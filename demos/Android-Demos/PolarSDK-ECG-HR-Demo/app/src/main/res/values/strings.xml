@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Polar ECG</string>
+    <string name="disconnect">DISCONNECT</string>
+    <string name="connect">CONNECT</string>
+    <string name="connecting">Connecting to device</string>
+    <string name="connected">Connected!</string>
+    <string name="device_id">device_id</string>
+    <string name="set_id_button">Change device ID</string>
+</resources>

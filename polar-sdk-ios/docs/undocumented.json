@@ -1,0 +1,47 @@
+{
+  "warnings": [
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "line": 8,
+      "symbol": "RecordingInterval.interval_1s",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "line": 9,
+      "symbol": "RecordingInterval.interval_5s",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/api/errors/PolarErrors.swift",
+      "line": 47,
+      "symbol": "UndefinedError.DeviceError(localizedDescription:)",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/api/errors/PolarErrors.swift",
+      "line": 48,
+      "symbol": "UndefinedError.localizedDescription",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/impl/PolarBleApiImpl.swift",
+      "line": 683,
+      "symbol": "PrimitiveSequence.asCompletable()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/version.swift",
+      "line": 1,
+      "symbol": "IOS_COMMUNICATIONS_VERSION",
+      "symbol_kind": "source.lang.swift.decl.var.global",
+      "warning": "undocumented"
+    }
+  ],
+  "source_directory": "/Users/esilvola/Documents/git_repos/ios-communications"
+}

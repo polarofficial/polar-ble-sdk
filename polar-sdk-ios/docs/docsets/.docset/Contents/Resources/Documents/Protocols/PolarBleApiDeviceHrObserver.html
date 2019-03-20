@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>PolarBleApiDeviceHrObserver Protocol Reference</title>
+    <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
+    <meta charset='utf-8'>
+    <script src="../js/jquery.min.js" defer></script>
+    <script src="../js/jazzy.js" defer></script>
+    
+  </head>
+  <body>
+    <a name="//apple_ref/swift/Protocol/PolarBleApiDeviceHrObserver" class="dashAnchor"></a>
+    <a title="PolarBleApiDeviceHrObserver Protocol Reference"></a>
+    <header>
+      <div class="content-wrapper">
+        <p><a href="../index.html"> Docs</a> (94% documented)</p>
+      </div>
+    </header>
+    <div class="content-wrapper">
+      <p id="breadcrumbs">
+        <a href="../index.html"> Reference</a>
+        <img id="carat" src="../img/carat.png" />
+        PolarBleApiDeviceHrObserver Protocol Reference
+      </p>
+    </div>
+    <div class="content-wrapper">
+      <nav class="sidebar">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a href="../API.html">API</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApi.html">PolarBleApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiObserver.html">PolarBleApiObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiDeviceFeaturesObserver.html">PolarBleApiDeviceFeaturesObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiDeviceHrObserver.html">PolarBleApiDeviceHrObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiDeviceInfoObserver.html">PolarBleApiDeviceInfoObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiPowerStateObserver.html">PolarBleApiPowerStateObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiLogger.html">PolarBleApiLogger</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarSensorSetting/SettingType.html">– SettingType</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../PolarErrors.html">PolarErrors</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk20DateTimeFormatFailedC">DateTimeFormatFailed</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk18DeviceNotConnectedC">DeviceNotConnected</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk14DeviceNotFoundC">DeviceNotFound</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk19MessageEncodeFailedC">MessageEncodeFailed</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk19MessageDecodeFailedC">MessageDecodeFailed</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk22NotificationNotEnabledC">NotificationNotEnabled</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk21OperationNotSupportedC">OperationNotSupported</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk15ServiceNotFoundC">ServiceNotFound</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk22UnableToStartStreamingC">UnableToStartStreaming</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk15InvalidArgumentC">InvalidArgument</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk14UndefinedErrorO">UndefinedError</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../API Default Implementation.html">API Default Implementation</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Classes/PolarBleApiDefaultImpl.html">PolarBleApiDefaultImpl</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Other Enums.html">Other Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Enums/Features.html">Features</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Enums.html#/s:11PolarBleSdk17RecordingIntervalO">RecordingInterval</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/SampleType.html">SampleType</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Other Extensions.html">Other Extensions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Extensions/PolarBleApiImpl.html">PolarBleApiImpl</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Other Typealiases.html">Other Type Aliases</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A7AccDataa">PolarAccData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A10DeviceInfoa">PolarDeviceInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A7EcgDataa">PolarEcgData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A12ExerciseDataa">PolarExerciseData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A15HrBroadcastDataa">PolarHrBroadcastData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A7PpgDataa">PolarPpgData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A7PpiDataa">PolarPpiData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A15RecordingStatusa">PolarRecordingStatus</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+        <section>
+          <section class="section">
+            <h1>PolarBleApiDeviceHrObserver</h1>
+              <div class="declaration">
+                <div class="language">
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">PolarBleApiDeviceHrObserver</span> <span class="p">:</span> <span class="kt">AnyObject</span></code></pre>
+
+                </div>
+              </div>
+            <p>Heart rate observer</p>
+
+          </section>
+          <section class="section task-group-section">
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB19ApiDeviceHrObserverP0aF4Dataa"></a>
+                    <a name="//apple_ref/swift/Alias/PolarHrData" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB19ApiDeviceHrObserverP0aF4Dataa">PolarHrData</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Polar hr data</p>
+<pre class="highlight swift"><code><span class="o">-</span> <span class="n">hr</span> <span class="k">in</span> <span class="kt">BPM</span>
+<span class="o">-</span> <span class="n">rrs</span> <span class="kt">RR</span> <span class="n">interval</span> <span class="k">in</span> <span class="mi">1</span><span class="o">/</span><span class="mi">1024</span><span class="o">.</span> <span class="kt">R</span> <span class="k">is</span> <span class="n">a</span> <span class="n">the</span> <span class="n">top</span> <span class="n">highest</span> <span class="n">peak</span> <span class="k">in</span> <span class="n">the</span> <span class="kt">QRS</span> <span class="n">complex</span> <span class="n">of</span> <span class="n">the</span> <span class="kt">ECG</span> <span class="n">wave</span> <span class="n">and</span> <span class="kt">RR</span> <span class="k">is</span> <span class="n">the</span> <span class="n">interval</span> <span class="n">between</span> <span class="n">successive</span> <span class="kt">Rs</span><span class="o">.</span> 
+<span class="o">-</span> <span class="n">rrs</span> <span class="kt">RR</span> <span class="n">interval</span> <span class="k">in</span> <span class="n">ms</span><span class="o">.</span>
+<span class="o">-</span> <span class="n">contact</span> <span class="n">status</span> <span class="n">between</span> <span class="n">the</span> <span class="n">device</span> <span class="n">and</span> <span class="n">the</span> <span class="n">users</span> <span class="n">skin</span>
+<span class="o">-</span> <span class="n">contactSupported</span> <span class="k">if</span> <span class="n">contact</span> <span class="k">is</span> <span class="n">supported</span>
+</code></pre>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">typealias</span> <span class="kt">PolarHrData</span> <span class="o">=</span> <span class="p">(</span><span class="nv">hr</span><span class="p">:</span> <span class="kt">UInt8</span><span class="p">,</span> <span class="nv">rrs</span><span class="p">:</span> <span class="p">[</span><span class="kt">Int</span><span class="p">],</span> <span class="nv">rrsMs</span><span class="p">:</span> <span class="p">[</span><span class="kt">Int</span><span class="p">],</span> <span class="nv">contact</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">,</span> <span class="nv">contactSupported</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB19ApiDeviceHrObserverP15hrValueReceived_4dataySS_s5UInt8V0H0_SaySiG3rrsAI0M2MsSb7contactSb0O9SupportedttF"></a>
+                    <a name="//apple_ref/swift/Method/hrValueReceived(_:data:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB19ApiDeviceHrObserverP15hrValueReceived_4dataySS_s5UInt8V0H0_SaySiG3rrsAI0M2MsSb7contactSb0O9SupportedttF">hrValueReceived(_:data:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>HR notification received.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">hrValueReceived</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="kt"><a href="../Protocols/PolarBleApiDeviceHrObserver.html#/s:11PolarBleSdk0aB19ApiDeviceHrObserverP0aF4Dataa">PolarHrData</a></span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </section>
+        </section>
+        <section id="footer">
+          <p>&copy; 2019 <a class="link" href="https://www.polar.com/en" target="_blank" rel="external">Polar Electro Oy</a>. All rights reserved. (Last updated: 2019-02-27)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+        </section>
+      </article>
+    </div>
+  </body>
+</div>
+</html>
