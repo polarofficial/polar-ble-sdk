@@ -1,0 +1,13 @@
+.DS_Store
+*.iml
+examples/example-android/androidBleSdkTestApp/app/libs/
+demos/**/libs/
+build
+.gradle
+gradle
+gradlew
+gradlew.bat
+.idea
+local.properties
+project.xcworkspace
+xcuserdata

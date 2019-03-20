@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>PolarBleApi Protocol Reference</title>
+    <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
+    <meta charset='utf-8'>
+    <script src="../js/jquery.min.js" defer></script>
+    <script src="../js/jazzy.js" defer></script>
+    
+  </head>
+  <body>
+    <a name="//apple_ref/swift/Protocol/PolarBleApi" class="dashAnchor"></a>
+    <a title="PolarBleApi Protocol Reference"></a>
+    <header>
+      <div class="content-wrapper">
+        <p><a href="../index.html"> Docs</a> (94% documented)</p>
+      </div>
+    </header>
+    <div class="content-wrapper">
+      <p id="breadcrumbs">
+        <a href="../index.html"> Reference</a>
+        <img id="carat" src="../img/carat.png" />
+        PolarBleApi Protocol Reference
+      </p>
+    </div>
+    <div class="content-wrapper">
+      <nav class="sidebar">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a href="../API.html">API</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApi.html">PolarBleApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiObserver.html">PolarBleApiObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiDeviceFeaturesObserver.html">PolarBleApiDeviceFeaturesObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiDeviceHrObserver.html">PolarBleApiDeviceHrObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiDeviceInfoObserver.html">PolarBleApiDeviceInfoObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiPowerStateObserver.html">PolarBleApiPowerStateObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiLogger.html">PolarBleApiLogger</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarSensorSetting/SettingType.html">– SettingType</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../PolarErrors.html">PolarErrors</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk20DateTimeFormatFailedC">DateTimeFormatFailed</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk18DeviceNotConnectedC">DeviceNotConnected</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk14DeviceNotFoundC">DeviceNotFound</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk19MessageEncodeFailedC">MessageEncodeFailed</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk19MessageDecodeFailedC">MessageDecodeFailed</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk22NotificationNotEnabledC">NotificationNotEnabled</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk21OperationNotSupportedC">OperationNotSupported</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk15ServiceNotFoundC">ServiceNotFound</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk22UnableToStartStreamingC">UnableToStartStreaming</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk15InvalidArgumentC">InvalidArgument</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../PolarErrors.html#/s:11PolarBleSdk14UndefinedErrorO">UndefinedError</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../API Default Implementation.html">API Default Implementation</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Classes/PolarBleApiDefaultImpl.html">PolarBleApiDefaultImpl</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Other Enums.html">Other Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Enums/Features.html">Features</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Enums.html#/s:11PolarBleSdk17RecordingIntervalO">RecordingInterval</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/SampleType.html">SampleType</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Other Extensions.html">Other Extensions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Extensions/PolarBleApiImpl.html">PolarBleApiImpl</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Other Typealiases.html">Other Type Aliases</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A7AccDataa">PolarAccData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A10DeviceInfoa">PolarDeviceInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A7EcgDataa">PolarEcgData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A12ExerciseDataa">PolarExerciseData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A15HrBroadcastDataa">PolarHrBroadcastData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A7PpgDataa">PolarPpgData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A7PpiDataa">PolarPpiData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Other Typealiases.html#/s:11PolarBleSdk0A15RecordingStatusa">PolarRecordingStatus</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+        <section>
+          <section class="section">
+            <h1>PolarBleApi</h1>
+              <div class="declaration">
+                <div class="language">
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">PolarBleApi</span></code></pre>
+
+                </div>
+              </div>
+            <p>Main class of the API.</p>
+
+          </section>
+          <section class="section task-group-section">
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP018startAutoConnectToA6Device_05polarI4Type7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSi_SSSgtF"></a>
+                    <a name="//apple_ref/swift/Method/startAutoConnectToPolarDevice(_:polarDeviceType:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP018startAutoConnectToA6Device_05polarI4Type7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSi_SSSgtF">startAutoConnectToPolarDevice(_:polarDeviceType:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Start connecting to a nearby Polar device. <code>PolarBleApiObservers</code> polarDeviceConnected is
+invoked when a connection is established.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startAutoConnectToPolarDevice</span><span class="p">(</span><span class="n">_</span> <span class="nv">rssi</span><span class="p">:</span> <span class="kt">Int</span><span class="p">,</span> <span class="nv">polarDeviceType</span><span class="p">:</span> <span class="kt">String</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>rssi</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>(Received Signal Strength Indicator) value is typically between -40 to -55 dBm.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>polarDeviceType</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>like H10, OH1 etc&hellip; or nil for any polar device</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Completable. Complete called when scan for nearby device has ended and connection attempt is started and polarDeviceConnecting callback will be invoked.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP09connectToA6DeviceyySSF"></a>
+                    <a name="//apple_ref/swift/Method/connectToPolarDevice(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP09connectToA6DeviceyySSF">connectToPolarDevice(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Request a connection to a Polar device. Invokes <code>PolarBleApiObservers</code> polarDeviceConnected.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">connectToPolarDevice</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id printed on the sensor/device.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP014disconnectFromA6DeviceyySSF"></a>
+                    <a name="//apple_ref/swift/Method/disconnectFromPolarDevice(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP014disconnectFromA6DeviceyySSF">disconnectFromPolarDevice(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Disconnect from the current Polar device.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">disconnectFromPolarDevice</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP09searchForA6Device7RxSwift10ObservableCySS8deviceId_Si4rssiSS4nameSb11connectabletGyF"></a>
+                    <a name="//apple_ref/swift/Method/searchForPolarDevice()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP09searchForA6Device7RxSwift10ObservableCySS8deviceId_Si4rssiSS4nameSb11connectabletGyF">searchForPolarDevice()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Start searching for Polar device(s)</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">searchForPolarDevice</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Other Typealiases.html#/s:11PolarBleSdk0A10DeviceInfoa">PolarDeviceInfo</a></span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>onNext</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>for every new polar device found</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Observable stream
+
+<ul>
+<li>onNext: for every new polar device found</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP14isFeatureReady_7featureSbSS_AA8FeaturesOtF"></a>
+                    <a name="//apple_ref/swift/Method/isFeatureReady(_:feature:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP14isFeatureReady_7featureSbSS_AA8FeaturesOtF">isFeatureReady(_:feature:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>helper to check is feature ready</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">isFeatureReady</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">feature</span><span class="p">:</span> <span class="kt"><a href="../Enums/Features.html">Features</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>feature</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>see <code><a href="../Enums/Features.html">Features</a></code> only supported is polarSensorStreaming and polarFileTransfer</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>true if requested feature is ready for use</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP12setLocalTime_4time7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_10Foundation4DateVtF"></a>
+                    <a name="//apple_ref/swift/Method/setLocalTime(_:time:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP12setLocalTime_4time7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_10Foundation4DateVtF">setLocalTime(_:time:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>set local time to device, requires ftp to be ready</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setLocalTime</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">time</span><span class="p">:</span> <span class="kt">Date</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>time</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>time to set</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Completable stream
+
+<ul>
+<li>success: when time has been set to device</li>
+<li>onError: see <code>PolarErrors</code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP14startRecording_10exerciseId8interval10sampleType7RxSwift17PrimitiveSequenceVyAH16CompletableTraitOs5NeverOGSS_SSAA0F8IntervalOAA06SampleK0OtF"></a>
+                    <a name="//apple_ref/swift/Method/startRecording(_:exerciseId:interval:sampleType:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP14startRecording_10exerciseId8interval10sampleType7RxSwift17PrimitiveSequenceVyAH16CompletableTraitOs5NeverOGSS_SSAA0F8IntervalOAA06SampleK0OtF">startRecording(_:exerciseId:interval:sampleType:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>request start recording, only H10 supported, requires ftp to be ready</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startRecording</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">exerciseId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">interval</span><span class="p">:</span> <span class="kt"><a href="../Other Enums.html#/s:11PolarBleSdk17RecordingIntervalO">RecordingInterval</a></span><span class="p">,</span> <span class="nv">sampleType</span><span class="p">:</span> <span class="kt"><a href="../Enums/SampleType.html">SampleType</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>exerciseId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>unique identifier for for exercise entry length from 1-64 bytes</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>interval</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>interval to be used</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>sampleType</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>sample type to be used</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Completable stream
+
+<ul>
+<li>success: recording started</li>
+<li>onError: see <code>PolarErrors</code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP13stopRecordingy7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF"></a>
+                    <a name="//apple_ref/swift/Method/stopRecording(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP13stopRecordingy7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF">stopRecording(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>request stop for current recording, only H10 supported, requires ftp to be ready</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">stopRecording</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Completable stream
+
+<ul>
+<li>success: recording stopped</li>
+<li>onError: see <code>PolarErrors</code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP22requestRecordingStatusy7RxSwift17PrimitiveSequenceVyAE11SingleTraitOSb7ongoing_SS7entryIdtGSSF"></a>
+                    <a name="//apple_ref/swift/Method/requestRecordingStatus(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP22requestRecordingStatusy7RxSwift17PrimitiveSequenceVyAE11SingleTraitOSb7ongoing_SS7entryIdtGSSF">requestRecordingStatus(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>request current recording status, only H10 supported, requires ftp to be ready</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">requestRecordingStatus</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Other Typealiases.html#/s:11PolarBleSdk0A15RecordingStatusa">PolarRecordingStatus</a></span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Single stream
+
+<ul>
+<li>success: see <code><a href="../Other Typealiases.html#/s:11PolarBleSdk0A15RecordingStatusa">PolarRecordingStatus</a></code></li>
+<li>onError: see <code>PolarErrors</code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP014startListenForA12HrBroadcastsy7RxSwift10ObservableCySS8deviceId_Si4rssiSS4nameSb11connectablet0M4Info_s5UInt8V2hrSb13batteryStatustGShySSGSgF"></a>
+                    <a name="//apple_ref/swift/Method/startListenForPolarHrBroadcasts(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP014startListenForA12HrBroadcastsy7RxSwift10ObservableCySS8deviceId_Si4rssiSS4nameSb11connectablet0M4Info_s5UInt8V2hrSb13batteryStatustGShySSGSgF">startListenForPolarHrBroadcasts(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Start listening to broadcasts from one or more Polar devices</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startListenForPolarHrBroadcasts</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifiers</span><span class="p">:</span> <span class="kt">Set</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Other Typealiases.html#/s:11PolarBleSdk0A15HrBroadcastDataa">PolarHrBroadcastData</a></span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifiers</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>list of Polar device ids, or nil for a any device</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Observable stream</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP18requestEcgSettingsy7RxSwift17PrimitiveSequenceVyAE11SingleTraitOAA0A13SensorSettingVGSSF"></a>
+                    <a name="//apple_ref/swift/Method/requestEcgSettings(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP18requestEcgSettingsy7RxSwift17PrimitiveSequenceVyAE11SingleTraitOAA0A13SensorSettingVGSSF">requestEcgSettings(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>request ecg settings available</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">requestEcgSettings</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a></span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Single stream
+
+<ul>
+<li>success: once after settings received from device</li>
+<li>onError: see <code>PolarErrors</code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP18requestAccSettingsy7RxSwift17PrimitiveSequenceVyAE11SingleTraitOAA0A13SensorSettingVGSSF"></a>
+                    <a name="//apple_ref/swift/Method/requestAccSettings(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP18requestAccSettingsy7RxSwift17PrimitiveSequenceVyAE11SingleTraitOAA0A13SensorSettingVGSSF">requestAccSettings(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>request acc settings available</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">requestAccSettings</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a></span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Single stream
+
+<ul>
+<li>success: once after settings received from device</li>
+<li>onError: see <code>PolarErrors</code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP18requestPpgSettingsy7RxSwift17PrimitiveSequenceVyAE11SingleTraitOAA0A13SensorSettingVGSSF"></a>
+                    <a name="//apple_ref/swift/Method/requestPpgSettings(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP18requestPpgSettingsy7RxSwift17PrimitiveSequenceVyAE11SingleTraitOAA0A13SensorSettingVGSSF">requestPpgSettings(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>request ppg settings available</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">requestPpgSettings</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a></span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Single stream
+
+<ul>
+<li>success: once after settings received from device</li>
+<li>onError: see <code>PolarErrors</code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP17startEcgStreaming_8settings7RxSwift10ObservableCys6UInt64V9timeStamp_Says5Int32VG7samplestGSS_AA0A13SensorSettingVtF"></a>
+                    <a name="//apple_ref/swift/Method/startEcgStreaming(_:settings:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP17startEcgStreaming_8settings7RxSwift10ObservableCys6UInt64V9timeStamp_Says5Int32VG7samplestGSS_AA0A13SensorSettingVtF">startEcgStreaming(_:settings:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Starts the ECG (Electrocardiography) stream.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startEcgStreaming</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">settings</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Other Typealiases.html#/s:11PolarBleSdk0A7EcgDataa">PolarEcgData</a></span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>settings</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>selected settings to start the stream</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Observable stream
+
+<ul>
+<li>onNext: for every air packet received. see <code><a href="../Other Typealiases.html#/s:11PolarBleSdk0A7EcgDataa">PolarEcgData</a></code></li>
+<li>onError: see <code>PolarErrors</code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP17startAccStreaming_8settings7RxSwift10ObservableCys6UInt64V9timeStamp_Says5Int32V1x_AM1yAM1ztG7samplestGSS_AA0A13SensorSettingVtF"></a>
+                    <a name="//apple_ref/swift/Method/startAccStreaming(_:settings:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP17startAccStreaming_8settings7RxSwift10ObservableCys6UInt64V9timeStamp_Says5Int32V1x_AM1yAM1ztG7samplestGSS_AA0A13SensorSettingVtF">startAccStreaming(_:settings:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Start ACC (accelerometer) stream.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startAccStreaming</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">settings</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Other Typealiases.html#/s:11PolarBleSdk0A7AccDataa">PolarAccData</a></span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>settings</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>selected settings to start the stream</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Observable stream
+
+<ul>
+<li>onNext: for every air packet received. see <code><a href="../Other Typealiases.html#/s:11PolarBleSdk0A7AccDataa">PolarAccData</a></code></li>
+<li>onError: see <code>PolarErrors</code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP20startOhrPPGStreaming_8settings7RxSwift10ObservableCys6UInt64V9timeStamp_Says5Int32V4ppg0_AM4ppg1AM4ppg2AM7ambienttG7samplestGSS_AA0A13SensorSettingVtF"></a>
+                    <a name="//apple_ref/swift/Method/startOhrPPGStreaming(_:settings:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP20startOhrPPGStreaming_8settings7RxSwift10ObservableCys6UInt64V9timeStamp_Says5Int32V4ppg0_AM4ppg1AM4ppg2AM7ambienttG7samplestGSS_AA0A13SensorSettingVtF">startOhrPPGStreaming(_:settings:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Start an OHR (optical heart rate) PPG (photoplethysmography) stream.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startOhrPPGStreaming</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">settings</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Other Typealiases.html#/s:11PolarBleSdk0A7PpgDataa">PolarPpgData</a></span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>settings</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>selected settings to start the stream</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Observable stream
+
+<ul>
+<li>onNext: for every air packet received. see <code><a href="../Other Typealiases.html#/s:11PolarBleSdk0A7PpgDataa">PolarPpgData</a></code></li>
+<li>onError: see <code>PolarErrors</code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP20startOhrPPIStreamingy7RxSwift10ObservableCys6UInt64V9timeStamp_SaySi2hr_s6UInt16V6ppInMsAM0P13ErrorEstimateSi10blockerBitSi17skinContactStatusSi0wX9SupportedtG7samplestGSSF"></a>
+                    <a name="//apple_ref/swift/Method/startOhrPPIStreaming(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP20startOhrPPIStreamingy7RxSwift10ObservableCys6UInt64V9timeStamp_SaySi2hr_s6UInt16V6ppInMsAM0P13ErrorEstimateSi10blockerBitSi17skinContactStatusSi0wX9SupportedtG7samplestGSSF">startOhrPPIStreaming(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Start PPI stream.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startOhrPPIStreaming</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Other Typealiases.html#/s:11PolarBleSdk0A7PpiDataa">PolarPpiData</a></span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Observable stream
+
+<ul>
+<li>onNext: for every air packet received. see <code><a href="../Other Typealiases.html#/s:11PolarBleSdk0A7PpiDataa">PolarPpiData</a></code></li>
+<li>onError: see <code>PolarErrors</code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP23fetchStoredExerciseListy7RxSwift10ObservableCySS4path_10Foundation4DateV4dateSS7entryIdtGSSF"></a>
+                    <a name="//apple_ref/swift/Method/fetchStoredExerciseList(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP23fetchStoredExerciseListy7RxSwift10ObservableCySS4path_10Foundation4DateV4dateSS7entryIdtGSSF">fetchStoredExerciseList(_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Api for fetching stored exercises from Polar OH1/H10 device</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">fetchStoredExerciseList</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Other Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Observable stream
+
+<ul>
+<li>onNext: see <code><a href="../Other Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></code></li>
+<li>onError: see <code>PolarErrors</code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP13fetchExercise_5entry7RxSwift17PrimitiveSequenceVyAF11SingleTraitOs6UInt32V8interval_SayALG7samplestGSS_SS4path_10Foundation4DateV4dateSS0G2IdttF"></a>
+                    <a name="//apple_ref/swift/Method/fetchExercise(_:entry:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP13fetchExercise_5entry7RxSwift17PrimitiveSequenceVyAF11SingleTraitOs6UInt32V8interval_SayALG7samplestGSS_SS4path_10Foundation4DateV4dateSS0G2IdttF">fetchExercise(_:entry:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Api for fetching a single exersice from Polar OH1/H10 device</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">fetchExercise</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Other Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Other Typealiases.html#/s:11PolarBleSdk0A12ExerciseDataa">PolarExerciseData</a></span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>entry</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>single exercise entry to be fetched</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Single stream
+
+<ul>
+<li>success: invoked after exercise data has been fetched from the device. see <code><a href="../Other Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></code></li>
+<li>onError: see <code>PolarErrors</code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP14removeExercise_5entry7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SS4path_10Foundation4DateV4dateSS0G2IdttF"></a>
+                    <a name="//apple_ref/swift/Method/removeExercise(_:entry:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP14removeExercise_5entry7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SS4path_10Foundation4DateV4dateSS0G2IdttF">removeExercise(_:entry:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Remove single exercise from device</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">removeExercise</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Other Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>entry</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>single exercise entry to be removed</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Completable stream
+
+<ul>
+<li>complete: entry successfully removed</li>
+<li>onError: see <code>PolarErrors</code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP8observerAA0abD8Observer_pSgvp"></a>
+                    <a name="//apple_ref/swift/Property/observer" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP8observerAA0abD8Observer_pSgvp">observer</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Common GAP (Generic access profile) observer</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">var</span> <span class="nv">observer</span><span class="p">:</span> <span class="kt"><a href="../Protocols/PolarBleApiObserver.html">PolarBleApiObserver</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP18deviceInfoObserverAA0abd6DevicefG0_pSgvp"></a>
+                    <a name="//apple_ref/swift/Property/deviceInfoObserver" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP18deviceInfoObserverAA0abd6DevicefG0_pSgvp">deviceInfoObserver</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Device info observer for DIS (Device information servive) and BAS (Battery service) GATT (Generic attributes) client</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">var</span> <span class="nv">deviceInfoObserver</span><span class="p">:</span> <span class="kt"><a href="../Protocols/PolarBleApiDeviceInfoObserver.html">PolarBleApiDeviceInfoObserver</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP16deviceHrObserverAA0abd6DevicefG0_pSgvp"></a>
+                    <a name="//apple_ref/swift/Property/deviceHrObserver" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP16deviceHrObserverAA0abd6DevicefG0_pSgvp">deviceHrObserver</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Device observer for HR GATT client</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">var</span> <span class="nv">deviceHrObserver</span><span class="p">:</span> <span class="kt"><a href="../Protocols/PolarBleApiDeviceHrObserver.html">PolarBleApiDeviceHrObserver</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP18powerStateObserverAA0abd5PowerfG0_pSgvp"></a>
+                    <a name="//apple_ref/swift/Property/powerStateObserver" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP18powerStateObserverAA0abd5PowerfG0_pSgvp">powerStateObserver</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Bluetooth power state observer</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">var</span> <span class="nv">powerStateObserver</span><span class="p">:</span> <span class="kt"><a href="../Protocols/PolarBleApiPowerStateObserver.html">PolarBleApiPowerStateObserver</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP22deviceFeaturesObserverAA0abd6DevicefG0_pSgvp"></a>
+                    <a name="//apple_ref/swift/Property/deviceFeaturesObserver" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP22deviceFeaturesObserverAA0abd6DevicefG0_pSgvp">deviceFeaturesObserver</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>device features ready observer</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">var</span> <span class="nv">deviceFeaturesObserver</span><span class="p">:</span> <span class="kt"><a href="../Protocols/PolarBleApiDeviceFeaturesObserver.html">PolarBleApiDeviceFeaturesObserver</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP02isB7PoweredSbvp"></a>
+                    <a name="//apple_ref/swift/Property/isBlePowered" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP02isB7PoweredSbvp">isBlePowered</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Helper to check if Ble is currently powered</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">var</span> <span class="nv">isBlePowered</span><span class="p">:</span> <span class="kt">Bool</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>current power state</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP6loggerAA0abD6Logger_pSgvp"></a>
+                    <a name="//apple_ref/swift/Property/logger" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP6loggerAA0abD6Logger_pSgvp">logger</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>optional logger set to get traces from sdk</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">var</span> <span class="nv">logger</span><span class="p">:</span> <span class="kt"><a href="../Protocols/PolarBleApiLogger.html">PolarBleApiLogger</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </section>
+        </section>
+        <section id="footer">
+          <p>&copy; 2019 <a class="link" href="https://www.polar.com/en" target="_blank" rel="external">Polar Electro Oy</a>. All rights reserved. (Last updated: 2019-02-27)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+        </section>
+      </article>
+    </div>
+  </body>
+</div>
+</html>
