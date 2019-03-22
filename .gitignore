@@ -1,6 +1,5 @@
 .DS_Store
 *.iml
-examples/example-android/androidBleSdkTestApp/app/libs/
 demos/**/libs/
 build
 .gradle
