@@ -64,7 +64,7 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 ```
 
 # Android: Getting started
-Detailed documentation  [Full Documentation](http://htmlpreview.github.com/?https://github.com/polarofficial/polar-ble-sdk/tree/develop/polar-sdk-android/docs/html/index.html). 
+Detailed documentation  [Full Documentation](polar-sdk-android/docs/html/). 
 ## Installation
 Compiled sdk and dependencies can be found from [polar-sdk-android](polar-sdk-android/libs/)
 
@@ -108,7 +108,7 @@ dependencies {
 
 
 ## Code example: Heart rate
-See the [example](examples/example-android) folder for the full project.
+See the [example](examples/example-android) folder for the full project. 
 
 #### Key things
 `String DEVICE_ID` is your Polar device's id. 
@@ -245,7 +245,7 @@ public void onDestroy() {
    `api.autoConnectToPolarDevice(-50, null).subscribe()`  to connect nearby device or  `api.searchForPolarDevice()` to scan and select the device
 
 # iOS: Getting started
-Detailed documentation [Full Documentation](http://htmlpreview.github.com/?https://github.com/polarofficial/polar-ble-sdk/tree/develop/polar-sdk-ios/docs/index.html). Minimum iOS version is 10.
+Detailed documentation [Full Documentation](polar-sdk-ios/docs/). Minimum iOS version is 10.
 ## Installation
 Compiled Sdk and dependencys can be found from [polar-sdk-ios](polar-sdk-ios/)
 Precompiled 4.4.0 RxSwift and RxAtomic is added to sdk package. All iOS demos and examples contains Cartfile if you desire to compile
