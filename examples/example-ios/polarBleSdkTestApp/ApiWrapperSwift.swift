@@ -139,13 +139,13 @@ import RxSwift
         }
     }
     
-    @objc func requestRecordingStatus(_ identifier: String, success: @escaping ((Bool,String)) -> Void, error: @escaping (Error) -> Void ) {
+    @objc func requestRecordingStatus(_ identifier: String, success:@escaping (Bool,String) -> Void, error: @escaping (Error) -> Void ) {
         _ = api.requestRecordingStatus(identifier).observeOn(MainScheduler.instance).subscribe{ e in
             switch e {
             case .error(let err):
                 error(err)
             case .success(let value):
-                success(value)
+                success(value.ongoing,value.entryId)
             }
         }
     }
@@ -183,7 +183,7 @@ import RxSwift
         }
     }
     
-    @objc func startEcgStreaming(_ identifier: String, settings: PolarSensorSettings, next: @escaping ((UInt64,[Int32])) -> Void, error: @escaping (Error) -> Void ) -> PolarDisposable {
+    @objc func startEcgStreaming(_ identifier: String, settings: PolarSensorSettings, next: @escaping (UInt64,[Int32]) -> Void, error: @escaping (Error) -> Void ) -> PolarDisposable {
         return PolarDisposable(api.startEcgStreaming(identifier, settings: settings.settings.maxSettings()).observeOn(MainScheduler.instance).subscribe{ e in
             switch e {
             case .completed:
@@ -191,7 +191,7 @@ import RxSwift
             case .error(let err):
                 error(err)
             case .next(let value):
-                next((value.0, samples: value.1))
+                next(value.timeStamp, value.samples)
             }
         })
     }
@@ -238,14 +238,13 @@ import RxSwift
         })
     }
 
-    @objc func fetchStoredExerciseList(_ identifier: String, next: @escaping ((String,Date,String)) -> Void, error: @escaping (Error) -> Void ) {
-        var entrys = [(String,Date,String)]()
+    @objc func fetchStoredExerciseList(_ identifier: String, next: @escaping (String,Date,String) -> Void, error: @escaping (Error) -> Void ) {
         _ = api.fetchStoredExerciseList(identifier).observeOn(MainScheduler.instance).subscribe { e in
             switch e {
             case .completed:
                 break
             case .next(let entry):
-                entrys.append((entry.path,entry.date,entry.entryId))
+                next(entry.path,entry.date,entry.entryId)
             case .error(let err):
                 error(err)
             }
