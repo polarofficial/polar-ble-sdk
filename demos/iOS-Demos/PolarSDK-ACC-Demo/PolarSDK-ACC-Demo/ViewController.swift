@@ -7,15 +7,14 @@ class ViewController: UIViewController, PolarBleApiObserver, PolarBleApiPowerSta
         NSLog(str)
     }
     
-    
     @IBOutlet weak var textX: UILabel!
     @IBOutlet weak var textY: UILabel!
     @IBOutlet weak var textZ: UILabel!
     @IBOutlet weak var connectionStatus: UILabel!
     @IBOutlet weak var buttonStart: UIButton!
     
-    var deviceId: String = ""
-    var api: PolarBleApi!
+    var deviceId = ""
+    lazy var api = PolarBleApiDefaultImpl.polarImplementation(DispatchQueue.main, features: Features.polarSensorStreaming.rawValue)
     var accToggle: Disposable?
     var multiplier: Double?
     
@@ -32,7 +31,6 @@ class ViewController: UIViewController, PolarBleApiObserver, PolarBleApiPowerSta
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        api = PolarBleApiDefaultImpl.polarImplementation(DispatchQueue.main, features: Features.polarSensorStreaming.rawValue)
         api.observer = self
         api.powerStateObserver = self
         api.deviceFeaturesObserver = self

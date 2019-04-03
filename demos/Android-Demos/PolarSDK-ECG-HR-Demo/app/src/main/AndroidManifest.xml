@@ -22,7 +22,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.polar.polarsdkecghrdemo.ECGActivity" android:screenOrientation="portrait"/>
+        <activity
+            android:name="com.polar.polarsdkecghrdemo.ECGActivity"
+            android:label="@string/ecg_name" android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name="com.polar.polarsdkecghrdemo.HRActivity"
+            android:label="@string/hr_name" android:screenOrientation="portrait">
+        </activity>
     </application>
 
 </manifest>

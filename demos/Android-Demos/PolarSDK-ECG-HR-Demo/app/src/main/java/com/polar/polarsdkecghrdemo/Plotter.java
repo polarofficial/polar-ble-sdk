@@ -25,7 +25,7 @@ public class Plotter {
         this.title = title;
 
         for(int i = 0; i < plotNumbers.length - 1; i++){
-            plotNumbers[i] = 0;
+            plotNumbers[i] = 60;
         }
 
         formatter = new FadeFormatter(800);
