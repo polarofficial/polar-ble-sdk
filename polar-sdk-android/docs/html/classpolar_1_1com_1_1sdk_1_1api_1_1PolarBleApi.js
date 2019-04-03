@@ -7,6 +7,7 @@ var classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi =
     [ "autoConnectToPolarDevice", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#aed92cfd7807194a6a82d708bdee2a313", null ],
     [ "autoConnectToPolarDevice", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ab8f30183f9ee4d1a0cc229e06f4f5d5b", null ],
     [ "backgroundEntered", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a5397f7034f2f36820910b65d84b45b1c", null ],
+    [ "cleanup", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a43c533a7a7011c6d2f56a4497fae04f7", null ],
     [ "connectToPolarDevice", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a1d83a0eec58e4a36f095207dcee71a6c", null ],
     [ "disconnectFromPolarDevice", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a90a6c60c7f16506e93745cd4111a5b25", null ],
     [ "fetchExercise", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a63713c5d8a89dee1d2e769068e803bed", null ],
