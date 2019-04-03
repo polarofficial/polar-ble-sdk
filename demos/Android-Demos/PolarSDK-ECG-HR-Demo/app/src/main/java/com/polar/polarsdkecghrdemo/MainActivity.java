@@ -1,6 +1,7 @@
 package com.polar.polarsdkecghrdemo;
 
 import android.Manifest;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -43,6 +44,20 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this,getString(R.string.connecting) + " " + DEVICE_ID,Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, ECGActivity.class);
+            intent.putExtra("id", DEVICE_ID);
+            startActivity(intent);
+        }
+    }
+
+    public void onClickConnect2(View view) {
+        checkBT();
+        DEVICE_ID = sharedPreferences.getString(sharedPrefsKey,"");
+        Log.d(TAG,DEVICE_ID);
+        if(DEVICE_ID.equals("")){
+            showDialog(view);
+        } else {
+            Toast.makeText(this,getString(R.string.connecting) + " " + DEVICE_ID,Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, HRActivity.class);
             intent.putExtra("id", DEVICE_ID);
             startActivity(intent);
         }

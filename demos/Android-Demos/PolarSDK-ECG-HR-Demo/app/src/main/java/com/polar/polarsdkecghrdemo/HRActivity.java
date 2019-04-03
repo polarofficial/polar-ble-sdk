@@ -10,32 +10,26 @@ import android.widget.Toast;
 
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.StepMode;
+import com.androidplot.xy.XYGraphWidget;
 import com.androidplot.xy.XYPlot;
 
-import org.reactivestreams.Publisher;
-
+import java.text.DecimalFormat;
 import java.util.List;
 
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
 import polar.com.sdk.api.PolarBleApi;
 import polar.com.sdk.api.PolarBleApiCallback;
 import polar.com.sdk.api.PolarBleApiDefaultImpl;
 import polar.com.sdk.api.model.PolarDeviceInfo;
-import polar.com.sdk.api.model.PolarEcgData;
 import polar.com.sdk.api.model.PolarHrData;
-import polar.com.sdk.api.model.PolarSensorSetting;
 
-public class ECGActivity extends AppCompatActivity implements PlotterListener {
+public class HRActivity extends AppCompatActivity implements PlotterListener {
 
     private XYPlot plot;
-    private Plotter plotter;
+    private TimePlotter plotter;
 
     TextView textViewHR, textViewFW;
-    private String TAG = "Polar_ECGActivity";
+    private String TAG = "Polar_HRActivity";
     public PolarBleApi api;
     private Disposable ecgDisposable = null;
     private Context classContext = this;
@@ -44,16 +38,15 @@ public class ECGActivity extends AppCompatActivity implements PlotterListener {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ecg);
+        setContentView(R.layout.activity_hr);
         DEVICE_ID = getIntent().getStringExtra("id");
-        textViewHR = findViewById(R.id.info);
-        textViewFW = findViewById(R.id.fw);
+        textViewHR = findViewById(R.id.info2);
+        textViewFW = findViewById(R.id.fw2);
 
-        plot = findViewById(R.id.plot);
+        plot = findViewById(R.id.plot2);
 
         api = PolarBleApiDefaultImpl.defaultImplementation(this,
-                PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING |
-                        PolarBleApi.FEATURE_BATTERY_INFO |
+                PolarBleApi.FEATURE_BATTERY_INFO |
                         PolarBleApi.FEATURE_DEVICE_INFO |
                         PolarBleApi.FEATURE_HR);
         api.setApiCallback(new PolarBleApiCallback() {
@@ -83,7 +76,6 @@ public class ECGActivity extends AppCompatActivity implements PlotterListener {
             @Override
             public void ecgFeatureReady(String s) {
                 Log.d(TAG, "ECG Feature ready " + s);
-                streamECG();
             }
 
             @Override
@@ -130,7 +122,16 @@ public class ECGActivity extends AppCompatActivity implements PlotterListener {
             public void hrNotificationReceived(String s,
                                                PolarHrData polarHrData) {
                 Log.d(TAG, "HR " + polarHrData.hr);
-                textViewHR.setText(String.valueOf(polarHrData.hr));
+                List<Integer> rrsMs = polarHrData.rrsMs;
+                String msg = String.valueOf(polarHrData.hr) + "\n";
+                for (int i : rrsMs) {
+                    msg += i + ",";
+                }
+                if (msg.endsWith(",")) {
+                    msg = msg.substring(0, msg.length() - 1);
+                }
+                textViewHR.setText(msg);
+                plotter.addValues(polarHrData);
             }
 
             @Override
@@ -140,13 +141,22 @@ public class ECGActivity extends AppCompatActivity implements PlotterListener {
         });
         api.connectToPolarDevice(DEVICE_ID);
 
-        plotter = new Plotter(this, "ECG");
+        plotter = new TimePlotter(this, "HR/RR");
         plotter.setListener(this);
 
-        plot.addSeries(plotter.getSeries(), plotter.getFormatter());
-        plot.setRangeBoundaries(-3.3, 3.3, BoundaryMode.FIXED);
-        plot.setRangeStep(StepMode.INCREMENT_BY_FIT, 0.55);
-        plot.setDomainBoundaries(0, 500, BoundaryMode.GROW);
+        plot.addSeries(plotter.getHrSeries(), plotter.getHrFormatter());
+        plot.addSeries(plotter.getRrSeries(), plotter.getRrFormatter());
+        plot.setRangeBoundaries(50, 100,
+                BoundaryMode.AUTO);
+        plot.setDomainBoundaries(0, 360000,
+                BoundaryMode.AUTO);
+        // Left labels will increment by 10
+        plot.setRangeStep(StepMode.INCREMENT_BY_VAL, 10);
+        plot.setDomainStep(StepMode.INCREMENT_BY_VAL, 60000);
+        // Make left labels be an integer (no decimal places)
+        plot.getGraph().getLineLabelStyle(XYGraphWidget.Edge.LEFT).
+                setFormat(new DecimalFormat("#"));
+        // These don't seem to have an effect
         plot.setLinesPerRangeLabel(2);
     }
 
@@ -156,48 +166,6 @@ public class ECGActivity extends AppCompatActivity implements PlotterListener {
         api.shutDown();
     }
 
-    public void streamECG() {
-        if (ecgDisposable == null) {
-            ecgDisposable =
-                    api.requestEcgSettings(DEVICE_ID).toFlowable().flatMap(new Function<PolarSensorSetting, Publisher<PolarEcgData>>() {
-                        @Override
-                        public Publisher<PolarEcgData> apply(PolarSensorSetting sensorSetting) throws Exception {
-                            return api.startEcgStreaming(DEVICE_ID,
-                                    sensorSetting.maxSettings());
-                        }
-                    }).observeOn(AndroidSchedulers.mainThread()).subscribe(
-                            new Consumer<PolarEcgData>() {
-                                @Override
-                                public void accept(PolarEcgData polarEcgData) throws Exception {
-                                    Log.d(TAG, "ecg update");
-                                    for (Integer data : polarEcgData.samples) {
-                                        plotter.sendSingleSample((float) ((float) data / 1000.0));
-                                    }
-                                }
-                            },
-                            new Consumer<Throwable>() {
-                                @Override
-                                public void accept(Throwable throwable) throws Exception {
-                                    Log.e(TAG,
-                                            "" + throwable.getLocalizedMessage());
-                                    ecgDisposable = null;
-                                }
-                            },
-                            new Action() {
-                                @Override
-                                public void run() throws Exception {
-                                    Log.d(TAG, "complete");
-                                }
-                            }
-                    );
-        } else {
-            // NOTE stops streaming if it is "running"
-            ecgDisposable.dispose();
-            ecgDisposable = null;
-        }
-    }
-
-    @Override
     public void update() {
         runOnUiThread(new Runnable() {
             @Override
