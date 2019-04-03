@@ -470,9 +470,9 @@ invoked when a connection is established.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP12setLocalTime_4time7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_10Foundation4DateVtF"></a>
-                    <a name="//apple_ref/swift/Method/setLocalTime(_:time:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP12setLocalTime_4time7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_10Foundation4DateVtF">setLocalTime(_:time:)</a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP12setLocalTime_4time4zone7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_10Foundation4DateVAO0G4ZoneVtF"></a>
+                    <a name="//apple_ref/swift/Method/setLocalTime(_:time:zone:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP12setLocalTime_4time4zone7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_10Foundation4DateVAO0G4ZoneVtF">setLocalTime(_:time:zone:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -487,7 +487,7 @@ invoked when a connection is established.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setLocalTime</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">time</span><span class="p">:</span> <span class="kt">Date</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setLocalTime</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">time</span><span class="p">:</span> <span class="kt">Date</span><span class="p">,</span> <span class="nv">zone</span><span class="p">:</span> <span class="kt">TimeZone</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
 
                         </div>
                       </div>
@@ -516,6 +516,18 @@ invoked when a connection is established.</p>
                               <td>
                                 <div>
                                   <p>time to set</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>zone</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>time zone to set</p>
                                 </div>
                               </td>
                             </tr>

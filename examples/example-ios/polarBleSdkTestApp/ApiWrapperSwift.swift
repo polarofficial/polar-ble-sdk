@@ -107,7 +107,7 @@ import RxSwift
     }
     
     @objc func setLocalTime(_ identifier: String, time: Date, success: @escaping () -> Void, error: @escaping (Error) -> Void ) {
-        _ = api.setLocalTime(identifier, time: time).observeOn(MainScheduler.instance).subscribe{ e in
+        _ = api.setLocalTime(identifier, time: time, zone: TimeZone.current).observeOn(MainScheduler.instance).subscribe{ e in
             switch e {
             case .completed:
                 success()
