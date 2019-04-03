@@ -24,7 +24,7 @@ var classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi =
     [ "setApiCallback", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a4682d9318c9ac41927694421bde349a5", null ],
     [ "setApiLogger", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ac92b34d91563bb7a208818dd4358b260", null ],
     [ "setAutomaticReconnection", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a32484f5b3bacdde45573298a4e1d12a5", null ],
-    [ "setLocalTime", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a29176c44198372ae4215d9de9a89c5b7", null ],
+    [ "setLocalTime", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ac8923ad69235615e62262a25115a01b9", null ],
     [ "shutDown", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ab6dec221f95ea5dce6118cadeb362006", null ],
     [ "startAccStreaming", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a11aa139fffa100c346c13a23fdedfe71", null ],
     [ "startBiozStreaming", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a36bcd4eb256abc810de32d3dbdfdf9e2", null ],

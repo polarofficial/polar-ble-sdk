@@ -12,6 +12,7 @@ import android.widget.Button;
 
 import org.reactivestreams.Publisher;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -559,7 +560,9 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("CheckResult")
             @Override
             public void onClick(View v) {
-                api.setLocalTime(DEVICE_ID,new Date()).subscribe(
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(new Date());
+                api.setLocalTime(DEVICE_ID,calendar).subscribe(
                 new Action() {
                      @Override
                      public void run() throws Exception {
