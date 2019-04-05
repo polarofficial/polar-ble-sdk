@@ -253,7 +253,7 @@ dependencies yourself.
 
 1. In the project properties __General__ tab, add `PolarBleSdk.framework` , `RxSwift.framework`  and  `RxAtomic.framework` to __Embedded binaries__ and __Linked Frameworks and Libraries__.
 
-2. In project target settings enable __Background Modes__, add __External accessory communication__ and __Uses Bluetooth LE accessories__
+2. In project target settings enable __Background Modes__, add  __Uses Bluetooth LE accessories__
 
 ## Code example: Heart rate
 See the [example](examples/example-ios) folder for the full project
