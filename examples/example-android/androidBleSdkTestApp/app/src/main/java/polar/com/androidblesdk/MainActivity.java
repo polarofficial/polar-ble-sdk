@@ -53,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         // Notice PolarBleApi.ALL_FEATURES are enabled
         api = PolarBleApiDefaultImpl.defaultImplementation(this, PolarBleApi.ALL_FEATURES);
+        // or USE
+        // api = PolarBleApiDefaultImpl.defaultImplementationWithoutPolarFilter(this, PolarBleApi.ALL_FEATURES);
 
         final Button broadcast = this.findViewById(R.id.broadcast_button);
         final Button connect = this.findViewById(R.id.connect_button);
