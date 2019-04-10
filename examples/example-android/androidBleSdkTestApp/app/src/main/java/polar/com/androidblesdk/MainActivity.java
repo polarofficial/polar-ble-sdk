@@ -53,8 +53,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         // Notice PolarBleApi.ALL_FEATURES are enabled
         api = PolarBleApiDefaultImpl.defaultImplementation(this, PolarBleApi.ALL_FEATURES);
-        // or USE
-        // api = PolarBleApiDefaultImpl.defaultImplementationWithoutPolarFilter(this, PolarBleApi.ALL_FEATURES);
+        api.setPolarFilter(false);
 
         final Button broadcast = this.findViewById(R.id.broadcast_button);
         final Button connect = this.findViewById(R.id.connect_button);
@@ -321,7 +320,8 @@ public class MainActivity extends AppCompatActivity {
                     ecgDisposable = api.requestEcgSettings(DEVICE_ID).toFlowable().flatMap(new Function<PolarSensorSetting, Publisher<PolarEcgData>>() {
                         @Override
                         public Publisher<PolarEcgData> apply(PolarSensorSetting polarEcgSettings) throws Exception {
-                            return api.startEcgStreaming(DEVICE_ID,polarEcgSettings.maxSettings());
+                            PolarSensorSetting sensorSetting = polarEcgSettings.maxSettings();
+                            return api.startEcgStreaming(DEVICE_ID,sensorSetting);
                         }
                     }).subscribe(
                         new Consumer<PolarEcgData>() {
@@ -360,7 +360,8 @@ public class MainActivity extends AppCompatActivity {
                     accDisposable = api.requestAccSettings(DEVICE_ID).toFlowable().flatMap(new Function<PolarSensorSetting, Publisher<PolarAccelerometerData>>() {
                         @Override
                         public Publisher<PolarAccelerometerData> apply(PolarSensorSetting settings) throws Exception {
-                            return api.startAccStreaming(DEVICE_ID,settings.maxSettings());
+                            PolarSensorSetting sensorSetting = settings.maxSettings();
+                            return api.startAccStreaming(DEVICE_ID,sensorSetting);
                         }
                     }).observeOn(AndroidSchedulers.mainThread()).subscribe(
                         new Consumer<PolarAccelerometerData>() {
