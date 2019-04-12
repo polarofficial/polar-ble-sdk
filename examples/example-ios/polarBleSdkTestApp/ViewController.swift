@@ -30,6 +30,7 @@ class ViewController: UIViewController,
         api.powerStateObserver = self
         api.deviceFeaturesObserver = self
         api.logger = self
+        api.polarFilter(false)
         NSLog("\(PolarBleApiDefaultImpl.versionInfo())")
     }
     
@@ -40,7 +41,7 @@ class ViewController: UIViewController,
 
     @IBAction func autoConnect(_ sender: Any) {
         autoConnect?.dispose()
-        autoConnect = api.startAutoConnectToPolarDevice(-45, polarDeviceType: nil).subscribe{ e in
+        autoConnect = api.startAutoConnectToDevice(-55, service: nil, polarDeviceType: nil).subscribe{ e in
             switch e {
             case .completed:
                 NSLog("auto connect search complete")
@@ -69,11 +70,11 @@ class ViewController: UIViewController,
     }
     
     @IBAction func connectToDevice(_ sender: Any) {
-        api.connectToPolarDevice(deviceId)
+        api.connectToDevice(deviceId)
     }
     
     @IBAction func disconnectFromDevice(_ sender: Any) {
-        api.disconnectFromPolarDevice(deviceId)
+        api.disconnectFromDevice(deviceId)
     }
     
     @IBAction func accToggle(_ sender: Any) {
@@ -184,7 +185,7 @@ class ViewController: UIViewController,
     
     @IBAction func searchToggle(_ sender: Any) {
         if searchToggle == nil {
-            searchToggle = api.searchForPolarDevice().observeOn(MainScheduler.instance).subscribe{ e in
+            searchToggle = api.searchForDevice().observeOn(MainScheduler.instance).subscribe{ e in
                 switch e {
                 case .completed:
                     NSLog("search complete")
@@ -262,16 +263,16 @@ class ViewController: UIViewController,
     }
     
     // PolarBleApiObserver
-    func polarDeviceConnecting(_ polarDeviceInfo: PolarDeviceInfo) {
+    func deviceConnecting(_ polarDeviceInfo: PolarDeviceInfo) {
         NSLog("DEVICE CONNECTING: \(polarDeviceInfo)")
     }
     
-    func polarDeviceConnected(_ polarDeviceInfo: PolarDeviceInfo) {
+    func deviceConnected(_ polarDeviceInfo: PolarDeviceInfo) {
         NSLog("DEVICE CONNECTED: \(polarDeviceInfo)")
         deviceId = polarDeviceInfo.deviceId
     }
     
-    func polarDeviceDisconnected(_ polarDeviceInfo: PolarDeviceInfo) {
+    func deviceDisconnected(_ polarDeviceInfo: PolarDeviceInfo) {
         NSLog("DISCONNECTED: \(polarDeviceInfo)")
     }
     
