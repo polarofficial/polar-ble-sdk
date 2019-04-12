@@ -15,6 +15,7 @@ import com.androidplot.xy.XYPlot;
 
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.UUID;
 
 import io.reactivex.disposables.Disposable;
 import polar.com.sdk.api.PolarBleApi;
@@ -56,19 +57,19 @@ public class HRActivity extends AppCompatActivity implements PlotterListener {
             }
 
             @Override
-            public void polarDeviceConnected(PolarDeviceInfo s) {
+            public void deviceConnected(PolarDeviceInfo s) {
                 Log.d(TAG, "Device connected " + s.deviceId);
                 Toast.makeText(classContext, R.string.connected,
                         Toast.LENGTH_SHORT).show();
             }
 
             @Override
-            public void polarDeviceConnecting(PolarDeviceInfo polarDeviceInfo) {
+            public void deviceConnecting(PolarDeviceInfo polarDeviceInfo) {
 
             }
 
             @Override
-            public void polarDeviceDisconnected(PolarDeviceInfo s) {
+            public void deviceDisconnected(PolarDeviceInfo s) {
                 Log.d(TAG, "Device disconnected " + s);
 
             }
@@ -104,10 +105,12 @@ public class HRActivity extends AppCompatActivity implements PlotterListener {
             }
 
             @Override
-            public void fwInformationReceived(String s, String s1) {
-                String msg = "Firmware: " + s1.trim();
-                Log.d(TAG, "Firmware: " + s + " " + s1.trim());
-                textViewFW.append(msg + "\n");
+            public void disInformationReceived(String s, UUID u, String s1) {
+                if( u.equals(UUID.fromString("00002a28-0000-1000-8000-00805f9b34fb"))) {
+                    String msg = "Firmware: " + s1.trim();
+                    Log.d(TAG, "Firmware: " + s + " " + s1.trim());
+                    textViewFW.append(msg + "\n");
+                }
             }
 
             @Override
@@ -139,7 +142,7 @@ public class HRActivity extends AppCompatActivity implements PlotterListener {
                 Log.d(TAG, "Polar FTP ready " + s);
             }
         });
-        api.connectToPolarDevice(DEVICE_ID);
+        api.connectToDevice(DEVICE_ID);
 
         plotter = new TimePlotter(this, "HR/RR");
         plotter.setListener(this);

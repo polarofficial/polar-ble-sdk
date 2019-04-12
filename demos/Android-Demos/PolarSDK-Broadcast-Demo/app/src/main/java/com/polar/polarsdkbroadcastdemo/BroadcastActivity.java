@@ -9,6 +9,7 @@ import android.util.Log;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -44,16 +45,16 @@ public class BroadcastActivity extends AppCompatActivity {
             }
 
             @Override
-            public void polarDeviceConnected(PolarDeviceInfo s) {
+            public void deviceConnected(PolarDeviceInfo s) {
             }
 
             @Override
-            public void polarDeviceConnecting(PolarDeviceInfo polarDeviceInfo) {
+            public void deviceConnecting(PolarDeviceInfo polarDeviceInfo) {
 
             }
 
             @Override
-            public void polarDeviceDisconnected(PolarDeviceInfo s) {
+            public void deviceDisconnected(PolarDeviceInfo s) {
             }
 
             @Override
@@ -82,7 +83,7 @@ public class BroadcastActivity extends AppCompatActivity {
             }
 
             @Override
-            public void fwInformationReceived(String s, String s1) {
+            public void disInformationReceived(String s, UUID u, String s1) {
             }
 
             @Override

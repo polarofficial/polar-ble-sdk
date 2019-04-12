@@ -14,6 +14,7 @@ import org.reactivestreams.Publisher;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -88,19 +89,19 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void polarDeviceConnected(PolarDeviceInfo polarDeviceInfo) {
+            public void deviceConnected(PolarDeviceInfo polarDeviceInfo) {
                 Log.d(TAG,"CONNECTED: " + polarDeviceInfo.deviceId);
                 DEVICE_ID = polarDeviceInfo.deviceId;
             }
 
             @Override
-            public void polarDeviceConnecting(PolarDeviceInfo polarDeviceInfo) {
+            public void deviceConnecting(PolarDeviceInfo polarDeviceInfo) {
                 Log.d(TAG,"CONNECTING: " + polarDeviceInfo.deviceId);
                 DEVICE_ID = polarDeviceInfo.deviceId;
             }
 
             @Override
-            public void polarDeviceDisconnected(PolarDeviceInfo polarDeviceInfo) {
+            public void deviceDisconnected(PolarDeviceInfo polarDeviceInfo) {
                 Log.d(TAG,"DISCONNECTED: " + polarDeviceInfo.deviceId);
                 ecgDisposable = null;
                 accDisposable = null;
@@ -145,8 +146,8 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void fwInformationReceived(String identifier, String fwVersion) {
-                Log.d(TAG,"FW: " + fwVersion);
+            public void disInformationReceived(String identifier, UUID uuid, String value) {
+                Log.d(TAG,"uuid: " + uuid + " value: " + value);
 
             }
 
@@ -278,14 +279,14 @@ public class MainActivity extends AppCompatActivity {
         connect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                api.connectToPolarDevice(DEVICE_ID);
+                api.connectToDevice(DEVICE_ID);
             }
         });
 
         disconnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                api.disconnectFromPolarDevice(DEVICE_ID);
+                api.disconnectFromDevice(DEVICE_ID);
             }
         });
 
@@ -296,7 +297,7 @@ public class MainActivity extends AppCompatActivity {
                     autoConnectDisposable.dispose();
                     autoConnectDisposable = null;
                 }
-                autoConnectDisposable = api.autoConnectToPolarDevice(-50, null).subscribe(
+                autoConnectDisposable = api.autoConnectToDevice(-50, "180D", null).subscribe(
                     new Action() {
                         @Override
                         public void run() throws Exception {

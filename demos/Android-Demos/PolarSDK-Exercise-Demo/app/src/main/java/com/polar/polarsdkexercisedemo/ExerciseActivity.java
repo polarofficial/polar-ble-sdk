@@ -14,6 +14,8 @@ import com.androidplot.xy.StepMode;
 import com.androidplot.xy.XYPlot;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
@@ -59,7 +61,7 @@ public class ExerciseActivity extends Activity implements PlotterListener, ItemC
             }
 
             @Override
-            public void polarDeviceConnected(PolarDeviceInfo s) {
+            public void deviceConnected(PolarDeviceInfo s) {
                 Log.d(TAG,"Device connected " + s);
                 deviceId = s.deviceId;
                 Toast.makeText(classContext, getString(R.string.connected) + " " + s.deviceId, Toast.LENGTH_SHORT).show();
@@ -73,12 +75,12 @@ public class ExerciseActivity extends Activity implements PlotterListener, ItemC
             }
 
             @Override
-            public void polarDeviceConnecting(PolarDeviceInfo polarDeviceInfo) {
+            public void deviceConnecting(PolarDeviceInfo polarDeviceInfo) {
 
             }
 
             @Override
-            public void polarDeviceDisconnected(PolarDeviceInfo s) {
+            public void deviceDisconnected(PolarDeviceInfo s) {
                 Log.d(TAG,"Device disconnected " + s.deviceId);
             }
 
@@ -113,7 +115,7 @@ public class ExerciseActivity extends Activity implements PlotterListener, ItemC
             }
 
             @Override
-            public void fwInformationReceived(String s, String s1) {
+            public void disInformationReceived(String s, UUID u, String s1) {
             }
 
             @Override
@@ -132,7 +134,7 @@ public class ExerciseActivity extends Activity implements PlotterListener, ItemC
             }
         });
 
-        api.autoConnectToPolarDevice(-50, null).subscribe();
+        api.autoConnectToDevice(-50, "180D", null).subscribe();
 
         plotter = new Plotter(this, "Exercise");
         plotter.setListener(this);
@@ -171,7 +173,7 @@ public class ExerciseActivity extends Activity implements PlotterListener, ItemC
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        api.disconnectFromPolarDevice(deviceId);
+        api.disconnectFromDevice(deviceId);
     }
 
     //PlotterListener

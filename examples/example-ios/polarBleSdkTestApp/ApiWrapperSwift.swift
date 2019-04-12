@@ -86,7 +86,7 @@ import RxSwift
     
     @objc func startAutoConnectToPolarDevice(_ rssi: Int, polarDeviceType: String?) {
         stopAutoConnectToPolarDevice()
-        autoConnect = self.api.startAutoConnectToPolarDevice(rssi, polarDeviceType: polarDeviceType).subscribe()
+        autoConnect = self.api.startAutoConnectToDevice(rssi, service: nil, polarDeviceType: polarDeviceType).subscribe()
     }
     
     @objc func stopAutoConnectToPolarDevice() {
@@ -95,11 +95,11 @@ import RxSwift
     }
     
     @objc func connectToPolarDevice(_ identifier: String) {
-        self.api.connectToPolarDevice(identifier)
+        self.api.connectToDevice(identifier)
     }
     
     @objc func disconnectFromPolarDevice(_ identifier: String) {
-        self.api.disconnectFromPolarDevice(identifier)
+        self.api.disconnectFromDevice(identifier)
     }
     
     @objc func isFeatureReady(_ identifier: String, feature: Int) -> Bool {
