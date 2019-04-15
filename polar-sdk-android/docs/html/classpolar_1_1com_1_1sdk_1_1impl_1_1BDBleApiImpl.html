@@ -65,9 +65,9 @@ $(document).ready(function(){initNavTree('classpolar_1_1com_1_1sdk_1_1impl_1_1BD
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pri-methods">Private Member Functions</a> &#124;
-<a href="#pri-attribs">Private Attributes</a> &#124;
-<a href="#pri-static-attribs">Static Private Attributes</a>  </div>
+<a href="#pro-methods">Protected Member Functions</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a> &#124;
+<a href="#pro-static-attribs">Static Protected Attributes</a>  </div>
   <div class="headertitle">
 <div class="title">polar.com.sdk.impl.BDBleApiImpl Class Reference</div>  </div>
 </div><!--header-->
@@ -95,6 +95,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ae1296701871fe33af919ca9423cadd7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f3fceac06da15b3c1a39dc5bb7b80f1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a4f3fceac06da15b3c1a39dc5bb7b80f1">cleanup</a> ()</td></tr>
 <tr class="separator:a4f3fceac06da15b3c1a39dc5bb7b80f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac08c2703034dc62317eaa6c47ed2284c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#ac08c2703034dc62317eaa6c47ed2284c">setPolarFilter</a> (boolean enable)</td></tr>
+<tr class="separator:ac08c2703034dc62317eaa6c47ed2284c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af300d862a83d6f973d78081cde32ab99"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#af300d862a83d6f973d78081cde32ab99">isFeatureReady</a> (final String deviceId, int feature)</td></tr>
 <tr class="separator:af300d862a83d6f973d78081cde32ab99"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac61c2b578af2d5563ef677172196d04d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#ac61c2b578af2d5563ef677172196d04d">setApiCallback</a> (<a class="el" href="interfacepolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiCallback.html">PolarBleApiCallback</a> <a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a5ccfe3027f85d5b1262737b1160006b8">callback</a>)</td></tr>
@@ -117,14 +119,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a24707fd78988e8b9f57d47a6d24cc7e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1218a5c9c6a590b55f1d00c9a76d4a90"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a1218a5c9c6a590b55f1d00c9a76d4a90">foregroundEntered</a> ()</td></tr>
 <tr class="separator:a1218a5c9c6a590b55f1d00c9a76d4a90"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a964a35d7b8b782183fad03aae73b99be"><td class="memItemLeft" align="right" valign="top">Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a964a35d7b8b782183fad03aae73b99be">autoConnectToPolarDevice</a> (final int rssiLimit, final int timeout, final TimeUnit unit, final String polarDeviceType)</td></tr>
-<tr class="separator:a964a35d7b8b782183fad03aae73b99be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af8fe71975e2d06a5eac90781f5555d07"><td class="memItemLeft" align="right" valign="top">Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#af8fe71975e2d06a5eac90781f5555d07">autoConnectToPolarDevice</a> (final int rssiLimit, final String polarDeviceType)</td></tr>
-<tr class="separator:af8fe71975e2d06a5eac90781f5555d07"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4736cc12d728a7a8ddcd15a883486765"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a4736cc12d728a7a8ddcd15a883486765">connectToPolarDevice</a> (final String identifier)</td></tr>
-<tr class="separator:a4736cc12d728a7a8ddcd15a883486765"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4d8a6d2fd920b9140d071db665aa762a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a4d8a6d2fd920b9140d071db665aa762a">disconnectFromPolarDevice</a> (String identifier)</td></tr>
-<tr class="separator:a4d8a6d2fd920b9140d071db665aa762a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59c11713e724352b7a8356089185fbda"><td class="memItemLeft" align="right" valign="top">Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a59c11713e724352b7a8356089185fbda">autoConnectToDevice</a> (final int rssiLimit, final String service, final int timeout, final TimeUnit unit, final String polarDeviceType)</td></tr>
+<tr class="separator:a59c11713e724352b7a8356089185fbda"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7e325a9ea06accea9746866d0118f1b"><td class="memItemLeft" align="right" valign="top">Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#ab7e325a9ea06accea9746866d0118f1b">autoConnectToDevice</a> (final int rssiLimit, final String service, final String polarDeviceType)</td></tr>
+<tr class="separator:ab7e325a9ea06accea9746866d0118f1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92ce7a49c8c5dda100c4095d96c2500d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a92ce7a49c8c5dda100c4095d96c2500d">connectToDevice</a> (final String identifier)</td></tr>
+<tr class="separator:a92ce7a49c8c5dda100c4095d96c2500d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b83c6b87fbac8b7fae12f677aab7ff9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a4b83c6b87fbac8b7fae12f677aab7ff9">disconnectFromDevice</a> (String identifier)</td></tr>
+<tr class="separator:a4b83c6b87fbac8b7fae12f677aab7ff9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a14a4d99e3a14c3e8dd2a9695e25ec9a8"><td class="memItemLeft" align="right" valign="top">Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a14a4d99e3a14c3e8dd2a9695e25ec9a8">startRecording</a> (String identifier, String exerciseId, <a class="el" href="enumpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi_1_1RecordingInterval.html">RecordingInterval</a> interval, <a class="el" href="enumpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi_1_1SampleType.html">SampleType</a> type)</td></tr>
 <tr class="separator:a14a4d99e3a14c3e8dd2a9695e25ec9a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4eb11a28590fe41d76fdb88c28894ce2"><td class="memItemLeft" align="right" valign="top">Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a4eb11a28590fe41d76fdb88c28894ce2">stopRecording</a> (String identifier)</td></tr>
@@ -158,6 +160,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ab6dec221f95ea5dce6118cadeb362006 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43c533a7a7011c6d2f56a4497fae04f7 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a43c533a7a7011c6d2f56a4497fae04f7">cleanup</a> ()</td></tr>
 <tr class="separator:a43c533a7a7011c6d2f56a4497fae04f7 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7a6e7c991db4f0fecca383e639cc74c inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ae7a6e7c991db4f0fecca383e639cc74c">setPolarFilter</a> (boolean enable)</td></tr>
+<tr class="separator:ae7a6e7c991db4f0fecca383e639cc74c inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a551ad9f20c37fba8d7e1ad08c6c1b258 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">abstract boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a551ad9f20c37fba8d7e1ad08c6c1b258">isFeatureReady</a> (@NonNull final String deviceId, final int feature)</td></tr>
 <tr class="separator:a551ad9f20c37fba8d7e1ad08c6c1b258 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5397f7034f2f36820910b65d84b45b1c inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a5397f7034f2f36820910b65d84b45b1c">backgroundEntered</a> ()</td></tr>
@@ -180,14 +184,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ae34d02d96a9fac60edde6d7b3f61a2d5 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa29e34cea992198209979e5c780b0d81 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">abstract Single&lt; <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1model_1_1PolarSensorSetting.html">PolarSensorSetting</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#aa29e34cea992198209979e5c780b0d81">requestBiozSettings</a> (@NonNull final String identifier)</td></tr>
 <tr class="separator:aa29e34cea992198209979e5c780b0d81 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aed92cfd7807194a6a82d708bdee2a313 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">abstract Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#aed92cfd7807194a6a82d708bdee2a313">autoConnectToPolarDevice</a> (int rssiLimit, int timeout, @NonNull TimeUnit unit, @Nullable final String polarDeviceType)</td></tr>
-<tr class="separator:aed92cfd7807194a6a82d708bdee2a313 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab8f30183f9ee4d1a0cc229e06f4f5d5b inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">abstract Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ab8f30183f9ee4d1a0cc229e06f4f5d5b">autoConnectToPolarDevice</a> (int rssiLimit, final String polarDeviceType)</td></tr>
-<tr class="separator:ab8f30183f9ee4d1a0cc229e06f4f5d5b inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1d83a0eec58e4a36f095207dcee71a6c inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a1d83a0eec58e4a36f095207dcee71a6c">connectToPolarDevice</a> (@NonNull final String identifier)</td></tr>
-<tr class="separator:a1d83a0eec58e4a36f095207dcee71a6c inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a90a6c60c7f16506e93745cd4111a5b25 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a90a6c60c7f16506e93745cd4111a5b25">disconnectFromPolarDevice</a> (@NonNull final String identifier)</td></tr>
-<tr class="separator:a90a6c60c7f16506e93745cd4111a5b25 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a0692503cb3f8ebd94bd393dd6b1a7b inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">abstract Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a3a0692503cb3f8ebd94bd393dd6b1a7b">autoConnectToDevice</a> (int rssiLimit, @Nullable String service, int timeout, @NonNull TimeUnit unit, @Nullable final String polarDeviceType)</td></tr>
+<tr class="separator:a3a0692503cb3f8ebd94bd393dd6b1a7b inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae406adb00b8f13bcc7c4630b11628784 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">abstract Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ae406adb00b8f13bcc7c4630b11628784">autoConnectToDevice</a> (int rssiLimit, @Nullable String service, final String polarDeviceType)</td></tr>
+<tr class="separator:ae406adb00b8f13bcc7c4630b11628784 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5e518b8f1ef6ca3c4b1c95f16312b52 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#af5e518b8f1ef6ca3c4b1c95f16312b52">connectToDevice</a> (@NonNull final String identifier)</td></tr>
+<tr class="separator:af5e518b8f1ef6ca3c4b1c95f16312b52 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a6de926dbcc32299dd79d2ba88e2544 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a2a6de926dbcc32299dd79d2ba88e2544">disconnectFromDevice</a> (@NonNull final String identifier)</td></tr>
+<tr class="separator:a2a6de926dbcc32299dd79d2ba88e2544 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a20700bbdf15b3ea25c632814d3bde8a2 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">abstract Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a20700bbdf15b3ea25c632814d3bde8a2">startRecording</a> (@NonNull final String identifier, @NonNull @Size(min=1, max=64) final String exerciseId, @NonNull <a class="el" href="enumpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi_1_1RecordingInterval.html">RecordingInterval</a> interval, @NonNull <a class="el" href="enumpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi_1_1SampleType.html">SampleType</a> type)</td></tr>
 <tr class="separator:a20700bbdf15b3ea25c632814d3bde8a2 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afe25cdd5414973383db68bffc75d492f inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">abstract Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#afe25cdd5414973383db68bffc75d492f">stopRecording</a> (@NonNull final String identifier)</td></tr>
@@ -215,12 +219,16 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ac2737c48f2aad83fd535d34134e43d17 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">abstract Flowable&lt; <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1model_1_1PolarOhrPPIData.html">PolarOhrPPIData</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ac2737c48f2aad83fd535d34134e43d17">startOhrPPIStreaming</a> (@NonNull final String identifier)</td></tr>
 <tr class="separator:ac2737c48f2aad83fd535d34134e43d17 inherit pub_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
-Private Member Functions</h2></td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
 <tr class="memitem:aea179b27f1dc4b7ed1ad3e2cb971a7a8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#aea179b27f1dc4b7ed1ad3e2cb971a7a8">enableAndroidScanFilter</a> ()</td></tr>
 <tr class="separator:aea179b27f1dc4b7ed1ad3e2cb971a7a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af7371642d2f1d673a4d20fd05be9e983"><td class="memItemLeft" align="right" valign="top">Single&lt; <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1model_1_1PolarSensorSetting.html">PolarSensorSetting</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#af7371642d2f1d673a4d20fd05be9e983">querySettings</a> (final String identifier, final BlePMDClient.PmdMeasurementType type)</td></tr>
 <tr class="separator:af7371642d2f1d673a4d20fd05be9e983"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a829ace600b46dbcb598683a488f821b9"><td class="memItemLeft" align="right" valign="top">BleDeviceSession&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a829ace600b46dbcb598683a488f821b9">fetchSession</a> (final String identifier)</td></tr>
+<tr class="separator:a829ace600b46dbcb598683a488f821b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0186ce1014ad60295930835b3620a22"><td class="memItemLeft" align="right" valign="top">BleDeviceSession&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#ae0186ce1014ad60295930835b3620a22">sessionByAddress</a> (final String address)</td></tr>
+<tr class="separator:ae0186ce1014ad60295930835b3620a22"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ca3ebc9ca23822d2aca71a2002c1b73"><td class="memItemLeft" align="right" valign="top">BleDeviceSession&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a2ca3ebc9ca23822d2aca71a2002c1b73">sessionByDeviceId</a> (final String deviceId)</td></tr>
 <tr class="separator:a2ca3ebc9ca23822d2aca71a2002c1b73"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a647db72c6f3a1cbd7587cac769cf0e2c"><td class="memItemLeft" align="right" valign="top">BleDeviceSession&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a647db72c6f3a1cbd7587cac769cf0e2c">sessionServiceReady</a> (final String identifier, UUID service)  throws Throwable </td></tr>
@@ -239,9 +247,12 @@ Private Member Functions</h2></td></tr>
 <tr class="separator:a6170765b10eb5ecc9b6b9584b350fb1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae897ee6968f1b84641861cda05859a6a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#ae897ee6968f1b84641861cda05859a6a">logError</a> (final String message)</td></tr>
 <tr class="separator:ae897ee6968f1b84641861cda05859a6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html">polar.com.sdk.api.PolarBleApi</a></td></tr>
+<tr class="memitem:afa663962cfcfa76ea7140315074ba39f inherit pro_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#afa663962cfcfa76ea7140315074ba39f">PolarBleApi</a> (final int <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a6b3b45f899b318df179c9779f9faaf48">features</a>)</td></tr>
+<tr class="separator:afa663962cfcfa76ea7140315074ba39f inherit pro_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
-Private Attributes</h2></td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
 <tr class="memitem:ac08998b625def30d377e05abb8a80f8d"><td class="memItemLeft" align="right" valign="top">BleDeviceListener&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#ac08998b625def30d377e05abb8a80f8d">listener</a></td></tr>
 <tr class="separator:ac08998b625def30d377e05abb8a80f8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac6df07abc427e5ad2ba3167a2d8c109b"><td class="memItemLeft" align="right" valign="top">Map&lt; String, Disposable &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#ac6df07abc427e5ad2ba3167a2d8c109b">connectSubscriptions</a> = new HashMap&lt;&gt;()</td></tr>
@@ -252,9 +263,12 @@ Private Attributes</h2></td></tr>
 <tr class="separator:a5ccfe3027f85d5b1262737b1160006b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abb45392febb6f61abfe49ef9482f07bb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="interfacepolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi_1_1PolarBleApiLogger.html">PolarBleApiLogger</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#abb45392febb6f61abfe49ef9482f07bb">logger</a></td></tr>
 <tr class="separator:abb45392febb6f61abfe49ef9482f07bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_attribs_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html">polar.com.sdk.api.PolarBleApi</a></td></tr>
+<tr class="memitem:a6b3b45f899b318df179c9779f9faaf48 inherit pro_attribs_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a6b3b45f899b318df179c9779f9faaf48">features</a></td></tr>
+<tr class="separator:a6b3b45f899b318df179c9779f9faaf48 inherit pro_attribs_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-static-attribs"></a>
-Static Private Attributes</h2></td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-attribs"></a>
+Static Protected Attributes</h2></td></tr>
 <tr class="memitem:a463274cf31be9ae204533e17818c7f16"><td class="memItemLeft" align="right" valign="top">static final String&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a463274cf31be9ae204533e17818c7f16">TAG</a> = BDBleApiImpl.class.getSimpleName()</td></tr>
 <tr class="separator:a463274cf31be9ae204533e17818c7f16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad534524e529063b76364ac1e1acb5858"><td class="memItemLeft" align="right" valign="top">static final int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#ad534524e529063b76364ac1e1acb5858">ANDROID_VERSION_O</a> = 26</td></tr>
@@ -275,12 +289,6 @@ Additional Inherited Members</h2></td></tr>
 <tr class="separator:ae9b1c6052d3c686487e906ae463a2ff7 inherit pub_static_attribs_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af2c376f5d1d43c02e7e39d2872924af1 inherit pub_static_attribs_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">static final int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#af2c376f5d1d43c02e7e39d2872924af1">ALL_FEATURES</a> = 0xff</td></tr>
 <tr class="separator:af2c376f5d1d43c02e7e39d2872924af1 inherit pub_static_attribs_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pro_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html">polar.com.sdk.api.PolarBleApi</a></td></tr>
-<tr class="memitem:afa663962cfcfa76ea7140315074ba39f inherit pro_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#afa663962cfcfa76ea7140315074ba39f">PolarBleApi</a> (final int <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a6b3b45f899b318df179c9779f9faaf48">features</a>)</td></tr>
-<tr class="separator:afa663962cfcfa76ea7140315074ba39f inherit pro_methods_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pro_attribs_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html">polar.com.sdk.api.PolarBleApi</a></td></tr>
-<tr class="memitem:a6b3b45f899b318df179c9779f9faaf48 inherit pro_attribs_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a6b3b45f899b318df179c9779f9faaf48">features</a></td></tr>
-<tr class="separator:a6b3b45f899b318df179c9779f9faaf48 inherit pro_attribs_classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The default implementation of the Polar API </p>
@@ -321,13 +329,13 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00101">101</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00107">107</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a964a35d7b8b782183fad03aae73b99be"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a964a35d7b8b782183fad03aae73b99be">&#9670;&nbsp;</a></span>autoConnectToPolarDevice() <span class="overload">[1/2]</span></h2>
+<a id="a59c11713e724352b7a8356089185fbda"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59c11713e724352b7a8356089185fbda">&#9670;&nbsp;</a></span>autoConnectToDevice() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -336,10 +344,16 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Completable polar.com.sdk.impl.BDBleApiImpl.autoConnectToPolarDevice </td>
+          <td class="memname">Completable polar.com.sdk.impl.BDBleApiImpl.autoConnectToDevice </td>
           <td>(</td>
           <td class="paramtype">final int&#160;</td>
           <td class="paramname"><em>rssiLimit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">final String&#160;</td>
+          <td class="paramname"><em>service</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -372,12 +386,12 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00333">333</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00344">344</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
-<a id="af8fe71975e2d06a5eac90781f5555d07"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af8fe71975e2d06a5eac90781f5555d07">&#9670;&nbsp;</a></span>autoConnectToPolarDevice() <span class="overload">[2/2]</span></h2>
+<a id="ab7e325a9ea06accea9746866d0118f1b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab7e325a9ea06accea9746866d0118f1b">&#9670;&nbsp;</a></span>autoConnectToDevice() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -386,10 +400,16 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Completable polar.com.sdk.impl.BDBleApiImpl.autoConnectToPolarDevice </td>
+          <td class="memname">Completable polar.com.sdk.impl.BDBleApiImpl.autoConnectToDevice </td>
           <td>(</td>
           <td class="paramtype">final int&#160;</td>
           <td class="paramname"><em>rssiLimit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">final String&#160;</td>
+          <td class="paramname"><em>service</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -410,7 +430,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00378">378</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00389">389</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -437,7 +457,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00323">323</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00334">334</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -464,12 +484,12 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00231">231</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00233">233</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
-<a id="a4736cc12d728a7a8ddcd15a883486765"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4736cc12d728a7a8ddcd15a883486765">&#9670;&nbsp;</a></span>connectToPolarDevice()</h2>
+<a id="a92ce7a49c8c5dda100c4095d96c2500d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a92ce7a49c8c5dda100c4095d96c2500d">&#9670;&nbsp;</a></span>connectToDevice()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -478,7 +498,7 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void polar.com.sdk.impl.BDBleApiImpl.connectToPolarDevice </td>
+          <td class="memname">void polar.com.sdk.impl.BDBleApiImpl.connectToDevice </td>
           <td>(</td>
           <td class="paramtype">final String&#160;</td>
           <td class="paramname"><em>identifier</em></td><td>)</td>
@@ -492,12 +512,12 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00383">383</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00394">394</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
-<a id="a4d8a6d2fd920b9140d071db665aa762a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4d8a6d2fd920b9140d071db665aa762a">&#9670;&nbsp;</a></span>disconnectFromPolarDevice()</h2>
+<a id="a4b83c6b87fbac8b7fae12f677aab7ff9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b83c6b87fbac8b7fae12f677aab7ff9">&#9670;&nbsp;</a></span>disconnectFromDevice()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -506,7 +526,7 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void polar.com.sdk.impl.BDBleApiImpl.disconnectFromPolarDevice </td>
+          <td class="memname">void polar.com.sdk.impl.BDBleApiImpl.disconnectFromDevice </td>
           <td>(</td>
           <td class="paramtype">String&#160;</td>
           <td class="paramname"><em>identifier</em></td><td>)</td>
@@ -520,7 +540,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00418">418</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00431">431</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -542,12 +562,12 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00214">214</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00216">216</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -585,7 +605,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00559">559</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00572">572</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -624,12 +644,40 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l01041">1041</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l01061">1061</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+
+</div>
+</div>
+<a id="a829ace600b46dbcb598683a488f821b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a829ace600b46dbcb598683a488f821b9">&#9670;&nbsp;</a></span>fetchSession()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">BleDeviceSession polar.com.sdk.impl.BDBleApiImpl.fetchSession </td>
+          <td>(</td>
+          <td class="paramtype">final String&#160;</td>
+          <td class="paramname"><em>identifier</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00841">841</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -656,7 +704,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00328">328</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00339">339</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -679,12 +727,12 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l01029">1029</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l01049">1049</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -722,7 +770,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00236">236</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00247">247</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -750,7 +798,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00503">503</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00516">516</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -773,12 +821,12 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l01073">1073</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l01093">1093</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -801,12 +849,12 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l01079">1079</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l01099">1099</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -839,12 +887,12 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00307">307</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00318">318</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -882,7 +930,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00587">587</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00600">600</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -910,7 +958,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00288">288</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00299">299</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -938,7 +986,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00303">303</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00314">314</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -966,7 +1014,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00293">293</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00304">304</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -994,7 +1042,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00298">298</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00309">309</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1022,7 +1070,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00478">478</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00491">491</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1049,7 +1097,35 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00636">636</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00649">649</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+
+</div>
+</div>
+<a id="ae0186ce1014ad60295930835b3620a22"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0186ce1014ad60295930835b3620a22">&#9670;&nbsp;</a></span>sessionByAddress()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">BleDeviceSession polar.com.sdk.impl.BDBleApiImpl.sessionByAddress </td>
+          <td>(</td>
+          <td class="paramtype">final String&#160;</td>
+          <td class="paramname"><em>address</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00845">845</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1072,12 +1148,12 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00829">829</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00854">854</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1105,7 +1181,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00853">853</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00878">878</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1128,12 +1204,12 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00866">866</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00891">891</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1166,12 +1242,12 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00838">838</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00863">863</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1199,7 +1275,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00250">250</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00261">261</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1227,7 +1303,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00256">256</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00267">267</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1255,7 +1331,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00261">261</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00272">272</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1293,7 +1369,35 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00266">266</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00277">277</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+
+</div>
+</div>
+<a id="ac08c2703034dc62317eaa6c47ed2284c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac08c2703034dc62317eaa6c47ed2284c">&#9670;&nbsp;</a></span>setPolarFilter()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void polar.com.sdk.impl.BDBleApiImpl.setPolarFilter </td>
+          <td>(</td>
+          <td class="paramtype">boolean&#160;</td>
+          <td class="paramname"><em>enable</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00238">238</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1316,12 +1420,12 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00898">898</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00923">923</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1348,7 +1452,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00226">226</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00228">228</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1386,7 +1490,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00703">703</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00715">715</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1424,7 +1528,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00803">803</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00815">815</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1462,7 +1566,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00671">671</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00683">683</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1490,7 +1594,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00651">651</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00663">663</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1528,7 +1632,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00735">735</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00747">747</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1556,7 +1660,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00767">767</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00779">779</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1606,7 +1710,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00434">434</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00447">447</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1645,12 +1749,12 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00877">877</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00902">902</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1678,7 +1782,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00459">459</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BDBleApiImpl_8java_source.html#l00472">472</a> of file <a class="el" href="BDBleApiImpl_8java_source.html">BDBleApiImpl.java</a>.</p>
 
 </div>
 </div>
@@ -1698,7 +1802,7 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -1722,7 +1826,7 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -1746,7 +1850,7 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -1770,7 +1874,7 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -1794,7 +1898,7 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -1818,7 +1922,7 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -1842,7 +1946,7 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">

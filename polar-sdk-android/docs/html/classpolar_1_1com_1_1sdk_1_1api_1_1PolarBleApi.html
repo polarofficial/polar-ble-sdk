@@ -97,6 +97,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ab6dec221f95ea5dce6118cadeb362006"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43c533a7a7011c6d2f56a4497fae04f7"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a43c533a7a7011c6d2f56a4497fae04f7">cleanup</a> ()</td></tr>
 <tr class="separator:a43c533a7a7011c6d2f56a4497fae04f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7a6e7c991db4f0fecca383e639cc74c"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ae7a6e7c991db4f0fecca383e639cc74c">setPolarFilter</a> (boolean enable)</td></tr>
+<tr class="separator:ae7a6e7c991db4f0fecca383e639cc74c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a551ad9f20c37fba8d7e1ad08c6c1b258"><td class="memItemLeft" align="right" valign="top">abstract boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a551ad9f20c37fba8d7e1ad08c6c1b258">isFeatureReady</a> (@NonNull final String deviceId, final int feature)</td></tr>
 <tr class="separator:a551ad9f20c37fba8d7e1ad08c6c1b258"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5397f7034f2f36820910b65d84b45b1c"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a5397f7034f2f36820910b65d84b45b1c">backgroundEntered</a> ()</td></tr>
@@ -119,14 +121,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ae34d02d96a9fac60edde6d7b3f61a2d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa29e34cea992198209979e5c780b0d81"><td class="memItemLeft" align="right" valign="top">abstract Single&lt; <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1model_1_1PolarSensorSetting.html">PolarSensorSetting</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#aa29e34cea992198209979e5c780b0d81">requestBiozSettings</a> (@NonNull final String identifier)</td></tr>
 <tr class="separator:aa29e34cea992198209979e5c780b0d81"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aed92cfd7807194a6a82d708bdee2a313"><td class="memItemLeft" align="right" valign="top">abstract Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#aed92cfd7807194a6a82d708bdee2a313">autoConnectToPolarDevice</a> (int rssiLimit, int timeout, @NonNull TimeUnit unit, @Nullable final String polarDeviceType)</td></tr>
-<tr class="separator:aed92cfd7807194a6a82d708bdee2a313"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab8f30183f9ee4d1a0cc229e06f4f5d5b"><td class="memItemLeft" align="right" valign="top">abstract Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ab8f30183f9ee4d1a0cc229e06f4f5d5b">autoConnectToPolarDevice</a> (int rssiLimit, final String polarDeviceType)</td></tr>
-<tr class="separator:ab8f30183f9ee4d1a0cc229e06f4f5d5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1d83a0eec58e4a36f095207dcee71a6c"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a1d83a0eec58e4a36f095207dcee71a6c">connectToPolarDevice</a> (@NonNull final String identifier)</td></tr>
-<tr class="separator:a1d83a0eec58e4a36f095207dcee71a6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a90a6c60c7f16506e93745cd4111a5b25"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a90a6c60c7f16506e93745cd4111a5b25">disconnectFromPolarDevice</a> (@NonNull final String identifier)</td></tr>
-<tr class="separator:a90a6c60c7f16506e93745cd4111a5b25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a0692503cb3f8ebd94bd393dd6b1a7b"><td class="memItemLeft" align="right" valign="top">abstract Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a3a0692503cb3f8ebd94bd393dd6b1a7b">autoConnectToDevice</a> (int rssiLimit, @Nullable String service, int timeout, @NonNull TimeUnit unit, @Nullable final String polarDeviceType)</td></tr>
+<tr class="separator:a3a0692503cb3f8ebd94bd393dd6b1a7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae406adb00b8f13bcc7c4630b11628784"><td class="memItemLeft" align="right" valign="top">abstract Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ae406adb00b8f13bcc7c4630b11628784">autoConnectToDevice</a> (int rssiLimit, @Nullable String service, final String polarDeviceType)</td></tr>
+<tr class="separator:ae406adb00b8f13bcc7c4630b11628784"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5e518b8f1ef6ca3c4b1c95f16312b52"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#af5e518b8f1ef6ca3c4b1c95f16312b52">connectToDevice</a> (@NonNull final String identifier)</td></tr>
+<tr class="separator:af5e518b8f1ef6ca3c4b1c95f16312b52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a6de926dbcc32299dd79d2ba88e2544"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a2a6de926dbcc32299dd79d2ba88e2544">disconnectFromDevice</a> (@NonNull final String identifier)</td></tr>
+<tr class="separator:a2a6de926dbcc32299dd79d2ba88e2544"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a20700bbdf15b3ea25c632814d3bde8a2"><td class="memItemLeft" align="right" valign="top">abstract Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a20700bbdf15b3ea25c632814d3bde8a2">startRecording</a> (@NonNull final String identifier, @NonNull @Size(min=1, max=64) final String exerciseId, @NonNull <a class="el" href="enumpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi_1_1RecordingInterval.html">RecordingInterval</a> interval, @NonNull <a class="el" href="enumpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi_1_1SampleType.html">SampleType</a> type)</td></tr>
 <tr class="separator:a20700bbdf15b3ea25c632814d3bde8a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afe25cdd5414973383db68bffc75d492f"><td class="memItemLeft" align="right" valign="top">abstract Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#afe25cdd5414973383db68bffc75d492f">stopRecording</a> (@NonNull final String identifier)</td></tr>
@@ -219,8 +221,8 @@ Protected Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="aed92cfd7807194a6a82d708bdee2a313"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aed92cfd7807194a6a82d708bdee2a313">&#9670;&nbsp;</a></span>autoConnectToPolarDevice() <span class="overload">[1/2]</span></h2>
+<a id="a3a0692503cb3f8ebd94bd393dd6b1a7b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3a0692503cb3f8ebd94bd393dd6b1a7b">&#9670;&nbsp;</a></span>autoConnectToDevice() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -229,10 +231,16 @@ Protected Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">abstract Completable polar.com.sdk.api.PolarBleApi.autoConnectToPolarDevice </td>
+          <td class="memname">abstract Completable polar.com.sdk.api.PolarBleApi.autoConnectToDevice </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>rssiLimit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">@Nullable String&#160;</td>
+          <td class="paramname"><em>service</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -264,7 +272,7 @@ Protected Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Start connecting to a nearby Polar device. <a class="el" href="interfacepolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiCallback.html#a2cb360c2635633d6e78affa9a19b71b9">PolarBleApiCallback::polarDeviceConnected</a> callback is invoked when connection to a nearby device is established. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Start connecting to a nearby Polar device. PolarBleApiCallback::polarDeviceConnected callback is invoked when connection to a nearby device is established. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">rssiLimit</td><td>RSSI (Received Signal Strength Indication) value is typically from -40 to -60 (dBm), depends on the used Bluetooth chipset and/or antenna tuning </td></tr>
     <tr><td class="paramname">timeout</td><td>min time to search nearby device default = 2s </td></tr>
@@ -277,8 +285,8 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="ab8f30183f9ee4d1a0cc229e06f4f5d5b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab8f30183f9ee4d1a0cc229e06f4f5d5b">&#9670;&nbsp;</a></span>autoConnectToPolarDevice() <span class="overload">[2/2]</span></h2>
+<a id="ae406adb00b8f13bcc7c4630b11628784"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae406adb00b8f13bcc7c4630b11628784">&#9670;&nbsp;</a></span>autoConnectToDevice() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -287,10 +295,16 @@ Protected Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">abstract Completable polar.com.sdk.api.PolarBleApi.autoConnectToPolarDevice </td>
+          <td class="memname">abstract Completable polar.com.sdk.api.PolarBleApi.autoConnectToDevice </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>rssiLimit</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">@Nullable String&#160;</td>
+          <td class="paramname"><em>service</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -365,8 +379,8 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a1d83a0eec58e4a36f095207dcee71a6c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1d83a0eec58e4a36f095207dcee71a6c">&#9670;&nbsp;</a></span>connectToPolarDevice()</h2>
+<a id="af5e518b8f1ef6ca3c4b1c95f16312b52"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af5e518b8f1ef6ca3c4b1c95f16312b52">&#9670;&nbsp;</a></span>connectToDevice()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -375,7 +389,7 @@ Protected Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">abstract void polar.com.sdk.api.PolarBleApi.connectToPolarDevice </td>
+          <td class="memname">abstract void polar.com.sdk.api.PolarBleApi.connectToDevice </td>
           <td>(</td>
           <td class="paramtype">@NonNull final String&#160;</td>
           <td class="paramname"><em>identifier</em></td><td>)</td>
@@ -388,17 +402,17 @@ Protected Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Request a connection to a Polar device. Invokes <a class="el" href="interfacepolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiCallback.html#a2cb360c2635633d6e78affa9a19b71b9">PolarBleApiCallback::polarDeviceConnected</a> callback. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Request a connection to a Polar device. Invokes PolarBleApiCallback::polarDeviceConnected callback. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">identifier</td><td>Polar device id found printed on the sensor/device </td></tr>
+    <tr><td class="paramname">identifier</td><td>Polar device id found printed on the sensor/device or bt address </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a90a6c60c7f16506e93745cd4111a5b25"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a90a6c60c7f16506e93745cd4111a5b25">&#9670;&nbsp;</a></span>disconnectFromPolarDevice()</h2>
+<a id="a2a6de926dbcc32299dd79d2ba88e2544"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a6de926dbcc32299dd79d2ba88e2544">&#9670;&nbsp;</a></span>disconnectFromDevice()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -407,7 +421,7 @@ Protected Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">abstract void polar.com.sdk.api.PolarBleApi.disconnectFromPolarDevice </td>
+          <td class="memname">abstract void polar.com.sdk.api.PolarBleApi.disconnectFromDevice </td>
           <td>(</td>
           <td class="paramtype">@NonNull final String&#160;</td>
           <td class="paramname"><em>identifier</em></td><td>)</td>
@@ -420,9 +434,9 @@ Protected Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Request disconnecting from a Polar device. Invokes <a class="el" href="interfacepolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiCallback.html#a3ff1646ff47dcd2a3cc5df276c0d1f6d">PolarBleApiCallback::polarDeviceDisconnected</a> callback. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Request disconnecting from a Polar device. Invokes PolarBleApiCallback::polarDeviceDisconnected callback. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">identifier</td><td>Polar device id found printed on the sensor/device </td></tr>
+    <tr><td class="paramname">identifier</td><td>Polar device id found printed on the sensor/device or bt address </td></tr>
   </table>
   </dd>
 </dl>
@@ -464,7 +478,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Fetch single exercise data requires feature <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ae9b1c6052d3c686487e906ae463a2ff7">PolarBleApi::FEATURE_POLAR_FILE_TRANSFER</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">identifier</td><td>Polar device id found printed on the sensor/device </td></tr>
+    <tr><td class="paramname">identifier</td><td>Polar device id found printed on the sensor/device or bt address </td></tr>
     <tr><td class="paramname">entry</td><td>PolarExerciseEntry object </td></tr>
   </table>
   </dd>
@@ -535,7 +549,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">deviceId</td><td>polar device id </td></tr>
+    <tr><td class="paramname">deviceId</td><td>polar device id or bt address </td></tr>
     <tr><td class="paramname">feature</td><td>feature to be requested </td></tr>
   </table>
   </dd>
@@ -569,7 +583,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>List all exercises stored in the device OH1/H10 requires feature <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ae9b1c6052d3c686487e906ae463a2ff7">PolarBleApi::FEATURE_POLAR_FILE_TRANSFER</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">identifier</td><td>Polar device id found printed on the sensor/device </td></tr>
+    <tr><td class="paramname">identifier</td><td>Polar device id found printed on the sensor/device or bt address </td></tr>
   </table>
   </dd>
 </dl>
@@ -613,7 +627,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Request to remove single exercise requires feature <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ae9b1c6052d3c686487e906ae463a2ff7">PolarBleApi::FEATURE_POLAR_FILE_TRANSFER</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">identifier</td><td>Polar device id </td></tr>
+    <tr><td class="paramname">identifier</td><td>Polar device id found printed on the sensor/device or bt address </td></tr>
     <tr><td class="paramname">entry</td><td>entry to be removed </td></tr>
   </table>
   </dd>
@@ -647,7 +661,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>request available acc settings requires feature <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a56b81b1ebb53df94c5e95ec5f74e6a2b">PolarBleApi::FEATURE_POLAR_SENSOR_STREAMING</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">identifier</td><td>polar device id </td></tr>
+    <tr><td class="paramname">identifier</td><td>polar device id or bt address </td></tr>
   </table>
   </dd>
 </dl>
@@ -706,7 +720,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>request available ecg settings requires feature <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a56b81b1ebb53df94c5e95ec5f74e6a2b">PolarBleApi::FEATURE_POLAR_SENSOR_STREAMING</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">identifier</td><td>polar device id </td></tr>
+    <tr><td class="paramname">identifier</td><td>polar device id or bt address </td></tr>
   </table>
   </dd>
 </dl>
@@ -739,7 +753,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>request available ppg settings requires feature <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a56b81b1ebb53df94c5e95ec5f74e6a2b">PolarBleApi::FEATURE_POLAR_SENSOR_STREAMING</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">identifier</td><td>polar device id </td></tr>
+    <tr><td class="paramname">identifier</td><td>polar device id or bt address </td></tr>
   </table>
   </dd>
 </dl>
@@ -772,7 +786,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>request current recording status only supported by H10, requires feature <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ae9b1c6052d3c686487e906ae463a2ff7">PolarBleApi::FEATURE_POLAR_FILE_TRANSFER</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">identifier</td><td>polar device id </td></tr>
+    <tr><td class="paramname">identifier</td><td>polar device id or bt address </td></tr>
   </table>
   </dd>
 </dl>
@@ -942,12 +956,44 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>set time to device affects on sensor data stream(s) timestamps requires feature <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ae9b1c6052d3c686487e906ae463a2ff7">PolarBleApi::FEATURE_POLAR_FILE_TRANSFER</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">identifier</td><td>polar device id </td></tr>
+    <tr><td class="paramname">identifier</td><td>polar device id or bt address </td></tr>
     <tr><td class="paramname">calendar</td><td>time to set </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Completable stream </dd></dl>
+
+</div>
+</div>
+<a id="ae7a6e7c991db4f0fecca383e639cc74c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae7a6e7c991db4f0fecca383e639cc74c">&#9670;&nbsp;</a></span>setPolarFilter()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">abstract void polar.com.sdk.api.PolarBleApi.setPolarFilter </td>
+          <td>(</td>
+          <td class="paramtype">boolean&#160;</td>
+          <td class="paramname"><em>enable</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">abstract</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">enable</td><td>false disable polar filter which means in all apis identifier can be bt address too </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1012,7 +1058,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Start ACC (Accelerometer) stream. Stops ACC stream if the connection is closed, error occured during start or stream is disposed. Requires feature <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a56b81b1ebb53df94c5e95ec5f74e6a2b">PolarBleApi::FEATURE_POLAR_SENSOR_STREAMING</a>. Query available settings before stream start <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a08884e4115932e7917d190daf15ddff1">PolarBleApi::requestAccSettings</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">identifier</td><td>Polar device id </td></tr>
+    <tr><td class="paramname">identifier</td><td>Polar device id found printed on the sensor/device or bt address </td></tr>
     <tr><td class="paramname">sensorSetting</td><td>settings to be used to start streaming </td></tr>
   </table>
   </dd>
@@ -1098,7 +1144,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Start the ECG (Electrocardiography) stream. Stops the ECG stream if the connection is closed, error occured during start or stream is disposed. Requires feature <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a56b81b1ebb53df94c5e95ec5f74e6a2b">PolarBleApi::FEATURE_POLAR_SENSOR_STREAMING</a>. Query available settings before stream start <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ab3027dbef46fdc8d3bc15348b494d6bc">PolarBleApi::requestEcgSettings</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">identifier</td><td>Polar device id </td></tr>
+    <tr><td class="paramname">identifier</td><td>Polar device id found printed on the sensor/device or bt address </td></tr>
     <tr><td class="paramname">sensorSetting</td><td>settings to be used to start streaming </td></tr>
   </table>
   </dd>
@@ -1184,7 +1230,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Start OHR (Optical heart rate) PPG (Photoplethysmography) stream. Stops PPG stream if the connection is closed, error occured during start or stream is disposed. Requires feature <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a56b81b1ebb53df94c5e95ec5f74e6a2b">PolarBleApi::FEATURE_POLAR_SENSOR_STREAMING</a>. Query available settings before stream start <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ae34d02d96a9fac60edde6d7b3f61a2d5">PolarBleApi::requestPpgSettings</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">identifier</td><td>Polar device id </td></tr>
+    <tr><td class="paramname">identifier</td><td>Polar device id found printed on the sensor/device or bt address </td></tr>
     <tr><td class="paramname">sensorSetting</td><td>settings to be used to start streaming </td></tr>
   </table>
   </dd>
@@ -1224,7 +1270,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Start OHR (Optical heart rate) PPI (Pulse to Pulse interval) stream. Notice that there is a delay before PPI data stream starts Requires feature <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a56b81b1ebb53df94c5e95ec5f74e6a2b">PolarBleApi::FEATURE_POLAR_SENSOR_STREAMING</a>. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">identifier</td><td>Polar device id </td></tr>
+    <tr><td class="paramname">identifier</td><td>Polar device id found printed on the sensor/device or bt address </td></tr>
   </table>
   </dd>
 </dl>
@@ -1285,7 +1331,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>request start recording only supported by H10, requires feature <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ae9b1c6052d3c686487e906ae463a2ff7">PolarBleApi::FEATURE_POLAR_FILE_TRANSFER</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">identifier</td><td>polar device id </td></tr>
+    <tr><td class="paramname">identifier</td><td>polar device id or bt address </td></tr>
     <tr><td class="paramname">exerciseId</td><td>unique id for exercise entry </td></tr>
     <tr><td class="paramname">interval</td><td>recording interval to be used </td></tr>
     <tr><td class="paramname">type</td><td>sample type to be used </td></tr>
@@ -1321,7 +1367,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>request stop recording only supported by H10, requires feature <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ae9b1c6052d3c686487e906ae463a2ff7">PolarBleApi::FEATURE_POLAR_FILE_TRANSFER</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">identifier</td><td>polar device id </td></tr>
+    <tr><td class="paramname">identifier</td><td>polar device id or bt address </td></tr>
   </table>
   </dd>
 </dl>
