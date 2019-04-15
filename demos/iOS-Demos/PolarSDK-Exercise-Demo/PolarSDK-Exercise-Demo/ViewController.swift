@@ -3,9 +3,14 @@
 import UIKit
 import PolarBleSdk
 import RxSwift
+import CoreBluetooth
 
-class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, PolarBleApiObserver, PolarBleApiPowerStateObserver, PolarBleApiDeviceInfoObserver, PolarBleApiDeviceFeaturesObserver {
-
+class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource,
+    PolarBleApiObserver,
+    PolarBleApiPowerStateObserver,
+    PolarBleApiDeviceInfoObserver,
+PolarBleApiDeviceFeaturesObserver {
+    
     var api: PolarBleApi!
     var deviceId: String?
     @IBOutlet weak var connectionStatus: UILabel!
@@ -32,7 +37,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         api.powerStateObserver = self
         api.deviceInfoObserver = self
         api.deviceFeaturesObserver = self
-        _ = api.startAutoConnectToPolarDevice(-50, polarDeviceType: "OH1").subscribe()
+        _ = api.startAutoConnectToDevice(-50, service: CBUUID.init(string: "180D"), polarDeviceType: "OH1").subscribe()
         connectionStatus.text = "Disconnected"
     }
     @IBAction func listExercises(_ sender: Any) {
@@ -112,18 +117,18 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
     
-    func polarDeviceConnected(_ identifier: PolarDeviceInfo) {
+    func deviceConnected(_ identifier: PolarDeviceInfo) {
         NSLog("Device connected " + identifier.deviceId)
         deviceId = identifier.deviceId
         connectionStatus.text = "Connected"
     }
     
-    func polarDeviceConnecting(_ identifier: PolarDeviceInfo) {
+    func deviceConnecting(_ identifier: PolarDeviceInfo) {
         NSLog("Device connecting " + identifier.deviceId)
         connectionStatus.text = "Connecting"
     }
     
-    func polarDeviceDisconnected(_ identifier: PolarDeviceInfo) {
+    func deviceDisconnected(_ identifier: PolarDeviceInfo) {
         NSLog("Device disconnected " + identifier.deviceId)
         connectionStatus.text = "Disconnected"
         deviceId = nil

@@ -2,7 +2,12 @@ import UIKit
 import PolarBleSdk
 import RxSwift
 
-class ViewController: UIViewController, PolarBleApiObserver, PolarBleApiPowerStateObserver, PolarBleApiDeviceFeaturesObserver, PolarBleApiLogger {
+class ViewController: UIViewController,
+    PolarBleApiObserver,
+    PolarBleApiPowerStateObserver,
+    PolarBleApiDeviceFeaturesObserver,
+    PolarBleApiLogger {
+  
     func message(_ str: String) {
         NSLog(str)
     }
@@ -35,7 +40,7 @@ class ViewController: UIViewController, PolarBleApiObserver, PolarBleApiPowerSta
         api.powerStateObserver = self
         api.deviceFeaturesObserver = self
         //api.logger = self
-        _ = api.startAutoConnectToPolarDevice(-50, polarDeviceType: nil).subscribe()
+        _ = api.startAutoConnectToDevice(-50, service: nil, polarDeviceType: nil).subscribe()
         connectionStatus.text = ""
     }
     
@@ -93,16 +98,16 @@ class ViewController: UIViewController, PolarBleApiObserver, PolarBleApiPowerSta
         NSLog("FTP CONNECTED")
     }
     
-    func polarDeviceConnecting(_ identifier: PolarDeviceInfo) {
+    func deviceConnecting(_ identifier: PolarDeviceInfo) {
         connectionStatus.text = "Connecting"
     }
     
-    func polarDeviceConnected(_ identifier: PolarDeviceInfo) {
+    func deviceConnected(_ identifier: PolarDeviceInfo) {
         deviceId = identifier.deviceId
         connectionStatus.text = "Connected"
     }
     
-    func polarDeviceDisconnected(_ identifier: PolarDeviceInfo) {
+    func deviceDisconnected(_ identifier: PolarDeviceInfo) {
         connectionStatus.text = "Disconnected"
     }
     
