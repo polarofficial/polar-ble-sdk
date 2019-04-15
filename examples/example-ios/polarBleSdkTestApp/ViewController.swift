@@ -2,6 +2,7 @@
 import UIKit
 import PolarBleSdk
 import RxSwift
+import CoreBluetooth
 
 class ViewController: UIViewController,
                       PolarBleApiObserver,
@@ -10,6 +11,7 @@ class ViewController: UIViewController,
                       PolarBleApiDeviceInfoObserver,
                       PolarBleApiDeviceFeaturesObserver,
                       PolarBleApiLogger {
+   
     // NOTICE this example utilizes all available features
     var api = PolarBleApiDefaultImpl.polarImplementation(DispatchQueue.main, features: Features.allFeatures.rawValue)
     var broadcast: Disposable?
@@ -281,8 +283,8 @@ class ViewController: UIViewController,
         NSLog("battery level updated: \(batteryLevel)")
     }
     
-    func fwVersionReceived(_ identifier: String, fwVersion: String) {
-        NSLog("fw version updated: \(fwVersion)")
+    func disInformationReceived(_ identifier: String, uuid: CBUUID, value: String) {
+        NSLog("dis info: \(uuid.uuidString) value: \(value)")
     }
     
     // PolarBleApiDeviceHrObserver

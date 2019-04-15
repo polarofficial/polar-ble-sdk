@@ -9,7 +9,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     PolarBleApiObserver,
     PolarBleApiPowerStateObserver,
     PolarBleApiDeviceInfoObserver,
-PolarBleApiDeviceFeaturesObserver {
+    PolarBleApiDeviceFeaturesObserver {
+    
     
     var api: PolarBleApi!
     var deviceId: String?
@@ -148,8 +149,7 @@ PolarBleApiDeviceFeaturesObserver {
         NSLog("Battery level \(identifier): \(batteryLevel) ")
     }
     
-    func fwVersionReceived(_ identifier: String, fwVersion: String) {
-        NSLog("Firmware version \(identifier): \(fwVersion) ")
+    func disInformationReceived(_ identifier: String, uuid: CBUUID, value: String) {
+        NSLog("DIS info \(identifier): \(uuid.uuidString) : \(value)")
     }
 }
-
