@@ -474,7 +474,7 @@ public class MainActivity extends AppCompatActivity {
                             new Consumer<PolarDeviceInfo>() {
                                 @Override
                                 public void accept(PolarDeviceInfo polarDeviceInfo) throws Exception {
-                                    Log.d(TAG, "polar device found id: " + polarDeviceInfo.deviceId + " rssi: " + polarDeviceInfo.rssi + " name: " + polarDeviceInfo.name + " isConnectable: " + polarDeviceInfo.isConnectable);
+                                    Log.d(TAG, "polar device found id: " + polarDeviceInfo.deviceId + " address: " + polarDeviceInfo.address + " rssi: " + polarDeviceInfo.rssi + " name: " + polarDeviceInfo.name + " isConnectable: " + polarDeviceInfo.isConnectable);
                                 }
                             },
                             new Consumer<Throwable>() {

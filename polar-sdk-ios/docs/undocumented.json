@@ -2,14 +2,14 @@
   "warnings": [
     {
       "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
-      "line": 8,
+      "line": 9,
       "symbol": "RecordingInterval.interval_1s",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
-      "line": 9,
+      "line": 10,
       "symbol": "RecordingInterval.interval_5s",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
@@ -30,7 +30,7 @@
     },
     {
       "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/impl/PolarBleApiImpl.swift",
-      "line": 690,
+      "line": 712,
       "symbol": "PrimitiveSequence.asCompletable()",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"

@@ -194,7 +194,7 @@ class ViewController: UIViewController,
                 case .error(let err):
                     NSLog("search error: \(err)")
                 case .next(let item):
-                    NSLog("polar device found: \(item.name) connectable: \(item.connectable)")
+                    NSLog("polar device found: \(item.name) connectable: \(item.connectable) address: \(item.address.uuidString)")
                 }
             }
         } else {
@@ -289,7 +289,7 @@ class ViewController: UIViewController,
     
     // PolarBleApiDeviceHrObserver
     func hrValueReceived(_ identifier: String, data: PolarHrData) {
-        NSLog("HR notification: \(data.hr) rrs: \(data.rrs) rrsMs: \(data.rrsMs) c: \(data.contact) s: \(data.contactSupported)")
+        NSLog("(\(identifier)) HR notification: \(data.hr) rrs: \(data.rrs) rrsMs: \(data.rrsMs) c: \(data.contact) s: \(data.contactSupported)")
     }
     
     func hrFeatureReady(_ identifier: String) {
