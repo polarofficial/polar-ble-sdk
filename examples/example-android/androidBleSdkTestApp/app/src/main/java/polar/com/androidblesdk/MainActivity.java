@@ -480,7 +480,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(scanDisposable == null) {
-                    scanDisposable = api.searchForPolarDevice().observeOn(AndroidSchedulers.mainThread()).subscribe(
+                    scanDisposable = api.searchForDevice().observeOn(AndroidSchedulers.mainThread()).subscribe(
                             new Consumer<PolarDeviceInfo>() {
                                 @Override
                                 public void accept(PolarDeviceInfo polarDeviceInfo) throws Exception {
