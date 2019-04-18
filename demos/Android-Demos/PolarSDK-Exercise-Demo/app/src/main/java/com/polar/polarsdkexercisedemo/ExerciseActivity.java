@@ -22,6 +22,7 @@ import io.reactivex.functions.Consumer;
 import polar.com.sdk.api.PolarBleApi;
 import polar.com.sdk.api.PolarBleApiCallback;
 import polar.com.sdk.api.PolarBleApiDefaultImpl;
+import polar.com.sdk.api.errors.PolarInvalidArgument;
 import polar.com.sdk.api.model.PolarDeviceInfo;
 import polar.com.sdk.api.model.PolarExerciseEntry;
 import polar.com.sdk.api.model.PolarHrData;
@@ -148,32 +149,36 @@ public class ExerciseActivity extends Activity implements PlotterListener, ItemC
     @SuppressLint("CheckResult")
     public void listExercises(){
         api.listExercises(deviceId).observeOn(AndroidSchedulers.mainThread()).subscribe(
-                new Consumer<PolarExerciseEntry>() {
-                    @Override
-                    public void accept(PolarExerciseEntry polarExerciseEntry) throws Exception {
-                        entries.add(polarExerciseEntry);
-                        adapter.notifyDataSetChanged();
-                    }
-                },
-                new Consumer<Throwable>() {
-                    @Override
-                    public void accept(Throwable throwable) throws Exception {
-                        Log.d(TAG,throwable.getLocalizedMessage());
-                    }
-                },
-                new Action() {
-                    @Override
-                    public void run() throws Exception {
-
-                    }
+            new Consumer<PolarExerciseEntry>() {
+                @Override
+                public void accept(PolarExerciseEntry polarExerciseEntry) throws Exception {
+                    entries.add(polarExerciseEntry);
+                    adapter.notifyDataSetChanged();
                 }
+            },
+            new Consumer<Throwable>() {
+                @Override
+                public void accept(Throwable throwable) throws Exception {
+                    Log.d(TAG,throwable.getLocalizedMessage());
+                }
+            },
+            new Action() {
+                @Override
+                public void run() throws Exception {
+
+                }
+            }
         );
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        api.disconnectFromDevice(deviceId);
+        try {
+            api.disconnectFromDevice(deviceId);
+        } catch (PolarInvalidArgument polarInvalidArgument) {
+            polarInvalidArgument.printStackTrace();
+        }
     }
 
     //PlotterListener
