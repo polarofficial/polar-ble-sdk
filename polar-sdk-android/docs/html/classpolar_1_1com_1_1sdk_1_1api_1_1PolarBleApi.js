@@ -20,7 +20,7 @@ var classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi =
     [ "requestEcgSettings", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ab3027dbef46fdc8d3bc15348b494d6bc", null ],
     [ "requestPpgSettings", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ae34d02d96a9fac60edde6d7b3f61a2d5", null ],
     [ "requestRecordingStatus", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a2f95d2c9b7c9963c3b7fa5d7c2949e43", null ],
-    [ "searchForPolarDevice", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a19008b45f93c7ef985a4e47df77674dc", null ],
+    [ "searchForDevice", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#acdbb4f7379e431ed53dec08e99657679", null ],
     [ "setApiCallback", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a4682d9318c9ac41927694421bde349a5", null ],
     [ "setApiLogger", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ac92b34d91563bb7a208818dd4358b260", null ],
     [ "setAutomaticReconnection", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a32484f5b3bacdde45573298a4e1d12a5", null ],
