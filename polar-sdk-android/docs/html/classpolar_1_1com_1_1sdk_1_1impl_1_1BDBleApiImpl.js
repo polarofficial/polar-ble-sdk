@@ -24,7 +24,7 @@ var classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl =
     [ "requestEcgSettings", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#abc85de0575973be85cc572460952b5d3", null ],
     [ "requestPpgSettings", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#aa65443950ef837c869eb6199a643487c", null ],
     [ "requestRecordingStatus", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#aded82e5731dc626c167ea7437551ad6d", null ],
-    [ "searchForPolarDevice", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a29b955b7813f2a1e6ebab906548964c8", null ],
+    [ "searchForDevice", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a436696ba043d2a5d77d5fe33e2ab91cf", null ],
     [ "sessionByAddress", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#ae0186ce1014ad60295930835b3620a22", null ],
     [ "sessionByDeviceId", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a2ca3ebc9ca23822d2aca71a2002c1b73", null ],
     [ "sessionPmdClientReady", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a568cbfd6e9548d54fff470a938cbf000", null ],
