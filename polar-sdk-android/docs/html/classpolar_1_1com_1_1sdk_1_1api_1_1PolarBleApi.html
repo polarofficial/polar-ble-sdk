@@ -125,9 +125,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a3a0692503cb3f8ebd94bd393dd6b1a7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae406adb00b8f13bcc7c4630b11628784"><td class="memItemLeft" align="right" valign="top">abstract Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ae406adb00b8f13bcc7c4630b11628784">autoConnectToDevice</a> (int rssiLimit, @Nullable String service, final String polarDeviceType)</td></tr>
 <tr class="separator:ae406adb00b8f13bcc7c4630b11628784"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af5e518b8f1ef6ca3c4b1c95f16312b52"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#af5e518b8f1ef6ca3c4b1c95f16312b52">connectToDevice</a> (@NonNull final String identifier)</td></tr>
+<tr class="memitem:af5e518b8f1ef6ca3c4b1c95f16312b52"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#af5e518b8f1ef6ca3c4b1c95f16312b52">connectToDevice</a> (@NonNull final String identifier)  throws PolarInvalidArgument</td></tr>
 <tr class="separator:af5e518b8f1ef6ca3c4b1c95f16312b52"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2a6de926dbcc32299dd79d2ba88e2544"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a2a6de926dbcc32299dd79d2ba88e2544">disconnectFromDevice</a> (@NonNull final String identifier)</td></tr>
+<tr class="memitem:a2a6de926dbcc32299dd79d2ba88e2544"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a2a6de926dbcc32299dd79d2ba88e2544">disconnectFromDevice</a> (@NonNull final String identifier)  throws PolarInvalidArgument</td></tr>
 <tr class="separator:a2a6de926dbcc32299dd79d2ba88e2544"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a20700bbdf15b3ea25c632814d3bde8a2"><td class="memItemLeft" align="right" valign="top">abstract Completable&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a20700bbdf15b3ea25c632814d3bde8a2">startRecording</a> (@NonNull final String identifier, @NonNull @Size(min=1, max=64) final String exerciseId, @NonNull <a class="el" href="enumpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi_1_1RecordingInterval.html">RecordingInterval</a> interval, @NonNull <a class="el" href="enumpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi_1_1SampleType.html">SampleType</a> type)</td></tr>
 <tr class="separator:a20700bbdf15b3ea25c632814d3bde8a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -184,7 +184,7 @@ Protected Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Main class of the API. </p>
 
-<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00031">31</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00032">32</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="afa663962cfcfa76ea7140315074ba39f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afa663962cfcfa76ea7140315074ba39f">&#9670;&nbsp;</a></span>PolarBleApi()</h2>
@@ -216,7 +216,7 @@ Protected Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00101">101</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00102">102</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
 
 </div>
 </div>
@@ -393,7 +393,7 @@ Protected Attributes</h2></td></tr>
           <td>(</td>
           <td class="paramtype">@NonNull final String&#160;</td>
           <td class="paramname"><em>identifier</em></td><td>)</td>
-          <td></td>
+          <td> throws <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarInvalidArgument.html">PolarInvalidArgument</a></td>
         </tr>
       </table>
   </td>
@@ -405,6 +405,12 @@ Protected Attributes</h2></td></tr>
 <p>Request a connection to a Polar device. Invokes PolarBleApiCallback::polarDeviceConnected callback. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">identifier</td><td>Polar device id found printed on the sensor/device or bt address </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">PolarInvalidArgument</td><td>if identifier is invalid formatted mac address or polar device id </td></tr>
   </table>
   </dd>
 </dl>
@@ -425,7 +431,7 @@ Protected Attributes</h2></td></tr>
           <td>(</td>
           <td class="paramtype">@NonNull final String&#160;</td>
           <td class="paramname"><em>identifier</em></td><td>)</td>
-          <td></td>
+          <td> throws <a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarInvalidArgument.html">PolarInvalidArgument</a></td>
         </tr>
       </table>
   </td>
@@ -437,6 +443,12 @@ Protected Attributes</h2></td></tr>
 <p>Request disconnecting from a Polar device. Invokes PolarBleApiCallback::polarDeviceDisconnected callback. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">identifier</td><td>Polar device id found printed on the sensor/device or bt address </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">PolarInvalidArgument</td><td>if identifier is invalid formatted mac address or polar device id </td></tr>
   </table>
   </dd>
 </dl>
@@ -1397,7 +1409,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>all features mask </p>
 
-<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00093">93</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00094">94</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
 
 </div>
 </div>
@@ -1422,7 +1434,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>bas feature to receive battery level info. </p>
 
-<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00081">81</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00082">82</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
 
 </div>
 </div>
@@ -1447,7 +1459,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>dis feature to receive sw information. </p>
 
-<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00077">77</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00078">78</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
 
 </div>
 </div>
@@ -1472,7 +1484,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>hr feature to receive hr and rr data. </p>
 
-<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00073">73</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00074">74</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
 
 </div>
 </div>
@@ -1497,7 +1509,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>polar file transfer feature to read exercises from device </p>
 
-<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00089">89</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00090">90</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
 
 </div>
 </div>
@@ -1522,7 +1534,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>polar sensor streaming for ecg, acc, ppg, ppi, etc... </p>
 
-<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00085">85</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00086">86</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
 
 </div>
 </div>
@@ -1546,7 +1558,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00095">95</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PolarBleApi_8java_source.html#l00096">96</a> of file <a class="el" href="PolarBleApi_8java_source.html">PolarBleApi.java</a>.</p>
 
 </div>
 </div>

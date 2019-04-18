@@ -72,11 +72,19 @@ class ViewController: UIViewController,
     }
     
     @IBAction func connectToDevice(_ sender: Any) {
-        api.connectToDevice(deviceId)
+        do{
+            try api.connectToDevice(deviceId)
+        } catch let err {
+            print("\(err)")
+        }
     }
     
     @IBAction func disconnectFromDevice(_ sender: Any) {
-        api.disconnectFromDevice(deviceId)
+        do{
+            try api.disconnectFromDevice(deviceId)
+        } catch let err {
+            print("\(err)")
+        }
     }
     
     @IBAction func accToggle(_ sender: Any) {

@@ -4,6 +4,7 @@ var hierarchy =
       [ "polar.com.sdk.api.errors.PolarDeviceDisconnected", "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarDeviceDisconnected.html", null ],
       [ "polar.com.sdk.api.errors.PolarDeviceNotConnected", "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarDeviceNotConnected.html", null ],
       [ "polar.com.sdk.api.errors.PolarDeviceNotFound", "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarDeviceNotFound.html", null ],
+      [ "polar.com.sdk.api.errors.PolarInvalidArgument", "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarInvalidArgument.html", null ],
       [ "polar.com.sdk.api.errors.PolarNotificationNotEnabled", "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarNotificationNotEnabled.html", null ],
       [ "polar.com.sdk.api.errors.PolarOperationNotSupported", "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarOperationNotSupported.html", null ],
       [ "polar.com.sdk.api.errors.PolarServiceNotAvailable", "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarServiceNotAvailable.html", null ]

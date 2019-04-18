@@ -29,6 +29,7 @@ import polar.com.sdk.api.model.PolarDeviceInfo;
 import polar.com.sdk.api.model.PolarEcgData;
 import polar.com.sdk.api.model.PolarHrData;
 import polar.com.sdk.api.model.PolarSensorSetting;
+import polar.com.sdk.api.errors.PolarInvalidArgument;
 
 public class ECGActivity extends AppCompatActivity implements PlotterListener {
 
@@ -141,7 +142,11 @@ public class ECGActivity extends AppCompatActivity implements PlotterListener {
                 Log.d(TAG, "Polar FTP ready " + s);
             }
         });
-        api.connectToDevice(DEVICE_ID);
+        try {
+            api.connectToDevice(DEVICE_ID);
+        } catch (PolarInvalidArgument a){
+            a.printStackTrace();
+        }
 
         plotter = new Plotter(this, "ECG");
         plotter.setListener(this);

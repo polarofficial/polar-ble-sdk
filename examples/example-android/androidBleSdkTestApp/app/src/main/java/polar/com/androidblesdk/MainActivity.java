@@ -12,6 +12,7 @@ import android.widget.Button;
 
 import org.reactivestreams.Publisher;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
@@ -24,6 +25,7 @@ import io.reactivex.functions.Function;
 import polar.com.sdk.api.PolarBleApi;
 import polar.com.sdk.api.PolarBleApiCallback;
 import polar.com.sdk.api.PolarBleApiDefaultImpl;
+import polar.com.sdk.api.errors.PolarInvalidArgument;
 import polar.com.sdk.api.model.PolarAccelerometerData;
 import polar.com.sdk.api.model.PolarDeviceInfo;
 import polar.com.sdk.api.model.PolarEcgData;
@@ -44,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     Disposable ppgDisposable;
     Disposable ppiDisposable;
     Disposable scanDisposable;
-    String DEVICE_ID = "24FDA820"; // TODO replace with your device id
+    String DEVICE_ID = "218DDA23"; // or bt address like F5:A7:B8:EF:7A:D1 // TODO replace with your device id
     Disposable autoConnectDisposable;
     PolarExerciseEntry exerciseEntry;
 
@@ -279,14 +281,22 @@ public class MainActivity extends AppCompatActivity {
         connect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                api.connectToDevice(DEVICE_ID);
+                try {
+                    api.connectToDevice(DEVICE_ID);
+                } catch (PolarInvalidArgument polarInvalidArgument) {
+                    polarInvalidArgument.printStackTrace();
+                }
             }
         });
 
         disconnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                api.disconnectFromDevice(DEVICE_ID);
+                try {
+                    api.disconnectFromDevice(DEVICE_ID);
+                } catch (PolarInvalidArgument polarInvalidArgument) {
+                    polarInvalidArgument.printStackTrace();
+                }
             }
         });
 

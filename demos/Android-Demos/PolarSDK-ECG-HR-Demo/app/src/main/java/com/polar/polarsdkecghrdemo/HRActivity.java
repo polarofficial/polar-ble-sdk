@@ -23,6 +23,7 @@ import polar.com.sdk.api.PolarBleApiCallback;
 import polar.com.sdk.api.PolarBleApiDefaultImpl;
 import polar.com.sdk.api.model.PolarDeviceInfo;
 import polar.com.sdk.api.model.PolarHrData;
+import polar.com.sdk.api.errors.PolarInvalidArgument;
 
 public class HRActivity extends AppCompatActivity implements PlotterListener {
 
@@ -142,7 +143,11 @@ public class HRActivity extends AppCompatActivity implements PlotterListener {
                 Log.d(TAG, "Polar FTP ready " + s);
             }
         });
-        api.connectToDevice(DEVICE_ID);
+        try {
+            api.connectToDevice(DEVICE_ID);
+        } catch (PolarInvalidArgument a){
+            a.printStackTrace();
+        }
 
         plotter = new TimePlotter(this, "HR/RR");
         plotter.setListener(this);
