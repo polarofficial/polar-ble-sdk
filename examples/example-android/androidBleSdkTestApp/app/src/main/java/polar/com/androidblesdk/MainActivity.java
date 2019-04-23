@@ -311,13 +311,13 @@ public class MainActivity extends AppCompatActivity {
                     new Action() {
                         @Override
                         public void run() throws Exception {
-
+                            Log.d(TAG,"auto connect search complete");
                         }
                     },
                     new Consumer<Throwable>() {
                         @Override
                         public void accept(Throwable throwable) throws Exception {
-
+                            Log.e(TAG,"" + throwable.toString());
                         }
                     }
                 );
@@ -346,7 +346,7 @@ public class MainActivity extends AppCompatActivity {
                         new Consumer<Throwable>() {
                             @Override
                             public void accept(Throwable throwable) throws Exception {
-                                Log.e(TAG, ""+throwable.getLocalizedMessage());
+                                Log.e(TAG, ""+throwable.toString());
                             }
                         },
                         new Action() {
