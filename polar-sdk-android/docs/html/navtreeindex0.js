@@ -85,6 +85,8 @@ var NAVTREEINDEX0 =
 "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarDeviceNotConnected.html":[1,0,0,0,0,0,0,1],
 "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarDeviceNotFound.html":[1,0,0,0,0,0,0,2],
 "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarInvalidArgument.html":[1,0,0,0,0,0,0,3],
+"classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarInvalidArgument.html#a50c572e87ea2de686c775efbc1083cdf":[1,0,0,0,0,0,0,3,0],
+"classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarInvalidArgument.html#aeec81334def71742b85fb449386cfb4c":[1,0,0,0,0,0,0,3,1],
 "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarNotificationNotEnabled.html":[1,0,0,0,0,0,0,4],
 "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarOperationNotSupported.html":[1,0,0,0,0,0,0,5],
 "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarServiceNotAvailable.html":[1,0,0,0,0,0,0,6],
@@ -247,7 +249,5 @@ var NAVTREEINDEX0 =
 "namespacepolar_1_1com_1_1sdk_1_1api_1_1errors.html":[0,0,0,0,0,0,0],
 "namespacepolar_1_1com_1_1sdk_1_1api_1_1errors.html":[1,0,0,0,0,0,0],
 "namespacepolar_1_1com_1_1sdk_1_1api_1_1model.html":[0,0,0,0,0,0,1],
-"namespacepolar_1_1com_1_1sdk_1_1api_1_1model.html":[1,0,0,0,0,0,1],
-"namespacepolar_1_1com_1_1sdk_1_1impl.html":[1,0,0,0,0,1],
-"namespacepolar_1_1com_1_1sdk_1_1impl.html":[0,0,0,0,0,1]
+"namespacepolar_1_1com_1_1sdk_1_1api_1_1model.html":[1,0,0,0,0,0,1]
 };

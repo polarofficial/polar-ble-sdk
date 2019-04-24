@@ -275,13 +275,14 @@ Protected Attributes</h2></td></tr>
 <p>Start connecting to a nearby Polar device. PolarBleApiCallback::polarDeviceConnected callback is invoked when connection to a nearby device is established. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">rssiLimit</td><td>RSSI (Received Signal Strength Indication) value is typically from -40 to -60 (dBm), depends on the used Bluetooth chipset and/or antenna tuning </td></tr>
+    <tr><td class="paramname">service</td><td>in hex string format like "180D" PolarInvalidArgument invoked if not in correct format </td></tr>
     <tr><td class="paramname">timeout</td><td>min time to search nearby device default = 2s </td></tr>
     <tr><td class="paramname">unit</td><td>time unit to be used </td></tr>
     <tr><td class="paramname">polarDeviceType</td><td>like H10, OH1 etc... or null for any polar device </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>rx Completable, complete invoked when nearby device found, and connection attempt started. polarDeviceConnectionAttemptStarted callback invoked to inform connection attempt </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>rx Completable, complete invoked when nearby device found, and connection attempt started. deviceConnecting callback invoked to inform connection attempt </dd></dl>
 
 </div>
 </div>
@@ -404,7 +405,7 @@ Protected Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Request a connection to a Polar device. Invokes PolarBleApiCallback::polarDeviceConnected callback. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">identifier</td><td>Polar device id found printed on the sensor/device or bt address </td></tr>
+    <tr><td class="paramname">identifier</td><td>Polar device id found printed on the sensor/device (in format "12345678") or bt address (in format "00:11:22:33:44:55") </td></tr>
   </table>
   </dd>
 </dl>
