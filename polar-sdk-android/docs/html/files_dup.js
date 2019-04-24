@@ -49,7 +49,7 @@ var files_dup =
       [ "PolarHrData", "classpolar_1_1com_1_1sdk_1_1api_1_1model_1_1PolarHrData.html", "classpolar_1_1com_1_1sdk_1_1api_1_1model_1_1PolarHrData" ]
     ] ],
     [ "PolarInvalidArgument.java", "PolarInvalidArgument_8java.html", [
-      [ "PolarInvalidArgument", "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarInvalidArgument.html", null ]
+      [ "PolarInvalidArgument", "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarInvalidArgument.html", "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarInvalidArgument" ]
     ] ],
     [ "PolarNotificationNotEnabled.java", "PolarNotificationNotEnabled_8java.html", [
       [ "PolarNotificationNotEnabled", "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarNotificationNotEnabled.html", null ]
