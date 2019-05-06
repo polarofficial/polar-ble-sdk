@@ -23,6 +23,7 @@ task copySdk {
     copy {
         from("$projectDir/../../../../polar-sdk-android/libs")
         into("$projectDir/libs")
+        include '*.aar'
     }
 }
 

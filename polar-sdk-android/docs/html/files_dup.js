@@ -16,7 +16,7 @@ var files_dup =
       [ "SampleType", "enumpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi_1_1SampleType.html", "enumpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi_1_1SampleType" ]
     ] ],
     [ "PolarBleApiCallback.java", "PolarBleApiCallback_8java.html", [
-      [ "PolarBleApiCallback", "interfacepolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiCallback.html", "interfacepolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiCallback" ]
+      [ "PolarBleApiCallback", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiCallback.html", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiCallback" ]
     ] ],
     [ "PolarBleApiDefaultImpl.java", "PolarBleApiDefaultImpl_8java.html", [
       [ "PolarBleApiDefaultImpl", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiDefaultImpl.html", null ]

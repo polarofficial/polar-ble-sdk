@@ -6,7 +6,7 @@
 	<dict>
 		<key>Headers/PolarBleSdk-Swift.h</key>
 		<data>
-		vbDQ5UDHwbfjrDw7k1t5cSAKoNE=
+		HO4c+RrAggGQ/XKQszvObJ9aMjA=
 		</data>
 		<key>Headers/PolarBleSdk.h</key>
 		<data>
@@ -14,47 +14,47 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		E1JKgYO+IEl1ZHXiPCgUJEB+reQ=
+		jMuCDSTRD2qm5PRh2wQrgtLcZ9Y=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/arm.swiftdoc</key>
 		<data>
-		EIJOM2MOdodWJJmlHEVVljGyq+8=
+		7fAut6RE9ii7KZc/JNCoHRe1uoc=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/arm.swiftmodule</key>
 		<data>
-		WoZR5za6gYJw9Qa7MVqw9E/M/8Q=
+		IhKiIJk4pMo2SgtQVcr4JmI777M=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/arm64.swiftdoc</key>
 		<data>
-		QsPC9IWKwTEV1uDklASNAIdAHng=
+		k/zXtcOpL8yKpaHpJpUDwIFcs6g=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/arm64.swiftmodule</key>
 		<data>
-		jYYySC5szpALlZYz8qAGexe3gnY=
+		kq174LaqPKIo3JHfLxkFelej+ww=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/armv7.swiftdoc</key>
 		<data>
-		EIJOM2MOdodWJJmlHEVVljGyq+8=
+		7fAut6RE9ii7KZc/JNCoHRe1uoc=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/armv7.swiftmodule</key>
 		<data>
-		WoZR5za6gYJw9Qa7MVqw9E/M/8Q=
+		IhKiIJk4pMo2SgtQVcr4JmI777M=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/i386.swiftdoc</key>
 		<data>
-		CJIdTOKj90rT9zAkPK63GBRTyx8=
+		/6heyjtuhF6pcbeN1UXrB7t8RiM=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/i386.swiftmodule</key>
 		<data>
-		E/QpmoZ8qgq3H1Nrag+xprFf0ew=
+		ZmF5YLFkfNMSoOuUPwv3RZurrEo=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/x86_64.swiftdoc</key>
 		<data>
-		GbPOA4kfa5FarwFtdjveWE6a8Hg=
+		j0gLxgf3k5oAYPuqNZGWX14K1gY=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/x86_64.swiftmodule</key>
 		<data>
-		bzgaThcUuSf4P8QZ8uTLeTIk/z8=
+		vAhJ5QQVJKruL5BYfLgBAXXA8pM=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -67,11 +67,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			vbDQ5UDHwbfjrDw7k1t5cSAKoNE=
+			HO4c+RrAggGQ/XKQszvObJ9aMjA=
 			</data>
 			<key>hash2</key>
 			<data>
-			LCj48abIt/+lxOrqZ5v+PeAFOkKxBPFUDXtEcCyawLQ=
+			f9Nn/PpQrvD/3HxssnhcRYpP/Xq0qlv3Ojt25nn6Y1I=
 			</data>
 		</dict>
 		<key>Headers/PolarBleSdk.h</key>
@@ -89,110 +89,110 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			EIJOM2MOdodWJJmlHEVVljGyq+8=
+			7fAut6RE9ii7KZc/JNCoHRe1uoc=
 			</data>
 			<key>hash2</key>
 			<data>
-			BvCHbh4HFt+gBu2g4viG9+9SrRR6xViSKx/NMvXYZqY=
+			Vus7/UA847dPkJ5LXsZSll5yn8/2sXy7an+4hwRybTI=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/arm.swiftmodule</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			WoZR5za6gYJw9Qa7MVqw9E/M/8Q=
+			IhKiIJk4pMo2SgtQVcr4JmI777M=
 			</data>
 			<key>hash2</key>
 			<data>
-			K9lJYQofoQiDu/vBe9OsrtBRLlZrWVD1SdFaGh6OWAc=
+			JzVGsGf86Jyv27kPnfLLf//mC5JOTl2RVkQXxwovWbI=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/arm64.swiftdoc</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			QsPC9IWKwTEV1uDklASNAIdAHng=
+			k/zXtcOpL8yKpaHpJpUDwIFcs6g=
 			</data>
 			<key>hash2</key>
 			<data>
-			vDh8zE42ED9/DIlO44XA+XKnN1S0Z/W5VODbS3Yefik=
+			gven40nlrnr4yk2uOtMHH63Wdvk35S7o4xI5z2lRU5c=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/arm64.swiftmodule</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			jYYySC5szpALlZYz8qAGexe3gnY=
+			kq174LaqPKIo3JHfLxkFelej+ww=
 			</data>
 			<key>hash2</key>
 			<data>
-			a1odyMvSAkCkWkCGx4o/RVdK386gM1zXyv6vy9T0EiM=
+			edNJfovkeLzsgp2Fp9F8ITZVTHJcaW1d8xkwa7yXFo8=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/armv7.swiftdoc</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			EIJOM2MOdodWJJmlHEVVljGyq+8=
+			7fAut6RE9ii7KZc/JNCoHRe1uoc=
 			</data>
 			<key>hash2</key>
 			<data>
-			BvCHbh4HFt+gBu2g4viG9+9SrRR6xViSKx/NMvXYZqY=
+			Vus7/UA847dPkJ5LXsZSll5yn8/2sXy7an+4hwRybTI=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/armv7.swiftmodule</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			WoZR5za6gYJw9Qa7MVqw9E/M/8Q=
+			IhKiIJk4pMo2SgtQVcr4JmI777M=
 			</data>
 			<key>hash2</key>
 			<data>
-			K9lJYQofoQiDu/vBe9OsrtBRLlZrWVD1SdFaGh6OWAc=
+			JzVGsGf86Jyv27kPnfLLf//mC5JOTl2RVkQXxwovWbI=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/i386.swiftdoc</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			CJIdTOKj90rT9zAkPK63GBRTyx8=
+			/6heyjtuhF6pcbeN1UXrB7t8RiM=
 			</data>
 			<key>hash2</key>
 			<data>
-			O34lTRxS4ec381VNXzifxp5XVJwgPaP6ll/oBUP7m+w=
+			c/Xz4tG+m+IOkSzTWaTqxB1gouuo01VOXVH9mJDYmek=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/i386.swiftmodule</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			E/QpmoZ8qgq3H1Nrag+xprFf0ew=
+			ZmF5YLFkfNMSoOuUPwv3RZurrEo=
 			</data>
 			<key>hash2</key>
 			<data>
-			cNt6A0naWy6GvPh6DA2WhEkFSRVA1De0xegiRTj41rM=
+			ypzq83skg1mwpSLMGo874tZezdpm9m/BQVrs6YvjQWI=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/x86_64.swiftdoc</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			GbPOA4kfa5FarwFtdjveWE6a8Hg=
+			j0gLxgf3k5oAYPuqNZGWX14K1gY=
 			</data>
 			<key>hash2</key>
 			<data>
-			5YE7iW06hQM6cNnBuYsMMXRkLWqF5k+sYLe1OtVo0fc=
+			lZU9yDgNcX45vkQFG67aOpyuizn+tneJlNTb/FzkUpM=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/x86_64.swiftmodule</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			bzgaThcUuSf4P8QZ8uTLeTIk/z8=
+			vAhJ5QQVJKruL5BYfLgBAXXA8pM=
 			</data>
 			<key>hash2</key>
 			<data>
-			aPSPD/o5hTJTQLisFZu/h3AqVUT+YObCOw69MMd606E=
+			Wy2+HCL181aBE0DbEqlY7k3q5vQ98eVYsh+SOBrOScw=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

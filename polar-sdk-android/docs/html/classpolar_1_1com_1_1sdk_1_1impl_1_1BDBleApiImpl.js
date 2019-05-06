@@ -46,7 +46,6 @@ var classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl =
     [ "startRecording", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a14a4d99e3a14c3e8dd2a9695e25ec9a8", null ],
     [ "stopPmdStreaming", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a5e80e959cbc19490c9a1963e6914a092", null ],
     [ "stopRecording", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a4eb11a28590fe41d76fdb88c28894ce2", null ],
-    [ "validate", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a3116d883037d1dfd712b598f7c02f50e", null ],
     [ "callback", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a5ccfe3027f85d5b1262737b1160006b8", null ],
     [ "connectSubscriptions", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#ac6df07abc427e5ad2ba3167a2d8c109b", null ],
     [ "listener", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#ac08998b625def30d377e05abb8a80f8d", null ],
