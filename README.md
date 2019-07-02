@@ -26,8 +26,8 @@ Most accurate Heart rate sensor in the markets. The H10 is used in the Getting s
 #### H10 heart rate sensor available data types
 * From version 3.0.35 onwards. Available later.
 * Heart rate as beats per minute. RR Interval in ms and 1/1024 format.
-* Electrocardiography (ECG) data in µV.
-* Accelerometer data with samplerates of 25Hz, 50Hz, 100Hz and 200Hz and range of 2G, 4G and 8G. Axis specific acceleration data in mG.
+* Electrocardiography (ECG) data in µV. Default epoch for timestamp is 1.1.2000
+* Accelerometer data with samplerates of 25Hz, 50Hz, 100Hz and 200Hz and range of 2G, 4G and 8G. Axis specific acceleration data in mG. Default epoch for timestamp is 1.1.2000
 * Start and stop of internal recording and request for internal recording status. Recording supports RR, HR with one second sampletime or HR with five second sampletime.
 * List, read and remove for stored internal recording (sensor supports only one recording at the time).
 
