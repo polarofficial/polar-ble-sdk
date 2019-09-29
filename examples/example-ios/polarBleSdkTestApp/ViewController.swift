@@ -10,7 +10,8 @@ class ViewController: UIViewController,
                       PolarBleApiDeviceHrObserver,
                       PolarBleApiDeviceInfoObserver,
                       PolarBleApiDeviceFeaturesObserver,
-                      PolarBleApiLogger {
+                      PolarBleApiLogger,
+                      PolarBleApiCCCWriteObserver {
    
     // NOTICE this example utilizes all available features
     var api = PolarBleApiDefaultImpl.polarImplementation(DispatchQueue.main, features: Features.allFeatures.rawValue)
@@ -338,5 +339,10 @@ class ViewController: UIViewController,
     
     func message(_ str: String) {
         NSLog(str)
+    }
+    
+    /// ccc write observer
+    func cccWrite(_ address: UUID, characteristic: CBUUID) {
+        NSLog("ccc write: \(address) chr: \(characteristic)")
     }
 }
