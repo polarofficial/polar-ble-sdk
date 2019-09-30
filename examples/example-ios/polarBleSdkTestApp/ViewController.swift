@@ -33,6 +33,7 @@ class ViewController: UIViewController,
         api.powerStateObserver = self
         api.deviceFeaturesObserver = self
         api.logger = self
+        api.cccWriteObserver = self
         api.polarFilter(false)
         NSLog("\(PolarBleApiDefaultImpl.versionInfo())")
     }
@@ -241,7 +242,7 @@ class ViewController: UIViewController,
     }
     
     @IBAction func startH10Recording(_ sender: Any) {
-        _ = api.startRecording(deviceId, exerciseId: "TEST_APP_ID", interval: .interval_1s, sampleType: .hr).observeOn(MainScheduler.instance).subscribe{ e in
+        _ = api.startRecording(deviceId, exerciseId: "TEST_APP_ID", interval: .interval_1s, sampleType: .rr).observeOn(MainScheduler.instance).subscribe{ e in
             switch e {
             case .completed:
                 NSLog("recording started")

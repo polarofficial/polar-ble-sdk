@@ -511,7 +511,7 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("CheckResult")
             @Override
             public void onClick(View view) {
-                api.startRecording(DEVICE_ID,"TEST_APP_ID", PolarBleApi.RecordingInterval.INTERVAL_1S, PolarBleApi.SampleType.HR).subscribe(
+                api.startRecording(DEVICE_ID,"TEST_APP_ID", PolarBleApi.RecordingInterval.INTERVAL_1S, PolarBleApi.SampleType.RR).subscribe(
                     new Action() {
                         @Override
                         public void run() throws Exception {

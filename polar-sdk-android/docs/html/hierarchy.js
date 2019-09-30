@@ -14,7 +14,9 @@ var hierarchy =
     [ "polar.com.sdk.api.PolarBleApi", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html", [
       [ "polar.com.sdk.impl.BDBleApiImpl", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html", null ]
     ] ],
-    [ "polar.com.sdk.api.PolarBleApiCallback", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiCallback.html", null ],
+    [ "polar.com.sdk.api.PolarBleApiCallbackProvider", "interfacepolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiCallbackProvider.html", [
+      [ "polar.com.sdk.api.PolarBleApiCallback", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiCallback.html", null ]
+    ] ],
     [ "polar.com.sdk.api.PolarBleApiDefaultImpl", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiDefaultImpl.html", null ],
     [ "polar.com.sdk.api.PolarBleApi.PolarBleApiLogger", "interfacepolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi_1_1PolarBleApiLogger.html", null ],
     [ "polar.com.sdk.api.model.PolarDeviceInfo", "classpolar_1_1com_1_1sdk_1_1api_1_1model_1_1PolarDeviceInfo.html", null ],

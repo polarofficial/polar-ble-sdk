@@ -24,7 +24,7 @@ Most accurate Heart rate sensor in the markets. The H10 is used in the Getting s
 [Store page](https://www.polar.com/en/products/accessories/H10_heart_rate_sensor)
 
 #### H10 heart rate sensor available data types
-* From version 3.0.35 onwards. Available later.
+* From version 3.0.35 onwards. 
 * Heart rate as beats per minute. RR Interval in ms and 1/1024 format.
 * Electrocardiography (ECG) data in µV. Default epoch for timestamp is 1.1.2000
 * Accelerometer data with samplerates of 25Hz, 50Hz, 100Hz and 200Hz and range of 2G, 4G and 8G. Axis specific acceleration data in mG. Default epoch for timestamp is 1.1.2000
@@ -37,7 +37,7 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 [Store page](https://www.polar.com/us-en/products/accessories/oh1-optical-heart-rate-sensor)
 
 #### OH1 Optical heart rate sensor available data types
-* From version 2.0.8 onwards. Available later.
+* From version 2.0.8 onwards.
 * Heart rate as beats per minute.
 * Photoplethysmograpy (PPG) values.
 * PP interval (milliseconds) representing cardiac pulse-to-pulse interval extracted from PPG signal.
