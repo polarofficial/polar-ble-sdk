@@ -18,6 +18,9 @@ var files_dup =
     [ "PolarBleApiCallback.java", "PolarBleApiCallback_8java.html", [
       [ "PolarBleApiCallback", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiCallback.html", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiCallback" ]
     ] ],
+    [ "PolarBleApiCallbackProvider.java", "PolarBleApiCallbackProvider_8java.html", [
+      [ "PolarBleApiCallbackProvider", "interfacepolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiCallbackProvider.html", "interfacepolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiCallbackProvider" ]
+    ] ],
     [ "PolarBleApiDefaultImpl.java", "PolarBleApiDefaultImpl_8java.html", [
       [ "PolarBleApiDefaultImpl", "classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiDefaultImpl.html", null ]
     ] ],
