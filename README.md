@@ -68,13 +68,13 @@ Detailed documentation  [Full Documentation](polar-sdk-android/docs/html/).
 ## Installation
 Compiled sdk and dependencies can be found from [polar-sdk-android](polar-sdk-android/libs/)
 
-1.  In `build.gradle` make sure the __minSdkVersion__ is set to __19__ or higher.
+1.  In `build.gradle` make sure the __minSdkVersion__ is set to __21__ or higher.
 ```
 android {
 	...
 	defaultConfig {
 		...
-		minSdkVersion 19
+		minSdkVersion 21
 	}
 }
 ```
