@@ -241,8 +241,8 @@ public void onDestroy() {
 }
 ```
 
-5.  Connect to a Polar device using  `api.connectToPolarDevice(DEVICE_ID)`  ,  
-   `api.autoConnectToPolarDevice(-50, null).subscribe()`  to connect nearby device or  `api.searchForPolarDevice()` to scan and select the device
+5.  Connect to a Polar device using  `api.connectToDevice(DEVICE_ID)`  ,  
+   `api.autoConnectToDevice(-50, null).subscribe()`  to connect nearby device or  `api.searchForDevice()` to scan and select the device
 
 # iOS: Getting started
 Detailed documentation [Full Documentation](polar-sdk-ios/docs/). Minimum iOS version is 10.
@@ -341,4 +341,4 @@ class MyController: UIViewController,
 }
 ```
 
-3. Connect to a Polar device using  `api.connectToPolarDevice(id)` , `api.startAutoConnectToPolarDevice(_ rssi: Int, polarDeviceType: String?)` to connect nearby device or  `api.searchForPolarDevice()` to scan and select the device
+3. Connect to a Polar device using  `api.connectToDevice(id)` , `api.startAutoConnectToDevice(_ rssi: Int, polarDeviceType: String?)` to connect nearby device or  `api.searchForDevice()` to scan and select the device
