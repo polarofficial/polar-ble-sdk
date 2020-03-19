@@ -1,0 +1,1 @@
+public let IOS_COMMUNICATIONS_VERSION = "13.0-36-gf116ab0"

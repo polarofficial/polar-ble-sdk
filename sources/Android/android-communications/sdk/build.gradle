@@ -1,0 +1,87 @@
+apply plugin: 'com.jfrog.artifactory'
+apply plugin: 'maven-publish'
+
+import java.util.regex.Pattern
+
+def getVersion = { ->
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'describe', '--tags'
+        standardOutput = stdout
+    }
+    def pattern = Pattern.compile("^([0-9]*)(\\.)([0-9]*)(.*)\$")
+    def matcher = pattern.matcher(stdout.toString().trim());
+    if( matcher.matches() ) {
+        String MAJOR = matcher.group(1)
+        String MINOR = matcher.group(3)
+        String PATCH = matcher.group(4)
+        if( PATCH.length() != 0 ){
+            // patch present
+            def patchMatcher = Pattern.compile("^(-)([0-9]*)(-.*)").matcher(PATCH)
+            if( patchMatcher.matches() ){
+                PATCH = patchMatcher.group(2)
+            } else {
+                PATCH = "0"
+            }
+        } else {
+            PATCH = "0"
+        }
+        def VERSION = MAJOR + "." + MINOR + "." + PATCH
+        println VERSION
+        return VERSION
+    } else {
+        return stdout.toString().trim()
+    }
+}
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.0.1"
+    }
+}
+
+publishing {
+    publications {
+        zip(MavenPublication) {
+            groupId 'com.polar'
+            version = getVersion() 
+            artifactId 'polar-ble-android-sdk'
+            artifact("polar-ble-sdk.zip")
+        }
+    }
+}
+
+artifactory {
+    contextUrl = 'https://repository.polar.grp/artifactory/'
+    def artifactory_user = project.getProperty('artifactoryUser')
+    def artifactory_password = project.getProperty('artifactoryPassword')
+    println "USER: " + "${artifactory_user}"
+    println "PASSWD: " + "${artifactory_password}"
+    publish {
+        repository {
+            // The Artifactory repository key to publish to
+            repoKey = 'libs-release-local'
+            username = "${artifactory_user}" // The publisher user name
+            password = "${artifactory_password}" // The publisher password
+            // maven = true
+        }
+        defaults {
+            // Tell the Artifactory Plugin which artifacts should be published to Artifactory.
+            publications('zip')
+            publishArtifacts = true
+
+            // Properties to be attached to the published artifacts.
+            properties = ['qa.level': 'basic', 'dev.team': 'core']
+            // Publish generated POM files to Artifactory (true by default)
+            publishPom = true
+        }
+    }
+}
+
+task wrapper(type: Wrapper){
+    gradleVersion = '4.7'
+}

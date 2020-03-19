@@ -1,0 +1,174 @@
+apply plugin: 'com.android.library'
+
+if ( project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPassword") ) {
+    apply plugin: 'com.jfrog.artifactory'
+    apply plugin: 'maven-publish'
+}
+
+import java.util.regex.Pattern
+
+def getVersion = { ->
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'describe', '--tags'
+        standardOutput = stdout
+    }
+    def pattern = Pattern.compile("^([0-9]*)(\\.)([0-9]*)(.*)\$")
+    def matcher = pattern.matcher(stdout.toString().trim());
+    if( matcher.matches() ) {
+        String MAJOR = matcher.group(1)
+        String MINOR = matcher.group(3)
+        String PATCH = matcher.group(4)
+        if( PATCH.length() != 0 ){
+            // patch present
+            def patchMatcher = Pattern.compile("^(-)([0-9]*)(-.*)").matcher(PATCH)
+            if( patchMatcher.matches() ){
+                PATCH = patchMatcher.group(2)
+            } else {
+                PATCH = "0"
+            }
+        } else {
+            PATCH = "0"
+        }
+        def VERSION = MAJOR + "." + MINOR + "." + PATCH
+        println VERSION
+        return VERSION
+    } else {
+        return stdout.toString().trim()
+    }
+}
+
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.4.1'
+        if ( project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPassword") ) {
+            classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.7.3"
+        }
+    }
+}
+
+android {
+    compileSdkVersion 27
+    buildToolsVersion '28.0.3'
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 27
+        versionCode 13
+        versionName "13"
+    }
+    buildTypes.all { buildType ->
+        def version = getVersion()
+        buildConfigField 'String', 'GIT_VERSION', "\"$version\""
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    repositories {
+        maven { url 'http://repo1.maven.org/maven2' }
+        jcenter()
+        google()
+    }
+    lintOptions {
+        abortOnError false
+    }
+}
+
+if ( project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPassword") ) {
+    publishing {
+        publications {
+            aar(MavenPublication) {
+                groupId 'com.polar'
+                version = getVersion() 
+                artifactId project.getName()
+
+                // Tell maven to prepare the generated "*.aar" file for publishing
+                artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+            }
+        }
+    }
+
+    artifactory {
+        contextUrl = 'https://repository.polar.grp/artifactory/'
+        def artifactory_user = project.getProperty('artifactoryUser')
+        def artifactory_password = project.getProperty('artifactoryPassword')
+        println "USER: " + "${artifactory_user}"
+        println "PASSWD: " + "${artifactory_password}"
+        publish {
+            repository {
+                // The Artifactory repository key to publish to
+                repoKey = 'libs-release-local'
+                username = "${artifactory_user}" // The publisher user name
+                password = "${artifactory_password}" // The publisher password
+                // maven = true
+            }
+            defaults {
+                // Tell the Artifactory Plugin which artifacts should be published to Artifactory.
+               /* publications {
+                    mavenJava(MavenPublication) {
+                        from components.java
+                        artifact (sourcesJar) {
+                            classifier = 'sources'
+                        }
+                    }
+                }*/
+                publications('aar')
+                publishArtifacts = true
+
+                // Properties to be attached to the published artifacts.
+                properties = ['qa.level': 'basic', 'dev.team': 'core']
+                // Publish generated POM files to Artifactory (true by default)
+                publishPom = true
+            }
+        }
+    }
+}
+
+task androidJavadocs(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    failOnError false
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    // skip internal sdk
+    exclude "com"
+}
+
+task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+    classifier = 'javadoc'
+    from androidJavadocs.destinationDir
+}
+
+task androidSourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+artifacts {
+    archives androidSourcesJar
+    archives androidJavadocsJar
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    if (project.hasProperty("buildSdk")) {
+        implementation files('libs/polar-protobuf-release.aar')
+        implementation 'com.google.protobuf:protobuf-java:3.1.0'
+    } else {
+        implementation project(':polar-protobuf')
+        implementation 'com.google.protobuf:protobuf-java:3.1.0'
+    }
+    testImplementation 'junit:junit:4.12'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
+    // Because RxAndroid releases are few and far between, it is recommended you also
+    // explicitly depend on RxJava's latest version for bug fixes and new features.
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.0'
+    implementation 'commons-io:commons-io:2.4'
+    implementation 'com.android.support:support-annotations:24.2.1'
+}

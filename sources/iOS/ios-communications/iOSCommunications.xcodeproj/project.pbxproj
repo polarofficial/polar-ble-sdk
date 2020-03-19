@@ -1,0 +1,1887 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		6C0C543F1CFC749E00FF23E9 /* iOSCommunications.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C0C543E1CFC749E00FF23E9 /* iOSCommunications.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		6C0C54FE1CFEB3C900FF23E9 /* TimeUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C54FD1CFEB3C900FF23E9 /* TimeUtility.swift */; };
+		6C1079231D6D6EA000931948 /* iOSCommunicationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1079221D6D6EA000931948 /* iOSCommunicationsTests.swift */; };
+		6C10792D1D6D9C4800931948 /* iOSCommunications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C34DE881CAA3F240083EB1F /* iOSCommunications.framework */; };
+		6C2408F8220D9581001C1A84 /* CBScanningProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */; };
+		6C24093222142DE6001C1A84 /* RxAtomic.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C24093022142DE6001C1A84 /* RxAtomic.framework */; };
+		6C24093322142DE6001C1A84 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C24093122142DE6001C1A84 /* RxSwift.framework */; };
+		6C24093422142DF6001C1A84 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C24093122142DE6001C1A84 /* RxSwift.framework */; };
+		6C2409412216A6E3001C1A84 /* PolarSensorSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C56422F21F1FF7A00F9BDA9 /* PolarSensorSetting.swift */; };
+		6C2409422216A6E3001C1A84 /* CBScanningProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */; };
+		6C2409432216A6E3001C1A84 /* BlePsFtpUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD381CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift */; };
+		6C2409442216A6E3001C1A84 /* BlePsFtpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD391CE5BCEA00A4C6A8 /* BlePsFtpClient.swift */; };
+		6C2409452216A6E3001C1A84 /* BlePmdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C98104421622D52002820A2 /* BlePmdClient.swift */; };
+		6C2409462216A6F3001C1A84 /* AtomicType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9810392154AEDD002820A2 /* AtomicType.swift */; };
+		6C2409472216A7BA001C1A84 /* ExerciseRrSamples.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10D82174B62500E16FBF /* ExerciseRrSamples.pbobjc.h */; };
+		6C2409482216A7BA001C1A84 /* Timestamp.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10E421786B0000E16FBF /* Timestamp.pbobjc.h */; };
+		6C2409492216A7BA001C1A84 /* Type.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10E321786B0000E16FBF /* Type.pbobjc.h */; };
+		6C24094A2216A7BA001C1A84 /* Any.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10792174B31500E16FBF /* Any.pbobjc.h */; };
+		6C24094B2216A7BA001C1A84 /* Api.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10852174B31600E16FBF /* Api.pbobjc.h */; };
+		6C24094C2216A7BA001C1A84 /* Descriptor.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA107D2174B31500E16FBF /* Descriptor.pbobjc.h */; };
+		6C24094D2216A7BA001C1A84 /* Duration.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA108C2174B31600E16FBF /* Duration.pbobjc.h */; };
+		6C24094E2216A7BA001C1A84 /* Empty.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA107B2174B31500E16FBF /* Empty.pbobjc.h */; };
+		6C24094F2216A7BA001C1A84 /* FieldMask.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10572174B31300E16FBF /* FieldMask.pbobjc.h */; };
+		6C2409502216A7BA001C1A84 /* GPBArray_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10772174B31400E16FBF /* GPBArray_PackagePrivate.h */; };
+		6C2409512216A7BA001C1A84 /* GPBArray.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10612174B31300E16FBF /* GPBArray.h */; };
+		6C2409522216A7BA001C1A84 /* GPBBootstrap.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10952174B31700E16FBF /* GPBBootstrap.h */; };
+		6C2409532216A7BA001C1A84 /* GPBCodedInputStream_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10812174B31500E16FBF /* GPBCodedInputStream_PackagePrivate.h */; };
+		6C2409542216A7BA001C1A84 /* GPBCodedInputStream.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA108A2174B31600E16FBF /* GPBCodedInputStream.h */; };
+		6C2409552216A7BA001C1A84 /* GPBCodedOutputStream_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10942174B31600E16FBF /* GPBCodedOutputStream_PackagePrivate.h */; };
+		6C2409562216A7BA001C1A84 /* GPBCodedOutputStream.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10822174B31500E16FBF /* GPBCodedOutputStream.h */; };
+		6C2409572216A7BA001C1A84 /* GPBDescriptor_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA107C2174B31500E16FBF /* GPBDescriptor_PackagePrivate.h */; };
+		6C2409582216A7BA001C1A84 /* GPBDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA106E2174B31400E16FBF /* GPBDescriptor.h */; };
+		6C2409592216A7BA001C1A84 /* GPBDictionary_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10782174B31400E16FBF /* GPBDictionary_PackagePrivate.h */; };
+		6C24095A2216A7BA001C1A84 /* GPBDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10552174B31200E16FBF /* GPBDictionary.h */; };
+		6C24095B2216A7BA001C1A84 /* GPBExtensionInternals.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA107F2174B31500E16FBF /* GPBExtensionInternals.h */; };
+		6C24095C2216A7BA001C1A84 /* GPBExtensionRegistry.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10762174B31400E16FBF /* GPBExtensionRegistry.h */; };
+		6C24095D2216A7BA001C1A84 /* GPBMessage_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA105F2174B31300E16FBF /* GPBMessage_PackagePrivate.h */; };
+		6C24095E2216A7BA001C1A84 /* GPBMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10642174B31300E16FBF /* GPBMessage.h */; };
+		6C24095F2216A7BA001C1A84 /* GPBProtocolBuffers_RuntimeSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10922174B31600E16FBF /* GPBProtocolBuffers_RuntimeSupport.h */; };
+		6C2409602216A7BA001C1A84 /* GPBProtocolBuffers.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10562174B31300E16FBF /* GPBProtocolBuffers.h */; };
+		6C2409612216A7BA001C1A84 /* GPBRootObject_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10622174B31300E16FBF /* GPBRootObject_PackagePrivate.h */; };
+		6C2409622216A7BA001C1A84 /* GPBRootObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10752174B31400E16FBF /* GPBRootObject.h */; };
+		6C2409632216A7BA001C1A84 /* GPBRuntimeTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA105B2174B31300E16FBF /* GPBRuntimeTypes.h */; };
+		6C2409642216A7BA001C1A84 /* GPBUnknownField_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10592174B31300E16FBF /* GPBUnknownField_PackagePrivate.h */; };
+		6C2409652216A7BA001C1A84 /* GPBUnknownField.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10582174B31300E16FBF /* GPBUnknownField.h */; };
+		6C2409662216A7BA001C1A84 /* GPBUnknownFieldSet_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA106C2174B31400E16FBF /* GPBUnknownFieldSet_PackagePrivate.h */; };
+		6C2409672216A7BA001C1A84 /* GPBUnknownFieldSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA106A2174B31400E16FBF /* GPBUnknownFieldSet.h */; };
+		6C2409682216A7BA001C1A84 /* GPBUtilities_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10742174B31400E16FBF /* GPBUtilities_PackagePrivate.h */; };
+		6C2409692216A7BA001C1A84 /* GPBUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10802174B31500E16FBF /* GPBUtilities.h */; };
+		6C24096A2216A7BA001C1A84 /* GPBWellKnownTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10862174B31600E16FBF /* GPBWellKnownTypes.h */; };
+		6C24096B2216A7BA001C1A84 /* GPBWireFormat.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10832174B31500E16FBF /* GPBWireFormat.h */; };
+		6C24096C2216A7BA001C1A84 /* SourceContext.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA106D2174B31400E16FBF /* SourceContext.pbobjc.h */; };
+		6C24096D2216A7BA001C1A84 /* Struct.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA105D2174B31300E16FBF /* Struct.pbobjc.h */; };
+		6C24096E2216A7BA001C1A84 /* Wrappers.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10732174B31400E16FBF /* Wrappers.pbobjc.h */; };
+		6C24096F2216A7BA001C1A84 /* ExerciseSamples.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FB22174B17700E16FBF /* ExerciseSamples.pbobjc.h */; };
+		6C2409702216A7BA001C1A84 /* Nanopb.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FB92174B17700E16FBF /* Nanopb.pbobjc.h */; };
+		6C2409712216A7BA001C1A84 /* PftpError.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FBB2174B17700E16FBF /* PftpError.pbobjc.h */; };
+		6C2409722216A7BA001C1A84 /* PftpNotification.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FB72174B17700E16FBF /* PftpNotification.pbobjc.h */; };
+		6C2409732216A7BA001C1A84 /* PftpRequest.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FB82174B17700E16FBF /* PftpRequest.pbobjc.h */; };
+		6C2409742216A7BA001C1A84 /* PftpResponse.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FBE2174B17700E16FBF /* PftpResponse.pbobjc.h */; };
+		6C2409752216A7BA001C1A84 /* Structures.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FBA2174B17700E16FBF /* Structures.pbobjc.h */; };
+		6C2409762216A7BA001C1A84 /* Types.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FB12174B17700E16FBF /* Types.pbobjc.h */; };
+		6C2409772216A7BA001C1A84 /* PolarProtobuf.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FD02174B1A000E16FBF /* PolarProtobuf.h */; };
+		6C2409782216A7CA001C1A84 /* ExerciseRrSamples.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10D72174B62500E16FBF /* ExerciseRrSamples.pbobjc.m */; };
+		6C2409792216A7CA001C1A84 /* Timestamp.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10E621786B0000E16FBF /* Timestamp.pbobjc.m */; };
+		6C24097A2216A7CA001C1A84 /* Type.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10E521786B0000E16FBF /* Type.pbobjc.m */; };
+		6C24097B2216A7CA001C1A84 /* Any.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA106F2174B31400E16FBF /* Any.pbobjc.m */; };
+		6C24097C2216A7CA001C1A84 /* Api.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA106B2174B31400E16FBF /* Api.pbobjc.m */; };
+		6C24097D2216A7CA001C1A84 /* Descriptor.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10722174B31400E16FBF /* Descriptor.pbobjc.m */; };
+		6C24097E2216A7CA001C1A84 /* Duration.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10632174B31300E16FBF /* Duration.pbobjc.m */; };
+		6C24097F2216A7CA001C1A84 /* Empty.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10892174B31600E16FBF /* Empty.pbobjc.m */; };
+		6C2409802216A7CA001C1A84 /* FieldMask.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA105C2174B31300E16FBF /* FieldMask.pbobjc.m */; };
+		6C2409812216A7CA001C1A84 /* GPBArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10702174B31400E16FBF /* GPBArray.m */; };
+		6C2409822216A7CA001C1A84 /* GPBCodedInputStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA105A2174B31300E16FBF /* GPBCodedInputStream.m */; };
+		6C2409832216A7CA001C1A84 /* GPBCodedOutputStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA108D2174B31600E16FBF /* GPBCodedOutputStream.m */; };
+		6C2409842216A7CA001C1A84 /* GPBDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10912174B31600E16FBF /* GPBDescriptor.m */; };
+		6C2409852216A7CA001C1A84 /* GPBDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10712174B31400E16FBF /* GPBDictionary.m */; };
+		6C2409862216A7CA001C1A84 /* GPBExtensionInternals.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA107E2174B31500E16FBF /* GPBExtensionInternals.m */; };
+		6C2409872216A7CA001C1A84 /* GPBExtensionRegistry.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA108E2174B31600E16FBF /* GPBExtensionRegistry.m */; };
+		6C2409882216A7CA001C1A84 /* GPBMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10932174B31600E16FBF /* GPBMessage.m */; };
+		6C2409892216A7CA001C1A84 /* GPBRootObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA108F2174B31600E16FBF /* GPBRootObject.m */; };
+		6C24098A2216A7CA001C1A84 /* GPBUnknownField.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10842174B31600E16FBF /* GPBUnknownField.m */; };
+		6C24098B2216A7CA001C1A84 /* GPBUnknownFieldSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA108B2174B31600E16FBF /* GPBUnknownFieldSet.m */; };
+		6C24098C2216A7CA001C1A84 /* GPBUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10682174B31300E16FBF /* GPBUtilities.m */; };
+		6C24098D2216A7CA001C1A84 /* GPBWellKnownTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10692174B31400E16FBF /* GPBWellKnownTypes.m */; };
+		6C24098E2216A7CA001C1A84 /* GPBWireFormat.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10652174B31300E16FBF /* GPBWireFormat.m */; };
+		6C24098F2216A7CA001C1A84 /* SourceContext.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10872174B31600E16FBF /* SourceContext.pbobjc.m */; };
+		6C2409902216A7CA001C1A84 /* Struct.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA105E2174B31300E16FBF /* Struct.pbobjc.m */; };
+		6C2409922216A7CA001C1A84 /* ExerciseSamples.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FBD2174B17700E16FBF /* ExerciseSamples.pbobjc.m */; };
+		6C2409932216A7CA001C1A84 /* Nanopb.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FB52174B17700E16FBF /* Nanopb.pbobjc.m */; };
+		6C2409942216A7CA001C1A84 /* PftpError.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FB62174B17700E16FBF /* PftpError.pbobjc.m */; };
+		6C2409952216A7CA001C1A84 /* PftpNotification.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FAF2174B17700E16FBF /* PftpNotification.pbobjc.m */; };
+		6C2409962216A7CA001C1A84 /* PftpRequest.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FBC2174B17700E16FBF /* PftpRequest.pbobjc.m */; };
+		6C2409972216A7CA001C1A84 /* PftpResponse.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FB02174B17700E16FBF /* PftpResponse.pbobjc.m */; };
+		6C2409982216A7CA001C1A84 /* Structures.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FB32174B17700E16FBF /* Structures.pbobjc.m */; };
+		6C2409992216A7CA001C1A84 /* Types.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FBF2174B17700E16FBF /* Types.pbobjc.m */; };
+		6C24099A2216AA58001C1A84 /* Wrappers.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10672174B31300E16FBF /* Wrappers.pbobjc.m */; };
+		6C32C6D7220AD3CA006615C3 /* CBScanningProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */; };
+		6C39E8C7209B0755001F7E44 /* PolarBleSdkWatchOs.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C39E8C5209B0755001F7E44 /* PolarBleSdkWatchOs.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		6C39E8CB209B07BC001F7E44 /* PolarBleApiImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C770AD62063B61700F3D51D /* PolarBleApiImpl.swift */; };
+		6C39E8CC209B07BC001F7E44 /* PolarErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C770AD42063B60D00F3D51D /* PolarErrors.swift */; };
+		6C39E8D2209B07BC001F7E44 /* PolarBleApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C770AC42063B5EB00F3D51D /* PolarBleApi.swift */; };
+		6C39E8D3209B07BC001F7E44 /* PolarBleApiDefaultImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C770AC52063B5EB00F3D51D /* PolarBleApiDefaultImpl.swift */; };
+		6C39E8D4209B07BC001F7E44 /* PolarBleApiObservers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C770AC62063B5EB00F3D51D /* PolarBleApiObservers.swift */; };
+		6C39E8DA209B07BC001F7E44 /* CBDeviceListenerImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44A91CB291A40006220D /* CBDeviceListenerImpl.swift */; };
+		6C39E8DB209B07BC001F7E44 /* CBDeviceSessionImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44AA1CB291A40006220D /* CBDeviceSessionImpl.swift */; };
+		6C39E8DC209B07BC001F7E44 /* CBScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9209061D93B2DC0035B928 /* CBScanner.swift */; };
+		6C39E8DD209B07BC001F7E44 /* BleDeviceSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44BA1CB37F060006220D /* BleDeviceSession.swift */; };
+		6C39E8DE209B07BC001F7E44 /* BlePolarDeviceIdUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD421CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift */; };
+		6C39E8DF209B07BC001F7E44 /* BleAdvertisementContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A251CC0BA0400E3AD73 /* BleAdvertisementContent.swift */; };
+		6C39E8E0209B07BC001F7E44 /* BlePolarHrAdvertisement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A261CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift */; };
+		6C39E8E1209B07BC001F7E44 /* BleRssiFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A271CC0BA0400E3AD73 /* BleRssiFilter.swift */; };
+		6C39E8E2209B07BC001F7E44 /* BleGattException.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD12AC9201F126500F3A417 /* BleGattException.swift */; };
+		6C39E8E5209B07BC001F7E44 /* BleBasClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FC1E169CCE00411498 /* BleBasClient.swift */; };
+		6C39E8E6209B07BC001F7E44 /* BleDisClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FD1E169CCE00411498 /* BleDisClient.swift */; };
+		6C39E8E7209B07BC001F7E44 /* BleHrClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FE1E169CCE00411498 /* BleHrClient.swift */; };
+		6C39E8EA209B07BC001F7E44 /* BlePsdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */; };
+		6C39E8EC209B07BC001F7E44 /* BleGattClientBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44941CB291500006220D /* BleGattClientBase.swift */; };
+		6C39E8ED209B07BC001F7E44 /* BleGattClientFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44951CB291500006220D /* BleGattClientFactory.swift */; };
+		6C39E8EE209B07BC001F7E44 /* BleAttributeTransportProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44961CB291500006220D /* BleAttributeTransportProtocol.swift */; };
+		6C39E8EF209B07BC001F7E44 /* BleLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A351CC0BA4E00E3AD73 /* BleLogger.swift */; };
+		6C39E8F0209B07BC001F7E44 /* BleDeviceListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A448D1CB291260006220D /* BleDeviceListener.swift */; };
+		6C39E8F5209B07BC001F7E44 /* AtomicBoolean.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A449E1CB291790006220D /* AtomicBoolean.swift */; };
+		6C39E8F6209B07BC001F7E44 /* AtomicInteger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A449F1CB291790006220D /* AtomicInteger.swift */; };
+		6C39E8F7209B07BC001F7E44 /* AtomicList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44A01CB291790006220D /* AtomicList.swift */; };
+		6C39E8F8209B07BC001F7E44 /* TimeUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C54FD1CFEB3C900FF23E9 /* TimeUtility.swift */; };
+		6C39E8FA209B07BC001F7E44 /* RxObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7709F72036D15F00F3D51D /* RxObserver.swift */; };
+		6C39E8FB209B07BC001F7E44 /* RxUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB9DB982087188E00505269 /* RxUtils.swift */; };
+		6C39E8FF209B08F0001F7E44 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C39E8FE209B08F0001F7E44 /* CoreBluetooth.framework */; };
+		6C4048DF2199BBCE0067433E /* PolarProtobuf.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FD02174B1A000E16FBF /* PolarProtobuf.h */; };
+		6C48395D21C79C1C00747D78 /* BlePmdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C98104421622D52002820A2 /* BlePmdClient.swift */; };
+		6C4A6A291CC0BA0400E3AD73 /* BleAdvertisementContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A251CC0BA0400E3AD73 /* BleAdvertisementContent.swift */; };
+		6C4A6A2A1CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A261CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift */; };
+		6C4A6A2B1CC0BA0400E3AD73 /* BleRssiFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A271CC0BA0400E3AD73 /* BleRssiFilter.swift */; };
+		6C4A6A311CC0BA2400E3AD73 /* BlePfcClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A2E1CC0BA2400E3AD73 /* BlePfcClient.swift */; };
+		6C4A6A381CC0BA4E00E3AD73 /* BleLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A351CC0BA4E00E3AD73 /* BleLogger.swift */; };
+		6C56423021F1FF7A00F9BDA9 /* PolarSensorSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C56422F21F1FF7A00F9BDA9 /* PolarSensorSetting.swift */; };
+		6C57A5B41F987B44002E50DB /* BleRscClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C57A5B31F987B40002E50DB /* BleRscClient.swift */; };
+		6C5A448F1CB291260006220D /* BleDeviceListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A448D1CB291260006220D /* BleDeviceListener.swift */; };
+		6C5A44971CB291500006220D /* BleGattClientBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44941CB291500006220D /* BleGattClientBase.swift */; };
+		6C5A44981CB291500006220D /* BleGattClientFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44951CB291500006220D /* BleGattClientFactory.swift */; };
+		6C5A44991CB291500006220D /* BleAttributeTransportProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44961CB291500006220D /* BleAttributeTransportProtocol.swift */; };
+		6C5A44A21CB291790006220D /* AtomicBoolean.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A449E1CB291790006220D /* AtomicBoolean.swift */; };
+		6C5A44A31CB291790006220D /* AtomicInteger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A449F1CB291790006220D /* AtomicInteger.swift */; };
+		6C5A44A41CB291790006220D /* AtomicList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44A01CB291790006220D /* AtomicList.swift */; };
+		6C5A44AC1CB291A40006220D /* CBDeviceListenerImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44A91CB291A40006220D /* CBDeviceListenerImpl.swift */; };
+		6C5A44AD1CB291A40006220D /* CBDeviceSessionImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44AA1CB291A40006220D /* CBDeviceSessionImpl.swift */; };
+		6C5A44BB1CB37F060006220D /* BleDeviceSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44BA1CB37F060006220D /* BleDeviceSession.swift */; };
+		6C67C7FF1E169CCE00411498 /* BleBasClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FC1E169CCE00411498 /* BleBasClient.swift */; };
+		6C67C8001E169CCE00411498 /* BleDisClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FD1E169CCE00411498 /* BleDisClient.swift */; };
+		6C67C8011E169CCE00411498 /* BleHrClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FE1E169CCE00411498 /* BleHrClient.swift */; };
+		6C707D2920D7F138002FE7FF /* RxUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB9DB982087188E00505269 /* RxUtils.swift */; };
+		6C7709F82036D15F00F3D51D /* RxObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7709F72036D15F00F3D51D /* RxObserver.swift */; };
+		6C770B70206B779A00F3D51D /* PolarBleSdk.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C770B6E206B779A00F3D51D /* PolarBleSdk.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		6C770B74206B77F300F3D51D /* PolarBleApiImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C770AD62063B61700F3D51D /* PolarBleApiImpl.swift */; };
+		6C770B75206B77F300F3D51D /* PolarErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C770AD42063B60D00F3D51D /* PolarErrors.swift */; };
+		6C770B7A206B77F300F3D51D /* PolarBleApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C770AC42063B5EB00F3D51D /* PolarBleApi.swift */; };
+		6C770B7B206B77F300F3D51D /* PolarBleApiDefaultImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C770AC52063B5EB00F3D51D /* PolarBleApiDefaultImpl.swift */; };
+		6C770B7C206B77F300F3D51D /* PolarBleApiObservers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C770AC62063B5EB00F3D51D /* PolarBleApiObservers.swift */; };
+		6C770B86206B77F300F3D51D /* CBDeviceListenerImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44A91CB291A40006220D /* CBDeviceListenerImpl.swift */; };
+		6C770B87206B77F300F3D51D /* CBDeviceSessionImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44AA1CB291A40006220D /* CBDeviceSessionImpl.swift */; };
+		6C770B88206B77F300F3D51D /* CBScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9209061D93B2DC0035B928 /* CBScanner.swift */; };
+		6C770B8A206B77F300F3D51D /* BleDeviceSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44BA1CB37F060006220D /* BleDeviceSession.swift */; };
+		6C770B8B206B77F300F3D51D /* BlePolarDeviceIdUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD421CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift */; };
+		6C770B8C206B77F300F3D51D /* BleAdvertisementContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A251CC0BA0400E3AD73 /* BleAdvertisementContent.swift */; };
+		6C770B8D206B77F300F3D51D /* BlePolarHrAdvertisement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A261CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift */; };
+		6C770B8E206B77F300F3D51D /* BleRssiFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A271CC0BA0400E3AD73 /* BleRssiFilter.swift */; };
+		6C770B8F206B77F300F3D51D /* BleGattException.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD12AC9201F126500F3A417 /* BleGattException.swift */; };
+		6C770B92206B77F300F3D51D /* BleBasClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FC1E169CCE00411498 /* BleBasClient.swift */; };
+		6C770B93206B77F300F3D51D /* BleDisClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FD1E169CCE00411498 /* BleDisClient.swift */; };
+		6C770B94206B77F300F3D51D /* BleHrClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FE1E169CCE00411498 /* BleHrClient.swift */; };
+		6C770B95206B77F300F3D51D /* BlePsdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */; };
+		6C770B96206B77F300F3D51D /* BleGattClientBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44941CB291500006220D /* BleGattClientBase.swift */; };
+		6C770B97206B77F300F3D51D /* BleGattClientFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44951CB291500006220D /* BleGattClientFactory.swift */; };
+		6C770B98206B77F300F3D51D /* BleAttributeTransportProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44961CB291500006220D /* BleAttributeTransportProtocol.swift */; };
+		6C770B9A206B77F300F3D51D /* BleLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A351CC0BA4E00E3AD73 /* BleLogger.swift */; };
+		6C770B9B206B77F300F3D51D /* BleDeviceListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A448D1CB291260006220D /* BleDeviceListener.swift */; };
+		6C770BA1206B77F300F3D51D /* AtomicBoolean.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A449E1CB291790006220D /* AtomicBoolean.swift */; };
+		6C770BA2206B77F300F3D51D /* AtomicInteger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A449F1CB291790006220D /* AtomicInteger.swift */; };
+		6C770BA3206B77F300F3D51D /* AtomicList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44A01CB291790006220D /* AtomicList.swift */; };
+		6C770BA4206B77F300F3D51D /* TimeUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C54FD1CFEB3C900FF23E9 /* TimeUtility.swift */; };
+		6C770BA6206B77F300F3D51D /* RxObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7709F72036D15F00F3D51D /* RxObserver.swift */; };
+		6C770BA9206B784300F3D51D /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6CD49C7E1CABA2EC000D8660 /* CoreBluetooth.framework */; };
+		6C8BCD3C1CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD381CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift */; };
+		6C8BCD3D1CE5BCEA00A4C6A8 /* BlePsFtpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD391CE5BCEA00A4C6A8 /* BlePsFtpClient.swift */; };
+		6C8BCD431CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD421CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift */; };
+		6C9209071D93B2DC0035B928 /* CBScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9209061D93B2DC0035B928 /* CBScanner.swift */; };
+		6C98103A2154AEDE002820A2 /* AtomicType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9810392154AEDD002820A2 /* AtomicType.swift */; };
+		6C9810402158A943002820A2 /* RecursiveCondition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C98103F2158A943002820A2 /* RecursiveCondition.swift */; };
+		6C981041215B7136002820A2 /* AtomicType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9810392154AEDD002820A2 /* AtomicType.swift */; };
+		6C98104521622D52002820A2 /* BlePmdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C98104421622D52002820A2 /* BlePmdClient.swift */; };
+		6CB902771D9B7F65001F1C9C /* BleH7SettingsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB902761D9B7F65001F1C9C /* BleH7SettingsClient.swift */; };
+		6CB9DB992087188E00505269 /* RxUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB9DB982087188E00505269 /* RxUtils.swift */; };
+		6CCFE4001E5D76C100FAA131 /* BlePsdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */; };
+		6CD12ACA201F126500F3A417 /* BleGattException.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD12AC9201F126500F3A417 /* BleGattException.swift */; };
+		6CD49C7F1CABA2EC000D8660 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6CD49C7E1CABA2EC000D8660 /* CoreBluetooth.framework */; };
+		6CEA0FC02174B17700E16FBF /* PftpNotification.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FAF2174B17700E16FBF /* PftpNotification.pbobjc.m */; };
+		6CEA0FC12174B17700E16FBF /* PftpResponse.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FB02174B17700E16FBF /* PftpResponse.pbobjc.m */; };
+		6CEA0FC22174B17700E16FBF /* Types.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FB12174B17700E16FBF /* Types.pbobjc.h */; };
+		6CEA0FC32174B17700E16FBF /* ExerciseSamples.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FB22174B17700E16FBF /* ExerciseSamples.pbobjc.h */; };
+		6CEA0FC42174B17700E16FBF /* Structures.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FB32174B17700E16FBF /* Structures.pbobjc.m */; };
+		6CEA0FC52174B17700E16FBF /* Nanopb.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FB52174B17700E16FBF /* Nanopb.pbobjc.m */; };
+		6CEA0FC62174B17700E16FBF /* PftpError.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FB62174B17700E16FBF /* PftpError.pbobjc.m */; };
+		6CEA0FC72174B17700E16FBF /* PftpNotification.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FB72174B17700E16FBF /* PftpNotification.pbobjc.h */; };
+		6CEA0FC82174B17700E16FBF /* PftpRequest.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FB82174B17700E16FBF /* PftpRequest.pbobjc.h */; };
+		6CEA0FC92174B17700E16FBF /* Nanopb.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FB92174B17700E16FBF /* Nanopb.pbobjc.h */; };
+		6CEA0FCA2174B17700E16FBF /* Structures.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FBA2174B17700E16FBF /* Structures.pbobjc.h */; };
+		6CEA0FCB2174B17700E16FBF /* PftpError.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FBB2174B17700E16FBF /* PftpError.pbobjc.h */; };
+		6CEA0FCC2174B17700E16FBF /* PftpRequest.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FBC2174B17700E16FBF /* PftpRequest.pbobjc.m */; };
+		6CEA0FCD2174B17700E16FBF /* ExerciseSamples.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FBD2174B17700E16FBF /* ExerciseSamples.pbobjc.m */; };
+		6CEA0FCE2174B17700E16FBF /* PftpResponse.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FBE2174B17700E16FBF /* PftpResponse.pbobjc.h */; };
+		6CEA0FCF2174B17700E16FBF /* Types.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FBF2174B17700E16FBF /* Types.pbobjc.m */; };
+		6CEA10962174B31700E16FBF /* GPBDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10552174B31200E16FBF /* GPBDictionary.h */; };
+		6CEA10972174B31700E16FBF /* GPBProtocolBuffers.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10562174B31300E16FBF /* GPBProtocolBuffers.h */; };
+		6CEA10982174B31700E16FBF /* FieldMask.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10572174B31300E16FBF /* FieldMask.pbobjc.h */; };
+		6CEA10992174B31700E16FBF /* GPBUnknownField.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10582174B31300E16FBF /* GPBUnknownField.h */; };
+		6CEA109A2174B31700E16FBF /* GPBUnknownField_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10592174B31300E16FBF /* GPBUnknownField_PackagePrivate.h */; };
+		6CEA109B2174B31700E16FBF /* GPBCodedInputStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA105A2174B31300E16FBF /* GPBCodedInputStream.m */; };
+		6CEA109C2174B31700E16FBF /* GPBRuntimeTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA105B2174B31300E16FBF /* GPBRuntimeTypes.h */; };
+		6CEA109D2174B31700E16FBF /* FieldMask.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA105C2174B31300E16FBF /* FieldMask.pbobjc.m */; };
+		6CEA109E2174B31700E16FBF /* Struct.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA105D2174B31300E16FBF /* Struct.pbobjc.h */; };
+		6CEA109F2174B31700E16FBF /* Struct.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA105E2174B31300E16FBF /* Struct.pbobjc.m */; };
+		6CEA10A02174B31700E16FBF /* GPBMessage_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA105F2174B31300E16FBF /* GPBMessage_PackagePrivate.h */; };
+		6CEA10A22174B31700E16FBF /* GPBArray.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10612174B31300E16FBF /* GPBArray.h */; };
+		6CEA10A32174B31700E16FBF /* GPBRootObject_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10622174B31300E16FBF /* GPBRootObject_PackagePrivate.h */; };
+		6CEA10A42174B31700E16FBF /* Duration.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10632174B31300E16FBF /* Duration.pbobjc.m */; };
+		6CEA10A52174B31700E16FBF /* GPBMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10642174B31300E16FBF /* GPBMessage.h */; };
+		6CEA10A62174B31700E16FBF /* GPBWireFormat.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10652174B31300E16FBF /* GPBWireFormat.m */; };
+		6CEA10A82174B31700E16FBF /* Wrappers.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10672174B31300E16FBF /* Wrappers.pbobjc.m */; };
+		6CEA10A92174B31700E16FBF /* GPBUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10682174B31300E16FBF /* GPBUtilities.m */; };
+		6CEA10AA2174B31700E16FBF /* GPBWellKnownTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10692174B31400E16FBF /* GPBWellKnownTypes.m */; };
+		6CEA10AB2174B31700E16FBF /* GPBUnknownFieldSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA106A2174B31400E16FBF /* GPBUnknownFieldSet.h */; };
+		6CEA10AC2174B31700E16FBF /* Api.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA106B2174B31400E16FBF /* Api.pbobjc.m */; };
+		6CEA10AD2174B31700E16FBF /* GPBUnknownFieldSet_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA106C2174B31400E16FBF /* GPBUnknownFieldSet_PackagePrivate.h */; };
+		6CEA10AE2174B31700E16FBF /* SourceContext.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA106D2174B31400E16FBF /* SourceContext.pbobjc.h */; };
+		6CEA10AF2174B31700E16FBF /* GPBDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA106E2174B31400E16FBF /* GPBDescriptor.h */; };
+		6CEA10B02174B31700E16FBF /* Any.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA106F2174B31400E16FBF /* Any.pbobjc.m */; };
+		6CEA10B12174B31700E16FBF /* GPBArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10702174B31400E16FBF /* GPBArray.m */; };
+		6CEA10B22174B31700E16FBF /* GPBDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10712174B31400E16FBF /* GPBDictionary.m */; };
+		6CEA10B32174B31700E16FBF /* Descriptor.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10722174B31400E16FBF /* Descriptor.pbobjc.m */; };
+		6CEA10B42174B31700E16FBF /* Wrappers.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10732174B31400E16FBF /* Wrappers.pbobjc.h */; };
+		6CEA10B52174B31700E16FBF /* GPBUtilities_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10742174B31400E16FBF /* GPBUtilities_PackagePrivate.h */; };
+		6CEA10B62174B31700E16FBF /* GPBRootObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10752174B31400E16FBF /* GPBRootObject.h */; };
+		6CEA10B72174B31700E16FBF /* GPBExtensionRegistry.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10762174B31400E16FBF /* GPBExtensionRegistry.h */; };
+		6CEA10B82174B31700E16FBF /* GPBArray_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10772174B31400E16FBF /* GPBArray_PackagePrivate.h */; };
+		6CEA10B92174B31700E16FBF /* GPBDictionary_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10782174B31400E16FBF /* GPBDictionary_PackagePrivate.h */; };
+		6CEA10BA2174B31700E16FBF /* Any.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10792174B31500E16FBF /* Any.pbobjc.h */; };
+		6CEA10BC2174B31700E16FBF /* Empty.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA107B2174B31500E16FBF /* Empty.pbobjc.h */; };
+		6CEA10BD2174B31700E16FBF /* GPBDescriptor_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA107C2174B31500E16FBF /* GPBDescriptor_PackagePrivate.h */; };
+		6CEA10BE2174B31700E16FBF /* Descriptor.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA107D2174B31500E16FBF /* Descriptor.pbobjc.h */; };
+		6CEA10BF2174B31700E16FBF /* GPBExtensionInternals.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA107E2174B31500E16FBF /* GPBExtensionInternals.m */; };
+		6CEA10C02174B31700E16FBF /* GPBExtensionInternals.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA107F2174B31500E16FBF /* GPBExtensionInternals.h */; };
+		6CEA10C12174B31700E16FBF /* GPBUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10802174B31500E16FBF /* GPBUtilities.h */; };
+		6CEA10C22174B31700E16FBF /* GPBCodedInputStream_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10812174B31500E16FBF /* GPBCodedInputStream_PackagePrivate.h */; };
+		6CEA10C32174B31700E16FBF /* GPBCodedOutputStream.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10822174B31500E16FBF /* GPBCodedOutputStream.h */; };
+		6CEA10C42174B31700E16FBF /* GPBWireFormat.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10832174B31500E16FBF /* GPBWireFormat.h */; };
+		6CEA10C52174B31700E16FBF /* GPBUnknownField.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10842174B31600E16FBF /* GPBUnknownField.m */; };
+		6CEA10C62174B31700E16FBF /* Api.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10852174B31600E16FBF /* Api.pbobjc.h */; };
+		6CEA10C72174B31700E16FBF /* GPBWellKnownTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10862174B31600E16FBF /* GPBWellKnownTypes.h */; };
+		6CEA10C82174B31700E16FBF /* SourceContext.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10872174B31600E16FBF /* SourceContext.pbobjc.m */; };
+		6CEA10CA2174B31700E16FBF /* Empty.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10892174B31600E16FBF /* Empty.pbobjc.m */; };
+		6CEA10CB2174B31700E16FBF /* GPBCodedInputStream.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA108A2174B31600E16FBF /* GPBCodedInputStream.h */; };
+		6CEA10CC2174B31700E16FBF /* GPBUnknownFieldSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA108B2174B31600E16FBF /* GPBUnknownFieldSet.m */; };
+		6CEA10CD2174B31700E16FBF /* Duration.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA108C2174B31600E16FBF /* Duration.pbobjc.h */; };
+		6CEA10CE2174B31700E16FBF /* GPBCodedOutputStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA108D2174B31600E16FBF /* GPBCodedOutputStream.m */; };
+		6CEA10CF2174B31700E16FBF /* GPBExtensionRegistry.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA108E2174B31600E16FBF /* GPBExtensionRegistry.m */; };
+		6CEA10D02174B31700E16FBF /* GPBRootObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA108F2174B31600E16FBF /* GPBRootObject.m */; };
+		6CEA10D22174B31700E16FBF /* GPBDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10912174B31600E16FBF /* GPBDescriptor.m */; };
+		6CEA10D32174B31700E16FBF /* GPBProtocolBuffers_RuntimeSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10922174B31600E16FBF /* GPBProtocolBuffers_RuntimeSupport.h */; };
+		6CEA10D42174B31700E16FBF /* GPBMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10932174B31600E16FBF /* GPBMessage.m */; };
+		6CEA10D52174B31700E16FBF /* GPBCodedOutputStream_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10942174B31600E16FBF /* GPBCodedOutputStream_PackagePrivate.h */; };
+		6CEA10D62174B31700E16FBF /* GPBBootstrap.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10952174B31700E16FBF /* GPBBootstrap.h */; };
+		6CEA10D92174B62600E16FBF /* ExerciseRrSamples.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10D72174B62500E16FBF /* ExerciseRrSamples.pbobjc.m */; };
+		6CEA10DA2174B62600E16FBF /* ExerciseRrSamples.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10D82174B62500E16FBF /* ExerciseRrSamples.pbobjc.h */; };
+		6CEA10DF2175AA5B00E16FBF /* BlePsFtpUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD381CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift */; };
+		6CEA10E02175AA5B00E16FBF /* BlePsFtpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD391CE5BCEA00A4C6A8 /* BlePsFtpClient.swift */; };
+		6CEA10E721786B0000E16FBF /* Type.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10E321786B0000E16FBF /* Type.pbobjc.h */; };
+		6CEA10E821786B0000E16FBF /* Timestamp.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10E421786B0000E16FBF /* Timestamp.pbobjc.h */; };
+		6CEA10E921786B0000E16FBF /* Type.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10E521786B0000E16FBF /* Type.pbobjc.m */; };
+		6CEA10EA21786B0000E16FBF /* Timestamp.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10E621786B0000E16FBF /* Timestamp.pbobjc.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		6C1079261D6D6EA000931948 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6C34DE7F1CAA3F240083EB1F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6C34DE871CAA3F240083EB1F;
+			remoteInfo = iOSCommunications;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		6C0C543E1CFC749E00FF23E9 /* iOSCommunications.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iOSCommunications.h; sourceTree = "<group>"; };
+		6C0C54FD1CFEB3C900FF23E9 /* TimeUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TimeUtility.swift; path = ble/common/TimeUtility.swift; sourceTree = "<group>"; };
+		6C1079201D6D6EA000931948 /* iOSCommunicationsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iOSCommunicationsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		6C1079221D6D6EA000931948 /* iOSCommunicationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSCommunicationsTests.swift; sourceTree = "<group>"; };
+		6C1079241D6D6EA000931948 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		6C24093022142DE6001C1A84 /* RxAtomic.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxAtomic.framework; path = Carthage/Build/iOS/RxAtomic.framework; sourceTree = "<group>"; };
+		6C24093122142DE6001C1A84 /* RxSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxSwift.framework; path = Carthage/Build/iOS/RxSwift.framework; sourceTree = "<group>"; };
+		6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CBScanningProtocol.swift; path = ble/endpoints/corebluetooth/central/CBScanningProtocol.swift; sourceTree = "<group>"; };
+		6C34DE881CAA3F240083EB1F /* iOSCommunications.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = iOSCommunications.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6C34DE8D1CAA3F240083EB1F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		6C39E8C3209B0754001F7E44 /* PolarBleSdkWatchOs.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PolarBleSdkWatchOs.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6C39E8C5209B0755001F7E44 /* PolarBleSdkWatchOs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PolarBleSdkWatchOs.h; sourceTree = "<group>"; };
+		6C39E8C6209B0755001F7E44 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		6C39E8FE209B08F0001F7E44 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS4.3.sdk/System/Library/Frameworks/CoreBluetooth.framework; sourceTree = DEVELOPER_DIR; };
+		6C4A6A251CC0BA0400E3AD73 /* BleAdvertisementContent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleAdvertisementContent.swift; path = ble/api/model/advertisement/BleAdvertisementContent.swift; sourceTree = "<group>"; };
+		6C4A6A261CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePolarHrAdvertisement.swift; path = ble/api/model/advertisement/BlePolarHrAdvertisement.swift; sourceTree = "<group>"; };
+		6C4A6A271CC0BA0400E3AD73 /* BleRssiFilter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleRssiFilter.swift; path = ble/api/model/advertisement/BleRssiFilter.swift; sourceTree = "<group>"; };
+		6C4A6A2E1CC0BA2400E3AD73 /* BlePfcClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePfcClient.swift; path = ble/api/model/gatt/client/BlePfcClient.swift; sourceTree = "<group>"; };
+		6C4A6A351CC0BA4E00E3AD73 /* BleLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleLogger.swift; path = ble/api/BleLogger.swift; sourceTree = "<group>"; };
+		6C56422F21F1FF7A00F9BDA9 /* PolarSensorSetting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PolarSensorSetting.swift; path = sdk/api/model/PolarSensorSetting.swift; sourceTree = "<group>"; };
+		6C57A5B31F987B40002E50DB /* BleRscClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BleRscClient.swift; path = ble/api/model/gatt/client/BleRscClient.swift; sourceTree = "<group>"; };
+		6C5A448D1CB291260006220D /* BleDeviceListener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleDeviceListener.swift; path = ble/api/BleDeviceListener.swift; sourceTree = "<group>"; };
+		6C5A44941CB291500006220D /* BleGattClientBase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleGattClientBase.swift; path = ble/api/model/gatt/BleGattClientBase.swift; sourceTree = "<group>"; };
+		6C5A44951CB291500006220D /* BleGattClientFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleGattClientFactory.swift; path = ble/api/model/gatt/BleGattClientFactory.swift; sourceTree = "<group>"; };
+		6C5A44961CB291500006220D /* BleAttributeTransportProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleAttributeTransportProtocol.swift; path = ble/api/model/gatt/BleAttributeTransportProtocol.swift; sourceTree = "<group>"; };
+		6C5A449E1CB291790006220D /* AtomicBoolean.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AtomicBoolean.swift; path = ble/common/AtomicBoolean.swift; sourceTree = "<group>"; };
+		6C5A449F1CB291790006220D /* AtomicInteger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AtomicInteger.swift; path = ble/common/AtomicInteger.swift; sourceTree = "<group>"; };
+		6C5A44A01CB291790006220D /* AtomicList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AtomicList.swift; path = ble/common/AtomicList.swift; sourceTree = "<group>"; };
+		6C5A44A91CB291A40006220D /* CBDeviceListenerImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CBDeviceListenerImpl.swift; path = ble/endpoints/corebluetooth/central/CBDeviceListenerImpl.swift; sourceTree = "<group>"; };
+		6C5A44AA1CB291A40006220D /* CBDeviceSessionImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CBDeviceSessionImpl.swift; path = ble/endpoints/corebluetooth/central/CBDeviceSessionImpl.swift; sourceTree = "<group>"; };
+		6C5A44BA1CB37F060006220D /* BleDeviceSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleDeviceSession.swift; path = ble/api/model/BleDeviceSession.swift; sourceTree = "<group>"; };
+		6C67C7F71E153A6400411498 /* MultipeerConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultipeerConnectivity.framework; path = System/Library/Frameworks/MultipeerConnectivity.framework; sourceTree = SDKROOT; };
+		6C67C7FC1E169CCE00411498 /* BleBasClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleBasClient.swift; path = ble/api/model/gatt/client/BleBasClient.swift; sourceTree = "<group>"; };
+		6C67C7FD1E169CCE00411498 /* BleDisClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleDisClient.swift; path = ble/api/model/gatt/client/BleDisClient.swift; sourceTree = "<group>"; };
+		6C67C7FE1E169CCE00411498 /* BleHrClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleHrClient.swift; path = ble/api/model/gatt/client/BleHrClient.swift; sourceTree = "<group>"; };
+		6C7709F72036D15F00F3D51D /* RxObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RxObserver.swift; path = ble/common/RxObserver.swift; sourceTree = "<group>"; };
+		6C770AC42063B5EB00F3D51D /* PolarBleApi.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PolarBleApi.swift; path = sdk/api/PolarBleApi.swift; sourceTree = "<group>"; };
+		6C770AC52063B5EB00F3D51D /* PolarBleApiDefaultImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PolarBleApiDefaultImpl.swift; path = sdk/api/PolarBleApiDefaultImpl.swift; sourceTree = "<group>"; };
+		6C770AC62063B5EB00F3D51D /* PolarBleApiObservers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PolarBleApiObservers.swift; path = sdk/api/PolarBleApiObservers.swift; sourceTree = "<group>"; };
+		6C770AD42063B60D00F3D51D /* PolarErrors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PolarErrors.swift; path = sdk/api/errors/PolarErrors.swift; sourceTree = "<group>"; };
+		6C770AD62063B61700F3D51D /* PolarBleApiImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PolarBleApiImpl.swift; path = sdk/impl/PolarBleApiImpl.swift; sourceTree = "<group>"; };
+		6C770B6C206B779900F3D51D /* PolarBleSdk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PolarBleSdk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6C770B6E206B779A00F3D51D /* PolarBleSdk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PolarBleSdk.h; sourceTree = "<group>"; };
+		6C770B6F206B779A00F3D51D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		6C8BCD381CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePsFtpUtility.swift; path = ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift; sourceTree = "<group>"; };
+		6C8BCD391CE5BCEA00A4C6A8 /* BlePsFtpClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePsFtpClient.swift; path = ble/api/model/gatt/client/psftp/BlePsFtpClient.swift; sourceTree = "<group>"; };
+		6C8BCD421CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePolarDeviceIdUtility.swift; path = ble/api/model/polar/BlePolarDeviceIdUtility.swift; sourceTree = "<group>"; };
+		6C9209061D93B2DC0035B928 /* CBScanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CBScanner.swift; path = ble/endpoints/corebluetooth/central/CBScanner.swift; sourceTree = "<group>"; };
+		6C9810392154AEDD002820A2 /* AtomicType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AtomicType.swift; path = ble/common/AtomicType.swift; sourceTree = "<group>"; };
+		6C98103F2158A943002820A2 /* RecursiveCondition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecursiveCondition.swift; path = ble/common/RecursiveCondition.swift; sourceTree = "<group>"; };
+		6C98104421622D52002820A2 /* BlePmdClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BlePmdClient.swift; path = ble/api/model/gatt/client/BlePmdClient.swift; sourceTree = "<group>"; };
+		6CB902761D9B7F65001F1C9C /* BleH7SettingsClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleH7SettingsClient.swift; path = ble/api/model/gatt/client/BleH7SettingsClient.swift; sourceTree = "<group>"; };
+		6CB9DB982087188E00505269 /* RxUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RxUtils.swift; path = ble/common/RxUtils.swift; sourceTree = "<group>"; };
+		6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePsdClient.swift; path = ble/api/model/gatt/client/BlePsdClient.swift; sourceTree = "<group>"; };
+		6CD12AC9201F126500F3A417 /* BleGattException.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleGattException.swift; path = ble/api/model/gatt/exceptions/BleGattException.swift; sourceTree = "<group>"; };
+		6CD49C7E1CABA2EC000D8660 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
+		6CEA0FAF2174B17700E16FBF /* PftpNotification.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PftpNotification.pbobjc.m; path = sdk/impl/protobuf/PftpNotification.pbobjc.m; sourceTree = "<group>"; };
+		6CEA0FB02174B17700E16FBF /* PftpResponse.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PftpResponse.pbobjc.m; path = sdk/impl/protobuf/PftpResponse.pbobjc.m; sourceTree = "<group>"; };
+		6CEA0FB12174B17700E16FBF /* Types.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Types.pbobjc.h; path = sdk/impl/protobuf/Types.pbobjc.h; sourceTree = "<group>"; };
+		6CEA0FB22174B17700E16FBF /* ExerciseSamples.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ExerciseSamples.pbobjc.h; path = sdk/impl/protobuf/ExerciseSamples.pbobjc.h; sourceTree = "<group>"; };
+		6CEA0FB32174B17700E16FBF /* Structures.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Structures.pbobjc.m; path = sdk/impl/protobuf/Structures.pbobjc.m; sourceTree = "<group>"; };
+		6CEA0FB52174B17700E16FBF /* Nanopb.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Nanopb.pbobjc.m; path = sdk/impl/protobuf/Nanopb.pbobjc.m; sourceTree = "<group>"; };
+		6CEA0FB62174B17700E16FBF /* PftpError.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PftpError.pbobjc.m; path = sdk/impl/protobuf/PftpError.pbobjc.m; sourceTree = "<group>"; };
+		6CEA0FB72174B17700E16FBF /* PftpNotification.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PftpNotification.pbobjc.h; path = sdk/impl/protobuf/PftpNotification.pbobjc.h; sourceTree = "<group>"; };
+		6CEA0FB82174B17700E16FBF /* PftpRequest.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PftpRequest.pbobjc.h; path = sdk/impl/protobuf/PftpRequest.pbobjc.h; sourceTree = "<group>"; };
+		6CEA0FB92174B17700E16FBF /* Nanopb.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Nanopb.pbobjc.h; path = sdk/impl/protobuf/Nanopb.pbobjc.h; sourceTree = "<group>"; };
+		6CEA0FBA2174B17700E16FBF /* Structures.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Structures.pbobjc.h; path = sdk/impl/protobuf/Structures.pbobjc.h; sourceTree = "<group>"; };
+		6CEA0FBB2174B17700E16FBF /* PftpError.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PftpError.pbobjc.h; path = sdk/impl/protobuf/PftpError.pbobjc.h; sourceTree = "<group>"; };
+		6CEA0FBC2174B17700E16FBF /* PftpRequest.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PftpRequest.pbobjc.m; path = sdk/impl/protobuf/PftpRequest.pbobjc.m; sourceTree = "<group>"; };
+		6CEA0FBD2174B17700E16FBF /* ExerciseSamples.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ExerciseSamples.pbobjc.m; path = sdk/impl/protobuf/ExerciseSamples.pbobjc.m; sourceTree = "<group>"; };
+		6CEA0FBE2174B17700E16FBF /* PftpResponse.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PftpResponse.pbobjc.h; path = sdk/impl/protobuf/PftpResponse.pbobjc.h; sourceTree = "<group>"; };
+		6CEA0FBF2174B17700E16FBF /* Types.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Types.pbobjc.m; path = sdk/impl/protobuf/Types.pbobjc.m; sourceTree = "<group>"; };
+		6CEA0FD02174B1A000E16FBF /* PolarProtobuf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PolarProtobuf.h; path = sdk/impl/protobuf/PolarProtobuf.h; sourceTree = "<group>"; };
+		6CEA10552174B31200E16FBF /* GPBDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBDictionary.h; path = sdk/impl/protobuf/google/GPBDictionary.h; sourceTree = "<group>"; };
+		6CEA10562174B31300E16FBF /* GPBProtocolBuffers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBProtocolBuffers.h; path = sdk/impl/protobuf/google/GPBProtocolBuffers.h; sourceTree = "<group>"; };
+		6CEA10572174B31300E16FBF /* FieldMask.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FieldMask.pbobjc.h; path = sdk/impl/protobuf/google/FieldMask.pbobjc.h; sourceTree = "<group>"; };
+		6CEA10582174B31300E16FBF /* GPBUnknownField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBUnknownField.h; path = sdk/impl/protobuf/google/GPBUnknownField.h; sourceTree = "<group>"; };
+		6CEA10592174B31300E16FBF /* GPBUnknownField_PackagePrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBUnknownField_PackagePrivate.h; path = sdk/impl/protobuf/google/GPBUnknownField_PackagePrivate.h; sourceTree = "<group>"; };
+		6CEA105A2174B31300E16FBF /* GPBCodedInputStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPBCodedInputStream.m; path = sdk/impl/protobuf/google/GPBCodedInputStream.m; sourceTree = "<group>"; };
+		6CEA105B2174B31300E16FBF /* GPBRuntimeTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBRuntimeTypes.h; path = sdk/impl/protobuf/google/GPBRuntimeTypes.h; sourceTree = "<group>"; };
+		6CEA105C2174B31300E16FBF /* FieldMask.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FieldMask.pbobjc.m; path = sdk/impl/protobuf/google/FieldMask.pbobjc.m; sourceTree = "<group>"; };
+		6CEA105D2174B31300E16FBF /* Struct.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Struct.pbobjc.h; path = sdk/impl/protobuf/google/Struct.pbobjc.h; sourceTree = "<group>"; };
+		6CEA105E2174B31300E16FBF /* Struct.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Struct.pbobjc.m; path = sdk/impl/protobuf/google/Struct.pbobjc.m; sourceTree = "<group>"; };
+		6CEA105F2174B31300E16FBF /* GPBMessage_PackagePrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBMessage_PackagePrivate.h; path = sdk/impl/protobuf/google/GPBMessage_PackagePrivate.h; sourceTree = "<group>"; };
+		6CEA10612174B31300E16FBF /* GPBArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBArray.h; path = sdk/impl/protobuf/google/GPBArray.h; sourceTree = "<group>"; };
+		6CEA10622174B31300E16FBF /* GPBRootObject_PackagePrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBRootObject_PackagePrivate.h; path = sdk/impl/protobuf/google/GPBRootObject_PackagePrivate.h; sourceTree = "<group>"; };
+		6CEA10632174B31300E16FBF /* Duration.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Duration.pbobjc.m; path = sdk/impl/protobuf/google/Duration.pbobjc.m; sourceTree = "<group>"; };
+		6CEA10642174B31300E16FBF /* GPBMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBMessage.h; path = sdk/impl/protobuf/google/GPBMessage.h; sourceTree = "<group>"; };
+		6CEA10652174B31300E16FBF /* GPBWireFormat.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPBWireFormat.m; path = sdk/impl/protobuf/google/GPBWireFormat.m; sourceTree = "<group>"; };
+		6CEA10672174B31300E16FBF /* Wrappers.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Wrappers.pbobjc.m; path = sdk/impl/protobuf/google/Wrappers.pbobjc.m; sourceTree = "<group>"; };
+		6CEA10682174B31300E16FBF /* GPBUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPBUtilities.m; path = sdk/impl/protobuf/google/GPBUtilities.m; sourceTree = "<group>"; };
+		6CEA10692174B31400E16FBF /* GPBWellKnownTypes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPBWellKnownTypes.m; path = sdk/impl/protobuf/google/GPBWellKnownTypes.m; sourceTree = "<group>"; };
+		6CEA106A2174B31400E16FBF /* GPBUnknownFieldSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBUnknownFieldSet.h; path = sdk/impl/protobuf/google/GPBUnknownFieldSet.h; sourceTree = "<group>"; };
+		6CEA106B2174B31400E16FBF /* Api.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Api.pbobjc.m; path = sdk/impl/protobuf/google/Api.pbobjc.m; sourceTree = "<group>"; };
+		6CEA106C2174B31400E16FBF /* GPBUnknownFieldSet_PackagePrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBUnknownFieldSet_PackagePrivate.h; path = sdk/impl/protobuf/google/GPBUnknownFieldSet_PackagePrivate.h; sourceTree = "<group>"; };
+		6CEA106D2174B31400E16FBF /* SourceContext.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SourceContext.pbobjc.h; path = sdk/impl/protobuf/google/SourceContext.pbobjc.h; sourceTree = "<group>"; };
+		6CEA106E2174B31400E16FBF /* GPBDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBDescriptor.h; path = sdk/impl/protobuf/google/GPBDescriptor.h; sourceTree = "<group>"; };
+		6CEA106F2174B31400E16FBF /* Any.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Any.pbobjc.m; path = sdk/impl/protobuf/google/Any.pbobjc.m; sourceTree = "<group>"; };
+		6CEA10702174B31400E16FBF /* GPBArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPBArray.m; path = sdk/impl/protobuf/google/GPBArray.m; sourceTree = "<group>"; };
+		6CEA10712174B31400E16FBF /* GPBDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPBDictionary.m; path = sdk/impl/protobuf/google/GPBDictionary.m; sourceTree = "<group>"; };
+		6CEA10722174B31400E16FBF /* Descriptor.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Descriptor.pbobjc.m; path = sdk/impl/protobuf/google/Descriptor.pbobjc.m; sourceTree = "<group>"; };
+		6CEA10732174B31400E16FBF /* Wrappers.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Wrappers.pbobjc.h; path = sdk/impl/protobuf/google/Wrappers.pbobjc.h; sourceTree = "<group>"; };
+		6CEA10742174B31400E16FBF /* GPBUtilities_PackagePrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBUtilities_PackagePrivate.h; path = sdk/impl/protobuf/google/GPBUtilities_PackagePrivate.h; sourceTree = "<group>"; };
+		6CEA10752174B31400E16FBF /* GPBRootObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBRootObject.h; path = sdk/impl/protobuf/google/GPBRootObject.h; sourceTree = "<group>"; };
+		6CEA10762174B31400E16FBF /* GPBExtensionRegistry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBExtensionRegistry.h; path = sdk/impl/protobuf/google/GPBExtensionRegistry.h; sourceTree = "<group>"; };
+		6CEA10772174B31400E16FBF /* GPBArray_PackagePrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBArray_PackagePrivate.h; path = sdk/impl/protobuf/google/GPBArray_PackagePrivate.h; sourceTree = "<group>"; };
+		6CEA10782174B31400E16FBF /* GPBDictionary_PackagePrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBDictionary_PackagePrivate.h; path = sdk/impl/protobuf/google/GPBDictionary_PackagePrivate.h; sourceTree = "<group>"; };
+		6CEA10792174B31500E16FBF /* Any.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Any.pbobjc.h; path = sdk/impl/protobuf/google/Any.pbobjc.h; sourceTree = "<group>"; };
+		6CEA107B2174B31500E16FBF /* Empty.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Empty.pbobjc.h; path = sdk/impl/protobuf/google/Empty.pbobjc.h; sourceTree = "<group>"; };
+		6CEA107C2174B31500E16FBF /* GPBDescriptor_PackagePrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBDescriptor_PackagePrivate.h; path = sdk/impl/protobuf/google/GPBDescriptor_PackagePrivate.h; sourceTree = "<group>"; };
+		6CEA107D2174B31500E16FBF /* Descriptor.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Descriptor.pbobjc.h; path = sdk/impl/protobuf/google/Descriptor.pbobjc.h; sourceTree = "<group>"; };
+		6CEA107E2174B31500E16FBF /* GPBExtensionInternals.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPBExtensionInternals.m; path = sdk/impl/protobuf/google/GPBExtensionInternals.m; sourceTree = "<group>"; };
+		6CEA107F2174B31500E16FBF /* GPBExtensionInternals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBExtensionInternals.h; path = sdk/impl/protobuf/google/GPBExtensionInternals.h; sourceTree = "<group>"; };
+		6CEA10802174B31500E16FBF /* GPBUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBUtilities.h; path = sdk/impl/protobuf/google/GPBUtilities.h; sourceTree = "<group>"; };
+		6CEA10812174B31500E16FBF /* GPBCodedInputStream_PackagePrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBCodedInputStream_PackagePrivate.h; path = sdk/impl/protobuf/google/GPBCodedInputStream_PackagePrivate.h; sourceTree = "<group>"; };
+		6CEA10822174B31500E16FBF /* GPBCodedOutputStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBCodedOutputStream.h; path = sdk/impl/protobuf/google/GPBCodedOutputStream.h; sourceTree = "<group>"; };
+		6CEA10832174B31500E16FBF /* GPBWireFormat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBWireFormat.h; path = sdk/impl/protobuf/google/GPBWireFormat.h; sourceTree = "<group>"; };
+		6CEA10842174B31600E16FBF /* GPBUnknownField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPBUnknownField.m; path = sdk/impl/protobuf/google/GPBUnknownField.m; sourceTree = "<group>"; };
+		6CEA10852174B31600E16FBF /* Api.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Api.pbobjc.h; path = sdk/impl/protobuf/google/Api.pbobjc.h; sourceTree = "<group>"; };
+		6CEA10862174B31600E16FBF /* GPBWellKnownTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBWellKnownTypes.h; path = sdk/impl/protobuf/google/GPBWellKnownTypes.h; sourceTree = "<group>"; };
+		6CEA10872174B31600E16FBF /* SourceContext.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SourceContext.pbobjc.m; path = sdk/impl/protobuf/google/SourceContext.pbobjc.m; sourceTree = "<group>"; };
+		6CEA10892174B31600E16FBF /* Empty.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Empty.pbobjc.m; path = sdk/impl/protobuf/google/Empty.pbobjc.m; sourceTree = "<group>"; };
+		6CEA108A2174B31600E16FBF /* GPBCodedInputStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBCodedInputStream.h; path = sdk/impl/protobuf/google/GPBCodedInputStream.h; sourceTree = "<group>"; };
+		6CEA108B2174B31600E16FBF /* GPBUnknownFieldSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPBUnknownFieldSet.m; path = sdk/impl/protobuf/google/GPBUnknownFieldSet.m; sourceTree = "<group>"; };
+		6CEA108C2174B31600E16FBF /* Duration.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Duration.pbobjc.h; path = sdk/impl/protobuf/google/Duration.pbobjc.h; sourceTree = "<group>"; };
+		6CEA108D2174B31600E16FBF /* GPBCodedOutputStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPBCodedOutputStream.m; path = sdk/impl/protobuf/google/GPBCodedOutputStream.m; sourceTree = "<group>"; };
+		6CEA108E2174B31600E16FBF /* GPBExtensionRegistry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPBExtensionRegistry.m; path = sdk/impl/protobuf/google/GPBExtensionRegistry.m; sourceTree = "<group>"; };
+		6CEA108F2174B31600E16FBF /* GPBRootObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPBRootObject.m; path = sdk/impl/protobuf/google/GPBRootObject.m; sourceTree = "<group>"; };
+		6CEA10912174B31600E16FBF /* GPBDescriptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPBDescriptor.m; path = sdk/impl/protobuf/google/GPBDescriptor.m; sourceTree = "<group>"; };
+		6CEA10922174B31600E16FBF /* GPBProtocolBuffers_RuntimeSupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBProtocolBuffers_RuntimeSupport.h; path = sdk/impl/protobuf/google/GPBProtocolBuffers_RuntimeSupport.h; sourceTree = "<group>"; };
+		6CEA10932174B31600E16FBF /* GPBMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPBMessage.m; path = sdk/impl/protobuf/google/GPBMessage.m; sourceTree = "<group>"; };
+		6CEA10942174B31600E16FBF /* GPBCodedOutputStream_PackagePrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBCodedOutputStream_PackagePrivate.h; path = sdk/impl/protobuf/google/GPBCodedOutputStream_PackagePrivate.h; sourceTree = "<group>"; };
+		6CEA10952174B31700E16FBF /* GPBBootstrap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPBBootstrap.h; path = sdk/impl/protobuf/google/GPBBootstrap.h; sourceTree = "<group>"; };
+		6CEA10D72174B62500E16FBF /* ExerciseRrSamples.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ExerciseRrSamples.pbobjc.m; path = sdk/impl/protobuf/ExerciseRrSamples.pbobjc.m; sourceTree = "<group>"; };
+		6CEA10D82174B62500E16FBF /* ExerciseRrSamples.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ExerciseRrSamples.pbobjc.h; path = sdk/impl/protobuf/ExerciseRrSamples.pbobjc.h; sourceTree = "<group>"; };
+		6CEA10E321786B0000E16FBF /* Type.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Type.pbobjc.h; path = sdk/impl/protobuf/google/Type.pbobjc.h; sourceTree = "<group>"; };
+		6CEA10E421786B0000E16FBF /* Timestamp.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Timestamp.pbobjc.h; path = sdk/impl/protobuf/google/Timestamp.pbobjc.h; sourceTree = "<group>"; };
+		6CEA10E521786B0000E16FBF /* Type.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Type.pbobjc.m; path = sdk/impl/protobuf/google/Type.pbobjc.m; sourceTree = "<group>"; };
+		6CEA10E621786B0000E16FBF /* Timestamp.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Timestamp.pbobjc.m; path = sdk/impl/protobuf/google/Timestamp.pbobjc.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		6C10791D1D6D6EA000931948 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C10792D1D6D9C4800931948 /* iOSCommunications.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C34DE841CAA3F240083EB1F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C24093222142DE6001C1A84 /* RxAtomic.framework in Frameworks */,
+				6C24093322142DE6001C1A84 /* RxSwift.framework in Frameworks */,
+				6CD49C7F1CABA2EC000D8660 /* CoreBluetooth.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C39E8BF209B0754001F7E44 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C39E8FF209B08F0001F7E44 /* CoreBluetooth.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C770B68206B779900F3D51D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C24093422142DF6001C1A84 /* RxSwift.framework in Frameworks */,
+				6C770BA9206B784300F3D51D /* CoreBluetooth.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		6C1079211D6D6EA000931948 /* iOSCommunicationsTests */ = {
+			isa = PBXGroup;
+			children = (
+				6C1079221D6D6EA000931948 /* iOSCommunicationsTests.swift */,
+				6C1079241D6D6EA000931948 /* Info.plist */,
+			);
+			path = iOSCommunicationsTests;
+			sourceTree = "<group>";
+		};
+		6C34DE7E1CAA3F240083EB1F = {
+			isa = PBXGroup;
+			children = (
+				6C34DE8A1CAA3F240083EB1F /* iOSCommunications */,
+				6C1079211D6D6EA000931948 /* iOSCommunicationsTests */,
+				6C770B6D206B779A00F3D51D /* PolarBleSdk */,
+				6C39E8C4209B0755001F7E44 /* PolarBleSdkWatchOs */,
+				6C34DE891CAA3F240083EB1F /* Products */,
+				6C64AB1C1D8ABF980074340A /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		6C34DE891CAA3F240083EB1F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6C34DE881CAA3F240083EB1F /* iOSCommunications.framework */,
+				6C1079201D6D6EA000931948 /* iOSCommunicationsTests.xctest */,
+				6C770B6C206B779900F3D51D /* PolarBleSdk.framework */,
+				6C39E8C3209B0754001F7E44 /* PolarBleSdkWatchOs.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6C34DE8A1CAA3F240083EB1F /* iOSCommunications */ = {
+			isa = PBXGroup;
+			children = (
+				6C770ABD2063B5B300F3D51D /* sdk */,
+				6C5A44891CB291030006220D /* ble */,
+				6C0C543E1CFC749E00FF23E9 /* iOSCommunications.h */,
+				6C34DE8D1CAA3F240083EB1F /* Info.plist */,
+			);
+			path = iOSCommunications;
+			sourceTree = "<group>";
+		};
+		6C39E8C4209B0755001F7E44 /* PolarBleSdkWatchOs */ = {
+			isa = PBXGroup;
+			children = (
+				6C39E8C5209B0755001F7E44 /* PolarBleSdkWatchOs.h */,
+				6C39E8C6209B0755001F7E44 /* Info.plist */,
+			);
+			path = PolarBleSdkWatchOs;
+			sourceTree = "<group>";
+		};
+		6C5A44891CB291030006220D /* ble */ = {
+			isa = PBXGroup;
+			children = (
+				6C5A448C1CB291160006220D /* endpoints */,
+				6C5A448B1CB291110006220D /* api */,
+				6C5A448A1CB291090006220D /* common */,
+			);
+			name = ble;
+			sourceTree = "<group>";
+		};
+		6C5A448A1CB291090006220D /* common */ = {
+			isa = PBXGroup;
+			children = (
+				6C9810392154AEDD002820A2 /* AtomicType.swift */,
+				6C5A449E1CB291790006220D /* AtomicBoolean.swift */,
+				6C5A449F1CB291790006220D /* AtomicInteger.swift */,
+				6C5A44A01CB291790006220D /* AtomicList.swift */,
+				6C0C54FD1CFEB3C900FF23E9 /* TimeUtility.swift */,
+				6C7709F72036D15F00F3D51D /* RxObserver.swift */,
+				6CB9DB982087188E00505269 /* RxUtils.swift */,
+				6C98103F2158A943002820A2 /* RecursiveCondition.swift */,
+			);
+			name = common;
+			sourceTree = "<group>";
+		};
+		6C5A448B1CB291110006220D /* api */ = {
+			isa = PBXGroup;
+			children = (
+				6C5A44911CB2912D0006220D /* model */,
+				6C4A6A351CC0BA4E00E3AD73 /* BleLogger.swift */,
+				6C5A448D1CB291260006220D /* BleDeviceListener.swift */,
+			);
+			name = api;
+			sourceTree = "<group>";
+		};
+		6C5A448C1CB291160006220D /* endpoints */ = {
+			isa = PBXGroup;
+			children = (
+				6C5A44A61CB2918D0006220D /* corebluetooth */,
+			);
+			name = endpoints;
+			sourceTree = "<group>";
+		};
+		6C5A44911CB2912D0006220D /* model */ = {
+			isa = PBXGroup;
+			children = (
+				6C5A44BA1CB37F060006220D /* BleDeviceSession.swift */,
+				6C8BCD411CE5D60100A4C6A8 /* polar */,
+				6C5A46C11CB4F0E80006220D /* advertisement */,
+				6C5A44921CB291340006220D /* gatt */,
+			);
+			name = model;
+			sourceTree = "<group>";
+		};
+		6C5A44921CB291340006220D /* gatt */ = {
+			isa = PBXGroup;
+			children = (
+				6CD12AC8201F11F700F3A417 /* exceptions */,
+				6C5A449B1CB2915A0006220D /* service */,
+				6C5A449A1CB291530006220D /* client */,
+				6C5A44941CB291500006220D /* BleGattClientBase.swift */,
+				6C5A44951CB291500006220D /* BleGattClientFactory.swift */,
+				6C5A44961CB291500006220D /* BleAttributeTransportProtocol.swift */,
+			);
+			name = gatt;
+			sourceTree = "<group>";
+		};
+		6C5A449A1CB291530006220D /* client */ = {
+			isa = PBXGroup;
+			children = (
+				6C8BCD351CE5BC8100A4C6A8 /* psftp */,
+				6C67C7FC1E169CCE00411498 /* BleBasClient.swift */,
+				6C67C7FD1E169CCE00411498 /* BleDisClient.swift */,
+				6C67C7FE1E169CCE00411498 /* BleHrClient.swift */,
+				6C4A6A2E1CC0BA2400E3AD73 /* BlePfcClient.swift */,
+				6CB902761D9B7F65001F1C9C /* BleH7SettingsClient.swift */,
+				6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */,
+				6C57A5B31F987B40002E50DB /* BleRscClient.swift */,
+				6C98104421622D52002820A2 /* BlePmdClient.swift */,
+			);
+			name = client;
+			sourceTree = "<group>";
+		};
+		6C5A449B1CB2915A0006220D /* service */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = service;
+			sourceTree = "<group>";
+		};
+		6C5A44A61CB2918D0006220D /* corebluetooth */ = {
+			isa = PBXGroup;
+			children = (
+				6C5A44A71CB291950006220D /* central */,
+			);
+			name = corebluetooth;
+			sourceTree = "<group>";
+		};
+		6C5A44A71CB291950006220D /* central */ = {
+			isa = PBXGroup;
+			children = (
+				6C5A44A91CB291A40006220D /* CBDeviceListenerImpl.swift */,
+				6C5A44AA1CB291A40006220D /* CBDeviceSessionImpl.swift */,
+				6C9209061D93B2DC0035B928 /* CBScanner.swift */,
+				6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */,
+			);
+			name = central;
+			sourceTree = "<group>";
+		};
+		6C5A46C11CB4F0E80006220D /* advertisement */ = {
+			isa = PBXGroup;
+			children = (
+				6C4A6A251CC0BA0400E3AD73 /* BleAdvertisementContent.swift */,
+				6C4A6A261CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift */,
+				6C4A6A271CC0BA0400E3AD73 /* BleRssiFilter.swift */,
+			);
+			name = advertisement;
+			sourceTree = "<group>";
+		};
+		6C64AB1C1D8ABF980074340A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				6C24093022142DE6001C1A84 /* RxAtomic.framework */,
+				6C24093122142DE6001C1A84 /* RxSwift.framework */,
+				6C39E8FE209B08F0001F7E44 /* CoreBluetooth.framework */,
+				6C67C7F71E153A6400411498 /* MultipeerConnectivity.framework */,
+				6CD49C7E1CABA2EC000D8660 /* CoreBluetooth.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		6C770ABD2063B5B300F3D51D /* sdk */ = {
+			isa = PBXGroup;
+			children = (
+				6C770AC32063B5D700F3D51D /* impl */,
+				6C770AC22063B5D100F3D51D /* api */,
+			);
+			name = sdk;
+			sourceTree = "<group>";
+		};
+		6C770AC22063B5D100F3D51D /* api */ = {
+			isa = PBXGroup;
+			children = (
+				6C770ACB2063B5F600F3D51D /* errors */,
+				6C770ACA2063B5F000F3D51D /* model */,
+				6C770AC42063B5EB00F3D51D /* PolarBleApi.swift */,
+				6C770AC52063B5EB00F3D51D /* PolarBleApiDefaultImpl.swift */,
+				6C770AC62063B5EB00F3D51D /* PolarBleApiObservers.swift */,
+			);
+			name = api;
+			sourceTree = "<group>";
+		};
+		6C770AC32063B5D700F3D51D /* impl */ = {
+			isa = PBXGroup;
+			children = (
+				6CEA0FAE2174A4E200E16FBF /* protobuf */,
+				6C770AD62063B61700F3D51D /* PolarBleApiImpl.swift */,
+			);
+			name = impl;
+			sourceTree = "<group>";
+		};
+		6C770ACA2063B5F000F3D51D /* model */ = {
+			isa = PBXGroup;
+			children = (
+				6C56422F21F1FF7A00F9BDA9 /* PolarSensorSetting.swift */,
+			);
+			name = model;
+			sourceTree = "<group>";
+		};
+		6C770ACB2063B5F600F3D51D /* errors */ = {
+			isa = PBXGroup;
+			children = (
+				6C770AD42063B60D00F3D51D /* PolarErrors.swift */,
+			);
+			name = errors;
+			sourceTree = "<group>";
+		};
+		6C770B6D206B779A00F3D51D /* PolarBleSdk */ = {
+			isa = PBXGroup;
+			children = (
+				6C770B6E206B779A00F3D51D /* PolarBleSdk.h */,
+				6C770B6F206B779A00F3D51D /* Info.plist */,
+			);
+			path = PolarBleSdk;
+			sourceTree = "<group>";
+		};
+		6C8BCD351CE5BC8100A4C6A8 /* psftp */ = {
+			isa = PBXGroup;
+			children = (
+				6C8BCD381CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift */,
+				6C8BCD391CE5BCEA00A4C6A8 /* BlePsFtpClient.swift */,
+			);
+			name = psftp;
+			sourceTree = "<group>";
+		};
+		6C8BCD411CE5D60100A4C6A8 /* polar */ = {
+			isa = PBXGroup;
+			children = (
+				6C8BCD421CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift */,
+			);
+			name = polar;
+			sourceTree = "<group>";
+		};
+		6CD12AC8201F11F700F3A417 /* exceptions */ = {
+			isa = PBXGroup;
+			children = (
+				6CD12AC9201F126500F3A417 /* BleGattException.swift */,
+			);
+			name = exceptions;
+			sourceTree = "<group>";
+		};
+		6CEA0FAE2174A4E200E16FBF /* protobuf */ = {
+			isa = PBXGroup;
+			children = (
+				6CEA10D82174B62500E16FBF /* ExerciseRrSamples.pbobjc.h */,
+				6CEA10D72174B62500E16FBF /* ExerciseRrSamples.pbobjc.m */,
+				6CEA0FD22174B26500E16FBF /* google */,
+				6CEA0FB22174B17700E16FBF /* ExerciseSamples.pbobjc.h */,
+				6CEA0FBD2174B17700E16FBF /* ExerciseSamples.pbobjc.m */,
+				6CEA0FB92174B17700E16FBF /* Nanopb.pbobjc.h */,
+				6CEA0FB52174B17700E16FBF /* Nanopb.pbobjc.m */,
+				6CEA0FBB2174B17700E16FBF /* PftpError.pbobjc.h */,
+				6CEA0FB62174B17700E16FBF /* PftpError.pbobjc.m */,
+				6CEA0FB72174B17700E16FBF /* PftpNotification.pbobjc.h */,
+				6CEA0FAF2174B17700E16FBF /* PftpNotification.pbobjc.m */,
+				6CEA0FB82174B17700E16FBF /* PftpRequest.pbobjc.h */,
+				6CEA0FBC2174B17700E16FBF /* PftpRequest.pbobjc.m */,
+				6CEA0FBE2174B17700E16FBF /* PftpResponse.pbobjc.h */,
+				6CEA0FB02174B17700E16FBF /* PftpResponse.pbobjc.m */,
+				6CEA0FBA2174B17700E16FBF /* Structures.pbobjc.h */,
+				6CEA0FB32174B17700E16FBF /* Structures.pbobjc.m */,
+				6CEA0FB12174B17700E16FBF /* Types.pbobjc.h */,
+				6CEA0FBF2174B17700E16FBF /* Types.pbobjc.m */,
+				6CEA0FD02174B1A000E16FBF /* PolarProtobuf.h */,
+			);
+			name = protobuf;
+			sourceTree = "<group>";
+		};
+		6CEA0FD22174B26500E16FBF /* google */ = {
+			isa = PBXGroup;
+			children = (
+				6CEA10E421786B0000E16FBF /* Timestamp.pbobjc.h */,
+				6CEA10E621786B0000E16FBF /* Timestamp.pbobjc.m */,
+				6CEA10E321786B0000E16FBF /* Type.pbobjc.h */,
+				6CEA10E521786B0000E16FBF /* Type.pbobjc.m */,
+				6CEA10792174B31500E16FBF /* Any.pbobjc.h */,
+				6CEA106F2174B31400E16FBF /* Any.pbobjc.m */,
+				6CEA10852174B31600E16FBF /* Api.pbobjc.h */,
+				6CEA106B2174B31400E16FBF /* Api.pbobjc.m */,
+				6CEA107D2174B31500E16FBF /* Descriptor.pbobjc.h */,
+				6CEA10722174B31400E16FBF /* Descriptor.pbobjc.m */,
+				6CEA108C2174B31600E16FBF /* Duration.pbobjc.h */,
+				6CEA10632174B31300E16FBF /* Duration.pbobjc.m */,
+				6CEA107B2174B31500E16FBF /* Empty.pbobjc.h */,
+				6CEA10892174B31600E16FBF /* Empty.pbobjc.m */,
+				6CEA10572174B31300E16FBF /* FieldMask.pbobjc.h */,
+				6CEA105C2174B31300E16FBF /* FieldMask.pbobjc.m */,
+				6CEA10772174B31400E16FBF /* GPBArray_PackagePrivate.h */,
+				6CEA10612174B31300E16FBF /* GPBArray.h */,
+				6CEA10702174B31400E16FBF /* GPBArray.m */,
+				6CEA10952174B31700E16FBF /* GPBBootstrap.h */,
+				6CEA10812174B31500E16FBF /* GPBCodedInputStream_PackagePrivate.h */,
+				6CEA108A2174B31600E16FBF /* GPBCodedInputStream.h */,
+				6CEA105A2174B31300E16FBF /* GPBCodedInputStream.m */,
+				6CEA10942174B31600E16FBF /* GPBCodedOutputStream_PackagePrivate.h */,
+				6CEA10822174B31500E16FBF /* GPBCodedOutputStream.h */,
+				6CEA108D2174B31600E16FBF /* GPBCodedOutputStream.m */,
+				6CEA107C2174B31500E16FBF /* GPBDescriptor_PackagePrivate.h */,
+				6CEA106E2174B31400E16FBF /* GPBDescriptor.h */,
+				6CEA10912174B31600E16FBF /* GPBDescriptor.m */,
+				6CEA10782174B31400E16FBF /* GPBDictionary_PackagePrivate.h */,
+				6CEA10552174B31200E16FBF /* GPBDictionary.h */,
+				6CEA10712174B31400E16FBF /* GPBDictionary.m */,
+				6CEA107F2174B31500E16FBF /* GPBExtensionInternals.h */,
+				6CEA107E2174B31500E16FBF /* GPBExtensionInternals.m */,
+				6CEA10762174B31400E16FBF /* GPBExtensionRegistry.h */,
+				6CEA108E2174B31600E16FBF /* GPBExtensionRegistry.m */,
+				6CEA105F2174B31300E16FBF /* GPBMessage_PackagePrivate.h */,
+				6CEA10642174B31300E16FBF /* GPBMessage.h */,
+				6CEA10932174B31600E16FBF /* GPBMessage.m */,
+				6CEA10922174B31600E16FBF /* GPBProtocolBuffers_RuntimeSupport.h */,
+				6CEA10562174B31300E16FBF /* GPBProtocolBuffers.h */,
+				6CEA10622174B31300E16FBF /* GPBRootObject_PackagePrivate.h */,
+				6CEA10752174B31400E16FBF /* GPBRootObject.h */,
+				6CEA108F2174B31600E16FBF /* GPBRootObject.m */,
+				6CEA105B2174B31300E16FBF /* GPBRuntimeTypes.h */,
+				6CEA10592174B31300E16FBF /* GPBUnknownField_PackagePrivate.h */,
+				6CEA10582174B31300E16FBF /* GPBUnknownField.h */,
+				6CEA10842174B31600E16FBF /* GPBUnknownField.m */,
+				6CEA106C2174B31400E16FBF /* GPBUnknownFieldSet_PackagePrivate.h */,
+				6CEA106A2174B31400E16FBF /* GPBUnknownFieldSet.h */,
+				6CEA108B2174B31600E16FBF /* GPBUnknownFieldSet.m */,
+				6CEA10742174B31400E16FBF /* GPBUtilities_PackagePrivate.h */,
+				6CEA10802174B31500E16FBF /* GPBUtilities.h */,
+				6CEA10682174B31300E16FBF /* GPBUtilities.m */,
+				6CEA10862174B31600E16FBF /* GPBWellKnownTypes.h */,
+				6CEA10692174B31400E16FBF /* GPBWellKnownTypes.m */,
+				6CEA10832174B31500E16FBF /* GPBWireFormat.h */,
+				6CEA10652174B31300E16FBF /* GPBWireFormat.m */,
+				6CEA106D2174B31400E16FBF /* SourceContext.pbobjc.h */,
+				6CEA10872174B31600E16FBF /* SourceContext.pbobjc.m */,
+				6CEA105D2174B31300E16FBF /* Struct.pbobjc.h */,
+				6CEA105E2174B31300E16FBF /* Struct.pbobjc.m */,
+				6CEA10732174B31400E16FBF /* Wrappers.pbobjc.h */,
+				6CEA10672174B31300E16FBF /* Wrappers.pbobjc.m */,
+			);
+			name = google;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		6C34DE851CAA3F240083EB1F /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C0C543F1CFC749E00FF23E9 /* iOSCommunications.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C39E8C0209B0754001F7E44 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C39E8C7209B0755001F7E44 /* PolarBleSdkWatchOs.h in Headers */,
+				6C2409472216A7BA001C1A84 /* ExerciseRrSamples.pbobjc.h in Headers */,
+				6C2409482216A7BA001C1A84 /* Timestamp.pbobjc.h in Headers */,
+				6C2409492216A7BA001C1A84 /* Type.pbobjc.h in Headers */,
+				6C24094A2216A7BA001C1A84 /* Any.pbobjc.h in Headers */,
+				6C24094B2216A7BA001C1A84 /* Api.pbobjc.h in Headers */,
+				6C24094C2216A7BA001C1A84 /* Descriptor.pbobjc.h in Headers */,
+				6C24094D2216A7BA001C1A84 /* Duration.pbobjc.h in Headers */,
+				6C24094E2216A7BA001C1A84 /* Empty.pbobjc.h in Headers */,
+				6C24094F2216A7BA001C1A84 /* FieldMask.pbobjc.h in Headers */,
+				6C2409502216A7BA001C1A84 /* GPBArray_PackagePrivate.h in Headers */,
+				6C2409512216A7BA001C1A84 /* GPBArray.h in Headers */,
+				6C2409522216A7BA001C1A84 /* GPBBootstrap.h in Headers */,
+				6C2409532216A7BA001C1A84 /* GPBCodedInputStream_PackagePrivate.h in Headers */,
+				6C2409542216A7BA001C1A84 /* GPBCodedInputStream.h in Headers */,
+				6C2409552216A7BA001C1A84 /* GPBCodedOutputStream_PackagePrivate.h in Headers */,
+				6C2409562216A7BA001C1A84 /* GPBCodedOutputStream.h in Headers */,
+				6C2409572216A7BA001C1A84 /* GPBDescriptor_PackagePrivate.h in Headers */,
+				6C2409582216A7BA001C1A84 /* GPBDescriptor.h in Headers */,
+				6C2409592216A7BA001C1A84 /* GPBDictionary_PackagePrivate.h in Headers */,
+				6C24095A2216A7BA001C1A84 /* GPBDictionary.h in Headers */,
+				6C24095B2216A7BA001C1A84 /* GPBExtensionInternals.h in Headers */,
+				6C24095C2216A7BA001C1A84 /* GPBExtensionRegistry.h in Headers */,
+				6C24095D2216A7BA001C1A84 /* GPBMessage_PackagePrivate.h in Headers */,
+				6C24095E2216A7BA001C1A84 /* GPBMessage.h in Headers */,
+				6C24095F2216A7BA001C1A84 /* GPBProtocolBuffers_RuntimeSupport.h in Headers */,
+				6C2409602216A7BA001C1A84 /* GPBProtocolBuffers.h in Headers */,
+				6C2409612216A7BA001C1A84 /* GPBRootObject_PackagePrivate.h in Headers */,
+				6C2409622216A7BA001C1A84 /* GPBRootObject.h in Headers */,
+				6C2409632216A7BA001C1A84 /* GPBRuntimeTypes.h in Headers */,
+				6C2409642216A7BA001C1A84 /* GPBUnknownField_PackagePrivate.h in Headers */,
+				6C2409652216A7BA001C1A84 /* GPBUnknownField.h in Headers */,
+				6C2409662216A7BA001C1A84 /* GPBUnknownFieldSet_PackagePrivate.h in Headers */,
+				6C2409672216A7BA001C1A84 /* GPBUnknownFieldSet.h in Headers */,
+				6C2409682216A7BA001C1A84 /* GPBUtilities_PackagePrivate.h in Headers */,
+				6C2409692216A7BA001C1A84 /* GPBUtilities.h in Headers */,
+				6C24096A2216A7BA001C1A84 /* GPBWellKnownTypes.h in Headers */,
+				6C24096B2216A7BA001C1A84 /* GPBWireFormat.h in Headers */,
+				6C24096C2216A7BA001C1A84 /* SourceContext.pbobjc.h in Headers */,
+				6C24096D2216A7BA001C1A84 /* Struct.pbobjc.h in Headers */,
+				6C24096E2216A7BA001C1A84 /* Wrappers.pbobjc.h in Headers */,
+				6C24096F2216A7BA001C1A84 /* ExerciseSamples.pbobjc.h in Headers */,
+				6C2409702216A7BA001C1A84 /* Nanopb.pbobjc.h in Headers */,
+				6C2409712216A7BA001C1A84 /* PftpError.pbobjc.h in Headers */,
+				6C2409722216A7BA001C1A84 /* PftpNotification.pbobjc.h in Headers */,
+				6C2409732216A7BA001C1A84 /* PftpRequest.pbobjc.h in Headers */,
+				6C2409742216A7BA001C1A84 /* PftpResponse.pbobjc.h in Headers */,
+				6C2409752216A7BA001C1A84 /* Structures.pbobjc.h in Headers */,
+				6C2409762216A7BA001C1A84 /* Types.pbobjc.h in Headers */,
+				6C2409772216A7BA001C1A84 /* PolarProtobuf.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C770B69206B779900F3D51D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6CEA10AE2174B31700E16FBF /* SourceContext.pbobjc.h in Headers */,
+				6CEA10D32174B31700E16FBF /* GPBProtocolBuffers_RuntimeSupport.h in Headers */,
+				6CEA10962174B31700E16FBF /* GPBDictionary.h in Headers */,
+				6C770B70206B779A00F3D51D /* PolarBleSdk.h in Headers */,
+				6CEA10B82174B31700E16FBF /* GPBArray_PackagePrivate.h in Headers */,
+				6C4048DF2199BBCE0067433E /* PolarProtobuf.h in Headers */,
+				6CEA10C12174B31700E16FBF /* GPBUtilities.h in Headers */,
+				6CEA10972174B31700E16FBF /* GPBProtocolBuffers.h in Headers */,
+				6CEA10CD2174B31700E16FBF /* Duration.pbobjc.h in Headers */,
+				6CEA10C42174B31700E16FBF /* GPBWireFormat.h in Headers */,
+				6CEA10AD2174B31700E16FBF /* GPBUnknownFieldSet_PackagePrivate.h in Headers */,
+				6CEA0FCA2174B17700E16FBF /* Structures.pbobjc.h in Headers */,
+				6CEA109A2174B31700E16FBF /* GPBUnknownField_PackagePrivate.h in Headers */,
+				6CEA10BA2174B31700E16FBF /* Any.pbobjc.h in Headers */,
+				6CEA10BD2174B31700E16FBF /* GPBDescriptor_PackagePrivate.h in Headers */,
+				6CEA10A02174B31700E16FBF /* GPBMessage_PackagePrivate.h in Headers */,
+				6CEA0FCB2174B17700E16FBF /* PftpError.pbobjc.h in Headers */,
+				6CEA0FC92174B17700E16FBF /* Nanopb.pbobjc.h in Headers */,
+				6CEA10B42174B31700E16FBF /* Wrappers.pbobjc.h in Headers */,
+				6CEA10A52174B31700E16FBF /* GPBMessage.h in Headers */,
+				6CEA10CB2174B31700E16FBF /* GPBCodedInputStream.h in Headers */,
+				6CEA0FC82174B17700E16FBF /* PftpRequest.pbobjc.h in Headers */,
+				6CEA10DA2174B62600E16FBF /* ExerciseRrSamples.pbobjc.h in Headers */,
+				6CEA10BC2174B31700E16FBF /* Empty.pbobjc.h in Headers */,
+				6CEA10B92174B31700E16FBF /* GPBDictionary_PackagePrivate.h in Headers */,
+				6CEA109E2174B31700E16FBF /* Struct.pbobjc.h in Headers */,
+				6CEA0FC22174B17700E16FBF /* Types.pbobjc.h in Headers */,
+				6CEA10BE2174B31700E16FBF /* Descriptor.pbobjc.h in Headers */,
+				6CEA10C02174B31700E16FBF /* GPBExtensionInternals.h in Headers */,
+				6CEA10C32174B31700E16FBF /* GPBCodedOutputStream.h in Headers */,
+				6CEA10992174B31700E16FBF /* GPBUnknownField.h in Headers */,
+				6CEA10C22174B31700E16FBF /* GPBCodedInputStream_PackagePrivate.h in Headers */,
+				6CEA10C72174B31700E16FBF /* GPBWellKnownTypes.h in Headers */,
+				6CEA10B52174B31700E16FBF /* GPBUtilities_PackagePrivate.h in Headers */,
+				6CEA109C2174B31700E16FBF /* GPBRuntimeTypes.h in Headers */,
+				6CEA10AB2174B31700E16FBF /* GPBUnknownFieldSet.h in Headers */,
+				6CEA10E721786B0000E16FBF /* Type.pbobjc.h in Headers */,
+				6CEA0FC72174B17700E16FBF /* PftpNotification.pbobjc.h in Headers */,
+				6CEA10B62174B31700E16FBF /* GPBRootObject.h in Headers */,
+				6CEA10A32174B31700E16FBF /* GPBRootObject_PackagePrivate.h in Headers */,
+				6CEA10E821786B0000E16FBF /* Timestamp.pbobjc.h in Headers */,
+				6CEA10A22174B31700E16FBF /* GPBArray.h in Headers */,
+				6CEA10C62174B31700E16FBF /* Api.pbobjc.h in Headers */,
+				6CEA0FC32174B17700E16FBF /* ExerciseSamples.pbobjc.h in Headers */,
+				6CEA10D52174B31700E16FBF /* GPBCodedOutputStream_PackagePrivate.h in Headers */,
+				6CEA10D62174B31700E16FBF /* GPBBootstrap.h in Headers */,
+				6CEA10AF2174B31700E16FBF /* GPBDescriptor.h in Headers */,
+				6CEA10982174B31700E16FBF /* FieldMask.pbobjc.h in Headers */,
+				6CEA0FCE2174B17700E16FBF /* PftpResponse.pbobjc.h in Headers */,
+				6CEA10B72174B31700E16FBF /* GPBExtensionRegistry.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		6C10791F1D6D6EA000931948 /* iOSCommunicationsTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6C1079281D6D6EA000931948 /* Build configuration list for PBXNativeTarget "iOSCommunicationsTests" */;
+			buildPhases = (
+				6C10791C1D6D6EA000931948 /* Sources */,
+				6C10791D1D6D6EA000931948 /* Frameworks */,
+				6C10791E1D6D6EA000931948 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6C1079271D6D6EA000931948 /* PBXTargetDependency */,
+			);
+			name = iOSCommunicationsTests;
+			productName = iOSCommunicationsTests;
+			productReference = 6C1079201D6D6EA000931948 /* iOSCommunicationsTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		6C34DE871CAA3F240083EB1F /* iOSCommunications */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6C34DE901CAA3F240083EB1F /* Build configuration list for PBXNativeTarget "iOSCommunications" */;
+			buildPhases = (
+				6C34DE831CAA3F240083EB1F /* Sources */,
+				6C34DE841CAA3F240083EB1F /* Frameworks */,
+				6C34DE851CAA3F240083EB1F /* Headers */,
+				6C34DE861CAA3F240083EB1F /* Resources */,
+				6C393C321D4F70BC00F5B6FD /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = iOSCommunications;
+			productName = iOSCommunications;
+			productReference = 6C34DE881CAA3F240083EB1F /* iOSCommunications.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		6C39E8C2209B0754001F7E44 /* PolarBleSdkWatchOs */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6C39E8C8209B0755001F7E44 /* Build configuration list for PBXNativeTarget "PolarBleSdkWatchOs" */;
+			buildPhases = (
+				6C39E8BE209B0754001F7E44 /* Sources */,
+				6C39E8BF209B0754001F7E44 /* Frameworks */,
+				6C39E8C0209B0754001F7E44 /* Headers */,
+				6C39E8C1209B0754001F7E44 /* Resources */,
+				6C24099B221A85C3001C1A84 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PolarBleSdkWatchOs;
+			productName = PolarBleSdkWatchOs;
+			productReference = 6C39E8C3209B0754001F7E44 /* PolarBleSdkWatchOs.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		6C770B6B206B779900F3D51D /* PolarBleSdk */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6C770B73206B779A00F3D51D /* Build configuration list for PBXNativeTarget "PolarBleSdk" */;
+			buildPhases = (
+				6C770BAA206B785400F3D51D /* ShellScript */,
+				6C770B67206B779900F3D51D /* Sources */,
+				6C770B68206B779900F3D51D /* Frameworks */,
+				6C770B69206B779900F3D51D /* Headers */,
+				6C770B6A206B779900F3D51D /* Resources */,
+				6C48395921B12BAD00747D78 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PolarBleSdk;
+			productName = PolarBleSdk;
+			productReference = 6C770B6C206B779900F3D51D /* PolarBleSdk.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		6C34DE7F1CAA3F240083EB1F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0730;
+				LastUpgradeCheck = 1030;
+				ORGANIZATIONNAME = Polar;
+				TargetAttributes = {
+					6C10791F1D6D6EA000931948 = {
+						CreatedOnToolsVersion = 7.3;
+						LastSwiftMigration = 0800;
+					};
+					6C34DE871CAA3F240083EB1F = {
+						CreatedOnToolsVersion = 7.3;
+						LastSwiftMigration = 1000;
+					};
+					6C39E8C2209B0754001F7E44 = {
+						CreatedOnToolsVersion = 9.3;
+						DevelopmentTeam = 48T8QNDCP9;
+						ProvisioningStyle = Automatic;
+					};
+					6C770B6B206B779900F3D51D = {
+						CreatedOnToolsVersion = 9.2;
+						LastSwiftMigration = 1000;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 6C34DE821CAA3F240083EB1F /* Build configuration list for PBXProject "iOSCommunications" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 6C34DE7E1CAA3F240083EB1F;
+			productRefGroup = 6C34DE891CAA3F240083EB1F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				6C34DE871CAA3F240083EB1F /* iOSCommunications */,
+				6C10791F1D6D6EA000931948 /* iOSCommunicationsTests */,
+				6C770B6B206B779900F3D51D /* PolarBleSdk */,
+				6C39E8C2209B0754001F7E44 /* PolarBleSdkWatchOs */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6C10791E1D6D6EA000931948 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C34DE861CAA3F240083EB1F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C39E8C1209B0754001F7E44 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C770B6A206B779900F3D51D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		6C24099B221A85C3001C1A84 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd $BUILT_PRODUCTS_DIR\necho $PWD\nsed -i -- 's/#import <PolarProtobuf.h>//' PolarBleSdkWatchOs.framework/Headers/PolarBleSdkWatchOs.h\nrm PolarBleSdkWatchOs.framework/Headers/PolarBleSdkWatchOs.h--\n";
+		};
+		6C393C321D4F70BC00F5B6FD /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Carthage/Build/iOS/RxSwift.framework",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#/usr/local/bin/carthage copy-frameworks\n";
+		};
+		6C48395921B12BAD00747D78 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd $BUILT_PRODUCTS_DIR\necho $PWD\nsed -i -- 's/#import <PolarProtobuf.h>//' PolarBleSdk.framework/Headers/PolarBleSdk.h\nrm PolarBleSdk.framework/Headers/PolarBleSdk.h--\n";
+		};
+		6C770BAA206B785400F3D51D /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "VERSION=`git describe --tags`\necho \"TAG=$VERSION\"\necho \"public let IOS_COMMUNICATIONS_VERSION = \\\"\"$VERSION\"\\\"\"> ${PROJECT_DIR}/iOSCommunications/version.swift\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		6C10791C1D6D6EA000931948 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C1079231D6D6EA000931948 /* iOSCommunicationsTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C34DE831CAA3F240083EB1F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C8BCD3C1CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift in Sources */,
+				6C57A5B41F987B44002E50DB /* BleRscClient.swift in Sources */,
+				6C5A44A31CB291790006220D /* AtomicInteger.swift in Sources */,
+				6C5A44AC1CB291A40006220D /* CBDeviceListenerImpl.swift in Sources */,
+				6CB902771D9B7F65001F1C9C /* BleH7SettingsClient.swift in Sources */,
+				6C0C54FE1CFEB3C900FF23E9 /* TimeUtility.swift in Sources */,
+				6C5A44971CB291500006220D /* BleGattClientBase.swift in Sources */,
+				6C5A44981CB291500006220D /* BleGattClientFactory.swift in Sources */,
+				6C8BCD3D1CE5BCEA00A4C6A8 /* BlePsFtpClient.swift in Sources */,
+				6C4A6A2B1CC0BA0400E3AD73 /* BleRssiFilter.swift in Sources */,
+				6C67C8011E169CCE00411498 /* BleHrClient.swift in Sources */,
+				6C5A44991CB291500006220D /* BleAttributeTransportProtocol.swift in Sources */,
+				6CD12ACA201F126500F3A417 /* BleGattException.swift in Sources */,
+				6C98104521622D52002820A2 /* BlePmdClient.swift in Sources */,
+				6C5A44A21CB291790006220D /* AtomicBoolean.swift in Sources */,
+				6C9810402158A943002820A2 /* RecursiveCondition.swift in Sources */,
+				6C5A448F1CB291260006220D /* BleDeviceListener.swift in Sources */,
+				6C5A44AD1CB291A40006220D /* CBDeviceSessionImpl.swift in Sources */,
+				6C7709F82036D15F00F3D51D /* RxObserver.swift in Sources */,
+				6C5A44BB1CB37F060006220D /* BleDeviceSession.swift in Sources */,
+				6C4A6A381CC0BA4E00E3AD73 /* BleLogger.swift in Sources */,
+				6CB9DB992087188E00505269 /* RxUtils.swift in Sources */,
+				6C9209071D93B2DC0035B928 /* CBScanner.swift in Sources */,
+				6C8BCD431CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift in Sources */,
+				6C67C7FF1E169CCE00411498 /* BleBasClient.swift in Sources */,
+				6CCFE4001E5D76C100FAA131 /* BlePsdClient.swift in Sources */,
+				6C5A44A41CB291790006220D /* AtomicList.swift in Sources */,
+				6C67C8001E169CCE00411498 /* BleDisClient.swift in Sources */,
+				6C32C6D7220AD3CA006615C3 /* CBScanningProtocol.swift in Sources */,
+				6C4A6A311CC0BA2400E3AD73 /* BlePfcClient.swift in Sources */,
+				6C4A6A291CC0BA0400E3AD73 /* BleAdvertisementContent.swift in Sources */,
+				6C98103A2154AEDE002820A2 /* AtomicType.swift in Sources */,
+				6C4A6A2A1CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C39E8BE209B0754001F7E44 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C24099A2216AA58001C1A84 /* Wrappers.pbobjc.m in Sources */,
+				6C2409782216A7CA001C1A84 /* ExerciseRrSamples.pbobjc.m in Sources */,
+				6C2409792216A7CA001C1A84 /* Timestamp.pbobjc.m in Sources */,
+				6C24097A2216A7CA001C1A84 /* Type.pbobjc.m in Sources */,
+				6C24097B2216A7CA001C1A84 /* Any.pbobjc.m in Sources */,
+				6C24097C2216A7CA001C1A84 /* Api.pbobjc.m in Sources */,
+				6C24097D2216A7CA001C1A84 /* Descriptor.pbobjc.m in Sources */,
+				6C24097E2216A7CA001C1A84 /* Duration.pbobjc.m in Sources */,
+				6C24097F2216A7CA001C1A84 /* Empty.pbobjc.m in Sources */,
+				6C2409802216A7CA001C1A84 /* FieldMask.pbobjc.m in Sources */,
+				6C2409812216A7CA001C1A84 /* GPBArray.m in Sources */,
+				6C2409822216A7CA001C1A84 /* GPBCodedInputStream.m in Sources */,
+				6C2409832216A7CA001C1A84 /* GPBCodedOutputStream.m in Sources */,
+				6C2409842216A7CA001C1A84 /* GPBDescriptor.m in Sources */,
+				6C2409852216A7CA001C1A84 /* GPBDictionary.m in Sources */,
+				6C2409862216A7CA001C1A84 /* GPBExtensionInternals.m in Sources */,
+				6C2409872216A7CA001C1A84 /* GPBExtensionRegistry.m in Sources */,
+				6C2409882216A7CA001C1A84 /* GPBMessage.m in Sources */,
+				6C2409892216A7CA001C1A84 /* GPBRootObject.m in Sources */,
+				6C24098A2216A7CA001C1A84 /* GPBUnknownField.m in Sources */,
+				6C24098B2216A7CA001C1A84 /* GPBUnknownFieldSet.m in Sources */,
+				6C24098C2216A7CA001C1A84 /* GPBUtilities.m in Sources */,
+				6C24098D2216A7CA001C1A84 /* GPBWellKnownTypes.m in Sources */,
+				6C24098E2216A7CA001C1A84 /* GPBWireFormat.m in Sources */,
+				6C24098F2216A7CA001C1A84 /* SourceContext.pbobjc.m in Sources */,
+				6C2409902216A7CA001C1A84 /* Struct.pbobjc.m in Sources */,
+				6C2409922216A7CA001C1A84 /* ExerciseSamples.pbobjc.m in Sources */,
+				6C2409932216A7CA001C1A84 /* Nanopb.pbobjc.m in Sources */,
+				6C2409942216A7CA001C1A84 /* PftpError.pbobjc.m in Sources */,
+				6C2409952216A7CA001C1A84 /* PftpNotification.pbobjc.m in Sources */,
+				6C2409962216A7CA001C1A84 /* PftpRequest.pbobjc.m in Sources */,
+				6C2409972216A7CA001C1A84 /* PftpResponse.pbobjc.m in Sources */,
+				6C2409982216A7CA001C1A84 /* Structures.pbobjc.m in Sources */,
+				6C2409992216A7CA001C1A84 /* Types.pbobjc.m in Sources */,
+				6C2409462216A6F3001C1A84 /* AtomicType.swift in Sources */,
+				6C2409412216A6E3001C1A84 /* PolarSensorSetting.swift in Sources */,
+				6C2409422216A6E3001C1A84 /* CBScanningProtocol.swift in Sources */,
+				6C2409432216A6E3001C1A84 /* BlePsFtpUtility.swift in Sources */,
+				6C2409442216A6E3001C1A84 /* BlePsFtpClient.swift in Sources */,
+				6C2409452216A6E3001C1A84 /* BlePmdClient.swift in Sources */,
+				6C39E8CB209B07BC001F7E44 /* PolarBleApiImpl.swift in Sources */,
+				6C39E8CC209B07BC001F7E44 /* PolarErrors.swift in Sources */,
+				6C39E8D2209B07BC001F7E44 /* PolarBleApi.swift in Sources */,
+				6C39E8D3209B07BC001F7E44 /* PolarBleApiDefaultImpl.swift in Sources */,
+				6C39E8D4209B07BC001F7E44 /* PolarBleApiObservers.swift in Sources */,
+				6C39E8DA209B07BC001F7E44 /* CBDeviceListenerImpl.swift in Sources */,
+				6C39E8DB209B07BC001F7E44 /* CBDeviceSessionImpl.swift in Sources */,
+				6C39E8DC209B07BC001F7E44 /* CBScanner.swift in Sources */,
+				6C39E8DD209B07BC001F7E44 /* BleDeviceSession.swift in Sources */,
+				6C39E8DE209B07BC001F7E44 /* BlePolarDeviceIdUtility.swift in Sources */,
+				6C39E8DF209B07BC001F7E44 /* BleAdvertisementContent.swift in Sources */,
+				6C39E8E0209B07BC001F7E44 /* BlePolarHrAdvertisement.swift in Sources */,
+				6C39E8E1209B07BC001F7E44 /* BleRssiFilter.swift in Sources */,
+				6C39E8E2209B07BC001F7E44 /* BleGattException.swift in Sources */,
+				6C39E8E5209B07BC001F7E44 /* BleBasClient.swift in Sources */,
+				6C39E8E6209B07BC001F7E44 /* BleDisClient.swift in Sources */,
+				6C39E8E7209B07BC001F7E44 /* BleHrClient.swift in Sources */,
+				6C39E8EA209B07BC001F7E44 /* BlePsdClient.swift in Sources */,
+				6C39E8EC209B07BC001F7E44 /* BleGattClientBase.swift in Sources */,
+				6C39E8ED209B07BC001F7E44 /* BleGattClientFactory.swift in Sources */,
+				6C39E8EE209B07BC001F7E44 /* BleAttributeTransportProtocol.swift in Sources */,
+				6C39E8EF209B07BC001F7E44 /* BleLogger.swift in Sources */,
+				6C39E8F0209B07BC001F7E44 /* BleDeviceListener.swift in Sources */,
+				6C39E8F5209B07BC001F7E44 /* AtomicBoolean.swift in Sources */,
+				6C39E8F6209B07BC001F7E44 /* AtomicInteger.swift in Sources */,
+				6C39E8F7209B07BC001F7E44 /* AtomicList.swift in Sources */,
+				6C39E8F8209B07BC001F7E44 /* TimeUtility.swift in Sources */,
+				6C39E8FA209B07BC001F7E44 /* RxObserver.swift in Sources */,
+				6C39E8FB209B07BC001F7E44 /* RxUtils.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C770B67206B779900F3D51D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C2408F8220D9581001C1A84 /* CBScanningProtocol.swift in Sources */,
+				6C48395D21C79C1C00747D78 /* BlePmdClient.swift in Sources */,
+				6CEA10DF2175AA5B00E16FBF /* BlePsFtpUtility.swift in Sources */,
+				6CEA10E02175AA5B00E16FBF /* BlePsFtpClient.swift in Sources */,
+				6C56423021F1FF7A00F9BDA9 /* PolarSensorSetting.swift in Sources */,
+				6C981041215B7136002820A2 /* AtomicType.swift in Sources */,
+				6CEA10C52174B31700E16FBF /* GPBUnknownField.m in Sources */,
+				6C707D2920D7F138002FE7FF /* RxUtils.swift in Sources */,
+				6CEA10EA21786B0000E16FBF /* Timestamp.pbobjc.m in Sources */,
+				6CEA10B02174B31700E16FBF /* Any.pbobjc.m in Sources */,
+				6CEA10BF2174B31700E16FBF /* GPBExtensionInternals.m in Sources */,
+				6C770B74206B77F300F3D51D /* PolarBleApiImpl.swift in Sources */,
+				6C770B75206B77F300F3D51D /* PolarErrors.swift in Sources */,
+				6CEA10AC2174B31700E16FBF /* Api.pbobjc.m in Sources */,
+				6CEA10CE2174B31700E16FBF /* GPBCodedOutputStream.m in Sources */,
+				6C770B7A206B77F300F3D51D /* PolarBleApi.swift in Sources */,
+				6CEA0FC42174B17700E16FBF /* Structures.pbobjc.m in Sources */,
+				6C770B7B206B77F300F3D51D /* PolarBleApiDefaultImpl.swift in Sources */,
+				6CEA10CF2174B31700E16FBF /* GPBExtensionRegistry.m in Sources */,
+				6C770B7C206B77F300F3D51D /* PolarBleApiObservers.swift in Sources */,
+				6CEA10A62174B31700E16FBF /* GPBWireFormat.m in Sources */,
+				6CEA109F2174B31700E16FBF /* Struct.pbobjc.m in Sources */,
+				6CEA10B32174B31700E16FBF /* Descriptor.pbobjc.m in Sources */,
+				6CEA0FC12174B17700E16FBF /* PftpResponse.pbobjc.m in Sources */,
+				6CEA0FC62174B17700E16FBF /* PftpError.pbobjc.m in Sources */,
+				6CEA10D92174B62600E16FBF /* ExerciseRrSamples.pbobjc.m in Sources */,
+				6CEA10A42174B31700E16FBF /* Duration.pbobjc.m in Sources */,
+				6C770B86206B77F300F3D51D /* CBDeviceListenerImpl.swift in Sources */,
+				6CEA10D22174B31700E16FBF /* GPBDescriptor.m in Sources */,
+				6C770B87206B77F300F3D51D /* CBDeviceSessionImpl.swift in Sources */,
+				6CEA0FC52174B17700E16FBF /* Nanopb.pbobjc.m in Sources */,
+				6C770B88206B77F300F3D51D /* CBScanner.swift in Sources */,
+				6C770B8A206B77F300F3D51D /* BleDeviceSession.swift in Sources */,
+				6CEA0FCC2174B17700E16FBF /* PftpRequest.pbobjc.m in Sources */,
+				6C770B8B206B77F300F3D51D /* BlePolarDeviceIdUtility.swift in Sources */,
+				6CEA0FCF2174B17700E16FBF /* Types.pbobjc.m in Sources */,
+				6C770B8C206B77F300F3D51D /* BleAdvertisementContent.swift in Sources */,
+				6CEA10D42174B31700E16FBF /* GPBMessage.m in Sources */,
+				6C770B8D206B77F300F3D51D /* BlePolarHrAdvertisement.swift in Sources */,
+				6CEA109B2174B31700E16FBF /* GPBCodedInputStream.m in Sources */,
+				6C770B8E206B77F300F3D51D /* BleRssiFilter.swift in Sources */,
+				6C770B8F206B77F300F3D51D /* BleGattException.swift in Sources */,
+				6C770B92206B77F300F3D51D /* BleBasClient.swift in Sources */,
+				6C770B93206B77F300F3D51D /* BleDisClient.swift in Sources */,
+				6CEA10AA2174B31700E16FBF /* GPBWellKnownTypes.m in Sources */,
+				6CEA10D02174B31700E16FBF /* GPBRootObject.m in Sources */,
+				6C770B94206B77F300F3D51D /* BleHrClient.swift in Sources */,
+				6CEA0FCD2174B17700E16FBF /* ExerciseSamples.pbobjc.m in Sources */,
+				6CEA10C82174B31700E16FBF /* SourceContext.pbobjc.m in Sources */,
+				6C770B95206B77F300F3D51D /* BlePsdClient.swift in Sources */,
+				6C770B96206B77F300F3D51D /* BleGattClientBase.swift in Sources */,
+				6CEA109D2174B31700E16FBF /* FieldMask.pbobjc.m in Sources */,
+				6C770B97206B77F300F3D51D /* BleGattClientFactory.swift in Sources */,
+				6C770B98206B77F300F3D51D /* BleAttributeTransportProtocol.swift in Sources */,
+				6C770B9A206B77F300F3D51D /* BleLogger.swift in Sources */,
+				6CEA0FC02174B17700E16FBF /* PftpNotification.pbobjc.m in Sources */,
+				6C770B9B206B77F300F3D51D /* BleDeviceListener.swift in Sources */,
+				6CEA10A82174B31700E16FBF /* Wrappers.pbobjc.m in Sources */,
+				6CEA10CA2174B31700E16FBF /* Empty.pbobjc.m in Sources */,
+				6C770BA1206B77F300F3D51D /* AtomicBoolean.swift in Sources */,
+				6CEA10E921786B0000E16FBF /* Type.pbobjc.m in Sources */,
+				6CEA10A92174B31700E16FBF /* GPBUtilities.m in Sources */,
+				6CEA10CC2174B31700E16FBF /* GPBUnknownFieldSet.m in Sources */,
+				6C770BA2206B77F300F3D51D /* AtomicInteger.swift in Sources */,
+				6C770BA3206B77F300F3D51D /* AtomicList.swift in Sources */,
+				6CEA10B22174B31700E16FBF /* GPBDictionary.m in Sources */,
+				6C770BA4206B77F300F3D51D /* TimeUtility.swift in Sources */,
+				6CEA10B12174B31700E16FBF /* GPBArray.m in Sources */,
+				6C770BA6206B77F300F3D51D /* RxObserver.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		6C1079271D6D6EA000931948 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6C34DE871CAA3F240083EB1F /* iOSCommunications */;
+			targetProxy = 6C1079261D6D6EA000931948 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		6C1079291D6D6EA000931948 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
+				INFOPLIST_FILE = iOSCommunicationsTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks $(PROJECT_DIR)/Carthage/Build/iOS";
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iOSCommunicationsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Debug;
+		};
+		6C10792A1D6D6EA000931948 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
+				INFOPLIST_FILE = iOSCommunicationsTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks $(PROJECT_DIR)/Carthage/Build/iOS";
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iOSCommunicationsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Release;
+		};
+		6C34DE8E1CAA3F240083EB1F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BITCODE_GENERATION_MODE = bitcode;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = NO;
+				CLANG_WARN_COMMA = NO;
+				CLANG_WARN_CONSTANT_CONVERSION = NO;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = NO;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = NO;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = NO;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEFINES_MODULE = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				MTL_ENABLE_DEBUG_INFO = "";
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = "-fembed-bitcode";
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		6C34DE8F1CAA3F240083EB1F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BITCODE_GENERATION_MODE = bitcode;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = NO;
+				CLANG_WARN_COMMA = NO;
+				CLANG_WARN_CONSTANT_CONVERSION = NO;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = NO;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = NO;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = NO;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEFINES_MODULE = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				MTL_ENABLE_DEBUG_INFO = "";
+				OTHER_CFLAGS = "-fembed-bitcode";
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		6C34DE911CAA3F240083EB1F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				CLANG_ENABLE_MODULES = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
+				HEADER_SEARCH_PATHS = AesBridge/aes;
+				INFOPLIST_FILE = iOSCommunications/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = "";
+				MODULEMAP_PRIVATE_FILE = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iOSCommunications;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/iOSCommunications/AesBridge";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "$(SWIFT_MODULE_NAME)-Swift.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		6C34DE921CAA3F240083EB1F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				CLANG_ENABLE_MODULES = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
+				HEADER_SEARCH_PATHS = AesBridge/aes;
+				INFOPLIST_FILE = iOSCommunications/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = "";
+				MODULEMAP_PRIVATE_FILE = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iOSCommunications;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/iOSCommunications/AesBridge";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "$(SWIFT_MODULE_NAME)-Swift.h";
+				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		6C39E8C9209B0755001F7E44 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 48T8QNDCP9;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/watchOS",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = PolarBleSdkWatchOs/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				OTHER_SWIFT_FLAGS = "-DDISABLE_TEAM_PRO_DECRYPTION";
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdkWatchOs;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/iOSCommunications/sdk/impl/protobuf";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 4.3;
+			};
+			name = Debug;
+		};
+		6C39E8CA209B0755001F7E44 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 48T8QNDCP9;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/watchOS",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = PolarBleSdkWatchOs/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				OTHER_SWIFT_FLAGS = "-DDISABLE_TEAM_PRO_DECRYPTION";
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdkWatchOs;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/iOSCommunications/sdk/impl/protobuf";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 4.3;
+			};
+			name = Release;
+		};
+		6C770B71206B779A00F3D51D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = PolarBleSdk/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MACH_O_TYPE = mh_dylib;
+				"OTHER_CFLAGS[arch=*]" = "-fembed-bitcode";
+				OTHER_SWIFT_FLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdk;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/iOSCommunications/sdk/impl/protobuf";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		6C770B72206B779A00F3D51D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = PolarBleSdk/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MACH_O_TYPE = mh_dylib;
+				"OTHER_CFLAGS[arch=*]" = "-fembed-bitcode";
+				OTHER_SWIFT_FLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdk;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/iOSCommunications/sdk/impl/protobuf";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6C1079281D6D6EA000931948 /* Build configuration list for PBXNativeTarget "iOSCommunicationsTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6C1079291D6D6EA000931948 /* Debug */,
+				6C10792A1D6D6EA000931948 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6C34DE821CAA3F240083EB1F /* Build configuration list for PBXProject "iOSCommunications" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6C34DE8E1CAA3F240083EB1F /* Debug */,
+				6C34DE8F1CAA3F240083EB1F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6C34DE901CAA3F240083EB1F /* Build configuration list for PBXNativeTarget "iOSCommunications" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6C34DE911CAA3F240083EB1F /* Debug */,
+				6C34DE921CAA3F240083EB1F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6C39E8C8209B0755001F7E44 /* Build configuration list for PBXNativeTarget "PolarBleSdkWatchOs" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6C39E8C9209B0755001F7E44 /* Debug */,
+				6C39E8CA209B0755001F7E44 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6C770B73206B779A00F3D51D /* Build configuration list for PBXNativeTarget "PolarBleSdk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6C770B71206B779A00F3D51D /* Debug */,
+				6C770B72206B779A00F3D51D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 6C34DE7F1CAA3F240083EB1F /* Project object */;
+}

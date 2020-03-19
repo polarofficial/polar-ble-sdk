@@ -1,0 +1,5 @@
+
+module PolarProtobuf [system] {
+    header "PolarProtobuf.h"
+    export *
+}
