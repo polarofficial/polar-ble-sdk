@@ -251,7 +251,7 @@ Compiled Sdk and dependencys can be found from [polar-sdk-ios](polar-sdk-ios/)
 Precompiled 4.4.0 RxSwift and RxAtomic is added to sdk package. All iOS demos and examples contains Cartfile if you desire to compile
 dependencies yourself.
 
-1. In the project properties __General__ tab, add `PolarBleSdk.framework` , `RxSwift.framework`  and  `RxAtomic.framework` to __Embedded binaries__ and __Linked Frameworks and Libraries__.
+1. In the project properties __General__ tab, add `PolarBleSdk.framework` , `RxSwift.framework`  to __Embedded binaries__ and __Linked Frameworks and Libraries__.
 
 2. In project target settings enable __Background Modes__, add  __Uses Bluetooth LE accessories__
 
