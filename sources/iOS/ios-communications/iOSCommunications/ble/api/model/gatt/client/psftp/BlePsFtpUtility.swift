@@ -68,6 +68,8 @@ public class BlePsFtpUtility {
     
     public class BlePsFtpRfc76SequenceNumber {
         
+        public init(){}
+        
         var seqn: Int=0
         
         func getSeq() -> Int {
@@ -142,7 +144,9 @@ public class BlePsFtpUtility {
         if data.hasBytesAvailable {
             //
             var frameData = [UInt8](repeating: 0, count: mtuSize)
-            let bytesRead = data.read(&frameData+1, maxLength: mtuSize-1)
+            let bytesRead = frameData.withUnsafeMutableBufferPointer{ (ptr: inout  UnsafeMutableBufferPointer<UInt8>) -> Int in
+                return data.read(ptr.baseAddress!+1, maxLength: mtuSize-1)
+            }
             if data.hasBytesAvailable && bytesRead == (mtuSize-1) {
                 // more
                 frameData[0] = 0x06 | UInt8(next) | UInt8(sequenceNumber.getSeq() << 4)
@@ -176,7 +180,9 @@ public class BlePsFtpUtility {
         if header.hasBytesAvailable {
             //
             var frameData = [UInt8](repeating: 0, count: mtuSize)
-            var bytesRead = header.read(&frameData+1, maxLength: mtuSize-1)
+            var bytesRead = frameData.withUnsafeMutableBufferPointer{ (ptr: inout  UnsafeMutableBufferPointer<UInt8>) -> Int in
+                return header.read(ptr.baseAddress!+1, maxLength: mtuSize-1)
+            }
             if header.hasBytesAvailable {
                 // more header payload
                 frameData[0] = 0x06 | UInt8(next) | UInt8(sequenceNumber.getSeq() << 4)
@@ -185,7 +191,9 @@ public class BlePsFtpUtility {
                 if data != nil && data!.hasBytesAvailable {
                     if (mtuSize-1-bytesRead != 0){
                         // NOTE added this faile safe check, if 0 payload is read from stream hasBytesAvailable will return false !
-                        bytesRead = bytesRead + data!.read(&frameData+(1+bytesRead), maxLength: mtuSize-1-bytesRead)
+                        bytesRead = frameData.withUnsafeMutableBufferPointer{ (ptr: inout  UnsafeMutableBufferPointer<UInt8>) -> Int in
+                            return bytesRead + data!.read(ptr.baseAddress!+(1+bytesRead), maxLength: mtuSize-1-bytesRead)
+                        }
                     }
                     if data!.hasBytesAvailable && bytesRead == (mtuSize-1) {
                         // more data payload
@@ -200,7 +208,9 @@ public class BlePsFtpUtility {
             packet = Data.init(bytes: &frameData, count: bytesRead + 1)
         } else if data != nil && data!.hasBytesAvailable {
             var frameData = [UInt8](repeating: 0, count: mtuSize)
-            let bytesRead = data?.read(&frameData+1, maxLength: mtuSize-1)
+            let bytesRead = frameData.withUnsafeMutableBufferPointer{ (ptr: inout  UnsafeMutableBufferPointer<UInt8>) -> Int in
+                return data!.read(ptr.baseAddress!+1, maxLength: mtuSize-1)
+            }
             // note added failsafe check for bytes actually read
             if data!.hasBytesAvailable && bytesRead == (mtuSize-1) {
                 // more data payload
@@ -209,7 +219,7 @@ public class BlePsFtpUtility {
                 // last data payload
                 frameData[0] = 0x02 | UInt8(next) | UInt8(sequenceNumber.getSeq() << 4)
             }
-            packet = Data(bytes: &frameData, count: bytesRead! + 1)
+            packet = Data(bytes: &frameData, count: bytesRead + 1)
         } else {
             // 0 payload
             var frameData = [UInt8](repeating: 0, count: 1)

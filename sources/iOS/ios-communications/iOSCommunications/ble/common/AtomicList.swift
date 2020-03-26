@@ -39,7 +39,6 @@ class AtomicList<T> {
     }
     
     func size() -> Int {
-        var s: Int
         lock.lock()
         defer {
             lock.unlock()

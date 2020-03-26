@@ -251,7 +251,7 @@ public class BlePsFtpClient: BleGattClientBase {
     public func request(_ header: Data) -> Single<NSData>{
         return Single.create{ observer in
             var totalStream: InputStream?
-            var block = BlockOperation()
+            let block = BlockOperation()
             block.addExecutionBlock { [unowned self, weak block] in
               BleLogger.trace("PS-FTP new request operation")
               self.gattServiceTransmitter?.attributeOperationStarted()
@@ -330,7 +330,7 @@ public class BlePsFtpClient: BleGattClientBase {
             // TODO make improvement, if ex. rx retry is used this create could be called n times,
             // now the InputStream on n=1... is allready consumed
             var totalStream: InputStream?
-            var block = BlockOperation()
+            let block = BlockOperation()
             block.addExecutionBlock { [unowned self, weak block] in
               BleLogger.trace("PS-FTP new write operation")
               self.gattServiceTransmitter?.attributeOperationStarted()
@@ -446,7 +446,7 @@ public class BlePsFtpClient: BleGattClientBase {
         let cancelPacket = [UInt8](repeating: 0, count: 3)
         packetsWritten.set(0)
         BleLogger.trace("PS-FTP mtu send cancel packet")
-        try self.transmitMtuPacket(Data.init(bytes: UnsafePointer<UInt8>(cancelPacket), count: 3), canceled: BlockOperation(), response: true)
+        try self.transmitMtuPacket(Data(cancelPacket), canceled: BlockOperation(), response: true)
     }
     
     /// Sends a single query to device, can be called many at once, but will internally make operations atomic
@@ -461,7 +461,7 @@ public class BlePsFtpClient: BleGattClientBase {
     public func query(_ id: Int32, parameters: NSData?) -> Single<NSData>{
         return Single.create{ observer in
             var totalStream: InputStream?
-            var block = BlockOperation()
+            let block = BlockOperation()
             block.addExecutionBlock { [unowned self, weak block] in
               BleLogger.trace("PS-FTP new query operation")
               if !(block?.isCancelled ?? true) {
@@ -536,7 +536,7 @@ public class BlePsFtpClient: BleGattClientBase {
     public func sendNotification(_ id: Int32, parameters: NSData?) -> Completable {
         return Completable.create{ observer in
             var totalStream: InputStream?
-            var block = BlockOperation()
+            let block = BlockOperation()
             block.addExecutionBlock { [unowned self, weak block] in
               BleLogger.trace("PS-FTP new notification")
               if !(block?.isCancelled ?? true) {
