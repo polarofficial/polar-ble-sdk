@@ -636,7 +636,7 @@ class BDDeviceSessionImpl extends BleDeviceSession2 implements BleGattTxInterfac
                 final BleGattBase client = fetchClient(service.getUuid());
                 if (client != null) {
                     if (client.containsCharacteristic(characteristic.getUuid())) {
-                        client.setActive(characteristic.getUuid(), activated, status);
+                        client.descriptorWritten(characteristic.getUuid(), activated, status);
                     }
                 }
                 break;

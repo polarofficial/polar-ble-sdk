@@ -1,9 +1,0 @@
-<resources>
-    <string name="app_name">PolarSDK Broadcast </string>
-    <string name="disconnect">STOP</string>
-    <string name="connect">START</string>
-    <string name="searching">Searching for devices</string>
-    <string name="connecting">Connecting to device</string>
-    <string name="connected">Connected to device</string>
-    <string name="list_items">List exercises</string>
-</resources>

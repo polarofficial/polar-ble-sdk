@@ -18,14 +18,13 @@ public class BleHrClient: BleGattClientBase {
     }
     
     // from base
-    override public func reset() {
-        super.reset()
+    override public func disconnected() {
+        super.disconnected()
         RxUtils.postErrorAndClearList(observers, error: BleGattException.gattDisconnected)
     }
     
     override public func processServiceData(_ chr: CBUUID , data: Data , err: Int ){
         if( chr.isEqual(BleHrClient.HR_MEASUREMENT) && err == 0 ){
-            // stupid swift does not have bit fields
             var offset=0
             let hrFormat = data[0] & 0x01
             let sensorContactBits = Int((data[0] & 0x06) >> 1)

@@ -147,7 +147,9 @@ class BDScanCallback extends ScanCallback {
                 }
                 break;
             }
-            case EXIT:{
+            case EXIT:
+            case ADMIN_START_SCAN:
+            case BLE_POWER_OFF: {
                 break;
             }
             case CLIENT_START_SCAN:{
@@ -169,11 +171,6 @@ class BDScanCallback extends ScanCallback {
                     // if there is atleast one client waiting
                     changeState(ScannerState.SCANNING);
                 }
-                break;
-            }
-            case ADMIN_START_SCAN:
-            case BLE_POWER_OFF:{
-                // skip
                 break;
             }
         }

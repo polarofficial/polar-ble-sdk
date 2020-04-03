@@ -44,14 +44,14 @@ open class BlePolarDeviceIdUtility {
         switch width {
             case 6:
                 let checksum = checkSumForDeviceId(deviceId,width: width)
-                return String.init(format: "%06X1%01X", deviceId,checksum)
+                return String(format: "%06X1%01X", deviceId,checksum)
             case 7:
                 let checksum = checkSumForDeviceId(deviceId,width: width)
                 let ret = NSMutableString()
-                ret.append(String.init(format: "%07X%01X", deviceId,checksum))
+                ret.append(String(format: "%07X%01X", deviceId,checksum))
                 return ret as String
             case 8:
-                return String.init(format: "%08X", deviceId)
+                return String(format: "%08X", deviceId)
             default:
                 return ""
         }

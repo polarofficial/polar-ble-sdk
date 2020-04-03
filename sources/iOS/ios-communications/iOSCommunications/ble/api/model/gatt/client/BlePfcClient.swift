@@ -123,8 +123,8 @@ public class BlePfcClient: BleGattClientBase{
     }
     
     // from base
-    override public func reset() {
-        super.reset()
+    override public func disconnected() {
+        super.disconnected()
         pfcInputQueue.removeAll()
         pfcFeatureData.set(Data())
         RxUtils.postErrorOnSingleAndClearList(pfcFeatureObservers, error: BleGattException.gattDisconnected)

@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.ScanFilter;
 import android.content.Context;
 import android.os.Build;
+import android.support.annotation.Nullable;
 
 import com.androidcommunications.polar.api.ble.BleLogger;
 import com.androidcommunications.polar.api.ble.exceptions.BleStartScanError;
@@ -98,6 +99,9 @@ public class BDDeviceListenerImpl extends BleDeviceListener2 implements BDScanCa
                 BleLogger.e(TAG, "BLE powered off");
                 powerObservers.onNext(false);
                 scanCallback.powerOff();
+                if(powerStateChangedCallback!=null) {
+                    powerStateChangedCallback.stateChanged(false);
+                }
                 for(BDDeviceSessionImpl deviceSession : sessions.getSessions().objects()){
                     switch (deviceSession.getSessionState()) {
                         case SESSION_OPEN:
@@ -119,6 +123,9 @@ public class BDDeviceListenerImpl extends BleDeviceListener2 implements BDScanCa
                 BleLogger.d(TAG,"BLE powered on!");
                 scanCallback.powerOn();
                 powerObservers.onNext(true);
+                if(powerStateChangedCallback!=null) {
+                    powerStateChangedCallback.stateChanged(true);
+                }
             }
         });
     }

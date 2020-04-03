@@ -98,9 +98,9 @@ public abstract class BleGattBase {
     private HashMap<UUID,AtomicInteger> mandatoryNotificationCharacteristics = new HashMap<>();
     // List of all characteristics that are available
     private AtomicSet<UUID> availableCharacteristics = new AtomicSet<>();
-    // List of all readable characteristics that are available, NOTE this list will contain all
+    // List of all readable characteristics that are available
     protected AtomicSet<UUID> availableReadableCharacteristics = new AtomicSet<>();
-    // List of all writable characteristics that are available, NOTE this list will contain all
+    // List of all writable characteristics that are available
     private AtomicSet<UUID> availableWritableCharacteristics = new AtomicSet<>();
     // transport layer interface
     protected BleGattTxInterface txInterface;
@@ -110,7 +110,6 @@ public abstract class BleGattBase {
     private AtomicInteger attMtuSize = new AtomicInteger(23);
     // flag to set client as primary
     protected boolean isPrimaryService = false;
-    // is remote service, e.g. means that the service on remote device, false local service
     protected final AtomicBoolean serviceDiscovered= new AtomicBoolean(false);
     // sets flag that this client/service requires as a whole encryption
     private boolean encryptionRequired = false;
@@ -173,7 +172,7 @@ public abstract class BleGattBase {
     }
 
     // only for CCC
-    public void setActive(UUID characteristic,boolean active,int status){
+    public void descriptorWritten(UUID characteristic, boolean active, int status){
         final AtomicInteger integer = getNotificationAtomicInteger(characteristic);
         if(integer != null){
             synchronized (integer) {
@@ -196,11 +195,6 @@ public abstract class BleGattBase {
         addAvailableCharacteristic(characteristic, property);
     }
 
-    // feedback for client's to know that currently connection has successfully authenticated
-    public void connectionAuthenticated(){
-        // by default do nothing
-    }
-
     public boolean isServiceDiscovered() {
         return serviceDiscovered.get();
     }
@@ -210,10 +204,6 @@ public abstract class BleGattBase {
             serviceDiscovered.set(discovered);
             serviceDiscovered.notifyAll();
         }
-    }
-
-    public UUID getServiceUuid() {
-        return serviceUuid;
     }
 
     public boolean containsCharacteristicRead(UUID characteristic){
@@ -251,10 +241,6 @@ public abstract class BleGattBase {
         return uuids.contains(characteristic);
     }
 
-    public Set<UUID> getCharacteristics() {
-        return characteristics.keySet();
-    }
-
     public Set<UUID> getAvailableCharacteristics() {
         return availableCharacteristics.objects();
     }
@@ -268,20 +254,8 @@ public abstract class BleGattBase {
         this.mtuSize.set(mtuSize-3);
     }
 
-    public int getMtuSize() {
-        return mtuSize.get();
-    }
-
-    public int getAttMtuSize() {
-        return attMtuSize.get();
-    }
-
     protected void addCharacteristic(UUID chr){
         characteristics.put(chr,true);
-    }
-
-    protected void addCharacteristic(UUID chr, boolean automatic){
-        characteristics.put(chr,automatic);
     }
 
     /**
@@ -289,11 +263,7 @@ public abstract class BleGattBase {
      * @param characteristicRead <BR>
      */
     protected void addCharacteristicRead(UUID characteristicRead){
-        addCharacteristic(characteristicRead,PROPERTY_READ, true);
-    }
-
-    protected void addCharacteristicRead(UUID characteristicRead, boolean automatic){
-        addCharacteristic(characteristicRead,PROPERTY_READ, automatic);
+        addCharacteristic(characteristicRead,PROPERTY_READ);
     }
 
     /**
@@ -302,26 +272,21 @@ public abstract class BleGattBase {
      */
     protected void addCharacteristicNotification(UUID characteristicNotify){
         // Note properties are just informal, as this is used by the client
-        addCharacteristic(characteristicNotify,PROPERTY_NOTIFY | PROPERTY_INDICATE, true);
+        addCharacteristic(characteristicNotify,PROPERTY_NOTIFY | PROPERTY_INDICATE);
     }
 
-    protected void addCharacteristicNotification(UUID characteristicNotify, boolean automatic){
-        // Note properties are just informal, as this is used by the client
-        addCharacteristic(characteristicNotify,PROPERTY_NOTIFY | PROPERTY_INDICATE, automatic);
-    }
-
-    protected void addCharacteristic(UUID characteristic, int properties, boolean automatic) {
+    protected void addCharacteristic(UUID characteristic, int properties) {
         if( ((properties & PROPERTY_NOTIFY) != 0 || (properties & PROPERTY_INDICATE) != 0) &&
              !containsNotifyCharacteristic(characteristic)) {
             mandatoryNotificationCharacteristics.put(characteristic,new AtomicInteger(-1));
-            characteristics.put(characteristic,automatic);
+            characteristics.put(characteristic,true);
         }
         if( (properties & PROPERTY_READ) != 0 &&
             !containsCharacteristicRead(characteristic)){
-            characteristicsRead.put(characteristic, automatic);
+            characteristicsRead.put(characteristic, true);
         }
         if(!characteristics.containsKey(characteristic)){
-            characteristics.put(characteristic,automatic);
+            characteristics.put(characteristic,true);
         }
     }
 
@@ -338,16 +303,8 @@ public abstract class BleGattBase {
         }
     }
 
-    protected boolean hasAllAvailableCharacteristics(Set<UUID> list){
-        return hasCharacteristics(list,availableCharacteristics.objects());
-    }
-
     protected boolean hasAllAvailableReadableCharacteristics(Set<UUID> list){
         return hasCharacteristics(list,availableReadableCharacteristics.objects());
-    }
-
-    private boolean hasCharacteristics(Set<UUID> set, List<UUID> list){
-        return list.size() != 0 && set.containsAll(list);
     }
 
     protected boolean hasCharacteristics(Set<UUID> set, Set<UUID> list){

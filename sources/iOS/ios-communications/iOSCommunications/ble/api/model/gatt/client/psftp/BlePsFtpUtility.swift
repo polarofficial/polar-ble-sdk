@@ -96,35 +96,38 @@ public class BlePsFtpUtility {
         _ header: Data?,
         type: MessageType ,
         id: Int) ->  InputStream  {
-
         switch type {
         case .request:
-            assert(header != nil, "header not present")
+            guard let header = header else {
+                fatalError("header not present")
+            }
             let mutableData=NSMutableData()
             var request = [UInt8](repeating: 0, count: 2)
-            request[1] = UInt8(((header?.count)! & 0x7F00) >> 8)
-            request[0] = UInt8((header?.count)! & 0x00FF)
+            // RFC60
+            request[1] = UInt8((header.count & 0x7F00) >> 8)
+            request[0] = UInt8(header.count & 0x00FF)
             let requestData = NSMutableData(bytes: request, length: 2)
             let ptr = UnsafeMutablePointer<UInt8>(requestData.mutableBytes.assumingMemoryBound(to: UInt8.IntegerLiteralType.self))
             mutableData.append(ptr, length: 2)
-            mutableData.append(((header as NSData?)?.bytes)!, length: (header?.count)!)
+            mutableData.append((header as NSData).bytes, length: header.count)
             return InputStream(data: mutableData as Data)
         case .query:
             var request = [UInt8](repeating: 0, count: 2)
-            request[1] = UInt8(((id & 0x7F00) >> 8) | 0x80)
+            // RFC60
+            request[1] = UInt8(((id & 0x7F00) >> 8) | 0x80/*is_query=true*/)
             request[0] = UInt8(id & 0x00FF)
             let mutableData=NSMutableData()
             mutableData.append(request, length: 2)
-            if( header != nil ){
-                mutableData.append(((header as NSData?)?.bytes)!, length: (header?.count)!)
+            if let h = header {
+                mutableData.append(h)
             }
             return InputStream(data: mutableData as Data)
         case .notification:
             var request = [UInt8](repeating: UInt8(id), count: 1)
             let mutableData=NSMutableData()
             mutableData.append(&request, length: 1)
-            if(header != nil){
-                mutableData.append(((header as NSData?)?.bytes)!, length: (header?.count)!)
+            if let h = header {
+                mutableData.append(h)
             }
             return InputStream(data: mutableData as Data)
         }
@@ -139,7 +142,7 @@ public class BlePsFtpUtility {
     ///   - sequenceNumber: RFC76 ring counter
     /// - Returns: air packet
     public static func buildRfc76MessageFrame(_ data: InputStream, next: Int, mtuSize: Int, sequenceNumber: BlePsFtpRfc76SequenceNumber) -> Data {
-        var packet: Data!
+        var packet = Data()
         //
         if data.hasBytesAvailable {
             //
@@ -176,7 +179,7 @@ public class BlePsFtpUtility {
     /// - Returns: air packet
     public static func buildRfc76MessageFrame(_ header: InputStream, data: InputStream?, next: Int, mtuSize: Int, sequenceNumber: BlePsFtpRfc76SequenceNumber) -> Data {
         // sorry as swift(stupids) does not support bit fields, needed have this verbose style
-        var packet: Data!
+        var packet = Data()
         if header.hasBytesAvailable {
             //
             var frameData = [UInt8](repeating: 0, count: mtuSize)
@@ -278,4 +281,3 @@ public class BlePsFtpUtility {
         }
     }
 }
-

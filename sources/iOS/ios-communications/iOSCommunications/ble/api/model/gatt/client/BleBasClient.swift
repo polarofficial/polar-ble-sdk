@@ -8,7 +8,7 @@ public class BleBasClient: BleGattClientBase {
     public static let BATTERY_SERVICE = CBUUID(string: "180F")
     let               BATTERY_LEVEL   = CBUUID(string: "2A19")
 
-    var batteryLevel = AtomicInteger.init(initialValue: -1)
+    var batteryLevel = AtomicInteger(initialValue: -1)
     var observers    = AtomicList<RxObserver<Int>>()
     
     public init(gattServiceTransmitter: BleAttributeTransportProtocol){
@@ -17,8 +17,8 @@ public class BleBasClient: BleGattClientBase {
     }
     
     // from base
-    override public func reset() {
-        super.reset()
+    override public func disconnected() {
+        super.disconnected()
         self.batteryLevel.set(-1)
         RxUtils.postErrorAndClearList(observers, error: BleGattException.gattDisconnected)
     }
