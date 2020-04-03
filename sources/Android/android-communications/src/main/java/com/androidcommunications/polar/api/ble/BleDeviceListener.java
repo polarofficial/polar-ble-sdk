@@ -62,7 +62,20 @@ public abstract class BleDeviceListener {
     /**
      * @return flowable stream of ble state
      */
+    @Deprecated
     abstract public Flowable<Boolean> monitorBleState();
+
+    /**
+     * @param cb callback
+     */
+    abstract public void setBlePowerStateCallback(@Nullable BlePowerStateChangedCallback cb);
+
+    public interface BlePowerStateChangedCallback {
+        /**
+         * @param power bt state
+         */
+        void stateChanged(Boolean power);
+    }
 
     /**
      * @param filters scan filter list, android specific
@@ -108,13 +121,32 @@ public abstract class BleDeviceListener {
     abstract public void openSessionDirect(BleDeviceSession session, List<String> uuids);
 
     /**
+     * Deprecated use setDeviceSessionStateChangedCallback instead
+     *
      * Produces: onNext: When a device session state has changed, Note use pair.second to check the state (see BleDeviceSession.DeviceSessionState)<BR>
      *           onError: should not be produced<BR>
      *           onCompleted: This is never propagated, NOTE to get completed event configure observable with some end rule e.g. take(1), takeUntil() etc...<BR>
      * @param session, a specific session or null = monitor all sessions
      * @return Observable stream
      */
+    @Deprecated
     abstract public Observable<Pair<BleDeviceSession,BleDeviceSession.DeviceSessionState>> monitorDeviceSessionState(BleDeviceSession session);
+
+    public interface BleDeviceSessionStateChangedCallback {
+        /**
+         * Invoked for all sessions and all state changes
+         *
+         * @param session check sessionState or session.getPreviousState() for actions
+         */
+        void stateChanged(BleDeviceSession session, BleDeviceSession.DeviceSessionState sessionState);
+    }
+
+    /**
+     * set or null state observer
+     *
+     * @param changedCallback @see BleDeviceSessionStateChangedCallback
+     */
+    abstract public void setDeviceSessionStateChangedCallback(@Nullable BleDeviceSessionStateChangedCallback changedCallback);
 
     /**
      * aquires disconnection establishment directly without Observable returned

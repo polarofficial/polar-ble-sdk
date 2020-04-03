@@ -24,7 +24,11 @@ public protocol BleDeviceListener{
     /// ble power state
     ///
     /// - Returns: Observable ble power state
+    @available(*, deprecated, message: "use powerStateObserver instead")
     func monitorBleState() -> Observable<BleState>
+    
+    /// power state observer
+    var powerStateObserver: BlePowerStateObserver? {get set}
     
     /// enable or disable automatic reconnection
     var automaticReconnection: Bool {get set}
@@ -38,9 +42,6 @@ public protocol BleDeviceListener{
     /// enable or disable automatic H10 mapping
     var automaticH10Mapping: Bool {get set}
     
-    /// set / get rssi limit for automatic reconnection
-    var rssiLimitForConnection: Int32 {get set}
-    
     /// Start scanning ble devices
     ///
     /// - Parameters:
@@ -50,18 +51,26 @@ public protocol BleDeviceListener{
     /// - Returns: Observable stream of device advertisements
     func search(_ uuids: [CBUUID]?, identifiers: [UUID]?)  -> Observable<BleDeviceSession>
     
-    /// Start connection request for device
+    /// Start connection request for device, callbacks are informed to monitorDeviceSessionState or
+    /// deviceSessionStateObserver
     ///
     /// - Parameter session: session instance
     /// - Returns:
-    func openSessionDirect(_ session: BleDeviceSession)
+    func openSessionDirect(_ session: BleDeviceSession) 
     
+    /// all session state changes, deprecated
+    ///
+    /// - Returns: Observable stream
+    @available(*, deprecated, message: "use deviceSessionStateObserver instead")
+    func monitorDeviceSessionState() -> Observable<(session: BleDeviceSession, state: BleDeviceSession.DeviceSessionState)>
+
     /// all session state changes
     ///
     /// - Returns: Observable stream
-    func monitorDeviceSessionState() -> Observable<(session: BleDeviceSession, state: BleDeviceSession.DeviceSessionState)>
+    var deviceSessionStateObserver: BleDeviceSessionStateObserver? {get set}
     
-    /// Start disconnection request for device
+    /// Start disconnection request for device, callbacks are informed to monitorDeviceSessionState or
+    /// deviceSessionStateObserver
     ///
     /// - Parameter session: device to be disconnected
     /// - Returns:
@@ -80,6 +89,14 @@ public protocol BleDeviceListener{
     ///
     /// - Returns: list of sessions
     func allSessions() -> [BleDeviceSession]
+}
+
+public protocol BleDeviceSessionStateObserver {
+    func stateChanged(_ session: BleDeviceSession)
+}
+
+public protocol BlePowerStateObserver {
+    func powerStateChanged(_ state: BleState)
 }
 
 public extension BleDeviceListener {

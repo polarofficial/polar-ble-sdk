@@ -1,6 +1,7 @@
 package com.androidcommunications.polar.enpoints.ble.common;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.util.Pair;
 
 import com.androidcommunications.polar.api.ble.BleDeviceListener;
@@ -26,6 +27,8 @@ public abstract class BleDeviceListener2 extends BleDeviceListener implements Sc
 
     protected ConnectionHandler connectionHandler;
     protected Context context;
+    private BleDeviceSessionStateChangedCallback changedCallback = null;
+    protected BlePowerStateChangedCallback powerStateChangedCallback = null;
 
     public BleDeviceListener2(Context context, Set<Class<? extends BleGattBase> > clients) {
         super(clients);
@@ -34,7 +37,18 @@ public abstract class BleDeviceListener2 extends BleDeviceListener implements Sc
         this.connectionHandler.addObserver(new ConnectionHandlerObserver() {
             @Override
             public void deviceSessionStateChanged(BleDeviceSession2 session) {
-                // do nothing
+                if (changedCallback != null) {
+                    if (session.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK &&
+                            session.getPreviousState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN) {
+                        //NOTE special case, we were connected so propagate closed event( informal )
+                        changedCallback.stateChanged(session, BleDeviceSession.DeviceSessionState.SESSION_CLOSED);
+                        if (session.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK) {
+                            changedCallback.stateChanged(session, BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
+                        }
+                    } else {
+                        changedCallback.stateChanged(session, session.getSessionState());
+                    }
+                }
             }
 
             @Override
@@ -58,6 +72,16 @@ public abstract class BleDeviceListener2 extends BleDeviceListener implements Sc
     @Override
     public void shutDown(){
 
+    }
+
+    @Override
+    public void setBlePowerStateCallback(@Nullable BlePowerStateChangedCallback cb) {
+        this.powerStateChangedCallback = cb;
+    }
+
+    @Override
+    public void setDeviceSessionStateChangedCallback(@Nullable BleDeviceSessionStateChangedCallback changedCallback) {
+        this.changedCallback = changedCallback;
     }
 
     @Override

@@ -7,9 +7,7 @@ import com.androidcommunications.polar.api.ble.BleLogger;
 import com.androidcommunications.polar.api.ble.model.BleDeviceSession;
 import com.androidcommunications.polar.common.ble.AtomicSet;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 class BDDeviceList {

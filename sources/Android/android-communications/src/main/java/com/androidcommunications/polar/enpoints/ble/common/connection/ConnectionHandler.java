@@ -31,8 +31,7 @@ public class ConnectionHandler {
         ADVERTISEMENT_HEAD_RECEIVED,
         DISCONNECT_DEVICE,
         DEVICE_CONNECTED,
-        DEVICE_DISCONNECTED,
-        TIMER_TIMEOUT
+        DEVICE_DISCONNECTED
     }
 
     private final static String TAG = ConnectionHandler.class.getSimpleName();
@@ -214,7 +213,6 @@ public class ConnectionHandler {
                 handleDeviceDisconnected(session);
                 break;
             }
-            case TIMER_TIMEOUT:
             case DEVICE_CONNECTED:
             {
                 BleLogger.e(TAG, " Incorrect event received! ");

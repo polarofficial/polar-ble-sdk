@@ -3,24 +3,6 @@ import Foundation
 import CoreBluetooth
 import RxSwift
 
-open class BleRscNotification {
-    public let speed: Double
-    public let candence: UInt8
-    public let strideLength: Int
-    public let distance: Double
-    public let running: Bool
-    public let flags: UInt8
-    
-    init(speed: Double, candence: UInt8, strideLength: Int, distance: Double, running: Bool, flags: UInt8){
-        self.speed = speed
-        self.candence = candence
-        self.strideLength = strideLength
-        self.distance = distance
-        self.running = running
-        self.flags = flags
-    }
-}
-
 public class BleRscClient: BleGattClientBase {
     
     public static let RSC_SERVICE = CBUUID(string: "1814")
@@ -29,6 +11,8 @@ public class BleRscClient: BleGattClientBase {
     
     var observers = AtomicList<RxObserver<BleRscNotification>>()
     
+    public typealias BleRscNotification = (speed: Double, candence: UInt8, strideLength: Int, distance: Double, running: Bool, flags: UInt8)
+    
     public init(gattServiceTransmitter: BleAttributeTransportProtocol){
         super.init(serviceUuid: BleRscClient.RSC_SERVICE, gattServiceTransmitter: gattServiceTransmitter)
         addCharacteristicNotification(RSC_MEASUREMENT)
@@ -36,8 +20,8 @@ public class BleRscClient: BleGattClientBase {
     }
     
     // from base
-    override public func reset() {
-        super.reset()
+    override public func disconnected() {
+        super.disconnected()
         RxUtils.postErrorAndClearList(observers, error: BleGattException.gattDisconnected)
     }
     
@@ -79,20 +63,7 @@ public class BleRscClient: BleGattClientBase {
     
     // api
     public func observeRscNotifications(_ checkConnection: Bool) -> Observable<BleRscNotification> {
-        var object: RxObserver<BleRscNotification>!
-        return Observable.create{ observer in
-            object = RxObserver<BleRscNotification>.init(obs: observer)
-            if !checkConnection || self.gattServiceTransmitter?.isConnected() ?? false {
-                self.observers.append(object)
-            } else {
-                observer.onError(BleGattException.gattDisconnected)
-            }
-            return Disposables.create {
-                self.observers.remove({ (item) -> Bool in
-                    return item === object
-                })
-            }
-        }.subscribeOn(baseConcurrentDispatchQueue)
+        return RxUtils.monitor(observers, transport: gattServiceTransmitter, checkConnection: checkConnection)
     }
     
     public override func clientReady(_ checkConnection: Bool) -> Completable {

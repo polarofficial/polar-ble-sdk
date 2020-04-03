@@ -86,7 +86,7 @@ public class BleGattClientBase: Hashable {
     }
     
     // from protocol
-    public func reset(){
+    public func disconnected(){
         serviceDiscovered.set(false)
         mtuSize = 20
         availableCharacteristics.removeAll()

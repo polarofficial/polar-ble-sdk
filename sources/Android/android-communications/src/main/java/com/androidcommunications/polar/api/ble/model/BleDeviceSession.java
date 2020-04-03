@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
+import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Function;
 
 /**
@@ -197,7 +198,7 @@ public abstract class BleDeviceSession {
     /**
      * @return advertisement content object <BR>
      */
-    public BleAdvertisementContent getAdvertisementContent() {
+    public @NonNull BleAdvertisementContent getAdvertisementContent() {
         return advertisementContent;
     }
 

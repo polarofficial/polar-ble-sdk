@@ -1,8 +1,0 @@
-<resources>
-    <string name="app_name">PolarSDK Exercise </string>
-    <string name="disconnect">DISCONNECT</string>
-    <string name="connect">CONNECT</string>
-    <string name="connecting">Connecting to device</string>
-    <string name="connected">Connected to device</string>
-    <string name="list_items">List exercises</string>
-</resources>

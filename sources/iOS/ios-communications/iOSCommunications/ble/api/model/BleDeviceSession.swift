@@ -73,7 +73,7 @@ public protocol BleCCCWriteProtocol: class {
     ///
     /// - Returns: Bool
     public func isConnectable() -> Bool {
-        return false
+        fatalError("not implemented")
     }
     
     /// Helper observable to asynchronously wait all services dicovered
@@ -81,7 +81,7 @@ public protocol BleCCCWriteProtocol: class {
     /// - Parameter checkConnection: check current connection
     /// - Returns: Observable<CBUUID>
     public func monitorServicesDiscovered(_ checkConnection: Bool) -> Observable<CBUUID> {
-        return Observable.empty()
+        fatalError("not implemented")
     }
     
     /// Helper observable to asynchronously wait all available/desired clients to be ready for use

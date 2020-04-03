@@ -7,24 +7,21 @@ class RxUtils {
     
     /// helper to emit specific error and clear list
     static func postErrorAndClearList<T>(_ list: AtomicList<RxObserver<T>>, error: Error ) {
-        let objects = list.list()
-        for object in objects {
+        list.list().forEach { (object) in
             object.obs.onError(error)
         }
         list.removeAll()
     }
     
     static func postErrorOnSingleAndClearList<T>(_ list: AtomicList<RxObserverSingle<T>>, error: Error) {
-        let objects = list.list()
-        for object in objects {
+        list.list().forEach { (object) in
             object.obs(.error(error))
         }
         list.removeAll()
     }
     
     static func postErrorOnCompletableAndClearList(_ list: AtomicList<RxObserverCompletable>, error: Error) {
-        let objects = list.list()
-        for object in objects {
+        list.list().forEach { (object) in
             object.obs(.error(error))
         }
         list.removeAll()

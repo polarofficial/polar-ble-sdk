@@ -44,7 +44,7 @@ public class BlePsFtpClient: BleGattClientBase {
         return queue
     }()
     
-    let currentOperationWrite = AtomicBoolean.init(initialValue: false)
+    let currentOperationWrite = AtomicBoolean(initialValue: false)
     
     public init(gattServiceTransmitter: BleAttributeTransportProtocol){
         super.init(serviceUuid: BlePsFtpClient.PSFTP_SERVICE, gattServiceTransmitter: gattServiceTransmitter)
@@ -57,12 +57,12 @@ public class BlePsFtpClient: BleGattClientBase {
     
     deinit {
         BleLogger.trace("PS-FTP deinit")
-        self.reset()
+        self.disconnected()
     }
     
     // from base
-    override public func reset() {
-        super.reset()
+    override public func disconnected() {
+        super.disconnected()
         BleLogger.trace("PS-FTP reset ")
         currentOperationWrite.set(false)
         mtuOperationQueue.cancelAllOperations()
@@ -243,31 +243,29 @@ public class BlePsFtpClient: BleGattClientBase {
     ///
     /// - Parameters:
     ///   - header: protocol buffer encoded request PbPFtpOperation(GET, REMOVE or PUT(folder, with no data))
-    ///   - byPassCache: optionally bypass cache
     /// - Returns: Single stream of NSData
     ///         Produces:  onSuccess, when file/content has been successfully read, note data can be 0 length for PUT(dir) or REMOVE operation
     ///                    onError, @see BlePsFtpException
     ///                            @see BleGattException
     public func request(_ header: Data) -> Single<NSData>{
         return Single.create{ observer in
-            var totalStream: InputStream?
             let block = BlockOperation()
             block.addExecutionBlock { [unowned self, weak block] in
               BleLogger.trace("PS-FTP new request operation")
               self.gattServiceTransmitter?.attributeOperationStarted()
               if !(block?.isCancelled ?? true) {
                     self.resetMtuPipe()
-                    totalStream = BlePsFtpUtility.makeCompleteMessageStream(header as Data, type: BlePsFtpUtility.MessageType.request, id: 0)
+                    let totalStream = BlePsFtpUtility.makeCompleteMessageStream(header as Data, type: BlePsFtpUtility.MessageType.request, id: 0)
                     let sequenceNumber=BlePsFtpUtility.BlePsFtpRfc76SequenceNumber()
-                    totalStream?.open()
+                    totalStream.open()
                     defer {
                         // poor mans raii
-                        totalStream?.close()
+                        totalStream.close()
                     }
                     var anySend = false
                     do{
                         // send request
-                        let requs = BlePsFtpUtility.buildRfc76MessageFrameAll(totalStream!, mtuSize: self.mtuSize, sequenceNumber: sequenceNumber)
+                        let requs = BlePsFtpUtility.buildRfc76MessageFrameAll(totalStream, mtuSize: self.mtuSize, sequenceNumber: sequenceNumber)
                         for packet in requs {
                             try self.transmitMtuPacket(packet, canceled: block ?? BlockOperation(), response: true)
                             anySend = true
@@ -329,7 +327,6 @@ public class BlePsFtpClient: BleGattClientBase {
         return Observable.create{ observer in
             // TODO make improvement, if ex. rx retry is used this create could be called n times,
             // now the InputStream on n=1... is allready consumed
-            var totalStream: InputStream?
             let block = BlockOperation()
             block.addExecutionBlock { [unowned self, weak block] in
               BleLogger.trace("PS-FTP new write operation")
@@ -338,11 +335,11 @@ public class BlePsFtpClient: BleGattClientBase {
                     self.currentOperationWrite.set(true)
                     self.resetMtuPipe()
                     let headerSize=Int64(header.length)
-                    totalStream = BlePsFtpUtility.makeCompleteMessageStream(header as Data, type: BlePsFtpUtility.MessageType.request, id: 0)
-                    totalStream?.open()
+                    let totalStream = BlePsFtpUtility.makeCompleteMessageStream(header as Data, type: BlePsFtpUtility.MessageType.request, id: 0)
+                    totalStream.open()
                     data.open()
                     defer {
-                        totalStream?.close()
+                        totalStream.close()
                         data.close()
                     }
                     var next=0
@@ -353,7 +350,7 @@ public class BlePsFtpClient: BleGattClientBase {
                     var more = true
                     repeat{
                         do{
-                            let packet = BlePsFtpUtility.buildRfc76MessageFrame(totalStream!, data: data, next: next, mtuSize: self.mtuSize, sequenceNumber: sequenceNumber)
+                            let packet = BlePsFtpUtility.buildRfc76MessageFrame(totalStream, data: data, next: next, mtuSize: self.mtuSize, sequenceNumber: sequenceNumber)
                             pCounter += 1
                             more = (packet[0] & 0x06) == 0x06
                             if( !more ) {
@@ -362,7 +359,7 @@ public class BlePsFtpClient: BleGattClientBase {
                             response = (pCounter % UInt64(self.packetChunks.get())) == 0
                             if next == 0 {
                                 // first write cannot be canceled
-                                try self.transmitMtuPacket(packet, canceled: BlockOperation.init(), response: response)
+                                try self.transmitMtuPacket(packet, canceled: BlockOperation(), response: response)
                             } else {
                                 try self.transmitMtuPacket(packet, canceled: block ?? BlockOperation(), response: response)
                             }
@@ -389,7 +386,6 @@ public class BlePsFtpClient: BleGattClientBase {
                                     // ignore
                                 }
                             }
-                            // BleLogger.trace("Transferred: \(transferred)")
                             observer.onNext(UInt(transferred))
                         } catch let error {
                             BleLogger.error("PS-FTP write interrupted error: \(error)")
@@ -460,22 +456,21 @@ public class BlePsFtpClient: BleGattClientBase {
     ///                             @see BleGattException
     public func query(_ id: Int32, parameters: NSData?) -> Single<NSData>{
         return Single.create{ observer in
-            var totalStream: InputStream?
             let block = BlockOperation()
             block.addExecutionBlock { [unowned self, weak block] in
               BleLogger.trace("PS-FTP new query operation")
               if !(block?.isCancelled ?? true) {
                     self.mtuInputQueue.removeAll()
-                    totalStream = BlePsFtpUtility.makeCompleteMessageStream(parameters as Data?, type: BlePsFtpUtility.MessageType.query, id: Int(id))
-                    totalStream?.open()
+                    let totalStream = BlePsFtpUtility.makeCompleteMessageStream(parameters as Data?, type: BlePsFtpUtility.MessageType.query, id: Int(id))
+                    totalStream.open()
                     defer {
                         // poor mans raii
-                        totalStream?.close()
+                        totalStream.close()
                     }
                     // send request
                     do{
                         let sequenceNumber=BlePsFtpUtility.BlePsFtpRfc76SequenceNumber()
-                        let requs = BlePsFtpUtility.buildRfc76MessageFrameAll(totalStream!, mtuSize: self.mtuSize, sequenceNumber: sequenceNumber)
+                        let requs = BlePsFtpUtility.buildRfc76MessageFrameAll(totalStream, mtuSize: self.mtuSize, sequenceNumber: sequenceNumber)
                         for packet in requs {
                             try self.transmitMtuPacket(packet, canceled: BlockOperation.init(), response: true)
                         }
@@ -535,23 +530,22 @@ public class BlePsFtpClient: BleGattClientBase {
     ///                             @see BleGattException
     public func sendNotification(_ id: Int32, parameters: NSData?) -> Completable {
         return Completable.create{ observer in
-            var totalStream: InputStream?
             let block = BlockOperation()
             block.addExecutionBlock { [unowned self, weak block] in
               BleLogger.trace("PS-FTP new notification")
               if !(block?.isCancelled ?? true) {
-                    totalStream = BlePsFtpUtility.makeCompleteMessageStream(parameters as Data?, type: BlePsFtpUtility.MessageType.notification, id: Int(id))
-                    totalStream?.open()
+                    let totalStream = BlePsFtpUtility.makeCompleteMessageStream(parameters as Data?, type: BlePsFtpUtility.MessageType.notification, id: Int(id))
+                    totalStream.open()
                     defer {
                         // poor mans raii
-                        totalStream?.close()
+                        totalStream.close()
                     }
                     self.notificationPacketsWritten.set(0)
                     // send notification
                     do{
                         self.notificationPacketsWritten.set(0)
                         let sequenceNumber=BlePsFtpUtility.BlePsFtpRfc76SequenceNumber()
-                        let requs = BlePsFtpUtility.buildRfc76MessageFrameAll(totalStream!, mtuSize: self.mtuSize, sequenceNumber: sequenceNumber)
+                        let requs = BlePsFtpUtility.buildRfc76MessageFrameAll(totalStream, mtuSize: self.mtuSize, sequenceNumber: sequenceNumber)
                         for packet in requs {
                             // NOTE no support for notification send cancelation, as typically notification fit into a single air packet
                             try self.transmitNotificationPacket(packet, response: true)

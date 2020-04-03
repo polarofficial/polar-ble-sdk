@@ -666,7 +666,8 @@ public class BlePsFtpClient extends BleGattBase {
                 if(next == response.next) {
                     next = 1;
                     switch (response.status) {
-                        case BlePsFtpUtils.RFC76_STATUS_MORE: { // more
+                        case BlePsFtpUtils.RFC76_STATUS_LAST:
+                        case BlePsFtpUtils.RFC76_STATUS_MORE: {
                             outputStream.write(response.payload, 0, response.payload.length);
                             break;
                         }

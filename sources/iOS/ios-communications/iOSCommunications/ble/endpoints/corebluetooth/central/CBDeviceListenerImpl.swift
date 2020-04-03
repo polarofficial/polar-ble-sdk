@@ -22,8 +22,9 @@ public class CBDeviceListenerImpl: NSObject,
             scanner.setServices(servicesToScanFor)
         }
     }
-    public var rssiLimitForConnection: Int32 = -110
-
+    public var deviceSessionStateObserver: BleDeviceSessionStateObserver?
+    public var powerStateObserver: BlePowerStateObserver?
+    
     public init(_ queue: DispatchQueue, clients: [(_ transport: BleAttributeTransportProtocol) -> BleGattClientBase], identifier: Int){
         self.queue = queue
         self.factory = BleGattClientFactory(clients)
@@ -43,6 +44,7 @@ public class CBDeviceListenerImpl: NSObject,
         RxUtils.emitNext(connectionObservers) { (object) in
             object.obs.onNext((session: session, state: state))
         }
+        deviceSessionStateObserver?.stateChanged(session)
         if scanner.scanningNeeded() {
             scanner.enableScan()
         } else {
@@ -109,6 +111,7 @@ public class CBDeviceListenerImpl: NSObject,
             RxUtils.emitNext(self.powerObservers, emitter: { (observer) in
                 observer.obs.onNext(BleState(rawValue: self.manager.state.rawValue) ?? BleState.unknown)
             })
+            self.powerStateObserver?.powerStateChanged(BleState(rawValue: self.manager.state.rawValue) ?? BleState.unknown)
         })
     }
     
@@ -164,16 +167,11 @@ public class CBDeviceListenerImpl: NSObject,
             }
             
             if sess.state == .sessionOpenPark {
-                if RSSI.int32Value < 0 &&
-                   RSSI.int32Value >= self.rssiLimitForConnection  {
-                    if sess.isConnectable() {
-                        self.updateSessionState(sess, state: .sessionOpening)
-                        self.manager.connect(sess.peripheral, options: nil)
-                    } else {
-                        BleLogger.trace("connection attempt deferred due to reason device is non connectable")
-                    }
+                if sess.isConnectable() {
+                    self.updateSessionState(sess, state: .sessionOpening)
+                    self.manager.connect(sess.peripheral, options: nil)
                 } else {
-                    BleLogger.trace("connection attempt deferred due to reason device rssi is too low or invalid: \(RSSI.int32Value)")
+                    BleLogger.trace("connection attempt deferred due to reason device is non connectable")
                 }
             }
         })
@@ -252,7 +250,7 @@ extension CBDeviceListenerImpl: CBScanningProtocol {
 }
 
 extension CBDeviceListenerImpl: BleDeviceListener {
-    // api callbacks
+   
     public func blePowered() -> Bool{
         return manager.state == .poweredOn
     }

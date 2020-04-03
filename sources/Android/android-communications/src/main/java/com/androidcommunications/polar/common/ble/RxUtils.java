@@ -1,12 +1,7 @@
 package com.androidcommunications.polar.common.ble;
 
-import android.util.Pair;
-
 import com.androidcommunications.polar.api.ble.exceptions.BleDisconnected;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattTxInterface;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import io.reactivex.BackpressureStrategy;

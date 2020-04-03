@@ -47,7 +47,7 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 ### Project structure
 * [polar-sdk-ios](polar-sdk-ios/) contains compiled iOS sdk, dependencies and documentation
 * [polar-sdk-android](polar-sdk-android/) contains compiled Android sdk and documentation
-* [demos](demos/) contains both Android and iOS demo applications using various subsets from sdk
+* [demos](demos/) contains Android ecg demo application 
 * [examples](examples/) contains both android and ios example app utilizing all features from sdk 
 * [gatt specification](technical_documentation/Polar_Measurement_Data_Specification.pdf) contains gatt specification for polar measurement data streaming
 * [H10 ecg technical document](technical_documentation/H10_ECG_Explained.docx)

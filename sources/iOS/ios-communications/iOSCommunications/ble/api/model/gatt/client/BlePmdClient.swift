@@ -233,8 +233,8 @@ public class BlePmdClient: BleGattClientBase {
     }
     
     // from base
-    override public func reset() {
-        super.reset()
+    override public func disconnected() {
+        super.disconnected()
         RxUtils.postErrorAndClearList(observersAcc, error: BleGattException.gattDisconnected)
         RxUtils.postErrorAndClearList(observersEcg, error: BleGattException.gattDisconnected)
         RxUtils.postErrorAndClearList(observersPpg, error: BleGattException.gattDisconnected)
@@ -267,7 +267,7 @@ public class BlePmdClient: BleGattClientBase {
                 let frameType = data[9]
                 let samples = data.subdata(in: 10..<data.count)
                 switch (data[0] ) {
-                case 0: // ECG
+                case Pmd.PmdMeasurementType.ecg.rawValue:
                     if frameType <= 2 {
                         RxUtils.emitNext(observersEcg) { (emitter) in
                             let ecgSamples = Pmd.buildEcgSamples(frameType, data: samples, timeStamp: timeStamp)
@@ -276,14 +276,16 @@ public class BlePmdClient: BleGattClientBase {
                     } else {
                         BleLogger.error("Unknown ECG frame received")
                     }
-                case 1: // PPG
+                case Pmd.PmdMeasurementType.ppg.rawValue:
                     if frameType == 0 {
                         RxUtils.emitNext(observersPpg) { (emitter) in
                             let ppgSamples = Pmd.buildPpgSamples(samples, timeStamp: timeStamp)
                             emitter.obs.onNext(ppgSamples)
                         }
+                    } else {
+                        BleLogger.error("Unknown PPG frame received")
                     }
-                case 2: // ACC
+                case Pmd.PmdMeasurementType.acc.rawValue:
                     if frameType <= 2 {
                         RxUtils.emitNext(observersAcc) { (emitter) in
                             let accSamples = Pmd.buildAccSamples(frameType, data: samples, timeStamp: timeStamp)
@@ -292,7 +294,7 @@ public class BlePmdClient: BleGattClientBase {
                     } else {
                         BleLogger.error("Unknown ACC frame received")
                     }
-                case 3: // PPI
+                case Pmd.PmdMeasurementType.ppi.rawValue:
                     if frameType == 0 {
                         RxUtils.emitNext(observersPpi) { (emitter) in
                             let ppiSamples = Pmd.buildPpiSamples(samples, timeStamp: timeStamp)
@@ -301,7 +303,7 @@ public class BlePmdClient: BleGattClientBase {
                     } else {
                         BleLogger.error("Unknown PPI frame received")
                     }
-                case 4: // BIOZ
+                case Pmd.PmdMeasurementType.bioz.rawValue:
                     if frameType == 0 {
                         RxUtils.emitNext(observersBioz) { (emitter) in
                             let biozSamples = Pmd.buildBiozSamples(samples, timeStamp: timeStamp)
@@ -311,7 +313,7 @@ public class BlePmdClient: BleGattClientBase {
                         BleLogger.error("Unknown BIOZ frame received")
                     }
                 default:
-                    break
+                    BleLogger.trace("Non handled stream type received")
                 }
             } else {
                 BleLogger.error("PMD MTU attribute error: \(err)")
@@ -417,7 +419,7 @@ public class BlePmdClient: BleGattClientBase {
                     return item === object
                 })
             }
-        }.subscribeOn(baseConcurrentDispatchQueue)
+        }
     }
     
     public override func clientReady(_ checkConnection: Bool) -> Completable {

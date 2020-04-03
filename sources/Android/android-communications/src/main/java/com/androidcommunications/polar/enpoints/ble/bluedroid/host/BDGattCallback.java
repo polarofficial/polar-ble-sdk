@@ -10,7 +10,6 @@ import android.content.Context;
 import android.os.Build;
 
 import com.androidcommunications.polar.api.ble.BleLogger;
-import com.androidcommunications.polar.api.ble.model.gatt.BleGattBase;
 import com.androidcommunications.polar.common.ble.RxUtils;
 import com.androidcommunications.polar.enpoints.ble.common.connection.ConnectionHandler;
 

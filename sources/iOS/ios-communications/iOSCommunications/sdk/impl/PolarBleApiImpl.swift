@@ -5,7 +5,9 @@ import CoreBluetooth
 import RxSwift
 
 /// Default implementation
-@objc class PolarBleApiImpl: NSObject {
+@objc class PolarBleApiImpl: NSObject,
+    BleDeviceSessionStateObserver,
+    BlePowerStateObserver {
     
     weak var deviceHrObserver: PolarBleApiDeviceHrObserver?
     weak var deviceFeaturesObserver: PolarBleApiDeviceFeaturesObserver?
@@ -32,7 +34,7 @@ import RxSwift
     let queue: DispatchQueue
     let scheduler: SerialDispatchQueueScheduler
     var connectSubscriptions = [String : Disposable]()
-    let serviceList = [CBUUID.init(string: "180D"),CBUUID.init(string: "FEEE")]
+    var serviceList = [CBUUID.init(string: "180D")]
     
     required public init(_ queue: DispatchQueue, features: Int) {
         var clientList: [(_ gattServiceTransmitter: BleAttributeTransportProtocol) -> BleGattClientBase] = []
@@ -50,6 +52,7 @@ import RxSwift
         }
         if ((features & Features.polarFileTransfer.rawValue) != 0) {
             clientList.append(BlePsFtpClient.init)
+            serviceList.append(CBUUID.init(string: "FEEE"))
         }
         self.queue = queue
         self.listener = CBDeviceListenerImpl(queue, clients: clientList, identifier: 0)
@@ -57,44 +60,8 @@ import RxSwift
         self.scheduler = SerialDispatchQueueScheduler(queue: queue, internalSerialQueueName: "BleApiScheduler")
         super.init()
         self.listener.scanPreFilter = deviceFilter
-        _ = listener.monitorDeviceSessionState().observeOn(scheduler).subscribe{ e in
-            switch e {
-                case .completed:
-                    self.logMessage("completed")
-                case .error(let error):
-                    self.logMessage("\(error)")
-                case .next(let value):
-                    let info = PolarDeviceInfo(
-                        value.session.advertisementContent.polarDeviceIdUntouched.count != 0 ? value.session.advertisementContent.polarDeviceIdUntouched : value.session.address.uuidString,
-                            value.session.address, Int(value.session.advertisementContent.rssiFilter.rssi),value.session.advertisementContent.name,true)
-                    if(value.state == .sessionOpen) {
-                        self.observer?.deviceConnected(info)
-                        self.setupDevice(value.session)
-                    } else if((value.state == .sessionClosed &&
-                               value.session.previousState == .sessionClosing ) ||
-                              (value.state == .sessionOpenPark
-                                && value.session.previousState == .sessionOpen)) {
-                        self.observer?.deviceDisconnected(info)
-                    } else if(value.state == .sessionOpening){
-                        self.observer?.deviceConnecting(info)
-                }
-            }
-        }
-        _ = listener.monitorBleState().observeOn(scheduler).subscribe{ e in
-            switch e {
-            case .completed:
-                break
-            case .error(let error):
-                self.logMessage("\(error)")
-            case .next(let value):
-                if value == BleState.poweredOn {
-                    self.powerStateObserver?.blePowerOn()
-                } else if value == BleState.poweredOff {
-                    self.powerStateObserver?.blePowerOff()
-                }
-            }
-        }
-        
+        self.listener.deviceSessionStateObserver = self
+        self.listener.powerStateObserver = self
         BleLogger.setLogLevel(BleLogger.LOG_LEVEL_TRACE | BleLogger.LOG_LEVEL_ERROR)
         BleLogger.setLogger(self)
         #if os(iOS)
@@ -108,6 +75,44 @@ import RxSwift
         NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIApplication.didEnterBackgroundNotification, object: nil)
         #endif
+    }
+    
+    // from BlePowerStateObserver
+    func powerStateChanged(_ state: BleState) {
+        switch state {
+        case .poweredOn:
+            self.powerStateObserver?.blePowerOn()
+        case .resetting: fallthrough
+        case .poweredOff:
+            self.powerStateObserver?.blePowerOff()
+        case .unknown: fallthrough
+        case .unsupported: fallthrough
+        case .unauthorized:
+            break
+        }
+    }
+    
+    // from BleDeviceSessionStateObserver
+    func stateChanged(_ session: BleDeviceSession) {
+        let info = PolarDeviceInfo(
+           session.advertisementContent.polarDeviceIdUntouched.count != 0 ? session.advertisementContent.polarDeviceIdUntouched : session.address.uuidString,
+               session.address, Int(session.advertisementContent.rssiFilter.rssi),session.advertisementContent.name,true)
+        switch session.state {
+           case .sessionOpen:
+               self.observer?.deviceConnected(info)
+               self.setupDevice(session)
+           case .sessionOpenPark where
+               session.previousState == .sessionOpen: fallthrough
+           case .sessionClosed where
+               session.previousState == .sessionClosing:
+               self.observer?.deviceDisconnected(info)
+           case .sessionOpening:
+               self.observer?.deviceConnecting(info)
+           case .sessionClosed: fallthrough
+           case .sessionOpenPark: fallthrough
+           case .sessionClosing:
+               break
+        }
     }
     
     @objc private func foreground() {
@@ -187,6 +192,7 @@ import RxSwift
         let deviceId = session.advertisementContent.polarDeviceIdUntouched.count != 0 ?
             session.advertisementContent.polarDeviceIdUntouched :
             session.address.uuidString
+        // TODO use flatMap
         _ = session.monitorServicesDiscovered(true).observeOn(
             scheduler).subscribe{ e in
                 switch e {
@@ -210,6 +216,8 @@ import RxSwift
                                                 deviceId, data: (hr: UInt8(value.hr), rrs: value.rrs, rrsMs: rrsMs, contact: value.sensorContact, contactSupported: value.sensorContactSupported))
                                         case .error(let error):
                                             self.logMessage("\(error)")
+                                        @unknown default:
+                                            fatalError()
                                     }
                             }
                         } else if uuid.isEqual(BleBasClient.BATTERY_SERVICE) {
@@ -223,7 +231,9 @@ import RxSwift
                                                 deviceId, batteryLevel: UInt(value))
                                         case .error(let error):
                                             self.logMessage("\(error)")
-                                    }
+                                        @unknown default:
+                                            fatalError()
+                                }
                             }
                         } else if uuid.isEqual(BleDisClient.DIS_SERVICE) {
                             let disClient = session.fetchGattClient(BleDisClient.DIS_SERVICE) as! BleDisClient
@@ -235,6 +245,8 @@ import RxSwift
                                         self.deviceInfoObserver?.disInformationReceived(deviceId, uuid: value.0, value: value.1)
                                     case .error(let error):
                                         self.logMessage("\(error)")
+                                    @unknown default:
+                                        fatalError()
                                 }
                             }
                         } else if uuid.isEqual(BlePmdClient.PMD_SERVICE) {
@@ -259,6 +271,8 @@ import RxSwift
                                     }
                                 case .error(let err):
                                     self.logMessage("\(err)")
+                                @unknown default:
+                                    fatalError()
                                 }
                             }
                         } else if uuid.isEqual(BlePsFtpClient.PSFTP_SERVICE) {
@@ -272,12 +286,16 @@ import RxSwift
                                     }
                                 case .error(let error):
                                     self.logMessage("\(error)")
+                                @unknown default:
+                                    fatalError()
                                 }
                             }
                         }
                     }
                 case .error(let error):
                     self.logMessage("\(error)")
+                @unknown default:
+                    fatalError()
                 }
           }
     }
@@ -349,6 +367,8 @@ extension PolarBleApiImpl: PolarBleApi {
                             value.connectionType = .directConnection
                             #endif
                             self.listener.openSessionDirect(value)
+                        @unknown default:
+                            fatalError()
                         }
                 }
             }

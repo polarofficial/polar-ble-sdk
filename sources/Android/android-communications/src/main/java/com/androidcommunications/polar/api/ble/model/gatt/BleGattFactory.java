@@ -13,11 +13,8 @@ import com.androidcommunications.polar.api.ble.model.gatt.client.BlePsdClient;
 import com.androidcommunications.polar.api.ble.model.gatt.client.BleRscClient;
 import com.androidcommunications.polar.api.ble.model.gatt.client.psftp.BlePsFtpClient;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 public class BleGattFactory {
 

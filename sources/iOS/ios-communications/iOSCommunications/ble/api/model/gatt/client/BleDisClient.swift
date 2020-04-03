@@ -33,8 +33,8 @@ public class BleDisClient: BleGattClientBase {
     }
     
     // from base
-    override public func reset() {
-        super.reset()
+    override public func disconnected() {
+        super.disconnected()
         disInformation.removeAll()
         RxUtils.postErrorAndClearList(observers,error: BleGattException.gattDisconnected)
     }

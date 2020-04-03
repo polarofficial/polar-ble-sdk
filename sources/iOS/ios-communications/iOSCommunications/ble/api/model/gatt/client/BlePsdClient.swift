@@ -95,8 +95,8 @@ public class BlePsdClient: BleGattClientBase {
     }
     
     // from base
-    override public func reset() {
-        super.reset()
+    override public func disconnected() {
+        super.disconnected()
         RxUtils.postErrorAndClearList(observers, error: BleGattException.gattDisconnected)
         RxUtils.postErrorOnSingleAndClearList(observersFeature, error: BleGattException.gattDisconnected)
         psdCpInputQueue.removeAll()

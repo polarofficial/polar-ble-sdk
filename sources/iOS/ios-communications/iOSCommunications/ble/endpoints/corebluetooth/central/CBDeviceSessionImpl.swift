@@ -84,7 +84,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     
     func reset() {
         for client in gattClients {
-            client.reset()
+            client.disconnected()
         }
         serviceCount.set(0)
         if isBleQueue() {
