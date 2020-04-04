@@ -7,7 +7,6 @@ import android.content.Context;
 import android.os.Build;
 import android.os.ParcelUuid;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.util.Pair;
 
 import com.androidcommunications.polar.api.ble.BleDeviceListener;
@@ -64,7 +63,6 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Timed;
 import polar.com.sdk.api.PolarBleApi;
-import polar.com.sdk.api.PolarBleApiCallback;
 import polar.com.sdk.api.PolarBleApiCallbackProvider;
 import polar.com.sdk.api.errors.PolarDeviceDisconnected;
 import polar.com.sdk.api.errors.PolarDeviceNotFound;
@@ -83,17 +81,22 @@ import polar.com.sdk.api.model.PolarHrData;
 import polar.com.sdk.api.model.PolarOhrPPGData;
 import polar.com.sdk.api.model.PolarOhrPPIData;
 import polar.com.sdk.api.model.PolarSensorSetting;
-import protocol.PftpNotification;
 import protocol.PftpRequest;
 import protocol.PftpResponse;
 
+import static com.androidcommunications.polar.api.ble.model.BleDeviceSession.DeviceSessionState.SESSION_CLOSED;
+import static com.androidcommunications.polar.api.ble.model.BleDeviceSession.DeviceSessionState.SESSION_OPEN;
+import static com.androidcommunications.polar.api.ble.model.BleDeviceSession.DeviceSessionState.SESSION_OPENING;
+
 /**
- *The default implementation of the Polar API
+ * The default implementation of the Polar API
  */
-public class BDBleApiImpl extends PolarBleApi {
+public class BDBleApiImpl extends PolarBleApi implements
+        BleDeviceListener.BleDeviceSessionStateChangedCallback,
+        BleDeviceListener.BlePowerStateChangedCallback {
     protected final static String TAG = BDBleApiImpl.class.getSimpleName();
     protected BleDeviceListener listener;
-    protected Map<String,Disposable> connectSubscriptions = new HashMap<>();
+    protected Map<String, Disposable> connectSubscriptions = new HashMap<>();
     protected Scheduler scheduler;
     protected PolarBleApiCallbackProvider callback;
     protected PolarBleApiLogger logger;
@@ -109,100 +112,35 @@ public class BDBleApiImpl extends PolarBleApi {
     public BDBleApiImpl(final Context context, int features) {
         super(features);
         Set<Class<? extends BleGattBase>> clients = new HashSet<>();
-        if((this.features & PolarBleApi.FEATURE_HR)!=0){
+        if ((this.features & PolarBleApi.FEATURE_HR) != 0) {
             clients.add(BleHrClient.class);
         }
-        if((this.features & PolarBleApi.FEATURE_DEVICE_INFO)!=0){
+        if ((this.features & PolarBleApi.FEATURE_DEVICE_INFO) != 0) {
             clients.add(BleDisClient.class);
         }
-        if((this.features & PolarBleApi.FEATURE_BATTERY_INFO)!=0){
+        if ((this.features & PolarBleApi.FEATURE_BATTERY_INFO) != 0) {
             clients.add(BleBattClient.class);
         }
-        if((this.features & PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING)!=0){
+        if ((this.features & PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING) != 0) {
             clients.add(BlePMDClient.class);
         }
-        if((this.features & PolarBleApi.FEATURE_POLAR_FILE_TRANSFER)!=0){
+        if ((this.features & PolarBleApi.FEATURE_POLAR_FILE_TRANSFER) != 0) {
             clients.add(BlePsFtpClient.class);
         }
         listener = new BDDeviceListenerImpl(context, clients);
         listener.setScanPreFilter(filter);
+        listener.setDeviceSessionStateChangedCallback(this);
+        listener.setBlePowerStateCallback(this);
         scheduler = AndroidSchedulers.from(context.getMainLooper());
-        listener.monitorDeviceSessionState(null).observeOn(scheduler).subscribe(
-                new Consumer<Pair<BleDeviceSession, BleDeviceSession.DeviceSessionState>>() {
-                    @Override
-                    public void accept(Pair<BleDeviceSession, BleDeviceSession.DeviceSessionState> pair) throws Exception {
-                        PolarDeviceInfo info = new PolarDeviceInfo(
-                                pair.first.getPolarDeviceId().length() != 0 ?
-                                        pair.first.getPolarDeviceId() : pair.first.getAddress(),
-                                pair.first.getAddress(),
-                                pair.first.getRssi(),pair.first.getName(),true);
-                        switch (pair.second){
-                            case SESSION_OPEN:
-                                if(callback!=null){
-                                    callback.deviceConnected(info);
-                                }
-                                setupDevice(pair.first);
-                                break;
-                            case SESSION_CLOSED:
-                                if( callback != null ) {
-                                    if (pair.first.getPreviousState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN ||
-                                            pair.first.getPreviousState() == BleDeviceSession.DeviceSessionState.SESSION_CLOSING){
-                                        callback.deviceDisconnected(info);
-                                    }
-                                }
-                                break;
-                            case SESSION_OPENING:
-                                if(callback != null){
-                                    callback.deviceConnecting(info);
-                                }
-                                break;
-                        }
-                    }
-                },
-                new Consumer<Throwable>() {
-                    @Override
-                    public void accept(Throwable throwable) throws Exception {
-                        logError(throwable.getMessage());
-                    }
-                },
-                new Action() {
-                    @Override
-                    public void run() throws Exception {
-
-                    }
-                }
-        );
-        listener.monitorBleState().observeOn(scheduler).subscribe(
-                new Consumer<Boolean>() {
-                    @Override
-                    public void accept(Boolean aBoolean) throws Exception {
-                        if(callback != null){
-                            callback.blePowerStateChanged(aBoolean);
-                        }
-                    }
-                },
-                new Consumer<Throwable>() {
-                    @Override
-                    public void accept(Throwable throwable) throws Exception {
-                        logError(throwable.getMessage());
-                    }
-                },
-                new Action() {
-                    @Override
-                    public void run() throws Exception {
-
-                    }
-                }
-        );
         BleLogger.setLoggerInterface(new BleLogger.BleLoggerInterface() {
             @Override
             public void d(String tag, String msg) {
-                log(tag+"/"+msg);
+                log(tag + "/" + msg);
             }
 
             @Override
             public void e(String tag, String msg) {
-                logError(tag+"/"+msg);
+                logError(tag + "/" + msg);
             }
 
             @Override
@@ -239,7 +177,7 @@ public class BDBleApiImpl extends PolarBleApi {
 
     @Override
     public void setPolarFilter(boolean enable) {
-        if(!enable) {
+        if (!enable) {
             listener.setScanPreFilter(null);
         } else {
             listener.setScanPreFilter(filter);
@@ -292,30 +230,30 @@ public class BDBleApiImpl extends PolarBleApi {
                     .setSeconds(cal.get(Calendar.SECOND))
                     .setMillis(cal.get(Calendar.MILLISECOND)).build();
             builder.setDate(date).setTime(time).setTzOffset((int) TimeUnit.MINUTES.convert(cal.get(Calendar.ZONE_OFFSET), TimeUnit.MILLISECONDS));
-            return client.query(PftpRequest.PbPFtpQuery.SET_LOCAL_TIME_VALUE,builder.build().toByteArray()).toObservable().ignoreElements();
-        } catch (Throwable error){
+            return client.query(PftpRequest.PbPFtpQuery.SET_LOCAL_TIME_VALUE, builder.build().toByteArray()).toObservable().ignoreElements();
+        } catch (Throwable error) {
             return Completable.error(error);
         }
     }
 
     @Override
     public Single<PolarSensorSetting> requestAccSettings(String identifier) {
-        return querySettings(identifier,BlePMDClient.PmdMeasurementType.ACC);
+        return querySettings(identifier, BlePMDClient.PmdMeasurementType.ACC);
     }
 
     @Override
     public Single<PolarSensorSetting> requestEcgSettings(String identifier) {
-        return querySettings(identifier,BlePMDClient.PmdMeasurementType.ECG);
+        return querySettings(identifier, BlePMDClient.PmdMeasurementType.ECG);
     }
 
     @Override
     public Single<PolarSensorSetting> requestPpgSettings(String identifier) {
-        return querySettings(identifier,BlePMDClient.PmdMeasurementType.PPG);
+        return querySettings(identifier, BlePMDClient.PmdMeasurementType.PPG);
     }
 
     @Override
-    public Single<PolarSensorSetting> requestBiozSettings(final String identifier){
-        return querySettings(identifier,BlePMDClient.PmdMeasurementType.BIOZ);
+    public Single<PolarSensorSetting> requestBiozSettings(final String identifier) {
+        return querySettings(identifier, BlePMDClient.PmdMeasurementType.BIOZ);
     }
 
     protected Single<PolarSensorSetting> querySettings(final String identifier, final BlePMDClient.PmdMeasurementType type) {
@@ -328,7 +266,7 @@ public class BDBleApiImpl extends PolarBleApi {
                     return new PolarSensorSetting(setting.settings, type);
                 }
             });
-        } catch (Throwable e){
+        } catch (Throwable e) {
             return Single.error(e);
         }
     }
@@ -349,7 +287,7 @@ public class BDBleApiImpl extends PolarBleApi {
         return Completable.create(new CompletableOnSubscribe() {
             @Override
             public void subscribe(CompletableEmitter emitter) throws Exception {
-                if( service == null || service.matches("([0-9a-fA-F]{4})") ) {
+                if (service == null || service.matches("([0-9a-fA-F]{4})")) {
                     emitter.onComplete();
                 } else {
                     emitter.tryOnError(new PolarInvalidArgument("Invalid service string format"));
@@ -358,21 +296,21 @@ public class BDBleApiImpl extends PolarBleApi {
         }).andThen(listener.search(false).filter(new Predicate<BleDeviceSession>() {
             @Override
             public boolean test(BleDeviceSession bleDeviceSession) throws Exception {
-                if( bleDeviceSession.getMedianRssi() >= rssiLimit &&
-                    bleDeviceSession.isConnectableAdvertisement() &&
-                    (polarDeviceType == null || polarDeviceType.equals(bleDeviceSession.getPolarDeviceType())) &&
-                    (service == null || bleDeviceSession.getAdvertisementContent().containsService(service))    ) {
-                        if(start[0] == 0){
-                            start[0] = System.currentTimeMillis();
-                        }
-                        return true;
+                if (bleDeviceSession.getMedianRssi() >= rssiLimit &&
+                        bleDeviceSession.isConnectableAdvertisement() &&
+                        (polarDeviceType == null || polarDeviceType.equals(bleDeviceSession.getPolarDeviceType())) &&
+                        (service == null || bleDeviceSession.getAdvertisementContent().containsService(service))) {
+                    if (start[0] == 0) {
+                        start[0] = System.currentTimeMillis();
+                    }
+                    return true;
                 }
                 return false;
             }
         }).timestamp().takeUntil(new Predicate<Timed<BleDeviceSession>>() {
             @Override
             public boolean test(Timed<BleDeviceSession> bleDeviceSessionTimed) throws Exception {
-                long diff =  bleDeviceSessionTimed.time(TimeUnit.MILLISECONDS) - start[0];
+                long diff = bleDeviceSessionTimed.time(TimeUnit.MILLISECONDS) - start[0];
                 return (diff >= unit.toMillis(timeout));
             }
         }).reduce(new HashSet<BleDeviceSession>(), new BiFunction<Set<BleDeviceSession>, Timed<BleDeviceSession>, Set<BleDeviceSession>>() {
@@ -405,12 +343,12 @@ public class BDBleApiImpl extends PolarBleApi {
     @Override
     public void connectToDevice(final String identifier) throws PolarInvalidArgument {
         BleDeviceSession session = fetchSession(identifier);
-        if( session == null || session.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_CLOSED ){
-            if( connectSubscriptions.containsKey(identifier) ){
+        if (session == null || session.getSessionState() == SESSION_CLOSED) {
+            if (connectSubscriptions.containsKey(identifier)) {
                 connectSubscriptions.get(identifier).dispose();
                 connectSubscriptions.remove(identifier);
             }
-            if( session != null ){
+            if (session != null) {
                 listener.openSessionDirect(session);
             } else {
                 connectSubscriptions.put(identifier, listener.search(false).filter(new Predicate<BleDeviceSession>() {
@@ -447,14 +385,14 @@ public class BDBleApiImpl extends PolarBleApi {
     @Override
     public void disconnectFromDevice(String identifier) throws PolarInvalidArgument {
         BleDeviceSession session = fetchSession(identifier);
-        if( session != null ){
-            if( session.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN ||
-                    session.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPENING ||
-                    session.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK ) {
+        if (session != null) {
+            if (session.getSessionState() == SESSION_OPEN ||
+                    session.getSessionState() == SESSION_OPENING ||
+                    session.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK) {
                 listener.closeSessionDirect(session);
             }
         }
-        if (connectSubscriptions.containsKey(identifier)){
+        if (connectSubscriptions.containsKey(identifier)) {
             connectSubscriptions.get(identifier).dispose();
             connectSubscriptions.remove(identifier);
         }
@@ -465,7 +403,7 @@ public class BDBleApiImpl extends PolarBleApi {
         try {
             final BleDeviceSession session = sessionPsFtpClientReady(identifier);
             final BlePsFtpClient client = (BlePsFtpClient) session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE);
-            if(session.getPolarDeviceType().equals("H10")) {
+            if (session.getPolarDeviceType().equals("H10")) {
                 Types.PbSampleType t = type == SampleType.HR ?
                         Types.PbSampleType.SAMPLE_TYPE_HEART_RATE :
                         Types.PbSampleType.SAMPLE_TYPE_RR_INTERVAL;
@@ -480,7 +418,7 @@ public class BDBleApiImpl extends PolarBleApi {
                 });
             }
             return Completable.error(new PolarOperationNotSupported());
-        } catch (Throwable error){
+        } catch (Throwable error) {
             return Completable.error(error);
         }
     }
@@ -490,7 +428,7 @@ public class BDBleApiImpl extends PolarBleApi {
         try {
             final BleDeviceSession session = sessionPsFtpClientReady(identifier);
             final BlePsFtpClient client = (BlePsFtpClient) session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE);
-            if(session.getPolarDeviceType().equals("H10")) {
+            if (session.getPolarDeviceType().equals("H10")) {
                 return client.query(PftpRequest.PbPFtpQuery.REQUEST_STOP_RECORDING_VALUE, null).toObservable().ignoreElements().onErrorResumeNext(new Function<Throwable, CompletableSource>() {
                     @Override
                     public CompletableSource apply(Throwable throwable) throws Exception {
@@ -499,22 +437,22 @@ public class BDBleApiImpl extends PolarBleApi {
                 });
             }
             return Completable.error(new PolarOperationNotSupported());
-        } catch (Throwable error){
+        } catch (Throwable error) {
             return Completable.error(error);
         }
     }
 
     @Override
-    public Single<Pair<Boolean,String>> requestRecordingStatus(String identifier) {
+    public Single<Pair<Boolean, String>> requestRecordingStatus(String identifier) {
         try {
             final BleDeviceSession session = sessionPsFtpClientReady(identifier);
             final BlePsFtpClient client = (BlePsFtpClient) session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE);
-            if(session.getPolarDeviceType().equals("H10")) {
-                return client.query(PftpRequest.PbPFtpQuery.REQUEST_RECORDING_STATUS_VALUE, null).map(new Function<ByteArrayOutputStream, Pair<Boolean,String>>() {
+            if (session.getPolarDeviceType().equals("H10")) {
+                return client.query(PftpRequest.PbPFtpQuery.REQUEST_RECORDING_STATUS_VALUE, null).map(new Function<ByteArrayOutputStream, Pair<Boolean, String>>() {
                     @Override
-                    public Pair<Boolean,String> apply(ByteArrayOutputStream byteArrayOutputStream) throws Exception {
+                    public Pair<Boolean, String> apply(ByteArrayOutputStream byteArrayOutputStream) throws Exception {
                         PftpResponse.PbRequestRecordingStatusResult result = PftpResponse.PbRequestRecordingStatusResult.parseFrom(byteArrayOutputStream.toByteArray());
-                        return new Pair<>(result.getRecordingOn(),result.hasSampleDataIdentifier() ? result.getSampleDataIdentifier() : "");
+                        return new Pair<>(result.getRecordingOn(), result.hasSampleDataIdentifier() ? result.getSampleDataIdentifier() : "");
                     }
                 }).onErrorResumeNext(new Function<Throwable, SingleSource<? extends Pair<Boolean, String>>>() {
                     @Override
@@ -524,14 +462,14 @@ public class BDBleApiImpl extends PolarBleApi {
                 });
             }
             return Single.error(new PolarOperationNotSupported());
-        } catch (Throwable error){
+        } catch (Throwable error) {
             return Single.error(error);
         }
     }
 
     @Override
     public Flowable<PolarExerciseEntry> listExercises(String identifier) {
-        try{
+        try {
             final BleDeviceSession session = sessionPsFtpClientReady(identifier);
             final BlePsFtpClient client = (BlePsFtpClient) session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE);
             switch (session.getPolarDeviceType()) {
@@ -580,25 +518,41 @@ public class BDBleApiImpl extends PolarBleApi {
                 default:
                     return Flowable.error(new PolarOperationNotSupported());
             }
-        } catch (Throwable error){
+        } catch (Throwable error) {
             return Flowable.error(error);
         }
     }
 
     @Override
     public Single<PolarExerciseData> fetchExercise(String identifier, PolarExerciseEntry entry) {
-        try{
+        try {
             final BleDeviceSession session = sessionPsFtpClientReady(identifier);
             final BlePsFtpClient client = (BlePsFtpClient) session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE);
             protocol.PftpRequest.PbPFtpOperation.Builder builder = protocol.PftpRequest.PbPFtpOperation.newBuilder();
             builder.setCommand(PftpRequest.PbPFtpOperation.Command.GET);
             builder.setPath(entry.path);
-            if(session.getPolarDeviceType().equals("OH1") || session.getPolarDeviceType().equals("H10")) {
+            if (session.getPolarDeviceType().equals("OH1") || session.getPolarDeviceType().equals("H10")) {
+
+                /*
+                TODO to improve throughput (device will request parameter update from mobile):
+
+                Add these two notifications before reading ex
+                client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.START_SYNC_VALUE, null).andThen(
+                        client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE, null)
+                );
+
+                Add these two notifications after reading ex
+                client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.STOP_SYNC_VALUE,
+                        PftpNotification.PbPFtpStopSyncParams.newBuilder().setCompleted(true).build().toByteArray()).andThen(
+                        client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.TERMINATE_SESSION_VALUE, null)
+                );
+                 */
+
                 return client.request(builder.build().toByteArray()).map(new Function<ByteArrayOutputStream, PolarExerciseData>() {
                     @Override
                     public PolarExerciseData apply(ByteArrayOutputStream byteArrayOutputStream) throws Exception {
                         ExerciseSamples.PbExerciseSamples samples = ExerciseSamples.PbExerciseSamples.parseFrom(byteArrayOutputStream.toByteArray());
-                        if(samples.hasRrSamples()){
+                        if (samples.hasRrSamples()) {
                             return new PolarExerciseData(samples.getRecordingInterval().getSeconds(), samples.getRrSamples().getRrIntervalsList());
                         } else {
                             return new PolarExerciseData(samples.getRecordingInterval().getSeconds(), samples.getHeartRateSamplesList());
@@ -612,21 +566,21 @@ public class BDBleApiImpl extends PolarBleApi {
                 });
             }
             return Single.error(new PolarOperationNotSupported());
-        } catch (Throwable error){
+        } catch (Throwable error) {
             return Single.error(error);
         }
     }
 
     @Override
     public Completable removeExercise(String identifier, PolarExerciseEntry entry) {
-        try{
+        try {
             final BleDeviceSession session = sessionPsFtpClientReady(identifier);
             final BlePsFtpClient client = (BlePsFtpClient) session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE);
-            if(session.getPolarDeviceType().equals("OH1")){
+            if (session.getPolarDeviceType().equals("OH1")) {
                 protocol.PftpRequest.PbPFtpOperation.Builder builder = protocol.PftpRequest.PbPFtpOperation.newBuilder();
                 builder.setCommand(PftpRequest.PbPFtpOperation.Command.GET);
                 final String[] components = entry.path.split("/");
-                final String exerciseParent =  "/U/0/" + components[3] + "/E/";
+                final String exerciseParent = "/U/0/" + components[3] + "/E/";
                 builder.setPath(exerciseParent);
                 return client.request(builder.build().toByteArray()).flatMap(new Function<ByteArrayOutputStream, SingleSource<?>>() {
                     @Override
@@ -634,7 +588,7 @@ public class BDBleApiImpl extends PolarBleApi {
                         PftpResponse.PbPFtpDirectory directory = PftpResponse.PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray());
                         protocol.PftpRequest.PbPFtpOperation.Builder removeBuilder = protocol.PftpRequest.PbPFtpOperation.newBuilder();
                         removeBuilder.setCommand(PftpRequest.PbPFtpOperation.Command.REMOVE);
-                        if( directory.getEntriesCount() <= 1 ){
+                        if (directory.getEntriesCount() <= 1) {
                             // remove entire directory
                             removeBuilder.setPath("/U/0/" + components[3] + "/");
                         } else {
@@ -649,7 +603,7 @@ public class BDBleApiImpl extends PolarBleApi {
                         return Completable.error(handleError(throwable));
                     }
                 });
-            } else if(session.getPolarDeviceType().equals("H10")){
+            } else if (session.getPolarDeviceType().equals("H10")) {
                 protocol.PftpRequest.PbPFtpOperation.Builder builder = protocol.PftpRequest.PbPFtpOperation.newBuilder();
                 builder.setCommand(PftpRequest.PbPFtpOperation.Command.REMOVE);
                 builder.setPath(entry.path);
@@ -661,7 +615,7 @@ public class BDBleApiImpl extends PolarBleApi {
                 });
             }
             return Completable.error(new PolarOperationNotSupported());
-        } catch (Throwable error){
+        } catch (Throwable error) {
             return Completable.error(error);
         }
     }
@@ -672,10 +626,10 @@ public class BDBleApiImpl extends PolarBleApi {
             @Override
             public PolarDeviceInfo apply(BleDeviceSession bleDeviceSession) throws Exception {
                 return new PolarDeviceInfo(bleDeviceSession.getPolarDeviceId(),
-                                           bleDeviceSession.getAddress(),
-                                           bleDeviceSession.getRssi(),
-                                           bleDeviceSession.getName(),
-                                           bleDeviceSession.isConnectableAdvertisement());
+                        bleDeviceSession.getAddress(),
+                        bleDeviceSession.getRssi(),
+                        bleDeviceSession.getName(),
+                        bleDeviceSession.isConnectableAdvertisement());
             }
         });
     }
@@ -693,7 +647,7 @@ public class BDBleApiImpl extends PolarBleApi {
             @Override
             public PolarHrBroadcastData apply(BleDeviceSession bleDeviceSession) throws Exception {
                 BlePolarHrAdvertisement advertisement = bleDeviceSession.getBlePolarHrAdvertisement();
-                return new PolarHrBroadcastData( new PolarDeviceInfo(bleDeviceSession.getPolarDeviceId(),
+                return new PolarHrBroadcastData(new PolarDeviceInfo(bleDeviceSession.getPolarDeviceId(),
                         bleDeviceSession.getAddress(),
                         bleDeviceSession.getRssi(),
                         bleDeviceSession.getName(),
@@ -711,27 +665,27 @@ public class BDBleApiImpl extends PolarBleApi {
             final BleDeviceSession session = sessionPmdClientReady(identifier);
             final BlePMDClient client = (BlePMDClient) session.fetchClient(BlePMDClient.PMD_SERVICE);
             return client.startMeasurement(BlePMDClient.PmdMeasurementType.ECG, setting.map2PmdSettings()).andThen(
-                client.monitorEcgNotifications(true).map(new Function<BlePMDClient.EcgData, PolarEcgData>() {
-                    @Override
-                    public PolarEcgData apply(BlePMDClient.EcgData ecgData) throws Exception {
-                        List<Integer> samples = new ArrayList<>();
-                        for( BlePMDClient.EcgData.EcgSample s : ecgData.ecgSamples ){
-                            samples.add(s.microVolts);
+                    client.monitorEcgNotifications(true).map(new Function<BlePMDClient.EcgData, PolarEcgData>() {
+                        @Override
+                        public PolarEcgData apply(BlePMDClient.EcgData ecgData) throws Exception {
+                            List<Integer> samples = new ArrayList<>();
+                            for (BlePMDClient.EcgData.EcgSample s : ecgData.ecgSamples) {
+                                samples.add(s.microVolts);
+                            }
+                            return new PolarEcgData(samples, ecgData.timeStamp);
                         }
-                        return new PolarEcgData(samples,ecgData.timeStamp);
-                    }
-                }).onErrorResumeNext(new Function<Throwable, Publisher<? extends PolarEcgData>>() {
-                    @Override
-                    public Publisher<? extends PolarEcgData> apply(Throwable throwable) throws Exception {
-                        return Flowable.error(handleError(throwable));
-                    }
-                }).doFinally(new Action() {
-                    @Override
-                    public void run() throws Exception {
-                        stopPmdStreaming(session,client, BlePMDClient.PmdMeasurementType.ECG);
-                    }
-                }));
-        } catch (Throwable t){
+                    }).onErrorResumeNext(new Function<Throwable, Publisher<? extends PolarEcgData>>() {
+                        @Override
+                        public Publisher<? extends PolarEcgData> apply(Throwable throwable) throws Exception {
+                            return Flowable.error(handleError(throwable));
+                        }
+                    }).doFinally(new Action() {
+                        @Override
+                        public void run() throws Exception {
+                            stopPmdStreaming(session, client, BlePMDClient.PmdMeasurementType.ECG);
+                        }
+                    }));
+        } catch (Throwable t) {
             return Flowable.error(t);
         }
     }
@@ -743,27 +697,27 @@ public class BDBleApiImpl extends PolarBleApi {
             final BleDeviceSession session = sessionPmdClientReady(identifier);
             final BlePMDClient client = (BlePMDClient) session.fetchClient(BlePMDClient.PMD_SERVICE);
             return client.startMeasurement(BlePMDClient.PmdMeasurementType.ACC, setting.map2PmdSettings()).andThen(
-                client.monitorAccNotifications(true).map(new Function<BlePMDClient.AccData, PolarAccelerometerData>() {
-                @Override
-                public PolarAccelerometerData apply(BlePMDClient.AccData accData) throws Exception {
-                    List<PolarAccelerometerData.PolarAccelerometerSample> samples = new ArrayList<>();
-                    for( BlePMDClient.AccData.AccSample s : accData.accSamples ){
-                        samples.add(new PolarAccelerometerData.PolarAccelerometerSample(s.x,s.y,s.z));
-                    }
-                    return new PolarAccelerometerData(samples,accData.timeStamp);
-                }
-            }).onErrorResumeNext(new Function<Throwable, Publisher<? extends PolarAccelerometerData>>() {
-                @Override
-                public Publisher<? extends PolarAccelerometerData> apply(Throwable throwable) throws Exception {
-                    return Flowable.error(handleError(throwable));
-                }
-            }).doFinally(new Action() {
-                @Override
-                public void run() throws Exception {
-                    stopPmdStreaming(session,client, BlePMDClient.PmdMeasurementType.ACC);
-                }
-            }));
-        } catch (Throwable t){
+                    client.monitorAccNotifications(true).map(new Function<BlePMDClient.AccData, PolarAccelerometerData>() {
+                        @Override
+                        public PolarAccelerometerData apply(BlePMDClient.AccData accData) throws Exception {
+                            List<PolarAccelerometerData.PolarAccelerometerSample> samples = new ArrayList<>();
+                            for (BlePMDClient.AccData.AccSample s : accData.accSamples) {
+                                samples.add(new PolarAccelerometerData.PolarAccelerometerSample(s.x, s.y, s.z));
+                            }
+                            return new PolarAccelerometerData(samples, accData.timeStamp);
+                        }
+                    }).onErrorResumeNext(new Function<Throwable, Publisher<? extends PolarAccelerometerData>>() {
+                        @Override
+                        public Publisher<? extends PolarAccelerometerData> apply(Throwable throwable) throws Exception {
+                            return Flowable.error(handleError(throwable));
+                        }
+                    }).doFinally(new Action() {
+                        @Override
+                        public void run() throws Exception {
+                            stopPmdStreaming(session, client, BlePMDClient.PmdMeasurementType.ACC);
+                        }
+                    }));
+        } catch (Throwable t) {
             return Flowable.error(t);
         }
     }
@@ -775,27 +729,27 @@ public class BDBleApiImpl extends PolarBleApi {
             final BleDeviceSession session = sessionPmdClientReady(identifier);
             final BlePMDClient client = (BlePMDClient) session.fetchClient(BlePMDClient.PMD_SERVICE);
             return client.startMeasurement(BlePMDClient.PmdMeasurementType.PPG, setting.map2PmdSettings()).andThen(
-                client.monitorPpgNotifications(true).map(new Function<BlePMDClient.PpgData, PolarOhrPPGData>() {
-                    @Override
-                    public PolarOhrPPGData apply(BlePMDClient.PpgData ppgData) throws Exception {
-                        List<PolarOhrPPGData.PolarOhrPPGSample> samples = new ArrayList<>();
-                        for( BlePMDClient.PpgData.PpgSample s : ppgData.ppgSamples ){
-                            samples.add(new PolarOhrPPGData.PolarOhrPPGSample(s.ppg0,s.ppg1,s.ppg2,s.ambient,s.ppgDataSamples,s.ambient1,s.status));
+                    client.monitorPpgNotifications(true).map(new Function<BlePMDClient.PpgData, PolarOhrPPGData>() {
+                        @Override
+                        public PolarOhrPPGData apply(BlePMDClient.PpgData ppgData) throws Exception {
+                            List<PolarOhrPPGData.PolarOhrPPGSample> samples = new ArrayList<>();
+                            for (BlePMDClient.PpgData.PpgSample s : ppgData.ppgSamples) {
+                                samples.add(new PolarOhrPPGData.PolarOhrPPGSample(s.ppg0, s.ppg1, s.ppg2, s.ambient, s.ppgDataSamples, s.ambient1, s.status));
+                            }
+                            return new PolarOhrPPGData(samples, ppgData.timeStamp, ppgData.type);
                         }
-                        return new PolarOhrPPGData(samples,ppgData.timeStamp,ppgData.type);
-                    }
-                }).doFinally(new Action() {
-                    @Override
-                    public void run() throws Exception {
-                        stopPmdStreaming(session,client, BlePMDClient.PmdMeasurementType.PPG);
-                    }
-                })).onErrorResumeNext(new Function<Throwable, Publisher<? extends PolarOhrPPGData>>() {
-                    @Override
-                    public Publisher<? extends PolarOhrPPGData> apply(Throwable throwable) throws Exception {
-                        return Flowable.error(handleError(throwable));
-                    }
-                });
-        } catch (Throwable t){
+                    }).doFinally(new Action() {
+                        @Override
+                        public void run() throws Exception {
+                            stopPmdStreaming(session, client, BlePMDClient.PmdMeasurementType.PPG);
+                        }
+                    })).onErrorResumeNext(new Function<Throwable, Publisher<? extends PolarOhrPPGData>>() {
+                @Override
+                public Publisher<? extends PolarOhrPPGData> apply(Throwable throwable) throws Exception {
+                    return Flowable.error(handleError(throwable));
+                }
+            });
+        } catch (Throwable t) {
             return Flowable.error(t);
         }
     }
@@ -806,38 +760,38 @@ public class BDBleApiImpl extends PolarBleApi {
             final BleDeviceSession session = sessionPmdClientReady(identifier);
             final BlePMDClient client = (BlePMDClient) session.fetchClient(BlePMDClient.PMD_SERVICE);
             return client.startMeasurement(BlePMDClient.PmdMeasurementType.PPI, new BlePMDClient.PmdSetting(new HashMap<BlePMDClient.PmdSetting.PmdSettingType, Integer>())).andThen(
-                client.monitorPpiNotifications(true).map(new Function<BlePMDClient.PpiData, PolarOhrPPIData>() {
-                    @Override
-                    public PolarOhrPPIData apply(BlePMDClient.PpiData ppiData) throws Exception {
-                        List<PolarOhrPPIData.PolarOhrPPISample> samples =  new ArrayList<>();
-                        for(BlePMDClient.PpiData.PPSample ppSample : ppiData.ppSamples){
-                            samples.add(new PolarOhrPPIData.PolarOhrPPISample(ppSample.ppInMs,
-                                                                                ppSample.ppErrorEstimate,
-                                                                                ppSample.hr,
-                                                                        ppSample.blockerBit != 0,
-                                                                        ppSample.skinContactStatus != 0,
-                                                                        ppSample.skinContactSupported != 0));
+                    client.monitorPpiNotifications(true).map(new Function<BlePMDClient.PpiData, PolarOhrPPIData>() {
+                        @Override
+                        public PolarOhrPPIData apply(BlePMDClient.PpiData ppiData) throws Exception {
+                            List<PolarOhrPPIData.PolarOhrPPISample> samples = new ArrayList<>();
+                            for (BlePMDClient.PpiData.PPSample ppSample : ppiData.ppSamples) {
+                                samples.add(new PolarOhrPPIData.PolarOhrPPISample(ppSample.ppInMs,
+                                        ppSample.ppErrorEstimate,
+                                        ppSample.hr,
+                                        ppSample.blockerBit != 0,
+                                        ppSample.skinContactStatus != 0,
+                                        ppSample.skinContactSupported != 0));
+                            }
+                            return new PolarOhrPPIData(ppiData.timestamp, samples);
                         }
-                        return new PolarOhrPPIData(ppiData.timestamp,samples);
-                    }
-                }).doFinally(new Action() {
-                    @Override
-                    public void run() throws Exception {
-                        stopPmdStreaming(session,client, BlePMDClient.PmdMeasurementType.PPI);
-                    }
-                })).onErrorResumeNext(new Function<Throwable, Publisher<? extends PolarOhrPPIData>>() {
-                    @Override
-                    public Publisher<? extends PolarOhrPPIData> apply(Throwable throwable) throws Exception {
-                        return Flowable.error(handleError(throwable));
-                    }
-                });
-        } catch (Throwable t){
+                    }).doFinally(new Action() {
+                        @Override
+                        public void run() throws Exception {
+                            stopPmdStreaming(session, client, BlePMDClient.PmdMeasurementType.PPI);
+                        }
+                    })).onErrorResumeNext(new Function<Throwable, Publisher<? extends PolarOhrPPIData>>() {
+                @Override
+                public Publisher<? extends PolarOhrPPIData> apply(Throwable throwable) throws Exception {
+                    return Flowable.error(handleError(throwable));
+                }
+            });
+        } catch (Throwable t) {
             return Flowable.error(t);
         }
     }
 
     @Override
-    public Flowable<PolarBiozData> startBiozStreaming(final String identifier, PolarSensorSetting setting){
+    public Flowable<PolarBiozData> startBiozStreaming(final String identifier, PolarSensorSetting setting) {
         try {
             final BleDeviceSession session = sessionPmdClientReady(identifier);
             final BlePMDClient client = (BlePMDClient) session.fetchClient(BlePMDClient.PMD_SERVICE);
@@ -845,12 +799,12 @@ public class BDBleApiImpl extends PolarBleApi {
                     client.monitorBiozNotifications(true).map(new Function<BlePMDClient.BiozData, PolarBiozData>() {
                         @Override
                         public PolarBiozData apply(BlePMDClient.BiozData biozData) throws Exception {
-                            return new PolarBiozData(biozData.timeStamp,biozData.samples,biozData.status,biozData.type);
+                            return new PolarBiozData(biozData.timeStamp, biozData.samples, biozData.status, biozData.type);
                         }
                     }).doFinally(new Action() {
                         @Override
                         public void run() throws Exception {
-                            stopPmdStreaming(session,client, BlePMDClient.PmdMeasurementType.PPG);
+                            stopPmdStreaming(session, client, BlePMDClient.PmdMeasurementType.PPG);
                         }
                     })).onErrorResumeNext(new Function<Throwable, Publisher<? extends PolarBiozData>>() {
                 @Override
@@ -858,23 +812,23 @@ public class BDBleApiImpl extends PolarBleApi {
                     return Flowable.error(handleError(throwable));
                 }
             });
-        } catch (Throwable t){
+        } catch (Throwable t) {
             return Flowable.error(t);
         }
     }
 
     protected BleDeviceSession fetchSession(final String identifier) throws PolarInvalidArgument {
-        if(identifier.matches("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$")){
+        if (identifier.matches("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$")) {
             return sessionByAddress(identifier);
-        } else if(identifier.matches("([0-9a-fA-F]){6,8}")) {
+        } else if (identifier.matches("([0-9a-fA-F]){6,8}")) {
             return sessionByDeviceId(identifier);
         }
         throw new PolarInvalidArgument();
     }
 
     protected BleDeviceSession sessionByAddress(final String address) throws PolarInvalidArgument {
-        for ( BleDeviceSession session : listener.deviceSessions() ){
-            if( session.getAddress().equals(address) ){
+        for (BleDeviceSession session : listener.deviceSessions()) {
+            if (session.getAddress().equals(address)) {
                 return session;
             }
         }
@@ -882,8 +836,8 @@ public class BDBleApiImpl extends PolarBleApi {
     }
 
     protected BleDeviceSession sessionByDeviceId(final String deviceId) throws PolarInvalidArgument {
-        for ( BleDeviceSession session : listener.deviceSessions() ){
-            if( session.getAdvertisementContent().getPolarDeviceId().equals(deviceId) ){
+        for (BleDeviceSession session : listener.deviceSessions()) {
+            if (session.getAdvertisementContent().getPolarDeviceId().equals(deviceId)) {
                 return session;
             }
         }
@@ -892,8 +846,8 @@ public class BDBleApiImpl extends PolarBleApi {
 
     protected BleDeviceSession sessionServiceReady(final String identifier, UUID service) throws Throwable {
         BleDeviceSession session = fetchSession(identifier);
-        if(session != null){
-            if(session.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN) {
+        if (session != null) {
+            if (session.getSessionState() == SESSION_OPEN) {
                 BleGattBase client = session.fetchClient(service);
                 if (client.isServiceDiscovered()) {
                     return session;
@@ -911,8 +865,8 @@ public class BDBleApiImpl extends PolarBleApi {
         final AtomicInteger pair = client.getNotificationAtomicInteger(BlePMDClient.PMD_CP);
         final AtomicInteger pairData = client.getNotificationAtomicInteger(BlePMDClient.PMD_DATA);
         if (pair != null && pairData != null &&
-            pair.get() == BleGattBase.ATT_SUCCESS &&
-            pairData.get() == BleGattBase.ATT_SUCCESS) {
+                pair.get() == BleGattBase.ATT_SUCCESS &&
+                pairData.get() == BleGattBase.ATT_SUCCESS) {
             return session;
         }
         throw new PolarNotificationNotEnabled();
@@ -922,7 +876,7 @@ public class BDBleApiImpl extends PolarBleApi {
         BleDeviceSession session = sessionServiceReady(identifier, BlePsFtpUtils.RFC77_PFTP_SERVICE);
         BlePsFtpClient client = (BlePsFtpClient) session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE);
         final AtomicInteger pair = client.getNotificationAtomicInteger(BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC);
-        if (pair != null && pair.get() == BleGattBase.ATT_SUCCESS ) {
+        if (pair != null && pair.get() == BleGattBase.ATT_SUCCESS) {
             return session;
         }
         throw new PolarNotificationNotEnabled();
@@ -930,27 +884,27 @@ public class BDBleApiImpl extends PolarBleApi {
 
     @SuppressLint("CheckResult")
     protected void stopPmdStreaming(BleDeviceSession session, BlePMDClient client, BlePMDClient.PmdMeasurementType type) {
-        if( session.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN ){
+        if (session.getSessionState() == SESSION_OPEN) {
             // stop streaming
             client.stopMeasurement(type).subscribe(
-                new Action() {
-                    @Override
-                    public void run() throws Exception {
+                    new Action() {
+                        @Override
+                        public void run() throws Exception {
 
+                        }
+                    },
+                    new Consumer<Throwable>() {
+                        @Override
+                        public void accept(Throwable throwable) throws Exception {
+                            logError("failed to stop pmd stream: " + throwable.getLocalizedMessage());
+                        }
                     }
-                },
-                new Consumer<Throwable>() {
-                    @Override
-                    public void accept(Throwable throwable) throws Exception {
-                        logError("failed to stop pmd stream: " + throwable.getLocalizedMessage());
-                    }
-                }
             );
         }
     }
 
     @SuppressLint("CheckResult")
-    protected void setupDevice(final BleDeviceSession session){
+    protected void setupDevice(final BleDeviceSession session) {
         final String deviceId = session.getPolarDeviceId().length() != 0 ? session.getPolarDeviceId() : session.getAddress();
         session.monitorServicesDiscovered(true).observeOn(scheduler).toFlowable().flatMapIterable(
                 new Function<List<UUID>, Iterable<UUID>>() {
@@ -962,7 +916,7 @@ public class BDBleApiImpl extends PolarBleApi {
         ).flatMap(new Function<UUID, Publisher<?>>() {
             @Override
             public Publisher<?> apply(UUID uuid) throws Exception {
-                if(session.fetchClient(uuid) != null) {
+                if (session.fetchClient(uuid) != null) {
                     if (uuid.equals(BleHrClient.HR_SERVICE)) {
                         if (callback != null) {
                             callback.hrFeatureReady(deviceId);
@@ -1036,7 +990,7 @@ public class BDBleApiImpl extends PolarBleApi {
                             @Override
                             public void accept(Pair<UUID, String> pair) {
                                 if (callback != null) {
-                                    callback.disInformationReceived(deviceId, pair.first , pair.second);
+                                    callback.disInformationReceived(deviceId, pair.first, pair.second);
                                 }
                             }
                         });
@@ -1077,10 +1031,47 @@ public class BDBleApiImpl extends PolarBleApi {
     }
 
     protected Exception handleError(Throwable throwable) {
-        if( throwable instanceof BleDisconnected ){
+        if (throwable instanceof BleDisconnected) {
             return new PolarDeviceDisconnected();
         } else {
             return new Exception("Unknown Error: " + throwable.getLocalizedMessage());
+        }
+    }
+
+    @Override
+    public void stateChanged(BleDeviceSession session, BleDeviceSession.DeviceSessionState sessionState) {
+        PolarDeviceInfo info = new PolarDeviceInfo(
+                session.getPolarDeviceId().length() != 0 ?
+                        session.getPolarDeviceId() : session.getAddress(),
+                session.getAddress(),
+                session.getRssi(), session.getName(), true);
+        switch (sessionState) {
+            case SESSION_OPEN:
+                if (callback != null) {
+                    callback.deviceConnected(info);
+                }
+                setupDevice(session);
+                break;
+            case SESSION_CLOSED:
+                if (callback != null) {
+                    if (session.getPreviousState() == SESSION_OPEN ||
+                            session.getPreviousState() == BleDeviceSession.DeviceSessionState.SESSION_CLOSING) {
+                        callback.deviceDisconnected(info);
+                    }
+                }
+                break;
+            case SESSION_OPENING:
+                if (callback != null) {
+                    callback.deviceConnecting(info);
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void stateChanged(Boolean power) {
+        if (callback != null) {
+            callback.blePowerStateChanged(power);
         }
     }
 
@@ -1097,13 +1088,13 @@ public class BDBleApiImpl extends PolarBleApi {
             public Publisher<String> apply(ByteArrayOutputStream byteArrayOutputStream) throws Exception {
                 PftpResponse.PbPFtpDirectory dir = PftpResponse.PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray());
                 Set<String> entrys = new HashSet<>();
-                for( int i=0; i < dir.getEntriesCount(); ++i ){
+                for (int i = 0; i < dir.getEntriesCount(); ++i) {
                     PftpResponse.PbPFtpEntry entry = dir.getEntries(i);
-                    if( condition.include(entry.getName()) ){
-                        BleUtils.validate(entrys.add(path + entry.getName()),"duplicate entry");
+                    if (condition.include(entry.getName())) {
+                        BleUtils.validate(entrys.add(path + entry.getName()), "duplicate entry");
                     }
                 }
-                if(entrys.size()!=0) {
+                if (entrys.size() != 0) {
                     return Flowable.fromIterable(entrys).flatMap(new Function<String, Publisher<String>>() {
                         @Override
                         public Publisher<String> apply(String s) {
@@ -1121,14 +1112,14 @@ public class BDBleApiImpl extends PolarBleApi {
     }
 
     protected void log(final String message) {
-        if(logger != null){
+        if (logger != null) {
             logger.message("" + message);
         }
     }
 
     protected void logError(final String message) {
-        if(logger != null){
-            logger.message("Error: "+message);
+        if (logger != null) {
+            logger.message("Error: " + message);
         }
     }
 }

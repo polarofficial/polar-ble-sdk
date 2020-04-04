@@ -57,6 +57,7 @@ public class BlePMDClient extends BleGattBase {
     private final AtomicSet<FlowableEmitter<? super AutoGainAFE4410> > autoGainAFE4410Observers = new AtomicSet<>();
     private final AtomicSet<FlowableEmitter<? super AutoGainADPD4000>> autoGainADPD4000Observers = new AtomicSet<>();
     private final AtomicSet<FlowableEmitter<? super Pair<Long,Long>>> afeOperationModeObservers = new AtomicSet<>();
+    private final AtomicSet<FlowableEmitter<? super Pair<Long,Long>>> sportIdObservers = new AtomicSet<>();
     private final AtomicSet<FlowableEmitter<? super BiozData> > biozObservers = new AtomicSet<>();
     private byte[] pmdFeatureData = null;
     private final Object mutexFeature = new Object();
@@ -300,9 +301,9 @@ public class BlePMDClient extends BleGattBase {
 
     public class AccData {
         public class AccSample {
-            public int x;
-            public int y;
-            public int z;
+            public final int x;
+            public final int y;
+            public final int z;
 
             AccSample(int x, int y, int z) {
                 this.x = x;
@@ -310,8 +311,8 @@ public class BlePMDClient extends BleGattBase {
                 this.z = z;
             }
         }
-        public List<AccSample> accSamples = new ArrayList<>();
-        public long timeStamp;
+        public final List<AccSample> accSamples = new ArrayList<>();
+        public final long timeStamp;
 
         public AccData(byte type, byte[] value, long timeStamp) {
             int offset=0;
@@ -338,6 +339,7 @@ public class BlePMDClient extends BleGattBase {
             PPG1_TYPE(3),
             ADPD4000(4),
             AFE_OPERATION_MODE(5),
+            SPORT_ID(6),
             UNKNOWN_TYPE(0xff);
             private int numVal;
             PpgFrameType(int numVal) {
@@ -543,6 +545,7 @@ public class BlePMDClient extends BleGattBase {
         RxUtils.postDisconnectedAndClearList(autoGainADPD4000Observers);
         RxUtils.postDisconnectedAndClearList(biozObservers);
         RxUtils.postDisconnectedAndClearList(afeOperationModeObservers);
+        RxUtils.postDisconnectedAndClearList(sportIdObservers);
 
         synchronized (mutexFeature){
             pmdFeatureData = null;
@@ -627,6 +630,16 @@ public class BlePMDClient extends BleGattBase {
                                     public void item(FlowableEmitter<? super Pair<Long,Long>> object) {
                                         Long value = BleUtils.convertArrayToUnsignedLong(content, 0, content.length);
                                         object.onNext(new Pair<Long,Long>(timeStamp,value));
+                                    }
+                                });
+                                break;
+                            }
+                            case SPORT_ID: {
+                                RxUtils.emitNext(sportIdObservers, new RxUtils.Emitter<FlowableEmitter<? super Pair<Long,Long>>>() {
+                                    @Override
+                                    public void item(FlowableEmitter<? super Pair<Long,Long>> object) {
+                                        final long sportId = BleUtils.convertArrayToUnsignedLong(content, 0,8);
+                                        object.onNext(new Pair<Long, Long>(timeStamp,sportId));
                                     }
                                 });
                                 break;
@@ -917,6 +930,10 @@ public class BlePMDClient extends BleGattBase {
 
     public Flowable<AutoGainADPD4000> monitorAutoGainADPD4000(final boolean checkConnection) {
         return RxUtils.monitorNotifications(autoGainADPD4000Observers,txInterface,checkConnection);
+    }
+
+    public Flowable<Pair<Long,Long>> monitorSportId(final boolean checkConnection) {
+        return RxUtils.monitorNotifications(sportIdObservers,txInterface,checkConnection);
     }
 
     @Override
