@@ -8,7 +8,6 @@ import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.ScanFilter;
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.Nullable;
 
 import com.androidcommunications.polar.api.ble.BleLogger;
 import com.androidcommunications.polar.api.ble.exceptions.BleStartScanError;

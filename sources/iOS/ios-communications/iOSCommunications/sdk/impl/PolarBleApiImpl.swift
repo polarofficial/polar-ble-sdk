@@ -653,6 +653,17 @@ extension PolarBleApiImpl: PolarBleApi {
             if session.advertisementContent.polarDeviceType == "OH1" ||
                session.advertisementContent.polarDeviceType == "H10" {
                 let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
+                
+                /*
+                 
+                TODO to improve throughput enable these
+                client.sendNotification(PbPFtpHostToDevNotification.startSync.rawValue, parameters: nil).andThen(client.sendNotification(PbPFtpHostToDevNotification.initializeSession.rawValue, parameters: nil))
+                
+                after file operation call these to device to change parameters
+                 
+                client.sendNotification(PbPFtpHostToDevNotification.terminateSession.rawValue, parameters: nil).andThen(client.sendNotification(PbPFtpHostToDevNotification.stopSync.rawValue, parameters: nil))
+                */
+                
                 let operation = PbPFtpOperation()
                 operation.command = PbPFtpOperation_Command.get
                 operation.path = entry.path

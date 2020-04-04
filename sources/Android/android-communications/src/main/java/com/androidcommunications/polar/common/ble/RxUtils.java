@@ -3,7 +3,6 @@ package com.androidcommunications.polar.common.ble;
 import com.androidcommunications.polar.api.ble.exceptions.BleDisconnected;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattTxInterface;
 import java.util.Set;
-
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.CompletableEmitter;
 import io.reactivex.Flowable;
