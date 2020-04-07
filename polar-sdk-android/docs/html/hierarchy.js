@@ -1,5 +1,11 @@
 var hierarchy =
 [
+    [ "BleDeviceSessionStateChangedCallback", null, [
+      [ "polar.com.sdk.impl.BDBleApiImpl", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html", null ]
+    ] ],
+    [ "BlePowerStateChangedCallback", null, [
+      [ "polar.com.sdk.impl.BDBleApiImpl", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html", null ]
+    ] ],
     [ "Exception", null, [
       [ "polar.com.sdk.api.errors.PolarDeviceDisconnected", "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarDeviceDisconnected.html", null ],
       [ "polar.com.sdk.api.errors.PolarDeviceNotConnected", "classpolar_1_1com_1_1sdk_1_1api_1_1errors_1_1PolarDeviceNotConnected.html", null ],

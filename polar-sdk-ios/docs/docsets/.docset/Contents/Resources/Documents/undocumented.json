@@ -1,0 +1,2280 @@
+{
+  "warnings": [
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleDeviceListener.swift",
+      "line": 8,
+      "symbol": "BleState.unknown",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleDeviceListener.swift",
+      "line": 9,
+      "symbol": "BleState.resetting",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleDeviceListener.swift",
+      "line": 10,
+      "symbol": "BleState.unsupported",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleDeviceListener.swift",
+      "line": 11,
+      "symbol": "BleState.unauthorized",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleDeviceListener.swift",
+      "line": 12,
+      "symbol": "BleState.poweredOff",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleDeviceListener.swift",
+      "line": 13,
+      "symbol": "BleState.poweredOn",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleDeviceListener.swift",
+      "line": 86,
+      "symbol": "BleDeviceListener.removeAllSessions()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleDeviceListener.swift",
+      "line": 94,
+      "symbol": "BleDeviceSessionStateObserver",
+      "symbol_kind": "source.lang.swift.decl.protocol",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleDeviceListener.swift",
+      "line": 95,
+      "symbol": "BleDeviceSessionStateObserver.stateChanged(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleDeviceListener.swift",
+      "line": 98,
+      "symbol": "BlePowerStateObserver",
+      "symbol_kind": "source.lang.swift.decl.protocol",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleDeviceListener.swift",
+      "line": 99,
+      "symbol": "BlePowerStateObserver.powerStateChanged(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleDeviceListener.swift",
+      "line": 110,
+      "symbol": "Observable.distinct()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleLogger.swift",
+      "line": 4,
+      "symbol": "BleLoggerProtocol",
+      "symbol_kind": "source.lang.swift.decl.protocol",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleLogger.swift",
+      "line": 5,
+      "symbol": "BleLoggerProtocol.logMessage(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleLogger.swift",
+      "line": 8,
+      "symbol": "BleLogger",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleLogger.swift",
+      "line": 9,
+      "symbol": "BleLogger.sharedInstance",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleLogger.swift",
+      "line": 10,
+      "symbol": "BleLogger.LOG_LEVEL_ALL",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleLogger.swift",
+      "line": 11,
+      "symbol": "BleLogger.LOG_LEVEL_ERROR",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleLogger.swift",
+      "line": 12,
+      "symbol": "BleLogger.LOG_LEVEL_TRACE",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleLogger.swift",
+      "line": 13,
+      "symbol": "BleLogger.LOG_LEVEL_HEX",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleLogger.swift",
+      "line": 19,
+      "symbol": "BleLogger.setLogLevel(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleLogger.swift",
+      "line": 25,
+      "symbol": "BleLogger.setLogger(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleLogger.swift",
+      "line": 31,
+      "symbol": "BleLogger.trace(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleLogger.swift",
+      "line": 40,
+      "symbol": "BleLogger.error(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleLogger.swift",
+      "line": 49,
+      "symbol": "BleLogger.trace_if_error(_:error:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleLogger.swift",
+      "line": 59,
+      "symbol": "BleLogger.trace_hex(_:data:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/BleLogger.swift",
+      "line": 74,
+      "symbol": "BleLogger.trace_hex(_:data:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/BleDeviceSession.swift",
+      "line": 6,
+      "symbol": "BleCCCWriteProtocol",
+      "symbol_kind": "source.lang.swift.decl.protocol",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/BleDeviceSession.swift",
+      "line": 7,
+      "symbol": "BleCCCWriteProtocol.cccWrite(_:characteristic:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/BleDeviceSession.swift",
+      "line": 10,
+      "symbol": "BleDeviceSession",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/BleDeviceSession.swift",
+      "line": 12,
+      "symbol": "BleDeviceSession.DeviceSessionState",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/BleDeviceSession.swift",
+      "line": 15,
+      "symbol": "BleDeviceSession.DeviceSessionState.sessionClosed",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/BleDeviceSession.swift",
+      "line": 17,
+      "symbol": "BleDeviceSession.DeviceSessionState.sessionOpening",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/BleDeviceSession.swift",
+      "line": 19,
+      "symbol": "BleDeviceSession.DeviceSessionState.sessionOpenPark",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/BleDeviceSession.swift",
+      "line": 21,
+      "symbol": "BleDeviceSession.DeviceSessionState.sessionOpen",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/BleDeviceSession.swift",
+      "line": 23,
+      "symbol": "BleDeviceSession.DeviceSessionState.sessionClosing",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/BleDeviceSession.swift",
+      "line": 25,
+      "symbol": "BleDeviceSession.DeviceSessionState.description()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/BleDeviceSession.swift",
+      "line": 41,
+      "symbol": "BleDeviceSession.ConnectionType",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/BleDeviceSession.swift",
+      "line": 49,
+      "symbol": "BleDeviceSession.address",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/BleDeviceSession.swift",
+      "line": 50,
+      "symbol": "BleDeviceSession.advertisementContent",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/BleDeviceSession.swift",
+      "line": 51,
+      "symbol": "BleDeviceSession.state",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/BleDeviceSession.swift",
+      "line": 52,
+      "symbol": "BleDeviceSession.previousState",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/BleDeviceSession.swift",
+      "line": 53,
+      "symbol": "BleDeviceSession.cccWriteCallback",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/BleDeviceSession.swift",
+      "line": 58,
+      "symbol": "BleDeviceSession.init(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleAdvertisementContent.swift",
+      "line": 6,
+      "symbol": "BleAdvertisementContent",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleAdvertisementContent.swift",
+      "line": 7,
+      "symbol": "BleAdvertisementContent.polarHrAdvertisementData",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleAdvertisementContent.swift",
+      "line": 8,
+      "symbol": "BleAdvertisementContent.rssiFilter",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleAdvertisementContent.swift",
+      "line": 13,
+      "symbol": "BleAdvertisementContent.advertisementTimestamp",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleAdvertisementContent.swift",
+      "line": 14,
+      "symbol": "BleAdvertisementContent.advertisementDelta",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleAdvertisementContent.swift",
+      "line": 15,
+      "symbol": "BleAdvertisementContent.polarDeviceIdInt",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleAdvertisementContent.swift",
+      "line": 16,
+      "symbol": "BleAdvertisementContent.polarDeviceIdIntUntouched",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleAdvertisementContent.swift",
+      "line": 17,
+      "symbol": "BleAdvertisementContent.isConnectable",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleAdvertisementContent.swift",
+      "line": 18,
+      "symbol": "BleAdvertisementContent.medianRssi",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleAdvertisementContent.swift",
+      "line": 19,
+      "symbol": "BleAdvertisementContent.manufacturerType",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleAdvertisementContent.swift",
+      "line": 20,
+      "symbol": "BleAdvertisementContent.advData",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleAdvertisementContent.swift",
+      "line": 22,
+      "symbol": "BleAdvertisementContent.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleAdvertisementContent.swift",
+      "line": 23,
+      "symbol": "BleAdvertisementContent.polarDeviceId",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleAdvertisementContent.swift",
+      "line": 24,
+      "symbol": "BleAdvertisementContent.polarDeviceIdUntouched",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleAdvertisementContent.swift",
+      "line": 25,
+      "symbol": "BleAdvertisementContent.polarDeviceType",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleAdvertisementContent.swift",
+      "line": 96,
+      "symbol": "BleAdvertisementContent.containsService(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BlePolarHrAdvertisement.swift",
+      "line": 4,
+      "symbol": "BlePolarHrAdvertisement",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BlePolarHrAdvertisement.swift",
+      "line": 6,
+      "symbol": "BlePolarHrAdvertisement.batteryStatus",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BlePolarHrAdvertisement.swift",
+      "line": 7,
+      "symbol": "BlePolarHrAdvertisement.sensorContact",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BlePolarHrAdvertisement.swift",
+      "line": 8,
+      "symbol": "BlePolarHrAdvertisement.ucAdvFrameCounter",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BlePolarHrAdvertisement.swift",
+      "line": 9,
+      "symbol": "BlePolarHrAdvertisement.broadcastBit",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BlePolarHrAdvertisement.swift",
+      "line": 10,
+      "symbol": "BlePolarHrAdvertisement.sensorDataType",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BlePolarHrAdvertisement.swift",
+      "line": 11,
+      "symbol": "BlePolarHrAdvertisement.statusFlags",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BlePolarHrAdvertisement.swift",
+      "line": 12,
+      "symbol": "BlePolarHrAdvertisement.khzCode",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BlePolarHrAdvertisement.swift",
+      "line": 13,
+      "symbol": "BlePolarHrAdvertisement.fastAverageHr",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BlePolarHrAdvertisement.swift",
+      "line": 14,
+      "symbol": "BlePolarHrAdvertisement.slowAverageHr",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BlePolarHrAdvertisement.swift",
+      "line": 17,
+      "symbol": "BlePolarHrAdvertisement.isPresent",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BlePolarHrAdvertisement.swift",
+      "line": 23,
+      "symbol": "BlePolarHrAdvertisement.isOldH7H6",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BlePolarHrAdvertisement.swift",
+      "line": 29,
+      "symbol": "BlePolarHrAdvertisement.isH7Update",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BlePolarHrAdvertisement.swift",
+      "line": 35,
+      "symbol": "BlePolarHrAdvertisement.hrValueForDisplay",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BlePolarHrAdvertisement.swift",
+      "line": 41,
+      "symbol": "BlePolarHrAdvertisement.processPolarManufacturerData(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BlePolarHrAdvertisement.swift",
+      "line": 58,
+      "symbol": "BlePolarHrAdvertisement.description()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleRssiFilter.swift",
+      "line": 4,
+      "symbol": "BleRssiFilter",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleRssiFilter.swift",
+      "line": 6,
+      "symbol": "BleRssiFilter.rssi",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/advertisement/BleRssiFilter.swift",
+      "line": 7,
+      "symbol": "BleRssiFilter.medianRssi",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleAttributeTransportProtocol.swift",
+      "line": 7,
+      "symbol": "BleAttributeTransportProtocol.transmitMessage(_:serviceUuid:characteristicUuid:packet:withResponse:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleAttributeTransportProtocol.swift",
+      "line": 8,
+      "symbol": "BleAttributeTransportProtocol.readValue(_:serviceUuid:characteristicUuid:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleAttributeTransportProtocol.swift",
+      "line": 9,
+      "symbol": "BleAttributeTransportProtocol.isConnected()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleAttributeTransportProtocol.swift",
+      "line": 11,
+      "symbol": "BleAttributeTransportProtocol.attributeOperationStarted()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleAttributeTransportProtocol.swift",
+      "line": 13,
+      "symbol": "BleAttributeTransportProtocol.attributeOperationFinished()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 6,
+      "symbol": "BleGattClientBase",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 19,
+      "symbol": "BleGattClientBase.ATT_NOTIFY_OR_INDICATE_OFF",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 21,
+      "symbol": "BleGattClientBase.baseSerialDispatchQueue",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 22,
+      "symbol": "BleGattClientBase.baseConcurrentDispatchQueue",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 66,
+      "symbol": "BleGattClientBase.containsAvailableCharacteristic(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 89,
+      "symbol": "BleGattClientBase.disconnected()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 104,
+      "symbol": "BleGattClientBase.processServiceData(_:data:err:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 108,
+      "symbol": "BleGattClientBase.setCharacteristicNotify(_:enabled:err:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 134,
+      "symbol": "BleGattClientBase.serviceDataWritten(_:err:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 138,
+      "symbol": "BleGattClientBase.processCharacteristicDiscovered(_:properties:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 148,
+      "symbol": "BleGattClientBase.clientReady(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 153,
+      "symbol": "BleGattClientBase.setServiceDiscovered(_:serviceUuid:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 157,
+      "symbol": "BleGattClientBase.isServiceDiscovered()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 161,
+      "symbol": "BleGattClientBase.serviceBelongsToClient(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 165,
+      "symbol": "BleGattClientBase.setMtu(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 177,
+      "symbol": "BleGattClientBase.isCharacteristicNotificationEnabled(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 184,
+      "symbol": "BleGattClientBase.waitDiscovered(checkConnection:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 212,
+      "symbol": "BleGattClientBase.waitNotificationEnabled(_:checkConnection:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/BleGattClientBase.swift",
+      "line": 245,
+      "symbol": "==(_:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.free",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleBasClient.swift",
+      "line": 6,
+      "symbol": "BleBasClient",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleBasClient.swift",
+      "line": 8,
+      "symbol": "BleBasClient.BATTERY_SERVICE",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleBasClient.swift",
+      "line": 14,
+      "symbol": "BleBasClient.init(gattServiceTransmitter:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleBasClient.swift",
+      "line": 20,
+      "symbol": "BleBasClient.disconnected()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleBasClient.swift",
+      "line": 26,
+      "symbol": "BleBasClient.processServiceData(_:data:err:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleBasClient.swift",
+      "line": 38,
+      "symbol": "BleBasClient.readLevel()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleDisClient.swift",
+      "line": 6,
+      "symbol": "BleDisClient",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleDisClient.swift",
+      "line": 8,
+      "symbol": "BleDisClient.DIS_SERVICE",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleDisClient.swift",
+      "line": 9,
+      "symbol": "BleDisClient.MODEL_NUMBER_STRING",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleDisClient.swift",
+      "line": 10,
+      "symbol": "BleDisClient.MANUFACTURER_NAME_STRING",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleDisClient.swift",
+      "line": 11,
+      "symbol": "BleDisClient.HARDWARE_REVISION_STRING",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleDisClient.swift",
+      "line": 12,
+      "symbol": "BleDisClient.FIRMWARE_REVISION_STRING",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleDisClient.swift",
+      "line": 13,
+      "symbol": "BleDisClient.SOFTWARE_REVISION_STRING",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleDisClient.swift",
+      "line": 14,
+      "symbol": "BleDisClient.SERIAL_NUMBER_STRING",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleDisClient.swift",
+      "line": 15,
+      "symbol": "BleDisClient.SYSTEM_ID",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleDisClient.swift",
+      "line": 16,
+      "symbol": "BleDisClient.IEEE_11073_20601",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleDisClient.swift",
+      "line": 17,
+      "symbol": "BleDisClient.PNP_ID",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleDisClient.swift",
+      "line": 22,
+      "symbol": "BleDisClient.init(gattServiceTransmitter:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleDisClient.swift",
+      "line": 36,
+      "symbol": "BleDisClient.disconnected()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleDisClient.swift",
+      "line": 42,
+      "symbol": "BleDisClient.processServiceData(_:data:err:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleHrClient.swift",
+      "line": 6,
+      "symbol": "BleHrClient",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleHrClient.swift",
+      "line": 8,
+      "symbol": "BleHrClient.HR_SERVICE",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleHrClient.swift",
+      "line": 10,
+      "symbol": "BleHrClient.HR_MEASUREMENT",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleHrClient.swift",
+      "line": 11,
+      "symbol": "BleHrClient.BleHrNotification",
+      "symbol_kind": "source.lang.swift.decl.typealias",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleHrClient.swift",
+      "line": 14,
+      "symbol": "BleHrClient.init(gattServiceTransmitter:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleHrClient.swift",
+      "line": 21,
+      "symbol": "BleHrClient.disconnected()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleHrClient.swift",
+      "line": 26,
+      "symbol": "BleHrClient.processServiceData(_:data:err:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleHrClient.swift",
+      "line": 57,
+      "symbol": "BleHrClient.observeHrNotifications(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BleHrClient.swift",
+      "line": 61,
+      "symbol": "BleHrClient.clientReady(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 6,
+      "symbol": "Pmd",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 7,
+      "symbol": "Pmd.PmdSetting",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 8,
+      "symbol": "Pmd.PmdSetting.PmdSettingType",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 9,
+      "symbol": "Pmd.PmdSetting.PmdSettingType.sampleRate",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 10,
+      "symbol": "Pmd.PmdSetting.PmdSettingType.resolution",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 11,
+      "symbol": "Pmd.PmdSetting.PmdSettingType.range",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 12,
+      "symbol": "Pmd.PmdSetting.PmdSettingType.unknown",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 15,
+      "symbol": "Pmd.PmdSetting.settings",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 17,
+      "symbol": "Pmd.PmdSetting.init(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 21,
+      "symbol": "Pmd.PmdSetting.init(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 52,
+      "symbol": "Pmd.BlePmdError",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 53,
+      "symbol": "Pmd.BlePmdError.controlPointRequestFailed(errorCode:)",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 56,
+      "symbol": "Pmd.PmdFeature",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 57,
+      "symbol": "Pmd.PmdFeature.ecgSupported",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 58,
+      "symbol": "Pmd.PmdFeature.ppgSupported",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 59,
+      "symbol": "Pmd.PmdFeature.accSupported",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 60,
+      "symbol": "Pmd.PmdFeature.ppiSupported",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 61,
+      "symbol": "Pmd.PmdFeature.bioZSupported",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 62,
+      "symbol": "Pmd.PmdFeature.gyroSupported",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 63,
+      "symbol": "Pmd.PmdFeature.magnetometerSupported",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 64,
+      "symbol": "Pmd.PmdFeature.barometerSupported",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 65,
+      "symbol": "Pmd.PmdFeature.ambientSupported",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 67,
+      "symbol": "Pmd.PmdFeature.init(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 80,
+      "symbol": "Pmd.PmdResponseCode",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 81,
+      "symbol": "Pmd.PmdResponseCode.success",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 82,
+      "symbol": "Pmd.PmdResponseCode.errorInvalidOpCode",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 83,
+      "symbol": "Pmd.PmdResponseCode.errorInvalidMeasurementType",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 84,
+      "symbol": "Pmd.PmdResponseCode.errorNotSupported",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 85,
+      "symbol": "Pmd.PmdResponseCode.errorInvalidLength",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 86,
+      "symbol": "Pmd.PmdResponseCode.errorInvalidParameter",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 87,
+      "symbol": "Pmd.PmdResponseCode.errorInvalidState",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 88,
+      "symbol": "Pmd.PmdResponseCode.unknown_error",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 91,
+      "symbol": "Pmd.PmdMeasurementType",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 92,
+      "symbol": "Pmd.PmdMeasurementType.ecg",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 93,
+      "symbol": "Pmd.PmdMeasurementType.ppg",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 94,
+      "symbol": "Pmd.PmdMeasurementType.acc",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 95,
+      "symbol": "Pmd.PmdMeasurementType.ppi",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 96,
+      "symbol": "Pmd.PmdMeasurementType.bioz",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 97,
+      "symbol": "Pmd.PmdMeasurementType.gyro",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 98,
+      "symbol": "Pmd.PmdMeasurementType.mgn",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 99,
+      "symbol": "Pmd.PmdMeasurementType.barometer",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 100,
+      "symbol": "Pmd.PmdMeasurementType.ambient",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 101,
+      "symbol": "Pmd.PmdMeasurementType.unknown_type",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 104,
+      "symbol": "Pmd.PmdControlPointResponse",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 105,
+      "symbol": "Pmd.PmdControlPointResponse.response",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 106,
+      "symbol": "Pmd.PmdControlPointResponse.opCode",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 107,
+      "symbol": "Pmd.PmdControlPointResponse.type",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 108,
+      "symbol": "Pmd.PmdControlPointResponse.errorCode",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 109,
+      "symbol": "Pmd.PmdControlPointResponse.more",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 110,
+      "symbol": "Pmd.PmdControlPointResponse.parameters",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 111,
+      "symbol": "Pmd.PmdControlPointResponse.init(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 213,
+      "symbol": "BlePmdClient.PMD_SERVICE",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 214,
+      "symbol": "BlePmdClient.PMD_CP",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 215,
+      "symbol": "BlePmdClient.PMD_MTU",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 227,
+      "symbol": "BlePmdClient.init(gattServiceTransmitter:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 236,
+      "symbol": "BlePmdClient.disconnected()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 248,
+      "symbol": "BlePmdClient.processServiceData(_:data:err:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 345,
+      "symbol": "BlePmdClient.observeAcc()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 349,
+      "symbol": "BlePmdClient.observeEcg()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 353,
+      "symbol": "BlePmdClient.observePpg()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 357,
+      "symbol": "BlePmdClient.observePpi()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 361,
+      "symbol": "BlePmdClient.observeBioz()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 365,
+      "symbol": "BlePmdClient.startMeasurement(_:settings:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 385,
+      "symbol": "BlePmdClient.stopMeasurement(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 403,
+      "symbol": "BlePmdClient.readFeature(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 425,
+      "symbol": "BlePmdClient.clientReady(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePmdClient.swift",
+      "line": 429,
+      "symbol": "BlePmdClient.querySettings(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 7,
+      "symbol": "Psd",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 8,
+      "symbol": "Psd.PPData",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 9,
+      "symbol": "Psd.PPData.rc",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 10,
+      "symbol": "Psd.PPData.hr",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 11,
+      "symbol": "Psd.PPData.ppInMs",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 12,
+      "symbol": "Psd.PPData.ppErrorEstimate",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 13,
+      "symbol": "Psd.PPData.blockerBit",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 14,
+      "symbol": "Psd.PPData.skinContactStatus",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 15,
+      "symbol": "Psd.PPData.skinContactSupported",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 31,
+      "symbol": "Psd.PsdResponse",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 33,
+      "symbol": "Psd.PsdResponse.responseCode",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 34,
+      "symbol": "Psd.PsdResponse.opCode",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 35,
+      "symbol": "Psd.PsdResponse.status",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 37,
+      "symbol": "Psd.PsdResponse.init(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 50,
+      "symbol": "Psd.PsdFeature",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 51,
+      "symbol": "Psd.PsdFeature.ecgSupported",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 52,
+      "symbol": "Psd.PsdFeature.accSupported",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 53,
+      "symbol": "Psd.PsdFeature.ohrSupported",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 54,
+      "symbol": "Psd.PsdFeature.ppSupported",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 56,
+      "symbol": "Psd.PsdFeature.init(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 65,
+      "symbol": "BlePsdClient",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 67,
+      "symbol": "BlePsdClient.PsdMessage",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 68,
+      "symbol": "BlePsdClient.PsdMessage.psdUnknown",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 69,
+      "symbol": "BlePsdClient.PsdMessage.psdStartOhrPpStream",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 70,
+      "symbol": "BlePsdClient.PsdMessage.psdStopOhrPpStream",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 73,
+      "symbol": "BlePsdClient.PSD_SERVICE",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 74,
+      "symbol": "BlePsdClient.PSD_FEATURE",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 75,
+      "symbol": "BlePsdClient.PSD_PP",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 76,
+      "symbol": "BlePsdClient.PSD_CP",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 77,
+      "symbol": "BlePsdClient.PSD_OHR",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 78,
+      "symbol": "BlePsdClient.PSD_ECG",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 79,
+      "symbol": "BlePsdClient.PSD_ACC",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 89,
+      "symbol": "BlePsdClient.init(gattServiceTransmitter:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 98,
+      "symbol": "BlePsdClient.disconnected()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 106,
+      "symbol": "BlePsdClient.processServiceData(_:data:err:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 153,
+      "symbol": "BlePsdClient.sendControlpointCommand(_:value:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 181,
+      "symbol": "BlePsdClient.readFeature(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/BlePsdClient.swift",
+      "line": 203,
+      "symbol": "BlePsdClient.clientReady(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpClient.swift",
+      "line": 6,
+      "symbol": "BlePsFtpClient",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpClient.swift",
+      "line": 8,
+      "symbol": "BlePsFtpClient.PSFTP_SERVICE",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpClient.swift",
+      "line": 9,
+      "symbol": "BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpClient.swift",
+      "line": 10,
+      "symbol": "BlePsFtpClient.PSFTP_D2H_NOTIFICATION_CHARACTERISTIC",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpClient.swift",
+      "line": 11,
+      "symbol": "BlePsFtpClient.PSFTP_H2D_NOTIFICATION_CHARACTERISTIC",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpClient.swift",
+      "line": 15,
+      "symbol": "BlePsFtpClient.PROTOCOL_TIMEOUT",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpClient.swift",
+      "line": 20,
+      "symbol": "BlePsFtpClient.packetChunks",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpClient.swift",
+      "line": 49,
+      "symbol": "BlePsFtpClient.init(gattServiceTransmitter:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpClient.swift",
+      "line": 64,
+      "symbol": "BlePsFtpClient.disconnected()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpClient.swift",
+      "line": 80,
+      "symbol": "BlePsFtpClient.processServiceData(_:data:err:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpClient.swift",
+      "line": 98,
+      "symbol": "BlePsFtpClient.serviceDataWritten(_:err:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpClient.swift",
+      "line": 189,
+      "symbol": "BlePsFtpClient.PsFtpNotification",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpClient.swift",
+      "line": 191,
+      "symbol": "BlePsFtpClient.PsFtpNotification.id",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpClient.swift",
+      "line": 193,
+      "symbol": "BlePsFtpClient.PsFtpNotification.parameters",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpClient.swift",
+      "line": 195,
+      "symbol": "BlePsFtpClient.PsFtpNotification.description()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpClient.swift",
+      "line": 632,
+      "symbol": "BlePsFtpClient.waitPsFtpReady(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpClient.swift",
+      "line": 637,
+      "symbol": "BlePsFtpClient.clientReady(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 5,
+      "symbol": "BlePsFtpException",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 18,
+      "symbol": "BlePsFtpException._domain",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 33,
+      "symbol": "BlePsFtpException._code",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 49,
+      "symbol": "BlePsFtpUtility.MessageType",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 51,
+      "symbol": "BlePsFtpUtility.MessageType.request",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 52,
+      "symbol": "BlePsFtpUtility.MessageType.query",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 53,
+      "symbol": "BlePsFtpUtility.MessageType.notification",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 56,
+      "symbol": "BlePsFtpUtility.RFC76_STATUS_MORE",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 57,
+      "symbol": "BlePsFtpUtility.RFC76_STATUS_LAST",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 58,
+      "symbol": "BlePsFtpUtility.RFC76_STATUS_ERROR_OR_RESPONSE",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 59,
+      "symbol": "BlePsFtpUtility.PFTP_AIR_PACKET_LOST_ERROR",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 61,
+      "symbol": "BlePsFtpUtility.BlePsFtpRfc76Frame",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 62,
+      "symbol": "BlePsFtpUtility.BlePsFtpRfc76Frame.next",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 63,
+      "symbol": "BlePsFtpUtility.BlePsFtpRfc76Frame.status",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 64,
+      "symbol": "BlePsFtpUtility.BlePsFtpRfc76Frame.sequenceNumber",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 65,
+      "symbol": "BlePsFtpUtility.BlePsFtpRfc76Frame.error",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 66,
+      "symbol": "BlePsFtpUtility.BlePsFtpRfc76Frame.payload",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 69,
+      "symbol": "BlePsFtpUtility.BlePsFtpRfc76SequenceNumber",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift",
+      "line": 71,
+      "symbol": "BlePsFtpUtility.BlePsFtpRfc76SequenceNumber.init()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/exceptions/BleGattException.swift",
+      "line": 6,
+      "symbol": "BleGattException.gattDisconnected",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/exceptions/BleGattException.swift",
+      "line": 7,
+      "symbol": "BleGattException.gattServiceNotFound",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/exceptions/BleGattException.swift",
+      "line": 8,
+      "symbol": "BleGattException.gattServicesNotFound",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/exceptions/BleGattException.swift",
+      "line": 9,
+      "symbol": "BleGattException.gattCharacteristicNotFound",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/exceptions/BleGattException.swift",
+      "line": 10,
+      "symbol": "BleGattException.gattCharacteristicNotifyNotEnabled",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/exceptions/BleGattException.swift",
+      "line": 11,
+      "symbol": "BleGattException.gattCharacteristicError",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/exceptions/BleGattException.swift",
+      "line": 12,
+      "symbol": "BleGattException.gattUndefinedDeviceError",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/exceptions/BleGattException.swift",
+      "line": 13,
+      "symbol": "BleGattException.gattAttributeError(errorCode:)",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/exceptions/BleGattException.swift",
+      "line": 14,
+      "symbol": "BleGattException.gattOperationNotSupported",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/gatt/exceptions/BleGattException.swift",
+      "line": 15,
+      "symbol": "BleGattException.gattTransportNotAvailable",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/polar/BlePolarDeviceIdUtility.swift",
+      "line": 4,
+      "symbol": "BlePolarDeviceIdUtility",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/polar/BlePolarDeviceIdUtility.swift",
+      "line": 6,
+      "symbol": "BlePolarDeviceIdUtility.isValidDeviceId(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/polar/BlePolarDeviceIdUtility.swift",
+      "line": 18,
+      "symbol": "BlePolarDeviceIdUtility.checkSumForDeviceId(_:width:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/polar/BlePolarDeviceIdUtility.swift",
+      "line": 43,
+      "symbol": "BlePolarDeviceIdUtility.assemblyFullPolarDeviceId(_:width:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/api/model/polar/BlePolarDeviceIdUtility.swift",
+      "line": 60,
+      "symbol": "BlePolarDeviceIdUtility.polarDeviceIdToInt(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/common/AtomicInteger.swift",
+      "line": 4,
+      "symbol": "AtomicIntegerException",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/common/AtomicInteger.swift",
+      "line": 5,
+      "symbol": "AtomicIntegerException.waitTimeout",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/common/AtomicInteger.swift",
+      "line": 6,
+      "symbol": "AtomicIntegerException.canceledSignal",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/common/AtomicList.swift",
+      "line": 4,
+      "symbol": "AtomicListException",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/common/AtomicList.swift",
+      "line": 5,
+      "symbol": "AtomicListException.waitTimeout",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/common/AtomicList.swift",
+      "line": 6,
+      "symbol": "AtomicListException.emptyQueueSignal",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/common/AtomicList.swift",
+      "line": 7,
+      "symbol": "AtomicListException.canceledSignal",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/common/TimeUtility.swift",
+      "line": 4,
+      "symbol": "TimeUtility",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/common/TimeUtility.swift",
+      "line": 6,
+      "symbol": "TimeUtility.currentTime()",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/common/TimeUtility.swift",
+      "line": 10,
+      "symbol": "TimeUtility.timeDeltaSeconds(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/common/TimeUtility.swift",
+      "line": 14,
+      "symbol": "TimeUtility.timeDeltaSeconds(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/endpoints/corebluetooth/central/CBDeviceListenerImpl.swift",
+      "line": 6,
+      "symbol": "CBDeviceListenerImpl",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/endpoints/corebluetooth/central/CBDeviceListenerImpl.swift",
+      "line": 28,
+      "symbol": "CBDeviceListenerImpl.init(_:clients:identifier:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/endpoints/corebluetooth/central/CBDeviceListenerImpl.swift",
+      "line": 76,
+      "symbol": "CBDeviceListenerImpl.centralManagerDidUpdateState(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/endpoints/corebluetooth/central/CBDeviceListenerImpl.swift",
+      "line": 118,
+      "symbol": "CBDeviceListenerImpl.centralManager(_:didDiscover:advertisementData:rssi:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/endpoints/corebluetooth/central/CBDeviceListenerImpl.swift",
+      "line": 180,
+      "symbol": "CBDeviceListenerImpl.centralManager(_:didConnect:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/endpoints/corebluetooth/central/CBDeviceListenerImpl.swift",
+      "line": 193,
+      "symbol": "CBDeviceListenerImpl.centralManager(_:didFailToConnect:error:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/endpoints/corebluetooth/central/CBDeviceListenerImpl.swift",
+      "line": 205,
+      "symbol": "CBDeviceListenerImpl.centralManager(_:didDisconnectPeripheral:error:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/endpoints/corebluetooth/central/CBDeviceListenerImpl.swift",
+      "line": 238,
+      "symbol": "CBDeviceListenerImpl",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/endpoints/corebluetooth/central/CBDeviceListenerImpl.swift",
+      "line": 239,
+      "symbol": "CBDeviceListenerImpl.stopScanning()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/endpoints/corebluetooth/central/CBDeviceListenerImpl.swift",
+      "line": 245,
+      "symbol": "CBDeviceListenerImpl.continueScanning()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/endpoints/corebluetooth/central/CBDeviceListenerImpl.swift",
+      "line": 252,
+      "symbol": "CBDeviceListenerImpl",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/endpoints/corebluetooth/central/CBDeviceListenerImpl.swift",
+      "line": 354,
+      "symbol": "CBDeviceListenerImpl.removeAllSessions()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/endpoints/corebluetooth/central/CBScanningProtocol.swift",
+      "line": 4,
+      "symbol": "CBScanningProtocol",
+      "symbol_kind": "source.lang.swift.decl.protocol",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/endpoints/corebluetooth/central/CBScanningProtocol.swift",
+      "line": 5,
+      "symbol": "CBScanningProtocol.stopScanning()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/ble/endpoints/corebluetooth/central/CBScanningProtocol.swift",
+      "line": 6,
+      "symbol": "CBScanningProtocol.continueScanning()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "line": 9,
+      "symbol": "RecordingInterval.interval_1s",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "line": 10,
+      "symbol": "RecordingInterval.interval_5s",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "line": 79,
+      "symbol": "PolarBiozData",
+      "symbol_kind": "source.lang.swift.decl.typealias",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "line": 217,
+      "symbol": "PolarBleApi.requestBiozSettings(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "line": 259,
+      "symbol": "PolarBleApi.startBiozStreaming(_:settings:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/api/PolarBleApiObservers.swift",
+      "line": 99,
+      "symbol": "PolarBleApiDeviceFeaturesObserver.biozFeatureReady(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/api/PolarBleApiObservers.swift",
+      "line": 109,
+      "symbol": "PolarBleApiDeviceFeaturesObserver.biozFeatureReady(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/api/PolarBleApiObservers.swift",
+      "line": 125,
+      "symbol": "PolarBleApiCCCWriteObserver.cccWrite(_:characteristic:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/api/errors/PolarErrors.swift",
+      "line": 47,
+      "symbol": "UndefinedError.DeviceError(localizedDescription:)",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/api/errors/PolarErrors.swift",
+      "line": 48,
+      "symbol": "UndefinedError.localizedDescription",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/esilvola/Documents/git_repos/ios-communications/iOSCommunications/sdk/impl/PolarBleApiImpl.swift",
+      "line": 787,
+      "symbol": "PrimitiveSequence.asCompletable()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    }
+  ],
+  "source_directory": "/Users/esilvola/Documents/git_repos/ios-communications"
+}
