@@ -1,0 +1,11 @@
+framework module PolarBleSdk {
+  umbrella header "PolarBleSdk.h"
+
+  export *
+  module * { export * }
+}
+
+module PolarBleSdk.Swift {
+    header "PolarBleSdk-Swift.h"
+    requires objc
+}

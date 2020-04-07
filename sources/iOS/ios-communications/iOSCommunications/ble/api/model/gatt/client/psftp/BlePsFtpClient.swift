@@ -130,7 +130,7 @@ public class BlePsFtpClient: BleGattClientBase {
             var packet: [Data:Int]!
             if self.gattServiceTransmitter?.isConnected() ?? false {
                 do{
-                    packet = try inputQueue.poll(PROTOCOL_TIMEOUT, canceled: canceled, cancelError: BlePsFtpException.operationTimeout)
+                    packet = try inputQueue.poll(PROTOCOL_TIMEOUT, canceled: canceled, cancelError: BlePsFtpException.operationCanceled)
                 } catch let error {
                     try handleResponseError(packet,error: error)
                 }
