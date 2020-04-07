@@ -192,112 +192,96 @@ import RxSwift
         let deviceId = session.advertisementContent.polarDeviceIdUntouched.count != 0 ?
             session.advertisementContent.polarDeviceIdUntouched :
             session.address.uuidString
-        // TODO use flatMap
         _ = session.monitorServicesDiscovered(true).observeOn(
-            scheduler).subscribe{ e in
-                switch e {
-                case .completed:
-                    self.logMessage("services complete")
-                case .next(let uuid):
-                    if session.fetchGattClient(uuid) != nil {
-                        if uuid.isEqual(BleHrClient.HR_SERVICE) {
-                            self.deviceFeaturesObserver?.hrFeatureReady(deviceId)
-                            let hrClient = session.fetchGattClient(BleHrClient.HR_SERVICE) as! BleHrClient
-                            _ = hrClient.observeHrNotifications(true).observeOn(
-                                self.scheduler).subscribe{ e in
-                                    switch e {
-                                        case .completed:
-                                            break
-                                        case .next(let value):
-                                            let rrsMs = value.rrs.map({ (rr) -> Int in
-                                                return Int(round((Float(rr) / 1024.0) * 1000.0))
-                                            })
-                                            self.deviceHrObserver?.hrValueReceived(
-                                                deviceId, data: (hr: UInt8(value.hr), rrs: value.rrs, rrsMs: rrsMs, contact: value.sensorContact, contactSupported: value.sensorContactSupported))
-                                        case .error(let error):
-                                            self.logMessage("\(error)")
-                                        @unknown default:
-                                            fatalError()
-                                    }
-                            }
-                        } else if uuid.isEqual(BleBasClient.BATTERY_SERVICE) {
-                            let basClient = session.fetchGattClient(BleBasClient.BATTERY_SERVICE) as! BleBasClient
-                            _ = basClient.waitBatteryLevelUpdate(true).observeOn(self.scheduler).take(1).subscribe{ e in
-                                    switch e {
-                                        case .completed:
-                                            break
-                                        case .next(let value):
-                                            self.deviceInfoObserver?.batteryLevelReceived(
-                                                deviceId, batteryLevel: UInt(value))
-                                        case .error(let error):
-                                            self.logMessage("\(error)")
-                                        @unknown default:
-                                            fatalError()
-                                }
-                            }
-                        } else if uuid.isEqual(BleDisClient.DIS_SERVICE) {
-                            let disClient = session.fetchGattClient(BleDisClient.DIS_SERVICE) as! BleDisClient
-                            _ = disClient.readDisInfo(true).observeOn(self.scheduler).subscribe{ e in
-                                switch e {
-                                    case .completed:
-                                        self.logMessage("DIS complete")
-                                    case .next(let value):
-                                        self.deviceInfoObserver?.disInformationReceived(deviceId, uuid: value.0, value: value.1)
-                                    case .error(let error):
-                                        self.logMessage("\(error)")
-                                    @unknown default:
-                                        fatalError()
-                                }
-                            }
-                        } else if uuid.isEqual(BlePmdClient.PMD_SERVICE) {
-                            let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
-                            _ = client.clientReady(true).andThen(client.readFeature(true)).observeOn(self.scheduler).subscribe{ e in
-                                switch e {
-                                case .success(let value):
-                                    if value.ecgSupported {
-                                        self.deviceFeaturesObserver?.ecgFeatureReady(deviceId)
-                                    }
-                                    if value.accSupported {
-                                        self.deviceFeaturesObserver?.accFeatureReady(deviceId)
-                                    }
-                                    if value.ppgSupported {
-                                        self.deviceFeaturesObserver?.ohrPPGFeatureReady(deviceId)
-                                    }
-                                    if value.ppiSupported {
-                                        self.deviceFeaturesObserver?.ohrPPIFeatureReady(deviceId)
-                                    }
-                                    if value.bioZSupported {
-                                        self.deviceFeaturesObserver?.biozFeatureReady(deviceId)
-                                    }
-                                case .error(let err):
-                                    self.logMessage("\(err)")
-                                @unknown default:
-                                    fatalError()
-                                }
-                            }
-                        } else if uuid.isEqual(BlePsFtpClient.PSFTP_SERVICE) {
-                            let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
-                            _ = client.waitPsFtpReady(true).observeOn(self.scheduler).subscribe{ e in
-                                switch e {
-                                case .completed:
-                                    if session.advertisementContent.polarDeviceType == "OH1" ||
-                                       session.advertisementContent.polarDeviceType == "H10" {
-                                        self.deviceFeaturesObserver?.ftpFeatureReady(deviceId)
-                                    }
-                                case .error(let error):
-                                    self.logMessage("\(error)")
-                                @unknown default:
-                                    fatalError()
-                                }
-                            }
-                        }
+        scheduler).flatMap { (uuid: CBUUID) -> Observable<Any> in
+            if let client = session.fetchGattClient(uuid) {
+                switch uuid {
+                case BleHrClient.HR_SERVICE:
+                    self.deviceFeaturesObserver?.hrFeatureReady(deviceId)
+                    let hrClient = client as! BleHrClient
+                    self.startHrObserver(hrClient, deviceId: deviceId)
+                case BleBasClient.BATTERY_SERVICE:
+                    return (client as! BleBasClient).waitBatteryLevelUpdate(true).observeOn(self.scheduler).take(1).do(onNext: { (level: Int) in
+                            self.deviceInfoObserver?.batteryLevelReceived(
+                            deviceId, batteryLevel: UInt(level))
+                    }).map { (_) -> Any in
+                        return Any.self
                     }
-                case .error(let error):
-                    self.logMessage("\(error)")
-                @unknown default:
-                    fatalError()
+                case BleDisClient.DIS_SERVICE:
+                    return (client as! BleDisClient).readDisInfo(true).observeOn(self.scheduler).do(onNext: { (arg0) in
+                        self.deviceInfoObserver?.disInformationReceived(deviceId, uuid: arg0.0, value: arg0.1)
+                    }).map { (_) -> Any in
+                        return Any.self
+                    }
+                case BlePmdClient.PMD_SERVICE:
+                    return (client as! BlePmdClient).readFeature(true).observeOn(self.scheduler).do(onSuccess: { (value: Pmd.PmdFeature) in
+                        if value.ecgSupported {
+                           self.deviceFeaturesObserver?.ecgFeatureReady(deviceId)
+                        }
+                        if value.accSupported {
+                           self.deviceFeaturesObserver?.accFeatureReady(deviceId)
+                        }
+                        if value.ppgSupported {
+                           self.deviceFeaturesObserver?.ohrPPGFeatureReady(deviceId)
+                        }
+                        if value.ppiSupported {
+                           self.deviceFeaturesObserver?.ohrPPIFeatureReady(deviceId)
+                        }
+                        if value.bioZSupported {
+                           self.deviceFeaturesObserver?.biozFeatureReady(deviceId)
+                        }
+                    }).asObservable().map { (_) -> Any in
+                        return Any.self
+                    }
+                case BlePsFtpClient.PSFTP_SERVICE:
+                    return (client as! BlePsFtpClient).waitPsFtpReady(true).observeOn(self.scheduler).do(onCompleted: {
+                        switch session.advertisementContent.polarDeviceType {
+                        case "OH1": fallthrough
+                        case "H10":
+                            self.deviceFeaturesObserver?.ftpFeatureReady(deviceId)
+                        default:
+                            break
+                        }
+                    } ).asObservable().map { (_) -> Any in
+                        return Any.self
+                    }
+                default:
+                    break
                 }
-          }
+            }
+            return Observable<Any>.empty()
+        }.subscribe { e in
+            switch e {
+            case .next(_):
+                break
+            case .error(let error):
+                self.logMessage("\(error)")
+            case .completed:
+                self.logMessage("device setup completed")
+            @unknown default:
+                fatalError()
+            }
+        }
+    }
+
+    private func startHrObserver(_ client: BleHrClient, deviceId: String) {
+        _ = client.observeHrNotifications(true).observeOn(
+           self.scheduler).subscribe{ e in
+               switch e {
+                   case .completed:
+                       break
+                   case .next(let value):
+                       let rrsMs = value.rrs.map({ (rr) -> Int in
+                           return Int(round((Float(rr) / 1024.0) * 1000.0))
+                       })
+                       self.deviceHrObserver?.hrValueReceived(
+                           deviceId, data: (hr: UInt8(value.hr), rrs: value.rrs, rrsMs: rrsMs, contact: value.sensorContact, contactSupported: value.sensorContactSupported))
+                   case .error(let error):
+                       self.logMessage("\(error)")
+                   @unknown default:
+                       fatalError()
+               }
+        }
     }
 }
 
