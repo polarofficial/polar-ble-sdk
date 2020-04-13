@@ -12,7 +12,15 @@ import RxSwift
     weak var deviceHrObserver: PolarBleApiDeviceHrObserver?
     weak var deviceFeaturesObserver: PolarBleApiDeviceFeaturesObserver?
     weak var deviceInfoObserver: PolarBleApiDeviceInfoObserver?
-    weak var powerStateObserver: PolarBleApiPowerStateObserver?
+    weak var powerStateObserver: PolarBleApiPowerStateObserver? {
+        didSet {
+            if listener.blePowered() {
+                powerStateObserver?.blePowerOn()
+            } else {
+                powerStateObserver?.blePowerOff()
+            }
+        }
+    }
     weak var cccWriteObserver: PolarBleApiCCCWriteObserver?
     weak var observer: PolarBleApiObserver?
     var isBlePowered: Bool {

@@ -220,7 +220,6 @@ public class BlePsFtpClient extends BleGattBase {
                 // block, until previous operation has completed
                 try {
                     synchronized (pftpOperationMutex) {
-                        BleLogger.d(TAG, "NEW READ operation started");
                         if (pftpMtuEnabled.get() == ATT_SUCCESS) {
                             resetMtuPipe();
                             // transmit header first
@@ -313,7 +312,6 @@ public class BlePsFtpClient extends BleGattBase {
                     if (pftpMtuEnabled.get() == ATT_SUCCESS) {
                         currentOperationWrite.set(true);
                         long pCounter = 0;
-                        BleLogger.d(TAG,"NEW WRITE operation");
                         resetMtuPipe();
                         // clear all before new operation
                         ByteArrayInputStream totalStream;
@@ -452,7 +450,6 @@ public class BlePsFtpClient extends BleGattBase {
                 try {
                     synchronized (pftpOperationMutex) {
                         if (pftpMtuEnabled.get() == ATT_SUCCESS) {
-                            BleLogger.d(TAG, "new query operation started id: " + id);
                             resetMtuPipe();
                             ByteArrayInputStream totalStream = BlePsFtpUtils.makeCompleteMessageStream(parameters != null ? new ByteArrayInputStream(parameters) : null, null, BlePsFtpUtils.MessageType.QUERY, id);
                             BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();
@@ -509,7 +506,6 @@ public class BlePsFtpClient extends BleGattBase {
                     synchronized (pftpNotificationMutex) {
                         if(txInterface.isConnected()) {
                             if(pftpD2HNotificationEnabled.get() == ATT_SUCCESS) {
-                                BleLogger.d(TAG,"NEW NOTIFICATION ID: " + id);
                                 resetNotificationPipe();
                                 ByteArrayInputStream totalStream = BlePsFtpUtils.makeCompleteMessageStream(parameters != null ? new ByteArrayInputStream(parameters) : null, null, BlePsFtpUtils.MessageType.NOTIFICATION, id);
                                 BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();

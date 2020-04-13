@@ -160,7 +160,7 @@ public abstract class BleDeviceListener {
     abstract public Set<BleDeviceSession> deviceSessions();
 
     /**
-     * @param address bt address
+     * @param address bt address in format 00:11:22:33:44:55
      * @return BleDeviceSession
      */
     abstract public BleDeviceSession sessionByAddress(final String address);
