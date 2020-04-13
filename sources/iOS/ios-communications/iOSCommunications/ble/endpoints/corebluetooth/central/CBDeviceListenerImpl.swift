@@ -23,7 +23,11 @@ public class CBDeviceListenerImpl: NSObject,
         }
     }
     public var deviceSessionStateObserver: BleDeviceSessionStateObserver?
-    public var powerStateObserver: BlePowerStateObserver?
+    public var powerStateObserver: BlePowerStateObserver? {
+        didSet {
+            powerStateObserver?.powerStateChanged(BleState(rawValue: self.manager.state.rawValue) ?? BleState.unknown)
+        }
+    }
     
     public init(_ queue: DispatchQueue, clients: [(_ transport: BleAttributeTransportProtocol) -> BleGattClientBase], identifier: Int){
         self.queue = queue
