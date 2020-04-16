@@ -3,7 +3,6 @@ package com.androidcommunications.polar.enpoints.ble.common;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.Pair;
-import android.os.Handler;
 
 import com.androidcommunications.polar.api.ble.BleDeviceListener;
 import com.androidcommunications.polar.api.ble.model.BleDeviceSession;
@@ -30,13 +29,11 @@ public abstract class BleDeviceListener2 extends BleDeviceListener implements Sc
     protected Context context;
     private BleDeviceSessionStateChangedCallback changedCallback = null;
     protected BlePowerStateChangedCallback powerStateChangedCallback = null;
-    private Handler stateHandler;
 
     public BleDeviceListener2(final Context context, Set<Class<? extends BleGattBase> > clients) {
         super(clients);
         this.context = context;
-        this.stateHandler = new Handler(context.getMainLooper());
-        this.connectionHandler = new ConnectionHandler(this,this);
+        this.connectionHandler = new ConnectionHandler(context,this,this);
         this.connectionHandler.addObserver(new ConnectionHandlerObserver() {
             @Override
             public void deviceSessionStateChanged(final BleDeviceSession2 session) {
@@ -44,27 +41,12 @@ public abstract class BleDeviceListener2 extends BleDeviceListener implements Sc
                     if (session.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK &&
                             session.getPreviousState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN) {
                         //NOTE special case, we were connected so propagate closed event( informal )
-                        stateHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                changedCallback.stateChanged(session, BleDeviceSession.DeviceSessionState.SESSION_CLOSED);
-                            }
-                        });
+                        changedCallback.stateChanged(session, BleDeviceSession.DeviceSessionState.SESSION_CLOSED);
                         if (session.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK) {
-                            stateHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    changedCallback.stateChanged(session, BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
-                                }
-                            });
+                            changedCallback.stateChanged(session, BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
                         }
                     } else {
-                        stateHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                changedCallback.stateChanged(session, session.getSessionState());
-                            }
-                        });
+                        changedCallback.stateChanged(session, session.getSessionState());
                     }
                 }
             }
