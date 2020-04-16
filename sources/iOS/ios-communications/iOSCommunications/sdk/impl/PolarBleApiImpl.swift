@@ -222,7 +222,8 @@ import RxSwift
                         return Any.self
                     }
                 case BlePmdClient.PMD_SERVICE:
-                    return (client as! BlePmdClient).readFeature(true).observeOn(self.scheduler).do(onSuccess: { (value: Pmd.PmdFeature) in
+                    let pmdClient = (client as! BlePmdClient)
+                    return pmdClient.clientReady(true).andThen(pmdClient.readFeature(true).observeOn(self.scheduler).do(onSuccess: { (value: Pmd.PmdFeature) in
                         if value.ecgSupported {
                            self.deviceFeaturesObserver?.ecgFeatureReady(deviceId)
                         }
@@ -238,7 +239,7 @@ import RxSwift
                         if value.bioZSupported {
                            self.deviceFeaturesObserver?.biozFeatureReady(deviceId)
                         }
-                    }).asObservable().map { (_) -> Any in
+                    })).asObservable().map { (_) -> Any in
                         return Any.self
                     }
                 case BlePsFtpClient.PSFTP_SERVICE:
