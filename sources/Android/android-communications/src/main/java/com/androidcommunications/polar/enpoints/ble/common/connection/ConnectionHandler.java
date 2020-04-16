@@ -1,5 +1,8 @@
 package com.androidcommunications.polar.enpoints.ble.common.connection;
 
+import android.content.Context;
+import android.os.Handler;
+
 import com.androidcommunications.polar.api.ble.BleLogger;
 import com.androidcommunications.polar.api.ble.model.BleDeviceSession;
 import com.androidcommunications.polar.common.ble.AtomicSet;
@@ -41,9 +44,11 @@ public class ConnectionHandler {
     private BleDeviceSession2 current;
     private AtomicSet<ConnectionHandlerObserver> observers = new AtomicSet<>();
     private boolean automaticReconnection = true;
+    private Handler stateHandler;
 
-    public ConnectionHandler(ConnectionInterface connectionInterface,
+    public ConnectionHandler(Context context, ConnectionInterface connectionInterface,
                              ScannerInterface scannerInterface){
+        this.stateHandler = new Handler(context.getMainLooper());
         this.scannerInterface = scannerInterface;
         this.connectionInterface = connectionInterface;
         this.state = ConnectionHandlerState.FREE;
@@ -76,21 +81,31 @@ public class ConnectionHandler {
     }
 
     public void deviceConnected(final BleDeviceSession2 bleDeviceSession){
-        commandState(bleDeviceSession, ConnectionHandlerAction.DEVICE_CONNECTED);
-        observers.accessAll(new AtomicSet.ObjectAccess<ConnectionHandlerObserver>() {
+        stateHandler.post(new Runnable() {
             @Override
-            public void access(ConnectionHandlerObserver object) {
-                object.deviceConnected(bleDeviceSession);
+            public void run() {
+                commandState(bleDeviceSession, ConnectionHandlerAction.DEVICE_CONNECTED);
+                observers.accessAll(new AtomicSet.ObjectAccess<ConnectionHandlerObserver>() {
+                    @Override
+                    public void access(ConnectionHandlerObserver object) {
+                        object.deviceConnected(bleDeviceSession);
+                    }
+                });
             }
         });
     }
 
     public void deviceDisconnected(final BleDeviceSession2 bleDeviceSession){
-        commandState(bleDeviceSession, ConnectionHandlerAction.DEVICE_DISCONNECTED);
-        observers.accessAll(new AtomicSet.ObjectAccess<ConnectionHandlerObserver>() {
+        stateHandler.post(new Runnable() {
             @Override
-            public void access(ConnectionHandlerObserver object) {
-                object.deviceDisconnected(bleDeviceSession);
+            public void run() {
+                commandState(bleDeviceSession, ConnectionHandlerAction.DEVICE_DISCONNECTED);
+                observers.accessAll(new AtomicSet.ObjectAccess<ConnectionHandlerObserver>() {
+                    @Override
+                    public void access(ConnectionHandlerObserver object) {
+                        object.deviceDisconnected(bleDeviceSession);
+                    }
+                });
             }
         });
     }
