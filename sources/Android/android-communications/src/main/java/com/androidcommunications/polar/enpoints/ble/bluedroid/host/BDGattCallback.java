@@ -26,7 +26,7 @@ import io.reactivex.schedulers.Schedulers;
 class BDGattCallback extends BluetoothGattCallback {
 
     private final static String TAG = BDGattCallback.class.getSimpleName();
-    private final static int POLAR_MAX_MTU = 512;
+    private int POLAR_MAX_MTU = 512;
 
     private ConnectionHandler connectionHandler;
     private BDDeviceList sessions;
@@ -36,6 +36,10 @@ class BDGattCallback extends BluetoothGattCallback {
         this.scheduler = AndroidSchedulers.from(context.getMainLooper());
         this.connectionHandler = connectionHandler;
         this.sessions = sessions;
+    }
+
+    void setPolarMaxMtu(int mtu) {
+        POLAR_MAX_MTU = mtu;
     }
 
     @Override

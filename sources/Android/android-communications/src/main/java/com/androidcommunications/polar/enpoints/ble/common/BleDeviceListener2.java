@@ -1,6 +1,7 @@
 package com.androidcommunications.polar.enpoints.ble.common;
 
 import android.content.Context;
+import android.support.annotation.IntRange;
 import android.support.annotation.Nullable;
 import android.util.Pair;
 

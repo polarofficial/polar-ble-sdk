@@ -203,6 +203,11 @@ public class BDDeviceListenerImpl extends BleDeviceListener2 implements BDScanCa
     }
 
     @Override
+    public void setMtu(int mtu) {
+        gattCallback.setPolarMaxMtu(mtu);
+    }
+
+    @Override
     public void shutDown(){
         super.shutDown();
         bondingManager.stopBroadcastReceiver();

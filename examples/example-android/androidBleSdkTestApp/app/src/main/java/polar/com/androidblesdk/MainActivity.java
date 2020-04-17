@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         // Notice PolarBleApi.ALL_FEATURES are enabled
         api = PolarBleApiDefaultImpl.defaultImplementation(this, PolarBleApi.ALL_FEATURES);
         api.setPolarFilter(false);
+        api.setMtu(140);
 
         final Button broadcast = this.findViewById(R.id.broadcast_button);
         final Button connect = this.findViewById(R.id.connect_button);
