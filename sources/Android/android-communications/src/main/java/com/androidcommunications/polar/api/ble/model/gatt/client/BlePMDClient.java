@@ -167,7 +167,8 @@ public class BlePMDClient extends BleGattBase {
             ERROR_INVALID_STATE(6),
             ERROR_INVALID_RESOLUTION(7),
             ERROR_INVALID_SAMPLE_RATE(8),
-            ERROR_INVALID_RANGE(9);
+            ERROR_INVALID_RANGE(9),
+            ERROR_INVALID_MTU(10);
 
             private int numVal;
             PmdControlPointResponseCode(int numVal) {
@@ -183,9 +184,11 @@ public class BlePMDClient extends BleGattBase {
             opCode = PmdControlPointCommand.values()[data[1]];
             measurementType = data[2];
             status = PmdControlPointResponseCode.values()[data[3]];
-            more = data.length > 4 && data[4] != 0;
-            if (data.length > 5) {
-                parameters.write(data, 5, data.length - 5);
+            if (status == PmdControlPointResponseCode.SUCCESS) {
+                more = data.length > 4 && data[4] != 0;
+                if (data.length > 5) {
+                    parameters.write(data, 5, data.length - 5);
+                }
             }
         }
     }

@@ -166,6 +166,11 @@ public class BDBleApiImpl extends PolarBleApi implements
     }
 
     @Override
+    public void setMtu(int mtu) {
+        listener.setMtu(mtu);
+    }
+
+    @Override
     public void shutDown() {
         listener.shutDown();
     }

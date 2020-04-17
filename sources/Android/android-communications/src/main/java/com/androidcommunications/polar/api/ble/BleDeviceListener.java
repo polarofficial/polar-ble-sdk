@@ -2,6 +2,7 @@ package com.androidcommunications.polar.api.ble;
 
 import android.bluetooth.le.ScanFilter;
 import android.support.annotation.IntDef;
+import android.support.annotation.IntRange;
 import android.support.annotation.Nullable;
 import android.util.Pair;
 
@@ -102,6 +103,8 @@ public abstract class BleDeviceListener {
      */
     abstract public Flowable<BleDeviceSession> search(boolean fetchKnownDevices);
 
+    abstract public void setMtu(@IntRange(from = 70, to = 512) int mtu);
+
     /**
      * As java does not support destructor/RAII, Client/App should call this whenever the application is being destroyed
      */
@@ -123,9 +126,9 @@ public abstract class BleDeviceListener {
     /**
      * Deprecated use setDeviceSessionStateChangedCallback instead
      *
-     * Produces: onNext: When a device session state has changed, Note use pair.second to check the state (see BleDeviceSession.DeviceSessionState)<BR>
-     *           onError: should not be produced<BR>
-     *           onCompleted: This is never propagated, NOTE to get completed event configure observable with some end rule e.g. take(1), takeUntil() etc...<BR>
+     * Produces: onNext: When a device session state has changed, Note use pair.second to check the state (see BleDeviceSession.DeviceSessionState) <BR>
+     *           onError: should not be produced <BR>
+     *           onCompleted: If stream is further configured <BR>
      * @param session, a specific session or null = monitor all sessions
      * @return Observable stream
      */
@@ -149,7 +152,7 @@ public abstract class BleDeviceListener {
     abstract public void setDeviceSessionStateChangedCallback(@Nullable BleDeviceSessionStateChangedCallback changedCallback);
 
     /**
-     * aquires disconnection establishment directly without Observable returned
+     * aquires disconnection directly without Observable returned
      * @param session device
      */
     abstract public void closeSessionDirect(BleDeviceSession session);
