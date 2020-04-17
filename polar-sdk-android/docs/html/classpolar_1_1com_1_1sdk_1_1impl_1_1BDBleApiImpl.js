@@ -34,6 +34,7 @@ var classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl =
     [ "setApiLogger", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#ad239df6d03a59f3a85506346931b52a1", null ],
     [ "setAutomaticReconnection", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a2c36d4ab6fbdc804df500d2a1d1c0e5d", null ],
     [ "setLocalTime", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a95d10bce5ba70d0b499f610d761aeabb", null ],
+    [ "setMtu", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a5f47612ad1d1171257ce7365c676ad09", null ],
     [ "setPolarFilter", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#ac08c2703034dc62317eaa6c47ed2284c", null ],
     [ "setupDevice", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#a4a711dc98144cb480f5b4e4ef3c2af5b", null ],
     [ "shutDown", "classpolar_1_1com_1_1sdk_1_1impl_1_1BDBleApiImpl.html#ae1296701871fe33af919ca9423cadd7a", null ],
