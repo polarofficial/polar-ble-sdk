@@ -46,7 +46,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "BDBleApiImpl_8java.html",
-"interfacepolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiCallbackProvider.html#a8a037114fa4c5a7c78960e66ae1c0b7c"
+"interfacepolar_1_1com_1_1sdk_1_1api_1_1PolarBleApiCallbackProvider.html#a78097d3ec0e9008595d905ab2302d404"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

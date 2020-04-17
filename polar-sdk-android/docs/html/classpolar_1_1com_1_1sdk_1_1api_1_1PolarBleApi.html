@@ -93,6 +93,8 @@ Data Structures</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a17372e01394efb53e7c8f83cb0e379eb"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a17372e01394efb53e7c8f83cb0e379eb">setMtu</a> (@IntRange(from=70, to=512) int mtu)</td></tr>
+<tr class="separator:a17372e01394efb53e7c8f83cb0e379eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab6dec221f95ea5dce6118cadeb362006"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#ab6dec221f95ea5dce6118cadeb362006">shutDown</a> ()</td></tr>
 <tr class="separator:ab6dec221f95ea5dce6118cadeb362006"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43c533a7a7011c6d2f56a4497fae04f7"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpolar_1_1com_1_1sdk_1_1api_1_1PolarBleApi.html#a43c533a7a7011c6d2f56a4497fae04f7">cleanup</a> ()</td></tr>
@@ -975,6 +977,38 @@ Protected Attributes</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Completable stream </dd></dl>
+
+</div>
+</div>
+<a id="a17372e01394efb53e7c8f83cb0e379eb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a17372e01394efb53e7c8f83cb0e379eb">&#9670;&nbsp;</a></span>setMtu()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">abstract void polar.com.sdk.api.PolarBleApi.setMtu </td>
+          <td>(</td>
+          <td class="paramtype">@IntRange(from=70, to=512) int&#160;</td>
+          <td class="paramname"><em>mtu</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">abstract</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>set mtu to lower than default(232 is the default for polar devices, minimum for H10 is 70 and for OH1 is 140) to minimize latency </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">mtu</td><td>value between 64-512 to be set </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
