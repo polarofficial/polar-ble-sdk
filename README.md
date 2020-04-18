@@ -247,7 +247,7 @@ public void onDestroy() {
 # iOS: Getting started
 Detailed documentation [Full Documentation](polar-sdk-ios/docs/). Minimum iOS version is 10.
 ## Installation
-Compiled Sdk and dependencys can be found from [polar-sdk-ios](polar-sdk-ios/)
+Compiled Sdk and dependencies can be found from [polar-sdk-ios](polar-sdk-ios/)
 Precompiled 5.1.1 RxSwift is added to sdk package. All iOS demos and examples contains Cartfile if you desire to compile
 dependencies yourself.
 

@@ -7,7 +7,6 @@ import android.support.annotation.Size;
 import android.util.Pair;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
