@@ -15,7 +15,7 @@ xcodebuild -scheme PolarBleSdkWatchOs -configuration Release -sdk `xcrun --sdk w
 xcodebuild -scheme PolarBleSdkWatchOs -configuration Release -sdk `xcrun --sdk watchsimulator --show-sdk-path` -derivedDataPath $DERIVED_DATA ONLY_ACTIVE_ARCH=NO ARCHS="i386 x86_64" CODE_SIGN_IDENTITY=''
 echo "Creating universal watchos framework"
 cd $DERIVED_DATA
-lipo -create -output ../3rd_party_sdk/watchos/PolarBleSdkWatchOs.framework/PolarBleSdkWatchOs Build/Products/Release-watchos/PolarBleSdkWatchOs.framework/PolarBleSdkWatchOs Build/Products/Release-watchsimulator/PolarBleSdkWatchOs.framework/PolarBleSdkWatchOs
+lipo -create -output ../3rd_party_sdk/PolarBleSdkWatchOs.framework/PolarBleSdkWatchOs Build/Products/Release-watchos/PolarBleSdkWatchOs.framework/PolarBleSdkWatchOs Build/Products/Release-watchsimulator/PolarBleSdkWatchOs.framework/PolarBleSdkWatchOs
 echo "Copying swift modules..."
 cp Build/Products/Release-watchos/PolarBleSdkWatchOs.framework/Modules/PolarBleSdkWatchOs.swiftmodule/*.swiftmodule ../3rd_party_sdk/PolarBleSdkWatchOs.framework/Modules/PolarBleSdkWatchOs.swiftmodule
 cp Build/Products/Release-watchos/PolarBleSdkWatchOs.framework/Modules/PolarBleSdkWatchOs.swiftmodule/*.swiftdoc ../3rd_party_sdk/PolarBleSdkWatchOs.framework/Modules/PolarBleSdkWatchOs.swiftmodule
