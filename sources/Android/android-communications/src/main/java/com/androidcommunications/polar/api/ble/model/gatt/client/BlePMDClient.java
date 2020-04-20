@@ -17,7 +17,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,16 +27,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.FlowableEmitter;
-import io.reactivex.Single;
-import io.reactivex.SingleEmitter;
-import io.reactivex.SingleOnSubscribe;
-import io.reactivex.SingleSource;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.FlowableEmitter;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleEmitter;
+import io.reactivex.rxjava3.core.SingleOnSubscribe;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class BlePMDClient extends BleGattBase {
     
@@ -578,12 +575,7 @@ public class BlePMDClient extends BleGattBase {
                 switch (type) {
                     case ECG:
                         if(frameType <= 2) {
-                            RxUtils.emitNext(ecgObservers, new RxUtils.Emitter<FlowableEmitter<? super EcgData>>() {
-                                @Override
-                                public void item(FlowableEmitter<? super EcgData> object) {
-                                    object.onNext(new EcgData(frameType, content, timeStamp));
-                                }
-                            });
+                            RxUtils.emitNext(ecgObservers, object -> object.onNext(new EcgData(frameType, content, timeStamp)));
                         } else {
                             BleLogger.w(TAG,"Unknown ECG frame type received");
                         }
@@ -592,58 +584,32 @@ public class BlePMDClient extends BleGattBase {
                         switch (PpgData.PpgFrameType.fromId(frameType)) {
                             case PPG1_TYPE:
                             case PPG0_TYPE: {
-                                RxUtils.emitNext(ppgObservers, new RxUtils.Emitter<FlowableEmitter<? super PpgData>>() {
-                                    @Override
-                                    public void item(FlowableEmitter<? super PpgData> object) {
-                                        object.onNext(new PpgData(content, timeStamp, frameType));
-                                    }
-                                });
+                                RxUtils.emitNext(ppgObservers, object -> object.onNext(new PpgData(content, timeStamp, frameType)));
                                 break;
                             }
                             case AFE4410: {
-                                RxUtils.emitNext(autoGainAFE4410Observers, new RxUtils.Emitter<FlowableEmitter<? super AutoGainAFE4410>>() {
-                                    @Override
-                                    public void item(FlowableEmitter<? super AutoGainAFE4410> object) {
-                                        object.onNext(new AutoGainAFE4410(content, timeStamp));
-                                    }
-                                });
+                                RxUtils.emitNext(autoGainAFE4410Observers, object -> object.onNext(new AutoGainAFE4410(content, timeStamp)));
                                 break;
                             }
                             case AFE4404: {
-                                RxUtils.emitNext(autoGainAFE4404Observers, new RxUtils.Emitter<FlowableEmitter<? super AutoGainAFE4404>>() {
-                                    @Override
-                                    public void item(FlowableEmitter<? super AutoGainAFE4404> object) {
-                                        object.onNext(new AutoGainAFE4404(content, timeStamp));
-                                    }
-                                });
+                                RxUtils.emitNext(autoGainAFE4404Observers, object -> object.onNext(new AutoGainAFE4404(content, timeStamp)));
                                 break;
                             }
                             case ADPD4000: {
-                                RxUtils.emitNext(autoGainADPD4000Observers, new RxUtils.Emitter<FlowableEmitter<? super AutoGainADPD4000>>() {
-                                    @Override
-                                    public void item(FlowableEmitter<? super AutoGainADPD4000> object) {
-                                        object.onNext(new AutoGainADPD4000(content, timeStamp));
-                                    }
-                                });
+                                RxUtils.emitNext(autoGainADPD4000Observers, object -> object.onNext(new AutoGainADPD4000(content, timeStamp)));
                                 break;
                             }
                             case AFE_OPERATION_MODE: {
-                                RxUtils.emitNext(afeOperationModeObservers, new RxUtils.Emitter<FlowableEmitter<? super Pair<Long,Long>>>() {
-                                    @Override
-                                    public void item(FlowableEmitter<? super Pair<Long,Long>> object) {
-                                        Long value = BleUtils.convertArrayToUnsignedLong(content, 0, content.length);
-                                        object.onNext(new Pair<Long,Long>(timeStamp,value));
-                                    }
+                                RxUtils.emitNext(afeOperationModeObservers, object -> {
+                                    Long value = BleUtils.convertArrayToUnsignedLong(content, 0, content.length);
+                                    object.onNext(new Pair<>(timeStamp, value));
                                 });
                                 break;
                             }
                             case SPORT_ID: {
-                                RxUtils.emitNext(sportIdObservers, new RxUtils.Emitter<FlowableEmitter<? super Pair<Long,Long>>>() {
-                                    @Override
-                                    public void item(FlowableEmitter<? super Pair<Long,Long>> object) {
-                                        final long sportId = BleUtils.convertArrayToUnsignedLong(content, 0,8);
-                                        object.onNext(new Pair<Long, Long>(timeStamp,sportId));
-                                    }
+                                RxUtils.emitNext(sportIdObservers, object -> {
+                                    final long sportId = BleUtils.convertArrayToUnsignedLong(content, 0,8);
+                                    object.onNext(new Pair<>(timeStamp, sportId));
                                 });
                                 break;
                             }
@@ -654,24 +620,14 @@ public class BlePMDClient extends BleGattBase {
                         break;
                     case ACC:
                         if(frameType <= 2) {
-                            RxUtils.emitNext(accObservers, new RxUtils.Emitter<FlowableEmitter<? super AccData>>() {
-                                @Override
-                                public void item(FlowableEmitter<? super AccData> object) {
-                                    object.onNext(new AccData(frameType, content, timeStamp));
-                                }
-                            });
+                            RxUtils.emitNext(accObservers, object -> object.onNext(new AccData(frameType, content, timeStamp)));
                         } else {
                             BleLogger.w(TAG,"Unknown ACC frame type received");
                         }
                         break;
                     case PPI:
                         if( frameType == 0 ) {
-                            RxUtils.emitNext(ppiObservers, new RxUtils.Emitter<FlowableEmitter<? super PpiData>>() {
-                                @Override
-                                public void item(FlowableEmitter<? super PpiData> object) {
-                                    object.onNext(new PpiData(content, timeStamp));
-                                }
-                            });
+                            RxUtils.emitNext(ppiObservers, object -> object.onNext(new PpiData(content, timeStamp)));
                         } else {
                             BleLogger.w(TAG,"Unknown PPI frame type received");
                         }
@@ -679,12 +635,7 @@ public class BlePMDClient extends BleGattBase {
                     case BIOZ:
                         if( frameType == 0 ||
                             frameType == 1 ){
-                            RxUtils.emitNext(biozObservers, new RxUtils.Emitter<FlowableEmitter<? super BiozData>>() {
-                                @Override
-                                public void item(FlowableEmitter<? super BiozData> object) {
-                                    object.onNext(new BiozData(content,timeStamp, frameType));
-                                }
-                            });
+                            RxUtils.emitNext(biozObservers, object -> object.onNext(new BiozData(content,timeStamp, frameType)));
                         } else {
                             BleLogger.w(TAG,"Unknown BIOZ frame type received");
                         }
@@ -739,27 +690,24 @@ public class BlePMDClient extends BleGattBase {
     }
 
     private Single<PmdControlPointResponse> sendControlPointCommand(final PmdControlPointCommand command, final byte[] params){
-        return Single.create(new SingleOnSubscribe<PmdControlPointResponse>() {
-            @Override
-            public void subscribe(SingleEmitter<PmdControlPointResponse> subscriber) throws Exception {
-                synchronized (controlPointMutex){
-                    try {
-                        if (pmdCpEnabled.get() == ATT_SUCCESS && pmdDataEnabled.get() == ATT_SUCCESS) {
-                            ByteBuffer bb = ByteBuffer.allocate(1 + params.length);
-                            bb.put(new byte[]{(byte) command.getNumVal()});
-                            bb.put(params);
-                            PmdControlPointResponse response = sendPmdCommand(bb.array());
-                            if (response.status == PmdControlPointResponse.PmdControlPointResponseCode.SUCCESS) {
-                                subscriber.onSuccess(response);
-                                return;
-                            }
-                            throw new Exception("Pmd cp failed: " + response.status.numVal);
+        return Single.create((SingleOnSubscribe<PmdControlPointResponse>) subscriber -> {
+            synchronized (controlPointMutex){
+                try {
+                    if (pmdCpEnabled.get() == ATT_SUCCESS && pmdDataEnabled.get() == ATT_SUCCESS) {
+                        ByteBuffer bb = ByteBuffer.allocate(1 + params.length);
+                        bb.put(new byte[]{(byte) command.getNumVal()});
+                        bb.put(params);
+                        PmdControlPointResponse response = sendPmdCommand(bb.array());
+                        if (response.status == PmdControlPointResponse.PmdControlPointResponseCode.SUCCESS) {
+                            subscriber.onSuccess(response);
+                            return;
                         }
-                        throw new BleCharacteristicNotificationNotEnabled();
-                    } catch (Throwable throwable){
-                        if(!subscriber.isDisposed()) {
-                            subscriber.tryOnError(throwable);
-                        }
+                        throw new Exception("Pmd cp failed: " + response.status.numVal);
+                    }
+                    throw new BleCharacteristicNotificationNotEnabled();
+                } catch (Throwable throwable){
+                    if(!subscriber.isDisposed()) {
+                        subscriber.tryOnError(throwable);
                     }
                 }
             }
@@ -783,29 +731,26 @@ public class BlePMDClient extends BleGattBase {
      * @return Single stream
      */
     public Single<PmdFeature> readFeature(final boolean checkConnection) {
-        return Single.create(new SingleOnSubscribe<PmdFeature>() {
-            @Override
-            public void subscribe(SingleEmitter<PmdFeature> emitter) throws Exception {
-                try {
-                    if(!checkConnection || txInterface.isConnected()) {
-                        synchronized (mutexFeature) {
-                            if (pmdFeatureData == null) {
-                                mutexFeature.wait();
-                            }
-                            if (pmdFeatureData != null) {
-                                emitter.onSuccess(new PmdFeature(pmdFeatureData));
-                                return;
-                            } else if (!txInterface.isConnected()) {
-                                throw new BleDisconnected();
-                            }
-                            throw new Exception("Undefined device error");
+        return Single.create((SingleOnSubscribe<PmdFeature>) emitter -> {
+            try {
+                if(!checkConnection || txInterface.isConnected()) {
+                    synchronized (mutexFeature) {
+                        if (pmdFeatureData == null) {
+                            mutexFeature.wait();
                         }
+                        if (pmdFeatureData != null) {
+                            emitter.onSuccess(new PmdFeature(pmdFeatureData));
+                            return;
+                        } else if (!txInterface.isConnected()) {
+                            throw new BleDisconnected();
+                        }
+                        throw new Exception("Undefined device error");
                     }
-                    throw new BleDisconnected();
-                } catch (Exception ex){
-                    if(!emitter.isDisposed()){
-                        emitter.tryOnError(ex);
-                    }
+                }
+                throw new BleDisconnected();
+            } catch (Exception ex){
+                if(!emitter.isDisposed()){
+                    emitter.tryOnError(ex);
                 }
             }
         }).subscribeOn(Schedulers.io());

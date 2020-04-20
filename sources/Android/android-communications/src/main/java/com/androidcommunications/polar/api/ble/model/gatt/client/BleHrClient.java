@@ -8,9 +8,9 @@ import com.androidcommunications.polar.common.ble.RxUtils;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.FlowableEmitter;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.FlowableEmitter;
 
 public class BleHrClient extends BleGattBase {
 
@@ -90,12 +90,7 @@ public class BleHrClient extends BleGattBase {
 
             final int finalCumulative_rr = cumulative_rr;
             final int finalEnergy = energy;
-            RxUtils.emitNext(hrObserverAtomicList, new RxUtils.Emitter<FlowableEmitter<? super HrNotificationData>>() {
-                @Override
-                public void item(FlowableEmitter<? super HrNotificationData> object) {
-                    object.onNext(new HrNotificationData(hrValue, sensorContact, finalEnergy, rrs, contactSupported, finalCumulative_rr, rrPresent == 1));
-                }
-            });
+            RxUtils.emitNext(hrObserverAtomicList, object -> object.onNext(new HrNotificationData(hrValue, sensorContact, finalEnergy, rrs, contactSupported, finalCumulative_rr, rrPresent == 1)));
         }
     }
 

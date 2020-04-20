@@ -8,9 +8,9 @@ import com.androidcommunications.polar.common.ble.RxUtils;
 
 import java.util.UUID;
 
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.FlowableEmitter;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.FlowableEmitter;
 
 public class BleRscClient extends BleGattBase {
 
@@ -82,12 +82,7 @@ public class BleRscClient extends BleGattBase {
 
                 final long finalStrideLength = StrideLength;
                 final long finalTotalDistance = TotalDistance;
-                RxUtils.emitNext(observers, new RxUtils.Emitter<FlowableEmitter<? super RscNotificationData>>() {
-                    @Override
-                    public void item(FlowableEmitter<? super RscNotificationData> object) {
-                        object.onNext(new RscNotificationData(StrideLenPresent,TotalDistancePresent,Running, Speed, Cadence, finalStrideLength, finalTotalDistance));
-                    }
-                });
+                RxUtils.emitNext(observers, object -> object.onNext(new RscNotificationData(StrideLenPresent,TotalDistancePresent,Running, Speed, Cadence, finalStrideLength, finalTotalDistance)));
             }else if(characteristic.equals(RSC_FEATURE)){
                 long feature = data[0] | data[1] << 8;
                 BleLogger.d(TAG, "RSC Feature Characteristic read: " + feature);

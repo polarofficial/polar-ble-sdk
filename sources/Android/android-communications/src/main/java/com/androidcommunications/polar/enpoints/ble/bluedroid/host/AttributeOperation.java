@@ -1,4 +1,4 @@
-package com.androidcommunications.polar.enpoints.ble.common.attribute;
+package com.androidcommunications.polar.enpoints.ble.bluedroid.host;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.support.annotation.NonNull;
@@ -30,7 +30,7 @@ public class AttributeOperation implements Comparable<AttributeOperation>{
     private boolean enable=false;
     private boolean withResponse=false;
 
-    public void setIsPartOfPrimaryService(boolean isPartOfPrimaryService) {
+    void setIsPartOfPrimaryService(boolean isPartOfPrimaryService) {
         this.isPartOfPrimaryService = isPartOfPrimaryService;
     }
 
@@ -38,13 +38,13 @@ public class AttributeOperation implements Comparable<AttributeOperation>{
         return isPartOfPrimaryService;
     }
 
-    public AttributeOperation(AttributeOperationCommand attributeOperation,
+    AttributeOperation(AttributeOperationCommand attributeOperation,
                               BluetoothGattCharacteristic characteristic) {
         this.attributeOperation = attributeOperation;
         this.characteristic = characteristic;
     }
 
-    public AttributeOperation(AttributeOperationCommand attributeOperation,
+    AttributeOperation(AttributeOperationCommand attributeOperation,
                               BluetoothGattCharacteristic characteristic,
                               boolean enable) {
         this.attributeOperation = attributeOperation;
@@ -52,7 +52,7 @@ public class AttributeOperation implements Comparable<AttributeOperation>{
         this.enable = enable;
     }
 
-    public AttributeOperation(AttributeOperationCommand attributeOperation,
+    AttributeOperation(AttributeOperationCommand attributeOperation,
                               byte[] data,
                               BluetoothGattCharacteristic characteristic,
                               final boolean withResponse) {
@@ -62,7 +62,7 @@ public class AttributeOperation implements Comparable<AttributeOperation>{
         this.withResponse = withResponse;
     }
 
-    public AttributeOperationCommand getAttributeOperation() {
+    AttributeOperationCommand getAttributeOperation() {
         return attributeOperation;
     }
 
@@ -78,7 +78,7 @@ public class AttributeOperation implements Comparable<AttributeOperation>{
         return enable; // notification or indication
     }
 
-    public boolean isWithResponse() {
+    boolean isWithResponse() {
         return withResponse;
     }
 }

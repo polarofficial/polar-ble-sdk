@@ -1,4 +1,4 @@
-package com.androidcommunications.polar.enpoints.ble.common.connection;
+package com.androidcommunications.polar.enpoints.ble.bluedroid.host.connection;
 
 public interface ScannerInterface {
     /**

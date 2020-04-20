@@ -8,8 +8,9 @@ import android.content.IntentFilter;
 
 class BDPowerListener {
 
-    interface BlePowerState{
+    interface BlePowerState {
         void blePoweredOff();
+
         void blePoweredOn();
     }
 
@@ -24,8 +25,8 @@ class BDPowerListener {
         this.powerState = powerState;
     }
 
-    void stopBroadcastReceiver(){
-        if(receiver != null) {
+    void stopBroadcastReceiver() {
+        if (receiver != null) {
             context.unregisterReceiver(receiver);
             receiver = null;
         }
@@ -38,7 +39,7 @@ class BDPowerListener {
             if (action != null && action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
                 if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_OFF) {
                     powerState.blePoweredOff();
-                }else if(bluetoothAdapter.getState() == BluetoothAdapter.STATE_ON){
+                } else if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_ON) {
                     powerState.blePoweredOn();
                 }
             }

@@ -9,18 +9,14 @@ import com.androidcommunications.polar.api.ble.model.gatt.BleGattTxInterface;
 import com.androidcommunications.polar.common.ble.AtomicSet;
 import com.androidcommunications.polar.common.ble.RxUtils;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Flowable;
-import io.reactivex.FlowableEmitter;
-import io.reactivex.FlowableOnSubscribe;
-import io.reactivex.annotations.NonNull;
-import io.reactivex.functions.Action;
+import io.reactivex.rxjava3.core.BackpressureStrategy;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.FlowableEmitter;
+import io.reactivex.rxjava3.core.FlowableOnSubscribe;
 
 public class BleDisClient extends BleGattBase {
 
@@ -39,7 +35,7 @@ public class BleDisClient extends BleGattBase {
 
     // store in map
     private final HashMap<UUID,String> disInformation = new HashMap<>();
-    private final AtomicSet<FlowableEmitter<? super Pair<UUID, String> > > disObserverAtomicList = new AtomicSet<>();
+    private final AtomicSet<FlowableEmitter<? super Pair<UUID, String> >> disObserverAtomicList = new AtomicSet<>();
 
     public BleDisClient(BleGattTxInterface txInterface) {
         super(txInterface,DIS_SERVICE);
@@ -69,14 +65,11 @@ public class BleDisClient extends BleGattBase {
             synchronized (disInformation) {
                 disInformation.put(characteristic, new String(data, StandardCharsets.UTF_8));
             }
-            RxUtils.emitNext(disObserverAtomicList, new RxUtils.Emitter<FlowableEmitter<? super Pair<UUID, String>>>() {
-                @Override
-                public void item(FlowableEmitter<? super Pair<UUID, String>> object) {
-                    object.onNext(new Pair<>(characteristic, new String(data, StandardCharsets.UTF_8)));
-                    synchronized (disInformation) {
-                        if (hasAllAvailableReadableCharacteristics(disInformation.keySet())) {
-                            object.onComplete();
-                        }
+            RxUtils.emitNext(disObserverAtomicList, object -> {
+                object.onNext(new Pair<>(characteristic, new String(data, StandardCharsets.UTF_8)));
+                synchronized (disInformation) {
+                    if (hasAllAvailableReadableCharacteristics(disInformation.keySet())) {
+                        object.onComplete();
                     }
                 }
             });
@@ -104,30 +97,22 @@ public class BleDisClient extends BleGattBase {
      */
     public Flowable<Pair<UUID, String> > observeDisInfo(final boolean checkConnection) {
         final FlowableEmitter<? super Pair<UUID, String>>[] observer = new FlowableEmitter[1];
-        return Flowable.create(new FlowableOnSubscribe<Pair<UUID, String>>() {
-            @Override
-            public void subscribe(@NonNull FlowableEmitter<Pair<UUID, String>> subscriber) {
-                if ( !checkConnection || BleDisClient.this.txInterface.isConnected() ) {
-                    observer[0] = subscriber;
-                    disObserverAtomicList.add(subscriber);
-                    synchronized (disInformation) {
-                        for(UUID e : disInformation.keySet()){
-                            subscriber.onNext(new Pair<UUID, String>(e,disInformation.get(e)));
-                        }
-                        if (hasAllAvailableReadableCharacteristics(disInformation.keySet())) {
-                            subscriber.onComplete();
-                        }
+        return Flowable.create((FlowableOnSubscribe<Pair<UUID, String>>) subscriber -> {
+            if ( !checkConnection || BleDisClient.this.txInterface.isConnected() ) {
+                observer[0] = subscriber;
+                disObserverAtomicList.add(subscriber);
+                synchronized (disInformation) {
+                    for(UUID e : disInformation.keySet()){
+                        subscriber.onNext(new Pair<>(e, disInformation.get(e)));
                     }
-                } else if(!subscriber.isCancelled()) {
-                    subscriber.tryOnError(new BleDisconnected());
+                    if (hasAllAvailableReadableCharacteristics(disInformation.keySet())) {
+                        subscriber.onComplete();
+                    }
                 }
+            } else if(!subscriber.isCancelled()) {
+                subscriber.tryOnError(new BleDisconnected());
             }
-        },BackpressureStrategy.BUFFER).doFinally(new Action() {
-            @Override
-            public void run() {
-                disObserverAtomicList.remove(observer[0]);
-            }
-        });
+        }, BackpressureStrategy.BUFFER).doFinally(() -> disObserverAtomicList.remove(observer[0]));
     }
 }
 

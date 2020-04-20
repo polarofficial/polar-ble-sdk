@@ -23,6 +23,10 @@ android {
     dexOptions {
         javaMaxHeapSize "2g"
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
@@ -31,9 +35,9 @@ dependencies {
     implementation files('libs/polar-ble-sdk.aar')
     implementation files('libs/polar-protobuf-release.aar')
     implementation 'com.google.protobuf:protobuf-java:3.1.0'
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.5'
+    implementation 'io.reactivex.rxjava3:rxjava:3.0.0'
     implementation group: 'commons-io', name: 'commons-io', version: '2.4'
-    implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     testImplementation 'junit:junit:4.12'

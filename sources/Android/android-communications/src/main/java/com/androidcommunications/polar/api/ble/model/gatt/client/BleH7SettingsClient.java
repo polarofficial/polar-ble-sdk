@@ -6,17 +6,15 @@ import com.androidcommunications.polar.api.ble.exceptions.BleNotSupported;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattBase;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattTxInterface;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
-import io.reactivex.Single;
-import io.reactivex.SingleEmitter;
-import io.reactivex.SingleOnSubscribe;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleEmitter;
+import io.reactivex.rxjava3.core.SingleOnSubscribe;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class BleH7SettingsClient extends BleGattBase {
     public static final UUID H7_SETTINGS_CHARACTERISTIC = UUID.fromString("6217FF4A-B07D-5DEB-261E-2586752D942E");
@@ -142,74 +140,71 @@ public class BleH7SettingsClient extends BleGattBase {
      * @return Single stream
      */
     public Single<H7SettingsResponse> sendSettingsCommand(final H7SettingsMessage command, final byte parameter) {
-        return Single.create(new SingleOnSubscribe<H7SettingsResponse>() {
-            @Override
-            public void subscribe(SingleEmitter<H7SettingsResponse> emitter) {
-                final boolean has = getAvailableCharacteristics().contains(H7_SETTINGS_CHARACTERISTIC);
-                try {
-                    synchronized (mutex) {
-                        if (txInterface.isConnected()) {
-                            if (has) {
-                                try {
-                                    h7InputQueue.clear();
-                                    int khzValue;
-                                    int broadcastValue;
-                                    byte[] packet = BleH7SettingsClient.this.readSettingsValue();
-                                    khzValue = (packet[0] & 0x02) >> 1;
-                                    broadcastValue = packet[0] & 0x01;
+        return Single.create((SingleOnSubscribe<H7SettingsResponse>) emitter -> {
+            final boolean has = getAvailableCharacteristics().contains(H7_SETTINGS_CHARACTERISTIC);
+            try {
+                synchronized (mutex) {
+                    if (txInterface.isConnected()) {
+                        if (has) {
+                            try {
+                                h7InputQueue.clear();
+                                int khzValue;
+                                int broadcastValue;
+                                byte[] packet = BleH7SettingsClient.this.readSettingsValue();
+                                khzValue = (packet[0] & 0x02) >> 1;
+                                broadcastValue = packet[0] & 0x01;
 
-                                    switch (command) {
-                                        case H7_CONFIGURE_5KHZ:
-                                        case H7_CONFIGURE_BROADCAST: {
-                                            byte[] values = new byte[1];
-                                            if (command == H7SettingsMessage.H7_CONFIGURE_BROADCAST) {
-                                                values[0] = (byte) ((khzValue << 1) | parameter);
+                                switch (command) {
+                                    case H7_CONFIGURE_5KHZ:
+                                    case H7_CONFIGURE_BROADCAST: {
+                                        byte[] values = new byte[1];
+                                        if (command == H7SettingsMessage.H7_CONFIGURE_BROADCAST) {
+                                            values[0] = (byte) ((khzValue << 1) | parameter);
+                                        } else {
+                                            values[0] = (byte) ((parameter << 1) | broadcastValue);
+                                        }
+                                        txInterface.transmitMessages(BleH7SettingsClient.this,
+                                                H7_SETTINGS_SERVICE,
+                                                H7_SETTINGS_CHARACTERISTIC,
+                                                Collections.singletonList(values), true);
+                                        Integer error = h7WrittenQueue.poll(30, TimeUnit.SECONDS);
+                                        if (error != null) {
+                                            if (error == 0) {
+                                                emitter.onSuccess(new H7SettingsResponse(values));
+                                                return;
                                             } else {
-                                                values[0] = (byte) ((parameter << 1) | broadcastValue);
+                                                throw new Exception("Failed to write settings: " + error);
                                             }
-                                            txInterface.transmitMessages(BleH7SettingsClient.this,
-                                                    H7_SETTINGS_SERVICE,
-                                                    H7_SETTINGS_CHARACTERISTIC,
-                                                    Collections.singletonList(values), true);
-                                            Integer error = h7WrittenQueue.poll(30, TimeUnit.SECONDS);
-                                            if (error != null) {
-                                                if (error == 0) {
-                                                    emitter.onSuccess(new H7SettingsResponse(values));
-                                                    return;
-                                                } else {
-                                                    throw new Exception("Failed to write settings: " + error);
-                                                }
+                                        } else {
+                                            if (!txInterface.isConnected()) {
+                                                throw new BleDisconnected();
                                             } else {
-                                                if (!txInterface.isConnected()) {
-                                                    throw new BleDisconnected();
-                                                } else {
-                                                    throw new Exception("Failed to write packet in timeline");
-                                                }
+                                                throw new Exception("Failed to write packet in timeline");
                                             }
                                         }
-                                        case H7_REQUEST_CURRENT_SETTINGS: {
-                                            emitter.onSuccess(new H7SettingsResponse(khzValue, broadcastValue));
-                                            return;
-                                        }
-                                        default:
-                                            throw new BleNotSupported("Unknown h7 command");
                                     }
-                                } catch (Exception e) {
-                                    if (!emitter.isDisposed()) {
-                                        throw e;
+                                    case H7_REQUEST_CURRENT_SETTINGS: {
+                                        emitter.onSuccess(new H7SettingsResponse(khzValue, broadcastValue));
+                                        return;
                                     }
+                                    default:
+                                        throw new BleNotSupported("Unknown h7 command");
                                 }
-                            } else {
-                                throw new BleCharacteristicNotFound();
+                            } catch (Exception e) {
+                                if (!emitter.isDisposed()) {
+                                    throw e;
+                                }
                             }
                         } else {
-                            throw new BleDisconnected();
+                            throw new BleCharacteristicNotFound();
                         }
+                    } else {
+                        throw new BleDisconnected();
                     }
-                } catch (Exception e){
-                    if(!emitter.isDisposed()){
-                        emitter.tryOnError(e);
-                    }
+                }
+            } catch (Exception e){
+                if(!emitter.isDisposed()){
+                    emitter.tryOnError(e);
                 }
             }
         }).subscribeOn(Schedulers.io());

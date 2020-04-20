@@ -10,19 +10,19 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.os.Build;
+
 import com.androidcommunications.polar.api.ble.BleLogger;
 import com.androidcommunications.polar.common.ble.BleUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-import io.reactivex.Observable;
-import io.reactivex.Scheduler;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
+
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 class BDScanCallback extends ScanCallback {
 
@@ -54,14 +54,16 @@ class BDScanCallback extends ScanCallback {
     private Scheduler delayScheduler;
     private Disposable delaySubscription;
     private Disposable opportunisticScanTimer;
-    private boolean opportunistic=true;
+    private boolean opportunistic = true;
 
     // scan window limit, for android's "is scanning too frequently"
     private final static int SCAN_WINDOW_LIMIT = 30000;
 
-    public interface BDScanCallbackInterface{
+    public interface BDScanCallbackInterface {
         void deviceDiscovered(final BluetoothDevice device, int rssi, byte[] scanRecord, BleUtils.EVENT_TYPE type);
+
         void scanStartError(int error);
+
         boolean isScanningNeeded();
     }
 
@@ -83,39 +85,39 @@ class BDScanCallback extends ScanCallback {
         this.lowPowerEnabled = lowPowerEnabled;
     }
 
-    void setScanFilters(final List<ScanFilter> filters){
+    void setScanFilters(final List<ScanFilter> filters) {
         stopScan();
         this.filters = filters;
         startScan();
     }
 
-    void clientAdded(){
+    void clientAdded() {
         commandState(ScanAction.CLIENT_START_SCAN);
     }
 
-    void clientRemoved(){
+    void clientRemoved() {
         commandState(ScanAction.CLIENT_REMOVED);
     }
 
-    void stopScan(){
+    void stopScan() {
         commandState(ScanAction.ADMIN_STOP_SCAN);
     }
 
-    void startScan(){
+    void startScan() {
         commandState(ScanAction.ADMIN_START_SCAN);
     }
 
-    void powerOn(){
+    void powerOn() {
         commandState(ScanAction.BLE_POWER_ON);
     }
 
-    void powerOff(){
+    void powerOff() {
         commandState(ScanAction.BLE_POWER_OFF);
     }
 
-    private void commandState(ScanAction action){
+    private void commandState(ScanAction action) {
         BleLogger.d(TAG, "commandState state:" + state.toString() + " action: " + action.toString());
-        switch (state){
+        switch (state) {
             case IDLE: {
                 scannerIdleState(action);
                 break;
@@ -131,17 +133,17 @@ class BDScanCallback extends ScanCallback {
         }
     }
 
-    private void changeState(ScannerState newState){
+    private void changeState(ScannerState newState) {
         commandState(ScanAction.EXIT);
         this.state = newState;
         commandState(ScanAction.ENTRY);
     }
 
-    private void scannerIdleState(ScanAction action){
-        switch (action){
-            case ENTRY:{
-                if(bluetoothAdapter != null && bluetoothAdapter.isEnabled()){
-                    if(scanCallbackInterface.isScanningNeeded()){
+    private void scannerIdleState(ScanAction action) {
+        switch (action) {
+            case ENTRY: {
+                if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
+                    if (scanCallbackInterface.isScanningNeeded()) {
                         changeState(ScannerState.SCANNING);
                     }
                 }
@@ -152,22 +154,22 @@ class BDScanCallback extends ScanCallback {
             case BLE_POWER_OFF: {
                 break;
             }
-            case CLIENT_START_SCAN:{
-                if(bluetoothAdapter != null && bluetoothAdapter.isEnabled()){
-                    if(scanCallbackInterface.isScanningNeeded()) {
+            case CLIENT_START_SCAN: {
+                if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
+                    if (scanCallbackInterface.isScanningNeeded()) {
                         changeState(ScannerState.SCANNING);
                     }
                 } else {
-                    BleLogger.d(TAG,"Skipped scan start, because of ble power off");
+                    BleLogger.d(TAG, "Skipped scan start, because of ble power off");
                 }
                 break;
             }
-            case ADMIN_STOP_SCAN:{
+            case ADMIN_STOP_SCAN: {
                 changeState(ScannerState.STOPPED);
                 break;
             }
-            case BLE_POWER_ON:{
-                if(scanCallbackInterface.isScanningNeeded()){
+            case BLE_POWER_ON: {
+                if (scanCallbackInterface.isScanningNeeded()) {
                     // if there is atleast one client waiting
                     changeState(ScannerState.SCANNING);
                 }
@@ -176,87 +178,87 @@ class BDScanCallback extends ScanCallback {
         }
     }
 
-    private void scannerAdminState(ScanAction action){
+    private void scannerAdminState(ScanAction action) {
         // forced stopped state
-        switch (action){
-            case ENTRY:{
+        switch (action) {
+            case ENTRY: {
                 adminStops = 1;
                 break;
             }
-            case EXIT:{
+            case EXIT: {
                 adminStops = 0;
                 break;
             }
-            case ADMIN_START_SCAN:{
+            case ADMIN_START_SCAN: {
                 // go through idle state back to scanning, if needed
                 --adminStops;
-                if( adminStops <= 0 ) {
+                if (adminStops <= 0) {
                     changeState(ScannerState.IDLE);
                 } else {
-                    BleLogger.d(TAG,"Waiting admins to call start c: " + adminStops);
+                    BleLogger.d(TAG, "Waiting admins to call start c: " + adminStops);
                 }
                 break;
             }
-            case ADMIN_STOP_SCAN:{
+            case ADMIN_STOP_SCAN: {
                 ++adminStops;
                 break;
             }
-            case BLE_POWER_OFF:{
+            case BLE_POWER_OFF: {
                 changeState(ScannerState.IDLE);
                 break;
             }
             case CLIENT_REMOVED:
             case CLIENT_START_SCAN:
-            case BLE_POWER_ON:{
+            case BLE_POWER_ON: {
                 // do nothing
                 break;
             }
         }
     }
 
-    private void scannerScanningState(ScanAction action){
-        switch (action){
-            case ENTRY:{
+    private void scannerScanningState(ScanAction action) {
+        switch (action) {
+            case ENTRY: {
                 // start scanning
                 startScanning();
                 break;
             }
-            case EXIT:{
+            case EXIT: {
                 // stop scanning
                 stopScanning();
-                if(opportunisticScanTimer != null){
+                if (opportunisticScanTimer != null) {
                     opportunisticScanTimer.dispose();
                     opportunisticScanTimer = null;
                 }
-                if(timer != null){
+                if (timer != null) {
                     timer.dispose();
                     timer = null;
                 }
                 break;
             }
-            case CLIENT_START_SCAN:{
+            case CLIENT_START_SCAN: {
                 // do nothing
                 break;
             }
-            case CLIENT_REMOVED:{
-                if(!scanCallbackInterface.isScanningNeeded()){
+            case CLIENT_REMOVED: {
+                if (!scanCallbackInterface.isScanningNeeded()) {
                     // scanning is not needed anymore
                     changeState(ScannerState.IDLE);
                 }
                 break;
             }
-            case ADMIN_STOP_SCAN:{
+            case ADMIN_STOP_SCAN: {
                 changeState(ScannerState.STOPPED);
                 break;
             }
-            case BLE_POWER_OFF:{
+            case BLE_POWER_OFF: {
                 changeState(ScannerState.IDLE);
                 break;
             }
             case ADMIN_START_SCAN:
                 // skip
                 break;
-            case BLE_POWER_ON:{
+            case BLE_POWER_ON: {
                 // should not happen
                 BleLogger.e(TAG, "INCORRECT event received in scanning state: " + action);
                 break;
@@ -271,7 +273,7 @@ class BDScanCallback extends ScanCallback {
 
     @Override
     public void onBatchScanResults(List<ScanResult> results) {
-        for(ScanResult result : results) {
+        for (ScanResult result : results) {
             scanCallbackInterface.deviceDiscovered(result.getDevice(), result.getRssi(), result.getScanRecord() != null ? result.getScanRecord().getBytes() : new byte[]{}, fetchAdvType(result));
         }
     }
@@ -284,10 +286,10 @@ class BDScanCallback extends ScanCallback {
 
     @SuppressLint("CheckResult")
     private void startScanning() {
-        if( android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ){
-            if(scanPool.size()!=0){
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (scanPool.size() != 0) {
                 long elapsed = System.currentTimeMillis() - scanPool.get(0);
-                if( scanPool.size() > 3 && elapsed < SCAN_WINDOW_LIMIT ) {
+                if (scanPool.size() > 3 && elapsed < SCAN_WINDOW_LIMIT) {
                     long sift = (SCAN_WINDOW_LIMIT - elapsed) + 200;
                     BleLogger.d(TAG, "Prevent scanning too frequently delay: " + sift + "ms" + " elapsed: " + elapsed + "ms");
                     if (delaySubscription != null) {
@@ -295,37 +297,26 @@ class BDScanCallback extends ScanCallback {
                         delaySubscription = null;
                     }
                     delaySubscription = Observable.timer(sift, TimeUnit.MILLISECONDS).subscribeOn(Schedulers.io()).observeOn(delayScheduler).subscribe(
-                        new Consumer<Long>() {
-                            @Override
-                            public void accept(Long aLong) {
+                            aLong -> {
                                 // do nothing
-                            }
-                        },
-                        new Consumer<Throwable>() {
-                            @Override
-                            public void accept(Throwable throwable) {
-                                BleLogger.e(TAG, "timer failed: " + throwable.getLocalizedMessage());
-                            }
-                        },
-                        new Action() {
-                            @Override
-                            public void run() {
+                            },
+                            throwable -> BleLogger.e(TAG, "timer failed: " + throwable.getLocalizedMessage()),
+                            () -> {
                                 BleLogger.d(TAG, "delayed scan starting");
                                 if (scanPool.size() != 0) scanPool.remove(0);
                                 startLScan();
-                            }
-                        });
+                            });
                     return;
                 }
             }
-            BleLogger.d(TAG,"timestamps left: " + scanPool.size());
+            BleLogger.d(TAG, "timestamps left: " + scanPool.size());
             startLScan();
         } else {
             startLScan();
         }
     }
 
-    private BleUtils.EVENT_TYPE fetchAdvType(ScanResult result){
+    private BleUtils.EVENT_TYPE fetchAdvType(ScanResult result) {
         BleUtils.EVENT_TYPE type = BleUtils.EVENT_TYPE.ADV_IND;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !result.isConnectable()) {
             type = BleUtils.EVENT_TYPE.ADV_NONCONN_IND;
@@ -334,7 +325,7 @@ class BDScanCallback extends ScanCallback {
     }
 
     @SuppressLint("NewApi")
-    private void startLScan(){
+    private void startLScan() {
         BleLogger.d(TAG, "Scan started -->");
         final ScanSettings scanSettings;
         if (!lowPowerEnabled) {
@@ -344,31 +335,20 @@ class BDScanCallback extends ScanCallback {
         }
         try {
             callStartScanL(scanSettings);
-            if( android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && opportunistic) {
-                opportunisticScanTimer = Observable.interval(30,TimeUnit.MINUTES).subscribeOn(Schedulers.io()).observeOn(delayScheduler).subscribe(
-                    new Consumer<Long>() {
-                        @Override
-                        public void accept(Long aLong) {
-                            BleLogger.d(TAG,"RESTARTING scan to avoid opportunistic");
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && opportunistic) {
+                opportunisticScanTimer = Observable.interval(30, TimeUnit.MINUTES).subscribeOn(Schedulers.io()).observeOn(delayScheduler).subscribe(
+                        aLong -> {
+                            BleLogger.d(TAG, "RESTARTING scan to avoid opportunistic");
                             stopScanning();
                             callStartScanL(scanSettings);
-                        }
-                    },
-                    new Consumer<Throwable>() {
-                        @Override
-                        public void accept(Throwable throwable) {
-                            BleLogger.e(TAG,"TIMER failed: " + throwable.getLocalizedMessage());
-                        }
-                    },
-                    new Action() {
-                        @Override
-                        public void run() {
+                        },
+                        throwable -> BleLogger.e(TAG, "TIMER failed: " + throwable.getLocalizedMessage()),
+                        () -> {
                             // non produced
                         }
-                    }
                 );
             }
-            BleLogger.d(TAG,"Scan started <--");
+            BleLogger.d(TAG, "Scan started <--");
         } catch (NullPointerException ex) {
             BleLogger.e(TAG, "startScan did throw null pointer exception");
             changeState(ScannerState.IDLE);
@@ -376,38 +356,33 @@ class BDScanCallback extends ScanCallback {
     }
 
     @SuppressLint("NewApi")
-    private void callStartScanL(ScanSettings scanSettings){
+    private void callStartScanL(ScanSettings scanSettings) {
         try {
             bluetoothAdapter.getBluetoothLeScanner().startScan(filters, scanSettings, this);
-        } catch (Exception e){
-            BleLogger.e(TAG,"Failed to start scan e: " + e.getLocalizedMessage());
+        } catch (Exception e) {
+            BleLogger.e(TAG, "Failed to start scan e: " + e.getLocalizedMessage());
             changeState(ScannerState.IDLE);
             return;
         }
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            scanPool.removeIf(new Predicate<Long>() {
-                @Override
-                public boolean test(Long aLong) {
-                    return (System.currentTimeMillis() - aLong) >= SCAN_WINDOW_LIMIT;
-                }
-            });
+            scanPool.removeIf(aLong -> (System.currentTimeMillis() - aLong) >= SCAN_WINDOW_LIMIT);
             scanPool.add(System.currentTimeMillis());
         }
     }
 
     @SuppressLint("CheckResult")
-    private void stopScanning(){
+    private void stopScanning() {
         BleLogger.d(TAG, "Stop scanning");
-        if( android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ){
-            if(delaySubscription != null){
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (delaySubscription != null) {
                 delaySubscription.dispose();
                 delaySubscription = null;
             }
         }
         try {
             bluetoothAdapter.getBluetoothLeScanner().stopScan(this);
-        }catch (Exception ex){
-            BleLogger.e(TAG,"stopScan did throw exception: " + ex.getLocalizedMessage());
+        } catch (Exception ex) {
+            BleLogger.e(TAG, "stopScan did throw exception: " + ex.getLocalizedMessage());
         }
     }
 }
