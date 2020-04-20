@@ -16,11 +16,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.Single;
-import io.reactivex.annotations.NonNull;
-import io.reactivex.functions.Function;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.functions.Function;
 
 /**
  * Bluetooth le device class, contains all essential api's for sufficient usage of bluetooth le device

@@ -3,14 +3,14 @@ package com.androidcommunications.polar.common.ble;
 import com.androidcommunications.polar.api.ble.exceptions.BleDisconnected;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattTxInterface;
 import java.util.Set;
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.CompletableEmitter;
-import io.reactivex.Flowable;
-import io.reactivex.FlowableEmitter;
-import io.reactivex.FlowableOnSubscribe;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.SingleEmitter;
-import io.reactivex.functions.Action;
+import io.reactivex.rxjava3.core.BackpressureStrategy;
+import io.reactivex.rxjava3.core.CompletableEmitter;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.FlowableEmitter;
+import io.reactivex.rxjava3.core.FlowableOnSubscribe;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.SingleEmitter;
+import io.reactivex.rxjava3.functions.Action;
 
 public class RxUtils {
 

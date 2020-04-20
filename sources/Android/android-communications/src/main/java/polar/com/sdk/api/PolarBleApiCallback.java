@@ -1,9 +1,10 @@
 // Copyright © 2019 Polar Electro Oy. All rights reserved.
 package polar.com.sdk.api;
 
+import android.support.annotation.NonNull;
+
 import java.util.UUID;
 
-import io.reactivex.annotations.NonNull;
 import polar.com.sdk.api.model.PolarDeviceInfo;
 import polar.com.sdk.api.model.PolarHrData;
 

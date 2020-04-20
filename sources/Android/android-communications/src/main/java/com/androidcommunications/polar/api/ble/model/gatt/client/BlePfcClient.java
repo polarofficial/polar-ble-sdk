@@ -2,7 +2,6 @@ package com.androidcommunications.polar.api.ble.model.gatt.client;
 
 import android.util.Pair;
 
-import com.androidcommunications.polar.api.ble.BleLogger;
 import com.androidcommunications.polar.api.ble.exceptions.BleAttributeError;
 import com.androidcommunications.polar.api.ble.exceptions.BleCharacteristicNotificationNotEnabled;
 import com.androidcommunications.polar.api.ble.exceptions.BleDisconnected;
@@ -12,20 +11,17 @@ import com.androidcommunications.polar.api.ble.model.gatt.BleGattBase;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattTxInterface;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.reactivex.Completable;
-import io.reactivex.Scheduler;
-import io.reactivex.Single;
-import io.reactivex.SingleEmitter;
-import io.reactivex.SingleOnSubscribe;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleOnSubscribe;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class BlePfcClient extends BleGattBase {
 
@@ -231,47 +227,44 @@ public class BlePfcClient extends BleGattBase {
      * @return Observable stream, @see Rx Observable
      */
     public Single<PfcResponse> sendControlPointCommand(final PfcMessage command, final byte[] params) {
-        return Single.create(new SingleOnSubscribe<PfcResponse>() {
-            @Override
-            public void subscribe(SingleEmitter<PfcResponse> emitter) throws Exception {
-                // force pfc operation to be 'atomic'
-                synchronized (pfcMutex) {
-                    if (pfcCpEnabled.get() == ATT_SUCCESS) {
-                        try {
-                            pfcCpInputQueue.clear();
-                            switch (command) {
-                                case PFC_CONFIGURE_ANT_PLUS_SETTING:
-                                case PFC_CONFIGURE_MULTI_CONNECTION_SETTING:
-                                case PFC_CONFIGURE_BLE_MODE:
-                                case PFC_CONFIGURE_WHISPER_MODE:
-                                case PFC_CONFIGURE_BROADCAST:
-                                case PFC_CONFIGURE_5KHZ: {
-                                    ByteBuffer bb = ByteBuffer.allocate(1 + params.length);
-                                    bb.put(new byte[]{(byte) command.getNumVal()});
-                                    bb.put(params);
-                                    emitter.onSuccess(sendPfcCommandAndProcessResponse(bb.array()));
-                                    return;
-                                }
-                                case PFC_REQUEST_MULTI_CONNECTION_SETTING:
-                                case PFC_REQUEST_ANT_PLUS_SETTING:
-                                case PFC_REQUEST_WHISPER_MODE:
-                                case PFC_REQUEST_BROADCAST_SETTING:
-                                case PFC_REQUEST_5KHZ_SETTING: {
-                                    byte[] packet = new byte[]{(byte) command.getNumVal()};
-                                    emitter.onSuccess(sendPfcCommandAndProcessResponse(packet));
-                                    return;
-                                }
-                                default:
-                                    throw new BleNotSupported("Unknown pfc command aquired");
+        return Single.create((SingleOnSubscribe<PfcResponse>) emitter -> {
+            // force pfc operation to be 'atomic'
+            synchronized (pfcMutex) {
+                if (pfcCpEnabled.get() == ATT_SUCCESS) {
+                    try {
+                        pfcCpInputQueue.clear();
+                        switch (command) {
+                            case PFC_CONFIGURE_ANT_PLUS_SETTING:
+                            case PFC_CONFIGURE_MULTI_CONNECTION_SETTING:
+                            case PFC_CONFIGURE_BLE_MODE:
+                            case PFC_CONFIGURE_WHISPER_MODE:
+                            case PFC_CONFIGURE_BROADCAST:
+                            case PFC_CONFIGURE_5KHZ: {
+                                ByteBuffer bb = ByteBuffer.allocate(1 + params.length);
+                                bb.put(new byte[]{(byte) command.getNumVal()});
+                                bb.put(params);
+                                emitter.onSuccess(sendPfcCommandAndProcessResponse(bb.array()));
+                                return;
                             }
-                        } catch (Exception ex){
-                            if(!emitter.isDisposed()){
-                                emitter.tryOnError(ex);
+                            case PFC_REQUEST_MULTI_CONNECTION_SETTING:
+                            case PFC_REQUEST_ANT_PLUS_SETTING:
+                            case PFC_REQUEST_WHISPER_MODE:
+                            case PFC_REQUEST_BROADCAST_SETTING:
+                            case PFC_REQUEST_5KHZ_SETTING: {
+                                byte[] packet = new byte[]{(byte) command.getNumVal()};
+                                emitter.onSuccess(sendPfcCommandAndProcessResponse(packet));
+                                return;
                             }
+                            default:
+                                throw new BleNotSupported("Unknown pfc command aquired");
                         }
-                    } else if(!emitter.isDisposed()) {
-                        emitter.tryOnError(new BleCharacteristicNotificationNotEnabled("PFC control point not enabled"));
+                    } catch (Exception ex){
+                        if(!emitter.isDisposed()){
+                            emitter.tryOnError(ex);
+                        }
                     }
+                } else if(!emitter.isDisposed()) {
+                    emitter.tryOnError(new BleCharacteristicNotificationNotEnabled("PFC control point not enabled"));
                 }
             }
         }).subscribeOn(scheduler);
@@ -285,26 +278,23 @@ public class BlePfcClient extends BleGattBase {
      *              - onError, @see errors package
      */
     public Single<PfcFeature> readFeature(){
-        return Single.create(new SingleOnSubscribe<PfcFeature>() {
-            @Override
-            public void subscribe(SingleEmitter<PfcFeature> emitter) {
-                try {
-                    synchronized (mutexFeature) {
-                        if (pfcFeature == null) {
-                            mutexFeature.wait();
-                        }
-                        if (pfcFeature != null) {
-                            emitter.onSuccess(new PfcFeature(pfcFeature));
-                            return;
-                        } else if (!txInterface.isConnected()) {
-                            throw new BleDisconnected();
-                        }
-                        throw new Exception("Undefined device error");
+        return Single.create((SingleOnSubscribe<PfcFeature>) emitter -> {
+            try {
+                synchronized (mutexFeature) {
+                    if (pfcFeature == null) {
+                        mutexFeature.wait();
                     }
-                } catch (Exception ex){
-                    if(!emitter.isDisposed()){
-                        emitter.tryOnError(ex);
+                    if (pfcFeature != null) {
+                        emitter.onSuccess(new PfcFeature(pfcFeature));
+                        return;
+                    } else if (!txInterface.isConnected()) {
+                        throw new BleDisconnected();
                     }
+                    throw new Exception("Undefined device error");
+                }
+            } catch (Exception ex){
+                if(!emitter.isDisposed()){
+                    emitter.tryOnError(ex);
                 }
             }
         }).subscribeOn(Schedulers.io());

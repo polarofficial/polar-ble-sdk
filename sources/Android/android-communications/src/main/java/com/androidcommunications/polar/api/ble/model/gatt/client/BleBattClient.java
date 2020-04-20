@@ -8,16 +8,14 @@ import com.androidcommunications.polar.common.ble.RxUtils;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReferenceArray;
 
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Flowable;
-import io.reactivex.FlowableEmitter;
-import io.reactivex.FlowableOnSubscribe;
-import io.reactivex.Single;
-import io.reactivex.SingleEmitter;
-import io.reactivex.SingleOnSubscribe;
-import io.reactivex.functions.Action;
+import io.reactivex.rxjava3.core.BackpressureStrategy;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.FlowableEmitter;
+import io.reactivex.rxjava3.core.FlowableOnSubscribe;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleEmitter;
+import io.reactivex.rxjava3.core.SingleOnSubscribe;
 
 public class BleBattClient extends BleGattBase {
 
@@ -47,18 +45,8 @@ public class BleBattClient extends BleGattBase {
         if(status == 0){
             if(characteristic.equals(BATTERY_LEVEL_CHARACTERISTIC)){
                 batteryLevel.set(data[0]);
-                RxUtils.emitNext(observers, new RxUtils.Emitter<SingleEmitter<? super Integer>>() {
-                    @Override
-                    public void item(SingleEmitter<? super Integer> object) {
-                        object.onSuccess((int) data[0]);
-                    }
-                });
-                RxUtils.emitNext(notificationObservers, new RxUtils.Emitter<FlowableEmitter<? super Integer>>() {
-                    @Override
-                    public void item(FlowableEmitter<? super Integer> object) {
-                        object.onNext((int)data[0]);
-                    }
-                });
+                RxUtils.emitNext(observers, object -> object.onSuccess((int) data[0]));
+                RxUtils.emitNext(notificationObservers, object -> object.onNext((int)data[0]));
             }
         }
     }
@@ -83,25 +71,17 @@ public class BleBattClient extends BleGattBase {
      */
     public Single<Integer> waitBatteryLevelUpdate(final boolean checkConnection){
         final SingleEmitter<? super Integer>[] observer = new SingleEmitter[1];
-        return Single.create(new SingleOnSubscribe<Integer>() {
-            @Override
-            public void subscribe(SingleEmitter<Integer> subscriber) {
-                if(!checkConnection || txInterface.isConnected()){
-                    observer[0] = subscriber;
-                    observers.add(subscriber);
-                    if(batteryLevel.get()!=-1){
-                        subscriber.onSuccess(batteryLevel.get());
-                    }
-                }else if(!subscriber.isDisposed()) {
-                    subscriber.tryOnError(new BleDisconnected());
+        return Single.create((SingleOnSubscribe<Integer>) subscriber -> {
+            if(!checkConnection || txInterface.isConnected()){
+                observer[0] = subscriber;
+                observers.add(subscriber);
+                if(batteryLevel.get()!=-1){
+                    subscriber.onSuccess(batteryLevel.get());
                 }
+            }else if(!subscriber.isDisposed()) {
+                subscriber.tryOnError(new BleDisconnected());
             }
-        }).doFinally(new Action() {
-            @Override
-            public void run() {
-                observers.remove(observer[0]);
-            }
-        });
+        }).doFinally(() -> observers.remove(observer[0]));
     }
 
     /**
@@ -111,25 +91,17 @@ public class BleBattClient extends BleGattBase {
      */
     public Flowable<Integer> monitorBatteryLevelUpdate(final boolean checkConnection) {
         final FlowableEmitter<? super Integer>[] observer = new FlowableEmitter[1];
-        return Flowable.create(new FlowableOnSubscribe<Integer>() {
-            @Override
-            public void subscribe(FlowableEmitter<Integer> emitter) throws Exception {
-                    if(!checkConnection || txInterface.isConnected()){
-                        observer[0] = emitter;
-                        notificationObservers.add(emitter);
-                        if(batteryLevel.get()!=-1){
-                            emitter.onNext(batteryLevel.get());
-                        }
-                    }else if(!emitter.isCancelled()) {
-                        emitter.tryOnError(new BleDisconnected());
+        return Flowable.create((FlowableOnSubscribe<Integer>) emitter -> {
+                if(!checkConnection || txInterface.isConnected()){
+                    observer[0] = emitter;
+                    notificationObservers.add(emitter);
+                    if(batteryLevel.get()!=-1){
+                        emitter.onNext(batteryLevel.get());
                     }
+                }else if(!emitter.isCancelled()) {
+                    emitter.tryOnError(new BleDisconnected());
                 }
-        }, BackpressureStrategy.LATEST).doFinally(new Action() {
-            @Override
-            public void run() throws Exception {
-                notificationObservers.remove(observer[0]);
-            }
-        });
+            }, BackpressureStrategy.LATEST).doFinally(() -> notificationObservers.remove(observer[0]));
     }
 
     /**
@@ -142,22 +114,14 @@ public class BleBattClient extends BleGattBase {
      */
     public Single<Integer> requestBatteryLevelUpdate(final boolean checkConnection){
         final SingleEmitter<? super Integer>[] observer = new SingleEmitter[1];
-        return Single.create(new SingleOnSubscribe<Integer>() {
-            @Override
-            public void subscribe(SingleEmitter<Integer> subscriber) {
-                try {
-                    txInterface.readValue(BleBattClient.this,BATTERY_SERVICE, BATTERY_LEVEL_CHARACTERISTIC);
-                    observer[0] = subscriber;
-                    observers.add(subscriber);
-                } catch (Throwable throwable) {
-                    subscriber.tryOnError(throwable);
-                }
+        return Single.create((SingleOnSubscribe<Integer>) subscriber -> {
+            try {
+                txInterface.readValue(BleBattClient.this,BATTERY_SERVICE, BATTERY_LEVEL_CHARACTERISTIC);
+                observer[0] = subscriber;
+                observers.add(subscriber);
+            } catch (Throwable throwable) {
+                subscriber.tryOnError(throwable);
             }
-        }).doFinally(new Action() {
-            @Override
-            public void run() {
-                observers.remove(observer[0]);
-            }
-        });
+        }).doFinally(() -> observers.remove(observer[0]));
     }
 }

@@ -12,24 +12,22 @@ import com.androidcommunications.polar.api.ble.model.gatt.BleGattTxInterface;
 import com.androidcommunications.polar.common.ble.AtomicSet;
 import com.androidcommunications.polar.common.ble.RxUtils;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.FlowableEmitter;
-import io.reactivex.Scheduler;
-import io.reactivex.Single;
-import io.reactivex.SingleEmitter;
-import io.reactivex.SingleOnSubscribe;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.FlowableEmitter;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.core.SingleEmitter;
+import io.reactivex.rxjava3.core.SingleOnSubscribe;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class BlePsdClient extends BleGattBase {
 
@@ -248,12 +246,7 @@ public class BlePsdClient extends BleGattBase {
             if(characteristic.equals(PSD_PP)){
                 List<byte[]> list = splitPP(data);
                 for(final byte[] packet : list){
-                    RxUtils.emitNext(ppObservers, new RxUtils.Emitter<FlowableEmitter<? super PPData>>() {
-                        @Override
-                        public void item(FlowableEmitter<? super PPData> object) {
-                            object.onNext(new PPData(packet));
-                        }
-                    });
+                    RxUtils.emitNext(ppObservers, object -> object.onNext(new PPData(packet)));
                 }
             }
         }
@@ -307,57 +300,51 @@ public class BlePsdClient extends BleGattBase {
      * @return Observable stream, @see Rx Observer
      */
     public Single<PsdResponse> sendControlPointCommand(final PsdMessage command, final byte[] params) {
-        return Single.create(new SingleOnSubscribe<PsdResponse>() {
-            @Override
-            public void subscribe(SingleEmitter<PsdResponse> emitter) throws Exception {
-                synchronized (psdMutex) {
-                    if (psdCpEnabled.get() == ATT_SUCCESS) {
-                        try {
-                            psdCpInputQueue.clear();
-                            switch (command) {
-                                case PSD_STOP_OHR_PP_STREAM:
-                                case PSD_START_OHR_PP_STREAM: {
-                                    byte[] packet = new byte[]{(byte) command.getNumVal()};
-                                    emitter.onSuccess(sendPsdCommandAndProcessResponse(packet));
-                                    return;
-                                }
-                                default:
-                                    throw new BleNotSupported("Unknown psd command aquired");
+        return Single.create((SingleOnSubscribe<PsdResponse>) emitter -> {
+            synchronized (psdMutex) {
+                if (psdCpEnabled.get() == ATT_SUCCESS) {
+                    try {
+                        psdCpInputQueue.clear();
+                        switch (command) {
+                            case PSD_STOP_OHR_PP_STREAM:
+                            case PSD_START_OHR_PP_STREAM: {
+                                byte[] packet = new byte[]{(byte) command.getNumVal()};
+                                emitter.onSuccess(sendPsdCommandAndProcessResponse(packet));
+                                return;
                             }
-                        } catch (Exception ex){
-                            if(!emitter.isDisposed()){
-                                emitter.tryOnError(ex);
-                            }
+                            default:
+                                throw new BleNotSupported("Unknown psd command aquired");
                         }
-                    } else if (!emitter.isDisposed()){
-                        emitter.tryOnError(new BleCharacteristicNotificationNotEnabled("PSD control point not enabled"));
+                    } catch (Exception ex){
+                        if(!emitter.isDisposed()){
+                            emitter.tryOnError(ex);
+                        }
                     }
+                } else if (!emitter.isDisposed()){
+                    emitter.tryOnError(new BleCharacteristicNotificationNotEnabled("PSD control point not enabled"));
                 }
             }
         }).subscribeOn(scheduler);
     }
 
     public Single<PsdFeature> readFeature(){
-        return Single.create(new SingleOnSubscribe<PsdFeature>() {
-            @Override
-            public void subscribe(SingleEmitter<PsdFeature> emitter) {
-                try {
-                    synchronized (mutexFeature) {
-                        if (psdFeature == null) {
-                            mutexFeature.wait();
-                        }
-                        if (psdFeature != null) {
-                            emitter.onSuccess(new PsdFeature(psdFeature));
-                            return;
-                        } else if (!txInterface.isConnected()) {
-                            throw new BleDisconnected();
-                        }
-                        throw new Exception("Undefined device error");
+        return Single.create((SingleOnSubscribe<PsdFeature>) emitter -> {
+            try {
+                synchronized (mutexFeature) {
+                    if (psdFeature == null) {
+                        mutexFeature.wait();
                     }
-                } catch (Exception ex){
-                    if(!emitter.isDisposed()){
-                        emitter.tryOnError(ex);
+                    if (psdFeature != null) {
+                        emitter.onSuccess(new PsdFeature(psdFeature));
+                        return;
+                    } else if (!txInterface.isConnected()) {
+                        throw new BleDisconnected();
                     }
+                    throw new Exception("Undefined device error");
+                }
+            } catch (Exception ex){
+                if(!emitter.isDisposed()){
+                    emitter.tryOnError(ex);
                 }
             }
         }).subscribeOn(Schedulers.io());

@@ -9,11 +9,10 @@ import com.androidcommunications.polar.common.ble.RxUtils;
 import java.util.HashMap;
 import java.util.UUID;
 
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Flowable;
-import io.reactivex.FlowableEmitter;
-import io.reactivex.FlowableOnSubscribe;
-import io.reactivex.functions.Action;
+import io.reactivex.rxjava3.core.BackpressureStrategy;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.FlowableEmitter;
+import io.reactivex.rxjava3.core.FlowableOnSubscribe;
 
 public class BleGapClient extends BleGattBase {
 
@@ -46,17 +45,14 @@ public class BleGapClient extends BleGattBase {
                 gapInformation.put(characteristic, new String(data));
             }
 
-            RxUtils.emitNext(gapObserverAtomicList, new RxUtils.Emitter<FlowableEmitter<? super HashMap<UUID, String>>>() {
-                @Override
-                public void item(FlowableEmitter<? super HashMap<UUID, String>> object) {
-                    HashMap<UUID,String> list;
-                    synchronized (gapInformation) {
-                        list = new HashMap<>(gapInformation);
-                    }
-                    object.onNext(list);
-                    if (hasAllAvailableReadableCharacteristics(list.keySet())) {
-                        object.onComplete();
-                    }
+            RxUtils.emitNext(gapObserverAtomicList, object -> {
+                HashMap<UUID,String> list;
+                synchronized (gapInformation) {
+                    list = new HashMap<>(gapInformation);
+                }
+                object.onNext(list);
+                if (hasAllAvailableReadableCharacteristics(list.keySet())) {
+                    object.onComplete();
                 }
             });
         }
@@ -81,31 +77,23 @@ public class BleGapClient extends BleGattBase {
      */
     public Flowable<HashMap<UUID, String> > observeGapInfo(final boolean checkConnection) {
         final FlowableEmitter<? super HashMap<UUID, String>>[] observer = new FlowableEmitter[]{null};
-        return Flowable.create(new FlowableOnSubscribe<HashMap<UUID, String>>() {
-            @Override
-            public void subscribe(FlowableEmitter<HashMap<UUID, String>> subscriber) throws Exception {
-                if( !checkConnection || BleGapClient.this.txInterface.isConnected() ) {
-                    observer[0] = subscriber;
-                    gapObserverAtomicList.add(subscriber);
-                    HashMap<UUID, String> list;
-                    synchronized (gapInformation) {
-                        list = new HashMap<>(gapInformation);
-                    }
-                    if (list.size() != 0) {
-                        subscriber.onNext(list);
-                    }
-                    if (hasAllAvailableReadableCharacteristics(list.keySet())) {
-                        subscriber.onComplete();
-                    }
-                }else if(!subscriber.isCancelled()){
-                    subscriber.tryOnError(new BleDisconnected());
+        return Flowable.create((FlowableOnSubscribe<HashMap<UUID, String>>) subscriber -> {
+            if( !checkConnection || BleGapClient.this.txInterface.isConnected() ) {
+                observer[0] = subscriber;
+                gapObserverAtomicList.add(subscriber);
+                HashMap<UUID, String> list;
+                synchronized (gapInformation) {
+                    list = new HashMap<>(gapInformation);
                 }
+                if (list.size() != 0) {
+                    subscriber.onNext(list);
+                }
+                if (hasAllAvailableReadableCharacteristics(list.keySet())) {
+                    subscriber.onComplete();
+                }
+            }else if(!subscriber.isCancelled()){
+                subscriber.tryOnError(new BleDisconnected());
             }
-        }, BackpressureStrategy.BUFFER).doFinally(new Action() {
-            @Override
-            public void run() {
-                gapObserverAtomicList.remove(observer[0]);
-            }
-        });
+        }, BackpressureStrategy.BUFFER).doFinally(() -> gapObserverAtomicList.remove(observer[0]));
     }
 }

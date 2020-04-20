@@ -129,6 +129,7 @@ public class BlePsFtpUtils {
             case REQUEST:{
                 int headerSize = header.available();
                 byte[] request = new byte[2];
+                // RFC60
                 request[1] = (byte) ((headerSize & 0x7F00) >> 8);
                 request[0] = (byte) (headerSize & 0x00FF);
                 outputStream.write(request,0,2);
@@ -140,6 +141,7 @@ public class BlePsFtpUtils {
             }
             case QUERY:{
                 byte[] request = new byte[2];
+                // RFC60
                 request[1] = (byte) (((id & 0x7F00) >> 8) | 0x80);
                 request[0] = (byte) (id & 0x00FF);
                 outputStream.write(request,0,2);

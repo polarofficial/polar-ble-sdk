@@ -10,20 +10,14 @@ import com.androidcommunications.polar.api.ble.model.BleDeviceSession;
 import com.androidcommunications.polar.api.ble.model.advertisement.BleAdvertisementContent;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattBase;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattFactory;
-import com.androidcommunications.polar.api.ble.model.gatt.client.BleHrClient;
-import com.androidcommunications.polar.api.ble.model.gatt.client.BlePMDClient;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
 
-import io.reactivex.Flowable;
-import io.reactivex.Observable;
-import io.reactivex.disposables.Disposable;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Observable;
 
 public abstract class BleDeviceListener {
 
@@ -59,12 +53,6 @@ public abstract class BleDeviceListener {
      * @return true if bluetooth is active
      */
     abstract public boolean bleActive();
-
-    /**
-     * @return flowable stream of ble state
-     */
-    @Deprecated
-    abstract public Flowable<Boolean> monitorBleState();
 
     /**
      * @param cb callback
@@ -117,23 +105,11 @@ public abstract class BleDeviceListener {
     abstract public void openSessionDirect(BleDeviceSession session);
 
     /**
-     * aquire connection establishment
+     * aquire connection establishment, BleDeviceSessionStateChangedCallback callbacks are invoked
      * @param session device
      * @param uuids needed uuids to be found from advertisement data, when reconnecting
      */
     abstract public void openSessionDirect(BleDeviceSession session, List<String> uuids);
-
-    /**
-     * Deprecated use setDeviceSessionStateChangedCallback instead
-     *
-     * Produces: onNext: When a device session state has changed, Note use pair.second to check the state (see BleDeviceSession.DeviceSessionState) <BR>
-     *           onError: should not be produced <BR>
-     *           onCompleted: If stream is further configured <BR>
-     * @param session, a specific session or null = monitor all sessions
-     * @return Observable stream
-     */
-    @Deprecated
-    abstract public Observable<Pair<BleDeviceSession,BleDeviceSession.DeviceSessionState>> monitorDeviceSessionState(BleDeviceSession session);
 
     public interface BleDeviceSessionStateChangedCallback {
         /**

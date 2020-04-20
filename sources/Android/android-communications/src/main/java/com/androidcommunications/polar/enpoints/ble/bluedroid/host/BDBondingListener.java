@@ -14,7 +14,9 @@ class BDBondingListener {
     interface AuthenticationObserverInterface {
         // bonding completion
         void bonding();
+
         void bonded();
+
         void bondNone();
     }
 
@@ -26,17 +28,17 @@ class BDBondingListener {
         this.context = context;
         IntentFilter intent = new IntentFilter();
         intent.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-        context.registerReceiver(mReceiver,intent);
+        context.registerReceiver(mReceiver, intent);
     }
 
-    void stopBroadcastReceiver(){
-        if(mReceiver!=null) {
+    void stopBroadcastReceiver() {
+        if (mReceiver != null) {
             context.unregisterReceiver(mReceiver);
             mReceiver = null;
         }
     }
 
-    static abstract class BondingObserver implements AuthenticationObserverInterface{
+    static abstract class BondingObserver implements AuthenticationObserverInterface {
         private BluetoothDevice device;
 
         BondingObserver(BluetoothDevice device) {
@@ -48,11 +50,11 @@ class BDBondingListener {
         }
     }
 
-    void addObserver(BondingObserver observer){
+    void addObserver(BondingObserver observer) {
         authenticationObservers.add(observer);
     }
 
-    void removeObserver(BondingObserver observer){
+    void removeObserver(BondingObserver observer) {
         authenticationObservers.remove(observer);
     }
 
@@ -61,38 +63,29 @@ class BDBondingListener {
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-            if(device != null && action != null) {
+            if (device != null && action != null) {
                 if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
                     final int state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
-                    BleLogger.d(TAG,"Bond manager state:" + state + " action: " + intent.toString());
+                    BleLogger.d(TAG, "Bond manager state:" + state + " action: " + intent.toString());
                     switch (state) {
                         case BluetoothDevice.BOND_BONDING:
-                            authenticationObservers.accessAll(new AtomicSet.ObjectAccess<BondingObserver>() {
-                                @Override
-                                public void access(BondingObserver object) {
-                                    if( object.getDevice().equals(device) ) {
-                                        object.bonding();
-                                    }
+                            authenticationObservers.accessAll(object -> {
+                                if (object.getDevice().equals(device)) {
+                                    object.bonding();
                                 }
                             });
                             break;
                         case BluetoothDevice.BOND_BONDED:
-                            authenticationObservers.accessAll(new AtomicSet.ObjectAccess<BondingObserver>() {
-                                @Override
-                                public void access(BondingObserver object) {
-                                    if( object.getDevice().equals(device) ) {
-                                        object.bonded();
-                                    }
+                            authenticationObservers.accessAll(object -> {
+                                if (object.getDevice().equals(device)) {
+                                    object.bonded();
                                 }
                             });
                             break;
                         case BluetoothDevice.BOND_NONE:
-                            authenticationObservers.accessAll(new AtomicSet.ObjectAccess<BondingObserver>() {
-                                @Override
-                                public void access(BondingObserver object) {
-                                    if( object.getDevice().equals(device) ) {
-                                        object.bondNone();
-                                    }
+                            authenticationObservers.accessAll(object -> {
+                                if (object.getDevice().equals(device)) {
+                                    object.bondNone();
                                 }
                             });
                             break;
