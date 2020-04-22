@@ -1,5 +1,6 @@
 package com.androidcommunications.polar.api.ble.model.gatt.client;
 
+import android.support.annotation.NonNull;
 import android.util.Pair;
 
 import com.androidcommunications.polar.api.ble.exceptions.BleAttributeError;
@@ -191,7 +192,7 @@ public class BlePfcClient extends BleGattBase {
     }
 
     @Override
-    public String toString() {
+    public @NonNull String toString() {
         return "PFC service with values broadcast supported: " + String.valueOf(pfcFeature.broadcastSupported) + " 5khz supported: " + String.valueOf(pfcFeature.khzSupported);
     }
 

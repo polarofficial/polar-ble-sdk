@@ -232,6 +232,11 @@ public class BDDeviceListenerImpl extends BleDeviceListener implements
     }
 
     @Override
+    public boolean isPowered() {
+        return bleActive();
+    }
+
+    @Override
     public void connectionHandlerResumeScanning() {
         scanCallback.startScan();
     }
@@ -317,7 +322,6 @@ public class BDDeviceListenerImpl extends BleDeviceListener implements
     public boolean isScanningNeeded() {
         return observers.size() != 0 || sessions.fetch(smartPolarDeviceSession1 -> smartPolarDeviceSession1.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK) != null;
     }
-
 
     @Override
     public void setBlePowerStateCallback(@Nullable BlePowerStateChangedCallback cb) {

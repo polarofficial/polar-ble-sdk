@@ -148,7 +148,6 @@ public abstract class BleGattBase {
 
     public abstract void processServiceData(UUID characteristic, byte[] data, int status, boolean notifying);
     public abstract void processServiceDataWritten(UUID characteristic, int status);
-    public abstract String toString();
 
     public Completable clientReady(boolean checkConnection) {
         // override in client if required
@@ -327,28 +326,25 @@ public abstract class BleGattBase {
      * @return Observable stream, only complete or error is produced
      */
     public Completable waitServiceDiscovered(final boolean checkConnection){
-        return Completable.create(new CompletableOnSubscribe() {
-            @Override
-            public void subscribe(CompletableEmitter emitter) {
-                try {
-                    if (!checkConnection || txInterface.isConnected()) {
-                        synchronized (serviceDiscovered) {
-                            if (serviceDiscovered.get()) {
-                                emitter.onComplete();
-                                return;
-                            }
-                            serviceDiscovered.wait();
-                            if (txInterface.isConnected() && serviceDiscovered.get()) {
-                                emitter.onComplete();
-                                return;
-                            }
+        return Completable.create(emitter -> {
+            try {
+                if (!checkConnection || txInterface.isConnected()) {
+                    synchronized (serviceDiscovered) {
+                        if (serviceDiscovered.get()) {
+                            emitter.onComplete();
+                            return;
+                        }
+                        serviceDiscovered.wait();
+                        if (txInterface.isConnected() && serviceDiscovered.get()) {
+                            emitter.onComplete();
+                            return;
                         }
                     }
-                    throw new BleDisconnected();
-                } catch (Exception ex){
-                    if(!emitter.isDisposed()){
-                        emitter.tryOnError(ex);
-                    }
+                }
+                throw new BleDisconnected();
+            } catch (Exception ex){
+                if(!emitter.isDisposed()){
+                    emitter.tryOnError(ex);
                 }
             }
         }).subscribeOn(Schedulers.io());
@@ -363,43 +359,40 @@ public abstract class BleGattBase {
      */
     public Completable waitNotificationEnabled(final UUID uuid, final boolean checkConnection, final Scheduler scheduler) {
         final AtomicInteger integer = getNotificationAtomicInteger(uuid);
-        return Completable.create(new CompletableOnSubscribe() {
-            @Override
-            public void subscribe(CompletableEmitter emitter) {
-                try {
-                    if (!checkConnection || txInterface.isConnected()) {
-                        if (integer != null) {
+        return Completable.create(emitter -> {
+            try {
+                if (!checkConnection || txInterface.isConnected()) {
+                    if (integer != null) {
+                        if (integer.get() == ATT_SUCCESS) {
+                            emitter.onComplete();
+                            return;
+                        }
+                        synchronized (integer) {
                             if (integer.get() == ATT_SUCCESS) {
                                 emitter.onComplete();
                                 return;
+                            } else if (integer.get() != -1) {
+                                throw new BleAttributeError("Failed to set characteristic notification or indication ", integer.get());
                             }
-                            synchronized (integer) {
-                                if (integer.get() == ATT_SUCCESS) {
-                                    emitter.onComplete();
-                                    return;
-                                } else if (integer.get() != -1) {
+                            integer.wait();
+                            if (integer.get() != ATT_SUCCESS && !emitter.isDisposed()) {
+                                if (integer.get() != -1) {
                                     throw new BleAttributeError("Failed to set characteristic notification or indication ", integer.get());
+                                } else {
+                                    throw new BleDisconnected();
                                 }
-                                integer.wait();
-                                if (integer.get() != ATT_SUCCESS && !emitter.isDisposed()) {
-                                    if (integer.get() != -1) {
-                                        throw new BleAttributeError("Failed to set characteristic notification or indication ", integer.get());
-                                    } else {
-                                        throw new BleDisconnected();
-                                    }
-                                }
-                                emitter.onComplete();
                             }
-                        } else {
-                            throw new BleCharacteristicNotFound();
+                            emitter.onComplete();
                         }
                     } else {
-                        throw new BleDisconnected();
+                        throw new BleCharacteristicNotFound();
                     }
-                } catch (Exception ex){
-                    if(!emitter.isDisposed()){
-                        emitter.tryOnError(ex);
-                    }
+                } else {
+                    throw new BleDisconnected();
+                }
+            } catch (Exception ex){
+                if(!emitter.isDisposed()){
+                    emitter.tryOnError(ex);
                 }
             }
         }).subscribeOn(scheduler);

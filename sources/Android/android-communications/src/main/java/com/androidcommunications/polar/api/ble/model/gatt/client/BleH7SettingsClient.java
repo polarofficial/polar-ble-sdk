@@ -1,5 +1,7 @@
 package com.androidcommunications.polar.api.ble.model.gatt.client;
 
+import android.support.annotation.NonNull;
+
 import com.androidcommunications.polar.api.ble.exceptions.BleCharacteristicNotFound;
 import com.androidcommunications.polar.api.ble.exceptions.BleDisconnected;
 import com.androidcommunications.polar.api.ble.exceptions.BleNotSupported;
@@ -113,7 +115,7 @@ public class BleH7SettingsClient extends BleGattBase {
     }
 
     @Override
-    public String toString() {
+    public @NonNull String toString() {
         return "Legacy H7 settings client";
     }
 

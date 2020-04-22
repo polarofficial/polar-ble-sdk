@@ -1,7 +1,7 @@
 package com.androidcommunications.polar.api.ble.model.advertisement;
 
 public class BlePolarHrAdvertisement {
-    
+
     private int batteryStatus;
     private int sensorContact;
     private int ucAdvFrameCounter;
@@ -13,7 +13,7 @@ public class BlePolarHrAdvertisement {
     private int slowAverageHr;
     private byte[] currentData;
 
-    public void processPolarManufacturerData(byte[] data){
+    void processPolarManufacturerData(byte[] data) {
         currentData = data;
         batteryStatus = data[2] & 0x01;
         sensorContact = (data[2] & 0x02) >> 1;
@@ -23,14 +23,14 @@ public class BlePolarHrAdvertisement {
         statusFlags = (data[2] & 0x80) >> 7;
         khzCode = data[3];
         fastAverageHr = (data[4] & 0x000000FF);
-        if( data.length == 6 ){
+        if (data.length == 6) {
             slowAverageHr = (data[5] & 0x000000FF);
         } else {
             slowAverageHr = (data[4] & 0x000000FF);
         }
     }
 
-    public boolean isPresent(){
+    public boolean isPresent() {
         return currentData != null;
     }
 
@@ -74,11 +74,11 @@ public class BlePolarHrAdvertisement {
         return slowAverageHr;
     }
 
-    public boolean isOldH7H6(){
+    public boolean isOldH7H6() {
         return currentData.length == 5;
     }
 
-    public boolean isH7Update(){
+    public boolean isH7Update() {
         return !isOldH7H6();
     }
 }

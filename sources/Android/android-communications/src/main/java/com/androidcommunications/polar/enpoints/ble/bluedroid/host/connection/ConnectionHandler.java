@@ -204,10 +204,15 @@ public class ConnectionHandler {
     private void connecting(final BDDeviceSessionImpl session, ConnectionHandlerAction action) {
         switch (action) {
             case ENTRY: {
-                scannerInterface.connectionHandlerRequestStopScanning();
-                current = session;
-                updateSessionState(session, BleDeviceSession.DeviceSessionState.SESSION_OPENING);
-                connectionInterface.connectDevice(session);
+                if (connectionInterface.isPowered()) {
+                    scannerInterface.connectionHandlerRequestStopScanning();
+                    current = session;
+                    updateSessionState(session, BleDeviceSession.DeviceSessionState.SESSION_OPENING);
+                    connectionInterface.connectDevice(session);
+                } else {
+                    BleLogger.w(TAG, "ble not powered exiting connecting state");
+                    changeState(session, ConnectionHandlerState.FREE);
+                }
                 break;
             }
             case EXIT: {

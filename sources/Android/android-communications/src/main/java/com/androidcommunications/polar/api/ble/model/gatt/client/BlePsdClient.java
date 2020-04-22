@@ -1,5 +1,6 @@
 package com.androidcommunications.polar.api.ble.model.gatt.client;
 
+import android.support.annotation.NonNull;
 import android.util.Pair;
 
 import com.androidcommunications.polar.api.ble.exceptions.BleAttributeError;
@@ -268,7 +269,7 @@ public class BlePsdClient extends BleGattBase {
     }
 
     @Override
-    public String toString() {
+    public @NonNull String toString() {
         return "psd client";
     }
 

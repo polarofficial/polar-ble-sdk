@@ -6,4 +6,5 @@ public interface ConnectionInterface {
     void connectDevice(BDDeviceSessionImpl session);
     void disconnectDevice(BDDeviceSessionImpl session);
     void cancelDeviceConnection(BDDeviceSessionImpl session);
+    boolean isPowered();
 }

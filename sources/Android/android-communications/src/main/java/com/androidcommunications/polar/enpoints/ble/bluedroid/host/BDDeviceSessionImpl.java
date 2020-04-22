@@ -63,11 +63,11 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
     @VisibleForTesting
     public BDDeviceSessionImpl(){}
 
-    public BDDeviceSessionImpl(Context context,
-                               BluetoothDevice bluetoothDevice,
-                               BDScanCallback scanCallback,
-                               BDBondingListener bondingManager,
-                               BleGattFactory factory) {
+    BDDeviceSessionImpl(Context context,
+                       BluetoothDevice bluetoothDevice,
+                       BDScanCallback scanCallback,
+                       BDBondingListener bondingManager,
+                       BleGattFactory factory) {
         super();
         this.context = context;
         this.handler = new Handler(context.getMainLooper());
@@ -169,7 +169,6 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                         observer[0] = new BDBondingListener.BondingObserver(bluetoothDevice) {
                             @Override
                             public void bonding() {
-                                //subscriber.onNext(new HashMap<BleUtils.PAIRING_CAPABILITY, Byte>());
                             }
 
                             @Override
@@ -305,7 +304,6 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
     }
 
     void handleDisconnection() {
-        // do nothing
         BleLogger.d(TAG, "disconnected");
         advertisementContent.resetAdvertisementData();
         attOperations.clear();
@@ -571,7 +569,11 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
         processNextAttributeOperation(true);
     }
 
-    void handleDescriptorWrite(final BluetoothGattService service, final BluetoothGattCharacteristic characteristic, final BluetoothGattDescriptor descriptor, byte[] value, int status) {
+    void handleDescriptorWrite(final BluetoothGattService service,
+                               final BluetoothGattCharacteristic characteristic,
+                               final BluetoothGattDescriptor descriptor,
+                               byte[] value,
+                               int status) {
         BleLogger.d(TAG, "onDescriptorWrite uuid: " + characteristic.getUuid().toString() + " status: " + status);
         switch (status) {
             case BleGattBase.ATT_INSUFFICIENT_AUTHENTICATION:

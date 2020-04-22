@@ -1,5 +1,7 @@
 package com.androidcommunications.polar.api.ble.model.gatt.client;
 
+import android.support.annotation.NonNull;
+
 import com.androidcommunications.polar.api.ble.exceptions.BleDisconnected;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattBase;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattTxInterface;
@@ -57,7 +59,7 @@ public class BleBattClient extends BleGattBase {
     }
 
     @Override
-    public String toString() {
+    public @NonNull String toString() {
         return "Battery service";
     }
 
@@ -86,8 +88,8 @@ public class BleBattClient extends BleGattBase {
 
     /**
      * monitor battery notifications
-     * @param checkConnection
-     * @return
+     * @param checkConnection false = no is connected check before observer added, true = check's is connected <BR>
+     * @return Observable
      */
     public Flowable<Integer> monitorBatteryLevelUpdate(final boolean checkConnection) {
         final FlowableEmitter<? super Integer>[] observer = new FlowableEmitter[1];

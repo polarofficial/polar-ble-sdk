@@ -272,12 +272,7 @@ public class MainActivity extends AppCompatActivity {
 
         ppg.setOnClickListener(v -> {
             if(ppgDisposable == null) {
-                ppgDisposable = api.requestPpgSettings(DEVICE_ID).toFlowable().flatMap(new Function<PolarSensorSetting, Publisher<PolarOhrPPGData>>() {
-                    @Override
-                    public Publisher<PolarOhrPPGData> apply(PolarSensorSetting polarPPGSettings) throws Exception {
-                        return api.startOhrPPGStreaming(DEVICE_ID,polarPPGSettings.maxSettings());
-                    }
-                }).subscribe(
+                ppgDisposable = api.requestPpgSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarOhrPPGData>>) polarPPGSettings -> api.startOhrPPGStreaming(DEVICE_ID,polarPPGSettings.maxSettings())).subscribe(
                         polarOhrPPGData -> {
                             for( PolarOhrPPGData.PolarOhrPPGSample data : polarOhrPPGData.samples ){
                                 Log.d(TAG,"    ppg0: " + data.ppg0 + " ppg1: " + data.ppg1 + " ppg2: " + data.ppg2 + "ambient: " + data.ambient);
