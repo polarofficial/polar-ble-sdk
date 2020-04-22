@@ -1,5 +1,6 @@
 package com.androidcommunications.polar.api.ble.model.gatt.client;
 
+import android.support.annotation.NonNull;
 import android.util.Pair;
 
 import com.androidcommunications.polar.api.ble.exceptions.BleAttributeError;
@@ -84,7 +85,7 @@ public class BleDisClient extends BleGattBase {
     }
 
     @Override
-    public String toString() {
+    public @NonNull String toString() {
         return "Device info service";
     }
 

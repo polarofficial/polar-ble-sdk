@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -308,7 +309,7 @@ public class BDBleApiImpl extends PolarBleApi implements
         BleDeviceSession session = fetchSession(identifier);
         if (session == null || session.getSessionState() == SESSION_CLOSED) {
             if (connectSubscriptions.containsKey(identifier)) {
-                connectSubscriptions.get(identifier).dispose();
+                Objects.requireNonNull(connectSubscriptions.get(identifier)).dispose();
                 connectSubscriptions.remove(identifier);
             }
             if (session != null) {
@@ -336,7 +337,7 @@ public class BDBleApiImpl extends PolarBleApi implements
             }
         }
         if (connectSubscriptions.containsKey(identifier)) {
-            connectSubscriptions.get(identifier).dispose();
+            Objects.requireNonNull(connectSubscriptions.get(identifier)).dispose();
             connectSubscriptions.remove(identifier);
         }
     }
@@ -767,9 +768,7 @@ public class BDBleApiImpl extends PolarBleApi implements
             }
             return Flowable.empty();
         }).subscribe(
-                o -> {
-
-                },
+                o -> { },
                 throwable -> logError(throwable.getMessage()),
                 () -> log("complete"));
     }

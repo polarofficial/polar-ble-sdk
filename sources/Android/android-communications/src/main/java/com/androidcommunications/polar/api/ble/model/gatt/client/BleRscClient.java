@@ -1,5 +1,7 @@
 package com.androidcommunications.polar.api.ble.model.gatt.client;
 
+import android.support.annotation.NonNull;
+
 import com.androidcommunications.polar.api.ble.BleLogger;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattBase;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattTxInterface;
@@ -68,8 +70,8 @@ public class BleRscClient extends BleGattBase {
                 final boolean TotalDistancePresent = (flags & 0x02) == 0x02;
                 final boolean Running              = (flags & 0x04) == 0x04;
 
-                final long Speed = (long)(data[index++] | (data[index++] << 8));
-                final long Cadence = (long)data[index++];
+                final long Speed = (data[index++] | (data[index++] << 8));
+                final long Cadence = data[index++];
 
                 long StrideLength = 0;
                 long TotalDistance = 0;
@@ -78,7 +80,7 @@ public class BleRscClient extends BleGattBase {
                     StrideLength = (data[index++] | (data[index++] << 8));
 
                 if(TotalDistancePresent)
-                    TotalDistance = (long)(data[index++] | (data[index++] << 8) | data[index++] << 16 | data[index++] << 24);
+                    TotalDistance = (data[index++] | (data[index++] << 8) | data[index++] << 16 | data[index] << 24);
 
                 final long finalStrideLength = StrideLength;
                 final long finalTotalDistance = TotalDistance;
@@ -96,8 +98,7 @@ public class BleRscClient extends BleGattBase {
     }
 
     @Override
-    public String toString() {
-        // and so on
+    public @NonNull String toString() {
         return "RSC service ";
     }
 

@@ -1,5 +1,7 @@
 package com.androidcommunications.polar.api.ble.model.gatt.client;
 
+import android.support.annotation.NonNull;
+
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattBase;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattTxInterface;
 import com.androidcommunications.polar.common.ble.AtomicSet;
@@ -99,7 +101,7 @@ public class BleHrClient extends BleGattBase {
     }
 
     @Override
-    public String toString() {
+    public @NonNull String toString() {
         // and so on
         return "HR gatt client";
     }

@@ -70,7 +70,7 @@ public class AttributeOperation implements Comparable<AttributeOperation>{
         return data;
     }
 
-    public BluetoothGattCharacteristic getCharacteristic() {
+    @NonNull public BluetoothGattCharacteristic getCharacteristic() {
         return characteristic;
     }
 
