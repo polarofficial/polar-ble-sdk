@@ -43,13 +43,10 @@ public class ConnectionHandler {
     private BDDeviceSessionImpl current;
     private ConnectionHandlerObserver observer;
     private boolean automaticReconnection = true;
-    private Handler stateHandler;
 
-    public ConnectionHandler(Context context,
-                             ConnectionInterface connectionInterface,
+    public ConnectionHandler(ConnectionInterface connectionInterface,
                              ScannerInterface scannerInterface,
                              ConnectionHandlerObserver observer) {
-        this.stateHandler = new Handler(context.getMainLooper());
         this.scannerInterface = scannerInterface;
         this.connectionInterface = connectionInterface;
         this.state = ConnectionHandlerState.FREE;
@@ -83,17 +80,13 @@ public class ConnectionHandler {
     }
 
     public void deviceConnected(final BDDeviceSessionImpl bleDeviceSession) {
-        stateHandler.post(() -> {
-            commandState(bleDeviceSession, ConnectionHandlerAction.DEVICE_CONNECTED);
-            observer.deviceConnected(bleDeviceSession);
-        });
+        commandState(bleDeviceSession, ConnectionHandlerAction.DEVICE_CONNECTED);
+        observer.deviceConnected(bleDeviceSession);
     }
 
     public void deviceDisconnected(final BDDeviceSessionImpl bleDeviceSession) {
-        stateHandler.post(() -> {
-            commandState(bleDeviceSession, ConnectionHandlerAction.DEVICE_DISCONNECTED);
-            observer.deviceDisconnected(bleDeviceSession);
-        });
+        commandState(bleDeviceSession, ConnectionHandlerAction.DEVICE_DISCONNECTED);
+        observer.deviceDisconnected(bleDeviceSession);
     }
 
     /**
@@ -204,8 +197,8 @@ public class ConnectionHandler {
     private void connecting(final BDDeviceSessionImpl session, ConnectionHandlerAction action) {
         switch (action) {
             case ENTRY: {
+                scannerInterface.connectionHandlerRequestStopScanning();
                 if (connectionInterface.isPowered()) {
-                    scannerInterface.connectionHandlerRequestStopScanning();
                     current = session;
                     updateSessionState(session, BleDeviceSession.DeviceSessionState.SESSION_OPENING);
                     connectionInterface.connectDevice(session);
