@@ -69,7 +69,7 @@ public class BDDeviceListenerImpl extends BleDeviceListener implements
         if (btManager != null) {
             bluetoothAdapter = btManager.getAdapter();
         }
-        connectionHandler = new ConnectionHandler(context, this, this, this);
+        connectionHandler = new ConnectionHandler( this, this, this);
         gattCallback = new BDGattCallback(context, connectionHandler, sessions);
         bondingManager = new BDBondingListener(context);
         scanCallback = new BDScanCallback(context, btManager, this);

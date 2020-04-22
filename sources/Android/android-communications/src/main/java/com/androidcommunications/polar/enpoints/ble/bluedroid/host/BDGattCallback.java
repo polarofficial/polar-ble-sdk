@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.content.Context;
 import android.os.Build;
+import android.os.Handler;
 
 import com.androidcommunications.polar.api.ble.BleLogger;
 import com.androidcommunications.polar.common.ble.RxUtils;
@@ -27,9 +28,11 @@ class BDGattCallback extends BluetoothGattCallback {
     private ConnectionHandler connectionHandler;
     private BDDeviceList sessions;
     private Scheduler scheduler;
+    private Handler handler;
 
     BDGattCallback(Context context, ConnectionHandler connectionHandler, BDDeviceList sessions) {
         this.scheduler = AndroidSchedulers.from(context.getMainLooper());
+        this.handler = new Handler(context.getMainLooper());
         this.connectionHandler = connectionHandler;
         this.sessions = sessions;
     }
@@ -45,7 +48,7 @@ class BDGattCallback extends BluetoothGattCallback {
         if (smartPolarDeviceSession != null) {
             if (newState == BluetoothGatt.STATE_CONNECTED) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
-                    connectionHandler.deviceConnected(smartPolarDeviceSession);
+                    handler.post(() -> connectionHandler.deviceConnected(smartPolarDeviceSession));
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         gatt.setPreferredPhy(BluetoothDevice.PHY_LE_2M_MASK, BluetoothDevice.PHY_LE_2M_MASK, BluetoothDevice.PHY_OPTION_NO_PREFERRED);
                     }
@@ -56,13 +59,13 @@ class BDGattCallback extends BluetoothGattCallback {
                                 throwable -> BleLogger.e(TAG, "Wait encryption start failed: " + throwable.getLocalizedMessage()),
                                 () -> startDiscovery(smartPolarDeviceSession, gatt)));
                     } else {
-                        startDiscovery(smartPolarDeviceSession, gatt);
+                        handler.post(() -> startDiscovery(smartPolarDeviceSession, gatt));
                     }
                 } else {
-                    connectionHandler.deviceDisconnected(smartPolarDeviceSession);
+                    handler.post(() -> connectionHandler.deviceDisconnected(smartPolarDeviceSession));
                 }
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
-                connectionHandler.deviceDisconnected(smartPolarDeviceSession);
+                handler.post(() -> connectionHandler.deviceDisconnected(smartPolarDeviceSession));
             }
         } else {
             BleLogger.e(TAG, "Dead gatt object received");
@@ -77,10 +80,12 @@ class BDGattCallback extends BluetoothGattCallback {
         super.onServicesDiscovered(gatt, status);
         final BDDeviceSessionImpl bdDeviceSession = sessions.getSession(gatt);
         if (bdDeviceSession != null) {
-            if (bdDeviceSession.serviceDiscovery != null) {
-                bdDeviceSession.serviceDiscovery.dispose();
-                bdDeviceSession.serviceDiscovery = null;
-            }
+            handler.post(() -> {
+                if (bdDeviceSession.serviceDiscovery != null) {
+                    bdDeviceSession.serviceDiscovery.dispose();
+                    bdDeviceSession.serviceDiscovery = null;
+                }
+            });
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 bdDeviceSession.handleServicesDiscovered();
                 gatt.requestMtu(POLAR_MAX_MTU);
