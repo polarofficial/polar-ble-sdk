@@ -1,1 +1,1 @@
-public let IOS_COMMUNICATIONS_VERSION = "v2.2.1-patch.1-9-gcb528ea"
+public let IOS_COMMUNICATIONS_VERSION = "v2.2.2-4-g06a2000"

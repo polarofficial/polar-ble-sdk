@@ -12,9 +12,6 @@
 		6C1079231D6D6EA000931948 /* iOSCommunicationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1079221D6D6EA000931948 /* iOSCommunicationsTests.swift */; };
 		6C10792D1D6D9C4800931948 /* iOSCommunications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C34DE881CAA3F240083EB1F /* iOSCommunications.framework */; };
 		6C2408F8220D9581001C1A84 /* CBScanningProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */; };
-		6C24093222142DE6001C1A84 /* RxAtomic.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C24093022142DE6001C1A84 /* RxAtomic.framework */; };
-		6C24093322142DE6001C1A84 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C24093122142DE6001C1A84 /* RxSwift.framework */; };
-		6C24093422142DF6001C1A84 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C24093122142DE6001C1A84 /* RxSwift.framework */; };
 		6C2409412216A6E3001C1A84 /* PolarSensorSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C56422F21F1FF7A00F9BDA9 /* PolarSensorSetting.swift */; };
 		6C2409422216A6E3001C1A84 /* CBScanningProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */; };
 		6C2409432216A6E3001C1A84 /* BlePsFtpUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD381CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift */; };
@@ -287,6 +284,12 @@
 		6CEA10E821786B0000E16FBF /* Timestamp.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10E421786B0000E16FBF /* Timestamp.pbobjc.h */; };
 		6CEA10E921786B0000E16FBF /* Type.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10E521786B0000E16FBF /* Type.pbobjc.m */; };
 		6CEA10EA21786B0000E16FBF /* Timestamp.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10E621786B0000E16FBF /* Timestamp.pbobjc.m */; };
+		A5D3225F2566982200E8C9A2 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5D3225E2566982200E8C9A2 /* RxSwift.framework */; };
+		A5D322602566982300E8C9A2 /* RxSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A5D3225E2566982200E8C9A2 /* RxSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A5D322622566983900E8C9A2 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5D3225E2566982200E8C9A2 /* RxSwift.framework */; };
+		A5D322632566983900E8C9A2 /* RxSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A5D3225E2566982200E8C9A2 /* RxSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A5D322662566984E00E8C9A2 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5D322652566984E00E8C9A2 /* RxSwift.framework */; };
+		A5D322672566984E00E8C9A2 /* RxSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A5D322652566984E00E8C9A2 /* RxSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -299,14 +302,48 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		A5D322612566982300E8C9A2 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				A5D322602566982300E8C9A2 /* RxSwift.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A5D322642566983900E8C9A2 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				A5D322632566983900E8C9A2 /* RxSwift.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A5D322682566984F00E8C9A2 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				A5D322672566984E00E8C9A2 /* RxSwift.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		6C0C543E1CFC749E00FF23E9 /* iOSCommunications.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iOSCommunications.h; sourceTree = "<group>"; };
 		6C0C54FD1CFEB3C900FF23E9 /* TimeUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TimeUtility.swift; path = ble/common/TimeUtility.swift; sourceTree = "<group>"; };
 		6C1079201D6D6EA000931948 /* iOSCommunicationsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iOSCommunicationsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C1079221D6D6EA000931948 /* iOSCommunicationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSCommunicationsTests.swift; sourceTree = "<group>"; };
 		6C1079241D6D6EA000931948 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		6C24093022142DE6001C1A84 /* RxAtomic.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxAtomic.framework; path = Carthage/Build/iOS/RxAtomic.framework; sourceTree = "<group>"; };
-		6C24093122142DE6001C1A84 /* RxSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxSwift.framework; path = Carthage/Build/iOS/RxSwift.framework; sourceTree = "<group>"; };
 		6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CBScanningProtocol.swift; path = ble/endpoints/corebluetooth/central/CBScanningProtocol.swift; sourceTree = "<group>"; };
 		6C34DE881CAA3F240083EB1F /* iOSCommunications.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = iOSCommunications.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C34DE8D1CAA3F240083EB1F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -331,7 +368,6 @@
 		6C5A44A91CB291A40006220D /* CBDeviceListenerImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CBDeviceListenerImpl.swift; path = ble/endpoints/corebluetooth/central/CBDeviceListenerImpl.swift; sourceTree = "<group>"; };
 		6C5A44AA1CB291A40006220D /* CBDeviceSessionImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CBDeviceSessionImpl.swift; path = ble/endpoints/corebluetooth/central/CBDeviceSessionImpl.swift; sourceTree = "<group>"; };
 		6C5A44BA1CB37F060006220D /* BleDeviceSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleDeviceSession.swift; path = ble/api/model/BleDeviceSession.swift; sourceTree = "<group>"; };
-		6C67C7F71E153A6400411498 /* MultipeerConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MultipeerConnectivity.framework; path = System/Library/Frameworks/MultipeerConnectivity.framework; sourceTree = SDKROOT; };
 		6C67C7FC1E169CCE00411498 /* BleBasClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleBasClient.swift; path = ble/api/model/gatt/client/BleBasClient.swift; sourceTree = "<group>"; };
 		6C67C7FD1E169CCE00411498 /* BleDisClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleDisClient.swift; path = ble/api/model/gatt/client/BleDisClient.swift; sourceTree = "<group>"; };
 		6C67C7FE1E169CCE00411498 /* BleHrClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleHrClient.swift; path = ble/api/model/gatt/client/BleHrClient.swift; sourceTree = "<group>"; };
@@ -439,6 +475,8 @@
 		6CEA10E421786B0000E16FBF /* Timestamp.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Timestamp.pbobjc.h; path = sdk/impl/protobuf/google/Timestamp.pbobjc.h; sourceTree = "<group>"; };
 		6CEA10E521786B0000E16FBF /* Type.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Type.pbobjc.m; path = sdk/impl/protobuf/google/Type.pbobjc.m; sourceTree = "<group>"; };
 		6CEA10E621786B0000E16FBF /* Timestamp.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Timestamp.pbobjc.m; path = sdk/impl/protobuf/google/Timestamp.pbobjc.m; sourceTree = "<group>"; };
+		A5D3225E2566982200E8C9A2 /* RxSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxSwift.framework; path = Carthage/Build/iOS/RxSwift.framework; sourceTree = "<group>"; };
+		A5D322652566984E00E8C9A2 /* RxSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxSwift.framework; path = Carthage/Build/watchOS/RxSwift.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -454,8 +492,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6C24093222142DE6001C1A84 /* RxAtomic.framework in Frameworks */,
-				6C24093322142DE6001C1A84 /* RxSwift.framework in Frameworks */,
+				A5D3225F2566982200E8C9A2 /* RxSwift.framework in Frameworks */,
 				6CD49C7F1CABA2EC000D8660 /* CoreBluetooth.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -464,6 +501,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A5D322662566984E00E8C9A2 /* RxSwift.framework in Frameworks */,
 				6C39E8FF209B08F0001F7E44 /* CoreBluetooth.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -472,7 +510,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6C24093422142DF6001C1A84 /* RxSwift.framework in Frameworks */,
+				A5D322622566983900E8C9A2 /* RxSwift.framework in Frameworks */,
 				6C770BA9206B784300F3D51D /* CoreBluetooth.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -654,10 +692,9 @@
 		6C64AB1C1D8ABF980074340A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				6C24093022142DE6001C1A84 /* RxAtomic.framework */,
-				6C24093122142DE6001C1A84 /* RxSwift.framework */,
+				A5D3225E2566982200E8C9A2 /* RxSwift.framework */,
+				A5D322652566984E00E8C9A2 /* RxSwift.framework */,
 				6C39E8FE209B08F0001F7E44 /* CoreBluetooth.framework */,
-				6C67C7F71E153A6400411498 /* MultipeerConnectivity.framework */,
 				6CD49C7E1CABA2EC000D8660 /* CoreBluetooth.framework */,
 			);
 			name = Frameworks;
@@ -996,6 +1033,7 @@
 				6C34DE851CAA3F240083EB1F /* Headers */,
 				6C34DE861CAA3F240083EB1F /* Resources */,
 				6C393C321D4F70BC00F5B6FD /* ShellScript */,
+				A5D322612566982300E8C9A2 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1015,6 +1053,7 @@
 				6C39E8C0209B0754001F7E44 /* Headers */,
 				6C39E8C1209B0754001F7E44 /* Resources */,
 				6C24099B221A85C3001C1A84 /* ShellScript */,
+				A5D322682566984F00E8C9A2 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1035,6 +1074,7 @@
 				6C770B69206B779900F3D51D /* Headers */,
 				6C770B6A206B779900F3D51D /* Resources */,
 				6C48395921B12BAD00747D78 /* ShellScript */,
+				A5D322642566983900E8C9A2 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1440,7 +1480,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				BITCODE_GENERATION_MODE = bitcode;
-				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
@@ -1506,7 +1546,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				BITCODE_GENERATION_MODE = bitcode;
-				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
@@ -1564,8 +1604,7 @@
 		6C34DE911CAA3F240083EB1F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
@@ -1600,8 +1639,7 @@
 		6C34DE921CAA3F240083EB1F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
@@ -1636,7 +1674,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -1686,7 +1724,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -1734,7 +1772,7 @@
 		6C770B71206B779A00F3D51D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_ENABLE_MODULES = YES;
@@ -1786,7 +1824,7 @@
 		6C770B72206B779A00F3D51D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_ENABLE_MODULES = YES;
