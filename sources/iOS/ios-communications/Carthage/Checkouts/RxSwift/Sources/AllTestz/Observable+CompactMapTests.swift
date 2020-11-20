@@ -1,1 +1,0 @@
-../../Tests/RxSwiftTests/Observable+CompactMapTests.swift
