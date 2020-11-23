@@ -5,7 +5,7 @@ This is the official repository of Polar's software development kit. With this S
 
 This SDK uses ReactiveX. You can read more about ReactiveX from their website [reactivex](http://reactivex.io)
 
-3rd party software lincense listing [ThirdPartySoftwareListing](ThirdPartySoftwareListing.txt)
+3rd party software license listing [ThirdPartySoftwareListing](ThirdPartySoftwareListing.txt)
 
 By exploiting the SDK, you indicate your acceptance of [License](Polar_SDK_License.txt).
 
@@ -27,7 +27,7 @@ Most accurate Heart rate sensor in the markets. The H10 is used in the Getting s
 * From version 3.0.35 onwards. 
 * Heart rate as beats per minute. RR Interval in ms and 1/1024 format.
 * Electrocardiography (ECG) data in µV. Default epoch for timestamp is 1.1.2000
-* Accelerometer data with samplerates of 25Hz, 50Hz, 100Hz and 200Hz and range of 2G, 4G and 8G. Axis specific acceleration data in mG. Default epoch for timestamp is 1.1.2000
+* Accelerometer data with sample rates of 25Hz, 50Hz, 100Hz and 200Hz and range of 2G, 4G and 8G. Axis specific acceleration data in mG. Default epoch for timestamp is 1.1.2000
 * Start and stop of internal recording and request for internal recording status. Recording supports RR, HR with one second sampletime or HR with five second sampletime.
 * List, read and remove for stored internal recording (sensor supports only one recording at the time).
 
@@ -248,8 +248,7 @@ public void onDestroy() {
 Detailed documentation [Full Documentation](polar-sdk-ios/docs/). Minimum iOS version is 10.
 ## Installation
 Compiled Sdk and dependencies can be found from [polar-sdk-ios](polar-sdk-ios/)
-Precompiled 5.1.1 RxSwift is added to sdk package. All iOS demos and examples contains Cartfile if you desire to compile
-dependencies yourself.
+Precompiled 5.1.1 RxSwift is added to sdk package. iOS example contains `Cartfile if you desire to compile dependency yourself.
 
 1. In the project properties __General__ tab, add `PolarBleSdk.framework` , `RxSwift.framework`  to __Embedded binaries__ and __Linked Frameworks and Libraries__.
 
