@@ -1,0 +1,23 @@
+# Environment Requirements
+
+* Xcode 12.x
+* Swift 5.x
+
+
+# Dependencies
+* iOS communications library is dependant on [RxSwift](https://github.com/ReactiveX/RxSwift)
+
+## Update dependency
+1. install [Carthage](https://github.com/Carthage/Carthage)
+2. update the `Cartfile` to version of your choice
+3. Run Carthage
+> **Note**: As Carthage doesn't work out of the box with Xcode 12. The recommended [workaround](https://github.com/Carthage/Carthage/blob/master/Documentation/Xcode12Workaround.md) is used and Carthage is wrapped into script `carthage.sh`
+
+    3.1. Make the script executable
+    ```bash
+    chmod +x carthage.sh
+    ```
+    3.2. Run the script
+    ```bash
+    $ ./carthage.sh update --platform iOS,watchOS
+    ```

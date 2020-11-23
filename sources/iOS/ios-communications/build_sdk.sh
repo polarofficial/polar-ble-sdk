@@ -11,8 +11,8 @@ function cleanup {
 trap cleanup EXIT
 cd $WORKSPACE
 echo "Rebuilding projects..."; sleep 1
-xcodebuild -scheme PolarBleSdk -configuration Release -sdk `xcrun --sdk iphoneos --show-sdk-path` -derivedDataPath $DERIVED_DATA ONLY_ACTIVE_ARCH=NO ARCHS="armv7 arm64" "OTHER_SWIFT_FLAGS=-DDISABLE_TEAM_PRO_DECRYPTION" CODE_SIGN_IDENTITY='' "OTHER_CFLAGS=-fembed-bitcode"
-xcodebuild -scheme PolarBleSdk -configuration Release -sdk `xcrun --sdk iphonesimulator --show-sdk-path` -derivedDataPath $DERIVED_DATA ONLY_ACTIVE_ARCH=NO ARCHS="i386 x86_64" "OTHER_SWIFT_FLAGS=-DDISABLE_TEAM_PRO_DECRYPTION" CODE_SIGN_IDENTITY='' "OTHER_CFLAGS=-fembed-bitcode"
+xcodebuild -scheme PolarBleSdk -configuration Release -sdk `xcrun --sdk iphoneos --show-sdk-path` -derivedDataPath $DERIVED_DATA ONLY_ACTIVE_ARCH=NO ARCHS="armv7 arm64" CODE_SIGN_IDENTITY='' "OTHER_CFLAGS=-fembed-bitcode"
+xcodebuild -scheme PolarBleSdk -configuration Release -sdk `xcrun --sdk iphonesimulator --show-sdk-path` -derivedDataPath $DERIVED_DATA ONLY_ACTIVE_ARCH=NO ARCHS="i386 x86_64" CODE_SIGN_IDENTITY='' "OTHER_CFLAGS=-fembed-bitcode"
 echo "Creating universal ios-communications..."
 cd $DERIVED_DATA
 lipo -create -output ../3rd_party_sdk/PolarBleSdk.framework/PolarBleSdk Build/Products/Release-iphoneos/PolarBleSdk.framework/PolarBleSdk Build/Products/Release-iphonesimulator/PolarBleSdk.framework/PolarBleSdk
