@@ -1,10 +1,9 @@
 package com.androidcommunications.polar.api.ble;
 
 import android.bluetooth.le.ScanFilter;
-import android.support.annotation.IntDef;
-import android.support.annotation.IntRange;
-import android.support.annotation.Nullable;
-import android.util.Pair;
+import androidx.annotation.IntDef;
+import androidx.annotation.IntRange;
+import androidx.annotation.Nullable;
 
 import com.androidcommunications.polar.api.ble.model.BleDeviceSession;
 import com.androidcommunications.polar.api.ble.model.advertisement.BleAdvertisementContent;
@@ -17,7 +16,6 @@ import java.util.List;
 import java.util.Set;
 
 import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.Observable;
 
 public abstract class BleDeviceListener {
 

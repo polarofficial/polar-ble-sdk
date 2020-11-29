@@ -1,6 +1,6 @@
 package com.androidcommunications.polar.api.ble.model.gatt.client;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.androidcommunications.polar.api.ble.exceptions.BleCharacteristicNotFound;
 import com.androidcommunications.polar.api.ble.exceptions.BleDisconnected;
@@ -14,7 +14,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.core.SingleEmitter;
 import io.reactivex.rxjava3.core.SingleOnSubscribe;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
