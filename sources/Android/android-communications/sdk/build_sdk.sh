@@ -6,11 +6,12 @@ if [ $# -ne 2 ]
     exit 1
 fi
 cd ..
-gradle assembleRelease androidJavadocsJar -PbuildSdk
+./gradlew assembleRelease androidJavadocsJar
 cp build/outputs/aar/android-communications-release.aar sdk/polar-ble-sdk.aar
-cp build/outputs/aar/android-communications-release.aar sdk/androidBleSdkTestApp/app/libs/polar-ble-sdk.aar
+cp build/outputs/aar/android-communications-release.aar ../../../polar-sdk-android/libs/polar-ble-sdk.aar
+cp build/outputs/aar/android-communications-release.aar ../../../examples/example-android/androidBleSdkTestApp/app/libs/polar-ble-sdk.aar
 cp libs/polar-protobuf-release.aar sdk/polar-protobuf-release.aar
-cp libs/polar-protobuf-release.aar sdk/androidBleSdkTestApp/app/libs/polar-protobuf-release.aar
+cp libs/polar-protobuf-release.aar ../../../examples/example-android/androidBleSdkTestApp/app/libs/polar-protobuf-release.aar
 rm -fr sdk/docs/
 mkdir sdk/docs/
 cp build/libs/android-communications-javadoc.jar sdk/docs/polar-ble-sdk-docs.jar

@@ -1,6 +1,6 @@
 package com.androidcommunications.polar.api.ble.model.gatt.client;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Pair;
 
 import com.androidcommunications.polar.api.ble.exceptions.BleAttributeError;

@@ -1,7 +1,7 @@
 package com.androidcommunications.polar.enpoints.ble.bluedroid.host;
 
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public class AttributeOperation implements Comparable<AttributeOperation>{
 

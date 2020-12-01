@@ -1,9 +1,9 @@
 // Copyright © 2019 Polar Electro Oy. All rights reserved.
 package polar.com.sdk.api;
 
-import android.support.annotation.IntRange;
-import android.support.annotation.Nullable;
-import android.support.annotation.Size;
+import androidx.annotation.IntRange;
+import androidx.annotation.Nullable;
+import androidx.annotation.Size;
 import android.util.Pair;
 
 import java.util.Calendar;
