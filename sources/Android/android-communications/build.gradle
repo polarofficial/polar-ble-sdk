@@ -47,7 +47,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:4.1.1'
         if ( project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPassword") ) {
-            classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.7.3"
+            classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.18.1"
         }
     }
 }
@@ -160,7 +160,7 @@ artifacts {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    if (project.hasProperty("buildSdk")) {
+    if (project.hasProperty("buildSdk") || !file("polar-protobuf").isDirectory()) {
         compileOnly files('libs/polar-protobuf-release.aar')
         implementation 'com.google.protobuf:protobuf-java:3.1.0'
     } else {
