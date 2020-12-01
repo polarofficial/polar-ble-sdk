@@ -7,7 +7,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.os.Handler;
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
 
 import com.androidcommunications.polar.BuildConfig;
 import com.androidcommunications.polar.api.ble.BleLogger;
