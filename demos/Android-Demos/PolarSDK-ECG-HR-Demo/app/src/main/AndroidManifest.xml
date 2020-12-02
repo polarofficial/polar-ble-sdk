@@ -2,9 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.polar.polarsdkecghrdemo">
 
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -15,7 +15,8 @@
         android:theme="@style/AppTheme">
         <activity
             android:name="com.polar.polarsdkecghrdemo.MainActivity"
-            android:label="@string/app_name" android:screenOrientation="portrait">
+            android:label="@string/app_name"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -24,12 +25,12 @@
         </activity>
         <activity
             android:name="com.polar.polarsdkecghrdemo.ECGActivity"
-            android:label="@string/ecg_name" android:screenOrientation="portrait">
-        </activity>
+            android:label="@string/ecg_name"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="com.polar.polarsdkecghrdemo.HRActivity"
-            android:label="@string/hr_name" android:screenOrientation="portrait">
-        </activity>
+            android:label="@string/hr_name"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>
