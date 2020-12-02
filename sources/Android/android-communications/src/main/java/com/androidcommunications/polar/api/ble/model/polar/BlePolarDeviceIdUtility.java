@@ -2,6 +2,7 @@ package com.androidcommunications.polar.api.ble.model.polar;
 
 public class BlePolarDeviceIdUtility {
     public static boolean isValidDeviceId(final String deviceId){
+        if (deviceId == null) return false;
         if (deviceId.length() == 8) {
             return checkSumForDeviceId(Long.parseLong(deviceId, 16), 8) == (Long.parseLong(deviceId, 16) & 0x000000000000000FL);
         }
