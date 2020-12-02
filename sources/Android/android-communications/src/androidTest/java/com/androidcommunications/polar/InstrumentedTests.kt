@@ -1,8 +1,8 @@
 package com.androidcommunications.polar
 
 import android.content.Context
-import androidx.test.InstrumentationRegistry
-import androidx.test.runner.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.androidcommunications.polar.api.ble.model.BleDeviceSession
 import com.androidcommunications.polar.enpoints.ble.bluedroid.host.BDDeviceSessionImpl
 import com.androidcommunications.polar.enpoints.ble.bluedroid.host.connection.ConnectionHandler
@@ -34,7 +34,7 @@ class InstrumentedTests {
     @Before
     fun setUp() {
         targetContext = InstrumentationRegistry.getInstrumentation().targetContext
-        connectionHandler = ConnectionHandler(targetContext, connectionInterface, scannerInterface, connectionHandlerObserver)
+        connectionHandler = ConnectionHandler(connectionInterface, scannerInterface, connectionHandlerObserver)
     }
 
     @Test
