@@ -2,11 +2,13 @@ package com.polar.polarsdkecghrdemo;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.StepMode;
@@ -14,40 +16,38 @@ import com.androidplot.xy.XYPlot;
 
 import org.reactivestreams.Publisher;
 
-import java.util.List;
 import java.util.UUID;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.functions.Action;
-import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
 import polar.com.sdk.api.PolarBleApi;
 import polar.com.sdk.api.PolarBleApiCallback;
 import polar.com.sdk.api.PolarBleApiDefaultImpl;
+import polar.com.sdk.api.errors.PolarInvalidArgument;
 import polar.com.sdk.api.model.PolarDeviceInfo;
 import polar.com.sdk.api.model.PolarEcgData;
 import polar.com.sdk.api.model.PolarHrData;
 import polar.com.sdk.api.model.PolarSensorSetting;
-import polar.com.sdk.api.errors.PolarInvalidArgument;
 
 public class ECGActivity extends AppCompatActivity implements PlotterListener {
+    private static final String TAG = "ECGActivity";
 
+    private PolarBleApi api;
+    private TextView textViewHR;
+    private TextView textViewFW;
     private XYPlot plot;
     private Plotter plotter;
 
-    TextView textViewHR, textViewFW;
-    private String TAG = "Polar_ECGActivity";
-    public PolarBleApi api;
     private Disposable ecgDisposable = null;
-    private Context classContext = this;
-    private String DEVICE_ID;
+    private final Context classContext = this;
+    private String deviceId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ecg);
-        DEVICE_ID = getIntent().getStringExtra("id");
+        deviceId = getIntent().getStringExtra("id");
         textViewHR = findViewById(R.id.info);
         textViewFW = findViewById(R.id.fw);
 
@@ -65,57 +65,55 @@ public class ECGActivity extends AppCompatActivity implements PlotterListener {
             }
 
             @Override
-            public void deviceConnected(PolarDeviceInfo s) {
+            public void deviceConnected(@NonNull PolarDeviceInfo s) {
                 Log.d(TAG, "Device connected " + s.deviceId);
-                Toast.makeText(classContext, R.string.connected,
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(classContext, R.string.connected, Toast.LENGTH_SHORT).show();
             }
 
             @Override
-            public void deviceConnecting(PolarDeviceInfo polarDeviceInfo) {
+            public void deviceConnecting(@NonNull PolarDeviceInfo polarDeviceInfo) {
 
             }
 
             @Override
-            public void deviceDisconnected(PolarDeviceInfo s) {
+            public void deviceDisconnected(@NonNull PolarDeviceInfo s) {
                 Log.d(TAG, "Device disconnected " + s);
-
             }
 
             @Override
-            public void ecgFeatureReady(String s) {
+            public void ecgFeatureReady(@NonNull String s) {
                 Log.d(TAG, "ECG Feature ready " + s);
                 streamECG();
             }
 
             @Override
-            public void accelerometerFeatureReady(String s) {
+            public void accelerometerFeatureReady(@NonNull String s) {
                 Log.d(TAG, "ACC Feature ready " + s);
             }
 
             @Override
-            public void ppgFeatureReady(String s) {
+            public void ppgFeatureReady(@NonNull String s) {
                 Log.d(TAG, "PPG Feature ready " + s);
             }
 
             @Override
-            public void ppiFeatureReady(String s) {
+            public void ppiFeatureReady(@NonNull String s) {
                 Log.d(TAG, "PPI Feature ready " + s);
             }
 
             @Override
-            public void biozFeatureReady(String s) {
+            public void biozFeatureReady(@NonNull String s) {
 
             }
 
             @Override
-            public void hrFeatureReady(String s) {
+            public void hrFeatureReady(@NonNull String s) {
                 Log.d(TAG, "HR Feature ready " + s);
             }
 
             @Override
-            public void disInformationReceived(String s, UUID u, String s1) {
-                if( u.equals(UUID.fromString("00002a28-0000-1000-8000-00805f9b34fb"))) {
+            public void disInformationReceived(@NonNull String s, @NonNull UUID u, @NonNull String s1) {
+                if (u.equals(UUID.fromString("00002a28-0000-1000-8000-00805f9b34fb"))) {
                     String msg = "Firmware: " + s1.trim();
                     Log.d(TAG, "Firmware: " + s + " " + s1.trim());
                     textViewFW.append(msg + "\n");
@@ -123,7 +121,7 @@ public class ECGActivity extends AppCompatActivity implements PlotterListener {
             }
 
             @Override
-            public void batteryLevelReceived(String s, int i) {
+            public void batteryLevelReceived(@NonNull String s, int i) {
                 String msg = "ID: " + s + "\nBattery level: " + i;
                 Log.d(TAG, "Battery level " + s + " " + i);
 //                Toast.makeText(classContext, msg, Toast.LENGTH_LONG).show();
@@ -131,24 +129,23 @@ public class ECGActivity extends AppCompatActivity implements PlotterListener {
             }
 
             @Override
-            public void hrNotificationReceived(String s,
-                                               PolarHrData polarHrData) {
+            public void hrNotificationReceived(@NonNull String s, @NonNull PolarHrData polarHrData) {
                 Log.d(TAG, "HR " + polarHrData.hr);
                 textViewHR.setText(String.valueOf(polarHrData.hr));
             }
 
             @Override
-            public void polarFtpFeatureReady(String s) {
+            public void polarFtpFeatureReady(@NonNull String s) {
                 Log.d(TAG, "Polar FTP ready " + s);
             }
         });
         try {
-            api.connectToDevice(DEVICE_ID);
-        } catch (PolarInvalidArgument a){
+            api.connectToDevice(deviceId);
+        } catch (PolarInvalidArgument a) {
             a.printStackTrace();
         }
 
-        plotter = new Plotter(this, "ECG");
+        plotter = new Plotter("ECG");
         plotter.setListener(this);
 
         plot.addSeries(plotter.getSeries(), plotter.getFormatter());
@@ -167,37 +164,24 @@ public class ECGActivity extends AppCompatActivity implements PlotterListener {
     public void streamECG() {
         if (ecgDisposable == null) {
             ecgDisposable =
-                    api.requestEcgSettings(DEVICE_ID).toFlowable().flatMap(new Function<PolarSensorSetting, Publisher<PolarEcgData>>() {
-                        @Override
-                        public Publisher<PolarEcgData> apply(PolarSensorSetting sensorSetting) throws Exception {
-                            return api.startEcgStreaming(DEVICE_ID,
-                                    sensorSetting.maxSettings());
-                        }
-                    }).observeOn(AndroidSchedulers.mainThread()).subscribe(
-                            new Consumer<PolarEcgData>() {
-                                @Override
-                                public void accept(PolarEcgData polarEcgData) throws Exception {
-                                    Log.d(TAG, "ecg update");
-                                    for (Integer data : polarEcgData.samples) {
-                                        plotter.sendSingleSample((float) ((float) data / 1000.0));
-                                    }
-                                }
-                            },
-                            new Consumer<Throwable>() {
-                                @Override
-                                public void accept(Throwable throwable) throws Exception {
-                                    Log.e(TAG,
-                                            "" + throwable.getLocalizedMessage());
-                                    ecgDisposable = null;
-                                }
-                            },
-                            new Action() {
-                                @Override
-                                public void run() throws Exception {
-                                    Log.d(TAG, "complete");
-                                }
-                            }
-                    );
+                    api.requestEcgSettings(deviceId)
+                            .toFlowable()
+                            .flatMap((Function<PolarSensorSetting, Publisher<PolarEcgData>>) sensorSetting -> api.startEcgStreaming(deviceId, sensorSetting.maxSettings()))
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(
+                                    polarEcgData -> {
+                                        Log.d(TAG, "ecg update");
+                                        for (Integer data : polarEcgData.samples) {
+                                            plotter.sendSingleSample((float) ((float) data / 1000.0));
+                                        }
+                                    },
+                                    throwable -> {
+                                        Log.e(TAG,
+                                                "" + throwable.getLocalizedMessage());
+                                        ecgDisposable = null;
+                                    },
+                                    () -> Log.d(TAG, "complete")
+                            );
         } else {
             // NOTE stops streaming if it is "running"
             ecgDisposable.dispose();
@@ -207,11 +191,6 @@ public class ECGActivity extends AppCompatActivity implements PlotterListener {
 
     @Override
     public void update() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                plot.redraw();
-            }
-        });
+        runOnUiThread(() -> plot.redraw());
     }
 }

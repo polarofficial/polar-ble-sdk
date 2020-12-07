@@ -2,11 +2,5 @@
 *.iml
 build
 demos/**/libs/
-.gradle
-gradle
-gradlew
-gradlew.bat
-.idea
-local.properties
 project.xcworkspace
 xcuserdata

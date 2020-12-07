@@ -1,9 +1,9 @@
 package com.androidcommunications.polar.api.ble;
 
 import android.bluetooth.le.ScanFilter;
-import android.support.annotation.IntDef;
-import android.support.annotation.IntRange;
-import android.support.annotation.Nullable;
+import androidx.annotation.IntDef;
+import androidx.annotation.IntRange;
+import androidx.annotation.Nullable;
 import android.util.Pair;
 
 import com.androidcommunications.polar.api.ble.model.BleDeviceSession;

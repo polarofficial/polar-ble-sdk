@@ -1,6 +1,6 @@
 package com.androidcommunications.polar.api.ble.model.gatt.client;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Pair;
 
 import com.androidcommunications.polar.api.ble.BleLogger;
@@ -57,6 +57,7 @@ public class BlePMDClient extends BleGattBase {
     private final AtomicSet<FlowableEmitter<? super Pair<Long,Long>>> afeOperationModeObservers = new AtomicSet<>();
     private final AtomicSet<FlowableEmitter<? super Pair<Long,Long>>> sportIdObservers = new AtomicSet<>();
     private final AtomicSet<FlowableEmitter<? super BiozData> > biozObservers = new AtomicSet<>();
+    private final AtomicSet<FlowableEmitter<? super byte[]>> rdObservers = new AtomicSet<>();
     private byte[] pmdFeatureData = null;
     private final Object mutexFeature = new Object();
 
@@ -547,6 +548,7 @@ public class BlePMDClient extends BleGattBase {
         RxUtils.postDisconnectedAndClearList(biozObservers);
         RxUtils.postDisconnectedAndClearList(afeOperationModeObservers);
         RxUtils.postDisconnectedAndClearList(sportIdObservers);
+        RxUtils.postDisconnectedAndClearList(rdObservers);
 
         synchronized (mutexFeature){
             pmdFeatureData = null;
@@ -642,8 +644,10 @@ public class BlePMDClient extends BleGattBase {
                         }
                         break;
                     case GYRO:
-                        break;
                     default:
+                        final byte[] rdData = new byte[data.length-1];
+                        System.arraycopy(data,1,content,0,content.length);
+                        RxUtils.emitNext(rdObservers, object -> object.onNext(rdData));
                         break;
                 }
             } else {
@@ -883,6 +887,10 @@ public class BlePMDClient extends BleGattBase {
 
     public Flowable<Pair<Long,Long>> monitorSportId(final boolean checkConnection) {
         return RxUtils.monitorNotifications(sportIdObservers,txInterface,checkConnection);
+    }
+
+    public Flowable<byte []> monitorRDData(final boolean checkConnection) {
+        return RxUtils.monitorNotifications(rdObservers,txInterface,checkConnection);
     }
 
     @Override
