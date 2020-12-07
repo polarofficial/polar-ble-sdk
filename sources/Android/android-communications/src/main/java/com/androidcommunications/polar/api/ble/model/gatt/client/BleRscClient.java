@@ -1,6 +1,6 @@
 package com.androidcommunications.polar.api.ble.model.gatt.client;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.androidcommunications.polar.api.ble.BleLogger;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattBase;

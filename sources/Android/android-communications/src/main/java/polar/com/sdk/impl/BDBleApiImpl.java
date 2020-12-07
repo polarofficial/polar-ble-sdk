@@ -6,8 +6,9 @@ import android.bluetooth.le.ScanFilter;
 import android.content.Context;
 import android.os.Build;
 import android.os.ParcelUuid;
-import android.support.annotation.Nullable;
 import android.util.Pair;
+
+import androidx.annotation.Nullable;
 
 import com.androidcommunications.polar.api.ble.BleDeviceListener;
 import com.androidcommunications.polar.api.ble.BleLogger;

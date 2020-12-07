@@ -10,15 +10,15 @@ def getVersion = { ->
         standardOutput = stdout
     }
     def pattern = Pattern.compile("^([0-9]*)(\\.)([0-9]*)(.*)\$")
-    def matcher = pattern.matcher(stdout.toString().trim());
-    if( matcher.matches() ) {
+    def matcher = pattern.matcher(stdout.toString().trim())
+    if (matcher.matches()) {
         String MAJOR = matcher.group(1)
         String MINOR = matcher.group(3)
         String PATCH = matcher.group(4)
-        if( PATCH.length() != 0 ){
+        if (PATCH.length() != 0) {
             // patch present
             def patchMatcher = Pattern.compile("^(-)([0-9]*)(-.*)").matcher(PATCH)
-            if( patchMatcher.matches() ){
+            if (patchMatcher.matches()) {
                 PATCH = patchMatcher.group(2)
             } else {
                 PATCH = "0"
@@ -39,8 +39,8 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
-        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.0.1"
+        classpath 'com.android.tools.build:gradle:4.1.1'
+        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.18.0"
     }
 }
 
@@ -48,7 +48,7 @@ publishing {
     publications {
         zip(MavenPublication) {
             groupId 'com.polar'
-            version = getVersion() 
+            version = getVersion()
             artifactId 'polar-ble-android-sdk'
             artifact("polar-ble-sdk.zip")
         }
@@ -80,8 +80,4 @@ artifactory {
             publishPom = true
         }
     }
-}
-
-task wrapper(type: Wrapper){
-    gradleVersion = '4.7'
 }

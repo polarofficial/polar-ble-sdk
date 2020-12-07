@@ -1,6 +1,5 @@
 package com.polar.polarsdkecghrdemo;
 
-import android.content.Context;
 import android.graphics.Color;
 
 import com.androidplot.xy.LineAndPointFormatter;
@@ -17,13 +16,11 @@ import polar.com.sdk.api.model.PolarHrData;
  * Implements two series for HR and RR using time for the x values.
  */
 public class TimePlotter {
+    private static final String TAG = "TimePlotter";
     private static final int NVALS = 300;  // 5 min
-
-    String title;
-    private String TAG = "Polar_Plotter";
-    private double RR_SCALE = .1;
+    private static final double RR_SCALE = .1;
     private PlotterListener listener;
-    private Context context;
+
     private XYSeriesFormatter hrFormatter;
     private XYSeriesFormatter rrFormatter;
     private SimpleXYSeries hrSeries;
@@ -33,9 +30,7 @@ public class TimePlotter {
     private Double[] xRrVals = new Double[NVALS];
     private Double[] yRrVals = new Double[NVALS];
 
-    public TimePlotter(Context context, String title) {
-        this.context = context;
-        this.title = title;  // Not used
+    public TimePlotter() {
         Date now = new Date();
         double endTime = now.getTime();
         double startTime = endTime - NVALS * 1000;
@@ -43,33 +38,26 @@ public class TimePlotter {
 
         // Specify initial values to keep it from auto sizing
         for (int i = 0; i < NVALS; i++) {
-            xHrVals[i] = new Double(startTime + i * delta);
-            yHrVals[i] = new Double(60);
-            xRrVals[i] = new Double(startTime + i * delta);
-            yRrVals[i] = new Double(100);
+            xHrVals[i] = startTime + i * delta;
+            yHrVals[i] = 60d;
+            xRrVals[i] = startTime + i * delta;
+            yRrVals[i] = 100d;
         }
 
-        hrFormatter = new LineAndPointFormatter(Color.RED,
-                null, null, null);
+        hrFormatter = new LineAndPointFormatter(Color.RED, null, null, null);
         hrFormatter.setLegendIconEnabled(false);
-        hrSeries = new SimpleXYSeries(Arrays.asList(xHrVals),
-                Arrays.asList(yHrVals),
-                "HR");
-
-        rrFormatter = new LineAndPointFormatter(Color.BLUE,
-                null, null, null);
+        hrSeries = new SimpleXYSeries(Arrays.asList(xHrVals), Arrays.asList(yHrVals), "HR");
+        rrFormatter = new LineAndPointFormatter(Color.BLUE, null, null, null);
         rrFormatter.setLegendIconEnabled(false);
-        rrSeries = new SimpleXYSeries(Arrays.asList(xRrVals),
-                Arrays.asList(yRrVals),
-                "HR");
+        rrSeries = new SimpleXYSeries(Arrays.asList(xRrVals), Arrays.asList(yRrVals), "HR");
     }
 
     public SimpleXYSeries getHrSeries() {
-        return (SimpleXYSeries) hrSeries;
+        return hrSeries;
     }
 
     public SimpleXYSeries getRrSeries() {
-        return (SimpleXYSeries) rrSeries;
+        return rrSeries;
     }
 
     public XYSeriesFormatter getHrFormatter() {
@@ -94,8 +82,8 @@ public class TimePlotter {
             yHrVals[i] = yHrVals[i + 1];
             hrSeries.setXY(xHrVals[i], yHrVals[i], i);
         }
-        xHrVals[NVALS - 1] = new Double(time);
-        yHrVals[NVALS - 1] = new Double(polarHrData.hr);
+        xHrVals[NVALS - 1] = (double) time;
+        yHrVals[NVALS - 1] = (double) polarHrData.hr;
         hrSeries.setXY(xHrVals[NVALS - 1], yHrVals[NVALS - 1], NVALS - 1);
 
         // Do RR
@@ -123,8 +111,8 @@ public class TimePlotter {
             double rr;
             for (int i = NVALS - nRrVals; i < NVALS; i++) {
                 rr = RR_SCALE * rrsMs.get(index++);
-                xRrVals[i] = new Double(time - totalRR);
-                yRrVals[i] = new Double(rr);
+                xRrVals[i] = time - totalRR;
+                yRrVals[i] = rr;
                 totalRR -= rr;
                 rrSeries.setXY(xRrVals[i], yRrVals[i], i);
             }

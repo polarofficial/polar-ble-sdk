@@ -1,105 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="polar.com.androidblesdk.MainActivity">
-    <ScrollView
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <LinearLayout
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/broadcast_button"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="broadcast"
-                android:id="@+id/broadcast_button"/>
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="connect"
-                android:id="@+id/connect_button"/>
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="disconnect"
-                android:id="@+id/disconnect_button"/>
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="auto_connect_toggle"
-                android:id="@+id/auto_connect_button"/>
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="ecg_stream"
-                android:id="@+id/ecg_button"/>
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="acc_stream"
-                android:id="@+id/acc_button"/>
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="ppg_stream"
-                android:id="@+id/ohr_ppg_button"/>
+            android:layout_height="wrap_content"
+            android:text="broadcast" />
 
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="ppi_stream"
-                android:id="@+id/ohr_ppi_button"/>
+        <Button
+            android:id="@+id/connect_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="connect" />
 
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="scan devices"
-                android:id="@+id/scan_button"/>
+        <Button
+            android:id="@+id/disconnect_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="disconnect" />
 
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="list exercises"
-                android:id="@+id/list_exercises"/>
+        <Button
+            android:id="@+id/auto_connect_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="auto_connect_toggle" />
 
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="read exercise"
-                android:id="@+id/read_exercise"/>
+        <Button
+            android:id="@+id/ecg_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ecg_stream" />
 
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="remove exercise"
-                android:id="@+id/remove_exercise"/>
+        <Button
+            android:id="@+id/acc_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="acc_stream" />
 
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Start H10 recording"
-                android:id="@+id/start_h10_recording"/>
+        <Button
+            android:id="@+id/ohr_ppg_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ppg_stream" />
 
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Stop H10 recording"
-                android:id="@+id/stop_h10_recording"/>
+        <Button
+            android:id="@+id/ohr_ppi_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ppi_stream" />
 
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="H10 recording status"
-                android:id="@+id/h10_recording_status"/>
+        <Button
+            android:id="@+id/scan_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="scan devices" />
 
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Set time"
-                android:id="@+id/set_time"/>
-        </LinearLayout>
-    </ScrollView>
-</android.support.constraint.ConstraintLayout>
+        <Button
+            android:id="@+id/list_exercises"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="list exercises" />
+
+        <Button
+            android:id="@+id/read_exercise"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="read exercise" />
+
+        <Button
+            android:id="@+id/remove_exercise"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="remove exercise" />
+
+        <Button
+            android:id="@+id/start_h10_recording"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Start H10 recording" />
+
+        <Button
+            android:id="@+id/stop_h10_recording"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Stop H10 recording" />
+
+        <Button
+            android:id="@+id/h10_recording_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="H10 recording status" />
+
+        <Button
+            android:id="@+id/set_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Set time" />
+    </LinearLayout>
+</ScrollView>
