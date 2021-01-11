@@ -154,16 +154,16 @@ public class BlePfcClient: BleGattClientBase{
                     if packet.first?.1 == 0 {
                         observer(.success(Pfc.PfcResponse(data: packet.first?.0 ?? Data())))
                     } else {
-                        observer(.error(BleGattException.gattCharacteristicError))
+                        observer(.failure(BleGattException.gattCharacteristicError))
                     }
                 } catch let error {
-                    observer(.error(error))
+                    observer(.failure(error))
                 }
             } else {
-                observer(.error(BleGattException.gattTransportNotAvailable))
+                observer(.failure(BleGattException.gattTransportNotAvailable))
             }
         } catch let error {
-            observer(.error(error))
+            observer(.failure(error))
         }
     }
     
@@ -199,11 +199,11 @@ public class BlePfcClient: BleGattClientBase{
                         self.sendPfcCommandAndProcessResponse(observer, packet: packet)
                 }
             } else {
-                observer(.error(BleGattException.gattCharacteristicNotifyNotEnabled))
+                observer(.failure(BleGattException.gattCharacteristicNotifyNotEnabled))
             }
             return Disposables.create {
             }
-        }.subscribeOn(baseSerialDispatchQueue)
+        }.subscribe(on: baseSerialDispatchQueue)
     }
     
     ///
@@ -220,7 +220,7 @@ public class BlePfcClient: BleGattClientBase{
                 if !checkConnection || self.gattServiceTransmitter?.isConnected() ?? false {
                     self.pfcFeatureObservers.append(object)
                 } else {
-                    observer(.error(BleGattException.gattDisconnected))
+                    observer(.failure(BleGattException.gattDisconnected))
                 }
             }
             return Disposables.create {
@@ -228,7 +228,7 @@ public class BlePfcClient: BleGattClientBase{
                     return item === object
                 })
             }
-        }.subscribeOn(baseConcurrentDispatchQueue)
+        }.subscribe(on: baseConcurrentDispatchQueue)
     }
     
     public override func clientReady(_ checkConnection: Bool) -> Completable {
