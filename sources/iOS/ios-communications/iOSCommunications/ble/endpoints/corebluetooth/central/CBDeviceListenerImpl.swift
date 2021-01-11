@@ -22,8 +22,8 @@ public class CBDeviceListenerImpl: NSObject,
             scanner.setServices(servicesToScanFor)
         }
     }
-    public var deviceSessionStateObserver: BleDeviceSessionStateObserver?
-    public var powerStateObserver: BlePowerStateObserver? {
+    public weak var deviceSessionStateObserver: BleDeviceSessionStateObserver?
+    public weak var powerStateObserver: BlePowerStateObserver? {
         didSet {
             powerStateObserver?.powerStateChanged(BleState(rawValue: self.manager.state.rawValue) ?? BleState.unknown)
         }

@@ -15,7 +15,7 @@ class RxUtils {
     
     static func postErrorOnSingleAndClearList<T>(_ list: AtomicList<RxObserverSingle<T>>, error: Error) {
         list.list().forEach { (object) in
-            object.obs(.error(error))
+            object.obs(.failure(error))
         }
         list.removeAll()
     }

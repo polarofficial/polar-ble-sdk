@@ -277,13 +277,13 @@ public class BlePsFtpClient: BleGattClientBase {
                                 observer(.success(outputStream))
                                 return
                             default:
-                                observer(.error(BlePsFtpException.responseError(errorCode: error)))
+                                observer(.failure(BlePsFtpException.responseError(errorCode: error)))
                                 return
                         }
                     } catch let error {
                         BleLogger.error("PS-FTP request interrupted error: \(error)")
                         if !(self.gattServiceTransmitter?.isConnected() ?? false) {
-                            observer(.error(BleGattException.gattDisconnected))
+                            observer(.failure(BleGattException.gattDisconnected))
                         } else {
                             if (block?.isCancelled ?? true) {
                                 // send cancel streaming packet
@@ -295,12 +295,12 @@ public class BlePsFtpClient: BleGattClientBase {
                                     BleLogger.error("Stream cancelation failed")
                                 }
                             }
-                            observer(.error(error))
+                            observer(.failure(error))
                         }
                         return
                     }
               } else {
-                observer(.error(BlePsFtpException.operationCanceled))
+                observer(.failure(BlePsFtpException.operationCanceled))
               }
             }
             self.mtuOperationQueue.addOperation(block)
@@ -481,13 +481,13 @@ public class BlePsFtpClient: BleGattClientBase {
                                 observer(.success(outputStream))
                                 return
                             default:
-                                observer(.error(BlePsFtpException.responseError(errorCode: error)))
+                                observer(.failure(BlePsFtpException.responseError(errorCode: error)))
                                 return
                         }
                     } catch let error {
                         BleLogger.error("PS-FTP query interrupted error: \(error)")
                         if !(self.gattServiceTransmitter?.isConnected() ?? false) {
-                            observer(.error(BleGattException.gattDisconnected))
+                            observer(.failure(BleGattException.gattDisconnected))
                         } else {
                             if (block?.isCancelled ?? false) {
                                 if (error is AtomicIntegerException) && (error as! AtomicIntegerException) == .waitTimeout{
@@ -501,12 +501,12 @@ public class BlePsFtpClient: BleGattClientBase {
                                     }
                                 }
                             }
-                            observer(.error(error))
+                            observer(.failure(error))
                         }
                         return
                     }
               } else {
-                observer(.error(BlePsFtpException.operationCanceled))
+                observer(.failure(BlePsFtpException.operationCanceled))
               }
             }
             self.mtuOperationQueue.addOperation(block)
