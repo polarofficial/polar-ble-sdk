@@ -346,7 +346,6 @@
 					"$(PROJECT_DIR)/../",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/../../polar-sdk-ios/",
-					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = polarBleSdkTestApp/Info.plist;
@@ -379,7 +378,6 @@
 					"$(PROJECT_DIR)/../",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/../../polar-sdk-ios/",
-					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = polarBleSdkTestApp/Info.plist;
