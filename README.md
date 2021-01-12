@@ -245,14 +245,16 @@ public void onDestroy() {
    `api.autoConnectToDevice(-50, null).subscribe()`  to connect nearby device or  `api.searchForDevice()` to scan and select the device
 
 # iOS: Getting started
-Detailed documentation [Full Documentation](polar-sdk-ios/docs/). Minimum iOS version is 10.
+Detailed documentation: [Documentation](polar-sdk-ios/docs/). Minimum iOS version is 12.
+## Requirements
+* Xcode 12.x
+* Swift 5.x
+## Dependencies
+*  [RxSwift 6.0](https://github.com/ReactiveX/RxSwift) or above
 ## Installation
-Compiled Sdk and dependencies can be found from [polar-sdk-ios](polar-sdk-ios/)
-Precompiled 5.1.1 RxSwift is added to sdk package. iOS example contains `Cartfile if you desire to compile dependency yourself.
-
-1. In the project properties __General__ tab, add `PolarBleSdk.framework` , `RxSwift.framework`  to __Embedded binaries__ and __Linked Frameworks and Libraries__.
-
-2. In project target settings enable __Background Modes__, add  __Uses Bluetooth LE accessories__
+1. **PolarBLE SDK**: Download the PolarBLE SDK XCFramework from [polar-sdk-ios](polar-sdk-ios/) or from the [releases](https://github.com/polarofficial/polar-ble-sdk/releases). For detailed information how to add XCFramework to XCode project, see the [tutorial](https://developer.apple.com/videos/play/wwdc2019/416/). You may use PolarBLE SDK [sources](sources/iOS/ios-communications/) as well.  
+2. **RxSwift**: To use PolarBLE SDK you need [RxSwift](https://github.com/ReactiveX/RxSwift) added to your project. Recomended way is to add RxSwift as XCFramework dependency.
+3. In project target settings enable __Background Modes__, add  __Uses Bluetooth LE accessories__
 
 ## Code example: Heart rate
 See the [example](examples/example-ios) folder for the full project
@@ -271,10 +273,10 @@ import RxSwift
 ```
 
 class MyController: UIViewController,
-                      PolarBleApiObserver,
-                      PolarBleApiPowerStateObserver,
-                      PolarBleApiDeviceFeaturesObserver,
-                      PolarBleApiDeviceHrObserver {
+                    PolarBleApiObserver,
+                    PolarBleApiPowerStateObserver,
+                    PolarBleApiDeviceFeaturesObserver,
+                    PolarBleApiDeviceHrObserver {
     // NOTICE only FEATURE_HR is enabled, to enable more features like battery info
     // e.g. PolarBleApiDefaultImpl.polarImplementation(DispatchQueue.main, features: Features.hr.rawValue | 
     // Features.batteryStatus.rawValue)
