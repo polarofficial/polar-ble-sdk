@@ -92,11 +92,11 @@ dependencies {
     // Only needed if FEATURE_POLAR_FILE_TRANSFER used
 	implementation files('libs/polar-protobuf-release.aar') 
     // Only needed if FEATURE_POLAR_FILE_TRANSFER used
-	implementation group: 'commons-io', name: 'commons-io', version: '2.4'
+    implementation 'commons-io:commons-io:2.8.0'
     // Only needed if FEATURE_POLAR_FILE_TRANSFER used
-	implementation 'com.google.protobuf:protobuf-java:3.1.0'
-	implementation 'io.reactivex.rxjava2:rxjava:2.1.5'
-	implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    implementation 'com.google.protobuf:protobuf-java:3.14.0'
+    implementation 'io.reactivex.rxjava3:rxjava:3.0.0'
+    implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
 }
 ```
 4. Finally, add the following permissions to  `AndroidManifest.xml`:
