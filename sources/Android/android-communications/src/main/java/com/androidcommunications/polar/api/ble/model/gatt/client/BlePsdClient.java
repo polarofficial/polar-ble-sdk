@@ -1,7 +1,8 @@
 package com.androidcommunications.polar.api.ble.model.gatt.client;
 
-import androidx.annotation.NonNull;
 import android.util.Pair;
+
+import androidx.annotation.NonNull;
 
 import com.androidcommunications.polar.api.ble.exceptions.BleAttributeError;
 import com.androidcommunications.polar.api.ble.exceptions.BleCharacteristicNotificationNotEnabled;
@@ -26,7 +27,6 @@ import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.FlowableEmitter;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.core.SingleEmitter;
 import io.reactivex.rxjava3.core.SingleOnSubscribe;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
@@ -41,8 +41,8 @@ public class BlePsdClient extends BleGattBase {
 
     public static final UUID PSD_SERVICE = UUID.fromString("FB005C20-02E7-F387-1CAD-8ACD2D8DF0C8");
     public static final UUID PSD_FEATURE = UUID.fromString("FB005C21-02E7-F387-1CAD-8ACD2D8DF0C8");
-    public static final UUID PSD_CP      = UUID.fromString("FB005C22-02E7-F387-1CAD-8ACD2D8DF0C8");
-    public static final UUID PSD_PP      = UUID.fromString("FB005C26-02E7-F387-1CAD-8ACD2D8DF0C8");
+    public static final UUID PSD_CP = UUID.fromString("FB005C22-02E7-F387-1CAD-8ACD2D8DF0C8");
+    public static final UUID PSD_PP = UUID.fromString("FB005C26-02E7-F387-1CAD-8ACD2D8DF0C8");
 
     public static final byte OP_CODE_START_ECG_STREAM = 0x01;
     public static final byte OP_CODE_STOP_ECG_STREAM = 0x02;
@@ -50,18 +50,18 @@ public class BlePsdClient extends BleGattBase {
     public static final byte OP_CODE_STOP_OHR_STREAM = 0x04;
     public static final byte OP_CODE_START_ACC_STREAM = 0x05;
     public static final byte OP_CODE_STOP_ACC_STREAM = 0x06;
-    public static final byte RESPONSE_CODE = (byte)0xF0;
+    public static final byte RESPONSE_CODE = (byte) 0xF0;
 
     private final Object psdMutex = new Object();
     private AtomicInteger psdCpEnabled;
     private PsdFeature psdFeature = null;
     private final Object mutexFeature = new Object();
-    private LinkedBlockingQueue<Pair<byte[],Integer> > psdCpInputQueue = new LinkedBlockingQueue<>();
+    private LinkedBlockingQueue<Pair<byte[], Integer>> psdCpInputQueue = new LinkedBlockingQueue<>();
     private Scheduler scheduler = Schedulers.newThread();
 
-    private AtomicSet<FlowableEmitter<? super PPData> > ppObservers = new AtomicSet<>();
+    private AtomicSet<FlowableEmitter<? super PPData>> ppObservers = new AtomicSet<>();
 
-    public enum PsdMessage{
+    public enum PsdMessage {
         PSD_UNKNOWN(0),
         PSD_START_OHR_PP_STREAM(7),
         PSD_STOP_OHR_PP_STREAM(8);
@@ -75,15 +75,18 @@ public class BlePsdClient extends BleGattBase {
         public int getNumVal() {
             return numVal;
         }
-    };
+    }
 
-    public static class PsdData{
+    ;
+
+    public static class PsdData {
         private byte[] data;
 
-        public PsdData(byte[] data){
+        public PsdData(byte[] data) {
             this.data = data;
         }
-        public byte[] getPayload(){
+
+        public byte[] getPayload() {
             return data;
         }
     }
@@ -97,11 +100,11 @@ public class BlePsdClient extends BleGattBase {
         private int skinContactStatus;
         private int skinContactSupported;
 
-        public PPData(byte[] data){
-            rc = (int)((long)data[0] & 0xFFL);
-            hr = (int)((long)data[1] & 0xFFL);
-            ppInMs = (int)(((long)data[2] & 0xFFL) | ((long)data[3] & 0xFFL) << 8);
-            ppErrorEstimate = (int)(((long)data[4] & 0xFFL) | (((long)data[5] & 0xFFL) << 8));
+        public PPData(byte[] data) {
+            rc = (int) ((long) data[0] & 0xFFL);
+            hr = (int) ((long) data[1] & 0xFFL);
+            ppInMs = (int) (((long) data[2] & 0xFFL) | ((long) data[3] & 0xFFL) << 8);
+            ppErrorEstimate = (int) (((long) data[4] & 0xFFL) | (((long) data[5] & 0xFFL) << 8));
             blockerBit = data[6] & 0x01;
             skinContactStatus = (data[6] & 0x02) >> 1;
             skinContactSupported = (data[6] & 0x04) >> 2;
@@ -136,7 +139,7 @@ public class BlePsdClient extends BleGattBase {
         }
     }
 
-    public static class PsdResponse{
+    public static class PsdResponse {
         private byte responseCode;
         private PsdMessage opCode;
         private byte status;
@@ -146,7 +149,7 @@ public class BlePsdClient extends BleGattBase {
         }
 
         public PsdResponse(byte[] data) {
-            if( data.length > 2 ) {
+            if (data.length > 2) {
                 responseCode = data[0];
                 opCode = PsdMessage.values()[data[1]];
                 status = data[2];
@@ -178,15 +181,15 @@ public class BlePsdClient extends BleGattBase {
         }
 
         @Override
-        public String toString(){
+        public String toString() {
             return "Response code: " + String.format("%02x", responseCode) +
-                   " op code: " + opCode +
-                   " status: " + String.format("%02x", status) +
-                   " payload: " + String.format("%02x", payload);
+                    " op code: " + opCode +
+                    " status: " + String.format("%02x", status) +
+                    " payload: " + String.format("%02x", payload);
         }
     }
 
-    public static class PsdFeature{
+    public static class PsdFeature {
         // feature boolean's
         public boolean ecgSupported;
         public boolean accSupported;
@@ -196,14 +199,14 @@ public class BlePsdClient extends BleGattBase {
         public PsdFeature() {
         }
 
-        public PsdFeature(byte[] data){
+        public PsdFeature(byte[] data) {
             ecgSupported = (data[0] & 0x01) == 1;
             ohrSupported = ((data[0] & 0x02) >> 1) == 1;
             accSupported = ((data[0] & 0x04) >> 2) == 1;
             ppSupported = ((data[0] & 0x08) != 0);
         }
 
-        PsdFeature(PsdFeature clone){
+        PsdFeature(PsdFeature clone) {
             ecgSupported = clone.ecgSupported;
             ohrSupported = clone.ohrSupported;
             accSupported = clone.accSupported;
@@ -234,19 +237,19 @@ public class BlePsdClient extends BleGattBase {
 
     @Override
     public void processServiceData(UUID characteristic, final byte[] data, int status, boolean notifying) {
-        if(characteristic.equals(PSD_CP)){
-            psdCpInputQueue.add(new Pair<>(data,status));
-        } else if(characteristic.equals(PSD_FEATURE)) {
+        if (characteristic.equals(PSD_CP)) {
+            psdCpInputQueue.add(new Pair<>(data, status));
+        } else if (characteristic.equals(PSD_FEATURE)) {
             synchronized (mutexFeature) {
-                if(status==0) {
+                if (status == 0) {
                     psdFeature = new PsdFeature(data);
                 }
                 mutexFeature.notifyAll();
             }
-        } else if(status==0){
-            if(characteristic.equals(PSD_PP)){
+        } else if (status == 0) {
+            if (characteristic.equals(PSD_PP)) {
                 List<byte[]> list = splitPP(data);
-                for(final byte[] packet : list){
+                for (final byte[] packet : list) {
                     RxUtils.emitNext(ppObservers, object -> object.onNext(new PPData(packet)));
                 }
             }
@@ -257,7 +260,7 @@ public class BlePsdClient extends BleGattBase {
         int offset = 0;
         List<byte[]> components = new ArrayList<>();
         while (offset < data.length) {
-            components.add(Arrays.copyOfRange(data,offset,offset+7));
+            components.add(Arrays.copyOfRange(data, offset, offset + 7));
             offset += 7;
         }
         return components;
@@ -269,17 +272,18 @@ public class BlePsdClient extends BleGattBase {
     }
 
     @Override
-    public @NonNull String toString() {
+    public @NonNull
+    String toString() {
         return "psd client";
     }
 
     private PsdResponse sendPsdCommandAndProcessResponse(byte[] packet) throws Exception {
-        txInterface.transmitMessages(BlePsdClient.this,PSD_SERVICE,PSD_CP, Arrays.asList(packet),true);
+        txInterface.transmitMessages(BlePsdClient.this, PSD_SERVICE, PSD_CP, Arrays.asList(packet), true);
         Pair<byte[], Integer> pair = psdCpInputQueue.poll(30, TimeUnit.SECONDS);
         if (pair != null) {
-            if(pair.second == 0) {
+            if (pair.second == 0) {
                 return new PsdResponse(pair.first);
-            }else{
+            } else {
                 throw new BleAttributeError("Psd attribute ", pair.second);
             }
         }
@@ -289,15 +293,16 @@ public class BlePsdClient extends BleGattBase {
     // API
     @Override
     public Completable clientReady(boolean checkConnection) {
-        return waitNotificationEnabled(PSD_CP,checkConnection);
+        return waitNotificationEnabled(PSD_CP, checkConnection);
     }
 
     /**
      * Produces:  onNext:  when response message from device has been received
-     *            onError: if reponse read fails e.g. timeout etc...
-     *            onCompleted: produced after onNext
+     * onError: if reponse read fails e.g. timeout etc...
+     * onCompleted: produced after onNext
+     *
      * @param command psd command
-     * @param params optional parameters if any
+     * @param params  optional parameters if any
      * @return Observable stream, @see Rx Observer
      */
     public Single<PsdResponse> sendControlPointCommand(final PsdMessage command, final byte[] params) {
@@ -316,19 +321,19 @@ public class BlePsdClient extends BleGattBase {
                             default:
                                 throw new BleNotSupported("Unknown psd command aquired");
                         }
-                    } catch (Exception ex){
-                        if(!emitter.isDisposed()){
+                    } catch (Exception ex) {
+                        if (!emitter.isDisposed()) {
                             emitter.tryOnError(ex);
                         }
                     }
-                } else if (!emitter.isDisposed()){
+                } else if (!emitter.isDisposed()) {
                     emitter.tryOnError(new BleCharacteristicNotificationNotEnabled("PSD control point not enabled"));
                 }
             }
         }).subscribeOn(scheduler);
     }
 
-    public Single<PsdFeature> readFeature(){
+    public Single<PsdFeature> readFeature() {
         return Single.create((SingleOnSubscribe<PsdFeature>) emitter -> {
             try {
                 synchronized (mutexFeature) {
@@ -343,8 +348,8 @@ public class BlePsdClient extends BleGattBase {
                     }
                     throw new Exception("Undefined device error");
                 }
-            } catch (Exception ex){
-                if(!emitter.isDisposed()){
+            } catch (Exception ex) {
+                if (!emitter.isDisposed()) {
                     emitter.tryOnError(ex);
                 }
             }
@@ -353,12 +358,13 @@ public class BlePsdClient extends BleGattBase {
 
     /**
      * start raw pp monitoring
+     *
      * @return Flowable stream Produces:
-     *                  - onNext for every air packet received <BR>
-     *                  - onComplete non produced if stream is not further configured <BR>
-     *                  - onError BleDisconnected produced on disconnection <BR>
+     * - onNext for every air packet received <BR>
+     * - onComplete non produced if stream is not further configured <BR>
+     * - onError BleDisconnected produced on disconnection <BR>
      */
     public Flowable<PPData> monitorPPNotifications(final boolean checkConnection) {
-        return RxUtils.monitorNotifications(ppObservers,txInterface,checkConnection);
+        return RxUtils.monitorNotifications(ppObservers, txInterface, checkConnection);
     }
 }

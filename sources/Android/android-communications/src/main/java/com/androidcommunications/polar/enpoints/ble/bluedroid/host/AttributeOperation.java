@@ -1,22 +1,23 @@
 package com.androidcommunications.polar.enpoints.ble.bluedroid.host;
 
 import android.bluetooth.BluetoothGattCharacteristic;
+
 import androidx.annotation.NonNull;
 
-public class AttributeOperation implements Comparable<AttributeOperation>{
+public class AttributeOperation implements Comparable<AttributeOperation> {
 
     @Override
     public int compareTo(@NonNull AttributeOperation another) {
-        if( another.getAttributeOperation() == AttributeOperation.AttributeOperationCommand.DESCRIPTOR_WRITE &&
-            another.isPartOfPrimaryService() ){
+        if (another.getAttributeOperation() == AttributeOperation.AttributeOperationCommand.DESCRIPTOR_WRITE &&
+                another.isPartOfPrimaryService()) {
             return 1;
-        } else if( another.getAttributeOperation() == AttributeOperation.AttributeOperationCommand.DESCRIPTOR_WRITE ){
+        } else if (another.getAttributeOperation() == AttributeOperation.AttributeOperationCommand.DESCRIPTOR_WRITE) {
             return 0;
         }
         return -1;
     }
 
-    public enum AttributeOperationCommand{
+    public enum AttributeOperationCommand {
         CHARACTERISTIC_READ,
         CHARACTERISTIC_WRITE,
         DESCRIPTOR_WRITE,
@@ -26,9 +27,9 @@ public class AttributeOperation implements Comparable<AttributeOperation>{
     private AttributeOperationCommand attributeOperation;
     private byte[] data;
     private BluetoothGattCharacteristic characteristic;
-    private boolean isPartOfPrimaryService=false;
-    private boolean enable=false;
-    private boolean withResponse=false;
+    private boolean isPartOfPrimaryService = false;
+    private boolean enable = false;
+    private boolean withResponse = false;
 
     void setIsPartOfPrimaryService(boolean isPartOfPrimaryService) {
         this.isPartOfPrimaryService = isPartOfPrimaryService;
@@ -39,23 +40,23 @@ public class AttributeOperation implements Comparable<AttributeOperation>{
     }
 
     AttributeOperation(AttributeOperationCommand attributeOperation,
-                              BluetoothGattCharacteristic characteristic) {
+                       BluetoothGattCharacteristic characteristic) {
         this.attributeOperation = attributeOperation;
         this.characteristic = characteristic;
     }
 
     AttributeOperation(AttributeOperationCommand attributeOperation,
-                              BluetoothGattCharacteristic characteristic,
-                              boolean enable) {
+                       BluetoothGattCharacteristic characteristic,
+                       boolean enable) {
         this.attributeOperation = attributeOperation;
         this.characteristic = characteristic;
         this.enable = enable;
     }
 
     AttributeOperation(AttributeOperationCommand attributeOperation,
-                              byte[] data,
-                              BluetoothGattCharacteristic characteristic,
-                              final boolean withResponse) {
+                       byte[] data,
+                       BluetoothGattCharacteristic characteristic,
+                       final boolean withResponse) {
         this.attributeOperation = attributeOperation;
         this.data = data;
         this.characteristic = characteristic;
@@ -70,7 +71,8 @@ public class AttributeOperation implements Comparable<AttributeOperation>{
         return data;
     }
 
-    @NonNull public BluetoothGattCharacteristic getCharacteristic() {
+    @NonNull
+    public BluetoothGattCharacteristic getCharacteristic() {
         return characteristic;
     }
 

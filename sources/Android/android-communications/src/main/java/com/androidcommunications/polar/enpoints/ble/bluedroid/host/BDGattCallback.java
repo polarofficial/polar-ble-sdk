@@ -15,9 +15,9 @@ import com.androidcommunications.polar.enpoints.ble.bluedroid.host.connection.Co
 
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Scheduler;
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 class BDGattCallback extends BluetoothGattCallback {

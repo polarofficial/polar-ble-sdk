@@ -3,7 +3,7 @@ package com.androidcommunications.polar.api.ble.exceptions;
 /**
  * Error indicating characteristic notification/indication is not enabled
  */
-public class BleCharacteristicNotificationNotEnabled extends Exception{
+public class BleCharacteristicNotificationNotEnabled extends Exception {
     public int error = -1;
 
     public BleCharacteristicNotificationNotEnabled() {

@@ -1,7 +1,8 @@
 package com.androidcommunications.polar.api.ble.model.gatt.client.psftp;
 
-import androidx.annotation.NonNull;
 import android.util.Pair;
+
+import androidx.annotation.NonNull;
 
 import com.androidcommunications.polar.api.ble.BleLogger;
 import com.androidcommunications.polar.api.ble.exceptions.BleAttributeError;
@@ -172,7 +173,8 @@ public class BlePsFtpClient extends BleGattBase {
     }
 
     @Override
-    public @NonNull String toString() {
+    public @NonNull
+    String toString() {
         return "RFC77 Service";
     }
 

@@ -1,8 +1,5 @@
 package com.androidcommunications.polar.enpoints.ble.bluedroid.host.connection;
 
-import android.content.Context;
-import android.os.Handler;
-
 import com.androidcommunications.polar.api.ble.BleLogger;
 import com.androidcommunications.polar.api.ble.model.BleDeviceSession;
 import com.androidcommunications.polar.common.ble.BleUtils;

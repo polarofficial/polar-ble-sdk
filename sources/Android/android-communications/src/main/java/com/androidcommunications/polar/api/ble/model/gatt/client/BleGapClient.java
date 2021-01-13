@@ -22,8 +22,8 @@ public class BleGapClient extends BleGattBase {
     public static UUID GAP_DEVICE_NAME_CHARACTERISTIC = UUID.fromString("00002a00-0000-1000-8000-00805f9b34fb");
     public static UUID GAP_APPEARANCE_CHARACTERISTIC = UUID.fromString("00002a01-0000-1000-8000-00805f9b34fb");
 
-    private final HashMap<UUID,String> gapInformation = new HashMap<>();
-    private AtomicSet<FlowableEmitter<? super HashMap<UUID, String> > > gapObserverAtomicList = new AtomicSet<>();
+    private final HashMap<UUID, String> gapInformation = new HashMap<>();
+    private AtomicSet<FlowableEmitter<? super HashMap<UUID, String>>> gapObserverAtomicList = new AtomicSet<>();
 
     public BleGapClient(BleGattTxInterface txInterface) {
         super(txInterface, GAP_SERVICE);
@@ -34,7 +34,7 @@ public class BleGapClient extends BleGattBase {
     @Override
     public void reset() {
         super.reset();
-        synchronized (gapInformation){
+        synchronized (gapInformation) {
             gapInformation.clear();
         }
         RxUtils.postDisconnectedAndClearList(gapObserverAtomicList);
@@ -42,13 +42,13 @@ public class BleGapClient extends BleGattBase {
 
     @Override
     public void processServiceData(UUID characteristic, byte[] data, int status, boolean notifying) {
-        if(status == 0) {
+        if (status == 0) {
             synchronized (gapInformation) {
                 gapInformation.put(characteristic, new String(data));
             }
 
             RxUtils.emitNext(gapObserverAtomicList, object -> {
-                HashMap<UUID,String> list;
+                HashMap<UUID, String> list;
                 synchronized (gapInformation) {
                     list = new HashMap<>(gapInformation);
                 }
@@ -66,21 +66,23 @@ public class BleGapClient extends BleGattBase {
     }
 
     @Override
-    public @NonNull String toString() {
+    public @NonNull
+    String toString() {
         return "GAP service with values device name: ";
     }
 
     /**
      * Produces:  onNext, when a new gap info has been read <BR>
-     *            onCompleted, after all available gap info has been read ok <BR>
-     *            onError, if client is not initially connected or ble disconnect's <BR>
+     * onCompleted, after all available gap info has been read ok <BR>
+     * onError, if client is not initially connected or ble disconnect's <BR>
+     *
      * @param checkConnection, optionally check connection on subscribe <BR>
      * @return Flowable stream
      */
-    public Flowable<HashMap<UUID, String> > observeGapInfo(final boolean checkConnection) {
+    public Flowable<HashMap<UUID, String>> observeGapInfo(final boolean checkConnection) {
         final FlowableEmitter<? super HashMap<UUID, String>>[] observer = new FlowableEmitter[]{null};
         return Flowable.create((FlowableOnSubscribe<HashMap<UUID, String>>) subscriber -> {
-            if( !checkConnection || BleGapClient.this.txInterface.isConnected() ) {
+            if (!checkConnection || BleGapClient.this.txInterface.isConnected()) {
                 observer[0] = subscriber;
                 gapObserverAtomicList.add(subscriber);
                 HashMap<UUID, String> list;
@@ -93,7 +95,7 @@ public class BleGapClient extends BleGattBase {
                 if (hasAllAvailableReadableCharacteristics(list.keySet())) {
                     subscriber.onComplete();
                 }
-            }else if(!subscriber.isCancelled()){
+            } else if (!subscriber.isCancelled()) {
                 subscriber.tryOnError(new BleDisconnected());
             }
         }, BackpressureStrategy.BUFFER).doFinally(() -> gapObserverAtomicList.remove(observer[0]));

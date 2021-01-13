@@ -2,7 +2,9 @@ package com.androidcommunications.polar.common.ble;
 
 import com.androidcommunications.polar.api.ble.exceptions.BleDisconnected;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattTxInterface;
+
 import java.util.Set;
+
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.CompletableEmitter;
 import io.reactivex.rxjava3.core.Flowable;
@@ -14,27 +16,27 @@ import io.reactivex.rxjava3.functions.Action;
 
 public class RxUtils {
 
-    public static <T> void postDisconnectedAndClearList(AtomicSet<T> list){
-        postError(list,new BleDisconnected());
+    public static <T> void postDisconnectedAndClearList(AtomicSet<T> list) {
+        postError(list, new BleDisconnected());
     }
 
-    public static <T> void postError(AtomicSet<T> list, Throwable throwable){
+    public static <T> void postError(AtomicSet<T> list, Throwable throwable) {
         Set<T> objects = list.objects();
-        for( T emitter  : objects ){
-            if( emitter instanceof ObservableEmitter ){
-                if(!((ObservableEmitter) emitter).isDisposed()) {
+        for (T emitter : objects) {
+            if (emitter instanceof ObservableEmitter) {
+                if (!((ObservableEmitter) emitter).isDisposed()) {
                     ((ObservableEmitter) emitter).tryOnError(throwable);
                 }
-            } else if( emitter instanceof SingleEmitter ){
-                if(!((SingleEmitter) emitter).isDisposed()) {
+            } else if (emitter instanceof SingleEmitter) {
+                if (!((SingleEmitter) emitter).isDisposed()) {
                     ((SingleEmitter) emitter).tryOnError(throwable);
                 }
-            } else if( emitter instanceof FlowableEmitter ){
-                if(!((FlowableEmitter) emitter).isCancelled()) {
+            } else if (emitter instanceof FlowableEmitter) {
+                if (!((FlowableEmitter) emitter).isCancelled()) {
                     ((FlowableEmitter) emitter).tryOnError(throwable);
                 }
-            } else if( emitter instanceof CompletableEmitter){
-                if(!((CompletableEmitter) emitter).isDisposed()) {
+            } else if (emitter instanceof CompletableEmitter) {
+                if (!((CompletableEmitter) emitter).isDisposed()) {
                     ((CompletableEmitter) emitter).tryOnError(throwable);
                 }
             } else {
@@ -48,29 +50,30 @@ public class RxUtils {
         void item(T object);
     }
 
-    public static <T> void emitNext(AtomicSet<T> list, Emitter<T> emitter){
+    public static <T> void emitNext(AtomicSet<T> list, Emitter<T> emitter) {
         Set<T> objects = list.objects();
-        for( T e  : objects ){
+        for (T e : objects) {
             emitter.item(e);
         }
     }
 
     /**
      * Template type monitor notifications to remove broiler plate code
-     * @param observers AtomicSet of observers
-     * @param transport for connection check
+     *
+     * @param observers       AtomicSet of observers
+     * @param transport       for connection check
      * @param checkConnection optional check initial connection
-     * @param <E> type
+     * @param <E>             type
      * @return Flowable stream
      */
     public static <E> Flowable<E> monitorNotifications(final AtomicSet<FlowableEmitter<? super E>> observers,
-                                          final BleGattTxInterface transport,
-                                          final boolean checkConnection){
+                                                       final BleGattTxInterface transport,
+                                                       final boolean checkConnection) {
         final FlowableEmitter<? super E>[] listener = new FlowableEmitter[1];
         return Flowable.create(new FlowableOnSubscribe<E>() {
             @Override
             public void subscribe(FlowableEmitter<E> subscriber) {
-                if( !checkConnection || transport.isConnected()) {
+                if (!checkConnection || transport.isConnected()) {
                     listener[0] = subscriber;
                     observers.add(subscriber);
                 } else {

@@ -16,10 +16,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.functions.Function;
 
 /**
@@ -30,7 +30,7 @@ public abstract class BleDeviceSession {
     /**
      * Connection state
      */
-    public enum DeviceSessionState{
+    public enum DeviceSessionState {
         /**
          * Disconnected state
          */
@@ -65,32 +65,32 @@ public abstract class BleDeviceSession {
 
     /**
      * Methods
-     *
+     * <p>
      * Class constructor
      */
-    protected BleDeviceSession(){
+    protected BleDeviceSession() {
     }
 
     /**
-     * @param time max time for the last advertisement event
+     * @param time     max time for the last advertisement event
      * @param timeUnit desired timeunit
      * @return true, device is still somewhat considered "alive"
      */
-    public boolean isDeviceAlive(long time, TimeUnit timeUnit){
+    public boolean isDeviceAlive(long time, TimeUnit timeUnit) {
         long deltaTime = (System.currentTimeMillis() / 1000L) - advertisementContent.getAdvertisetTimeStamp();
         DeviceSessionState sessionState = getSessionState();
         return (sessionState == DeviceSessionState.SESSION_OPEN ||
                 sessionState == DeviceSessionState.SESSION_OPENING ||
                 sessionState == DeviceSessionState.SESSION_CLOSING) ||
-               (advertisementContent.getAdvertisementData().size()!=0 && deltaTime <= timeUnit.toSeconds(time));
+                (advertisementContent.getAdvertisementData().size() != 0 && deltaTime <= timeUnit.toSeconds(time));
     }
 
     /**
-     * @param time max time for the last advertisement event
+     * @param time     max time for the last advertisement event
      * @param timeUnit desired timeunit
      * @return true if device is advertising in the required timespan
      */
-    public boolean isAdvertising(long time, TimeUnit timeUnit){
+    public boolean isAdvertising(long time, TimeUnit timeUnit) {
         long deltaTime = (System.currentTimeMillis() / 1000L) - advertisementContent.getAdvertisetTimeStamp();
         return advertisementContent.getAdvertisementData().size() != 0 && deltaTime <= timeUnit.toSeconds(time);
     }
@@ -118,8 +118,9 @@ public abstract class BleDeviceSession {
 
     /**
      * start pairing and optionally bonding procedure with the device
+     *
      * @return Completable either produces complete for already bonded device or starts pairing/bonding procedure
-     *                     or onError on failure case
+     * or onError on failure case
      */
     public abstract Completable authenticate();
 
@@ -130,6 +131,7 @@ public abstract class BleDeviceSession {
 
     /**
      * Monitor services discovered
+     *
      * @return Observable stream
      */
     public abstract Single<List<UUID>> monitorServicesDiscovered(final boolean checkConnection);
@@ -147,7 +149,7 @@ public abstract class BleDeviceSession {
     /**
      * @return get current state (DeviceSessionState.SESSION_XXXXX)
      */
-    public DeviceSessionState getSessionState(){
+    public DeviceSessionState getSessionState() {
         return state;
     }
 
@@ -162,9 +164,9 @@ public abstract class BleDeviceSession {
      * @param uuid service uuid
      * @return get a specific client from the list
      */
-    public BleGattBase fetchClient(UUID uuid){
-        for( BleGattBase serviceBase : clients ){
-            if( serviceBase.serviceBelongsToClient(uuid) ){
+    public BleGattBase fetchClient(UUID uuid) {
+        for (BleGattBase serviceBase : clients) {
+            if (serviceBase.serviceBelongsToClient(uuid)) {
                 return serviceBase;
             }
         }
@@ -173,6 +175,7 @@ public abstract class BleDeviceSession {
 
     /**
      * Helper to combine all available/desired clients ready
+     *
      * @param checkConnection check initial connection
      * @return Observable stream
      */
@@ -183,16 +186,16 @@ public abstract class BleDeviceSession {
                 return uuids;
             }
         }).flatMap(
-            new Function<UUID, Publisher<?>>() {
-                @Override
-                public Publisher<?> apply(UUID uuid) throws Exception {
-                    BleGattBase bleGattBase = fetchClient(uuid);
-                    if(bleGattBase != null){
-                        return bleGattBase.clientReady(checkConnection).toFlowable();
+                new Function<UUID, Publisher<?>>() {
+                    @Override
+                    public Publisher<?> apply(UUID uuid) throws Exception {
+                        BleGattBase bleGattBase = fetchClient(uuid);
+                        if (bleGattBase != null) {
+                            return bleGattBase.clientReady(checkConnection).toFlowable();
+                        }
+                        return Completable.fromPublisher(Flowable.empty()).toFlowable();
                     }
-                    return Completable.fromPublisher(Flowable.empty()).toFlowable();
-                }
-            }));
+                }));
     }
 
     /**
@@ -205,7 +208,7 @@ public abstract class BleDeviceSession {
     /**
      * @param uuids set connection uuid's
      */
-    public void setConnectionUuids(List<String> uuids){
+    public void setConnectionUuids(List<String> uuids) {
         connectionUuids.clear();
         connectionUuids.addAll(uuids);
     }
@@ -223,63 +226,63 @@ public abstract class BleDeviceSession {
     }
 
     // adv data getter helpers
-    public String getName(){
+    public String getName() {
         return advertisementContent.getName();
     }
 
     /**
      * @return polar device id
      */
-    public String getPolarDeviceId(){
+    public String getPolarDeviceId() {
         return advertisementContent.getPolarDeviceId();
     }
 
     /**
      * @return polar device type
      */
-    public String getPolarDeviceType(){
+    public String getPolarDeviceType() {
         return advertisementContent.getPolarDeviceType();
     }
 
     /**
      * @return polar device id in int
      */
-    public long getPolarDeviceIdInt(){
+    public long getPolarDeviceIdInt() {
         return advertisementContent.getPolarDeviceIdInt();
     }
 
     /**
      * @return current median rssi value
      */
-    public int getMedianRssi(){
+    public int getMedianRssi() {
         return advertisementContent.getMedianRssi();
     }
 
     /**
      * @return instant rssi value
      */
-    public int getRssi(){
+    public int getRssi() {
         return advertisementContent.getRssi();
     }
 
     /**
      * @return current advertisement data received from device
      */
-    public HashMap<BleUtils.AD_TYPE,byte[]> getAdvertisementData(){
+    public HashMap<BleUtils.AD_TYPE, byte[]> getAdvertisementData() {
         return advertisementContent.getAdvertisementData();
     }
 
     /**
      * @return all advertisement data received in current session lifespan
      */
-    public HashMap<BleUtils.AD_TYPE,byte[]> getAdvertisementDataAll(){
+    public HashMap<BleUtils.AD_TYPE, byte[]> getAdvertisementDataAll() {
         return advertisementContent.getAdvertisementDataAll();
     }
 
     /**
      * @return polar hr advertisement content @see BlePolarHrAdvertisement
      */
-    public BlePolarHrAdvertisement getBlePolarHrAdvertisement(){
+    public BlePolarHrAdvertisement getBlePolarHrAdvertisement() {
         return advertisementContent.getPolarHrAdvertisement();
     }
 }

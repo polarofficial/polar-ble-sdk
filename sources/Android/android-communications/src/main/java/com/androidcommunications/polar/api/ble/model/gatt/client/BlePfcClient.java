@@ -1,7 +1,8 @@
 package com.androidcommunications.polar.api.ble.model.gatt.client;
 
-import androidx.annotation.NonNull;
 import android.util.Pair;
+
+import androidx.annotation.NonNull;
 
 import com.androidcommunications.polar.api.ble.exceptions.BleAttributeError;
 import com.androidcommunications.polar.api.ble.exceptions.BleCharacteristicNotificationNotEnabled;
@@ -34,20 +35,20 @@ public class BlePfcClient extends BleGattBase {
     public static final byte ERROR_OPERATION_FAILED = 0x04;
     public static final byte ERROR_NOT_ALLOWED = 0x05;
 
-    public static final byte RESPONSE_CODE       = (byte)0xF0;
+    public static final byte RESPONSE_CODE = (byte) 0xF0;
 
     public static final UUID PFC_SERVICE = UUID.fromString("6217FF4B-FB31-1140-AD5A-A45545D7ECF3"); /* Poler Features Configuration Service (PFCS)*/
     public static final UUID PFC_FEATURE = UUID.fromString("6217FF4C-C8EC-B1FB-1380-3AD986708E2D");
-    public static final UUID PFC_CP      = UUID.fromString("6217FF4D-91BB-91D0-7E2A-7CD3BDA8A1F3");
+    public static final UUID PFC_CP = UUID.fromString("6217FF4D-91BB-91D0-7E2A-7CD3BDA8A1F3");
 
     private PfcFeature pfcFeature = null;
     private final Object mutexFeature = new Object();
-    private LinkedBlockingQueue<Pair<byte[],Integer> > pfcCpInputQueue = new LinkedBlockingQueue<>();
+    private LinkedBlockingQueue<Pair<byte[], Integer>> pfcCpInputQueue = new LinkedBlockingQueue<>();
     private Scheduler scheduler = Schedulers.newThread();
     private AtomicInteger pfcCpEnabled;
     private final Object pfcMutex = new Object();
 
-    public enum PfcMessage{
+    public enum PfcMessage {
         PFC_UNKNOWN(0),
         PFC_CONFIGURE_BROADCAST(1),
         PFC_REQUEST_BROADCAST_SETTING(2),
@@ -70,9 +71,11 @@ public class BlePfcClient extends BleGattBase {
         public int getNumVal() {
             return numVal;
         }
-    };
+    }
 
-    public static class PfcResponse{
+    ;
+
+    public static class PfcResponse {
         private byte responseCode;
         private PfcMessage opCode;
         private byte status;
@@ -85,8 +88,8 @@ public class BlePfcClient extends BleGattBase {
             responseCode = data[0];
             opCode = PfcMessage.values()[data[1]];
             status = data[2];
-            if(data.length > 3) {
-                payload = new byte[data.length-3];
+            if (data.length > 3) {
+                payload = new byte[data.length - 3];
                 System.arraycopy(data, 3, payload, 0, data.length - 3);
             }
         }
@@ -108,20 +111,20 @@ public class BlePfcClient extends BleGattBase {
         }
 
         @Override
-        public String toString(){
+        public String toString() {
             StringBuffer stringBuffer = new StringBuffer();
-            if(payload != null) {
+            if (payload != null) {
                 for (byte b : payload) {
                     stringBuffer.append(String.format("%02x ", b));
                 }
             }
             return "Response code: " + String.format("%02x", responseCode) +
-                   " op code: " + opCode +
-                   " status: " + String.format("%02x", status) + " payload: " + stringBuffer;
+                    " op code: " + opCode +
+                    " status: " + String.format("%02x", status) + " payload: " + stringBuffer;
         }
     }
 
-    public static class PfcFeature implements Cloneable{
+    public static class PfcFeature implements Cloneable {
         // feature boolean's
         public boolean broadcastSupported;
         public boolean khzSupported;
@@ -134,17 +137,17 @@ public class BlePfcClient extends BleGattBase {
         public PfcFeature() {
         }
 
-        PfcFeature(byte[] data){
-            broadcastSupported =         (data[0] & 0x01) == 1;
-            khzSupported =              ((data[0] & 0x02) >> 1) == 1;
-            otaUpdateSupported =        ((data[0] & 0x04) >> 2) == 1;
-            whisperModeSupported =      ((data[0] & 0x10) >> 4) == 1;
+        PfcFeature(byte[] data) {
+            broadcastSupported = (data[0] & 0x01) == 1;
+            khzSupported = ((data[0] & 0x02) >> 1) == 1;
+            otaUpdateSupported = ((data[0] & 0x04) >> 2) == 1;
+            whisperModeSupported = ((data[0] & 0x10) >> 4) == 1;
             bleModeConfigureSupported = ((data[0] & 0x40) >> 6) == 1;
-            multiConnectionSupported  = ((data[0] & 0x80) >> 7) == 1;
+            multiConnectionSupported = ((data[0] & 0x80) >> 7) == 1;
             antSupported = (data[1] & 0x01) == 1;
         }
 
-        PfcFeature(PfcFeature clone){
+        PfcFeature(PfcFeature clone) {
             this.broadcastSupported = clone.broadcastSupported;
             this.khzSupported = clone.khzSupported;
             this.otaUpdateSupported = clone.otaUpdateSupported;
@@ -174,11 +177,11 @@ public class BlePfcClient extends BleGattBase {
 
     @Override
     public void processServiceData(UUID characteristic, byte[] data, int status, boolean notifying) {
-        if(characteristic.equals(PFC_CP)){
-            pfcCpInputQueue.add(new Pair<>(data,status));
-        }else if(characteristic.equals(PFC_FEATURE)){
+        if (characteristic.equals(PFC_CP)) {
+            pfcCpInputQueue.add(new Pair<>(data, status));
+        } else if (characteristic.equals(PFC_FEATURE)) {
             synchronized (mutexFeature) {
-                if(status==0) {
+                if (status == 0) {
                     pfcFeature = new PfcFeature(data);
                 }
                 mutexFeature.notifyAll();
@@ -192,18 +195,19 @@ public class BlePfcClient extends BleGattBase {
     }
 
     @Override
-    public @NonNull String toString() {
+    public @NonNull
+    String toString() {
         return "PFC service with values broadcast supported: " + String.valueOf(pfcFeature.broadcastSupported) + " 5khz supported: " + String.valueOf(pfcFeature.khzSupported);
     }
 
     private PfcResponse sendPfcCommandAndProcessResponse(byte[] packet) throws Exception {
-        txInterface.transmitMessages(BlePfcClient.this,PFC_SERVICE,PFC_CP,
-                Collections.singletonList(packet),true);
+        txInterface.transmitMessages(BlePfcClient.this, PFC_SERVICE, PFC_CP,
+                Collections.singletonList(packet), true);
         Pair<byte[], Integer> pair = pfcCpInputQueue.poll(30, TimeUnit.SECONDS);
         if (pair != null) {
-            if(pair.second == 0) {
+            if (pair.second == 0) {
                 return new PfcResponse(pair.first);
-            }else{
+            } else {
                 throw new BleAttributeError("pfc attribute ", pair.second);
             }
         }
@@ -212,19 +216,20 @@ public class BlePfcClient extends BleGattBase {
 
     // API
     public Single<PfcResponse> sendControlPointCommand(final PfcMessage command, int param) {
-        return sendControlPointCommand(command, new byte[]{(byte)param});
+        return sendControlPointCommand(command, new byte[]{(byte) param});
     }
 
     @Override
     public Completable clientReady(boolean checkConnection) {
-        return waitNotificationEnabled(PFC_CP,checkConnection);
+        return waitNotificationEnabled(PFC_CP, checkConnection);
     }
 
     /**
      * Produces:  onError: if reponse read fails e.g. timeout etc...
-     *            onSuccess: with control point response
+     * onSuccess: with control point response
+     *
      * @param command @see PfcMessage
-     * @param params optional parameters depends on command
+     * @param params  optional parameters depends on command
      * @return Observable stream, @see Rx Observable
      */
     public Single<PfcResponse> sendControlPointCommand(final PfcMessage command, final byte[] params) {
@@ -259,12 +264,12 @@ public class BlePfcClient extends BleGattBase {
                             default:
                                 throw new BleNotSupported("Unknown pfc command aquired");
                         }
-                    } catch (Exception ex){
-                        if(!emitter.isDisposed()){
+                    } catch (Exception ex) {
+                        if (!emitter.isDisposed()) {
                             emitter.tryOnError(ex);
                         }
                     }
-                } else if(!emitter.isDisposed()) {
+                } else if (!emitter.isDisposed()) {
                     emitter.tryOnError(new BleCharacteristicNotificationNotEnabled("PFC control point not enabled"));
                 }
             }
@@ -273,12 +278,13 @@ public class BlePfcClient extends BleGattBase {
 
     /**
      * read features from pfc service
+     *
      * @return Observable stream
-     *         Produces:
-     *              - onSuccess device response data
-     *              - onError, @see errors package
+     * Produces:
+     * - onSuccess device response data
+     * - onError, @see errors package
      */
-    public Single<PfcFeature> readFeature(){
+    public Single<PfcFeature> readFeature() {
         return Single.create((SingleOnSubscribe<PfcFeature>) emitter -> {
             try {
                 synchronized (mutexFeature) {
@@ -293,8 +299,8 @@ public class BlePfcClient extends BleGattBase {
                     }
                     throw new Exception("Undefined device error");
                 }
-            } catch (Exception ex){
-                if(!emitter.isDisposed()){
+            } catch (Exception ex) {
+                if (!emitter.isDisposed()) {
                     emitter.tryOnError(ex);
                 }
             }
