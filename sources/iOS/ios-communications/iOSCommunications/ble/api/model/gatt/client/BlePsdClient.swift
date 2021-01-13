@@ -133,13 +133,13 @@ public class BlePsdClient: BleGattClientBase {
                     let response = Psd.PsdResponse.init((packet.first?.0)!)
                     observer(.success(response))
                 } else {
-                    observer(.error(BleGattException.gattCharacteristicError))
+                    observer(.failure(BleGattException.gattCharacteristicError))
                 }
             } else {
-                observer(.error(BleGattException.gattTransportNotAvailable))
+                observer(.failure(BleGattException.gattTransportNotAvailable))
             }
         } catch let error {
-            observer(.error(error))
+            observer(.failure(error))
         }
     }
     
@@ -159,15 +159,15 @@ public class BlePsdClient: BleGattClientBase {
                     let packet = [UInt8](repeating:UInt8(command.rawValue), count:1)
                     self.sendPsdCommandAndProcessResponse(observer, packet: NSData.init(bytes: packet, length: 1) as Data)
                 default:
-                    observer(.error(BleGattException.gattOperationNotSupported))
+                    observer(.failure(BleGattException.gattOperationNotSupported))
                 }
             } else {
-                observer(.error(BleGattException.gattCharacteristicNotifyNotEnabled))
+                observer(.failure(BleGattException.gattCharacteristicNotifyNotEnabled))
             }
             return Disposables.create {
                 // do nothing
             }
-        }.subscribeOn(baseSerialDispatchQueue)
+        }.subscribe(on: baseSerialDispatchQueue)
     }
     
     /// start psd PP stream monitor
@@ -189,7 +189,7 @@ public class BlePsdClient: BleGattClientBase {
                 if !checkConnection || self.gattServiceTransmitter?.isConnected() ?? false {
                     self.observersFeature.append(object)
                 } else {
-                    observer(.error(BleGattException.gattDisconnected))
+                    observer(.failure(BleGattException.gattDisconnected))
                 }
             }
             return Disposables.create {
@@ -197,7 +197,7 @@ public class BlePsdClient: BleGattClientBase {
                     return item === object
                 })
             }
-        }.subscribeOn(baseConcurrentDispatchQueue)
+        }.subscribe(on: baseConcurrentDispatchQueue)
     }
     
     public override func clientReady(_ checkConnection: Bool) -> Completable {

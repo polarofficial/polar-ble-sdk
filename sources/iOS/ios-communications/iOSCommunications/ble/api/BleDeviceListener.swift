@@ -91,11 +91,11 @@ public protocol BleDeviceListener{
     func allSessions() -> [BleDeviceSession]
 }
 
-public protocol BleDeviceSessionStateObserver {
+public protocol BleDeviceSessionStateObserver: AnyObject {
     func stateChanged(_ session: BleDeviceSession)
 }
 
-public protocol BlePowerStateObserver {
+public protocol BlePowerStateObserver: AnyObject {
     func powerStateChanged(_ state: BleState)
 }
 

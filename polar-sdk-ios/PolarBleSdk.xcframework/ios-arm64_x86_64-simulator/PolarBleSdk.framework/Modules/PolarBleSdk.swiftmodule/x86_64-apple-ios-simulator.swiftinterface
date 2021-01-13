@@ -1,0 +1,811 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.3.2 (swiftlang-1200.0.45 clang-1200.0.32.28)
+// swift-module-flags: -target x86_64-apple-ios12.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name PolarBleSdk
+import CoreBluetooth
+import Foundation
+@_exported import PolarBleSdk
+import RxSwift
+import Swift
+public protocol CBScanningProtocol {
+  func stopScanning()
+  func continueScanning()
+}
+public struct Pmd {
+  public struct PmdSetting {
+    public enum PmdSettingType : Swift.UInt8, Swift.CaseIterable {
+      case sampleRate
+      case resolution
+      case range
+      case unknown
+      public typealias RawValue = Swift.UInt8
+      public init?(rawValue: Swift.UInt8)
+      public var rawValue: Swift.UInt8 {
+        get
+      }
+      public typealias AllCases = [PolarBleSdk.Pmd.PmdSetting.PmdSettingType]
+      public static var allCases: [PolarBleSdk.Pmd.PmdSetting.PmdSettingType] {
+        get
+      }
+    }
+    public var settings: [PolarBleSdk.Pmd.PmdSetting.PmdSettingType : Swift.Set<Swift.UInt16>]
+    public init(_ settings: [PolarBleSdk.Pmd.PmdSetting.PmdSettingType : Swift.Set<Swift.UInt16>])
+    public init(_ data: Foundation.Data)
+  }
+  public enum BlePmdError : Swift.Error {
+    case controlPointRequestFailed(errorCode: Swift.Int)
+  }
+  public struct PmdFeature {
+    public let ecgSupported: Swift.Bool
+    public let ppgSupported: Swift.Bool
+    public let accSupported: Swift.Bool
+    public let ppiSupported: Swift.Bool
+    public let bioZSupported: Swift.Bool
+    public let gyroSupported: Swift.Bool
+    public let magnetometerSupported: Swift.Bool
+    public let barometerSupported: Swift.Bool
+    public let ambientSupported: Swift.Bool
+    public init(_ data: Foundation.Data)
+  }
+  public enum PmdResponseCode : Swift.Int {
+    case success
+    case errorInvalidOpCode
+    case errorInvalidMeasurementType
+    case errorNotSupported
+    case errorInvalidLength
+    case errorInvalidParameter
+    case errorInvalidState
+    case unknown_error
+    public typealias RawValue = Swift.Int
+    public init?(rawValue: Swift.Int)
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  public enum PmdMeasurementType : Swift.UInt8 {
+    case ecg
+    case ppg
+    case acc
+    case ppi
+    case bioz
+    case gyro
+    case mgn
+    case barometer
+    case ambient
+    case unknown_type
+    public typealias RawValue = Swift.UInt8
+    public init?(rawValue: Swift.UInt8)
+    public var rawValue: Swift.UInt8 {
+      get
+    }
+  }
+  public struct PmdControlPointResponse {
+    public let response: Swift.UInt8
+    public let opCode: Swift.UInt8
+    public let type: PolarBleSdk.Pmd.PmdMeasurementType
+    public let errorCode: PolarBleSdk.Pmd.PmdResponseCode
+    public let more: Swift.Bool
+    public let parameters: Foundation.NSMutableData
+    public init(_ data: Foundation.Data)
+  }
+  public static func buildAccSamples(_ frameType: Swift.UInt8, data: Foundation.Data, timeStamp: Swift.UInt64) -> (Swift.UInt64, [(x: Swift.Int32, y: Swift.Int32, z: Swift.Int32)])
+}
+@_hasMissingDesignatedInitializers public class BlePmdClient : PolarBleSdk.BleGattClientBase {
+  public static let PMD_SERVICE: CoreBluetooth.CBUUID
+  public static let PMD_CP: CoreBluetooth.CBUUID
+  public static let PMD_MTU: CoreBluetooth.CBUUID
+  public init(gattServiceTransmitter: PolarBleSdk.BleAttributeTransportProtocol)
+  override public func disconnected()
+  override public func processServiceData(_ chr: CoreBluetooth.CBUUID, data: Foundation.Data, err: Swift.Int)
+  public func observeAcc() -> RxSwift.Observable<(timeStamp: Swift.UInt64, samples: [(x: Swift.Int32, y: Swift.Int32, z: Swift.Int32)])>
+  public func observeEcg() -> RxSwift.Observable<(timeStamp: Swift.UInt64, samples: [Swift.Int32])>
+  public func observePpg() -> RxSwift.Observable<(timeStamp: Swift.UInt64, samples: [(ppg0: Swift.Int32, ppg1: Swift.Int32, ppg2: Swift.Int32, ambient: Swift.Int32)])>
+  public func observePpi() -> RxSwift.Observable<(timeStamp: Swift.UInt64, samples: [(hr: Swift.Int, ppInMs: Swift.UInt16, ppErrorEstimate: Swift.UInt16, blockerBit: Swift.Int, skinContactStatus: Swift.Int, skinContactSupported: Swift.Int)])>
+  public func observeBioz() -> RxSwift.Observable<(timeStamp: Swift.UInt64, samples: [Swift.Int32])>
+  public func startMeasurement(_ type: PolarBleSdk.Pmd.PmdMeasurementType, settings: PolarBleSdk.Pmd.PmdSetting) -> RxSwift.Completable
+  public func stopMeasurement(_ type: PolarBleSdk.Pmd.PmdMeasurementType) -> RxSwift.Completable
+  public func readFeature(_ checkConnection: Swift.Bool) -> RxSwift.Single<PolarBleSdk.Pmd.PmdFeature>
+  override public func clientReady(_ checkConnection: Swift.Bool) -> RxSwift.Completable
+  public func querySettings(_ setting: PolarBleSdk.Pmd.PmdMeasurementType) -> RxSwift.Single<PolarBleSdk.Pmd.PmdSetting>
+  @objc deinit
+}
+public enum BlePsFtpException : Swift.Error {
+  case undefinedError
+  case operationTimeout
+  case operationCanceled
+  case responseError(errorCode: Swift.Int)
+  case protocolError
+  public var _domain: Swift.String {
+    get
+  }
+  public var _code: Swift.Int {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers public class BlePsFtpUtility {
+  public enum MessageType {
+    case request, query, notification
+    public static func == (a: PolarBleSdk.BlePsFtpUtility.MessageType, b: PolarBleSdk.BlePsFtpUtility.MessageType) -> Swift.Bool
+    public var hashValue: Swift.Int {
+      get
+    }
+    public func hash(into hasher: inout Swift.Hasher)
+  }
+  public static let RFC76_STATUS_MORE: Swift.Int
+  public static let RFC76_STATUS_LAST: Swift.Int
+  public static let RFC76_STATUS_ERROR_OR_RESPONSE: Swift.Int
+  public static let PFTP_AIR_PACKET_LOST_ERROR: Swift.Int
+  @_hasMissingDesignatedInitializers public class BlePsFtpRfc76Frame {
+    public var next: Swift.Int
+    public var status: Swift.Int
+    public var sequenceNumber: Swift.Int
+    public var error: Swift.Int
+    public var payload: Foundation.Data!
+    @objc deinit
+  }
+  public class BlePsFtpRfc76SequenceNumber {
+    public init()
+    @objc deinit
+  }
+  public static func makeCompleteMessageStream(_ header: Foundation.Data?, type: PolarBleSdk.BlePsFtpUtility.MessageType, id: Swift.Int) -> Foundation.InputStream
+  public static func buildRfc76MessageFrame(_ data: Foundation.InputStream, next: Swift.Int, mtuSize: Swift.Int, sequenceNumber: PolarBleSdk.BlePsFtpUtility.BlePsFtpRfc76SequenceNumber) -> Foundation.Data
+  public static func buildRfc76MessageFrame(_ header: Foundation.InputStream, data: Foundation.InputStream?, next: Swift.Int, mtuSize: Swift.Int, sequenceNumber: PolarBleSdk.BlePsFtpUtility.BlePsFtpRfc76SequenceNumber) -> Foundation.Data
+  public static func buildRfc76MessageFrameAll(_ data: Foundation.InputStream, mtuSize: Swift.Int, sequenceNumber: PolarBleSdk.BlePsFtpUtility.BlePsFtpRfc76SequenceNumber) -> [Foundation.Data]
+  public static func processRfc76MessageFrame(_ packet: Foundation.Data) -> PolarBleSdk.BlePsFtpUtility.BlePsFtpRfc76Frame
+  public static func processRfc76MessageFrame(_ header: PolarBleSdk.BlePsFtpUtility.BlePsFtpRfc76Frame, packet: Foundation.Data)
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class BlePsFtpClient : PolarBleSdk.BleGattClientBase {
+  public static let PSFTP_SERVICE: CoreBluetooth.CBUUID
+  public static let PSFTP_MTU_CHARACTERISTIC: CoreBluetooth.CBUUID
+  public static let PSFTP_D2H_NOTIFICATION_CHARACTERISTIC: CoreBluetooth.CBUUID
+  public static let PSFTP_H2D_NOTIFICATION_CHARACTERISTIC: CoreBluetooth.CBUUID
+  public var PROTOCOL_TIMEOUT: Foundation.TimeInterval
+  final public let packetChunks: PolarBleSdk.AtomicType<Swift.Int>
+  public init(gattServiceTransmitter: PolarBleSdk.BleAttributeTransportProtocol)
+  @objc deinit
+  override public func disconnected()
+  override public func processServiceData(_ chr: CoreBluetooth.CBUUID, data: Foundation.Data, err: Swift.Int)
+  override public func serviceDataWritten(_ chr: CoreBluetooth.CBUUID, err: Swift.Int)
+  @_hasMissingDesignatedInitializers public class PsFtpNotification {
+    public var id: Swift.Int32
+    public var parameters: Foundation.NSMutableData
+    public func description() -> Swift.String
+    @objc deinit
+  }
+  public func isBusy() -> Swift.Bool
+  public func request(_ header: Foundation.Data) -> RxSwift.Single<Foundation.NSData>
+  public func write(_ header: Foundation.NSData, data: Foundation.InputStream) -> RxSwift.Observable<Swift.UInt>
+  public func query(_ id: Swift.Int32, parameters: Foundation.NSData?) -> RxSwift.Single<Foundation.NSData>
+  public func sendNotification(_ id: Swift.Int32, parameters: Foundation.NSData?) -> RxSwift.Completable
+  public func waitNotification() -> RxSwift.Observable<PolarBleSdk.BlePsFtpClient.PsFtpNotification>
+  public func waitPsFtpReady(_ checkConnection: Swift.Bool) -> RxSwift.Completable
+  override public func clientReady(_ checkConnection: Swift.Bool) -> RxSwift.Completable
+}
+public struct PolarSensorSetting {
+  public enum SettingType : Swift.Int {
+    case sampleRate
+    case resolution
+    case range
+    case unknown
+    public typealias RawValue = Swift.Int
+    public init?(rawValue: Swift.Int)
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  public let settings: [PolarBleSdk.PolarSensorSetting.SettingType : Swift.Set<Swift.UInt16>]
+  public init(_ settings: [PolarBleSdk.PolarSensorSetting.SettingType : Swift.UInt16])
+  public func maxSettings() -> PolarBleSdk.PolarSensorSetting
+}
+@_hasMissingDesignatedInitializers public class AtomicType<T> : ObjectiveC.NSObject {
+  public func get() -> T
+  public func accessItem(_ f: (T) -> Swift.Void)
+  public func set(_ value: T)
+  public func wait()
+  @objc override dynamic public init()
+  @objc deinit
+}
+extension PrimitiveSequence where Trait == RxSwift.SingleTrait {
+  public func asCompletable() -> RxSwift.PrimitiveSequence<RxSwift.CompletableTrait, Swift.Never>
+}
+@_hasMissingDesignatedInitializers public class NotificationNotEnabled : Swift.Error {
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class ServiceNotFound : Swift.Error {
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class DeviceNotConnected : Swift.Error {
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class DeviceNotFound : Swift.Error {
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class OperationNotSupported : Swift.Error {
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class MessageEncodeFailed : Swift.Error {
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class MessageDecodeFailed : Swift.Error {
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class DateTimeFormatFailed : Swift.Error {
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class UnableToStartStreaming : Swift.Error {
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class InvalidArgument : Swift.Error {
+  @objc deinit
+}
+public enum UndefinedError : Foundation.LocalizedError {
+  case DeviceError(localizedDescription: Swift.String)
+  public var localizedDescription: Swift.String {
+    get
+  }
+}
+public enum RecordingInterval : Swift.Int {
+  case interval_1s
+  case interval_5s
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+  public init?(rawValue: Swift.Int)
+}
+public enum SampleType : Swift.Int {
+  case hr
+  case rr
+  public typealias RawValue = Swift.Int
+  public init?(rawValue: Swift.Int)
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public enum Features : Swift.Int, Swift.CaseIterable {
+  case hr
+  case deviceInfo
+  case batteryStatus
+  case polarSensorStreaming
+  case polarFileTransfer
+  case allFeatures
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+  public init?(rawValue: Swift.Int)
+  public typealias AllCases = [PolarBleSdk.Features]
+  public static var allCases: [PolarBleSdk.Features] {
+    get
+  }
+}
+public typealias PolarDeviceInfo = (deviceId: Swift.String, address: Foundation.UUID, rssi: Swift.Int, name: Swift.String, connectable: Swift.Bool)
+public typealias PolarHrBroadcastData = (deviceInfo: PolarBleSdk.PolarDeviceInfo, hr: Swift.UInt8, batteryStatus: Swift.Bool)
+public typealias PolarEcgData = (timeStamp: Swift.UInt64, samples: [Swift.Int32])
+public typealias PolarAccData = (timeStamp: Swift.UInt64, samples: [(x: Swift.Int32, y: Swift.Int32, z: Swift.Int32)])
+public typealias PolarPpgData = (timeStamp: Swift.UInt64, samples: [(ppg0: Swift.Int32, ppg1: Swift.Int32, ppg2: Swift.Int32, ambient: Swift.Int32)])
+public typealias PolarPpiData = (timeStamp: Swift.UInt64, samples: [(hr: Swift.Int, ppInMs: Swift.UInt16, ppErrorEstimate: Swift.UInt16, blockerBit: Swift.Int, skinContactStatus: Swift.Int, skinContactSupported: Swift.Int)])
+public typealias PolarBiozData = (timeStamp: Swift.UInt64, samples: [Swift.Int32])
+public typealias PolarExerciseEntry = (path: Swift.String, date: Foundation.Date, entryId: Swift.String)
+public typealias PolarExerciseData = (interval: Swift.UInt32, samples: [Swift.UInt32])
+public typealias PolarRecordingStatus = (ongoing: Swift.Bool, entryId: Swift.String)
+public protocol PolarBleApi {
+  func cleanup()
+  func polarFilter(_ enable: Swift.Bool)
+  func startAutoConnectToDevice(_ rssi: Swift.Int, service: CoreBluetooth.CBUUID?, polarDeviceType: Swift.String?) -> RxSwift.Completable
+  func connectToDevice(_ identifier: Swift.String) throws
+  func disconnectFromDevice(_ identifier: Swift.String) throws
+  func searchForDevice() -> RxSwift.Observable<PolarBleSdk.PolarDeviceInfo>
+  func isFeatureReady(_ identifier: Swift.String, feature: PolarBleSdk.Features) -> Swift.Bool
+  func setLocalTime(_ identifier: Swift.String, time: Foundation.Date, zone: Foundation.TimeZone) -> RxSwift.Completable
+  func startRecording(_ identifier: Swift.String, exerciseId: Swift.String, interval: PolarBleSdk.RecordingInterval, sampleType: PolarBleSdk.SampleType) -> RxSwift.Completable
+  func stopRecording(_ identifier: Swift.String) -> RxSwift.Completable
+  func requestRecordingStatus(_ identifier: Swift.String) -> RxSwift.Single<PolarBleSdk.PolarRecordingStatus>
+  func startListenForPolarHrBroadcasts(_ identifiers: Swift.Set<Swift.String>?) -> RxSwift.Observable<PolarBleSdk.PolarHrBroadcastData>
+  func requestEcgSettings(_ identifier: Swift.String) -> RxSwift.Single<PolarBleSdk.PolarSensorSetting>
+  func requestAccSettings(_ identifier: Swift.String) -> RxSwift.Single<PolarBleSdk.PolarSensorSetting>
+  func requestPpgSettings(_ identifier: Swift.String) -> RxSwift.Single<PolarBleSdk.PolarSensorSetting>
+  func requestBiozSettings(_ identifier: Swift.String) -> RxSwift.Single<PolarBleSdk.PolarSensorSetting>
+  func startEcgStreaming(_ identifier: Swift.String, settings: PolarBleSdk.PolarSensorSetting) -> RxSwift.Observable<PolarBleSdk.PolarEcgData>
+  func startAccStreaming(_ identifier: Swift.String, settings: PolarBleSdk.PolarSensorSetting) -> RxSwift.Observable<PolarBleSdk.PolarAccData>
+  func startOhrPPGStreaming(_ identifier: Swift.String, settings: PolarBleSdk.PolarSensorSetting) -> RxSwift.Observable<PolarBleSdk.PolarPpgData>
+  func startOhrPPIStreaming(_ identifier: Swift.String) -> RxSwift.Observable<PolarBleSdk.PolarPpiData>
+  func startBiozStreaming(_ identifier: Swift.String, settings: PolarBleSdk.PolarSensorSetting) -> RxSwift.Observable<PolarBleSdk.PolarBiozData>
+  func fetchStoredExerciseList(_ identifier: Swift.String) -> RxSwift.Observable<PolarBleSdk.PolarExerciseEntry>
+  func fetchExercise(_ identifier: Swift.String, entry: PolarBleSdk.PolarExerciseEntry) -> RxSwift.Single<PolarBleSdk.PolarExerciseData>
+  func removeExercise(_ identifier: Swift.String, entry: PolarBleSdk.PolarExerciseEntry) -> RxSwift.Completable
+  var observer: PolarBleSdk.PolarBleApiObserver? { get set }
+  var deviceInfoObserver: PolarBleSdk.PolarBleApiDeviceInfoObserver? { get set }
+  var deviceHrObserver: PolarBleSdk.PolarBleApiDeviceHrObserver? { get set }
+  var powerStateObserver: PolarBleSdk.PolarBleApiPowerStateObserver? { get set }
+  var deviceFeaturesObserver: PolarBleSdk.PolarBleApiDeviceFeaturesObserver? { get set }
+  var isBlePowered: Swift.Bool { get }
+  var logger: PolarBleSdk.PolarBleApiLogger? { get set }
+  var automaticReconnection: Swift.Bool { get set }
+  var cccWriteObserver: PolarBleSdk.PolarBleApiCCCWriteObserver? { get set }
+}
+@_hasMissingDesignatedInitializers public class PolarBleApiDefaultImpl {
+  public static func polarImplementation(_ queue: Dispatch.DispatchQueue, features: Swift.Int) -> PolarBleSdk.PolarBleApi
+  public static func versionInfo() -> Swift.String
+  @objc deinit
+}
+public protocol PolarBleApiObserver : AnyObject {
+  func deviceConnecting(_ identifier: PolarBleSdk.PolarDeviceInfo)
+  func deviceConnected(_ identifier: PolarBleSdk.PolarDeviceInfo)
+  func deviceDisconnected(_ identifier: PolarBleSdk.PolarDeviceInfo)
+}
+public protocol PolarBleApiPowerStateObserver : AnyObject {
+  func blePowerOn()
+  func blePowerOff()
+}
+public protocol PolarBleApiDeviceInfoObserver : AnyObject {
+  func batteryLevelReceived(_ identifier: Swift.String, batteryLevel: Swift.UInt)
+  func disInformationReceived(_ identifier: Swift.String, uuid: CoreBluetooth.CBUUID, value: Swift.String)
+}
+public protocol PolarBleApiDeviceHrObserver : AnyObject {
+  typealias PolarHrData = (hr: Swift.UInt8, rrs: [Swift.Int], rrsMs: [Swift.Int], contact: Swift.Bool, contactSupported: Swift.Bool)
+  func hrValueReceived(_ identifier: Swift.String, data: Self.PolarHrData)
+}
+public protocol PolarBleApiDeviceFeaturesObserver : AnyObject {
+  func hrFeatureReady(_ identifier: Swift.String)
+  func ecgFeatureReady(_ identifier: Swift.String)
+  func accFeatureReady(_ identifier: Swift.String)
+  func ohrPPGFeatureReady(_ identifier: Swift.String)
+  func ohrPPIFeatureReady(_ identifier: Swift.String)
+  func biozFeatureReady(_ identifier: Swift.String)
+  func ftpFeatureReady(_ identifier: Swift.String)
+}
+extension PolarBleApiDeviceFeaturesObserver {
+  public func biozFeatureReady(_ identifier: Swift.String)
+}
+public protocol PolarBleApiLogger : AnyObject {
+  func message(_ str: Swift.String)
+}
+public protocol PolarBleApiCCCWriteObserver : AnyObject {
+  func cccWrite(_ address: Foundation.UUID, characteristic: CoreBluetooth.CBUUID)
+}
+@objc public class CBDeviceListenerImpl : ObjectiveC.NSObject, CoreBluetooth.CBCentralManagerDelegate {
+  public var automaticH10Mapping: Swift.Bool
+  public var automaticReconnection: Swift.Bool
+  public var scanPreFilter: ((PolarBleSdk.BleAdvertisementContent) -> Swift.Bool)?
+  public var servicesToScanFor: [CoreBluetooth.CBUUID]? {
+    get
+    set
+  }
+  weak public var deviceSessionStateObserver: PolarBleSdk.BleDeviceSessionStateObserver?
+  weak public var powerStateObserver: PolarBleSdk.BlePowerStateObserver? {
+    get
+    set
+  }
+  public init(_ queue: Dispatch.DispatchQueue, clients: [(PolarBleSdk.BleAttributeTransportProtocol) -> PolarBleSdk.BleGattClientBase], identifier: Swift.Int)
+  @objc public func centralManagerDidUpdateState(_ central: CoreBluetooth.CBCentralManager)
+  @objc public func centralManager(_ central: CoreBluetooth.CBCentralManager, didDiscover peripheral: CoreBluetooth.CBPeripheral, advertisementData: [Swift.String : Any], rssi RSSI: Foundation.NSNumber)
+  @objc public func centralManager(_ central: CoreBluetooth.CBCentralManager, didConnect peripheral: CoreBluetooth.CBPeripheral)
+  @objc public func centralManager(_ central: CoreBluetooth.CBCentralManager, didFailToConnect peripheral: CoreBluetooth.CBPeripheral, error: Swift.Error?)
+  @objc public func centralManager(_ central: CoreBluetooth.CBCentralManager, didDisconnectPeripheral peripheral: CoreBluetooth.CBPeripheral, error: Swift.Error?)
+  @objc override dynamic public init()
+  @objc deinit
+}
+extension CBDeviceListenerImpl : PolarBleSdk.CBScanningProtocol {
+  public func stopScanning()
+  public func continueScanning()
+}
+extension CBDeviceListenerImpl : PolarBleSdk.BleDeviceListener {
+  public func blePowered() -> Swift.Bool
+  public func monitorBleState() -> RxSwift.Observable<PolarBleSdk.BleState>
+  public func search(_ uuids: [CoreBluetooth.CBUUID]?, identifiers: [Foundation.UUID]?) -> RxSwift.Observable<PolarBleSdk.BleDeviceSession>
+  public func openSessionDirect(_ session: PolarBleSdk.BleDeviceSession)
+  public func monitorDeviceSessionState() -> RxSwift.Observable<(session: PolarBleSdk.BleDeviceSession, state: PolarBleSdk.BleDeviceSession.DeviceSessionState)>
+  public func closeSessionDirect(_ session: PolarBleSdk.BleDeviceSession)
+  public func removeAllSessions(_ inState: Swift.Set<PolarBleSdk.BleDeviceSession.DeviceSessionState>) -> Swift.Int
+  public func removeAllSessions() -> Swift.Int
+  public func allSessions() -> [PolarBleSdk.BleDeviceSession]
+}
+public protocol BleCCCWriteProtocol : AnyObject {
+  func cccWrite(_ address: Foundation.UUID, characteristic: CoreBluetooth.CBUUID)
+}
+@objc open class BleDeviceSession : ObjectiveC.NSObject {
+  public enum DeviceSessionState {
+    case sessionClosed, sessionOpening, sessionOpenPark, sessionOpen, sessionClosing
+    public func description() -> Swift.String
+    public static func == (a: PolarBleSdk.BleDeviceSession.DeviceSessionState, b: PolarBleSdk.BleDeviceSession.DeviceSessionState) -> Swift.Bool
+    public var hashValue: Swift.Int {
+      get
+    }
+    public func hash(into hasher: inout Swift.Hasher)
+  }
+  public enum ConnectionType {
+    case directConnection
+    case connectFromAdvertisementHead
+    public static func == (a: PolarBleSdk.BleDeviceSession.ConnectionType, b: PolarBleSdk.BleDeviceSession.ConnectionType) -> Swift.Bool
+    public var hashValue: Swift.Int {
+      get
+    }
+    public func hash(into hasher: inout Swift.Hasher)
+  }
+  final public let address: Foundation.UUID
+  final public let advertisementContent: PolarBleSdk.BleAdvertisementContent
+  public var state: PolarBleSdk.BleDeviceSession.DeviceSessionState
+  public var previousState: PolarBleSdk.BleDeviceSession.DeviceSessionState
+  weak public var cccWriteCallback: PolarBleSdk.BleCCCWriteProtocol?
+  public var connectionType: PolarBleSdk.BleDeviceSession.ConnectionType
+  public init(_ addr: Foundation.UUID)
+  public func fetchGattClient(_ serviceUuid: CoreBluetooth.CBUUID) -> PolarBleSdk.BleGattClientBase?
+  public func isConnectable() -> Swift.Bool
+  public func monitorServicesDiscovered(_ checkConnection: Swift.Bool) -> RxSwift.Observable<CoreBluetooth.CBUUID>
+  public func clientsReady() -> RxSwift.Observable<Swift.Never>
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers open class BlePolarDeviceIdUtility {
+  public static func isValidDeviceId(_ deviceId: Swift.String) -> Swift.Bool
+  public static func checkSumForDeviceId(_ deviceId: Swift.UInt32, width: Swift.Int) -> Swift.UInt8
+  public static func assemblyFullPolarDeviceId(_ deviceId: Swift.UInt32, width: Swift.Int) -> Swift.String
+  public static func polarDeviceIdToInt(_ deviceId: Swift.String) -> Swift.UInt32
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class BleAdvertisementContent {
+  public var polarHrAdvertisementData: PolarBleSdk.BlePolarHrAdvertisement {
+    get
+  }
+  public var rssiFilter: PolarBleSdk.BleRssiFilter {
+    get
+  }
+  public var advertisementTimestamp: Swift.Double {
+    get
+  }
+  public var advertisementDelta: Swift.Double {
+    get
+  }
+  public var polarDeviceIdInt: Swift.UInt32 {
+    get
+  }
+  public var polarDeviceIdIntUntouched: Swift.UInt32 {
+    get
+  }
+  public var isConnectable: Swift.Bool {
+    get
+  }
+  public var medianRssi: Swift.Int32 {
+    get
+  }
+  public var manufacturerType: Swift.Int16 {
+    get
+  }
+  public var advData: [Swift.String : Any] {
+    get
+  }
+  public var name: Swift.String {
+    get
+  }
+  public var polarDeviceId: Swift.String {
+    get
+  }
+  public var polarDeviceIdUntouched: Swift.String {
+    get
+  }
+  public var polarDeviceType: Swift.String {
+    get
+  }
+  public func containsService(_ service: CoreBluetooth.CBUUID) -> Swift.Bool
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class BlePolarHrAdvertisement {
+  public var batteryStatus: Swift.Bool {
+    get
+  }
+  public var sensorContact: Swift.Bool {
+    get
+  }
+  public var ucAdvFrameCounter: Swift.UInt8 {
+    get
+  }
+  public var broadcastBit: Swift.UInt8 {
+    get
+  }
+  public var sensorDataType: Swift.UInt8 {
+    get
+  }
+  public var statusFlags: Swift.UInt8 {
+    get
+  }
+  public var khzCode: Swift.UInt8 {
+    get
+  }
+  public var fastAverageHr: Swift.UInt8 {
+    get
+  }
+  public var slowAverageHr: Swift.UInt8 {
+    get
+  }
+  public var isPresent: Swift.Bool {
+    get
+  }
+  public var isOldH7H6: Swift.Bool {
+    get
+  }
+  public var isH7Update: Swift.Bool {
+    get
+  }
+  public var hrValueForDisplay: Swift.UInt8 {
+    get
+  }
+  public func processPolarManufacturerData(_ data: Foundation.Data)
+  public func description() -> Swift.String
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class BleRssiFilter {
+  public var rssi: (Swift.Int32) {
+    get
+  }
+  public var medianRssi: (Swift.Int32) {
+    get
+  }
+  @objc deinit
+}
+public enum BleGattException : Swift.Error {
+  case gattDisconnected
+  case gattServiceNotFound
+  case gattServicesNotFound
+  case gattCharacteristicNotFound
+  case gattCharacteristicNotifyNotEnabled
+  case gattCharacteristicError
+  case gattUndefinedDeviceError
+  case gattAttributeError(errorCode: Swift.Int)
+  case gattOperationNotSupported
+  case gattTransportNotAvailable
+}
+@_hasMissingDesignatedInitializers public class BleBasClient : PolarBleSdk.BleGattClientBase {
+  public static let BATTERY_SERVICE: CoreBluetooth.CBUUID
+  public init(gattServiceTransmitter: PolarBleSdk.BleAttributeTransportProtocol)
+  override public func disconnected()
+  override public func processServiceData(_ chr: CoreBluetooth.CBUUID, data: Foundation.Data, err: Swift.Int)
+  public func readLevel() throws
+  public func waitBatteryLevelUpdate(_ checkConnection: Swift.Bool) -> RxSwift.Observable<Swift.Int>
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class BleDisClient : PolarBleSdk.BleGattClientBase {
+  public static let DIS_SERVICE: CoreBluetooth.CBUUID
+  public static let MODEL_NUMBER_STRING: CoreBluetooth.CBUUID
+  public static let MANUFACTURER_NAME_STRING: CoreBluetooth.CBUUID
+  public static let HARDWARE_REVISION_STRING: CoreBluetooth.CBUUID
+  public static let FIRMWARE_REVISION_STRING: CoreBluetooth.CBUUID
+  public static let SOFTWARE_REVISION_STRING: CoreBluetooth.CBUUID
+  public static let SERIAL_NUMBER_STRING: CoreBluetooth.CBUUID
+  public static let SYSTEM_ID: CoreBluetooth.CBUUID
+  public static let IEEE_11073_20601: CoreBluetooth.CBUUID
+  public static let PNP_ID: CoreBluetooth.CBUUID
+  public init(gattServiceTransmitter: PolarBleSdk.BleAttributeTransportProtocol)
+  override public func disconnected()
+  override public func processServiceData(_ chr: CoreBluetooth.CBUUID, data: Foundation.Data, err: Swift.Int)
+  public func readDisInfo(_ checkConnection: Swift.Bool) -> RxSwift.Observable<(CoreBluetooth.CBUUID, Swift.String)>
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class BleHrClient : PolarBleSdk.BleGattClientBase {
+  public static let HR_SERVICE: CoreBluetooth.CBUUID
+  public static let HR_MEASUREMENT: CoreBluetooth.CBUUID
+  public typealias BleHrNotification = (hr: Swift.Int, sensorContact: Swift.Bool, sensorContactSupported: Swift.Bool, energy: Swift.Int, rrs: [Swift.Int])
+  public init(gattServiceTransmitter: PolarBleSdk.BleAttributeTransportProtocol)
+  override public func disconnected()
+  override public func processServiceData(_ chr: CoreBluetooth.CBUUID, data: Foundation.Data, err: Swift.Int)
+  public func observeHrNotifications(_ checkConnection: Swift.Bool) -> RxSwift.Observable<PolarBleSdk.BleHrClient.BleHrNotification>
+  override public func clientReady(_ checkConnection: Swift.Bool) -> RxSwift.Completable
+  @objc deinit
+}
+public struct Psd {
+  @_hasMissingDesignatedInitializers public class PPData {
+    final public let rc: Swift.Int
+    final public let hr: Swift.Int
+    public var ppInMs: Swift.UInt16
+    public var ppErrorEstimate: Swift.UInt16
+    final public let blockerBit: Swift.Int
+    final public let skinContactStatus: Swift.Int
+    final public let skinContactSupported: Swift.Int
+    @objc deinit
+  }
+  public class PsdResponse {
+    final public let responseCode: Swift.UInt8
+    final public let opCode: Swift.UInt8
+    final public let status: Swift.UInt8
+    public init(_ data: Foundation.Data)
+    @objc deinit
+  }
+  public class PsdFeature {
+    final public let ecgSupported: Swift.Bool
+    final public let accSupported: Swift.Bool
+    final public let ohrSupported: Swift.Bool
+    final public let ppSupported: Swift.Bool
+    public init(_ data: Foundation.Data)
+    @objc deinit
+  }
+}
+@_hasMissingDesignatedInitializers public class BlePsdClient : PolarBleSdk.BleGattClientBase {
+  public enum PsdMessage : Swift.Int {
+    case psdUnknown
+    case psdStartOhrPpStream
+    case psdStopOhrPpStream
+    public typealias RawValue = Swift.Int
+    public init?(rawValue: Swift.Int)
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  public static let PSD_SERVICE: CoreBluetooth.CBUUID
+  public static let PSD_FEATURE: CoreBluetooth.CBUUID
+  public static let PSD_PP: CoreBluetooth.CBUUID
+  public static let PSD_CP: CoreBluetooth.CBUUID
+  public static let PSD_OHR: CoreBluetooth.CBUUID
+  public static let PSD_ECG: CoreBluetooth.CBUUID
+  public static let PSD_ACC: CoreBluetooth.CBUUID
+  public init(gattServiceTransmitter: PolarBleSdk.BleAttributeTransportProtocol)
+  override public func disconnected()
+  override public func processServiceData(_ chr: CoreBluetooth.CBUUID, data: Foundation.Data, err: Swift.Int)
+  public func sendControlpointCommand(_ command: PolarBleSdk.BlePsdClient.PsdMessage, value: [Swift.UInt8]) -> RxSwift.Single<PolarBleSdk.Psd.PsdResponse>
+  public func observePsdPPNotifications(_ checkConnection: Swift.Bool) -> RxSwift.Observable<PolarBleSdk.Psd.PPData>
+  public func readFeature(_ checkConnection: Swift.Bool) -> RxSwift.Single<PolarBleSdk.Psd.PsdFeature>
+  override public func clientReady(_ checkConnection: Swift.Bool) -> RxSwift.Completable
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class BleGattClientBase : Swift.Hashable {
+  public func hash(into hasher: inout Swift.Hasher)
+  final public let ATT_NOTIFY_OR_INDICATE_OFF: Swift.Int
+  public var baseSerialDispatchQueue: RxSwift.SerialDispatchQueueScheduler!
+  final public let baseConcurrentDispatchQueue: RxSwift.ConcurrentDispatchQueueScheduler
+  public func containsAvailableCharacteristic(_ chr: CoreBluetooth.CBUUID) -> Swift.Bool
+  public func disconnected()
+  public func processServiceData(_ chr: CoreBluetooth.CBUUID, data: Foundation.Data, err: Swift.Int)
+  public func setCharacteristicNotify(_ chr: CoreBluetooth.CBUUID, enabled: Swift.Bool, err: Swift.Int)
+  public func serviceDataWritten(_ chr: CoreBluetooth.CBUUID, err: Swift.Int)
+  public func processCharacteristicDiscovered(_ characteristic: CoreBluetooth.CBUUID, properties: Swift.UInt)
+  public func clientReady(_ checkConnection: Swift.Bool) -> RxSwift.Completable
+  public func setServiceDiscovered(_ value: Swift.Bool, serviceUuid: CoreBluetooth.CBUUID)
+  public func isServiceDiscovered() -> Swift.Bool
+  public func serviceBelongsToClient(_ uuid: CoreBluetooth.CBUUID) -> Swift.Bool
+  public func setMtu(_ mtuSize: Swift.Int)
+  public func isCharacteristicNotificationEnabled(_ uuid: CoreBluetooth.CBUUID) -> Swift.Bool
+  public func waitDiscovered(checkConnection: Swift.Bool) -> RxSwift.Completable
+  public func waitNotificationEnabled(_ chr: CoreBluetooth.CBUUID, checkConnection: Swift.Bool) -> RxSwift.Completable
+  public var hashValue: Swift.Int {
+    get
+  }
+  @objc deinit
+}
+public func == (lhs: PolarBleSdk.BleGattClientBase, rhs: PolarBleSdk.BleGattClientBase) -> Swift.Bool
+public protocol BleAttributeTransportProtocol : AnyObject {
+  func transmitMessage(_ parent: PolarBleSdk.BleGattClientBase, serviceUuid: CoreBluetooth.CBUUID, characteristicUuid: CoreBluetooth.CBUUID, packet: Foundation.Data, withResponse: Swift.Bool) throws
+  func readValue(_ parent: PolarBleSdk.BleGattClientBase, serviceUuid: CoreBluetooth.CBUUID, characteristicUuid: CoreBluetooth.CBUUID) throws
+  func isConnected() -> Swift.Bool
+  func attributeOperationStarted()
+  func attributeOperationFinished()
+}
+public protocol BleLoggerProtocol {
+  func logMessage(_ message: Swift.String)
+}
+@_hasMissingDesignatedInitializers public class BleLogger {
+  public static let sharedInstance: PolarBleSdk.BleLogger
+  public static let LOG_LEVEL_ALL: Swift.Int
+  public static let LOG_LEVEL_ERROR: Swift.Int
+  public static let LOG_LEVEL_TRACE: Swift.Int
+  public static let LOG_LEVEL_HEX: Swift.Int
+  public static func setLogLevel(_ level: Swift.Int)
+  public static func setLogger(_ logger: PolarBleSdk.BleLoggerProtocol?)
+  public static func trace(_ strings: Swift.String...)
+  public static func error(_ strings: Swift.String...)
+  public static func trace_if_error(_ message: Swift.String, error: Swift.Error?)
+  public static func trace_hex(_ message: Swift.String, data: Foundation.Data)
+  public static func trace_hex(_ message: Swift.String, data: [Swift.UInt8])
+  @objc deinit
+}
+public enum BleState : Swift.Int {
+  case unknown
+  case resetting
+  case unsupported
+  case unauthorized
+  case poweredOff
+  case poweredOn
+  public typealias RawValue = Swift.Int
+  public init?(rawValue: Swift.Int)
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public protocol BleDeviceListener {
+  func blePowered() -> Swift.Bool
+  @available(*, deprecated, message: "use powerStateObserver instead")
+  func monitorBleState() -> RxSwift.Observable<PolarBleSdk.BleState>
+  var powerStateObserver: PolarBleSdk.BlePowerStateObserver? { get set }
+  var automaticReconnection: Swift.Bool { get set }
+  var servicesToScanFor: [CoreBluetooth.CBUUID]? { get set }
+  var scanPreFilter: ((PolarBleSdk.BleAdvertisementContent) -> Swift.Bool)? { get set }
+  var automaticH10Mapping: Swift.Bool { get set }
+  func search(_ uuids: [CoreBluetooth.CBUUID]?, identifiers: [Foundation.UUID]?) -> RxSwift.Observable<PolarBleSdk.BleDeviceSession>
+  func openSessionDirect(_ session: PolarBleSdk.BleDeviceSession)
+  @available(*, deprecated, message: "use deviceSessionStateObserver instead")
+  func monitorDeviceSessionState() -> RxSwift.Observable<(session: PolarBleSdk.BleDeviceSession, state: PolarBleSdk.BleDeviceSession.DeviceSessionState)>
+  var deviceSessionStateObserver: PolarBleSdk.BleDeviceSessionStateObserver? { get set }
+  func closeSessionDirect(_ session: PolarBleSdk.BleDeviceSession)
+  @discardableResult
+  func removeAllSessions(_ inState: Swift.Set<PolarBleSdk.BleDeviceSession.DeviceSessionState>) -> Swift.Int
+  @discardableResult
+  func removeAllSessions() -> Swift.Int
+  func allSessions() -> [PolarBleSdk.BleDeviceSession]
+}
+public protocol BleDeviceSessionStateObserver : AnyObject {
+  func stateChanged(_ session: PolarBleSdk.BleDeviceSession)
+}
+public protocol BlePowerStateObserver : AnyObject {
+  func powerStateChanged(_ state: PolarBleSdk.BleState)
+}
+extension BleDeviceListener {
+  public func search(_ uuids: [CoreBluetooth.CBUUID]? = nil, identifiers: [Foundation.UUID]? = nil) -> RxSwift.Observable<PolarBleSdk.BleDeviceSession>
+}
+extension Observable where Element : Swift.Hashable {
+  public func distinct() -> RxSwift.Observable<Element>
+}
+@_hasMissingDesignatedInitializers public class AtomicBoolean {
+  public func get() -> Swift.Bool
+  public func set(_ value: Swift.Bool)
+  @objc deinit
+}
+public enum AtomicIntegerException : Swift.Error {
+  case waitTimeout
+  case canceledSignal
+  public static func == (a: PolarBleSdk.AtomicIntegerException, b: PolarBleSdk.AtomicIntegerException) -> Swift.Bool
+  public var hashValue: Swift.Int {
+    get
+  }
+  public func hash(into hasher: inout Swift.Hasher)
+}
+public enum AtomicListException : Swift.Error {
+  case waitTimeout
+  case emptyQueueSignal
+  case canceledSignal
+  public static func == (a: PolarBleSdk.AtomicListException, b: PolarBleSdk.AtomicListException) -> Swift.Bool
+  public var hashValue: Swift.Int {
+    get
+  }
+  public func hash(into hasher: inout Swift.Hasher)
+}
+@_hasMissingDesignatedInitializers open class TimeUtility {
+  public static func currentTime() -> Foundation.TimeInterval
+  public static func timeDeltaSeconds(_ from: Foundation.TimeInterval) -> Foundation.TimeInterval
+  public static func timeDeltaSeconds(_ from: Foundation.Date) -> Foundation.TimeInterval
+  @objc deinit
+}
+extension PolarBleSdk.Pmd.PmdSetting.PmdSettingType : Swift.Equatable {}
+extension PolarBleSdk.Pmd.PmdSetting.PmdSettingType : Swift.Hashable {}
+extension PolarBleSdk.Pmd.PmdSetting.PmdSettingType : Swift.RawRepresentable {}
+extension PolarBleSdk.Pmd.PmdResponseCode : Swift.Equatable {}
+extension PolarBleSdk.Pmd.PmdResponseCode : Swift.Hashable {}
+extension PolarBleSdk.Pmd.PmdResponseCode : Swift.RawRepresentable {}
+extension PolarBleSdk.Pmd.PmdMeasurementType : Swift.Equatable {}
+extension PolarBleSdk.Pmd.PmdMeasurementType : Swift.Hashable {}
+extension PolarBleSdk.Pmd.PmdMeasurementType : Swift.RawRepresentable {}
+extension PolarBleSdk.BlePsFtpUtility.MessageType : Swift.Equatable {}
+extension PolarBleSdk.BlePsFtpUtility.MessageType : Swift.Hashable {}
+extension PolarBleSdk.PolarSensorSetting.SettingType : Swift.Equatable {}
+extension PolarBleSdk.PolarSensorSetting.SettingType : Swift.Hashable {}
+extension PolarBleSdk.PolarSensorSetting.SettingType : Swift.RawRepresentable {}
+extension PolarBleSdk.RecordingInterval : Swift.Equatable {}
+extension PolarBleSdk.RecordingInterval : Swift.Hashable {}
+extension PolarBleSdk.RecordingInterval : Swift.RawRepresentable {}
+extension PolarBleSdk.SampleType : Swift.Equatable {}
+extension PolarBleSdk.SampleType : Swift.Hashable {}
+extension PolarBleSdk.SampleType : Swift.RawRepresentable {}
+extension PolarBleSdk.Features : Swift.Equatable {}
+extension PolarBleSdk.Features : Swift.Hashable {}
+extension PolarBleSdk.Features : Swift.RawRepresentable {}
+extension PolarBleSdk.BleDeviceSession.DeviceSessionState : Swift.Equatable {}
+extension PolarBleSdk.BleDeviceSession.DeviceSessionState : Swift.Hashable {}
+extension PolarBleSdk.BleDeviceSession.ConnectionType : Swift.Equatable {}
+extension PolarBleSdk.BleDeviceSession.ConnectionType : Swift.Hashable {}
+extension PolarBleSdk.BlePsdClient.PsdMessage : Swift.Equatable {}
+extension PolarBleSdk.BlePsdClient.PsdMessage : Swift.Hashable {}
+extension PolarBleSdk.BlePsdClient.PsdMessage : Swift.RawRepresentable {}
+extension PolarBleSdk.BleState : Swift.Equatable {}
+extension PolarBleSdk.BleState : Swift.Hashable {}
+extension PolarBleSdk.BleState : Swift.RawRepresentable {}
+extension PolarBleSdk.AtomicIntegerException : Swift.Equatable {}
+extension PolarBleSdk.AtomicIntegerException : Swift.Hashable {}
+extension PolarBleSdk.AtomicListException : Swift.Equatable {}
+extension PolarBleSdk.AtomicListException : Swift.Hashable {}

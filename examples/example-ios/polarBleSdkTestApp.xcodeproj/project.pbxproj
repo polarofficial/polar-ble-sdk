@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 48;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,10 +13,10 @@
 		6C770A5E205269C800F3D51D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6C770A5C205269C800F3D51D /* Main.storyboard */; };
 		6C770A60205269C800F3D51D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6C770A5F205269C800F3D51D /* Assets.xcassets */; };
 		6C770A63205269C800F3D51D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6C770A61205269C800F3D51D /* LaunchScreen.storyboard */; };
-		A5D322752566A06100E8C9A2 /* PolarBleSdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5D322742566A06100E8C9A2 /* PolarBleSdk.framework */; };
-		A5D322762566A06100E8C9A2 /* PolarBleSdk.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A5D322742566A06100E8C9A2 /* PolarBleSdk.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		A5D3227825678D8100E8C9A2 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5D3227725678D8000E8C9A2 /* RxSwift.framework */; };
-		A5D3227925678D8100E8C9A2 /* RxSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A5D3227725678D8000E8C9A2 /* RxSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A521CACA25AD7A3A00151D51 /* RxSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A521CAC925AD7A3A00151D51 /* RxSwift.xcframework */; };
+		A521CACB25AD7A3A00151D51 /* RxSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A521CAC925AD7A3A00151D51 /* RxSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A521CACD25AD7A4B00151D51 /* PolarBleSdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A521CACC25AD7A4B00151D51 /* PolarBleSdk.xcframework */; };
+		A521CACE25AD7A4B00151D51 /* PolarBleSdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A521CACC25AD7A4B00151D51 /* PolarBleSdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,8 +26,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				A5D3227925678D8100E8C9A2 /* RxSwift.framework in Embed Frameworks */,
-				A5D322762566A06100E8C9A2 /* PolarBleSdk.framework in Embed Frameworks */,
+				A521CACB25AD7A3A00151D51 /* RxSwift.xcframework in Embed Frameworks */,
+				A521CACE25AD7A4B00151D51 /* PolarBleSdk.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -53,8 +53,8 @@
 		6C770A62205269C800F3D51D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		6C770A64205269C800F3D51D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6C770A9F2057A35A00F3D51D /* polarBleSdkTestApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "polarBleSdkTestApp-Bridging-Header.h"; sourceTree = "<group>"; };
-		A5D322742566A06100E8C9A2 /* PolarBleSdk.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PolarBleSdk.framework; path = "../../polar-sdk-ios/PolarBleSdk.framework"; sourceTree = "<group>"; };
-		A5D3227725678D8000E8C9A2 /* RxSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxSwift.framework; path = Carthage/Build/iOS/RxSwift.framework; sourceTree = "<group>"; };
+		A521CAC925AD7A3A00151D51 /* RxSwift.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = RxSwift.xcframework; path = polarBleSdkTestApp/dependency/RxSwift.xcframework; sourceTree = "<group>"; };
+		A521CACC25AD7A4B00151D51 /* PolarBleSdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = PolarBleSdk.xcframework; path = "../../polar-sdk-ios/PolarBleSdk.xcframework"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,8 +62,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A5D3227825678D8100E8C9A2 /* RxSwift.framework in Frameworks */,
-				A5D322752566A06100E8C9A2 /* PolarBleSdk.framework in Frameworks */,
+				A521CACA25AD7A3A00151D51 /* RxSwift.xcframework in Frameworks */,
+				A521CACD25AD7A4B00151D51 /* PolarBleSdk.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -105,8 +105,8 @@
 		6C770A6A20526A9500F3D51D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				A5D3227725678D8000E8C9A2 /* RxSwift.framework */,
-				A5D322742566A06100E8C9A2 /* PolarBleSdk.framework */,
+				A521CACC25AD7A4B00151D51 /* PolarBleSdk.xcframework */,
+				A521CAC925AD7A3A00151D51 /* RxSwift.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -327,7 +327,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -345,12 +346,15 @@
 					"$(PROJECT_DIR)/../",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/../../polar-sdk-ios/",
-					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = polarBleSdkTestApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/Frameworks/PolarBleSdk.framework";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/Frameworks/PolarBleSdk.framework",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.polarBleSdkTestApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -374,12 +378,15 @@
 					"$(PROJECT_DIR)/../",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/../../polar-sdk-ios/",
-					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = polarBleSdkTestApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/Frameworks/PolarBleSdk.framework";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/Frameworks/PolarBleSdk.framework",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.polarBleSdkTestApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

@@ -200,8 +200,8 @@ import RxSwift
         let deviceId = session.advertisementContent.polarDeviceIdUntouched.count != 0 ?
             session.advertisementContent.polarDeviceIdUntouched :
             session.address.uuidString
-        _ = session.monitorServicesDiscovered(true).observeOn(
-        scheduler).flatMap { (uuid: CBUUID) -> Observable<Any> in
+        _ = session.monitorServicesDiscovered(true).observe(
+            on: scheduler).flatMap { (uuid: CBUUID) -> Observable<Any> in
             if let client = session.fetchGattClient(uuid) {
                 switch uuid {
                 case BleHrClient.HR_SERVICE:
@@ -209,21 +209,21 @@ import RxSwift
                     let hrClient = client as! BleHrClient
                     self.startHrObserver(hrClient, deviceId: deviceId)
                 case BleBasClient.BATTERY_SERVICE:
-                    return (client as! BleBasClient).waitBatteryLevelUpdate(true).observeOn(self.scheduler).take(1).do(onNext: { (level: Int) in
+                    return (client as! BleBasClient).waitBatteryLevelUpdate(true).observe(on: self.scheduler).take(1).do(onNext: { (level: Int) in
                             self.deviceInfoObserver?.batteryLevelReceived(
                             deviceId, batteryLevel: UInt(level))
                     }).map { (_) -> Any in
                         return Any.self
                     }
                 case BleDisClient.DIS_SERVICE:
-                    return (client as! BleDisClient).readDisInfo(true).observeOn(self.scheduler).do(onNext: { (arg0) in
+                    return (client as! BleDisClient).readDisInfo(true).observe(on: self.scheduler).do(onNext: { (arg0) in
                         self.deviceInfoObserver?.disInformationReceived(deviceId, uuid: arg0.0, value: arg0.1)
                     }).map { (_) -> Any in
                         return Any.self
                     }
                 case BlePmdClient.PMD_SERVICE:
                     let pmdClient = (client as! BlePmdClient)
-                    return pmdClient.clientReady(true).andThen(pmdClient.readFeature(true).observeOn(self.scheduler).do(onSuccess: { (value: Pmd.PmdFeature) in
+                    return pmdClient.clientReady(true).andThen(pmdClient.readFeature(true).observe(on: self.scheduler).do(onSuccess: { (value: Pmd.PmdFeature) in
                         if value.ecgSupported {
                            self.deviceFeaturesObserver?.ecgFeatureReady(deviceId)
                         }
@@ -243,7 +243,7 @@ import RxSwift
                         return Any.self
                     }
                 case BlePsFtpClient.PSFTP_SERVICE:
-                    return (client as! BlePsFtpClient).waitPsFtpReady(true).observeOn(self.scheduler).do(onCompleted: {
+                    return (client as! BlePsFtpClient).waitPsFtpReady(true).observe(on: self.scheduler).do(onCompleted: {
                         switch session.advertisementContent.polarDeviceType {
                         case "OH1": fallthrough
                         case "H10":
@@ -267,15 +267,13 @@ import RxSwift
                 self.logMessage("\(error)")
             case .completed:
                 self.logMessage("device setup completed")
-            @unknown default:
-                fatalError()
             }
         }
     }
 
     private func startHrObserver(_ client: BleHrClient, deviceId: String) {
-        _ = client.observeHrNotifications(true).observeOn(
-           self.scheduler).subscribe{ e in
+        _ = client.observeHrNotifications(true).observe(
+            on: self.scheduler).subscribe{ e in
                switch e {
                    case .completed:
                        break
@@ -287,8 +285,6 @@ import RxSwift
                            deviceId, data: (hr: UInt8(value.hr), rrs: value.rrs, rrsMs: rrsMs, contact: value.sensorContact, contactSupported: value.sensorContactSupported))
                    case .error(let error):
                        self.logMessage("\(error)")
-                   @unknown default:
-                       fatalError()
                }
         }
     }
@@ -345,7 +341,7 @@ extension PolarBleApiImpl: PolarBleApi {
                 self.listener.openSessionDirect(session!)
             } else {
                 connectSubscriptions[identifier] = listener.search(serviceList,
-                                                                   identifiers: nil).observeOn(scheduler).filter { (sess: BleDeviceSession) -> Bool in
+                                                                   identifiers: nil).observe(on: scheduler).filter { (sess: BleDeviceSession) -> Bool in
                                                                     return
                                                                    identifier.contains("-") ?
                                                                     sess.address.uuidString == identifier : sess.advertisementContent.polarDeviceIdUntouched == identifier
@@ -360,8 +356,6 @@ extension PolarBleApiImpl: PolarBleApi {
                             value.connectionType = .directConnection
                             #endif
                             self.listener.openSessionDirect(value)
-                        @unknown default:
-                            fatalError()
                         }
                 }
             }
@@ -420,7 +414,7 @@ extension PolarBleApiImpl: PolarBleApi {
             params.time = t
             params.tzOffset = Int32(zone.secondsFromGMT()/60)
             if let data = params.data() {
-                return client.query(PbPFtpQuery.setLocalTime.rawValue, parameters: data as NSData).catchError({ (err) -> Single<NSData> in
+                return client.query(PbPFtpQuery.setLocalTime.rawValue, parameters: data as NSData).catch({ (err) -> Single<NSData> in
                     return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
                 }).asCompletable()
             }
@@ -446,7 +440,7 @@ extension PolarBleApiImpl: PolarBleApi {
                 params.sampleDataIdentifier = exerciseId
                 params.sampleType = sampleType == .hr ? PbSampleType.sampleTypeHeartRate : PbSampleType.sampleTypeRrInterval
                 if let data = params.data() {
-                    return client.query(PbPFtpQuery.requestStartRecording.rawValue, parameters: data as NSData).catchError({ (err) -> Single<NSData> in
+                    return client.query(PbPFtpQuery.requestStartRecording.rawValue, parameters: data as NSData).catch({ (err) -> Single<NSData> in
                         return Single.error(err)
                     }).asCompletable()
                 }
@@ -463,7 +457,7 @@ extension PolarBleApiImpl: PolarBleApi {
             let session = try sessionFtpClientReady(identifier)
             let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
             if session.advertisementContent.polarDeviceType == "H10" {
-                return client.query(PbPFtpQuery.requestStopRecording.rawValue, parameters: nil).catchError({ (err) -> Single<NSData> in
+                return client.query(PbPFtpQuery.requestStopRecording.rawValue, parameters: nil).catch({ (err) -> Single<NSData> in
                     return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
                 }).asCompletable()
             }
@@ -481,7 +475,7 @@ extension PolarBleApiImpl: PolarBleApi {
                 return client.query(PbPFtpQuery.requestRecordingStatus.rawValue, parameters: nil).map({ (data) -> PolarRecordingStatus in
                     let result = try PbRequestRecordingStatusResult.parse(from: data as Data)
                     return (ongoing: result.recordingOn, entryId: result.hasSampleDataIdentifier ? result.sampleDataIdentifier : "")
-                }).catchError({ (err) -> Single<PolarRecordingStatus> in
+                }).catch({ (err) -> Single<PolarRecordingStatus> in
                     return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
                 })
             }
@@ -520,7 +514,7 @@ extension PolarBleApiImpl: PolarBleApi {
                             } catch {
                                 return Single.error(MessageDecodeFailed())
                             }
-                        }.catchError({ (err) -> Single<NSData> in
+                    }.catch({ (err) -> Single<NSData> in
                             return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
                         }).asCompletable()
                     }
@@ -529,7 +523,7 @@ extension PolarBleApiImpl: PolarBleApi {
                 operation.command = .remove
                 operation.path = entry.path
                 if let data = operation.data() {
-                    return client.request(data).observeOn(self.scheduler).catchError({ (err) -> Single<NSData> in
+                    return client.request(data).observe(on: self.scheduler).catch({ (err) -> Single<NSData> in
                         return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
                     }).asCompletable()
                 }
@@ -576,7 +570,7 @@ extension PolarBleApiImpl: PolarBleApi {
             let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
             return client.startMeasurement(.ecg, settings: settings.map2PmdSetting()).andThen(client.observeEcg().do(onDispose: {
                 _ = client.stopMeasurement(.ecg).subscribe()
-            })).catchError({ (err) -> Observable<PolarEcgData> in
+            })).catch({ (err) -> Observable<PolarEcgData> in
                 return Observable.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
             })
         } catch let err {
@@ -590,7 +584,7 @@ extension PolarBleApiImpl: PolarBleApi {
             let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
             return client.startMeasurement(.acc, settings: settings.map2PmdSetting()).andThen(client.observeAcc().do(onDispose: {
                 _ = client.stopMeasurement(.acc).subscribe()
-            })).catchError({ (err) -> Observable<PolarAccData> in
+            })).catch({ (err) -> Observable<PolarAccData> in
                 return Observable.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
             })
         } catch let err {
@@ -604,7 +598,7 @@ extension PolarBleApiImpl: PolarBleApi {
             let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
             return client.startMeasurement(.ppg, settings: settings.map2PmdSetting()).andThen(client.observePpg().do(onDispose: {
                 _ = client.stopMeasurement(.ppg).subscribe()
-            })).catchError({ (err) -> Observable<PolarPpgData> in
+            })).catch({ (err) -> Observable<PolarPpgData> in
                 return Observable.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
             })
         } catch let err {
@@ -618,7 +612,7 @@ extension PolarBleApiImpl: PolarBleApi {
             let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
             return client.startMeasurement(.ppi, settings: Pmd.PmdSetting([:])).andThen(client.observePpi().do(onDispose: {
                 _ = client.stopMeasurement(.ppi).subscribe()
-            })).catchError({ (err) -> Observable<PolarPpiData> in
+            })).catch({ (err) -> Observable<PolarPpiData> in
                 return Observable.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
             })
         } catch let err {
@@ -632,7 +626,7 @@ extension PolarBleApiImpl: PolarBleApi {
             let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
             return client.startMeasurement(.bioz, settings: settings.map2PmdSetting()).andThen(client.observeBioz().do(onDispose: {
                 _ = client.stopMeasurement(.bioz).subscribe()
-            })).catchError({ (err) -> Observable<PolarBiozData> in
+            })).catch({ (err) -> Observable<PolarBiozData> in
                 return Observable.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
             })
         } catch let err {
@@ -674,7 +668,7 @@ extension PolarBleApiImpl: PolarBleApi {
                             }
                         }
                         return (samples.recordingInterval?.seconds ?? 0, samples: exSamples)
-                    }.catchError({ (err) -> Single<PolarExerciseData> in
+                    }.catch({ (err) -> Single<PolarExerciseData> in
                         return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
                     })
                 }
@@ -705,7 +699,7 @@ extension PolarBleApiImpl: PolarBleApi {
                         return (path,date: date, entryId: String(components[2] + components[4]))
                     }
                     throw DateTimeFormatFailed()
-                }).catchError({ (err) -> Observable<PolarExerciseEntry> in
+                }).catch({ (err) -> Observable<PolarExerciseEntry> in
                     return Observable.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
                 })
             } else if session.advertisementContent.polarDeviceType == "H10" {
@@ -714,7 +708,7 @@ extension PolarBleApiImpl: PolarBleApi {
                 }).map({ (path) -> (path: String, date: Date, entryId: String) in
                     let components = path.split(separator: "/")
                     return (path,date: Date(), entryId: String(components[0]))
-                }).catchError({ (err) -> Observable<PolarExerciseEntry> in
+                }).catch({ (err) -> Observable<PolarExerciseEntry> in
                     return Observable.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
                 })
             }
@@ -730,7 +724,7 @@ extension PolarBleApiImpl: PolarBleApi {
             let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
             return client.querySettings(type).map({ (setting) -> PolarSensorSetting in
                 return PolarSensorSetting(setting.settings)
-            }).catchError({ (err) -> Single<PolarSensorSetting> in
+            }).catch({ (err) -> Single<PolarSensorSetting> in
                 return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
             })
         } catch let err {
@@ -752,7 +746,7 @@ extension PolarBleApiImpl: PolarBleApi {
         operation.command = PbPFtpOperation_Command.get
         operation.path = path
         if let header = operation.data() {
-            return client.request(header).asObservable().observeOn(MainScheduler.instance).flatMap { (data) -> Observable<String> in
+            return client.request(header).asObservable().observe(on: MainScheduler.instance).flatMap { (data) -> Observable<String> in
                 do{
                     let dir = try PbPFtpDirectory.parse(from: data as Data, extensionRegistry: nil)
                     let entrys = dir.entriesArray.compactMap({ (e) -> String? in
