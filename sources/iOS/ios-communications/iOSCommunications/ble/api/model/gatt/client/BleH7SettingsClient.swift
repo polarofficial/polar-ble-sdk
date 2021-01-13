@@ -121,6 +121,6 @@ public class BleH7SettingsClient: BleGattClientBase{
             return Disposables.create {
                 
             }
-        }.subscribeOn(baseSerialDispatchQueue)
+        }.subscribe(on: baseSerialDispatchQueue)
     }
 }

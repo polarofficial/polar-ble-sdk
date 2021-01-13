@@ -197,8 +197,6 @@ class CBScanner {
                     case .next( _):
                         self.central.stopScan()
                         self.central.scanForPeripherals(withServices: self.services, options:   [CBCentralManagerScanOptionAllowDuplicatesKey: true])
-                    @unknown default:
-                        fatalError()
                     }
                 }
             case .exit:

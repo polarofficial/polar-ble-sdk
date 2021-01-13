@@ -379,7 +379,7 @@ public class BlePmdClient: BleGattClientBase {
             }
             return Disposables.create{
             }
-        }.subscribeOn(baseSerialDispatchQueue)
+        }.subscribe(on: baseSerialDispatchQueue)
     }
 
     public func stopMeasurement(_ type: Pmd.PmdMeasurementType) -> Completable {
@@ -397,7 +397,7 @@ public class BlePmdClient: BleGattClientBase {
             }
             return Disposables.create{
             }
-        }.subscribeOn(baseSerialDispatchQueue)
+        }.subscribe(on: baseSerialDispatchQueue)
     }
     
     public func readFeature(_ checkConnection: Bool) -> Single<Pmd.PmdFeature> {
@@ -411,7 +411,7 @@ public class BlePmdClient: BleGattClientBase {
                 if !checkConnection || self.gattServiceTransmitter?.isConnected() ?? false {
                     self.observersFeature.append(object)
                 } else {
-                    observer(.error(BleGattException.gattDisconnected))
+                    observer(.failure(BleGattException.gattDisconnected))
                 }
             }
             return Disposables.create {
@@ -435,15 +435,15 @@ public class BlePmdClient: BleGattClientBase {
                     let query = Pmd.PmdSetting(cpResponse.parameters as Data)
                     observer(.success(query))
                 } else {
-                    observer(.error(BleGattException.gattAttributeError(errorCode: cpResponse.errorCode.rawValue)))
+                    observer(.failure(BleGattException.gattAttributeError(errorCode: cpResponse.errorCode.rawValue)))
                 }
             } catch let err {
-                observer(.error(err))
+                observer(.failure(err))
             }
             return Disposables.create{
                 // do nothing
             }
-        }.subscribeOn(baseSerialDispatchQueue)
+        }.subscribe(on: baseSerialDispatchQueue)
     }
     
     private func sendControlPointCommand(_ data: Data) throws -> Pmd.PmdControlPointResponse {
