@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.ScanFilter;
 import android.content.Context;
 import android.os.Build;
+
 import androidx.annotation.Nullable;
 
 import com.androidcommunications.polar.api.ble.BleDeviceListener;
@@ -32,12 +33,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.BackpressureOverflowStrategy;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.FlowableEmitter;
 import io.reactivex.rxjava3.core.FlowableOnSubscribe;
-import io.reactivex.rxjava3.annotations.NonNull;
 
 public class BDDeviceListenerImpl extends BleDeviceListener implements
         BDScanCallback.BDScanCallbackInterface,
@@ -69,7 +70,7 @@ public class BDDeviceListenerImpl extends BleDeviceListener implements
         if (btManager != null) {
             bluetoothAdapter = btManager.getAdapter();
         }
-        connectionHandler = new ConnectionHandler( this, this, this);
+        connectionHandler = new ConnectionHandler(this, this, this);
         gattCallback = new BDGattCallback(context, connectionHandler, sessions);
         bondingManager = new BDBondingListener(context);
         scanCallback = new BDScanCallback(context, btManager, this);

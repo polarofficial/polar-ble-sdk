@@ -14,7 +14,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.core.SingleEmitter;
 import io.reactivex.rxjava3.core.SingleOnSubscribe;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
@@ -27,7 +26,7 @@ public class BleH7SettingsClient extends BleGattBase {
 
     private final Object mutex = new Object();
 
-    public enum H7SettingsMessage{
+    public enum H7SettingsMessage {
         H7_UNKNOWN(0),
         H7_CONFIGURE_BROADCAST(1),
         H7_CONFIGURE_5KHZ(2),
@@ -44,7 +43,7 @@ public class BleH7SettingsClient extends BleGattBase {
         }
     }
 
-    public static class H7SettingsResponse{
+    public static class H7SettingsResponse {
         private int broadcastValue;
         private int khzValue;
 
@@ -70,7 +69,7 @@ public class BleH7SettingsClient extends BleGattBase {
         }
 
         @Override
-        public String toString(){
+        public String toString() {
             return "BC value: " + broadcastValue + " khz value: " + khzValue;
         }
     }
@@ -81,13 +80,13 @@ public class BleH7SettingsClient extends BleGattBase {
     }
 
     @Override
-    public void reset(){
+    public void reset() {
         super.reset();
         synchronized (h7InputQueue) {
             h7InputQueue.clear();
             h7InputQueue.notifyAll();
         }
-        synchronized (h7WrittenQueue){
+        synchronized (h7WrittenQueue) {
             h7WrittenQueue.clear();
             h7WrittenQueue.notifyAll();
         }
@@ -95,7 +94,7 @@ public class BleH7SettingsClient extends BleGattBase {
 
     @Override
     public void processServiceData(UUID characteristic, byte[] data, int status, boolean notifying) {
-        if( status == 0 && characteristic.equals(H7_SETTINGS_CHARACTERISTIC) ){
+        if (status == 0 && characteristic.equals(H7_SETTINGS_CHARACTERISTIC)) {
             synchronized (h7InputQueue) {
                 h7InputQueue.push(data);
                 h7InputQueue.notifyAll();
@@ -106,8 +105,8 @@ public class BleH7SettingsClient extends BleGattBase {
     @Override
     public void processServiceDataWritten(UUID characteristic, int status) {
         // do nothing
-        if (characteristic.equals(H7_SETTINGS_CHARACTERISTIC)){
-            synchronized (h7WrittenQueue){
+        if (characteristic.equals(H7_SETTINGS_CHARACTERISTIC)) {
+            synchronized (h7WrittenQueue) {
                 h7WrittenQueue.push(status);
                 h7WrittenQueue.notifyAll();
             }
@@ -115,29 +114,29 @@ public class BleH7SettingsClient extends BleGattBase {
     }
 
     @Override
-    public @NonNull String toString() {
+    public @NonNull
+    String toString() {
         return "Legacy H7 settings client";
     }
 
-    private byte[] readSettingsValue() throws Exception{
-        txInterface.readValue(BleH7SettingsClient.this,H7_SETTINGS_SERVICE,H7_SETTINGS_CHARACTERISTIC);
+    private byte[] readSettingsValue() throws Exception {
+        txInterface.readValue(BleH7SettingsClient.this, H7_SETTINGS_SERVICE, H7_SETTINGS_CHARACTERISTIC);
         byte[] packet = h7InputQueue.poll(30, TimeUnit.SECONDS);
-        if( packet != null ){
+        if (packet != null) {
             return packet;
         } else {
-            if(!txInterface.isConnected()){
+            if (!txInterface.isConnected()) {
                 throw new BleDisconnected();
-            }else {
+            } else {
                 throw new Exception("Failed to receive packet in timeline");
             }
         }
     }
 
     /**
-     *
-     * @param command H7_CONFIGURE_BROADCAST | H7_CONFIGURE_5KHZ: writes broadcast value to desired, contains 3 operations
-     *                                        1. inital value read 2. updated value write 3. updated value read
-     *                H7_REQUEST_CURRENT_SETTINGS: reads current settings
+     * @param command   H7_CONFIGURE_BROADCAST | H7_CONFIGURE_5KHZ: writes broadcast value to desired, contains 3 operations
+     *                  1. inital value read 2. updated value write 3. updated value read
+     *                  H7_REQUEST_CURRENT_SETTINGS: reads current settings
      * @param parameter byte with value 1=on or 0=off
      * @return Single stream
      */
@@ -204,8 +203,8 @@ public class BleH7SettingsClient extends BleGattBase {
                         throw new BleDisconnected();
                     }
                 }
-            } catch (Exception e){
-                if(!emitter.isDisposed()){
+            } catch (Exception e) {
+                if (!emitter.isDisposed()) {
                     emitter.tryOnError(e);
                 }
             }

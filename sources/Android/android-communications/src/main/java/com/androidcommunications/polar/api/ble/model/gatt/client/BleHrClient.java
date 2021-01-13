@@ -16,7 +16,7 @@ import io.reactivex.rxjava3.core.FlowableEmitter;
 
 public class BleHrClient extends BleGattBase {
 
-    public static class HrNotificationData{
+    public static class HrNotificationData {
         public int hrValue;
         public boolean sensorContact;
         public boolean sensorContactSupported;
@@ -42,11 +42,11 @@ public class BleHrClient extends BleGattBase {
         }
     }
 
-    private AtomicSet<FlowableEmitter<? super HrNotificationData> > hrObserverAtomicList = new AtomicSet<>();
+    private AtomicSet<FlowableEmitter<? super HrNotificationData>> hrObserverAtomicList = new AtomicSet<>();
 
     public static final UUID BODY_SENSOR_LOCATION = UUID.fromString("00002a38-0000-1000-8000-00805f9b34fb");
-    public static final UUID HR_MEASUREMENT       = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb");
-    public static final UUID HR_SERVICE           = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb");
+    public static final UUID HR_MEASUREMENT = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb");
+    public static final UUID HR_SERVICE = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb");
 
     public BleHrClient(BleGattTxInterface txInterface) {
         super(txInterface, HR_SERVICE);
@@ -62,7 +62,7 @@ public class BleHrClient extends BleGattBase {
 
     @Override
     public void processServiceData(UUID characteristic, byte[] data, int status, boolean notifying) {
-        if(status == 0) if (characteristic.equals(HR_MEASUREMENT)) {
+        if (status == 0) if (characteristic.equals(HR_MEASUREMENT)) {
             // stupid java does not have bit fields
             int cumulative_rr = 0;
             int hrFormat = data[0] & 0x01;
@@ -101,24 +101,26 @@ public class BleHrClient extends BleGattBase {
     }
 
     @Override
-    public @NonNull String toString() {
+    public @NonNull
+    String toString() {
         // and so on
         return "HR gatt client";
     }
 
     @Override
     public Completable clientReady(boolean checkConnection) {
-        return waitNotificationEnabled(HR_MEASUREMENT,checkConnection);
+        return waitNotificationEnabled(HR_MEASUREMENT, checkConnection);
     }
 
     // API
+
     /**
      * @return Flowable stream
-     *        Produces: onNext, for every hr notification event
-     *                  onError, if client is not initially connected or ble disconnect's
-     *                  onCompleted, none except further configuration applied. If binded to fragment or activity life cycle this might be produced
+     * Produces: onNext, for every hr notification event
+     * onError, if client is not initially connected or ble disconnect's
+     * onCompleted, none except further configuration applied. If binded to fragment or activity life cycle this might be produced
      */
-    public Flowable<HrNotificationData> observeHrNotifications(final boolean checkConnection){
-        return RxUtils.monitorNotifications(hrObserverAtomicList,txInterface,checkConnection);
+    public Flowable<HrNotificationData> observeHrNotifications(final boolean checkConnection) {
+        return RxUtils.monitorNotifications(hrObserverAtomicList, txInterface, checkConnection);
     }
 }

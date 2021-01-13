@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.os.Handler;
+
 import androidx.annotation.VisibleForTesting;
 
 import com.androidcommunications.polar.BuildConfig;
@@ -32,11 +33,11 @@ import java.util.UUID;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.core.SingleEmitter;
 import io.reactivex.rxjava3.core.SingleOnSubscribe;
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Action;
 
@@ -61,13 +62,14 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
     private Handler handler;
 
     @VisibleForTesting
-    public BDDeviceSessionImpl(){}
+    public BDDeviceSessionImpl() {
+    }
 
     BDDeviceSessionImpl(Context context,
-                       BluetoothDevice bluetoothDevice,
-                       BDScanCallback scanCallback,
-                       BDBondingListener bondingManager,
-                       BleGattFactory factory) {
+                        BluetoothDevice bluetoothDevice,
+                        BDScanCallback scanCallback,
+                        BDBondingListener bondingManager,
+                        BleGattFactory factory) {
         super();
         this.context = context;
         this.handler = new Handler(context.getMainLooper());

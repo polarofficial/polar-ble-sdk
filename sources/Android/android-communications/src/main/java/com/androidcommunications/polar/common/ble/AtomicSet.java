@@ -9,56 +9,56 @@ public class AtomicSet<E> {
 
     private List<E> items = new ArrayList<>();
 
-    public interface ObjectAccess<E>{
+    public interface ObjectAccess<E> {
         void access(E object);
     }
 
-    public interface CompareFunction<E>{
+    public interface CompareFunction<E> {
         boolean compare(E object);
     }
 
-    public synchronized void clear(){
+    public synchronized void clear() {
         items.clear();
     }
 
-    public synchronized boolean add(E object){
-        if(object != null && !items.contains(object)){
+    public synchronized boolean add(E object) {
+        if (object != null && !items.contains(object)) {
             items.add(object);
             return true;
         }
         return false;
     }
 
-    public synchronized void remove(E object){
-        if(object != null){
+    public synchronized void remove(E object) {
+        if (object != null) {
             items.remove(object);
         }
     }
 
-    public synchronized void accessAll(ObjectAccess<E> objectAccess){
-        for(int i=items.size()-1;i!=-1;--i){
+    public synchronized void accessAll(ObjectAccess<E> objectAccess) {
+        for (int i = items.size() - 1; i != -1; --i) {
             objectAccess.access(items.get(i));
         }
     }
 
-    public synchronized E fetch(CompareFunction<E> compareFunction){
-        for(int i=items.size()-1;i!=-1;--i){
-            if( compareFunction.compare(items.get(i)) ){
+    public synchronized E fetch(CompareFunction<E> compareFunction) {
+        for (int i = items.size() - 1; i != -1; --i) {
+            if (compareFunction.compare(items.get(i))) {
                 return items.get(i);
             }
         }
         return null;
     }
 
-    public synchronized Set<E> objects(){
+    public synchronized Set<E> objects() {
         return new HashSet<>(items);
     }
 
-    public synchronized int size(){
+    public synchronized int size() {
         return items.size();
     }
 
-    public synchronized boolean contains(E object){
+    public synchronized boolean contains(E object) {
         return items.contains(object);
     }
 }

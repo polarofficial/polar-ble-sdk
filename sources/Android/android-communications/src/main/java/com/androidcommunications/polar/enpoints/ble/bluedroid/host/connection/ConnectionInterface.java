@@ -4,7 +4,10 @@ import com.androidcommunications.polar.enpoints.ble.bluedroid.host.BDDeviceSessi
 
 public interface ConnectionInterface {
     void connectDevice(BDDeviceSessionImpl session);
+
     void disconnectDevice(BDDeviceSessionImpl session);
+
     void cancelDeviceConnection(BDDeviceSessionImpl session);
+
     boolean isPowered();
 }

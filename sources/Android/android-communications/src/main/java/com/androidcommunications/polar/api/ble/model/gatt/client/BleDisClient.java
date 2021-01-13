@@ -1,7 +1,8 @@
 package com.androidcommunications.polar.api.ble.model.gatt.client;
 
-import androidx.annotation.NonNull;
 import android.util.Pair;
+
+import androidx.annotation.NonNull;
 
 import com.androidcommunications.polar.api.ble.exceptions.BleAttributeError;
 import com.androidcommunications.polar.api.ble.exceptions.BleDisconnected;
@@ -35,11 +36,11 @@ public class BleDisClient extends BleGattBase {
     public static final UUID PNP_ID = UUID.fromString("00002a50-0000-1000-8000-00805f9b34fb");
 
     // store in map
-    private final HashMap<UUID,String> disInformation = new HashMap<>();
-    private final AtomicSet<FlowableEmitter<? super Pair<UUID, String> >> disObserverAtomicList = new AtomicSet<>();
+    private final HashMap<UUID, String> disInformation = new HashMap<>();
+    private final AtomicSet<FlowableEmitter<? super Pair<UUID, String>>> disObserverAtomicList = new AtomicSet<>();
 
     public BleDisClient(BleGattTxInterface txInterface) {
-        super(txInterface,DIS_SERVICE);
+        super(txInterface, DIS_SERVICE);
         addCharacteristicRead(MODEL_NUMBER_STRING);
         addCharacteristicRead(MANUFACTURER_NAME_STRING);
         addCharacteristicRead(HARDWARE_REVISION_STRING);
@@ -62,7 +63,7 @@ public class BleDisClient extends BleGattBase {
 
     @Override
     public void processServiceData(final UUID characteristic, final byte[] data, int status, boolean notifying) {
-        if(status==0){
+        if (status == 0) {
             synchronized (disInformation) {
                 disInformation.put(characteristic, new String(data, StandardCharsets.UTF_8));
             }
@@ -74,8 +75,8 @@ public class BleDisClient extends BleGattBase {
                     }
                 }
             });
-        }else{
-            RxUtils.postError(disObserverAtomicList,new BleAttributeError("dis ",status));
+        } else {
+            RxUtils.postError(disObserverAtomicList, new BleAttributeError("dis ", status));
         }
     }
 
@@ -85,32 +86,34 @@ public class BleDisClient extends BleGattBase {
     }
 
     @Override
-    public @NonNull String toString() {
+    public @NonNull
+    String toString() {
         return "Device info service";
     }
 
     /**
      * Produces:  onNext, when a dis data has been read <BR>
-     *            onCompleted, after all available dis info has been read <BR>
-     *            onError, if client is not initially connected or ble disconnect's  <BR>
+     * onCompleted, after all available dis info has been read <BR>
+     * onError, if client is not initially connected or ble disconnect's  <BR>
+     *
      * @param checkConnection, optionally check connection on subscribe <BR>
      * @return Flowable stream <BR>
      */
-    public Flowable<Pair<UUID, String> > observeDisInfo(final boolean checkConnection) {
+    public Flowable<Pair<UUID, String>> observeDisInfo(final boolean checkConnection) {
         final FlowableEmitter<? super Pair<UUID, String>>[] observer = new FlowableEmitter[1];
         return Flowable.create((FlowableOnSubscribe<Pair<UUID, String>>) subscriber -> {
-            if ( !checkConnection || BleDisClient.this.txInterface.isConnected() ) {
+            if (!checkConnection || BleDisClient.this.txInterface.isConnected()) {
                 observer[0] = subscriber;
                 disObserverAtomicList.add(subscriber);
                 synchronized (disInformation) {
-                    for(UUID e : disInformation.keySet()){
+                    for (UUID e : disInformation.keySet()) {
                         subscriber.onNext(new Pair<>(e, disInformation.get(e)));
                     }
                     if (hasAllAvailableReadableCharacteristics(disInformation.keySet())) {
                         subscriber.onComplete();
                     }
                 }
-            } else if(!subscriber.isCancelled()) {
+            } else if (!subscriber.isCancelled()) {
                 subscriber.tryOnError(new BleDisconnected());
             }
         }, BackpressureStrategy.BUFFER).doFinally(() -> disObserverAtomicList.remove(observer[0]));

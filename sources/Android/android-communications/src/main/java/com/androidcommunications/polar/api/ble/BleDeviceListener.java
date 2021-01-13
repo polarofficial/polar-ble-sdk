@@ -1,10 +1,10 @@
 package com.androidcommunications.polar.api.ble;
 
 import android.bluetooth.le.ScanFilter;
+
 import androidx.annotation.IntDef;
 import androidx.annotation.IntRange;
 import androidx.annotation.Nullable;
-import android.util.Pair;
 
 import com.androidcommunications.polar.api.ble.model.BleDeviceSession;
 import com.androidcommunications.polar.api.ble.model.advertisement.BleAdvertisementContent;
@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Set;
 
 import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.Observable;
 
 public abstract class BleDeviceListener {
 
@@ -30,22 +29,23 @@ public abstract class BleDeviceListener {
 
     protected BleGattFactory factory;
     protected BleSearchPreFilter preFilter;
+
     /**
      * @param clients e.g. how to set the clients
-     *
-     * Set<Class<? extends BleGattBase> > clients = new HashSet<>(Arrays.asList(
-     * BleHrClient.class,
-     * BleBattClient.class,
-     * BleDisClient.class,
-     * BleGapClient.class,
-     * BlePfcClient.class,
-     * BlePsdClient.class,
-     * BlePsFtpClient.class,
-     * BleH7SettingsClient.class,
-     * BlePMDClient.class,
-     * BleRscClient.class));
+     *                <p>
+     *                Set<Class<? extends BleGattBase> > clients = new HashSet<>(Arrays.asList(
+     *                BleHrClient.class,
+     *                BleBattClient.class,
+     *                BleDisClient.class,
+     *                BleGapClient.class,
+     *                BlePfcClient.class,
+     *                BlePsdClient.class,
+     *                BlePsFtpClient.class,
+     *                BleH7SettingsClient.class,
+     *                BlePMDClient.class,
+     *                BleRscClient.class));
      */
-    protected BleDeviceListener(Set<Class<? extends BleGattBase> > clients) {
+    protected BleDeviceListener(Set<Class<? extends BleGattBase>> clients) {
         factory = new BleGattFactory(clients);
     }
 
@@ -73,6 +73,7 @@ public abstract class BleDeviceListener {
 
     /**
      * enable to optimize memory usage or disable scan pre filter
+     *
      * @param filter policy
      */
     abstract public void setScanPreFilter(@Nullable final BleSearchPreFilter filter);
@@ -84,8 +85,9 @@ public abstract class BleDeviceListener {
 
     /**
      * Produces: onNext:      When a advertisement has been detected <BR>
-     *           onError:     if scan start fails propagates BleStartScanError with error code <BR>
-     *           onCompleted: Non produced <BR>
+     * onError:     if scan start fails propagates BleStartScanError with error code <BR>
+     * onCompleted: Non produced <BR>
+     *
      * @param fetchKnownDevices, fetch known devices means bonded, already connected and already found devices <BR>
      * @return Observable stream <BR>
      */
@@ -100,14 +102,16 @@ public abstract class BleDeviceListener {
 
     /**
      * aquire connection establishment
+     *
      * @param session device
      */
     abstract public void openSessionDirect(BleDeviceSession session);
 
     /**
      * aquire connection establishment, BleDeviceSessionStateChangedCallback callbacks are invoked
+     *
      * @param session device
-     * @param uuids needed uuids to be found from advertisement data, when reconnecting
+     * @param uuids   needed uuids to be found from advertisement data, when reconnecting
      */
     abstract public void openSessionDirect(BleDeviceSession session, List<String> uuids);
 
@@ -129,6 +133,7 @@ public abstract class BleDeviceListener {
 
     /**
      * aquires disconnection directly without Observable returned
+     *
      * @param session device
      */
     abstract public void closeSessionDirect(BleDeviceSession session);
@@ -146,6 +151,7 @@ public abstract class BleDeviceListener {
 
     /**
      * Client app/lib can request to remove device from the list,
+     *
      * @param deviceSession @see BleDeviceSession
      * @return true device was removed, false no( means device is considered to be alive )
      */
@@ -155,19 +161,23 @@ public abstract class BleDeviceListener {
      * @return count of sessions removed
      */
     abstract public int removeAllSessions();
+
     abstract public int removeAllSessions(Set<BleDeviceSession.DeviceSessionState> inStates);
 
     /**
      * enable or disable automatic reconnection, by default true.
+     *
      * @param automaticReconnection
      */
     abstract public void setAutomaticReconnection(boolean automaticReconnection);
 
     public static final int POWER_MODE_NORMAL = 0;
     public static final int POWER_MODE_LOW = 1;
+
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({POWER_MODE_NORMAL,POWER_MODE_LOW})
+    @IntDef({POWER_MODE_NORMAL, POWER_MODE_LOW})
     public @interface PowerMode {
     }
+
     abstract public void setPowerMode(@PowerMode int mode);
 }
