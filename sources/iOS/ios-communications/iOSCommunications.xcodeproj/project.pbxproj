@@ -282,11 +282,8 @@
 		6CEA10E921786B0000E16FBF /* Type.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10E521786B0000E16FBF /* Type.pbobjc.m */; };
 		6CEA10EA21786B0000E16FBF /* Timestamp.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10E621786B0000E16FBF /* Timestamp.pbobjc.m */; };
 		A5C3EC3525A9CB33003565A9 /* RxSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5C3EC3425A9CB33003565A9 /* RxSwift.xcframework */; };
-		A5C3EC3625A9CB33003565A9 /* RxSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A5C3EC3425A9CB33003565A9 /* RxSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A5C3EC3825A9CB43003565A9 /* RxSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5C3EC3425A9CB33003565A9 /* RxSwift.xcframework */; };
-		A5C3EC3925A9CB43003565A9 /* RxSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A5C3EC3425A9CB33003565A9 /* RxSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A5C3EC3B25A9CB4F003565A9 /* RxSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5C3EC3425A9CB33003565A9 /* RxSwift.xcframework */; };
-		A5C3EC3C25A9CB4F003565A9 /* RxSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A5C3EC3425A9CB33003565A9 /* RxSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -298,42 +295,6 @@
 			remoteInfo = iOSCommunications;
 		};
 /* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		A5C3EC2225A889A4003565A9 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				A5C3EC3925A9CB43003565A9 /* RxSwift.xcframework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A5C3EC2825A889AE003565A9 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				A5C3EC3625A9CB33003565A9 /* RxSwift.xcframework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A5C3EC2D25A889B4003565A9 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				A5C3EC3C25A9CB4F003565A9 /* RxSwift.xcframework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		6C0C543E1CFC749E00FF23E9 /* iOSCommunications.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iOSCommunications.h; sourceTree = "<group>"; };
@@ -1013,7 +974,6 @@
 				6C34DE851CAA3F240083EB1F /* Headers */,
 				6C34DE861CAA3F240083EB1F /* Resources */,
 				6C393C321D4F70BC00F5B6FD /* ShellScript */,
-				A5C3EC2D25A889B4003565A9 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1035,7 +995,6 @@
 				6C39E8C0209B0754001F7E44 /* Headers */,
 				6C39E8C1209B0754001F7E44 /* Resources */,
 				6C24099B221A85C3001C1A84 /* ShellScript */,
-				A5C3EC2225A889A4003565A9 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1058,7 +1017,6 @@
 				6C770B69206B779900F3D51D /* Headers */,
 				6C770B6A206B779900F3D51D /* Resources */,
 				6C48395921B12BAD00747D78 /* ShellScript */,
-				A5C3EC2825A889AE003565A9 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1705,7 +1663,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.3.0;
+				MARKETING_VERSION = 2.3.1;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdkWatchOs;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -1757,7 +1715,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.3.0;
+				MARKETING_VERSION = 2.3.1;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdkWatchOs;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -1809,7 +1767,7 @@
 					"@loader_path/Frameworks",
 				);
 				MACH_O_TYPE = mh_dylib;
-				MARKETING_VERSION = 2.3.0;
+				MARKETING_VERSION = 2.3.1;
 				"OTHER_CFLAGS[arch=*]" = "-fembed-bitcode";
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdk;
@@ -1865,7 +1823,7 @@
 					"@loader_path/Frameworks",
 				);
 				MACH_O_TYPE = mh_dylib;
-				MARKETING_VERSION = 2.3.0;
+				MARKETING_VERSION = 2.3.1;
 				"OTHER_CFLAGS[arch=*]" = "-fembed-bitcode";
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdk;
