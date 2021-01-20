@@ -4,18 +4,6 @@
 <dict>
 	<key>files</key>
 	<dict>
-		<key>Frameworks/RxSwift.framework/Info.plist</key>
-		<data>
-		xxYCPfCMQ2qlXWsHy/sb9Yjp3t4=
-		</data>
-		<key>Frameworks/RxSwift.framework/RxSwift</key>
-		<data>
-		P8jGjnOr7kQNv8dJpSZZm71oMxI=
-		</data>
-		<key>Frameworks/RxSwift.framework/_CodeSignature/CodeResources</key>
-		<data>
-		yJ0KnbwV1AH9tgktz8TyJ39Kdw0=
-		</data>
 		<key>Headers/PolarBleSdkWatchOs-Swift.h</key>
 		<data>
 		RTWtn9cEDbqjAYq9nfQKsusO7Yw=
@@ -26,7 +14,7 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		bRfJ3TrN8y10XFfbDyM5BVa2/N8=
+		os+mY9prqgddP8uv600cCSXl2Ng=
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/arm64-apple-watchos-simulator.swiftdoc</key>
 		<data>
@@ -107,39 +95,6 @@
 	</dict>
 	<key>files2</key>
 	<dict>
-		<key>Frameworks/RxSwift.framework/Info.plist</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			xxYCPfCMQ2qlXWsHy/sb9Yjp3t4=
-			</data>
-			<key>hash2</key>
-			<data>
-			7waM35yVRyN6fH+eIiouYnYnX7g+S/LCZKdFOJS9hh8=
-			</data>
-		</dict>
-		<key>Frameworks/RxSwift.framework/RxSwift</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			P8jGjnOr7kQNv8dJpSZZm71oMxI=
-			</data>
-			<key>hash2</key>
-			<data>
-			ey+MZScHJu0KEZXiH6ksViz3xHf7o1Z992p+j5am6bY=
-			</data>
-		</dict>
-		<key>Frameworks/RxSwift.framework/_CodeSignature/CodeResources</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			yJ0KnbwV1AH9tgktz8TyJ39Kdw0=
-			</data>
-			<key>hash2</key>
-			<data>
-			3qbHa/pcSnIzVuXhbuNlxH7dIFsI2nd1EpFPdp279bQ=
-			</data>
-		</dict>
 		<key>Headers/PolarBleSdkWatchOs-Swift.h</key>
 		<dict>
 			<key>hash</key>

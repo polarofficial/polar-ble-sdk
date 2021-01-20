@@ -4,18 +4,6 @@
 <dict>
 	<key>files</key>
 	<dict>
-		<key>Frameworks/RxSwift.framework/Info.plist</key>
-		<data>
-		PS2uSTGfemzqY5tK9cvuqgN7FlE=
-		</data>
-		<key>Frameworks/RxSwift.framework/RxSwift</key>
-		<data>
-		UvWjQ3fTnzqBdb6ID4T9wzcCoBM=
-		</data>
-		<key>Frameworks/RxSwift.framework/_CodeSignature/CodeResources</key>
-		<data>
-		EWelIK1uimbtGf8vh+a8nDuAKYQ=
-		</data>
 		<key>Headers/PolarBleSdk-Swift.h</key>
 		<data>
 		Csn4CffEYOkIRdhNgtHqyw+GdTo=
@@ -26,7 +14,7 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		s+z8Z/XMZApM8xt8eL+nRjSbQC4=
+		cq0joh+u8uOrKWcmS8y+B+HW9BA=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/arm64-apple-ios-simulator.swiftdoc</key>
 		<data>
@@ -83,27 +71,6 @@
 	</dict>
 	<key>files2</key>
 	<dict>
-		<key>Frameworks/RxSwift.framework/Info.plist</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			FpWeDwWWSHTI6K5gpZLAQ6FOzpmXlW2Uqx7QzfGP3wU=
-			</data>
-		</dict>
-		<key>Frameworks/RxSwift.framework/RxSwift</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			9VWL9hBH/RsvrrfVmU2wgh48agu5ajzCB0jIRdJtp6c=
-			</data>
-		</dict>
-		<key>Frameworks/RxSwift.framework/_CodeSignature/CodeResources</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			EPKDgSmGNQ+03BsyFPZVYtoGeBjHMKBmbE7RHF2zWXk=
-			</data>
-		</dict>
 		<key>Headers/PolarBleSdk-Swift.h</key>
 		<dict>
 			<key>hash2</key>
