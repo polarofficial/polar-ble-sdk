@@ -185,7 +185,6 @@
 		6C770BA3206B77F300F3D51D /* AtomicList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44A01CB291790006220D /* AtomicList.swift */; };
 		6C770BA4206B77F300F3D51D /* TimeUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C54FD1CFEB3C900FF23E9 /* TimeUtility.swift */; };
 		6C770BA6206B77F300F3D51D /* RxObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7709F72036D15F00F3D51D /* RxObserver.swift */; };
-		6C770BA9206B784300F3D51D /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6CD49C7E1CABA2EC000D8660 /* CoreBluetooth.framework */; };
 		6C8BCD3C1CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD381CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift */; };
 		6C8BCD3D1CE5BCEA00A4C6A8 /* BlePsFtpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD391CE5BCEA00A4C6A8 /* BlePsFtpClient.swift */; };
 		6C8BCD431CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD421CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift */; };
@@ -198,7 +197,6 @@
 		6CB9DB992087188E00505269 /* RxUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB9DB982087188E00505269 /* RxUtils.swift */; };
 		6CCFE4001E5D76C100FAA131 /* BlePsdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */; };
 		6CD12ACA201F126500F3A417 /* BleGattException.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD12AC9201F126500F3A417 /* BleGattException.swift */; };
-		6CD49C7F1CABA2EC000D8660 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6CD49C7E1CABA2EC000D8660 /* CoreBluetooth.framework */; };
 		6CEA0FC02174B17700E16FBF /* PftpNotification.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FAF2174B17700E16FBF /* PftpNotification.pbobjc.m */; };
 		6CEA0FC12174B17700E16FBF /* PftpResponse.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA0FB02174B17700E16FBF /* PftpResponse.pbobjc.m */; };
 		6CEA0FC22174B17700E16FBF /* Types.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA0FB12174B17700E16FBF /* Types.pbobjc.h */; };
@@ -389,7 +387,6 @@
 		6CB9DB982087188E00505269 /* RxUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RxUtils.swift; path = ble/common/RxUtils.swift; sourceTree = "<group>"; };
 		6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePsdClient.swift; path = ble/api/model/gatt/client/BlePsdClient.swift; sourceTree = "<group>"; };
 		6CD12AC9201F126500F3A417 /* BleGattException.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleGattException.swift; path = ble/api/model/gatt/exceptions/BleGattException.swift; sourceTree = "<group>"; };
-		6CD49C7E1CABA2EC000D8660 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		6CEA0FAF2174B17700E16FBF /* PftpNotification.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PftpNotification.pbobjc.m; path = sdk/impl/protobuf/PftpNotification.pbobjc.m; sourceTree = "<group>"; };
 		6CEA0FB02174B17700E16FBF /* PftpResponse.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PftpResponse.pbobjc.m; path = sdk/impl/protobuf/PftpResponse.pbobjc.m; sourceTree = "<group>"; };
 		6CEA0FB12174B17700E16FBF /* Types.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Types.pbobjc.h; path = sdk/impl/protobuf/Types.pbobjc.h; sourceTree = "<group>"; };
@@ -489,7 +486,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6CD49C7F1CABA2EC000D8660 /* CoreBluetooth.framework in Frameworks */,
 				A5C3EC3B25A9CB4F003565A9 /* RxSwift.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -506,7 +502,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6C770BA9206B784300F3D51D /* CoreBluetooth.framework in Frameworks */,
 				A5C3EC3525A9CB33003565A9 /* RxSwift.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -681,7 +676,6 @@
 			isa = PBXGroup;
 			children = (
 				A5C3EC3425A9CB33003565A9 /* RxSwift.xcframework */,
-				6CD49C7E1CABA2EC000D8660 /* CoreBluetooth.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
