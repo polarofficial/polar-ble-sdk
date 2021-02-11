@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>PolarBleApiDeviceHrObserver Protocol Reference</title>
+    <title>DeviceStreamingFeature Enumeration Reference</title>
     <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
     <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
     <meta charset='utf-8'>
@@ -13,8 +13,8 @@
     <script src="../js/jazzy.search.js" defer></script>
   </head>
   <body>
-    <a name="//apple_ref/swift/Protocol/PolarBleApiDeviceHrObserver" class="dashAnchor"></a>
-    <a title="PolarBleApiDeviceHrObserver Protocol Reference"></a>
+    <a name="//apple_ref/swift/Enum/DeviceStreamingFeature" class="dashAnchor"></a>
+    <a title="DeviceStreamingFeature Enumeration Reference"></a>
     <header>
       <div class="content-wrapper">
         <p><a href="../index.html"> Docs</a> (89% documented)</p>
@@ -29,7 +29,7 @@
       <p id="breadcrumbs">
         <a href="../index.html"> Reference</a>
         <img id="carat" src="../img/carat.png" />
-        PolarBleApiDeviceHrObserver Protocol Reference
+        DeviceStreamingFeature Enumeration Reference
       </p>
     </div>
     <div class="content-wrapper">
@@ -187,15 +187,15 @@
       <article class="main-content">
         <section>
           <section class="section">
-            <h1>PolarBleApiDeviceHrObserver</h1>
+            <h1>DeviceStreamingFeature</h1>
               <div class="declaration">
                 <div class="language">
                   
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">PolarBleApiDeviceHrObserver</span> <span class="p">:</span> <span class="kt">AnyObject</span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">DeviceStreamingFeature</span> <span class="p">:</span> <span class="kt">Int</span><span class="p">,</span> <span class="kt">CaseIterable</span></code></pre>
 
                 </div>
               </div>
-            <p>Heart rate observer</p>
+            <p>device streaming features</p>
 
           </section>
           <section class="section task-group-section">
@@ -204,9 +204,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB19ApiDeviceHrObserverP0aF4Dataa"></a>
-                    <a name="//apple_ref/swift/Alias/PolarHrData" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB19ApiDeviceHrObserverP0aF4Dataa">PolarHrData</a>
+                    <a name="/s:11PolarBleSdk22DeviceStreamingFeatureO3ecgyA2CmF"></a>
+                    <a name="//apple_ref/swift/Element/ecg" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk22DeviceStreamingFeatureO3ecgyA2CmF">ecg</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -214,20 +214,14 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Polar hr data</p>
-<pre class="highlight swift"><code><span class="o">-</span> <span class="n">hr</span> <span class="k">in</span> <span class="kt">BPM</span>
-<span class="o">-</span> <span class="n">rrs</span> <span class="kt">RR</span> <span class="n">interval</span> <span class="k">in</span> <span class="mi">1</span><span class="o">/</span><span class="mi">1024</span><span class="o">.</span> <span class="kt">R</span> <span class="k">is</span> <span class="n">a</span> <span class="n">the</span> <span class="n">top</span> <span class="n">highest</span> <span class="n">peak</span> <span class="k">in</span> <span class="n">the</span> <span class="kt">QRS</span> <span class="n">complex</span> <span class="n">of</span> <span class="n">the</span> <span class="kt">ECG</span> <span class="n">wave</span> <span class="n">and</span> <span class="kt">RR</span> <span class="k">is</span> <span class="n">the</span> <span class="n">interval</span> <span class="n">between</span> <span class="n">successive</span> <span class="kt">Rs</span><span class="o">.</span> 
-<span class="o">-</span> <span class="n">rrs</span> <span class="kt">RR</span> <span class="n">interval</span> <span class="k">in</span> <span class="n">ms</span><span class="o">.</span>
-<span class="o">-</span> <span class="n">contact</span> <span class="n">status</span> <span class="n">between</span> <span class="n">the</span> <span class="n">device</span> <span class="n">and</span> <span class="n">the</span> <span class="n">users</span> <span class="n">skin</span>
-<span class="o">-</span> <span class="n">contactSupported</span> <span class="k">if</span> <span class="n">contact</span> <span class="k">is</span> <span class="n">supported</span>
-</code></pre>
+                        <p>Undocumented</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">typealias</span> <span class="kt">PolarHrData</span> <span class="o">=</span> <span class="p">(</span><span class="nv">hr</span><span class="p">:</span> <span class="kt">UInt8</span><span class="p">,</span> <span class="nv">rrs</span><span class="p">:</span> <span class="p">[</span><span class="kt">Int</span><span class="p">],</span> <span class="nv">rrsMs</span><span class="p">:</span> <span class="p">[</span><span class="kt">Int</span><span class="p">],</span> <span class="nv">contact</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">,</span> <span class="nv">contactSupported</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">ecg</span></code></pre>
 
                         </div>
                       </div>
@@ -237,9 +231,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB19ApiDeviceHrObserverP15hrValueReceived_4dataySS_s5UInt8V0H0_SaySiG3rrsAI0M2MsSb7contactSb0O9SupportedttF"></a>
-                    <a name="//apple_ref/swift/Method/hrValueReceived(_:data:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB19ApiDeviceHrObserverP15hrValueReceived_4dataySS_s5UInt8V0H0_SaySiG3rrsAI0M2MsSb7contactSb0O9SupportedttF">hrValueReceived(_:<wbr>data:<wbr>)</a>
+                    <a name="/s:11PolarBleSdk22DeviceStreamingFeatureO3accyA2CmF"></a>
+                    <a name="//apple_ref/swift/Element/acc" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk22DeviceStreamingFeatureO3accyA2CmF">acc</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -247,35 +241,124 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>HR notification received. Notice when using OH1 and PPI stream is started this callback will produce 0 hr.</p>
+                        <p>Undocumented</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">hrValueReceived</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="kt"><a href="../Protocols/PolarBleApiDeviceHrObserver.html#/s:11PolarBleSdk0aB19ApiDeviceHrObserverP0aF4Dataa">PolarHrData</a></span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">acc</span></code></pre>
 
                         </div>
                       </div>
-                      <div>
-                        <h4>Parameters</h4>
-                        <table class="graybox">
-                          <tbody>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>identifier</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>Polar device id</p>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk22DeviceStreamingFeatureO3ppgyA2CmF"></a>
+                    <a name="//apple_ref/swift/Element/ppg" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk22DeviceStreamingFeatureO3ppgyA2CmF">ppg</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">ppg</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk22DeviceStreamingFeatureO3ppiyA2CmF"></a>
+                    <a name="//apple_ref/swift/Element/ppi" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk22DeviceStreamingFeatureO3ppiyA2CmF">ppi</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">ppi</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk22DeviceStreamingFeatureO4gyroyA2CmF"></a>
+                    <a name="//apple_ref/swift/Element/gyro" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk22DeviceStreamingFeatureO4gyroyA2CmF">gyro</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">gyro</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk22DeviceStreamingFeatureO12magnetometeryA2CmF"></a>
+                    <a name="//apple_ref/swift/Element/magnetometer" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk22DeviceStreamingFeatureO12magnetometeryA2CmF">magnetometer</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">magnetometer</span></code></pre>
+
+                        </div>
                       </div>
                     </section>
                   </div>
