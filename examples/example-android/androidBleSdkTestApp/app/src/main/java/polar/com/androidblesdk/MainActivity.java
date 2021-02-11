@@ -3,17 +3,17 @@ package polar.com.androidblesdk;
 import android.Manifest;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.util.Log;
-import android.widget.Button;
 
 import org.reactivestreams.Publisher;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -27,10 +27,14 @@ import polar.com.sdk.api.model.PolarAccelerometerData;
 import polar.com.sdk.api.model.PolarDeviceInfo;
 import polar.com.sdk.api.model.PolarEcgData;
 import polar.com.sdk.api.model.PolarExerciseEntry;
+import polar.com.sdk.api.model.PolarGyroData;
 import polar.com.sdk.api.model.PolarHrData;
-import polar.com.sdk.api.model.PolarOhrPPGData;
+import polar.com.sdk.api.model.PolarMagnetometerData;
+import polar.com.sdk.api.model.PolarOhrData;
 import polar.com.sdk.api.model.PolarOhrPPIData;
 import polar.com.sdk.api.model.PolarSensorSetting;
+
+import static polar.com.sdk.api.model.PolarOhrData.OHR_DATA_TYPE.PPG3_AMBIENT1;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -39,11 +43,13 @@ public class MainActivity extends AppCompatActivity {
     Disposable broadcastDisposable;
     Disposable ecgDisposable;
     Disposable accDisposable;
+    Disposable gyrDisposable;
+    Disposable magDisposable;
     Disposable ppgDisposable;
     Disposable ppiDisposable;
     Disposable scanDisposable;
-    String DEVICE_ID = "0A34442D"; // or bt address like F5:A7:B8:EF:7A:D1 // TODO replace with your device id
     Disposable autoConnectDisposable;
+    String DEVICE_ID = "8C4CAD2D"; //TODO replace with your device id
     PolarExerciseEntry exerciseEntry;
 
     @Override
@@ -60,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
         final Button autoConnect = this.findViewById(R.id.auto_connect_button);
         final Button ecg = this.findViewById(R.id.ecg_button);
         final Button acc = this.findViewById(R.id.acc_button);
+        final Button gyr = this.findViewById(R.id.gyr_button);
+        final Button mag = this.findViewById(R.id.mag_button);
         final Button ppg = this.findViewById(R.id.ohr_ppg_button);
         final Button ppi = this.findViewById(R.id.ohr_ppi_button);
         final Button scan = this.findViewById(R.id.scan_button);
@@ -68,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
         final Button remove = this.findViewById(R.id.remove_exercise);
         final Button startH10Recording = this.findViewById(R.id.start_h10_recording);
         final Button stopH10Recording = this.findViewById(R.id.stop_h10_recording);
-        final Button H10RecordingStatus = this.findViewById(R.id.h10_recording_status);
+        final Button readH10RecordingStatus = this.findViewById(R.id.h10_recording_status);
         final Button setTime = this.findViewById(R.id.set_time);
 
         api.setApiLogger(s -> Log.d(API_LOGGER_TAG, s));
@@ -98,38 +106,18 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "DISCONNECTED: " + polarDeviceInfo.deviceId);
                 ecgDisposable = null;
                 accDisposable = null;
+                gyrDisposable = null;
+                magDisposable = null;
                 ppgDisposable = null;
                 ppiDisposable = null;
             }
 
             @Override
-            public void ecgFeatureReady(@NonNull String identifier) {
-                Log.d(TAG, "ECG READY: " + identifier);
-                // ecg streaming can be started now if needed
-            }
-
-            @Override
-            public void accelerometerFeatureReady(@NonNull String identifier) {
-                Log.d(TAG, "ACC READY: " + identifier);
-                // acc streaming can be started now if needed
-            }
-
-            @Override
-            public void ppgFeatureReady(@NonNull String identifier) {
-                Log.d(TAG, "PPG READY: " + identifier);
-                // ohr ppg can be started
-            }
-
-            @Override
-            public void ppiFeatureReady(@NonNull String identifier) {
-                Log.d(TAG, "PPI READY: " + identifier);
-                // ohr ppi can be started
-            }
-
-            @Override
-            public void biozFeatureReady(@NonNull String identifier) {
-                Log.d(TAG, "BIOZ READY: " + identifier);
-                // ohr ppi can be started
+            public void streamingFeaturesReady(@NonNull final String identifier,
+                                               @NonNull final Set<PolarBleApi.DeviceStreamingFeature> features) {
+                for(PolarBleApi.DeviceStreamingFeature feature : features) {
+                    Log.d(TAG, "Streaming feature " + feature.toString() + " is ready");
+                }
             }
 
             @Override
@@ -141,19 +129,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void disInformationReceived(@NonNull String identifier, @NonNull UUID uuid, @NonNull String value) {
                 Log.d(TAG, "uuid: " + uuid + " value: " + value);
-
             }
 
             @Override
             public void batteryLevelReceived(@NonNull String identifier, int level) {
                 Log.d(TAG, "BATTERY LEVEL: " + level);
-
             }
 
             @Override
             public void hrNotificationReceived(@NonNull String identifier, @NonNull PolarHrData data) {
                 Log.d(TAG, "HR value: " + data.hr + " rrsMs: " + data.rrsMs + " rr: " + data.rrs + " contact: " + data.contactStatus + "," + data.contactStatusSupported);
-            }
+        }
 
             @Override
             public void polarFtpFeatureReady(@NonNull String s) {
@@ -161,43 +147,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        list.setOnClickListener(v -> api.listExercises(DEVICE_ID).observeOn(AndroidSchedulers.mainThread()).subscribe(
-                polarExerciseEntry -> {
-                    Log.d(TAG, "next: " + polarExerciseEntry.date + " path: " + polarExerciseEntry.path + " id: " + polarExerciseEntry.identifier);
-                    exerciseEntry = polarExerciseEntry;
-                },
-                throwable -> Log.e(TAG, "fetch exercises failed: " + throwable.getLocalizedMessage()),
-                () -> Log.d(TAG, "complete")
-        ));
-
-        read.setOnClickListener(v -> {
-            if (exerciseEntry != null) {
-                api.fetchExercise(DEVICE_ID, exerciseEntry).observeOn(AndroidSchedulers.mainThread()).subscribe(
-                        polarExerciseData -> Log.d(TAG, "exercise data count: " + polarExerciseData.hrSamples.size() + " samples: " + polarExerciseData.hrSamples),
-                        throwable -> Log.e(TAG, "Failed to read exercise: " + throwable.getLocalizedMessage())
-                );
-            }
-        });
-
-        remove.setOnClickListener(v -> {
-            if (exerciseEntry != null) {
-                api.removeExercise(DEVICE_ID, exerciseEntry).observeOn(AndroidSchedulers.mainThread()).subscribe(
-                        () -> Log.d(TAG, "ex removed ok"),
-                        throwable -> Log.d(TAG, "ex remove failed: " + throwable.getLocalizedMessage())
-                );
-            }
-        });
-
         broadcast.setOnClickListener(v -> {
             if (broadcastDisposable == null) {
-                broadcastDisposable = api.startListenForPolarHrBroadcasts(null).subscribe(
-                        polarBroadcastData -> Log.d(TAG, "HR BROADCAST " +
-                                polarBroadcastData.polarDeviceInfo.deviceId + " HR: " +
-                                polarBroadcastData.hr + " batt: " +
-                                polarBroadcastData.batteryStatus),
-                        throwable -> Log.e(TAG, "" + throwable.getLocalizedMessage()),
-                        () -> Log.d(TAG, "complete")
-                );
+                broadcastDisposable = api.startListenForPolarHrBroadcasts(null)
+                        .subscribe(polarBroadcastData -> Log.d(TAG, "HR BROADCAST " +
+                                        polarBroadcastData.polarDeviceInfo.deviceId + " HR: " +
+                                        polarBroadcastData.hr + " batt: " +
+                                        polarBroadcastData.batteryStatus),
+                                error -> Log.e(TAG, "Broadcast listener failed. Reason " + error),
+                                () -> Log.d(TAG, "complete")
+                        );
             } else {
                 broadcastDisposable.dispose();
                 broadcastDisposable = null;
@@ -225,15 +184,16 @@ public class MainActivity extends AppCompatActivity {
                 autoConnectDisposable.dispose();
                 autoConnectDisposable = null;
             }
-            autoConnectDisposable = api.autoConnectToDevice(-50, "180D", null).subscribe(
-                    () -> Log.d(TAG, "auto connect search complete"),
-                    throwable -> Log.e(TAG, "" + throwable.toString())
-            );
+            autoConnectDisposable = api.autoConnectToDevice(-50, "180D", null)
+                    .subscribe(
+                            () -> Log.d(TAG, "auto connect search complete"),
+                            throwable -> Log.e(TAG, "" + throwable.toString())
+                    );
         });
 
         ecg.setOnClickListener(v -> {
             if (ecgDisposable == null) {
-                ecgDisposable = api.requestEcgSettings(DEVICE_ID)
+                ecgDisposable = api.requestStreamSettings(DEVICE_ID, PolarBleApi.DeviceStreamingFeature.ECG)
                         .toFlowable()
                         .flatMap((Function<PolarSensorSetting, Publisher<PolarEcgData>>) polarEcgSettings -> {
                             PolarSensorSetting sensorSetting = polarEcgSettings.maxSettings();
@@ -244,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
                                         Log.d(TAG, "    yV: " + microVolts);
                                     }
                                 },
-                                throwable -> Log.e(TAG, "" + throwable.toString()),
+                                throwable -> Log.e(TAG, "" + throwable),
                                 () -> Log.d(TAG, "complete")
                         );
             } else {
@@ -256,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
 
         acc.setOnClickListener(v -> {
             if (accDisposable == null) {
-                accDisposable = api.requestAccSettings(DEVICE_ID)
+                accDisposable = api.requestStreamSettings(DEVICE_ID, PolarBleApi.DeviceStreamingFeature.ACC)
                         .toFlowable()
                         .flatMap((Function<PolarSensorSetting, Publisher<PolarAccelerometerData>>) settings -> {
                             PolarSensorSetting sensorSetting = settings.maxSettings();
@@ -264,11 +224,11 @@ public class MainActivity extends AppCompatActivity {
                         }).observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 polarAccelerometerData -> {
-                                    for (PolarAccelerometerData.PolarAccelerometerSample data : polarAccelerometerData.samples) {
+                                    for (PolarAccelerometerData.PolarAccelerometerDataSample data : polarAccelerometerData.samples) {
                                         Log.d(TAG, "    x: " + data.x + " y: " + data.y + " z: " + data.z);
                                     }
                                 },
-                                throwable -> Log.e(TAG, "" + throwable.getLocalizedMessage()),
+                                throwable -> Log.e(TAG, "" + throwable),
                                 () -> Log.d(TAG, "complete")
                         );
             } else {
@@ -278,15 +238,70 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        gyr.setOnClickListener(v -> {
+            if (gyrDisposable == null) {
+                gyrDisposable = api.requestStreamSettings(DEVICE_ID, PolarBleApi.DeviceStreamingFeature.GYRO)
+                        .toFlowable()
+                        .flatMap((Function<PolarSensorSetting, Publisher<PolarGyroData>>) settings -> {
+                            PolarSensorSetting sensorSetting = settings.maxSettings();
+                            return api.startGyroStreaming(DEVICE_ID, sensorSetting);
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                polarGyroData -> {
+                                    for (PolarGyroData.PolarGyroDataSample data : polarGyroData.samples) {
+                                        Log.d(TAG, "    x: " + data.x + " y: " + data.y + " z: " + data.z);
+                                    }
+                                },
+                                throwable -> Log.e(TAG, "" + throwable),
+                                () -> Log.d(TAG, "complete")
+                        );
+            } else {
+                // NOTE dispose will stop streaming if it is "running"
+                gyrDisposable.dispose();
+                gyrDisposable = null;
+            }
+        });
+
+        mag.setOnClickListener(v -> {
+            if (magDisposable == null) {
+                magDisposable = api.requestStreamSettings(DEVICE_ID, PolarBleApi.DeviceStreamingFeature.MAGNETOMETER)
+                        .toFlowable()
+                        .flatMap((Function<PolarSensorSetting, Publisher<PolarMagnetometerData>>) settings -> {
+                            PolarSensorSetting sensorSetting = settings.maxSettings();
+                            return api.startMagnetometerStreaming(DEVICE_ID, sensorSetting);
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                polarMagData -> {
+                                    for (PolarMagnetometerData.PolarMagnetometerDataSample data : polarMagData.samples) {
+                                        Log.d(TAG, "    x: " + data.x + " y: " + data.y + " z: " + data.z);
+                                    }
+                                },
+                                throwable -> Log.e(TAG, "" + throwable),
+                                () -> Log.d(TAG, "complete")
+                        );
+            } else {
+                // NOTE dispose will stop streaming if it is "running"
+                magDisposable.dispose();
+                magDisposable = null;
+            }
+        });
+
         ppg.setOnClickListener(v -> {
             if (ppgDisposable == null) {
-                ppgDisposable = api.requestPpgSettings(DEVICE_ID)
+                ppgDisposable = api.requestStreamSettings(DEVICE_ID, PolarBleApi.DeviceStreamingFeature.PPG)
                         .toFlowable()
-                        .flatMap((Function<PolarSensorSetting, Publisher<PolarOhrPPGData>>) polarPPGSettings -> api.startOhrPPGStreaming(DEVICE_ID, polarPPGSettings.maxSettings()))
+                        .flatMap((Function<PolarSensorSetting, Publisher<PolarOhrData>>) polarPPGSettings -> api.startOhrStreaming(DEVICE_ID, polarPPGSettings.maxSettings()))
                         .subscribe(
                                 polarOhrPPGData -> {
-                                    for (PolarOhrPPGData.PolarOhrPPGSample data : polarOhrPPGData.samples) {
-                                        Log.d(TAG, "    ppg0: " + data.ppg0 + " ppg1: " + data.ppg1 + " ppg2: " + data.ppg2 + "ambient: " + data.ambient);
+                                    if (polarOhrPPGData.type == PPG3_AMBIENT1) {
+                                        for (PolarOhrData.PolarOhrSample data : polarOhrPPGData.samples) {
+                                            Log.d(TAG, "    ppg0: " + data.channelSamples.get(0)
+                                                    + " ppg1: " + data.channelSamples.get(0)
+                                                    + " ppg2: " + data.channelSamples.get(0)
+                                                    + " ambient: " + data.channelSamples.get(0));
+                                        }
                                     }
                                 },
                                 throwable -> Log.e(TAG, "" + throwable.getLocalizedMessage()),
@@ -305,7 +320,7 @@ public class MainActivity extends AppCompatActivity {
                         .subscribe(
                                 ppiData -> {
                                     for (PolarOhrPPIData.PolarOhrPPISample sample : ppiData.samples) {
-                                        Log.d(TAG, "ppi: " + sample.ppi
+                                        Log.d(TAG, "    ppi: " + sample.ppi
                                                 + " blocker: " + sample.blockerBit + " errorEstimate: " + sample.errorEstimate);
                                     }
                                 },
@@ -333,31 +348,71 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        startH10Recording.setOnClickListener(view -> api.startRecording(DEVICE_ID, "TEST_APP_ID", PolarBleApi.RecordingInterval.INTERVAL_1S, PolarBleApi.SampleType.HR).subscribe(
-                () -> Log.d(TAG, "recording started"),
-                throwable -> Log.e(TAG, "recording start failed: " + throwable.getLocalizedMessage())
-        ));
+        list.setOnClickListener(v -> api.listExercises(DEVICE_ID)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        polarExerciseEntry -> {
+                            Log.d(TAG, "next: " + polarExerciseEntry.date + " path: " + polarExerciseEntry.path + " id: " + polarExerciseEntry.identifier);
+                            exerciseEntry = polarExerciseEntry;
+                        },
+                        throwable -> Log.e(TAG, "Failed to fetch exercises: " + throwable),
+                        () -> Log.d(TAG, "fetch exercises complete")
+                ));
 
-        stopH10Recording.setOnClickListener(view -> api.stopRecording(DEVICE_ID).subscribe(
-                () -> Log.d(TAG, "recording stopped"),
-                throwable -> Log.e(TAG, "recording stop failed: " + throwable.getLocalizedMessage())
-        ));
+        read.setOnClickListener(v -> {
+            if (exerciseEntry != null) {
+                api.fetchExercise(DEVICE_ID, exerciseEntry)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                polarExerciseData -> Log.d(TAG, "exercise data count: " + polarExerciseData.hrSamples.size() + " samples: " + polarExerciseData.hrSamples),
+                                throwable -> Log.e(TAG, "Failed to read exercise: " + throwable.getLocalizedMessage())
+                        );
+            }
+        });
 
-        H10RecordingStatus.setOnClickListener(view -> api.requestRecordingStatus(DEVICE_ID).subscribe(
-                pair -> Log.d(TAG, "recording on: " + pair.first + " ID: " + pair.second),
-                throwable -> Log.e(TAG, "recording status failed: " + throwable.getLocalizedMessage())
-        ));
+        remove.setOnClickListener(v -> {
+            if (exerciseEntry != null) {
+                api.removeExercise(DEVICE_ID, exerciseEntry)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> Log.d(TAG, "ex removed ok"),
+                                throwable -> Log.d(TAG, "ex remove failed: " + throwable.getLocalizedMessage())
+                        );
+            }
+        });
+
+        startH10Recording.setOnClickListener(view ->
+                api.startRecording(DEVICE_ID, "TEST_APP_ID", PolarBleApi.RecordingInterval.INTERVAL_1S, PolarBleApi.SampleType.HR)
+                        .subscribe(
+                                () -> Log.d(TAG, "recording started"),
+                                throwable -> Log.e(TAG, "recording start failed: " + throwable.getLocalizedMessage())
+                        ));
+
+        stopH10Recording.setOnClickListener(view ->
+                api.stopRecording(DEVICE_ID)
+                        .subscribe(
+                                () -> Log.d(TAG, "recording stopped"),
+                                throwable -> Log.e(TAG, "recording stop failed: " + throwable.getLocalizedMessage())
+                        ));
+
+        readH10RecordingStatus.setOnClickListener(view ->
+                api.requestRecordingStatus(DEVICE_ID)
+                        .subscribe(
+                                pair -> Log.d(TAG, "recording on: " + pair.first + " ID: " + pair.second),
+                                throwable -> Log.e(TAG, "recording status failed: " + throwable.getLocalizedMessage())
+                        ));
 
         setTime.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(new Date());
-            api.setLocalTime(DEVICE_ID, calendar).subscribe(
-                    () -> Log.d(TAG, "time set to device"),
-                    throwable -> Log.d(TAG, "set time failed: " + throwable.getLocalizedMessage()));
+            api.setLocalTime(DEVICE_ID, calendar)
+                    .subscribe(
+                            () -> Log.d(TAG, "time set to device"),
+                            error -> Log.d(TAG, "set time failed: " + error));
         });
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && savedInstanceState == null) {
-            this.requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
     }
 
