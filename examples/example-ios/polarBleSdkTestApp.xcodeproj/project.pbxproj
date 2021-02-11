@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6C56423C2203199400F9BDA9 /* ApiWrapperSwift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C56423B2203199400F9BDA9 /* ApiWrapperSwift.swift */; };
 		6C770A59205269C800F3D51D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C770A58205269C800F3D51D /* AppDelegate.swift */; };
 		6C770A5B205269C800F3D51D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C770A5A205269C800F3D51D /* ViewController.swift */; };
 		6C770A5E205269C800F3D51D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6C770A5C205269C800F3D51D /* Main.storyboard */; };
@@ -44,7 +43,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		6C56423B2203199400F9BDA9 /* ApiWrapperSwift.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApiWrapperSwift.swift; sourceTree = "<group>"; };
 		6C770A55205269C800F3D51D /* polarBleSdkTestApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = polarBleSdkTestApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C770A58205269C800F3D51D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		6C770A5A205269C800F3D51D /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -90,7 +88,6 @@
 		6C770A57205269C800F3D51D /* polarBleSdkTestApp */ = {
 			isa = PBXGroup;
 			children = (
-				6C56423B2203199400F9BDA9 /* ApiWrapperSwift.swift */,
 				6C770A58205269C800F3D51D /* AppDelegate.swift */,
 				6C770A5A205269C800F3D51D /* ViewController.swift */,
 				6C770A5C205269C800F3D51D /* Main.storyboard */,
@@ -193,7 +190,6 @@
 			files = (
 				6C770A5B205269C800F3D51D /* ViewController.swift in Sources */,
 				6C770A59205269C800F3D51D /* AppDelegate.swift in Sources */,
-				6C56423C2203199400F9BDA9 /* ApiWrapperSwift.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -340,7 +336,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 48T8QNDCP9;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../",
@@ -372,7 +368,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 48T8QNDCP9;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../",
