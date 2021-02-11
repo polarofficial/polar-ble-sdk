@@ -10,15 +10,15 @@ public class PolarExerciseEntry {
     /**
      * Resource path in device.
      */
-    public String path;
+    public final String path;
     /**
      * Date object contains the date and time of the exercise. Only valid with OH1.
      */
-    public Date date;
+    public final Date date;
     /**
      * unique identifier. Only valid with H10
      */
-    public String identifier;
+    public final String identifier;
 
     public PolarExerciseEntry(String path, Date date, String identifier) {
         this.path = path;

@@ -37,8 +37,8 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class BlePsFtpClient extends BleGattBase {
 
     private static final String TAG = BlePsFtpClient.class.getSimpleName();
-    private AtomicInteger pftpMtuEnabled;
-    private AtomicInteger pftpD2HNotificationEnabled;
+    private final AtomicInteger pftpMtuEnabled;
+    private final AtomicInteger pftpD2HNotificationEnabled;
     private final LinkedBlockingQueue<Pair<byte[], Integer>> mtuInputQueue = new LinkedBlockingQueue<>();
     private final LinkedBlockingQueue<Pair<byte[], Integer>> notificationInputQueue = new LinkedBlockingQueue<>();
     private final AtomicInteger packetsWritten = new AtomicInteger(0);
@@ -54,7 +54,7 @@ public class BlePsFtpClient extends BleGattBase {
      * true  = uses attribute operation WRITE
      * false = uses attribute operation WRITE_NO_RESPONSE
      */
-    private AtomicBoolean USE_ATTRIBUTE_LEVEL_RESPONSE = new AtomicBoolean(false);
+    private final AtomicBoolean USE_ATTRIBUTE_LEVEL_RESPONSE = new AtomicBoolean(false);
     private final Object pftpOperationMutex = new Object();
     private final Object pftpNotificationMutex = new Object();
     private final Object pftpWaitNotificationMutex = new Object();
@@ -386,21 +386,19 @@ public class BlePsFtpClient extends BleGattBase {
         return query(id, parameters, Schedulers.newThread());
     }
 
-    private void handleMtuInterrupted(boolean dataAvailable, int lastRequs) {
-        if (pftpMtuEnabled.get() == ATT_SUCCESS) {
-            if (dataAvailable) {
-                //wait for packets written
-                byte[] cancelPacket = new byte[]{0x00, 0x00, 0x00};
-                try {
-                    if (mtuWaiting.get()) {
-                        waitPacketsWritten(packetsWritten, mtuWaiting, lastRequs);
-                    }
-                    txInterface.transmitMessages(BlePsFtpClient.this, BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, Collections.singletonList(cancelPacket), USE_ATTRIBUTE_LEVEL_RESPONSE.get());
-                    waitPacketsWritten(packetsWritten, mtuWaiting, 1);
-                    BleLogger.d(TAG, "Stream cancel has been successfully send");
-                } catch (Throwable throwable) {
-                    BleLogger.e(TAG, "Exception while trying to cancel streaming");
+    private void handleMtuInterrupted(boolean dataAvailable, int lastRequest) {
+        if (pftpMtuEnabled.get() == ATT_SUCCESS && dataAvailable) {
+            //wait for packets written
+            byte[] cancelPacket = new byte[]{0x00, 0x00, 0x00};
+            try {
+                if (mtuWaiting.get()) {
+                    waitPacketsWritten(packetsWritten, mtuWaiting, lastRequest);
                 }
+                txInterface.transmitMessages(BlePsFtpClient.this, BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, Collections.singletonList(cancelPacket), USE_ATTRIBUTE_LEVEL_RESPONSE.get());
+                waitPacketsWritten(packetsWritten, mtuWaiting, 1);
+                BleLogger.d(TAG, "Stream cancel has been successfully send");
+            } catch (Throwable throwable) {
+                BleLogger.e(TAG, "Exception while trying to cancel streaming");
             }
         }
     }
@@ -597,8 +595,8 @@ public class BlePsFtpClient extends BleGattBase {
             // wait for message frame
             if (txInterface.isConnected()) {
                 synchronized (mtuInputQueue) {
-                    if (mtuInputQueue.size() == 0) {
-                        mtuInputQueue.wait(PROTOCOL_TIMEOUT * 1000);
+                    if (mtuInputQueue.isEmpty()) {
+                        mtuInputQueue.wait(PROTOCOL_TIMEOUT * 1000L);
                     }
                 }
             } else {
