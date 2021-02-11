@@ -8,48 +8,44 @@ import java.util.List;
  */
 public class PolarAccelerometerData {
 
-	/**
-	 * Static class containing the data of a single ACC sample. Data is received as a 16-bit short value.
-	 */
-	public static class PolarAccelerometerSample {
-		/**
-		 * Accelerometer x axis value in millig.
-		 */
-		public int x;
+    public static class PolarAccelerometerDataSample {
+        /**
+         * x axis in millig
+         */
+        public final int x;
+        /**
+         * y axis in millig
+         */
+        public final int y;
+        /**
+         * z axis in millig
+         */
+        public final int z;
 
-		/**
-		 * Accelerometer y axis value millig.
-		 */
-		public int y;
-
-		/**
-		 * Accelerometer z axis value millig.
-		 */
-		public int z;
-
-		public PolarAccelerometerSample(int x, int y, int z) {
+        public PolarAccelerometerDataSample(int x, int y, int z) {
             this.x = x;
             this.y = y;
             this.z = z;
         }
-	}
+    }
 
-	/**
+    /**
      * Acceleration samples list. Each sample contains signed x,y,z axis value in millig
      */
-    public List<PolarAccelerometerSample> samples;
+    public final List<PolarAccelerometerDataSample> samples;
 
     /**
      * Last sample timestamp in nanoseconds.
      */
-    public long timeStamp;
+    public final long timeStamp;
 
-	/**
+    /**
      * Class constructor
-     * @param 	samples list of Accelerometer data samples
-     * @param 	timeStamp in nanoseconds
+     *
+     * @param samples   list of Accelerometer data samples
+     * @param timeStamp in nanoseconds
      */
-    public PolarAccelerometerData(List<PolarAccelerometerSample> samples, long timeStamp) {
+    public PolarAccelerometerData(List<PolarAccelerometerDataSample> samples, long timeStamp) {
         this.samples = samples;
         this.timeStamp = timeStamp;
     }

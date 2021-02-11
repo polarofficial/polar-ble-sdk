@@ -10,11 +10,11 @@ public class PolarExerciseData {
     /**
      * Recording interval in seconds.
      */
-    public int recordingInterval;
+    public final int recordingInterval;
     /**
      * HR or RR samples.
      */
-    public List<Integer> hrSamples;
+    public final List<Integer> hrSamples;
 
     public PolarExerciseData(int recordingInterval, List<Integer> hrSamples) {
         this.recordingInterval = recordingInterval;

@@ -82,8 +82,8 @@ public class ConnectionHandler {
     }
 
     public void deviceDisconnected(final BDDeviceSessionImpl bleDeviceSession) {
-        commandState(bleDeviceSession, ConnectionHandlerAction.DEVICE_DISCONNECTED);
         observer.deviceDisconnected(bleDeviceSession);
+        commandState(bleDeviceSession, ConnectionHandlerAction.DEVICE_DISCONNECTED);
     }
 
     /**
@@ -200,6 +200,7 @@ public class ConnectionHandler {
                     updateSessionState(session, BleDeviceSession.DeviceSessionState.SESSION_OPENING);
                     connectionInterface.connectDevice(session);
                 } else {
+                    // TODO set state to PARK
                     BleLogger.w(TAG, "ble not powered exiting connecting state");
                     changeState(session, ConnectionHandlerState.FREE);
                 }

@@ -310,10 +310,8 @@ class BDScanCallback extends ScanCallback {
                 }
             }
             BleLogger.d(TAG, "timestamps left: " + scanPool.size());
-            startLScan();
-        } else {
-            startLScan();
         }
+        startLScan();
     }
 
     private BleUtils.EVENT_TYPE fetchAdvType(ScanResult result) {

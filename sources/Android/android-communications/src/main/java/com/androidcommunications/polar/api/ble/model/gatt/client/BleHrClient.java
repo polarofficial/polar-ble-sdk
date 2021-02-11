@@ -2,12 +2,14 @@ package com.androidcommunications.polar.api.ble.model.gatt.client;
 
 import androidx.annotation.NonNull;
 
+import com.androidcommunications.polar.api.ble.BleLogger;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattBase;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattTxInterface;
 import com.androidcommunications.polar.common.ble.AtomicSet;
 import com.androidcommunications.polar.common.ble.RxUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import io.reactivex.rxjava3.core.Completable;
@@ -15,34 +17,35 @@ import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.FlowableEmitter;
 
 public class BleHrClient extends BleGattBase {
+    private static final String TAG = BleHrClient.class.getSimpleName();
 
     public static class HrNotificationData {
-        public int hrValue;
-        public boolean sensorContact;
-        public boolean sensorContactSupported;
-        public boolean rrPresent;
-        public int energy;
-        public int cumulative_rr;
-        public ArrayList<Integer> rrs = new ArrayList<>();
+        public final int hrValue;
+        public final boolean sensorContact;
+        public final boolean sensorContactSupported;
+        public final boolean rrPresent;
+        public final int energy;
+        public final long cumulativeRR;
+        public final List<Integer> rrs = new ArrayList<>();
 
         public HrNotificationData(int hrValue,
                                   boolean sensorContact,
                                   int energy,
-                                  ArrayList<Integer> rrs,
+                                  List<Integer> rrs,
                                   boolean sensorContactSupported,
-                                  int cumulative_rr,
+                                  long cumulativeRR,
                                   boolean rrPresent) {
             this.hrValue = hrValue;
             this.sensorContact = sensorContact;
             this.energy = energy;
             this.rrs.addAll(rrs);
-            this.cumulative_rr = cumulative_rr;
+            this.cumulativeRR = cumulativeRR;
             this.sensorContactSupported = sensorContactSupported;
             this.rrPresent = rrPresent;
         }
     }
 
-    private AtomicSet<FlowableEmitter<? super HrNotificationData>> hrObserverAtomicList = new AtomicSet<>();
+    private final AtomicSet<FlowableEmitter<? super HrNotificationData>> hrObserverAtomicList = new AtomicSet<>();
 
     public static final UUID BODY_SENSOR_LOCATION = UUID.fromString("00002a38-0000-1000-8000-00805f9b34fb");
     public static final UUID HR_MEASUREMENT = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb");
@@ -62,16 +65,15 @@ public class BleHrClient extends BleGattBase {
 
     @Override
     public void processServiceData(UUID characteristic, byte[] data, int status, boolean notifying) {
-        if (status == 0) if (characteristic.equals(HR_MEASUREMENT)) {
-            // stupid java does not have bit fields
-            int cumulative_rr = 0;
-            int hrFormat = data[0] & 0x01;
-            final boolean sensorContact = ((data[0] & 0x06) >> 1) == 3;
-            final boolean contactSupported = !((data[0] & 0x06) == 0);
+        BleLogger.d(TAG, "Processing service data. Status: " + status + ".  Data length: " + data.length);
+        if (status == 0 && characteristic.equals(HR_MEASUREMENT)) {
+            long cumulativeRR = 0;
+            final int hrFormat = data[0] & 0x01;
+            final boolean sensorContact = ((data[0] & 0x06) >> 1) == 0x03;
+            final boolean contactSupported = (data[0] & 0x04) != 0;
             int energyExpended = (data[0] & 0x08) >> 3;
             final int rrPresent = (data[0] & 0x10) >> 4;
-            int polar_32bit_rr = (data[0] & 0x20) >> 5; // Polar RR format
-            final int hrValue = (hrFormat == 1 ? data[1] + (data[2] << 8) : data[1]) & (hrFormat == 1 ? 0x0000FFFF : 0x000000FF);
+            final int hrValue = (hrFormat == 1 ? (data[1] & 0xFF) + (data[2] << 8) : data[1]) & (hrFormat == 1 ? 0x0000FFFF : 0x000000FF);
             int offset = hrFormat + 2;
             int energy = 0;
             if (energyExpended == 1) {
@@ -86,23 +88,23 @@ public class BleHrClient extends BleGattBase {
                     offset += 2;
                     rrs.add(rrValue);
                 }
-            } else if (polar_32bit_rr == 1 && (offset + 3) < data.length) {
-                cumulative_rr = ((data[offset] & 0xFF) + ((data[offset + 1] & 0xFF) << 8) + ((data[offset + 2] & 0xFF) << 16) + ((data[offset + 3] & 0xFF) << 24));
             }
 
-            final int finalCumulative_rr = cumulative_rr;
+            final long finalCumulativeRR = cumulativeRR;
             final int finalEnergy = energy;
-            RxUtils.emitNext(hrObserverAtomicList, object -> object.onNext(new HrNotificationData(hrValue, sensorContact, finalEnergy, rrs, contactSupported, finalCumulative_rr, rrPresent == 1)));
+            RxUtils.emitNext(hrObserverAtomicList, object ->
+                    object.onNext(new HrNotificationData(hrValue, sensorContact, finalEnergy, rrs, contactSupported, finalCumulativeRR, rrPresent == 1)));
         }
     }
 
     @Override
     public void processServiceDataWritten(UUID characteristic, int status) {
+        BleLogger.d(TAG, "Service data written not processed in BleHrClient");
     }
 
+    @NonNull
     @Override
-    public @NonNull
-    String toString() {
+    public String toString() {
         // and so on
         return "HR gatt client";
     }

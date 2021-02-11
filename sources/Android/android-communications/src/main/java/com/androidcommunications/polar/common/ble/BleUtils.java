@@ -2,12 +2,16 @@ package com.androidcommunications.polar.common.ble;
 
 import com.androidcommunications.polar.api.ble.BleLogger;
 
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
 
-public class BleUtils {
+public final class BleUtils {
 
-    public final static String TAG = BleUtils.class.getSimpleName();
+    private BleUtils() {
+        throw new IllegalStateException("Utility class");
+    }
+
+    public static final String TAG = BleUtils.class.getSimpleName();
 
     public enum AD_TYPE {
         GAP_ADTYPE_UNKNOWN(0),
@@ -33,7 +37,7 @@ public class BleUtils {
         GAP_ADTYPE_SERVICE_DATA(20), //!< Service Data
         GAP_ADTYPE_MANUFACTURER_SPECIFIC(0xFF);       //!< Manufacturer Specific Data: first 2 octets contain the Company Identifier Code followed by the additional manufacturer specific data
 
-        private int numVal;
+        private final int numVal;
 
         AD_TYPE(int numVal) {
             this.numVal = numVal;
@@ -52,7 +56,7 @@ public class BleUtils {
         ADV_NONCONN_IND(3), // Non connectable undirected advertising
         SCAN_RSP(4); // Scan Response
 
-        private int numVal;
+        private final int numVal;
 
         EVENT_TYPE(int numVal) {
             this.numVal = numVal;
@@ -84,9 +88,10 @@ public class BleUtils {
                     break;
                 }
                 if (adTypeHashMap.containsKey(type) && type == AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC) {
-                    byte[] data = new byte[adTypeHashMap.get(type).length + fieldLen - 1];
+                    byte[] data = new byte[Objects.requireNonNull(adTypeHashMap.get(type)).length + fieldLen - 1];
                     System.arraycopy(record, offset + 2, data, 0, fieldLen - 1);
-                    System.arraycopy(adTypeHashMap.get(type), 0, data, fieldLen - 1, adTypeHashMap.get(type).length);
+                    System.arraycopy(Objects.requireNonNull(adTypeHashMap.get(type)), 0, data, fieldLen - 1,
+                            Objects.requireNonNull(adTypeHashMap.get(type)).length);
                     adTypeHashMap.put(type, data);
                 } else {
                     byte[] data = new byte[fieldLen - 1];
@@ -101,15 +106,6 @@ public class BleUtils {
         return adTypeHashMap;
     }
 
-    public static boolean compare(HashMap<AD_TYPE, byte[]> from, HashMap<AD_TYPE, byte[]> to) {
-        for (AD_TYPE object : to.keySet()) {
-            if (!from.containsKey(object) || !Arrays.equals(from.get(object), to.get(object))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     public static void validate(boolean valid, String message) {
         if (!valid) throw new AssertionError(message);
     }
@@ -117,13 +113,16 @@ public class BleUtils {
     public static int convertArrayToSignedInt(byte[] data, int offset, int length) {
         int result = (int) convertArrayToUnsignedLong(data, offset, length);
         if ((data[offset + length - 1] & 0x80) != 0) {
-            if (length == 3) {
-                result |= 0xFF000000;
-            } else if (length == 2) {
-                result |= 0xFFFF0000;
-            } else {
-                result |= 0xFFFFFF00;
-            }
+            int mask = 0xFFFFFFFF << length * 8;
+            result |= mask;
+        }
+        return result;
+    }
+
+    public static int convertArrayToUnsignedInt(byte[] data, int offset, int length) {
+        int result = 0;
+        for (int i = 0; i < length; ++i) {
+            result |= (((int) data[i + offset] & 0xFF) << i * 8);
         }
         return result;
     }

@@ -9,18 +9,18 @@ public class PolarHrBroadcastData {
     /**
      * @see polar.com.sdk.api.model.PolarDeviceInfo
      */
-    public PolarDeviceInfo polarDeviceInfo;
+    public final PolarDeviceInfo polarDeviceInfo;
 
     /**
      * Heart rate in beats per minute.
      */
-    public int hr;
+    public final int hr;
 
     /**
      * Device battery status.
      * False if the battery needs to be replaced or recharged.
      */
-    public boolean batteryStatus;
+    public final boolean batteryStatus;
 
     public PolarHrBroadcastData(PolarDeviceInfo deviceInfo, int hr, boolean batteryStatus) {
         this.polarDeviceInfo = deviceInfo;
