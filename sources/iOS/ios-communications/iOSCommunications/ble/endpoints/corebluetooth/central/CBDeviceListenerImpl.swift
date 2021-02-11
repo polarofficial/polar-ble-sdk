@@ -274,7 +274,7 @@ extension CBDeviceListenerImpl: BleDeviceListener {
         }
     }
     
-    public func search(_ uuids: [CBUUID]?, identifiers: [UUID]?) -> Observable<BleDeviceSession> {
+    public func search(_ uuids: [CBUUID]?, identifiers: [UUID]?, fetchKnownDevices: Bool) -> Observable<BleDeviceSession> {
         var object: RxObserver<BleDeviceSession>!
         return Observable.create{ observer in
             object = RxObserver<BleDeviceSession>(obs: observer)
@@ -296,6 +296,11 @@ extension CBDeviceListenerImpl: BleDeviceListener {
                         advData[CBAdvertisementDataServiceUUIDsKey] = uuids as Any?
                     }
                     self.centralManager(self.manager, didDiscover: device, advertisementData: advData, rssi: -20)
+                }
+            }
+            if fetchKnownDevices {
+                self.sessions.items.forEach { (sess) in
+                    observer.onNext(sess)
                 }
             }
             return Disposables.create {

@@ -4,6 +4,16 @@ import Foundation
 import CoreBluetooth
 import RxSwift
 
+/// device streaming features
+public enum DeviceStreamingFeature: Int, CaseIterable {
+    case ecg
+    case acc
+    case ppg
+    case ppi
+    case gyro
+    case magnetometer
+}
+
 /// recording interval in seconds for H10
 public enum RecordingInterval: Int {
     case interval_1s = 1
@@ -42,6 +52,7 @@ public enum Features: Int, CaseIterable {
 ///     - name = local name from advertisement
 ///     - connectable = true adv type is connectable
 public typealias PolarDeviceInfo = (deviceId: String, address: UUID, rssi: Int, name: String, connectable: Bool)
+
 /// deviceInfo: see #PolarDeviceInfo ,
 ///
 ///     - hr: in BPM
@@ -60,11 +71,32 @@ public typealias PolarEcgData = (timeStamp: UInt64,samples: [Int32])
 ///     - samples: Acceleration samples list x,y,z in millig signed value
 public typealias PolarAccData = (timeStamp: UInt64,samples: [(x: Int32,y: Int32,z: Int32)])
 
-/// Polar ppg data
+/// Polar gyro data
 ///
 ///     - Timestamp: Last sample timestamp in nanoseconds.
-///     - samples: PPG samples list ppg0,ppg1,ppg2,ambient signed value
-public typealias PolarPpgData = (timeStamp: UInt64,samples: [(ppg0: Int32,ppg1: Int32,ppg2: Int32,ambient: Int32)])
+///     - samples: gyro samples list x,y,z in °/s signed value
+public typealias PolarGyroData = (timeStamp: UInt64,samples: [(x: Float,y: Float,z: Float)])
+
+/// Polar mgn data
+///
+///     - Timestamp: Last sample timestamp in nanoseconds. 
+///     - samples: in Gauss
+public typealias PolarMagnetometerData = (timeStamp: UInt64,samples: [(x: Float,y: Float,z: Float)])
+
+/// OHR data source enum
+public enum OhrDataType: Int, CaseIterable {
+    /// 3 ppg + 1 ambient
+    case ppg3_ambient1 = 4
+    case unknown = 18
+}
+
+/// Polar Ohr data
+///
+///     - Timestamp: Last sample timestamp in nanoseconds.
+///     - channels: amount of channels
+///     - source: source of OHR data
+///     - samples: ppg(s) and ambient(s) samples list
+public typealias PolarOhrData = (timeStamp: UInt64, type: OhrDataType, samples: [[Int32]])
 
 /// Polar ppi data
 ///           - timestamp N/A always 0
@@ -75,8 +107,6 @@ public typealias PolarPpgData = (timeStamp: UInt64,samples: [(ppg0: Int32,ppg1: 
 ///           - skinContactStatus 0 = if the device detects poor or no contact with the skin, the Sensor
 ///           - Contact Status bit (bit 1 of the PP Flags field)
 public typealias PolarPpiData = (timeStamp: UInt64,samples: [(hr: Int, ppInMs: UInt16, ppErrorEstimate: UInt16, blockerBit: Int, skinContactStatus: Int, skinContactSupported: Int)])
-
-public typealias PolarBiozData = (timeStamp: UInt64,samples: [Int32])
 
 /// Polar exercise entry
 ///
@@ -124,7 +154,7 @@ public protocol PolarBleApi {
     /// - Parameter identifier: Polar device id
     /// - Throws: InvalidArgument if identifier is invalid polar device id or invalid uuid
     func disconnectFromDevice(_ identifier: String) throws
-
+    
     /// Start searching for Polar device(s)
     ///
     /// - Parameter onNext: Invoked once for each device
@@ -187,35 +217,16 @@ public protocol PolarBleApi {
     /// - Returns: Observable stream
     func startListenForPolarHrBroadcasts(_ identifiers: Set<String>?) -> Observable<PolarHrBroadcastData>
     
-    /// request ecg settings available
+    /// request stream settings available
     ///
     /// - Parameters:
     ///   - identifier: polar device id
+    ///   - feature: selected feature from`DeviceStreamingFeature`
     /// - Returns: Single stream
     ///   - success: once after settings received from device
     ///   - onError: see `PolarErrors` for possible errors invoked
-    func requestEcgSettings(_ identifier: String) -> Single<PolarSensorSetting>
-
-    /// request acc settings available
-    ///
-    /// - Parameters:
-    ///   - identifier: polar device id
-    /// - Returns: Single stream
-    ///   - success: once after settings received from device
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func requestAccSettings(_ identifier: String) -> Single<PolarSensorSetting>
-
-    /// request ppg settings available
-    ///
-    /// - Parameters:
-    ///   - identifier: polar device id
-    /// - Returns: Single stream
-    ///   - success: once after settings received from device
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func requestPpgSettings(_ identifier: String) -> Single<PolarSensorSetting>
-
-    func requestBiozSettings(_ identifier: String) -> Single<PolarSensorSetting>
-
+    func requestStreamSettings(_ identifier: String, feature: DeviceStreamingFeature) -> Single<PolarSensorSetting>
+    
     /// Starts the ECG (Electrocardiography) stream.
     ///
     /// - Parameters:
@@ -225,7 +236,7 @@ public protocol PolarBleApi {
     ///   - onNext: for every air packet received. see `PolarEcgData`
     ///   - onError: see `PolarErrors` for possible errors invoked
     func startEcgStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarEcgData>
-
+    
     /// Start ACC (accelerometer) stream.
     ///
     /// - Parameters:
@@ -235,16 +246,28 @@ public protocol PolarBleApi {
     ///   - onNext: for every air packet received. see `PolarAccData`
     ///   - onError: see `PolarErrors` for possible errors invoked
     func startAccStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarAccData>
-
+    
+    /// starts gyro streaming
+    /// - Parameters:
+    ///   - identifier: Polar device id or device address
+    ///   - settings: selected settings to start the stream
+    func startGyroStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarGyroData>
+    
+    /// Starts mgn streaming
+    /// - Parameters:
+    ///   - identifier: Polar device id or device address
+    ///   - settings: selected settings to start the stream
+    func startMagnetometerStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarMagnetometerData>
+    
     /// Start an OHR (optical heart rate) PPG (photoplethysmography) stream.
     ///
     /// - Parameters:
     ///   - identifier: Polar device id or device address
     ///   - settings: selected settings to start the stream
     /// - Returns: Observable stream
-    ///   - onNext: for every air packet received. see `PolarPpgData`
+    ///   - onNext: for every air packet received. see `PolarOhrData`
     ///   - onError: see `PolarErrors` for possible errors invoked
-    func startOhrPPGStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarPpgData>
+    func startOhrStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarOhrData>
     
     /// Start PPI stream. Notice when using OH1 there is a delay before actual
     /// PPI measurement starts and timestamp produced to PolarPpiData is 0
@@ -256,8 +279,6 @@ public protocol PolarBleApi {
     ///   - onError: see `PolarErrors` for possible errors invoked
     func startOhrPPIStreaming(_ identifier: String) -> Observable<PolarPpiData>
     
-    func startBiozStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarBiozData>
-
     /// Api for fetching stored exercises from Polar OH1/H10 device
     ///
     /// - Parameters:
@@ -292,7 +313,7 @@ public protocol PolarBleApi {
     
     /// Device info observer for DIS (Device information servive) and BAS (Battery service) GATT (Generic attributes) client
     var deviceInfoObserver: PolarBleApiDeviceInfoObserver? { get set }
-
+    
     /// Device observer for HR GATT client
     var deviceHrObserver: PolarBleApiDeviceHrObserver? { get set }
     
