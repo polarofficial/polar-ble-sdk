@@ -9,7 +9,7 @@ This SDK uses ReactiveX. You can read more about ReactiveX from their website [r
 
 By exploiting the SDK, you indicate your acceptance of [License](Polar_SDK_License.txt).
 
-If you wish to collaborate with Polar commercially, [click here](http://polar.com/developers)
+If you wish to collaborate with Polar commercially, [click here](https://polar.com/developers)
 
 ### Quick License Summary / Your rights to use the SDK
 You may use, copy and modify the SDK as long as you
@@ -26,11 +26,35 @@ Most accurate Heart rate sensor in the markets. The H10 is used in the Getting s
 #### H10 heart rate sensor available data types
 * From version 3.0.35 onwards. 
 * Heart rate as beats per minute. RR Interval in ms and 1/1024 format.
+* Heart rate broadcast.
 * Electrocardiography (ECG) data in µV. Default epoch for timestamp is 1.1.2000
 * Accelerometer data with sample rates of 25Hz, 50Hz, 100Hz and 200Hz and range of 2G, 4G and 8G. Axis specific acceleration data in mG. Default epoch for timestamp is 1.1.2000
 * Start and stop of internal recording and request for internal recording status. Recording supports RR, HR with one second sampletime or HR with five second sampletime.
 * List, read and remove for stored internal recording (sensor supports only one recording at the time).
 
+### H9 Heart rate sensor 
+Reliable high quality heart rate chest strap.
+[Store page](https://www.polar.com/en/products/accessories/H9_heart_rate_sensor)
+
+#### H9 heart rate sensor available data types
+* From version 1.0.0 onwards. 
+* Heart rate as beats per minute. RR Interval in ms and 1/1024 format.
+* Heart rate broadcast.
+
+### Polar Verity Sense Optical heart rate sensor
+Optical heart rate sensor is a rechargeable device that measures user’s heart rate with LED technology.
+[Store page](https://www.polar.com/en/products/accessories/polar-verity-sense)
+
+#### Polar Verity Sense Optical heart rate sensor available data types
+* From version 1.0.0 onwards.
+* Heart rate as beats per minute. 
+* Heart rate broadcast.
+* Photoplethysmograpy (PPG) values.
+* PP interval (milliseconds) representing cardiac pulse-to-pulse interval extracted from PPG signal.
+* Accelerometer data with sample rate of 52Hz and range of 8G. Axis specific acceleration data in mG.
+* Gyroscope data with sample rate of 52Hz and ranges of 250dps, 500dps, 1000dps and 2000dps. Axis specific gyroscope data in dps.
+* Magnetometer data with sample rates of 10Hz, 20Hz, 50HZ and 100Hz and range of +/-50 Gauss. Axis specific magnetometer data in Gauss.
+* List, read and remove stored exercise. Recording of exercise requires that sensor is registered to Polar Flow account.
 
 ### OH1 Optical heart rate sensor
 Optical heart rate sensor is a rechargeable device that measures user’s heart rate with LED technology.
@@ -39,6 +63,7 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 #### OH1 Optical heart rate sensor available data types
 * From version 2.0.8 onwards.
 * Heart rate as beats per minute.
+* Heart rate broadcast.
 * Photoplethysmograpy (PPG) values.
 * PP interval (milliseconds) representing cardiac pulse-to-pulse interval extracted from PPG signal.
 * Accelerometer data with samplerate of 50Hz and range of 8G. Axis specific acceleration data in mG.
@@ -51,17 +76,6 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 * [examples](examples/) contains both android and ios example app utilizing all features from sdk 
 * [gatt specification](technical_documentation/Polar_Measurement_Data_Specification.pdf) contains gatt specification for polar measurement data streaming
 * [H10 ecg technical document](technical_documentation/H10_ECG_Explained.docx)
-
-### Android proguard-rules
-```
--dontwarn rx.internal.util.**
--dontwarn com.google.protobuf.**
--keep class fi.polar.remote.representation.protobuf.** {public private protected *;}
--keep class protocol.** {public private protected *;}
--keep class data.** {public private protected *;}
--keep class com.androidcommunications.polar.api.ble.model.** {public private protected *;}
--keep class com.androidcommunications.polar.enpoints.ble.bluedroid.host.**
-```
 
 # Android: Getting started
 Detailed documentation  [Full Documentation](polar-sdk-android/docs/html/). 
@@ -106,6 +120,16 @@ dependencies {
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 ```
 
+## Android proguard-rules
+```
+-dontwarn rx.internal.util.**
+-dontwarn com.google.protobuf.**
+-keep class fi.polar.remote.representation.protobuf.** {public private protected *;}
+-keep class protocol.** {public private protected *;}
+-keep class data.** {public private protected *;}
+-keep class com.androidcommunications.polar.api.ble.model.** {public private protected *;}
+-keep class com.androidcommunications.polar.enpoints.ble.bluedroid.host.**
+```
 
 ## Code example: Heart rate
 See the [example](examples/example-android) folder for the full project. 
@@ -116,34 +140,33 @@ This is not required if you are using automatic connection.
 
  1.  Import following packages.
 ```
-import io.reactivex.CompletableObserver;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Function;
+
 import polar.com.sdk.api.PolarBleApi;
 import polar.com.sdk.api.PolarBleApiCallback;
 import polar.com.sdk.api.PolarBleApiDefaultImpl;
+import polar.com.sdk.api.errors.PolarInvalidArgument;
 import polar.com.sdk.api.model.PolarAccelerometerData;
 import polar.com.sdk.api.model.PolarDeviceInfo;
 import polar.com.sdk.api.model.PolarEcgData;
-import polar.com.sdk.api.model.PolarExerciseData;
 import polar.com.sdk.api.model.PolarExerciseEntry;
-import polar.com.sdk.api.model.PolarHrBroadcastData;
+import polar.com.sdk.api.model.PolarGyroData;
 import polar.com.sdk.api.model.PolarHrData;
-import polar.com.sdk.api.model.PolarOhrPPGData;
+import polar.com.sdk.api.model.PolarMagnetometerData;
+import polar.com.sdk.api.model.PolarOhrData;
 import polar.com.sdk.api.model.PolarOhrPPIData;
 import polar.com.sdk.api.model.PolarSensorSetting;
 ```
 
 2. Load the default api implementation and add callback.
 ```
-// NOTICE only FEATURE_HR is enabled, to enable more features like battery info
+// NOTICE all features are enabled, if only interested on particular feature(s) like info Heart rate and Battery info then
 // e.g. PolarBleApiDefaultImpl.defaultImplementation(this, PolarBleApi.FEATURE_HR |
 // PolarBleApi.FEATURE_BATTERY_INFO); 
 // batteryLevelReceived callback is invoked after connection
-PolarBleApi api = PolarBleApiDefaultImpl.defaultImplementation(this, PolarBleApi.FEATURE_HR);
+PolarBleApi api = PolarBleApiDefaultImpl.defaultImplementation(this,  PolarBleApi.ALL_FEATURES);
 
 api.setApiCallback(new PolarBleApiCallback() {
     @Override
@@ -152,39 +175,27 @@ api.setApiCallback(new PolarBleApiCallback() {
     }
 
     @Override
-    public void polarDeviceConnected(PolarDeviceInfo polarDeviceInfo) {
+    public void deviceConnected(PolarDeviceInfo polarDeviceInfo) {
         Log.d("MyApp","CONNECTED: " + polarDeviceInfo.deviceId);
     }
 
     @Override
-    public void polarDeviceConnecting(PolarDeviceInfo polarDeviceInfo) {
+    public void deviceConnecting(PolarDeviceInfo polarDeviceInfo) {
         Log.d("MyApp","CONNECTING: " + polarDeviceInfo.deviceId);
     }
 
     @Override
-    public void polarDeviceDisconnected(PolarDeviceInfo polarDeviceInfo) {
+    public void deviceDisconnected(PolarDeviceInfo polarDeviceInfo) {
         Log.d("MyApp","DISCONNECTED: " + polarDeviceInfo.deviceId);
     }
 
     @Override
-    public void ecgFeatureReady(String identifier) {
-    }
-
-    @Override
-    public void accelerometerFeatureReady(String identifier) {
-    }
-
-    @Override
-    public void ppgFeatureReady(String identifier) {
-    }
-
-    @Override
-    public void ppiFeatureReady(String identifier) {
-    }
-
-    @Override
-    public void biozFeatureReady(String identifier) {
-    }
+    public void streamingFeaturesReady(@NonNull final String identifier,
+                                       @NonNull final Set<PolarBleApi.DeviceStreamingFeature> features) {
+            for(PolarBleApi.DeviceStreamingFeature feature : features) {
+                Log.d("MyApp", "Streaming feature " + feature.toString() + " is ready");
+            }
+        }
 
     @Override
     public void hrFeatureReady(String identifier) {
@@ -192,7 +203,7 @@ api.setApiCallback(new PolarBleApiCallback() {
     }
 
     @Override
-    public void fwInformationReceived(String identifier, String fwVersion) {
+    public void disInformationReceived(String identifier, UUID uuid, String value) {
     }
 
     @Override
@@ -317,13 +328,10 @@ class MyController: UIViewController,
         print("HR READY")
     }
     
-    func ecgFeatureReady(_ identifier: String) {
-    }
-    
-    func accFeatureReady(_ identifier: String) {
-    }
-    
-    func ohrPPGFeatureReady(_ identifier: String) {
+    func streamingFeaturesReady(_ identifier: String, streamingFeatures: Set<DeviceStreamingFeature>) {
+        for feature in streamingFeatures {
+            print("Feature \(feature) is ready.")
+        }
     }
     
     func blePowerOn() {
@@ -333,10 +341,7 @@ class MyController: UIViewController,
     func blePowerOff() {
         print("BLE OFF")
     }
-    
-    func ohrPPIFeatureReady(_ identifier: String) {
-    }
-    
+        
     func ftpFeatureReady(_ identifier: String) {
     }
 }
