@@ -11,7 +11,7 @@ public class AtomicType<T> : NSObject{
         super.init()
     }
     
-    /// copy of item stored(note only for primitive types, for object use accessItem) to AtomicType
+    /// copy of item stored(note only for primitive types or copyable, for object use accessItem) to AtomicType
     public func get() -> T {
         // sorry no proper RAII support
         lock.lock()
@@ -22,9 +22,9 @@ public class AtomicType<T> : NSObject{
     }
 
     /// f function for atomic access for the stored item
-    public func accessItem(_ f: (_ item: T) -> Void) {
+    public func accessItem(_ f: (_ item: inout T) -> Void) {
         self.lock.lock()
-        f(item)
+        f(&item)
         self.lock.unlock()
     }
     

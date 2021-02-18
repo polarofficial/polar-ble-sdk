@@ -1,6 +1,11 @@
 package com.androidcommunications.polar.api.ble.model.polar;
 
-public class BlePolarDeviceIdUtility {
+public final class BlePolarDeviceIdUtility {
+
+    private BlePolarDeviceIdUtility() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static boolean isValidDeviceId(final String deviceId) {
         if (deviceId == null) return false;
         if (deviceId.length() == 8) {

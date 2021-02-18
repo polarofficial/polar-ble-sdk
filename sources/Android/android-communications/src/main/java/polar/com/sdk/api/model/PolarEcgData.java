@@ -12,12 +12,12 @@ public class PolarEcgData {
     /**
      * ECG samples in microVolts.
      */
-    public List<Integer> samples;
+    public final List<Integer> samples;
 
     /**
      * Last sample timestamp in nanoseconds.
      */
-    public long timeStamp;
+    public final long timeStamp;
 
     public PolarEcgData(List<Integer> samples, long timeStamp) {
         this.samples = samples;

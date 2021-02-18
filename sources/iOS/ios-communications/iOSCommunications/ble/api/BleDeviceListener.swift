@@ -49,7 +49,7 @@ public protocol BleDeviceListener{
     ///   - identifiers: device identifiers to look for from corebluetooth
     ///   - preFilter: pre filter before memory allocation, for pref reason
     /// - Returns: Observable stream of device advertisements
-    func search(_ uuids: [CBUUID]?, identifiers: [UUID]?)  -> Observable<BleDeviceSession>
+    func search(_ uuids: [CBUUID]?, identifiers: [UUID]?, fetchKnownDevices: Bool)  -> Observable<BleDeviceSession>
     
     /// Start connection request for device, callbacks are informed to monitorDeviceSessionState or
     /// deviceSessionStateObserver
@@ -100,8 +100,8 @@ public protocol BlePowerStateObserver: AnyObject {
 }
 
 public extension BleDeviceListener {
-    func search(_ uuids: [CBUUID]? = nil, identifiers: [UUID]?=nil)  -> Observable<BleDeviceSession> {
-        return search(uuids, identifiers: identifiers)
+    func search(_ uuids: [CBUUID]? = nil, identifiers: [UUID]?=nil, fetchKnownDevices: Bool = false)  -> Observable<BleDeviceSession> {
+        return search(uuids, identifiers: identifiers, fetchKnownDevices: fetchKnownDevices)
     }
 }
 
@@ -120,6 +120,8 @@ public extension Observable where Element: Hashable {
                 set.insert(element)
                 return Observable<Element>.just(element)
             }
-        }
+        }.do(onDispose:  {
+            set = Set<Element>()
+        })
     }
 }

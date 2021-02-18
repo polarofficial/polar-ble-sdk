@@ -47,6 +47,18 @@
             android:text="acc_stream" />
 
         <Button
+            android:id="@+id/gyr_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="gyro_stream" />
+
+        <Button
+            android:id="@+id/mag_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="magnetometer_stream" />
+
+        <Button
             android:id="@+id/ohr_ppg_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

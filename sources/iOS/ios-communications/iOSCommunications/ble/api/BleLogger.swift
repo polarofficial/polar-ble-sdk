@@ -59,14 +59,10 @@ public class BleLogger {
     public static func trace_hex(_ message: String, data: Data) {
         sharedInstance.queue.async(execute: {
             if( sharedInstance.logger != nil && (sharedInstance.logLevel & BleLogger.LOG_LEVEL_HEX) != 0 ){
-                let ret = NSMutableString()
-                ret.append(message)
-                ret.append(" HEX: ")
-                let bytes = (data as NSData).bytes.bindMemory(to: UInt8.self, capacity: data.count)
-                for i in 0..<data.count {
-                    ret.appendFormat("%02X ", bytes[i])
-                }
-                sharedInstance.logger?.logMessage(ret as String)
+                let logStr = (message + " HEX " + data.compactMap { (byte) -> String in
+                    return String(format: "%02X", byte)
+                }.joined(separator: " "))
+                sharedInstance.logger?.logMessage(logStr)
             }
         })
     }
@@ -74,13 +70,10 @@ public class BleLogger {
     public static func trace_hex(_ message: String, data: [UInt8]) {
         sharedInstance.queue.async(execute: {
             if( sharedInstance.logger != nil && (sharedInstance.logLevel & BleLogger.LOG_LEVEL_HEX) != 0 ){
-                let ret = NSMutableString()
-                ret.append(message)
-                ret.append(" HEX: ")
-                for i in 0..<data.count {
-                    ret.appendFormat("%02X ", data[i])
-                }
-                sharedInstance.logger?.logMessage(ret as String)
+                let logStr = (message + " HEX " + data.compactMap { (byte) -> String in
+                   return String(format: "%02X", byte)
+               }.joined(separator: " "))
+               sharedInstance.logger?.logMessage(logStr)
             }
         })
     }

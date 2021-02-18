@@ -2,12 +2,12 @@ package com.androidcommunications.polar.api.ble.model;
 
 import android.bluetooth.BluetoothDevice;
 
+import androidx.annotation.NonNull;
+
 import com.androidcommunications.polar.api.ble.model.advertisement.BleAdvertisementContent;
 import com.androidcommunications.polar.api.ble.model.advertisement.BlePolarHrAdvertisement;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattBase;
 import com.androidcommunications.polar.common.ble.BleUtils;
-
-import org.reactivestreams.Publisher;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +16,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
@@ -61,7 +60,7 @@ public abstract class BleDeviceSession {
     protected Set<BleGattBase> clients;
     // needs to be set by 'upper' class
     protected BleAdvertisementContent advertisementContent = new BleAdvertisementContent();
-    private List<String> connectionUuids = new ArrayList<>();
+    private final List<String> connectionUuids = new ArrayList<>();
 
     /**
      * Methods
@@ -180,28 +179,21 @@ public abstract class BleDeviceSession {
      * @return Observable stream
      */
     public Completable clientsReady(final boolean checkConnection) {
-        return Completable.fromPublisher(monitorServicesDiscovered(checkConnection).toFlowable().flatMapIterable(new Function<List<UUID>, Iterable<UUID>>() {
-            @Override
-            public Iterable<UUID> apply(List<UUID> uuids) {
-                return uuids;
-            }
-        }).flatMap(
-                new Function<UUID, Publisher<?>>() {
-                    @Override
-                    public Publisher<?> apply(UUID uuid) throws Exception {
-                        BleGattBase bleGattBase = fetchClient(uuid);
-                        if (bleGattBase != null) {
-                            return bleGattBase.clientReady(checkConnection).toFlowable();
-                        }
-                        return Completable.fromPublisher(Flowable.empty()).toFlowable();
+        return Completable.fromPublisher(monitorServicesDiscovered(checkConnection).toFlowable().flatMapIterable((Function<List<UUID>, Iterable<UUID>>) uuids -> uuids).flatMap(
+                uuid -> {
+                    BleGattBase bleGattBase = fetchClient(uuid);
+                    if (bleGattBase != null) {
+                        return bleGattBase.clientReady(checkConnection).toFlowable();
                     }
+                    return Completable.fromPublisher(Flowable.empty()).toFlowable();
                 }));
     }
 
     /**
      * @return advertisement content object <BR>
      */
-    public @NonNull BleAdvertisementContent getAdvertisementContent() {
+    @NonNull
+    public BleAdvertisementContent getAdvertisementContent() {
         return advertisementContent;
     }
 
@@ -240,6 +232,7 @@ public abstract class BleDeviceSession {
     /**
      * @return polar device type
      */
+    @NonNull
     public String getPolarDeviceType() {
         return advertisementContent.getPolarDeviceType();
     }

@@ -12,33 +12,33 @@ public class PolarHrData {
     /**
      * Heart rate in BPM (beats per minute).
      */
-    public int hr;
+    public final int hr;
 
     /**
      * R is the peak of the QRS complex in the ECG wave and RR is the interval between successive Rs.
      * In 1/1024 format.
      */
-    public List<Integer> rrs;
+    public final List<Integer> rrs;
 
     /**
      * RRs in milliseconds.
      */
-    public List<Integer> rrsMs;
+    public final List<Integer> rrsMs;
 
     /**
      * Equals true if the sensor has contact (with a measurable surface e.g. skin).
      */
-    public boolean contactStatus;
+    public final boolean contactStatus;
 
     /**
      * Equals true if the sensor supports contact status
      */
-    public boolean contactStatusSupported;
+    public final boolean contactStatusSupported;
 
     /**
      * Equals true if RR data is available.
      */
-    public boolean rrAvailable;
+    public final boolean rrAvailable;
 
     public PolarHrData(int hr, List<Integer> rrs, boolean contactStatus, boolean contactStatusSupported, boolean rrAvailable) {
         this.hr = hr;
@@ -47,8 +47,8 @@ public class PolarHrData {
         this.contactStatusSupported = contactStatusSupported;
         this.rrAvailable = rrAvailable;
         rrsMs = new ArrayList<>();
-        for( int rrRaw : rrs ){
-            rrsMs.add((int)(Math.round(((float) rrRaw /1024.0)*1000.0)));
+        for (int rrRaw : rrs) {
+            rrsMs.add((int) (Math.round(((float) rrRaw / 1024.0) * 1000.0)));
         }
     }
 }

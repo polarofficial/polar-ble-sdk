@@ -12,7 +12,7 @@ import java.util.Set;
 
 class BDDeviceList {
 
-    private final static String TAG = BDDeviceList.class.getSimpleName();
+    private static final String TAG = BDDeviceList.class.getSimpleName();
     private AtomicSet<BDDeviceSessionImpl> sessions = new AtomicSet<>();
 
     AtomicSet<BDDeviceSessionImpl> getSessions() {

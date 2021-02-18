@@ -9,27 +9,27 @@ public class PolarDeviceInfo {
     /**
      * Polar device id
      */
-    public String deviceId;
+    public final String deviceId;
 
     /**
      * Bt mac address
      */
-    public String address;
+    public final String address;
 
     /**
      * Received signal strength indication value in dBm.
      */
-    public int rssi;
+    public final int rssi;
 
     /**
      * Device name.
      */
-    public String name;
+    public final String name;
 
     /**
      * true adv type is connectable
      */
-    public boolean isConnectable;
+    public final boolean isConnectable;
 
     public PolarDeviceInfo(String deviceId, String address, int rssi, String name, boolean isConnectable) {
         this.deviceId = deviceId;

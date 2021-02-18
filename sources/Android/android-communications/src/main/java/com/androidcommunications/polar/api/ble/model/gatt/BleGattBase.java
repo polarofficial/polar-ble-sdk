@@ -23,11 +23,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
  * contains helpers functions for asynchronously monitoring characteristic or service events
  */
 public abstract class BleGattBase {
-
-    private final static String TAG = BleGattBase.class.getSimpleName();
-
-    // descriptors, add more when needed
-    public static final UUID UUID_CCC = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+    private static final String TAG = BleGattBase.class.getSimpleName();
 
     /**
      * Characteristic properties
@@ -74,7 +70,7 @@ public abstract class BleGattBase {
     public static final int ATT_UNSUPPORTED_GRP_TYPE = 0x10;
     public static final int ATT_INSUFFICIENT_RESOURCES = 0x11;
     public static final int ATT_NOTIFY_OR_INDICATE_OFF = 0xff;
-    //0x80-0x9F Application Errors;
+    //0x80-0x9F Application Errors
     //0xA0-0xDF Reserved for future use
     //0xE0-0xFF Common Profile and Service Error Codes
     //          Defined in Core Specification Supplement Part B.
@@ -88,23 +84,23 @@ public abstract class BleGattBase {
     //
     protected UUID serviceUuid;
     // List of all service characteristics, value is boolean if this is a automatic read/notification
-    private HashMap<UUID, Boolean> characteristics = new HashMap<>();
+    private final HashMap<UUID, Boolean> characteristics = new HashMap<>();
     // List of all service characteristics to read automatically
-    private HashMap<UUID, Boolean> characteristicsRead = new HashMap<>();
+    private final HashMap<UUID, Boolean> characteristicsRead = new HashMap<>();
     // List of all service characteristics to be enabled automatically, pair contains property and atomic boolean
-    private HashMap<UUID, AtomicInteger> mandatoryNotificationCharacteristics = new HashMap<>();
+    private final HashMap<UUID, AtomicInteger> mandatoryNotificationCharacteristics = new HashMap<>();
     // List of all characteristics that are available
-    private AtomicSet<UUID> availableCharacteristics = new AtomicSet<>();
+    private final AtomicSet<UUID> availableCharacteristics = new AtomicSet<>();
     // List of all readable characteristics that are available
-    protected AtomicSet<UUID> availableReadableCharacteristics = new AtomicSet<>();
+    private final AtomicSet<UUID> availableReadableCharacteristics = new AtomicSet<>();
     // List of all writable characteristics that are available
-    private AtomicSet<UUID> availableWritableCharacteristics = new AtomicSet<>();
+    private final AtomicSet<UUID> availableWritableCharacteristics = new AtomicSet<>();
     // transport layer interface
-    protected BleGattTxInterface txInterface;
+    protected final BleGattTxInterface txInterface;
     // current usable mtu size
-    protected AtomicInteger mtuSize = new AtomicInteger(20);
+    protected final AtomicInteger mtuSize = new AtomicInteger(20);
     // mtu size with att layer
-    private AtomicInteger attMtuSize = new AtomicInteger(23);
+    private final AtomicInteger attMtuSize = new AtomicInteger(23);
     // flag to set client as primary
     protected boolean isPrimaryService = false;
     protected final AtomicBoolean serviceDiscovered = new AtomicBoolean(false);
@@ -144,6 +140,14 @@ public abstract class BleGattBase {
         attMtuSize.set(23);
     }
 
+    /**
+     * Callback for GATT service characteristic data processing
+     *
+     * @param characteristic characteristic UUID
+     * @param data           data in byte array
+     * @param status         status code of processed data
+     * @param notifying      if true data is notification data from GATT service
+     */
     public abstract void processServiceData(UUID characteristic, byte[] data, int status, boolean notifying);
 
     public abstract void processServiceDataWritten(UUID characteristic, int status);
