@@ -18,12 +18,14 @@ class ViewController: UIViewController,
     var broadcast: Disposable?
     var ecgToggle: Disposable?
     var accToggle: Disposable?
+    var gyroToggle: Disposable?
+    var magnetometerToggle: Disposable?
     var ppgToggle: Disposable?
     var ppiToggle: Disposable?
     var searchToggle: Disposable?
     var autoConnect: Disposable?
-    var entry: PolarExerciseEntry?
-    var deviceId = "4F443C26" // TODO replace this with your device id
+    var exerciseEntry: PolarExerciseEntry?
+    var deviceId = "89647C2E" //TODO replace this with your device id
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,21 +43,6 @@ class ViewController: UIViewController,
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
-    }
-    
-    @IBAction func autoConnect(_ sender: Any) {
-        autoConnect?.dispose()
-        autoConnect = api.startAutoConnectToDevice(-55, service: nil, polarDeviceType: nil)
-            .subscribe{ e in
-                switch e {
-                case .completed:
-                    NSLog("auto connect search complete")
-                case .error(let err):
-                    NSLog("auto connect failed: \(err)")
-                @unknown default:
-                    fatalError()
-                }
-            }
     }
     
     @IBAction func broadcastToggle(_ sender: Any) {
@@ -94,16 +81,57 @@ class ViewController: UIViewController,
         }
     }
     
+    @IBAction func autoConnect(_ sender: Any) {
+        autoConnect?.dispose()
+        autoConnect = api.startAutoConnectToDevice(-55, service: nil, polarDeviceType: nil)
+            .subscribe{ e in
+                switch e {
+                case .completed:
+                    NSLog("auto connect search complete")
+                case .error(let err):
+                    NSLog("auto connect failed: \(err)")
+                @unknown default:
+                    fatalError()
+                }
+            }
+    }
+    
+    @IBAction func ecgToggle(_ sender: Any) {
+        if ecgToggle == nil {
+            ecgToggle = api.requestStreamSettings(deviceId, feature: DeviceStreamingFeature.ecg)
+                .asObservable()
+                .flatMap({ (settings) -> Observable<PolarEcgData> in
+                    return self.api.startEcgStreaming(self.deviceId, settings: settings.maxSettings())
+                })
+                .observe(on: MainScheduler.instance)
+                .subscribe{ e in
+                    switch e {
+                    case .next(let data):
+                        for µv in data.samples {
+                            NSLog("    µV: \(µv)")
+                        }
+                    case .error(let err):
+                        NSLog("ECG error: \(err)")
+                        self.ecgToggle = nil
+                    case .completed:
+                        break
+                    }
+                }
+        } else {
+            ecgToggle?.dispose()
+            ecgToggle = nil
+        }
+    }
+    
     @IBAction func accToggle(_ sender: Any) {
         if accToggle == nil {
-            accToggle = api.requestAccSettings(deviceId)
+            accToggle = api.requestStreamSettings(deviceId, feature: DeviceStreamingFeature.acc)
                 .asObservable()
                 .flatMap({ (settings) -> Observable<PolarAccData> in
                     NSLog("settings: \(settings.settings)")
                     return self.api.startAccStreaming(self.deviceId, settings: settings.maxSettings())
                 })
-                .observe(on: MainScheduler.instance)
-                .subscribe{ e in
+                .observe(on: MainScheduler.instance).subscribe{ e in
                     switch e {
                     case .next(let data):
                         for item in data.samples {
@@ -122,69 +150,81 @@ class ViewController: UIViewController,
         }
     }
     
-    @IBAction func ecgToggle(_ sender: Any) {
-        if ecgToggle == nil {
-            ecgToggle = api.requestEcgSettings(deviceId)
+    @IBAction func gyroToggle(_ sender: Any) {
+        if gyroToggle == nil {
+            gyroToggle = api.requestStreamSettings(deviceId, feature:DeviceStreamingFeature.gyro)
                 .asObservable()
-                .flatMap({ (settings) -> Observable<PolarEcgData> in
-                    return self.api.startEcgStreaming(self.deviceId, settings: settings.maxSettings())
+                .flatMap({ (settings) -> Observable<PolarGyroData> in
+                    return self.api.startGyroStreaming(self.deviceId, settings: settings.maxSettings())
                 })
                 .observe(on: MainScheduler.instance)
                 .subscribe{ e in
                     switch e {
                     case .next(let data):
-                        for µv in data.samples {
-                            NSLog("    µV: \(µv)")
+                        for item in data.samples {
+                            NSLog("    x: \(item.x) y: \(item.y) z: \(item.z)")
                         }
                     case .error(let err):
-                        NSLog("start ecg error: \(err)")
-                        self.ecgToggle = nil
+                        NSLog("Gyro error: \(err)")
+                        self.gyroToggle = nil
                     case .completed:
                         break
                     }
                 }
         } else {
-            ecgToggle?.dispose()
-            ecgToggle = nil
+            gyroToggle?.dispose()
+            gyroToggle = nil
         }
     }
     
-    @IBAction func listFilesToggle(_ sender: Any) {
-        _ = api.fetchStoredExerciseList(deviceId)
-            .observe(on: MainScheduler.instance)
-            .subscribe{ e in
-                switch e {
-                case .completed:
-                    NSLog("list files done")
-                case .error(let err):
-                    NSLog("list files: \(err)")
-                case .next(let e):
-                    NSLog("entry: \(e.date.description) id: \(e.entryId)")
-                    self.entry = e
-                }
-            }
-        
-    }
-    
-    @IBAction func ppgToggle(_ sender: Any) {
-        if ppgToggle == nil {
-            ppgToggle = api.requestPpgSettings(deviceId)
+    @IBAction func magnetometerToggle(_ sender: Any) {
+        if magnetometerToggle == nil {
+            magnetometerToggle = api.requestStreamSettings(deviceId, feature:DeviceStreamingFeature.magnetometer)
                 .asObservable()
-                .flatMap({ (settings) -> Observable<PolarPpgData> in
-                    return self.api.startOhrPPGStreaming(self.deviceId, settings: settings.maxSettings())
+                .flatMap({ (settings) -> Observable<PolarGyroData> in
+                    return self.api.startMagnetometerStreaming(self.deviceId, settings: settings.maxSettings())
                 })
                 .observe(on: MainScheduler.instance)
                 .subscribe{ e in
                     switch e {
-                    case .completed:
-                        NSLog("ppg finished")
-                    case .error(let err):
-                        NSLog("start ppg error: \(err)")
-                        self.ppgToggle = nil
                     case .next(let data):
                         for item in data.samples {
-                            NSLog("    ppg0: \(item.ppg0) ppg1: \(item.ppg1) ppg2: \(item.ppg2)")
+                            NSLog("    x: \(item.x) y: \(item.y) z: \(item.z)")
                         }
+                    case .error(let err):
+                        NSLog("Magnetometer error: \(err)")
+                        self.magnetometerToggle = nil
+                    case .completed:
+                        break
+                    }
+                }
+        } else {
+            magnetometerToggle?.dispose()
+            magnetometerToggle = nil
+        }
+    }
+    
+    @IBAction func ppgToggle(_ sender: Any) {
+        if ppgToggle == nil {
+            ppgToggle = api.requestStreamSettings(deviceId, feature: DeviceStreamingFeature.ppg)
+                .asObservable()
+                .flatMap({ (settings) -> Observable<PolarOhrData> in
+                    return self.api.startOhrStreaming(self.deviceId, settings: settings.maxSettings())
+                })
+                .observe(on: MainScheduler.instance)
+                .subscribe{ e in
+                    switch e {
+                    case .next(let data):
+                        if(data.type == OhrDataType.ppg3_ambient1) {
+                            for item in data.samples {
+                                NSLog("    ppg0: \(item[0]) ppg1: \(item[1]) ppg2: \(item[2]) ambient: \(item[3])")
+                            }
+                        }
+                    case .error(let err):
+                        NSLog("PPG error: \(err)")
+                        self.ppgToggle = nil
+                    case .completed:
+                        NSLog("ppg complete")
                     }
                 }
         } else {
@@ -199,15 +239,15 @@ class ViewController: UIViewController,
                 .observe(on: MainScheduler.instance)
                 .subscribe{ e in
                     switch e {
-                    case .completed:
-                        NSLog("ppi complete")
-                    case .error(let err):
-                        NSLog("start ppi error: \(err)")
-                        self.ppiToggle = nil
                     case .next(let data):
                         for item in data.samples {
-                            NSLog("PPI: \(item.ppInMs)")
+                            NSLog("    PPI: \(item.ppInMs) sample.blockerBit: \(item.blockerBit)  errorEstimate: \(item.ppErrorEstimate)")
                         }
+                    case .error(let err):
+                        NSLog("PPI error: \(err)")
+                        self.ppiToggle = nil
+                    case .completed:
+                        NSLog("ppi complete")
                     }
                 }
         } else {
@@ -236,8 +276,24 @@ class ViewController: UIViewController,
         }
     }
     
+    @IBAction func listExercises(_ sender: Any) {
+        _ = api.fetchStoredExerciseList(deviceId)
+            .observe(on: MainScheduler.instance)
+            .subscribe{ e in
+                switch e {
+                case .completed:
+                    NSLog("list exercises done")
+                case .error(let err):
+                    NSLog("failed to list exercises: \(err)")
+                case .next(let polarExerciseEntry):
+                    NSLog("entry: \(polarExerciseEntry.date.description) path: \(polarExerciseEntry.path) id: \(polarExerciseEntry.entryId)");
+                    self.exerciseEntry = polarExerciseEntry
+                }
+            }
+    }
+    
     @IBAction func readExercise(_ sender: Any) {
-        guard let e = entry else {
+        guard let e = exerciseEntry else {
             return
         }
         _ = api.fetchExercise(deviceId, entry: e)
@@ -245,15 +301,15 @@ class ViewController: UIViewController,
             .subscribe{ e in
                 switch e {
                 case .failure(let err):
-                    NSLog("read ex error: \(err)")
+                    NSLog("failed to read exercises: \(err)")
                 case .success(let data):
-                    NSLog("\(data.samples)")
+                    NSLog("exercise data count: \(data.samples.count) samples: \(data.samples)")
                 }
             }
     }
     
     @IBAction func removeExercise(_ sender: Any) {
-        guard let e = entry else {
+        guard let e = exerciseEntry else {
             return
         }
         _ = api.removeExercise(deviceId, entry: e)
@@ -313,6 +369,23 @@ class ViewController: UIViewController,
             }
     }
     
+    @IBAction func setTime(_ sender: Any) {
+        let time = Date()
+        let timeZone = TimeZone.current
+        _ = api.setLocalTime(deviceId, time: time, zone: timeZone)
+            .observe(on: MainScheduler.instance)
+            .subscribe{ e in
+                switch e {
+                case .completed:
+                    NSLog("time set to device")
+                case .error(let err):
+                    NSLog("set time failed: \(err)")
+                @unknown default:
+                    fatalError()
+                }
+            }
+    }
+    
     // PolarBleApiObserver
     func deviceConnecting(_ polarDeviceInfo: PolarDeviceInfo) {
         NSLog("DEVICE CONNECTING: \(polarDeviceInfo)")
@@ -338,25 +411,17 @@ class ViewController: UIViewController,
     
     // PolarBleApiDeviceHrObserver
     func hrValueReceived(_ identifier: String, data: PolarHrData) {
-        NSLog("(\(identifier)) HR notification: \(data.hr) rrs: \(data.rrs) rrsMs: \(data.rrsMs) c: \(data.contact) s: \(data.contactSupported)")
+        NSLog("(\(identifier)) HR notification: \(data.hr) rrs: \(data.rrs) rrsMs: \(data.rrsMs) contact: \(data.contact) contact supported: \(data.contactSupported)")
     }
     
     func hrFeatureReady(_ identifier: String) {
         NSLog("HR READY")
     }
     
-    // PolarBleApiDeviceEcgObserver
-    func ecgFeatureReady(_ identifier: String) {
-        NSLog("ECG READY \(identifier)")
-    }
-    
-    // PolarBleApiDeviceAccelerometerObserver
-    func accFeatureReady(_ identifier: String) {
-        NSLog("ACC READY")
-    }
-    
-    func ohrPPGFeatureReady(_ identifier: String) {
-        NSLog("OHR PPG ready")
+    func streamingFeaturesReady(_ identifier: String, streamingFeatures: Set<DeviceStreamingFeature>) {
+        for feature in streamingFeatures {
+            NSLog("Feature \(feature) is ready.")
+        }
     }
     
     // PolarBleApiPowerStateObserver
@@ -378,7 +443,7 @@ class ViewController: UIViewController,
     }
     
     func message(_ str: String) {
-        NSLog(str)
+        NSLog("Polar SDK log:  \(str)")
     }
     
     /// ccc write observer

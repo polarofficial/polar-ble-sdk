@@ -24,10 +24,10 @@ public class BlePsFtpUtils {
 
     public final int RFC77_PFTP_SERVICE_16BIT = 0xFEEE;
 
-    public final static int RFC76_HEADER_SIZE = 1;
-    public final static int RFC76_STATUS_MORE = 0x03;
-    public final static int RFC76_STATUS_LAST = 0x01;
-    public final static int RFC76_STATUS_ERROR_OR_RESPONSE = 0x00;
+    public static final int RFC76_HEADER_SIZE = 1;
+    public static final int RFC76_STATUS_MORE = 0x03;
+    public static final int RFC76_STATUS_LAST = 0x01;
+    public static final int RFC76_STATUS_ERROR_OR_RESPONSE = 0x00;
 
     public static class Rfc76SequenceNumber {
         long seq = 0;
@@ -58,7 +58,7 @@ public class BlePsFtpUtils {
      * one of PbPftpError codes
      */
     public static class PftpResponseError extends Exception {
-        private int error;
+        private final int error;
 
         public PftpResponseError(String detailMessage, int error) {
             super(detailMessage + " Error: " + (error & 0x0000FFFF));
@@ -108,8 +108,6 @@ public class BlePsFtpUtils {
         QUERY,
         NOTIFICATION
     }
-
-    ;
 
     /**
      * Compines header(protobuf typically) and data(for write operation only, for other operations = null)

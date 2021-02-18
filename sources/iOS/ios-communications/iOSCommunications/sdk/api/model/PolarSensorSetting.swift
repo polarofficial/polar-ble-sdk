@@ -10,41 +10,43 @@ public struct PolarSensorSetting {
         case sampleRate = 0
         /// resolution in bits
         case resolution = 1
-        /// range in g's
+        /// range
         case range = 2
+        /// range with min and max allowed values
+        case rangeMilliunit = 3
+        /// amount of channels available
+        case channels = 4
         /// type is unknown
         case unknown = 0xff
     }
     
     /// current settings available / set
-    public let settings: [SettingType : Set<UInt16>]
+    public let settings: [SettingType : Set<UInt32>]
 
     init() {
-        self.settings = [SettingType : Set<UInt16>]()
+        self.settings = [SettingType : Set<UInt32>]()
     }
     
     /// constructor with desired settings
     ///
     /// - Parameter settings: single key value pairs to start stream
-    public init(_ settings: [SettingType : UInt16]) {
-        self.settings = settings.mapValues({ (v) -> Set<UInt16> in
-            var set = Set<UInt16>()
-            set.insert(v)
-            return set
+    public init(_ settings: [SettingType : UInt32]) {
+        self.settings = settings.mapValues({ (v) -> Set<UInt32> in
+            return Set(arrayLiteral: v)
         })
     }
     
-    init(_ settings: [Pmd.PmdSetting.PmdSettingType : Set<UInt16>]) {
+    init(_ settings: [Pmd.PmdSetting.PmdSettingType : Set<UInt32>]) {
         self.settings = settings.reduce(into: [:]) { (result, arg1) in
             let (key, value) = arg1
-            result[SettingType.init(rawValue: Int(key.rawValue)) ?? SettingType.unknown]=value
+            result[SettingType(rawValue: Int(key.rawValue)) ?? SettingType.unknown]=value
         }
     }
     
     func map2PmdSetting() -> Pmd.PmdSetting {
         return Pmd.PmdSetting(settings.reduce(into: [:]) { (result, arg1) in
             let (key, value) = arg1
-            result[Pmd.PmdSetting.PmdSettingType.init(rawValue: UInt8(key.rawValue)) ?? Pmd.PmdSetting.PmdSettingType.unknown]=Set(value)
+            result[Pmd.PmdSetting.PmdSettingType(rawValue: UInt8(key.rawValue)) ?? Pmd.PmdSetting.PmdSettingType.unknown]=value.first!
         })
     }
     
@@ -55,10 +57,7 @@ public struct PolarSensorSetting {
         let selected = settings.reduce(into: [:]) { (result, arg1) in
             let (key, value) = arg1
             result[key] = value.max() ?? 0
-        } as [SettingType : UInt16]
+        } as [SettingType : UInt32]
         return PolarSensorSetting(selected)
     }
 }
-
-
-

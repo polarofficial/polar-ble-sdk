@@ -11,13 +11,13 @@ public class PolarBleApiDefaultImpl {
     /// - Parameter features: bit mask with one or more items from enum `Features`
     /// - Returns: api instance
     public static func polarImplementation(_ queue: DispatchQueue, features: Int) -> PolarBleApi {
-        return PolarBleApiImpl.init(queue, features: features)
+        return PolarBleApiImpl(queue, features: features)
     }
     
     /// Return current version
     ///
     /// - Returns: version in format major.minor.patch
     public static func versionInfo() -> String {
-        return "2.3.1"
+        return "3.0.0"
     }
 }

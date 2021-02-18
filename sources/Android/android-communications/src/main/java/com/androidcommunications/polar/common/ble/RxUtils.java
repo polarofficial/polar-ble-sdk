@@ -12,9 +12,12 @@ import io.reactivex.rxjava3.core.FlowableEmitter;
 import io.reactivex.rxjava3.core.FlowableOnSubscribe;
 import io.reactivex.rxjava3.core.ObservableEmitter;
 import io.reactivex.rxjava3.core.SingleEmitter;
-import io.reactivex.rxjava3.functions.Action;
 
-public class RxUtils {
+public final class RxUtils {
+
+    private RxUtils() {
+        throw new IllegalStateException("Utility class");
+    }
 
     public static <T> void postDisconnectedAndClearList(AtomicSet<T> list) {
         postError(list, new BleDisconnected());
@@ -70,21 +73,15 @@ public class RxUtils {
                                                        final BleGattTxInterface transport,
                                                        final boolean checkConnection) {
         final FlowableEmitter<? super E>[] listener = new FlowableEmitter[1];
-        return Flowable.create(new FlowableOnSubscribe<E>() {
-            @Override
-            public void subscribe(FlowableEmitter<E> subscriber) {
-                if (!checkConnection || transport.isConnected()) {
-                    listener[0] = subscriber;
-                    observers.add(subscriber);
-                } else {
-                    subscriber.tryOnError(new BleDisconnected());
-                }
+        return Flowable.create((FlowableOnSubscribe<E>) subscriber -> {
+            if (!checkConnection || transport.isConnected()) {
+                listener[0] = subscriber;
+                observers.add(subscriber);
+            } else {
+                subscriber.tryOnError(new BleDisconnected());
             }
-        }, BackpressureStrategy.BUFFER).doFinally(new Action() {
-            @Override
-            public void run() {
-                observers.remove(listener[0]);
-            }
-        }).serialize();
+        }, BackpressureStrategy.BUFFER)
+                .doFinally(() -> observers.remove(listener[0]))
+                .serialize();
     }
 }

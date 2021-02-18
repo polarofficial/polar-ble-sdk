@@ -52,12 +52,12 @@ public abstract class BleDeviceListener {
     /**
      * @return true if bluetooth is active
      */
-    abstract public boolean bleActive();
+    public abstract boolean bleActive();
 
     /**
      * @param cb callback
      */
-    abstract public void setBlePowerStateCallback(@Nullable BlePowerStateChangedCallback cb);
+    public abstract void setBlePowerStateCallback(@Nullable BlePowerStateChangedCallback cb);
 
     public interface BlePowerStateChangedCallback {
         /**
@@ -69,19 +69,19 @@ public abstract class BleDeviceListener {
     /**
      * @param filters scan filter list, android specific
      */
-    abstract public void setScanFilters(@Nullable final List<ScanFilter> filters);
+    public abstract void setScanFilters(@Nullable final List<ScanFilter> filters);
 
     /**
      * enable to optimize memory usage or disable scan pre filter
      *
      * @param filter policy
      */
-    abstract public void setScanPreFilter(@Nullable final BleSearchPreFilter filter);
+    public abstract void setScanPreFilter(@Nullable final BleSearchPreFilter filter);
 
     /**
      * @param enable true enables timer to avoid opportunistic scan, false disables. Default true.
      */
-    abstract public void setOpportunisticScan(boolean enable);
+    public abstract void setOpportunisticScan(boolean enable);
 
     /**
      * Produces: onNext:      When a advertisement has been detected <BR>
@@ -91,21 +91,21 @@ public abstract class BleDeviceListener {
      * @param fetchKnownDevices, fetch known devices means bonded, already connected and already found devices <BR>
      * @return Observable stream <BR>
      */
-    abstract public Flowable<BleDeviceSession> search(boolean fetchKnownDevices);
+    public abstract Flowable<BleDeviceSession> search(boolean fetchKnownDevices);
 
-    abstract public void setMtu(@IntRange(from = 70, to = 512) int mtu);
+    public abstract void setMtu(@IntRange(from = 70, to = 512) int mtu);
 
     /**
      * As java does not support destructor/RAII, Client/App should call this whenever the application is being destroyed
      */
-    abstract public void shutDown();
+    public abstract void shutDown();
 
     /**
-     * aquire connection establishment
+     * Attempt connection establishment
      *
      * @param session device
      */
-    abstract public void openSessionDirect(BleDeviceSession session);
+    public abstract void openSessionDirect(BleDeviceSession session);
 
     /**
      * aquire connection establishment, BleDeviceSessionStateChangedCallback callbacks are invoked
@@ -113,7 +113,7 @@ public abstract class BleDeviceListener {
      * @param session device
      * @param uuids   needed uuids to be found from advertisement data, when reconnecting
      */
-    abstract public void openSessionDirect(BleDeviceSession session, List<String> uuids);
+    public abstract void openSessionDirect(BleDeviceSession session, List<String> uuids);
 
     public interface BleDeviceSessionStateChangedCallback {
         /**
@@ -129,25 +129,25 @@ public abstract class BleDeviceListener {
      *
      * @param changedCallback @see BleDeviceSessionStateChangedCallback
      */
-    abstract public void setDeviceSessionStateChangedCallback(@Nullable BleDeviceSessionStateChangedCallback changedCallback);
+    public abstract void setDeviceSessionStateChangedCallback(@Nullable BleDeviceSessionStateChangedCallback changedCallback);
 
     /**
      * aquires disconnection directly without Observable returned
      *
      * @param session device
      */
-    abstract public void closeSessionDirect(BleDeviceSession session);
+    public abstract void closeSessionDirect(BleDeviceSession session);
 
     /**
      * @return List of current device sessions known
      */
-    abstract public Set<BleDeviceSession> deviceSessions();
+    public abstract Set<BleDeviceSession> deviceSessions();
 
     /**
      * @param address bt address in format 00:11:22:33:44:55
      * @return BleDeviceSession
      */
-    abstract public BleDeviceSession sessionByAddress(final String address);
+    public abstract BleDeviceSession sessionByAddress(final String address);
 
     /**
      * Client app/lib can request to remove device from the list,
@@ -155,21 +155,21 @@ public abstract class BleDeviceListener {
      * @param deviceSession @see BleDeviceSession
      * @return true device was removed, false no( means device is considered to be alive )
      */
-    abstract public boolean removeSession(BleDeviceSession deviceSession);
+    public abstract boolean removeSession(BleDeviceSession deviceSession);
 
     /**
      * @return count of sessions removed
      */
-    abstract public int removeAllSessions();
+    public abstract int removeAllSessions();
 
-    abstract public int removeAllSessions(Set<BleDeviceSession.DeviceSessionState> inStates);
+    public abstract int removeAllSessions(Set<BleDeviceSession.DeviceSessionState> inStates);
 
     /**
      * enable or disable automatic reconnection, by default true.
      *
      * @param automaticReconnection
      */
-    abstract public void setAutomaticReconnection(boolean automaticReconnection);
+    public abstract void setAutomaticReconnection(boolean automaticReconnection);
 
     public static final int POWER_MODE_NORMAL = 0;
     public static final int POWER_MODE_LOW = 1;
@@ -179,5 +179,5 @@ public abstract class BleDeviceListener {
     public @interface PowerMode {
     }
 
-    abstract public void setPowerMode(@PowerMode int mode);
+    public abstract void setPowerMode(@PowerMode int mode);
 }

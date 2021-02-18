@@ -10,7 +10,7 @@ public enum BleGattException: Error{
     case gattCharacteristicNotifyNotEnabled
     case gattCharacteristicError
     case gattUndefinedDeviceError
-    case gattAttributeError(errorCode: Int)
+    case gattAttributeError(errorCode: Int, errorDescription: String = "")
     case gattOperationNotSupported
     case gattTransportNotAvailable
 }

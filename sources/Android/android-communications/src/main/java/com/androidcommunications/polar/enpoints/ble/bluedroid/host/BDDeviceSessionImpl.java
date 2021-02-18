@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
@@ -638,7 +639,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                     attOperations.take();
                 }
                 if (attOperations.size() != 0) {
-                    AttributeOperation operation = attOperations.peek();
+                    AttributeOperation operation = Objects.requireNonNull(attOperations.peek());
                     if (BuildConfig.DEBUG) {
                         BleLogger.d(TAG, "send next: " + operation.getCharacteristic().getUuid() + " op: " + operation.getAttributeOperation().toString());
                     }

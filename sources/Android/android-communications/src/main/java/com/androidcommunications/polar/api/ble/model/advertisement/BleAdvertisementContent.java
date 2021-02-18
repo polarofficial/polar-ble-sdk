@@ -1,5 +1,7 @@
 package com.androidcommunications.polar.api.ble.model.advertisement;
 
+import androidx.annotation.NonNull;
+
 import com.androidcommunications.polar.api.ble.model.polar.BlePolarDeviceIdUtility;
 import com.androidcommunications.polar.common.ble.BleUtils;
 
@@ -133,6 +135,7 @@ public class BleAdvertisementContent {
      *
      * @return String that for "Polar H7 20346EAB" will contain "H7"
      */
+    @NonNull
     public String getPolarDeviceType() {
         return polarDeviceType;
     }

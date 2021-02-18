@@ -14,32 +14,32 @@ public class PolarOhrPPIData {
         /**
          * Pulse to Pulse interval in milliseconds.
          */
-        public int ppi;
+        public final int ppi;
 
         /**
          * Error estimate in milliseconds.
          */
-        public int errorEstimate;
+        public final int errorEstimate;
 
         /**
          * Heart rate in beats per minute.
          */
-        public int hr;
+        public final int hr;
 
         /**
          * True if PPI measurement is invalid due to acceleration (or other reason).
          */
-        public boolean blockerBit;
+        public final boolean blockerBit;
 
         /**
          * False if the device detects poor or no contact with the skin.
          */
-        public boolean skinContactStatus;
+        public final boolean skinContactStatus;
 
         /**
          * True if the Sensor Contact feature is supported.
          */
-        public boolean skinContactSupported;
+        public final boolean skinContactSupported;
 
         public PolarOhrPPISample(int ppi, int errorEstimate, int hr, boolean blockerBit, boolean skinContactStatus, boolean skinContactSupported) {
             this.ppi = ppi;
@@ -54,15 +54,14 @@ public class PolarOhrPPIData {
     /**
      * Last sample timestamp in nanoseconds
      */
-    public long timeStamp;
-
+    public final long timeStamp;
 
     /**
      * PPI samples list. Sample with ppi in ms, errorEstimate in ms, hr in BPM,
      * blockerBit = True if PPI measurement is invalid due to acceleration (or other reason) ,
      * skinContactSupported = True if the Sensor Contact feature is supported.
      */
-    public List<PolarOhrPPISample> samples;
+    public final List<PolarOhrPPISample> samples;
 
     public PolarOhrPPIData(long timeStamp, List<PolarOhrPPISample> samples) {
         this.timeStamp = timeStamp;
