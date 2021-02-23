@@ -778,19 +778,22 @@ public class BDBleApiImpl extends PolarBleApi implements
                                             },
                                             throwable -> logError(throwable.getMessage()),
                                             () -> {
-
-                                    }
-                            );
+                                            }
+                                    );
                         } else if (uuid.equals(BleBattClient.BATTERY_SERVICE)) {
                             BleBattClient client = (BleBattClient) session.fetchClient(BleBattClient.BATTERY_SERVICE);
-                            return client.waitBatteryLevelUpdate(true)
+                            client.monitorBatteryLevelUpdate(true)
                                     .observeOn(scheduler)
-                                    .doOnSuccess(integer -> {
-                                        if (callback != null) {
-                                            callback.batteryLevelReceived(deviceId, integer);
-                                        }
-                                    })
-                                    .toFlowable();
+                                    .subscribe(
+                                            batteryLevel -> {
+                                                if (callback != null) {
+                                                    callback.batteryLevelReceived(deviceId, batteryLevel);
+                                                }
+                                            },
+                                            error -> logError(error.getMessage()),
+                                            () -> {
+                                            }
+                                    );
                         } else if (uuid.equals(BlePMDClient.PMD_SERVICE)) {
                             final BlePMDClient client = (BlePMDClient) session.fetchClient(BlePMDClient.PMD_SERVICE);
                             return client.waitNotificationEnabled(BlePMDClient.PMD_CP, true)

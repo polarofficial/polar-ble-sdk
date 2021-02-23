@@ -24,6 +24,6 @@ public class PolarBleApiDefaultImpl {
      * @return SDK version number in format major.minor.patch
      */
     public static String versionInfo() {
-        return "3.0.0";
+        return "3.0.1";
     }
 }
