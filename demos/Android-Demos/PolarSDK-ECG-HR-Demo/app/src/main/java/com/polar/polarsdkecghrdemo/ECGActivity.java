@@ -16,6 +16,7 @@ import com.androidplot.xy.XYPlot;
 
 import org.reactivestreams.Publisher;
 
+import java.util.Set;
 import java.util.UUID;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -81,29 +82,23 @@ public class ECGActivity extends AppCompatActivity implements PlotterListener {
             }
 
             @Override
-            public void ecgFeatureReady(@NonNull String s) {
-                Log.d(TAG, "ECG Feature ready " + s);
-                streamECG();
-            }
+            public void streamingFeaturesReady(@NonNull final String identifier,
+                                               @NonNull final Set<PolarBleApi.DeviceStreamingFeature> features) {
 
-            @Override
-            public void accelerometerFeatureReady(@NonNull String s) {
-                Log.d(TAG, "ACC Feature ready " + s);
-            }
-
-            @Override
-            public void ppgFeatureReady(@NonNull String s) {
-                Log.d(TAG, "PPG Feature ready " + s);
-            }
-
-            @Override
-            public void ppiFeatureReady(@NonNull String s) {
-                Log.d(TAG, "PPI Feature ready " + s);
-            }
-
-            @Override
-            public void biozFeatureReady(@NonNull String s) {
-
+                for (PolarBleApi.DeviceStreamingFeature feature : features) {
+                    Log.d(TAG, "Streaming feature is ready: " + feature);
+                    switch (feature) {
+                        case ECG:
+                            streamECG();
+                            break;
+                        case ACC:
+                        case MAGNETOMETER:
+                        case GYRO:
+                        case PPI:
+                        case PPG:
+                            break;
+                    }
+                }
             }
 
             @Override
@@ -164,7 +159,7 @@ public class ECGActivity extends AppCompatActivity implements PlotterListener {
     public void streamECG() {
         if (ecgDisposable == null) {
             ecgDisposable =
-                    api.requestEcgSettings(deviceId)
+                    api.requestStreamSettings(deviceId, PolarBleApi.DeviceStreamingFeature.ECG)
                             .toFlowable()
                             .flatMap((Function<PolarSensorSetting, Publisher<PolarEcgData>>) sensorSetting -> api.startEcgStreaming(deviceId, sensorSetting.maxSettings()))
                             .observeOn(AndroidSchedulers.mainThread())

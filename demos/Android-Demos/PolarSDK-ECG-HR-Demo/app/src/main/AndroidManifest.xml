@@ -26,11 +26,11 @@
         <activity
             android:name="com.polar.polarsdkecghrdemo.ECGActivity"
             android:label="@string/ecg_name"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name="com.polar.polarsdkecghrdemo.HRActivity"
             android:label="@string/hr_name"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>
