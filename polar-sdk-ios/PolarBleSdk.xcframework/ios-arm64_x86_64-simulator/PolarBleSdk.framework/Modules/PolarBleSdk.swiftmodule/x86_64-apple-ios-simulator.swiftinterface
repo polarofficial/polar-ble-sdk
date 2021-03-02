@@ -607,7 +607,7 @@ public enum BleGattException : Swift.Error {
   override public func disconnected()
   override public func processServiceData(_ chr: CoreBluetooth.CBUUID, data: Foundation.Data, err: Swift.Int)
   public func readLevel() throws
-  public func waitBatteryLevelUpdate(_ checkConnection: Swift.Bool) -> RxSwift.Observable<Swift.Int>
+  public func monitorBatteryStatus(_ checkConnection: Swift.Bool) -> RxSwift.Observable<Swift.Int>
   @objc deinit
 }
 @_hasMissingDesignatedInitializers public class BleDisClient : PolarBleSdk.BleGattClientBase {
