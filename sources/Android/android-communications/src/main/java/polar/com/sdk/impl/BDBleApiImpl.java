@@ -782,7 +782,7 @@ public class BDBleApiImpl extends PolarBleApi implements
                                     );
                         } else if (uuid.equals(BleBattClient.BATTERY_SERVICE)) {
                             BleBattClient client = (BleBattClient) session.fetchClient(BleBattClient.BATTERY_SERVICE);
-                            client.monitorBatteryLevelUpdate(true)
+                            client.monitorBatteryStatus(true)
                                     .observeOn(scheduler)
                                     .subscribe(
                                             batteryLevel -> {
