@@ -10,6 +10,7 @@
 *.class
 
 # Generated files
+SdkBuild/
 bin/
 gen/
 out/
