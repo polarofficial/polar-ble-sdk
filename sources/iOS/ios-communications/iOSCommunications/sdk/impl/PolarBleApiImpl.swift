@@ -210,9 +210,8 @@ import RxSwift
                         let hrClient = client as! BleHrClient
                         self.startHrObserver(hrClient, deviceId: deviceId)
                     case BleBasClient.BATTERY_SERVICE:
-                        return (client as! BleBasClient).waitBatteryLevelUpdate(true)
+                        return (client as! BleBasClient).monitorBatteryStatus(true)
                             .observe(on: self.scheduler)
-                            .take(1)
                             .do(onNext: { (level: Int) in
                                 self.deviceInfoObserver?.batteryLevelReceived(
                                     deviceId, batteryLevel: UInt(level))
@@ -295,8 +294,9 @@ import RxSwift
     }
     
     private func startHrObserver(_ client: BleHrClient, deviceId: String) {
-        _ = client.observeHrNotifications(true).observe(
-            on: self.scheduler).subscribe{ e in
+        _ = client.observeHrNotifications(true)
+            .observe(on: self.scheduler)
+            .subscribe{ e in
                 switch e {
                 case .completed:
                     break

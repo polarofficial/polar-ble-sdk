@@ -281,9 +281,11 @@
 		6CEA10E821786B0000E16FBF /* Timestamp.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10E421786B0000E16FBF /* Timestamp.pbobjc.h */; };
 		6CEA10E921786B0000E16FBF /* Type.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10E521786B0000E16FBF /* Type.pbobjc.m */; };
 		6CEA10EA21786B0000E16FBF /* Timestamp.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10E621786B0000E16FBF /* Timestamp.pbobjc.m */; };
+		A53468CB25ECDB38006752CA /* RxTest.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A53468CA25ECDB38006752CA /* RxTest.xcframework */; };
 		A580139725B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
 		A580139825B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
 		A580139925B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
+		A5AD08B725E67064002DA200 /* BleBasClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5AD08B625E67064002DA200 /* BleBasClientTest.swift */; };
 		A5C3EC3525A9CB33003565A9 /* RxSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5C3EC3425A9CB33003565A9 /* RxSwift.xcframework */; };
 		A5C3EC3825A9CB43003565A9 /* RxSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5C3EC3425A9CB33003565A9 /* RxSwift.xcframework */; };
 		A5C3EC3B25A9CB4F003565A9 /* RxSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5C3EC3425A9CB33003565A9 /* RxSwift.xcframework */; };
@@ -434,7 +436,9 @@
 		6CEA10E421786B0000E16FBF /* Timestamp.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Timestamp.pbobjc.h; path = sdk/impl/protobuf/google/Timestamp.pbobjc.h; sourceTree = "<group>"; };
 		6CEA10E521786B0000E16FBF /* Type.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Type.pbobjc.m; path = sdk/impl/protobuf/google/Type.pbobjc.m; sourceTree = "<group>"; };
 		6CEA10E621786B0000E16FBF /* Timestamp.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Timestamp.pbobjc.m; path = sdk/impl/protobuf/google/Timestamp.pbobjc.m; sourceTree = "<group>"; };
+		A53468CA25ECDB38006752CA /* RxTest.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = RxTest.xcframework; path = dependencyFrameworks/RxTest.xcframework; sourceTree = "<group>"; };
 		A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePolarDeviceCapabilitiesUtility.swift; path = ble/api/model/polar/BlePolarDeviceCapabilitiesUtility.swift; sourceTree = "<group>"; };
+		A5AD08B625E67064002DA200 /* BleBasClientTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleBasClientTest.swift; sourceTree = "<group>"; };
 		A5C3EC3425A9CB33003565A9 /* RxSwift.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = RxSwift.xcframework; path = dependencyFrameworks/RxSwift.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -452,6 +456,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A5C3EC3B25A9CB4F003565A9 /* RxSwift.xcframework in Frameworks */,
+				A53468CB25ECDB38006752CA /* RxTest.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -477,6 +482,7 @@
 		6C1079211D6D6EA000931948 /* iOSCommunicationsTests */ = {
 			isa = PBXGroup;
 			children = (
+				A5AD08B625E67064002DA200 /* BleBasClientTest.swift */,
 				6C1079221D6D6EA000931948 /* iOSCommunicationsTests.swift */,
 				6C1079241D6D6EA000931948 /* Info.plist */,
 			);
@@ -640,6 +646,7 @@
 		6C64AB1C1D8ABF980074340A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				A53468CA25ECDB38006752CA /* RxTest.xcframework */,
 				A5C3EC3425A9CB33003565A9 /* RxSwift.xcframework */,
 			);
 			name = Frameworks;
@@ -1187,6 +1194,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6C1079231D6D6EA000931948 /* iOSCommunicationsTests.swift in Sources */,
+				A5AD08B725E67064002DA200 /* BleBasClientTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1671,7 +1679,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.0.0;
+				MARKETING_VERSION = 3.0.2;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdkWatchOs;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -1723,7 +1731,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.0.0;
+				MARKETING_VERSION = 3.0.2;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdkWatchOs;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -1760,6 +1768,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1775,7 +1784,7 @@
 					"@loader_path/Frameworks",
 				);
 				MACH_O_TYPE = mh_dylib;
-				MARKETING_VERSION = 3.0.0;
+				MARKETING_VERSION = 3.0.2;
 				"OTHER_CFLAGS[arch=*]" = "-fembed-bitcode";
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdk;
@@ -1817,6 +1826,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -1831,7 +1841,7 @@
 					"@loader_path/Frameworks",
 				);
 				MACH_O_TYPE = mh_dylib;
-				MARKETING_VERSION = 3.0.0;
+				MARKETING_VERSION = 3.0.2;
 				"OTHER_CFLAGS[arch=*]" = "-fembed-bitcode";
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdk;
