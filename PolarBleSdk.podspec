@@ -4,7 +4,7 @@ Pod::Spec.new do |s|
     s.summary           = 'SDK for Polar sensors'
     s.homepage          = 'https://github.com/polarofficial/polar-ble-sdk'
     s.authors           = 'Polar Electro'
-    s.license           = s.license = { :type => 'Custom', :file => 'Polar_SDK_License.txt' }
+    s.license           = { :type => 'Custom', :file => 'Polar_SDK_License.txt' }
     s.platform          = :ios
     s.swift_versions    = '5.0'
     s.source            = { :git => 'https://github.com/polarofficial/polar-ble-sdk.git', :tag => '3.0.2' }
