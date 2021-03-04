@@ -10,5 +10,5 @@ Pod::Spec.new do |s|
     s.source            = { :git => 'https://github.com/polarofficial/polar-ble-sdk.git', :tag => '3.0.2' }
     s.ios.deployment_target = '12.0'
     s.ios.vendored_frameworks = 'polar-sdk-ios/PolarBleSdk.xcframework'
-    s.dependency 'RxSwift', '~> 6'
+    s.dependency 'RxSwift', '6.0.0'
 end 
