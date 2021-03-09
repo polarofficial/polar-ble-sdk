@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     Disposable ppiDisposable;
     Disposable scanDisposable;
     Disposable autoConnectDisposable;
-    String DEVICE_ID = "8C4CAD2D"; //TODO replace with your device id
+    String DEVICE_ID = "8C4CBE21"; //TODO replace with your device id
     PolarExerciseEntry exerciseEntry;
 
     @Override
