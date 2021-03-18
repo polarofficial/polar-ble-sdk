@@ -264,10 +264,11 @@ import RxSwift
                         return (client as! BlePsFtpClient).waitPsFtpReady(true)
                             .observe(on: self.scheduler)
                             .do(onCompleted: {
-                                switch session.advertisementContent.polarDeviceType {
-                                case "OH1": fallthrough
-                                case "H10":
+                                switch (BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType)) {
+                                case .h10FileSystem,
+                                     .sagRfc2FileSystem:
                                     self.deviceFeaturesObserver?.ftpFeatureReady(deviceId)
+                                    break
                                 default:
                                     break
                                 }
