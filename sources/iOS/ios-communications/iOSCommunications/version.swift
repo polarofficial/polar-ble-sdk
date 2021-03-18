@@ -1,1 +1,0 @@
-public let IOS_COMMUNICATIONS_VERSION = "14.1-20-geeb7606"
