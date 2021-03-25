@@ -281,14 +281,18 @@
 		6CEA10E821786B0000E16FBF /* Timestamp.pbobjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CEA10E421786B0000E16FBF /* Timestamp.pbobjc.h */; };
 		6CEA10E921786B0000E16FBF /* Type.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10E521786B0000E16FBF /* Type.pbobjc.m */; };
 		6CEA10EA21786B0000E16FBF /* Timestamp.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CEA10E621786B0000E16FBF /* Timestamp.pbobjc.m */; };
-		A53468CB25ECDB38006752CA /* RxTest.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A53468CA25ECDB38006752CA /* RxTest.xcframework */; };
+		A534691425EE4C2C006752CA /* RxSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A534691325EE4C2C006752CA /* RxSwift.xcframework */; };
+		A534692025EE4C40006752CA /* RxSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A534691325EE4C2C006752CA /* RxSwift.xcframework */; };
+		A534692525EE4C4C006752CA /* RxSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A534691325EE4C2C006752CA /* RxSwift.xcframework */; };
+		A534692A25EE4C90006752CA /* RxTest.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A534691A25EE4C31006752CA /* RxTest.xcframework */; };
+		A5346A3725F21858006752CA /* MockGattServiceTransmitterImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5346A3625F21858006752CA /* MockGattServiceTransmitterImpl.swift */; };
+		A5346A4125F21866006752CA /* BlePsFtpClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5346A4025F21866006752CA /* BlePsFtpClientTest.swift */; };
+		A5346A4B25F21877006752CA /* BlePsFtpUtilityTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5346A4A25F21877006752CA /* BlePsFtpUtilityTest.swift */; };
+		A5346A5B25F218B6006752CA /* RxBlocking.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5346A5425F218B0006752CA /* RxBlocking.xcframework */; };
 		A580139725B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
 		A580139825B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
 		A580139925B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
 		A5AD08B725E67064002DA200 /* BleBasClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5AD08B625E67064002DA200 /* BleBasClientTest.swift */; };
-		A5C3EC3525A9CB33003565A9 /* RxSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5C3EC3425A9CB33003565A9 /* RxSwift.xcframework */; };
-		A5C3EC3825A9CB43003565A9 /* RxSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5C3EC3425A9CB33003565A9 /* RxSwift.xcframework */; };
-		A5C3EC3B25A9CB4F003565A9 /* RxSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5C3EC3425A9CB33003565A9 /* RxSwift.xcframework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -300,6 +304,19 @@
 			remoteInfo = iOSCommunications;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A5346A5725F218B1006752CA /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		6C0C543E1CFC749E00FF23E9 /* iOSCommunications.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iOSCommunications.h; sourceTree = "<group>"; };
@@ -436,10 +453,14 @@
 		6CEA10E421786B0000E16FBF /* Timestamp.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Timestamp.pbobjc.h; path = sdk/impl/protobuf/google/Timestamp.pbobjc.h; sourceTree = "<group>"; };
 		6CEA10E521786B0000E16FBF /* Type.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Type.pbobjc.m; path = sdk/impl/protobuf/google/Type.pbobjc.m; sourceTree = "<group>"; };
 		6CEA10E621786B0000E16FBF /* Timestamp.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Timestamp.pbobjc.m; path = sdk/impl/protobuf/google/Timestamp.pbobjc.m; sourceTree = "<group>"; };
-		A53468CA25ECDB38006752CA /* RxTest.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = RxTest.xcframework; path = dependencyFrameworks/RxTest.xcframework; sourceTree = "<group>"; };
+		A534691325EE4C2C006752CA /* RxSwift.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = RxSwift.xcframework; path = Carthage/Build/RxSwift.xcframework; sourceTree = "<group>"; };
+		A534691A25EE4C31006752CA /* RxTest.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = RxTest.xcframework; path = Carthage/Build/RxTest.xcframework; sourceTree = "<group>"; };
+		A5346A3625F21858006752CA /* MockGattServiceTransmitterImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockGattServiceTransmitterImpl.swift; sourceTree = "<group>"; };
+		A5346A4025F21866006752CA /* BlePsFtpClientTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlePsFtpClientTest.swift; sourceTree = "<group>"; };
+		A5346A4A25F21877006752CA /* BlePsFtpUtilityTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlePsFtpUtilityTest.swift; sourceTree = "<group>"; };
+		A5346A5425F218B0006752CA /* RxBlocking.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = RxBlocking.xcframework; path = Carthage/Build/RxBlocking.xcframework; sourceTree = "<group>"; };
 		A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePolarDeviceCapabilitiesUtility.swift; path = ble/api/model/polar/BlePolarDeviceCapabilitiesUtility.swift; sourceTree = "<group>"; };
 		A5AD08B625E67064002DA200 /* BleBasClientTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleBasClientTest.swift; sourceTree = "<group>"; };
-		A5C3EC3425A9CB33003565A9 /* RxSwift.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = RxSwift.xcframework; path = dependencyFrameworks/RxSwift.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -448,6 +469,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				6C10792D1D6D9C4800931948 /* iOSCommunications.framework in Frameworks */,
+				A5346A5B25F218B6006752CA /* RxBlocking.xcframework in Frameworks */,
+				A534692A25EE4C90006752CA /* RxTest.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -455,8 +478,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A5C3EC3B25A9CB4F003565A9 /* RxSwift.xcframework in Frameworks */,
-				A53468CB25ECDB38006752CA /* RxTest.xcframework in Frameworks */,
+				A534691425EE4C2C006752CA /* RxSwift.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -464,7 +486,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A5C3EC3825A9CB43003565A9 /* RxSwift.xcframework in Frameworks */,
+				A534692525EE4C4C006752CA /* RxSwift.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -472,7 +494,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A5C3EC3525A9CB33003565A9 /* RxSwift.xcframework in Frameworks */,
+				A534692025EE4C40006752CA /* RxSwift.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -482,6 +504,9 @@
 		6C1079211D6D6EA000931948 /* iOSCommunicationsTests */ = {
 			isa = PBXGroup;
 			children = (
+				A5346A4A25F21877006752CA /* BlePsFtpUtilityTest.swift */,
+				A5346A4025F21866006752CA /* BlePsFtpClientTest.swift */,
+				A5346A3625F21858006752CA /* MockGattServiceTransmitterImpl.swift */,
 				A5AD08B625E67064002DA200 /* BleBasClientTest.swift */,
 				6C1079221D6D6EA000931948 /* iOSCommunicationsTests.swift */,
 				6C1079241D6D6EA000931948 /* Info.plist */,
@@ -646,8 +671,9 @@
 		6C64AB1C1D8ABF980074340A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				A53468CA25ECDB38006752CA /* RxTest.xcframework */,
-				A5C3EC3425A9CB33003565A9 /* RxSwift.xcframework */,
+				A5346A5425F218B0006752CA /* RxBlocking.xcframework */,
+				A534691A25EE4C31006752CA /* RxTest.xcframework */,
+				A534691325EE4C2C006752CA /* RxSwift.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -985,7 +1011,7 @@
 				6C34DE841CAA3F240083EB1F /* Frameworks */,
 				6C34DE851CAA3F240083EB1F /* Headers */,
 				6C34DE861CAA3F240083EB1F /* Resources */,
-				6C393C321D4F70BC00F5B6FD /* ShellScript */,
+				A5346A5725F218B1006752CA /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1023,7 +1049,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6C770B73206B779A00F3D51D /* Build configuration list for PBXNativeTarget "PolarBleSdk" */;
 			buildPhases = (
-				6C770BAA206B785400F3D51D /* ShellScript */,
 				6C770B67206B779900F3D51D /* Sources */,
 				6C770B68206B779900F3D51D /* Frameworks */,
 				6C770B69206B779900F3D51D /* Headers */,
@@ -1142,20 +1167,6 @@
 			shellPath = /bin/sh;
 			shellScript = "cd $BUILT_PRODUCTS_DIR\necho $PWD\nsed -i -- 's/#import <PolarProtobuf.h>//' PolarBleSdkWatchOs.framework/Headers/PolarBleSdkWatchOs.h\nrm PolarBleSdkWatchOs.framework/Headers/PolarBleSdkWatchOs.h--\n";
 		};
-		6C393C321D4F70BC00F5B6FD /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Carthage/Build/iOS/RxSwift.framework",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "#/usr/local/bin/carthage copy-frameworks\n";
-		};
 		6C48395921B12BAD00747D78 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1173,19 +1184,6 @@
 			shellPath = /bin/sh;
 			shellScript = "cd $BUILT_PRODUCTS_DIR\necho $PWD\nsed -i -- 's/#import <PolarProtobuf.h>//' PolarBleSdk.framework/Headers/PolarBleSdk.h\nrm PolarBleSdk.framework/Headers/PolarBleSdk.h--\n";
 		};
-		6C770BAA206B785400F3D51D /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "VERSION=`git describe --tags`\necho \"TAG=$VERSION\"\necho \"public let IOS_COMMUNICATIONS_VERSION = \\\"\"$VERSION\"\\\"\"> ${PROJECT_DIR}/iOSCommunications/version.swift\n";
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -1194,6 +1192,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				6C1079231D6D6EA000931948 /* iOSCommunicationsTests.swift in Sources */,
+				A5346A3725F21858006752CA /* MockGattServiceTransmitterImpl.swift in Sources */,
+				A5346A4B25F21877006752CA /* BlePsFtpUtilityTest.swift in Sources */,
+				A5346A4125F21866006752CA /* BlePsFtpClientTest.swift in Sources */,
 				A5AD08B725E67064002DA200 /* BleBasClientTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1590,7 +1591,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 14.0.0;
+				MARKETING_VERSION = 14.1.2;
 				MODULEMAP_FILE = "";
 				MODULEMAP_PRIVATE_FILE = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iOSCommunications;
@@ -1627,7 +1628,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 14.0.0;
+				MARKETING_VERSION = 14.1.2;
 				MODULEMAP_FILE = "";
 				MODULEMAP_PRIVATE_FILE = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iOSCommunications;

@@ -121,37 +121,3 @@ class BleBasClientTest: XCTestCase {
         ])
     }
 }
-
-class MockGattServiceTransmitterImpl: BleAttributeTransportProtocol {
-    func isConnected() -> Bool {
-        return true
-    }
-    
-    func transmitMessage(_ parent: BleGattClientBase, serviceUuid: CBUUID , characteristicUuid: CBUUID , packet: Data, withResponse: Bool) throws {
-        // Do nothing
-    }
-    
-    func characteristicWith(uuid: CBUUID) throws -> CBCharacteristic? {
-        return nil
-    }
-    
-    func characteristicNameWith(uuid: CBUUID) -> String? {
-        return nil
-    }
-    
-    func readValue(_ parent: BleGattClientBase, serviceUuid: CBUUID , characteristicUuid: CBUUID ) throws {
-        // Do nothing
-    }
-    
-    func setCharacteristicNotify(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID, notify: Bool) throws {
-        // Do nothing
-    }
-    
-    func attributeOperationStarted(){
-        // Do nothing
-    }
-    
-    func attributeOperationFinished(){
-        // Do nothing
-    }
-}

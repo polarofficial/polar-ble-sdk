@@ -22,33 +22,6 @@ class iOSCommunicationsTests: XCTestCase {
         XCTAssert(diff <= delta && diff >= (delta * -1.0))
     }
     
-    func testPsFtpUtils(){
-        let seq = BlePsFtpUtility.BlePsFtpRfc76SequenceNumber()
-        let stream = InputStream.init(data: Data(count: 60));
-        stream.open()
-        let requs = BlePsFtpUtility.buildRfc76MessageFrameAll(stream, mtuSize: 20, sequenceNumber: seq)
-        stream.close()
-        XCTAssert(requs.count == 4)
-        
-        let frame = BlePsFtpUtility.processRfc76MessageFrame(Data([0x03,0x03]))
-        XCTAssert(frame.next == 1 &&
-                  frame.status == BlePsFtpUtility.RFC76_STATUS_LAST &&
-                  frame.sequenceNumber == 0 &&
-                  frame.payload != nil)
-        
-        let frame2 = BlePsFtpUtility.processRfc76MessageFrame(Data([0x01,0x00,0x00]))
-        XCTAssert(frame2.next == 1 &&
-                  frame2.status == BlePsFtpUtility.RFC76_STATUS_ERROR_OR_RESPONSE &&
-                  frame2.sequenceNumber == 0 &&
-                  frame2.payload == nil)
-        
-        let frame3 = BlePsFtpUtility.processRfc76MessageFrame(Data([0xF3,0x00]))
-        XCTAssert(frame3.next == 1 &&
-            frame3.status == BlePsFtpUtility.RFC76_STATUS_LAST &&
-            frame3.sequenceNumber == 0x0F &&
-            frame3.payload != nil)
-    }
-    
     func testPmdDeltaFrameDecoder() {
         let data = Data([0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x03,0x03,0xAA,0xAA,0xCC,0xCF,0x03,0x02,0xAA,0xAA,0xCC])
         let samples = Pmd.buildFromDeltaFrame3Axis(data, resolution: 14, timeStamp: 0)
