@@ -14,55 +14,55 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		/iEtiTBBPZbkBK8P4jx2xb9d7YQ=
+		MQ863yMgFIGxwba2NdsOSHSg9OU=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/arm64-apple-ios-simulator.swiftdoc</key>
 		<data>
-		zAhO3R6azhWG/CYmgfD4y+scVF0=
+		wLyTTT30n58j9XctRLkePSia7Pw=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/arm64-apple-ios-simulator.swiftinterface</key>
 		<data>
-		n4uZPxYUTL0fwFC+GFpqwDogBkI=
+		zRt0jifmzVOWIRLPv7eWxX/mG8Q=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		Kq7w+BK5pukJUwXEFHaYxCQkOTA=
+		ZbvTS7V+b6jNTUmbk8acMKSyn1o=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/arm64.swiftdoc</key>
 		<data>
-		zAhO3R6azhWG/CYmgfD4y+scVF0=
+		wLyTTT30n58j9XctRLkePSia7Pw=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/arm64.swiftinterface</key>
 		<data>
-		n4uZPxYUTL0fwFC+GFpqwDogBkI=
+		zRt0jifmzVOWIRLPv7eWxX/mG8Q=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/arm64.swiftmodule</key>
 		<data>
-		Kq7w+BK5pukJUwXEFHaYxCQkOTA=
+		ZbvTS7V+b6jNTUmbk8acMKSyn1o=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
 		<data>
-		6EoPjwmvD9iP2nLVTxsBPHcr5yw=
+		sEfVgCa+capVH4Q9K9dPGyD/28s=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/x86_64-apple-ios-simulator.swiftinterface</key>
 		<data>
-		oONU1QqmmwL1L9EnxQkgNqllaQY=
+		nHDPaLtsZhwumGiXRgVnE9TWpbk=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		34OZng065h2Q2wR3sYjz+50g4wM=
+		AlUdrygDUBzYZJROnNWtrZuX4gw=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/x86_64.swiftdoc</key>
 		<data>
-		6EoPjwmvD9iP2nLVTxsBPHcr5yw=
+		sEfVgCa+capVH4Q9K9dPGyD/28s=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/x86_64.swiftinterface</key>
 		<data>
-		oONU1QqmmwL1L9EnxQkgNqllaQY=
+		nHDPaLtsZhwumGiXRgVnE9TWpbk=
 		</data>
 		<key>Modules/PolarBleSdk.swiftmodule/x86_64.swiftmodule</key>
 		<data>
-		34OZng065h2Q2wR3sYjz+50g4wM=
+		AlUdrygDUBzYZJROnNWtrZuX4gw=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -89,84 +89,84 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			u8TSoU23Wi0BEIEBpvHM9RNDcmanV9VSteYR13QXxlo=
+			PkkMslTtuphHIRpX/WTBjfKJD9enL1UuEOaRq199ZAU=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/arm64-apple-ios-simulator.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			FTKGiS8eGTBe8BBWTMrZ7QAq2faRhQD/4Q0gWucor+o=
+			YGILSicGstOjV0m8QD9hUtVutU0QLmXAuMo5c4Yle44=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			GmiJejqfD2jPq+ucXHkZtzwoVrEGw3qb8nzGsjCPn1g=
+			44luiSjgUr+Fv1jnS5gP0xcZL/V/mAq+/LLsXMEVMbw=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/arm64.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			u8TSoU23Wi0BEIEBpvHM9RNDcmanV9VSteYR13QXxlo=
+			PkkMslTtuphHIRpX/WTBjfKJD9enL1UuEOaRq199ZAU=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/arm64.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			FTKGiS8eGTBe8BBWTMrZ7QAq2faRhQD/4Q0gWucor+o=
+			YGILSicGstOjV0m8QD9hUtVutU0QLmXAuMo5c4Yle44=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/arm64.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			GmiJejqfD2jPq+ucXHkZtzwoVrEGw3qb8nzGsjCPn1g=
+			44luiSjgUr+Fv1jnS5gP0xcZL/V/mAq+/LLsXMEVMbw=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			iJcIkOwmCDM3gm2sdyVoKU84MofdAfT+TLfwQD/KOk8=
+			FRQkVtfwinRambpRNzOQzNvAfvnskWD4zH2EFWhXhaI=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/x86_64-apple-ios-simulator.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			03Iu/w1GDW3+kIYx0f2CxQwp4OqqpXsi9s0kZWZiogo=
+			158jdMkQqjBFdwLgHOJqtEEq8Qgcoq80Z3VeA2fcFq0=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			qvOfCgvFESr/bFY5vL8FS7Plx5EcKDKgEhELW0WUJfI=
+			nmXzb4sLO+jjVr2ZzHUXrlVFqLnsYjmzjMZxmKDAM/U=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/x86_64.swiftdoc</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			iJcIkOwmCDM3gm2sdyVoKU84MofdAfT+TLfwQD/KOk8=
+			FRQkVtfwinRambpRNzOQzNvAfvnskWD4zH2EFWhXhaI=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/x86_64.swiftinterface</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			03Iu/w1GDW3+kIYx0f2CxQwp4OqqpXsi9s0kZWZiogo=
+			158jdMkQqjBFdwLgHOJqtEEq8Qgcoq80Z3VeA2fcFq0=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdk.swiftmodule/x86_64.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			qvOfCgvFESr/bFY5vL8FS7Plx5EcKDKgEhELW0WUJfI=
+			nmXzb4sLO+jjVr2ZzHUXrlVFqLnsYjmzjMZxmKDAM/U=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

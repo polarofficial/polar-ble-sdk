@@ -152,13 +152,22 @@ public enum BlePsFtpException : Swift.Error {
   public static let RFC76_STATUS_MORE: Swift.Int
   public static let RFC76_STATUS_LAST: Swift.Int
   public static let RFC76_STATUS_ERROR_OR_RESPONSE: Swift.Int
+  public enum RFC76FrameProcessError : Swift.Error {
+    case frameIsEmpty
+    case frameHasNoPayload
+    public static func == (a: PolarBleSdk.BlePsFtpUtility.RFC76FrameProcessError, b: PolarBleSdk.BlePsFtpUtility.RFC76FrameProcessError) -> Swift.Bool
+    public var hashValue: Swift.Int {
+      get
+    }
+    public func hash(into hasher: inout Swift.Hasher)
+  }
   public static let PFTP_AIR_PACKET_LOST_ERROR: Swift.Int
   @_hasMissingDesignatedInitializers public class BlePsFtpRfc76Frame {
     public var next: Swift.Int
     public var status: Swift.Int
     public var sequenceNumber: Swift.Int
-    public var error: Swift.Int
-    public var payload: Foundation.Data!
+    public var error: Swift.Int?
+    public var payload: Foundation.Data
     @objc deinit
   }
   public class BlePsFtpRfc76SequenceNumber {
@@ -169,8 +178,7 @@ public enum BlePsFtpException : Swift.Error {
   public static func buildRfc76MessageFrame(_ data: Foundation.InputStream, next: Swift.Int, mtuSize: Swift.Int, sequenceNumber: PolarBleSdk.BlePsFtpUtility.BlePsFtpRfc76SequenceNumber) -> Foundation.Data
   public static func buildRfc76MessageFrame(_ header: Foundation.InputStream, data: Foundation.InputStream?, next: Swift.Int, mtuSize: Swift.Int, sequenceNumber: PolarBleSdk.BlePsFtpUtility.BlePsFtpRfc76SequenceNumber) -> Foundation.Data
   public static func buildRfc76MessageFrameAll(_ data: Foundation.InputStream, mtuSize: Swift.Int, sequenceNumber: PolarBleSdk.BlePsFtpUtility.BlePsFtpRfc76SequenceNumber) -> [Foundation.Data]
-  public static func processRfc76MessageFrame(_ packet: Foundation.Data) -> PolarBleSdk.BlePsFtpUtility.BlePsFtpRfc76Frame
-  public static func processRfc76MessageFrame(_ header: PolarBleSdk.BlePsFtpUtility.BlePsFtpRfc76Frame, packet: Foundation.Data)
+  public static func processRfc76MessageFrame(_ packet: Foundation.Data) throws -> PolarBleSdk.BlePsFtpUtility.BlePsFtpRfc76Frame
   @objc deinit
 }
 @_hasMissingDesignatedInitializers public class BlePsFtpClient : PolarBleSdk.BleGattClientBase {
@@ -829,6 +837,8 @@ extension PolarBleSdk.Pmd.PmdMeasurementType : Swift.Hashable {}
 extension PolarBleSdk.Pmd.PmdMeasurementType : Swift.RawRepresentable {}
 extension PolarBleSdk.BlePsFtpUtility.MessageType : Swift.Equatable {}
 extension PolarBleSdk.BlePsFtpUtility.MessageType : Swift.Hashable {}
+extension PolarBleSdk.BlePsFtpUtility.RFC76FrameProcessError : Swift.Equatable {}
+extension PolarBleSdk.BlePsFtpUtility.RFC76FrameProcessError : Swift.Hashable {}
 extension PolarBleSdk.PolarSensorSetting.SettingType : Swift.Equatable {}
 extension PolarBleSdk.PolarSensorSetting.SettingType : Swift.Hashable {}
 extension PolarBleSdk.PolarSensorSetting.SettingType : Swift.RawRepresentable {}
