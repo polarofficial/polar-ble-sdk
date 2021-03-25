@@ -48,22 +48,31 @@ public class BlePsFtpUtility {
     
     public enum MessageType{
         case
-        request,
-        query,
-        notification
+            request,
+            query,
+            notification
     }
     
     public static let RFC76_STATUS_MORE = 0x03
     public static let RFC76_STATUS_LAST = 0x01
     public static let RFC76_STATUS_ERROR_OR_RESPONSE = 0x00
+    
+    private static let RFC76_HEADER_SIZE = 1
+    private static let RFC76_ERROR_DATA_SIZE = 2
+    
+    public enum RFC76FrameProcessError: Error {
+        case frameIsEmpty
+        case frameHasNoPayload
+    }
+    
     public static let PFTP_AIR_PACKET_LOST_ERROR = 303
     
     public class BlePsFtpRfc76Frame {
         public var next: Int=0
         public var status: Int=0
         public var sequenceNumber: Int=0
-        public var error: Int=0
-        public var payload: Data!
+        public var error: Int?
+        public var payload = Data()
     }
     
     public class BlePsFtpRfc76SequenceNumber {
@@ -84,7 +93,7 @@ public class BlePsFtpUtility {
             }
         }
     }
-
+    
     /// Compines header(protobuf typically) and data(for write operation only, for other operations = nil)
     ///
     /// - Parameters:
@@ -258,10 +267,10 @@ public class BlePsFtpUtility {
     ///
     /// - Parameter packet: air packet
     /// - Returns: @see PftpRfc76ResponseHeader
-    public static func processRfc76MessageFrame(_ packet: Data) -> BlePsFtpRfc76Frame{
-        let header=BlePsFtpRfc76Frame()
-        processRfc76MessageFrame(header, packet: packet)
-        return header
+    public static func processRfc76MessageFrame(_ packet: Data) throws -> BlePsFtpRfc76Frame {
+        let rfc76Frame = BlePsFtpRfc76Frame()
+        try processRfc76MessageFrame(rfc76Frame, packet: packet)
+        return rfc76Frame
     }
     
     ///
@@ -269,15 +278,25 @@ public class BlePsFtpUtility {
     /// - Parameters:
     ///   - header: RF76 container
     ///   - packet: air packet
-    public static func processRfc76MessageFrame(_ header: BlePsFtpRfc76Frame, packet: Data){
+    private static func processRfc76MessageFrame(_ header: BlePsFtpRfc76Frame, packet: Data) throws {
+        if (packet.isEmpty) {
+            throw BlePsFtpUtility.RFC76FrameProcessError.frameIsEmpty
+        }
+        
         let ptr = (packet as NSData).bytes.bindMemory(to: UInt8.self, capacity: packet.count)
         header.next = (Int)(ptr[0] & 0x01)
         header.status = (Int)((ptr[0] & 0x06) >> 1)
         header.sequenceNumber = (Int)(ptr[0] >> 4)
-        if( header.status == 0 ){
-            header.error = Int(ptr[1]) | (Int(ptr[2]) << 8)
-        }else{
-            header.payload = packet.subdata(in: 1..<(packet.count))
+        if( header.status == RFC76_STATUS_ERROR_OR_RESPONSE ){
+            if(packet.count == RFC76_HEADER_SIZE + RFC76_ERROR_DATA_SIZE) {
+                header.error = Int(ptr[1]) | (Int(ptr[2]) << 8)
+            }
+        } else {
+            if (packet.count > RFC76_HEADER_SIZE) {
+                header.payload = packet.subdata(in: 1..<(packet.count))
+            } else {
+                throw BlePsFtpUtility.RFC76FrameProcessError.frameHasNoPayload
+            }
         }
     }
 }
