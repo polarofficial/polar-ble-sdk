@@ -1,4 +1,3 @@
-
 # SDK for Polar sensors
 
 This is the official repository of Polar's software development kit. With this SDK you are able to develop your own applications for sensors made by Polar.
@@ -263,9 +262,24 @@ Detailed documentation: [Documentation](polar-sdk-ios/docs/). Minimum iOS versio
 ## Dependencies
 *  [RxSwift 6.0](https://github.com/ReactiveX/RxSwift) or above
 ## Installation
-1. **PolarBLE SDK**: Download the PolarBLE SDK XCFramework from [polar-sdk-ios](polar-sdk-ios/) or from the [releases](https://github.com/polarofficial/polar-ble-sdk/releases). For detailed information how to add XCFramework to XCode project, see the [tutorial](https://developer.apple.com/videos/play/wwdc2019/416/). You may use PolarBLE SDK [sources](sources/iOS/ios-communications/) as well.  
-2. **RxSwift**: To use PolarBLE SDK you need [RxSwift](https://github.com/ReactiveX/RxSwift) added to your project. Recomended way is to add RxSwift as XCFramework dependency.
-3. In project target settings enable __Background Modes__, add  __Uses Bluetooth LE accessories__
+#### CocoaPods
+If you use [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) to manage your dependencies, add
+PolarBleSdk to your `Podfile`:
+
+```
+pod 'PolarBleSdk', '~> 3.0'
+```
+#### Swift Package Manager
+Not supported yet. Reported in [issue 132](https://github.com/polarofficial/polar-ble-sdk/issues/132)
+
+#### XCFrameworks
+1. **PolarBLE SDK**: Download the PolarBLE SDK XCFramework from [polar-sdk-ios](polar-sdk-ios/) or from the [releases](https://github.com/polarofficial/polar-ble-sdk/releases). 
+2. **RxSwift**: To use PolarBLE SDK XCFramework then you need to use [RxSwift](https://github.com/ReactiveX/RxSwift) added to your project as XCFramework too.
+
+For detailed information how to add XCFramework to XCode project, see the [tutorial](https://developer.apple.com/videos/play/wwdc2019/416/). 
+
+## Setup your application
+In project target settings enable __Background Modes__, add  __Uses Bluetooth LE accessories__
 
 ## Code example: Heart rate
 See the [example](examples/example-ios) folder for the full project
