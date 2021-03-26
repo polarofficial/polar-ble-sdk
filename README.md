@@ -263,6 +263,8 @@ Detailed documentation: [Documentation](polar-sdk-ios/docs/). Minimum iOS versio
 *  [RxSwift 6.0](https://github.com/ReactiveX/RxSwift) or above
 ## Installation
 #### CocoaPods
+> **Note**: Do not use yet. There is still a bug in CocoaPods configuration, will be fixed in [issue 141](https://github.com/polarofficial/polar-ble-sdk/issues/141)
+
 If you use [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) to manage your dependencies, add
 PolarBleSdk to your `Podfile`:
 
