@@ -116,7 +116,7 @@ dependencies {
 ```
 <uses-permission android:name="android.permission.BLUETOOTH"/>
 <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 ```
 
 ## Android proguard-rules
@@ -174,17 +174,17 @@ api.setApiCallback(new PolarBleApiCallback() {
     }
 
     @Override
-    public void deviceConnected(PolarDeviceInfo polarDeviceInfo) {
+    public void deviceConnected(@NonNull PolarDeviceInfo polarDeviceInfo) {
         Log.d("MyApp","CONNECTED: " + polarDeviceInfo.deviceId);
     }
 
     @Override
-    public void deviceConnecting(PolarDeviceInfo polarDeviceInfo) {
+    public void deviceConnecting(@NonNull PolarDeviceInfo polarDeviceInfo) {
         Log.d("MyApp","CONNECTING: " + polarDeviceInfo.deviceId);
     }
 
     @Override
-    public void deviceDisconnected(PolarDeviceInfo polarDeviceInfo) {
+    public void deviceDisconnected(@NonNull PolarDeviceInfo polarDeviceInfo) {
         Log.d("MyApp","DISCONNECTED: " + polarDeviceInfo.deviceId);
     }
 
@@ -197,36 +197,36 @@ api.setApiCallback(new PolarBleApiCallback() {
         }
 
     @Override
-    public void hrFeatureReady(String identifier) {
+    public void hrFeatureReady(@NonNull String identifier) {
         Log.d("MyApp","HR READY: " + identifier);
     }
 
     @Override
-    public void disInformationReceived(String identifier, UUID uuid, String value) {
+    public void disInformationReceived(@NonNull String identifier, @NonNull UUID uuid, @NonNull String value) {
     }
 
     @Override
-    public void batteryLevelReceived(String identifier, int level) {
+    public void batteryLevelReceived(@NonNull String identifier, int level) {
     }
 
     @Override
-    public void hrNotificationReceived(String identifier, PolarHrData data) {
+    public void hrNotificationReceived(@NonNull String identifier, @NonNull PolarHrData data) {
         Log.d("MyApp","HR: " + data.hr);
     }
 
     @Override
-    public void polarFtpFeatureReady(String s) {
+    public void polarFtpFeatureReady(@NonNull String s) {
     }
 });
 ```
 3.  Request permissions if needed
 ```
 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-    this.requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+    this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
 }
 // callback is invoked after granted or denied permissions
 @Override
-public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
 }
 ```
 
@@ -252,7 +252,7 @@ public void onDestroy() {
 ```
 
 5.  Connect to a Polar device using  `api.connectToDevice(DEVICE_ID)`  ,  
-   `api.autoConnectToDevice(-50, null).subscribe()`  to connect nearby device or  `api.searchForDevice()` to scan and select the device
+   `api.autoConnectToDevice(-50, null, null).subscribe()`  to connect nearby device or  `api.searchForDevice()` to scan and select the device
 
 # iOS: Getting started
 Detailed documentation: [Documentation](polar-sdk-ios/docs/). Minimum iOS version is 12.
