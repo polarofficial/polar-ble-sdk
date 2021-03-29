@@ -263,14 +263,38 @@ Detailed documentation: [Documentation](polar-sdk-ios/docs/). Minimum iOS versio
 *  [RxSwift 6.0](https://github.com/ReactiveX/RxSwift) or above
 ## Installation
 #### CocoaPods
-> **Note**: Do not use yet. There is still a bug in CocoaPods configuration, will be fixed in [issue 141](https://github.com/polarofficial/polar-ble-sdk/issues/141)
 
 If you use [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) to manage your dependencies, add
 PolarBleSdk to your `Podfile`:
 
 ```
-pod 'PolarBleSdk', '~> 3.0'
+# Podfile
+
+use_frameworks!
+
+target 'YOUR_TARGET_NAME' do
+    pod 'PolarBleSdk', '~> 3.0'
+
+end
+
+post_install do |installer|
+        installer.pods_project.targets.each do |target|
+          target.build_configurations.each do |config|
+            config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+          end
+        end
+      end
 ```
+
+> **Note**:  `post_install` section is required in the `Podfile`.  CocoaPods are not yet working fluently with the XCFrameworks. The progress is followed by [issue 141](https://github.com/polarofficial/polar-ble-sdk/issues/141)
+
+
+# RxTest and RxBlocking make the most sense in the context of unit/integration tests
+target 'YOUR_TESTING_TARGET' do
+    pod 'RxBlocking', '6.1.0'
+    pod 'RxTest', '6.1.0'
+end
+
 #### Swift Package Manager
 Not supported yet. Reported in [issue 132](https://github.com/polarofficial/polar-ble-sdk/issues/132)
 
@@ -363,4 +387,4 @@ class MyController: UIViewController,
 }
 ```
 
-3. Connect to a Polar device using  `api.connectToDevice(id)` , `api.startAutoConnectToDevice(_ rssi: Int, polarDeviceType: String?)` to connect nearby device or  `api.searchForDevice()` to scan and select the device
+3. Connect to a Polar device using  `api.connectToDevice(id)` ,  `api.startAutoConnectToDevice(_ rssi: Int, service: CBUUID?, polarDeviceType: String?)` to connect nearby device or  `api.searchForDevice()` to scan and select the device
