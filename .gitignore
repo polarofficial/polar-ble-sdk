@@ -1,6 +1,5 @@
 .DS_Store
 *.iml
-build
 demos/**/libs/
 project.xcworkspace
 xcuserdata

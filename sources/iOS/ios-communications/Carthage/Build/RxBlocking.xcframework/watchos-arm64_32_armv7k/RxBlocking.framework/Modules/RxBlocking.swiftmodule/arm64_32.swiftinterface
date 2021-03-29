@@ -1,0 +1,33 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.3.2 (swiftlang-1200.0.45 clang-1200.0.32.28)
+// swift-module-flags: -target arm64_32-apple-watchos3.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name RxBlocking
+import CoreFoundation
+import Darwin
+import Foundation
+import RxSwift
+import Swift
+public struct BlockingObservable<Element> {
+}
+@frozen public enum MaterializedSequenceResult<T> {
+  case completed(elements: [T])
+  case failed(elements: [T], error: Swift.Error)
+}
+extension BlockingObservable {
+  public func toArray() throws -> [Element]
+}
+extension BlockingObservable {
+  public func first() throws -> Element?
+}
+extension BlockingObservable {
+  public func last() throws -> Element?
+}
+extension BlockingObservable {
+  public func single() throws -> Element
+  public func single(_ predicate: @escaping (Element) throws -> Swift.Bool) throws -> Element
+}
+extension BlockingObservable {
+  public func materialize() -> RxBlocking.MaterializedSequenceResult<Element>
+}
+extension ObservableConvertibleType {
+  public func toBlocking(timeout: Foundation.TimeInterval? = nil) -> RxBlocking.BlockingObservable<Self.Element>
+}
