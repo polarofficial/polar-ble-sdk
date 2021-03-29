@@ -288,13 +288,6 @@ post_install do |installer|
 
 > **Note**:  `post_install` section is required in the `Podfile`.  CocoaPods are not yet working fluently with the XCFrameworks. The progress is followed by [issue 141](https://github.com/polarofficial/polar-ble-sdk/issues/141)
 
-
-# RxTest and RxBlocking make the most sense in the context of unit/integration tests
-target 'YOUR_TESTING_TARGET' do
-    pod 'RxBlocking', '6.1.0'
-    pod 'RxTest', '6.1.0'
-end
-
 #### Swift Package Manager
 Not supported yet. Reported in [issue 132](https://github.com/polarofficial/polar-ble-sdk/issues/132)
 
