@@ -3,7 +3,7 @@ Apple clang version 12.0.0 (clang-1200.0.32.29)
 /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.4.sdk
 iPhoneOS14.4.sdk
 /Users/joikarin/Library/Caches/org.carthage.CarthageKit/DerivedData/12.4_12D4e/RxSwift/6.1.0/Build/Intermediates.noindex/ArchiveIntermediates/RxBlocking/IntermediateBuildFilesPath/Rx.build/Release-iphoneos/RxBlocking.build/DerivedSources/RxBlocking_vers.c
-/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/Carthage/Checkouts/RxSwift
+/Users/joikarin/Projects/ios-communications-master/ios-communications/Carthage/Checkouts/RxSwift
 _$s10RxBlocking9AtomicIntCfD
 _$s10RxBlocking9AtomicIntCACycfcTo
 _$s10RxBlocking9AtomicIntCMa
@@ -49,14 +49,14 @@ Apple clang version 12.0.0 (clang-1200.0.32.28)
 -private-discriminator _421DB3E1E0285CE4C5C66128EB186D4F
 <swift-imported-modules>
 Apple Swift version 5.3.2 (swiftlang-1200.0.45 clang-1200.0.32.28)
-/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/Platform/AtomicInt.swift
+/Users/joikarin/Projects/ios-communications-master/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/Platform/AtomicInt.swift
 $sSo12CFRunLoopRefaMa
 <compiler-generated>
 $s10RxBlocking9AtomicIntCMa
 init
 $ss25_unimplementedInitializer9className04initD04file4line6columns5NeverOs12StaticStringV_A2JS2utFySRys5UInt8VGXEfU0_
 deinit
-/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/Platform/Platform.Linux.swift
+/Users/joikarin/Projects/ios-communications-master/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/Platform/Platform.Linux.swift
 _globalinit_33_1F60DA86C84B27029121D0E75CB7DC8D_func0
 _$s10RxBlocking11runLoopModeSo05CFRundE0avau
 _globalinit_33_1F60DA86C84B27029121D0E75CB7DC8D_func1
@@ -105,7 +105,7 @@ _block_descriptor.9
 _$s10RxBlocking11RunLoopLockC7timeoutACSdSg_tcfCTq
 _$s10RxBlocking11RunLoopLockCN
 -private-discriminator _1F60DA86C84B27029121D0E75CB7DC8D
-/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/RunLoopLock.swift
+/Users/joikarin/Projects/ios-communications-master/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/RunLoopLock.swift
 $s10RxBlocking11RunLoopLockC4stopyyFyycfU_TA
 $s10RxBlocking11RunLoopLockC4stopyyFyycfU_
 __swift_destroy_boxed_opaque_existential_1
@@ -153,7 +153,7 @@ _symbolic _____ 10RxBlocking0B10ObservableV
 _got.$s7RxSwift10ObservableCMn
 _symbolic _____yxG 7RxSwift10ObservableC
 _$s10RxBlocking0B10ObservableVMF
-/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/BlockingObservable.swift
+/Users/joikarin/Projects/ios-communications-master/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/BlockingObservable.swift
 __swift_instantiateGenericMetadata
 $s10RxBlocking0B10ObservableVMa
 $s10RxBlocking0B10ObservableVwst
@@ -211,7 +211,7 @@ _symbolic SiSg
 _got.$s10RxBlocking11RunLoopLockCMn
 _symbolic ______pSgz_Xx s5ErrorP
 -private-discriminator _0B722750ACA186F976F8768615F683CB
-/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/BlockingObservable+Operators.swift
+/Users/joikarin/Projects/ios-communications-master/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/BlockingObservable+Operators.swift
 $s10RxBlocking0B10ObservableV17materializeResult33_0B722750ACA186F976F8768615F683CBLL3max9predicateAA020MaterializedSequenceE0OyxGSiSg_SbxKctFfA0_SbxcfU_TA
 objectdestroy.14
 $sSa37_appendElementAssumeUniqueAndCapacity_03newB0ySi_xntFTf4ngn_n
@@ -247,11 +247,11 @@ first
 materializeResult
 RxBlocking/RunLoopLock.swift
 toArray
-/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/ObservableConvertibleType+Blocking.swift
+/Users/joikarin/Projects/ios-communications-master/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/ObservableConvertibleType+Blocking.swift
 toBlocking
-/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/Resources.swift
-/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/Platform/Platform.Darwin.swift
-/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/Platform/RecursiveLock.swift
+/Users/joikarin/Projects/ios-communications-master/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/Resources.swift
+/Users/joikarin/Projects/ios-communications-master/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/Platform/Platform.Darwin.swift
+/Users/joikarin/Projects/ios-communications-master/ios-communications/Carthage/Checkouts/RxSwift/RxBlocking/Platform/RecursiveLock.swift
 __ZN5swift39swift51override_conformsToSwiftProtocolEPKNS_14TargetMetadataINS_9InProcessEEEPKNS_24TargetProtocolDescriptorIS1_EEN4llvm9StringRefEPFPKNS_35TargetProtocolConformanceDescriptorIS1_EES4_S8_SA_E
 _Swift51Overrides
 /AppleInternal/BuildRoot/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang --driver-mode=g++ -D CMARK_STATIC_DEFINE -D GTEST_HAS_RTTI=0 -D LLVM_DISABLE_ABI_BREAKING_CHECKS_ENFORCING=1 -D __STDC_CONSTANT_MACROS -D __STDC_FORMAT_MACROS -D __STDC_LIMIT_MACROS -I stdlib/toolchain/Compatibility51 -I /AppleInternal/BuildRoot/Library/Caches/com.apple.xbs/Sources/swiftlang/swiftlang-1200.0.45/swift/stdlib/toolchain/Compatibility51 -I include -I /AppleInternal/BuildRoot/Library/Caches/com.apple.xbs/Sources/swiftlang/swiftlang-1200.0.45/swift/include -I /AppleInternal/BuildRoot/Library/Caches/com.apple.xbs/Sources/swiftlang/swiftlang-1200.0.45/llvm-project/llvm/include -I /AppleInternal/BuildRoot/Library/Caches/com.apple.xbs/Binaries/swiftlang/install/TempContent/Objects/BNI_assert_lightweight/llvm-macosx-x86_64/include -I /AppleInternal/BuildRoot/Library/Caches/com.apple.xbs/Sources/swiftlang/swiftlang-1200.0.45/llvm-project/clang/include -I /AppleInternal/BuildRoot/Library/Caches/com.apple.xbs/Binaries/swiftlang/install/TempContent/Objects/BNI_assert_lightweight/llvm-macosx-x86_64/tools/clang/include -I /AppleInternal/BuildRoot/Library/Caches/com.apple.xbs/Sources/swiftlang/swiftlang-1200.0.45/cmark/src -I /AppleInternal/BuildRoot/Library/Caches/com.apple.xbs/Binaries/swiftlang/install/TempContent/Objects/BNI_assert_lightweight/cmark-macosx-x86_64/src -Wno-unknown-warning-option -Werror=unguarded-availability-new -fno-stack-protector -fPIC -fvisibility-inlines-hidden -Werror=date-time -Werror=unguarded-availability-new -Wall -Wextra -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wmissing-field-initializers -Wimplicit-fallthrough -Wcovered-switch-default -Wno-class-memaccess -Wno-noexcept-type -Wnon-virtual-dtor -Wdelete-non-virtual-dtor -Wstring-conversion -fdiagnostics-color -Werror=switch -Wdocumentation -Wimplicit-fallthrough -Wunreachable-code -Woverloaded-virtual -D OBJC_OLD_DISPATCH_PROTOTYPES=0 -O2 -D NDEBUG -isysroot /AppleInternal/BuildRoot/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.0.sdk -fno-exceptions -funwind-tables -fno-rtti -Werror=gnu -Wall -Wglobal-constructors -Wexit-time-destructors -fvisibility=hidden -D SWIFT_COMPATIBILITY_LIBRARY=1 -D SWIFT_TARGET_LIBRARY_NAME=swiftCompatibility51 -fembed-bitcode=all --target=armv7-apple-ios7.0 -isysroot /AppleInternal/BuildRoot/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.2.sdk -arch armv7 -F/AppleInternal/BuildRoot/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.2.sdk/../../../Developer/Library/Frameworks -F/AppleInternal/BuildRoot/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.2.sdk/../../../Developer/AppleInternal/Library/Frameworks -miphoneos-version-min=7.0 -O2 -g -D NDEBUG -std=c++14 -MD -MT stdlib/toolchain/Compatibility51/CMakeFiles/swiftCompatibility51-iphoneos-armv7.dir/Overrides.cpp.o -MF stdlib/toolchain/Compatibility51/CMakeFiles/swiftCompatibility51-iphoneos-armv7.dir/Overrides.cpp.o.d -o stdlib/toolchain/Compatibility51/CMakeFiles/swiftCompatibility51-iphoneos-armv7.dir/Overrides.cpp.o -c /AppleInternal/BuildRoot/Library/Caches/com.apple.xbs/Sources/swiftlang/swiftlang-1200.0.45/swift/stdlib/toolchain/Compatibility51/Overrides.cpp -Wno-reorder-init-list -Wno-implicit-int-float-conversion -Wno-c99-designator -Wno-final-dtor-non-final-class -Wno-extra-semi-stmt -Wno-misleading-indentation -Wno-quoted-include-in-framework-header -Wno-enum-enum-conversion -Wno-enum-float-conversion -mlinker-version=609.8 -march=armv7a -stdlib=libc++
