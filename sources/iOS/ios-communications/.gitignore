@@ -1,4 +1,11 @@
-xcuserdata
-
+.DS_Store
+iOSCommunications.xcodeproj/project.xcworkspace/
+iOSCommunications.xcodeproj/xcuserdata/
+build
 !Carthage/
+!Carthage/Build/
+!Carthage/Build/RxSwift.xcframework
+!Carthage/Build/RxBlocking.xcframework
+!Carthage/Build/RxTest.xcframework
+Carthage/Build/
 Carthage/Checkouts/
