@@ -3,55 +3,69 @@
     {
       "file": "/Users/joikarin/Projects/ios-communications-master/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
       "line": 9,
-      "symbol": "RecordingInterval.interval_1s",
+      "symbol": "DeviceStreamingFeature.ecg",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/joikarin/Projects/ios-communications-master/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
       "line": 10,
+      "symbol": "DeviceStreamingFeature.acc",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/joikarin/Projects/ios-communications-master/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "line": 11,
+      "symbol": "DeviceStreamingFeature.ppg",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/joikarin/Projects/ios-communications-master/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "line": 12,
+      "symbol": "DeviceStreamingFeature.ppi",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/joikarin/Projects/ios-communications-master/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "line": 13,
+      "symbol": "DeviceStreamingFeature.gyro",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/joikarin/Projects/ios-communications-master/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "line": 14,
+      "symbol": "DeviceStreamingFeature.magnetometer",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/joikarin/Projects/ios-communications-master/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "line": 19,
+      "symbol": "RecordingInterval.interval_1s",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/joikarin/Projects/ios-communications-master/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "line": 20,
       "symbol": "RecordingInterval.interval_5s",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/joikarin/Projects/ios-communications-master/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
-      "line": 79,
-      "symbol": "PolarBiozData",
-      "symbol_kind": "source.lang.swift.decl.typealias",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/joikarin/Projects/ios-communications-master/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
-      "line": 217,
-      "symbol": "PolarBleApi.requestBiozSettings(_:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/joikarin/Projects/ios-communications-master/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
-      "line": 259,
-      "symbol": "PolarBleApi.startBiozStreaming(_:settings:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "line": 90,
+      "symbol": "OhrDataType.unknown",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/joikarin/Projects/ios-communications-master/ios-communications/iOSCommunications/sdk/api/PolarBleApiObservers.swift",
-      "line": 99,
-      "symbol": "PolarBleApiDeviceFeaturesObserver.biozFeatureReady(_:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/joikarin/Projects/ios-communications-master/ios-communications/iOSCommunications/sdk/api/PolarBleApiObservers.swift",
-      "line": 109,
-      "symbol": "PolarBleApiDeviceFeaturesObserver.biozFeatureReady(_:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/joikarin/Projects/ios-communications-master/ios-communications/iOSCommunications/sdk/api/PolarBleApiObservers.swift",
-      "line": 125,
+      "line": 98,
       "symbol": "PolarBleApiCCCWriteObserver.cccWrite(_:characteristic:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
@@ -72,7 +86,7 @@
     },
     {
       "file": "/Users/joikarin/Projects/ios-communications-master/ios-communications/iOSCommunications/sdk/impl/PolarBleApiImpl.swift",
-      "line": 790,
+      "line": 846,
       "symbol": "PrimitiveSequence.asCompletable()",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
