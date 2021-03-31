@@ -1,11 +1,10 @@
 .DS_Store
-iOSCommunications.xcodeproj/project.xcworkspace/
-iOSCommunications.xcodeproj/xcuserdata/
-build
+xcuserdata/
 !Carthage/
+Carthage/*
 !Carthage/Build/
-!Carthage/Build/RxSwift.xcframework
-!Carthage/Build/RxBlocking.xcframework
-!Carthage/Build/RxTest.xcframework
-Carthage/Build/
+Carthage/Build/*
+!Carthage/Build/RxSwift.xcframework/
+!Carthage/Build/RxBlocking.xcframework/
+!Carthage/Build/RxTest.xcframework/
 Carthage/Checkouts/
