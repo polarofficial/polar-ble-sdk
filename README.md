@@ -53,7 +53,7 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 * Accelerometer data with sample rate of 52Hz and range of 8G. Axis specific acceleration data in mG.
 * Gyroscope data with sample rate of 52Hz and ranges of 250dps, 500dps, 1000dps and 2000dps. Axis specific gyroscope data in dps.
 * Magnetometer data with sample rates of 10Hz, 20Hz, 50HZ and 100Hz and range of +/-50 Gauss. Axis specific magnetometer data in Gauss.
-* List, read and remove stored exercise. Recording of exercise requires that sensor is registered to Polar Flow account.
+* List, read and remove stored exercise. Recording of exercise requires that sensor is registered to Polar Flow account. Stored sample data contains HR with one second sampletime. 
 
 ### OH1 Optical heart rate sensor
 Optical heart rate sensor is a rechargeable device that measures user’s heart rate with LED technology.
@@ -66,7 +66,7 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 * Photoplethysmograpy (PPG) values.
 * PP interval (milliseconds) representing cardiac pulse-to-pulse interval extracted from PPG signal.
 * Accelerometer data with samplerate of 50Hz and range of 8G. Axis specific acceleration data in mG.
-* List, read and remove stored exercise. Recording of exercise requires that sensor is registered to Polar Flow account.
+* List, read and remove stored exercise. Recording of exercise requires that sensor is registered to Polar Flow account. Stored sample data contains HR with one second sampletime. 
 
 ### Project structure
 * [polar-sdk-ios](polar-sdk-ios/) contains compiled iOS sdk, dependencies and documentation
@@ -264,8 +264,7 @@ Detailed documentation: [Documentation](polar-sdk-ios/docs/). Minimum iOS versio
 ## Installation
 #### CocoaPods
 
-If you use [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) to manage your dependencies, add
-PolarBleSdk to your `Podfile`:
+If you use [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) to manage your dependencies, add PolarBleSdk to your `Podfile`:
 
 ```
 # Podfile
@@ -287,6 +286,18 @@ post_install do |installer|
 ```
 
 > **Note**:  `post_install` section is required in the `Podfile`.  CocoaPods are not yet working fluently with the XCFrameworks. The progress is followed by [issue 141](https://github.com/polarofficial/polar-ble-sdk/issues/141)
+
+#### Carthage
+
+If you use [Cathage](https://github.com/Carthage/Carthage) to manage your dependencies, add PolarBleSdk to your `Cartfile`
+
+```
+github "polarofficial/polar-ble-sdk" ~> 3.0
+```
+
+```bash
+$ carthage update --use-xcframeworks
+```
 
 #### Swift Package Manager
 Not supported yet. Reported in [issue 132](https://github.com/polarofficial/polar-ble-sdk/issues/132)
