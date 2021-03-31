@@ -86,7 +86,7 @@
     },
     {
       "file": "/Users/joikarin/Projects/ios-communications-master/ios-communications/iOSCommunications/sdk/impl/PolarBleApiImpl.swift",
-      "line": 846,
+      "line": 847,
       "symbol": "PrimitiveSequence.asCompletable()",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
