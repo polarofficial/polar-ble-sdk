@@ -46,23 +46,6 @@
 			<key>DebugSymbolsPath</key>
 			<string>dSYMs</string>
 			<key>LibraryIdentifier</key>
-			<string>ios-arm64_armv7</string>
-			<key>LibraryPath</key>
-			<string>RxSwift.framework</string>
-			<key>SupportedArchitectures</key>
-			<array>
-				<string>arm64</string>
-				<string>armv7</string>
-			</array>
-			<key>SupportedPlatform</key>
-			<string>ios</string>
-		</dict>
-		<dict>
-			<key>BitcodeSymbolMapsPath</key>
-			<string>BCSymbolMaps</string>
-			<key>DebugSymbolsPath</key>
-			<string>dSYMs</string>
-			<key>LibraryIdentifier</key>
 			<string>watchos-arm64_32_armv7k</string>
 			<key>LibraryPath</key>
 			<string>RxSwift.framework</string>
@@ -73,6 +56,23 @@
 			</array>
 			<key>SupportedPlatform</key>
 			<string>watchos</string>
+		</dict>
+		<dict>
+			<key>BitcodeSymbolMapsPath</key>
+			<string>BCSymbolMaps</string>
+			<key>DebugSymbolsPath</key>
+			<string>dSYMs</string>
+			<key>LibraryIdentifier</key>
+			<string>ios-arm64_armv7</string>
+			<key>LibraryPath</key>
+			<string>RxSwift.framework</string>
+			<key>SupportedArchitectures</key>
+			<array>
+				<string>arm64</string>
+				<string>armv7</string>
+			</array>
+			<key>SupportedPlatform</key>
+			<string>ios</string>
 		</dict>
 	</array>
 	<key>CFBundlePackageType</key>
