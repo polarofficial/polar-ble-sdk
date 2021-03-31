@@ -90,8 +90,6 @@ class ViewController: UIViewController,
                     NSLog("auto connect search complete")
                 case .error(let err):
                     NSLog("auto connect failed: \(err)")
-                @unknown default:
-                    fatalError()
                 }
             }
     }
@@ -320,8 +318,6 @@ class ViewController: UIViewController,
                     NSLog("remove completed")
                 case .error(let err):
                     NSLog("remove failed: \(err)")
-                @unknown default:
-                    fatalError()
                 }
             }
     }
@@ -335,8 +331,6 @@ class ViewController: UIViewController,
                     NSLog("recording started")
                 case .error(let err):
                     NSLog("recording start fail: \(err)")
-                @unknown default:
-                    fatalError()
                 }
             }
     }
@@ -350,8 +344,6 @@ class ViewController: UIViewController,
                     NSLog("recording stopped")
                 case .error(let err):
                     NSLog("recording stop fail: \(err)")
-                @unknown default:
-                    fatalError()
                 }
             }
     }
@@ -380,8 +372,6 @@ class ViewController: UIViewController,
                     NSLog("time set to device")
                 case .error(let err):
                     NSLog("set time failed: \(err)")
-                @unknown default:
-                    fatalError()
                 }
             }
     }
