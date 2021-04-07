@@ -100,12 +100,12 @@ public typealias PolarOhrData = (timeStamp: UInt64, type: OhrDataType, samples: 
 
 /// Polar ppi data
 ///           - timestamp N/A always 0
-///           - hr in BPM,
-///           - ppInMs in milliseconds,
-///           - ppErrorEstimate in milliseconds,
-///           - blockerBit 1 = if PP measurement was invalid due to acceleration or other reason
-///           - skinContactStatus 0 = if the device detects poor or no contact with the skin, the Sensor
-///           - Contact Status bit (bit 1 of the PP Flags field)
+///           - hr in BPM
+///           - ppInMs Pulse to Pulse interval in milliseconds. The value indicates the quality of PP-intervals. When error estimate is below 10ms the PP-intervals are probably very accurate. Error estimate values over 30ms may be caused by movement artefact or too loose sensor-skin contact.
+///           - ppErrorEstimate estimate of the expected absolute error in PP-interval in milliseconds
+///           - blockerBit = 1 if PP measurement was invalid due to acceleration or other reason
+///           - skinContactStatus = 0 if the device detects poor or no contact with the skin
+///           - skinContactSupported = 1 if the Sensor Contact feature is supported.
 public typealias PolarPpiData = (timeStamp: UInt64,samples: [(hr: Int, ppInMs: UInt16, ppErrorEstimate: UInt16, blockerBit: Int, skinContactStatus: Int, skinContactSupported: Int)])
 
 /// Polar exercise entry
