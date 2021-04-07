@@ -4,6 +4,7 @@ import android.bluetooth.le.ScanFilter;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.IntRange;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.androidcommunications.polar.api.ble.model.BleDeviceSession;
@@ -45,7 +46,7 @@ public abstract class BleDeviceListener {
      *                BlePMDClient.class,
      *                BleRscClient.class));
      */
-    protected BleDeviceListener(Set<Class<? extends BleGattBase>> clients) {
+    protected BleDeviceListener(@NonNull Set<Class<? extends BleGattBase>> clients) {
         factory = new BleGattFactory(clients);
     }
 

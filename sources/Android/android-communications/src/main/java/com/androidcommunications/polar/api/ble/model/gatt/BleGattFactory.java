@@ -18,14 +18,15 @@ import java.util.Set;
 
 public class BleGattFactory {
 
-    private final static String TAG = BleGattFactory.class.getSimpleName();
-    private Set<Class<? extends BleGattBase>> classesRemote = new HashSet<>();
+    private static final String TAG = BleGattFactory.class.getSimpleName();
+    private final Set<Class<? extends BleGattBase>> classesRemote = new HashSet<>();
 
     public BleGattFactory(@NonNull Set<Class<? extends BleGattBase>> clients) {
         classesRemote.addAll(clients);
     }
 
-    public Set<BleGattBase> getRemoteServices(BleGattTxInterface txInterface) {
+    @NonNull
+    public Set<BleGattBase> getRemoteServices(@NonNull BleGattTxInterface txInterface) {
         Set<BleGattBase> serviceBases = new HashSet<>();
         for (Class<?> classObject : classesRemote) {
             try {
@@ -63,7 +64,6 @@ public class BleGattFactory {
                 if (classesRemote.contains(BlePMDClient.class)) {
                     serviceBases.add(new BlePMDClient(txInterface));
                 }
-
                 return serviceBases;
             }
         }
