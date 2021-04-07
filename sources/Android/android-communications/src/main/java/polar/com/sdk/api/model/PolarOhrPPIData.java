@@ -17,7 +17,10 @@ public class PolarOhrPPIData {
         public final int ppi;
 
         /**
-         * Error estimate in milliseconds.
+         * Error estimate of the expected absolute error in PP-interval in milliseconds. The value
+         * indicates the quality of PP-intervals. When error estimate is below 10ms the PP-intervals
+         * are probably very accurate. Error estimate values over 30ms may be caused by movement
+         * artefact or too loose sensor-skin contact.
          */
         public final int errorEstimate;
 
@@ -52,7 +55,7 @@ public class PolarOhrPPIData {
     }
 
     /**
-     * Last sample timestamp in nanoseconds
+     * timestamp N/A always 0
      */
     public final long timeStamp;
 
