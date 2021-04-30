@@ -7,4 +7,10 @@ assignees: JOikarinen
 
 ---
 
+**Question concerns:**
+- [ ] Android SDK
+- [ ] iOS SDK
+- [ ] Polar device
+- [ ] General
 
+**Description:**
