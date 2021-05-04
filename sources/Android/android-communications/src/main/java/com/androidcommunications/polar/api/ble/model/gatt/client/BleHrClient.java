@@ -53,7 +53,6 @@ public class BleHrClient extends BleGattBase {
 
     public BleHrClient(BleGattTxInterface txInterface) {
         super(txInterface, HR_SERVICE);
-        addCharacteristicNotification(HR_MEASUREMENT);
         addCharacteristicRead(BODY_SENSOR_LOCATION);
     }
 
@@ -109,11 +108,6 @@ public class BleHrClient extends BleGattBase {
         return "HR gatt client";
     }
 
-    @Override
-    public Completable clientReady(boolean checkConnection) {
-        return waitNotificationEnabled(HR_MEASUREMENT, checkConnection);
-    }
-
     // API
 
     /**
@@ -123,6 +117,16 @@ public class BleHrClient extends BleGattBase {
      * onCompleted, none except further configuration applied. If binded to fragment or activity life cycle this might be produced
      */
     public Flowable<HrNotificationData> observeHrNotifications(final boolean checkConnection) {
-        return RxUtils.monitorNotifications(hrObserverAtomicList, txInterface, checkConnection);
+        return RxUtils.monitorNotifications(hrObserverAtomicList, txInterface, checkConnection)
+                .startWith(Completable.fromAction(() -> {
+                    BleLogger.d(TAG, "Start observing HR");
+                    addCharacteristicNotification(HR_MEASUREMENT);
+                    getTxInterface().setCharacteristicNotify(this, HR_SERVICE, HR_MEASUREMENT, true);
+                }))
+                .doFinally(() -> {
+                    BleLogger.d(TAG, "Stop observing HR");
+                    removeCharacteristicNotification(HR_MEASUREMENT);
+                    getTxInterface().setCharacteristicNotify(this, HR_SERVICE, HR_MEASUREMENT, false);
+                });
     }
 }

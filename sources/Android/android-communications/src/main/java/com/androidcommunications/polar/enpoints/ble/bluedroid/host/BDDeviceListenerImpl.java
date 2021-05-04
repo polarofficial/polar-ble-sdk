@@ -9,7 +9,9 @@ import android.bluetooth.le.ScanFilter;
 import android.content.Context;
 import android.os.Build;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
 import com.androidcommunications.polar.api.ble.BleDeviceListener;
 import com.androidcommunications.polar.api.ble.BleLogger;
@@ -33,12 +35,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.BackpressureOverflowStrategy;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.FlowableEmitter;
 import io.reactivex.rxjava3.core.FlowableOnSubscribe;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.subjects.BehaviorSubject;
 
 public class BDDeviceListenerImpl extends BleDeviceListener implements
         BDScanCallback.BDScanCallbackInterface,
@@ -47,23 +50,23 @@ public class BDDeviceListenerImpl extends BleDeviceListener implements
         BDPowerListener.BlePowerState,
         ConnectionHandlerObserver {
 
-    private final static String TAG = BDDeviceListenerImpl.class.getSimpleName();
+    private static final String TAG = BDDeviceListenerImpl.class.getSimpleName();
     private BluetoothAdapter bluetoothAdapter;
-    private BDDeviceList sessions = new BDDeviceList();
-    private BDGattCallback gattCallback;
-    private BDScanCallback scanCallback;
-    private BluetoothManager btManager;
-    private BDPowerListener powerManager;
-    private BDBondingListener bondingManager;
-    private AtomicSet<FlowableEmitter<? super BleDeviceSession>> observers = new AtomicSet<>();
-    private ConnectionHandler connectionHandler;
-    private Context context;
+    private final BDDeviceList sessions = new BDDeviceList();
+    private final BDGattCallback gattCallback;
+    private final BDScanCallback scanCallback;
+    private final BluetoothManager btManager;
+    private final BDPowerListener powerManager;
+    private final BDBondingListener bondingManager;
+    private final AtomicSet<FlowableEmitter<? super BleDeviceSession>> observers = new AtomicSet<>();
+    private final ConnectionHandler connectionHandler;
+    private final Context context;
+    private final BehaviorSubject<Pair<BleDeviceSession, BleDeviceSession.DeviceSessionState>> deviceSessionStateSubject = BehaviorSubject.create();
     private BleDeviceSessionStateChangedCallback changedCallback = null;
     private BlePowerStateChangedCallback powerStateChangedCallback = null;
 
-    public BDDeviceListenerImpl(
-            @NonNull final Context context,
-            @NonNull Set<Class<? extends BleGattBase>> clients) {
+    public BDDeviceListenerImpl(@NonNull final Context context,
+                                @NonNull Set<Class<? extends BleGattBase>> clients) {
         super(clients);
         this.context = context;
         btManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
@@ -83,12 +86,12 @@ public class BDDeviceListenerImpl extends BleDeviceListener implements
     }
 
     @Override
-    public void setScanFilters(final List<ScanFilter> filters) {
+    public void setScanFilters(@Nullable List<ScanFilter> filters) {
         scanCallback.setScanFilters(filters);
     }
 
     @Override
-    public void setScanPreFilter(BleSearchPreFilter filter) {
+    public void setScanPreFilter(@Nullable BleSearchPreFilter filter) {
         this.preFilter = filter;
     }
 
@@ -97,43 +100,44 @@ public class BDDeviceListenerImpl extends BleDeviceListener implements
         scanCallback.setOpportunistic(disable);
     }
 
+    @NonNull
     @Override
     public Flowable<BleDeviceSession> search(final boolean fetchKnownDevices) {
         final FlowableEmitter<BleDeviceSession>[] subscriber1 = new FlowableEmitter[1];
         return Flowable.create((FlowableOnSubscribe<BleDeviceSession>) subscriber -> {
-            if (fetchKnownDevices) {
-                List<BluetoothDevice> devices =
-                        btManager.getDevicesMatchingConnectionStates(BluetoothProfile.GATT,
-                                new int[]{BluetoothProfile.STATE_CONNECTED | BluetoothProfile.STATE_CONNECTING});
-                for (BluetoothDevice device : devices) {
-                    if (device.getType() == BluetoothDevice.DEVICE_TYPE_LE && sessions.getSession(device) == null) {
-                        BDDeviceSessionImpl newDevice = new BDDeviceSessionImpl(context, device, scanCallback, bondingManager, factory);
-                        sessions.addSession(newDevice);
+                    if (fetchKnownDevices) {
+                        List<BluetoothDevice> devices =
+                                btManager.getDevicesMatchingConnectionStates(BluetoothProfile.GATT,
+                                        new int[]{BluetoothProfile.STATE_CONNECTED | BluetoothProfile.STATE_CONNECTING});
+                        for (BluetoothDevice device : devices) {
+                            if (device.getType() == BluetoothDevice.DEVICE_TYPE_LE && sessions.getSession(device) == null) {
+                                BDDeviceSessionImpl newDevice = new BDDeviceSessionImpl(context, device, scanCallback, bondingManager, factory);
+                                sessions.addSession(newDevice);
+                            }
+                        }
+                        Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
+                        for (BluetoothDevice device : bondedDevices) {
+                            if (device.getType() == BluetoothDevice.DEVICE_TYPE_LE && sessions.getSession(device) == null) {
+                                BDDeviceSessionImpl newDevice = new BDDeviceSessionImpl(context, device, scanCallback, bondingManager, factory);
+                                sessions.addSession(newDevice);
+                            }
+                        }
+                        Set<BleDeviceSession> sessionsList = sessions.copyDeviceList();
+                        for (BleDeviceSession deviceSession : sessionsList) {
+                            subscriber.onNext(deviceSession);
+                        }
                     }
-                }
-                Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
-                for (BluetoothDevice device : bondedDevices) {
-                    if (device.getType() == BluetoothDevice.DEVICE_TYPE_LE && sessions.getSession(device) == null) {
-                        BDDeviceSessionImpl newDevice = new BDDeviceSessionImpl(context, device, scanCallback, bondingManager, factory);
-                        sessions.addSession(newDevice);
-                    }
-                }
-                Set<BleDeviceSession> sessionsList = sessions.copyDeviceList();
-                for (BleDeviceSession deviceSession : sessionsList) {
-                    subscriber.onNext(deviceSession);
-                }
-            }
 
-            subscriber1[0] = subscriber;
-            observers.add(subscriber);
-            scanCallback.clientAdded();
-        }, BackpressureStrategy.BUFFER).onBackpressureBuffer(200, () -> {
-            // do nothing
-            BleLogger.w(TAG, "search backpressure buffer full");
-        }, BackpressureOverflowStrategy.DROP_OLDEST).doFinally(() -> {
-            observers.remove(subscriber1[0]);
-            scanCallback.clientRemoved();
-        });
+                    subscriber1[0] = subscriber;
+                    observers.add(subscriber);
+                    scanCallback.clientAdded();
+                },
+                BackpressureStrategy.BUFFER)
+                .onBackpressureBuffer(200, () -> BleLogger.w(TAG, "search backpressure buffer full"), BackpressureOverflowStrategy.DROP_OLDEST)
+                .doFinally(() -> {
+                    observers.remove(subscriber1[0]);
+                    scanCallback.clientRemoved();
+                });
     }
 
     @Override
@@ -166,10 +170,10 @@ public class BDDeviceListenerImpl extends BleDeviceListener implements
     }
 
     @Override
-    public boolean removeSession(BleDeviceSession deviceSession) {
-        if (deviceSession.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_CLOSED &&
-                !deviceSession.isAdvertising(30, TimeUnit.SECONDS) &&
-                sessions.getSessions().contains((BDDeviceSessionImpl) deviceSession)) {
+    public boolean removeSession(@NonNull BleDeviceSession deviceSession) {
+        if (deviceSession.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_CLOSED
+                && !deviceSession.isAdvertising(30, TimeUnit.SECONDS)
+                && sessions.getSessions().contains((BDDeviceSessionImpl) deviceSession)) {
             sessions.getSessions().remove((BDDeviceSessionImpl) deviceSession);
             return true;
         }
@@ -182,12 +186,12 @@ public class BDDeviceListenerImpl extends BleDeviceListener implements
     }
 
     @Override
-    public int removeAllSessions(Set<BleDeviceSession.DeviceSessionState> inStates) {
+    public int removeAllSessions(@NonNull Set<BleDeviceSession.DeviceSessionState> inStates) {
         int count = 0;
         Set<BleDeviceSession> list = sessions.copyDeviceList();
         for (BleDeviceSession session : list) {
-            if (inStates.contains(session.getSessionState()) &&
-                    sessions.getSessions().contains((BDDeviceSessionImpl) session)) {
+            if (inStates.contains(session.getSessionState())
+                    && sessions.getSessions().contains((BDDeviceSessionImpl) session)) {
                 sessions.getSessions().remove((BDDeviceSessionImpl) session);
                 count += 1;
             }
@@ -250,18 +254,16 @@ public class BDDeviceListenerImpl extends BleDeviceListener implements
     @Override
     public void setPowerMode(@PowerMode int mode) {
         switch (mode) {
-            case POWER_MODE_NORMAL: {
+            case POWER_MODE_NORMAL:
                 scanCallback.stopScan();
                 scanCallback.setLowPowerEnabled(false);
                 scanCallback.startScan();
                 break;
-            }
-            case POWER_MODE_LOW: {
+            case POWER_MODE_LOW:
                 scanCallback.stopScan();
                 scanCallback.setLowPowerEnabled(true);
                 scanCallback.startScan();
                 break;
-            }
         }
     }
 
@@ -338,19 +340,19 @@ public class BDDeviceListenerImpl extends BleDeviceListener implements
     }
 
     @Override
-    public void openSessionDirect(BleDeviceSession session) {
+    public void openSessionDirect(@NonNull BleDeviceSession session) {
         session.setConnectionUuids(new ArrayList<>());
         connectionHandler.connectDevice((BDDeviceSessionImpl) session, bleActive());
     }
 
     @Override
-    public void openSessionDirect(BleDeviceSession session, List<String> uuids) {
+    public void openSessionDirect(@NonNull BleDeviceSession session, @NonNull List<String> uuids) {
         session.setConnectionUuids(uuids);
         connectionHandler.connectDevice((BDDeviceSessionImpl) session, bleActive());
     }
 
     @Override
-    public void closeSessionDirect(BleDeviceSession session) {
+    public void closeSessionDirect(@NonNull BleDeviceSession session) {
         connectionHandler.disconnectDevice((BDDeviceSessionImpl) session);
     }
 
@@ -370,14 +372,12 @@ public class BDDeviceListenerImpl extends BleDeviceListener implements
             switch (deviceSession.getSessionState()) {
                 case SESSION_OPEN:
                 case SESSION_OPENING:
-                case SESSION_CLOSING: {
+                case SESSION_CLOSING:
                     gattCallback.onConnectionStateChange(deviceSession.getGatt(), 0, BluetoothGatt.STATE_DISCONNECTED);
                     break;
-                }
-                default: {
+                default:
                     connectionHandler.deviceDisconnected(deviceSession);
                     break;
-                }
             }
         }
     }
@@ -391,40 +391,52 @@ public class BDDeviceListenerImpl extends BleDeviceListener implements
         }
     }
 
+    @NonNull
     @Override
-    public void deviceSessionStateChanged(BDDeviceSessionImpl session) {
+    public Observable<Pair<BleDeviceSession, BleDeviceSession.DeviceSessionState>> monitorDeviceSessionState() {
+        return deviceSessionStateSubject;
+    }
+
+    @Override
+    public void deviceSessionStateChanged(@NonNull BDDeviceSessionImpl session) {
         if (sessions.fetch(smartPolarDeviceSession1 -> smartPolarDeviceSession1.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK) != null) {
             scanCallback.clientAdded();
         } else {
             scanCallback.clientRemoved();
         }
-        if (changedCallback != null) {
+        if (changedCallback != null || deviceSessionStateSubject.hasObservers()) {
             if (session.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK &&
                     session.getPreviousState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN) {
                 //NOTE special case, we were connected so propagate closed event( informal )
-                changedCallback.stateChanged(session, BleDeviceSession.DeviceSessionState.SESSION_CLOSED);
+                if (changedCallback != null)
+                    changedCallback.stateChanged(session, BleDeviceSession.DeviceSessionState.SESSION_CLOSED);
+                deviceSessionStateSubject.onNext(new Pair<>(session, BleDeviceSession.DeviceSessionState.SESSION_CLOSED));
                 if (session.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK) {
-                    changedCallback.stateChanged(session, BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
+                    if (changedCallback != null)
+                        changedCallback.stateChanged(session, BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
+                    deviceSessionStateSubject.onNext(new Pair<>(session, BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK));
                 }
             } else {
-                changedCallback.stateChanged(session, session.getSessionState());
+                if (changedCallback != null)
+                    changedCallback.stateChanged(session, session.getSessionState());
+                deviceSessionStateSubject.onNext(new Pair<>(session, session.getSessionState()));
             }
         }
     }
 
     @Override
-    public void deviceConnected(BDDeviceSessionImpl session) {
+    public void deviceConnected(@NonNull BDDeviceSessionImpl session) {
 
     }
 
     @Override
-    public void deviceDisconnected(BDDeviceSessionImpl session) {
+    public void deviceDisconnected(@NonNull BDDeviceSessionImpl session) {
         session.handleDisconnection();
         session.reset();
     }
 
     @Override
-    public void deviceConnectionCancelled(BDDeviceSessionImpl session) {
+    public void deviceConnectionCancelled(@NonNull BDDeviceSessionImpl session) {
         session.reset();
     }
 }

@@ -3,13 +3,13 @@ package com.androidcommunications.polar.api.ble.model.gatt.client
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattTxInterface
 import com.androidcommunications.polar.api.ble.model.gatt.client.BleHrClient.HR_MEASUREMENT
 import io.mockk.MockKAnnotations
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.reactivex.rxjava3.subscribers.TestSubscriber
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import java.util.*
-
 
 class BleHrClientTest {
 
@@ -22,6 +22,8 @@ class BleHrClientTest {
     fun setUp() {
         MockKAnnotations.init(this)
         bleHrClient = BleHrClient(txInterface)
+        every { txInterface.isConnected } returns true
+        every { txInterface.setCharacteristicNotify(any(), any(), any(), any()) } returns Unit
     }
 
     @Test
@@ -47,7 +49,7 @@ class BleHrClientTest {
         val measurementFrame2 = byteArrayOf(0x00.toByte(), 0x7F.toByte())
 
         //Act
-        val result = bleHrClient.observeHrNotifications(false)
+        val result = bleHrClient.observeHrNotifications(true)
         val testObserver = TestSubscriber<BleHrClient.HrNotificationData>()
         result.subscribe(testObserver)
         bleHrClient.processServiceData(characteristic, measurementFrame1, status, notifying)
@@ -84,7 +86,7 @@ class BleHrClientTest {
         val measurementFrame2 = byteArrayOf(0x01.toByte(), 0x7F.toByte(), 0x7F.toByte())
 
         //Act
-        val result = bleHrClient.observeHrNotifications(false)
+        val result = bleHrClient.observeHrNotifications(true)
         val testObserver = TestSubscriber<BleHrClient.HrNotificationData>()
         result.subscribe(testObserver)
         bleHrClient.processServiceData(characteristic, measurementFrame1, status, notifying)
@@ -119,7 +121,7 @@ class BleHrClientTest {
         val measurementFrame1 = byteArrayOf(0x04.toByte(), 0x00.toByte())
 
         //Act
-        val result = bleHrClient.observeHrNotifications(false)
+        val result = bleHrClient.observeHrNotifications(true)
         val testObserver = TestSubscriber<BleHrClient.HrNotificationData>()
         result.subscribe(testObserver)
         bleHrClient.processServiceData(characteristic, measurementFrame0, status, notifying)
@@ -158,7 +160,7 @@ class BleHrClientTest {
         val measurementFrame2 = byteArrayOf(0x00.toByte(), 0x00.toByte())
 
         //Act
-        val result = bleHrClient.observeHrNotifications(false)
+        val result = bleHrClient.observeHrNotifications(true)
         val testObserver = TestSubscriber<BleHrClient.HrNotificationData>()
         result.subscribe(testObserver)
         bleHrClient.processServiceData(characteristic, measurementFrame1, status, notifying)
@@ -202,7 +204,7 @@ class BleHrClientTest {
         val measurementFrame2 = byteArrayOf(0x08.toByte(), 0x00.toByte(), 0x7F.toByte(), 0x80.toByte())
 
         //Act
-        val result = bleHrClient.observeHrNotifications(false)
+        val result = bleHrClient.observeHrNotifications(true)
         val testObserver = TestSubscriber<BleHrClient.HrNotificationData>()
         result.subscribe(testObserver)
         bleHrClient.processServiceData(characteristic, measurementFrame1, status, notifying)
@@ -249,7 +251,7 @@ class BleHrClientTest {
         val measurementFrame2 = byteArrayOf(0x11.toByte(), 0x00.toByte(), 0x00.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0x7F.toByte(), 0x80.toByte())
 
         //Act
-        val result = bleHrClient.observeHrNotifications(false)
+        val result = bleHrClient.observeHrNotifications(true)
         val testObserver = TestSubscriber<BleHrClient.HrNotificationData>()
         result.subscribe(testObserver)
         bleHrClient.processServiceData(characteristic, measurementFrame1, status, notifying)

@@ -6,6 +6,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
 import com.androidcommunications.polar.api.ble.model.BleDeviceSession;
 import com.androidcommunications.polar.api.ble.model.advertisement.BleAdvertisementContent;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Observable;
 
 public abstract class BleDeviceListener {
 
@@ -25,10 +27,13 @@ public abstract class BleDeviceListener {
      * Pre filter interface for search, to improve memory usage
      */
     public interface BleSearchPreFilter {
-        boolean process(BleAdvertisementContent content);
+        boolean process(@NonNull BleAdvertisementContent content);
     }
 
+    @NonNull
     protected BleGattFactory factory;
+
+    @Nullable
     protected BleSearchPreFilter preFilter;
 
     /**
@@ -58,26 +63,26 @@ public abstract class BleDeviceListener {
     /**
      * @param cb callback
      */
-    public abstract void setBlePowerStateCallback(@Nullable BlePowerStateChangedCallback cb);
+    public abstract void setBlePowerStateCallback(@NonNull BlePowerStateChangedCallback cb);
 
     public interface BlePowerStateChangedCallback {
         /**
          * @param power bt state
          */
-        void stateChanged(Boolean power);
+        void stateChanged(boolean power);
     }
 
     /**
      * @param filters scan filter list, android specific
      */
-    public abstract void setScanFilters(@Nullable final List<ScanFilter> filters);
+    public abstract void setScanFilters(@Nullable List<ScanFilter> filters);
 
     /**
      * enable to optimize memory usage or disable scan pre filter
      *
      * @param filter policy
      */
-    public abstract void setScanPreFilter(@Nullable final BleSearchPreFilter filter);
+    public abstract void setScanPreFilter(@Nullable BleSearchPreFilter filter);
 
     /**
      * @param enable true enables timer to avoid opportunistic scan, false disables. Default true.
@@ -92,6 +97,7 @@ public abstract class BleDeviceListener {
      * @param fetchKnownDevices, fetch known devices means bonded, already connected and already found devices <BR>
      * @return Observable stream <BR>
      */
+    @NonNull
     public abstract Flowable<BleDeviceSession> search(boolean fetchKnownDevices);
 
     public abstract void setMtu(@IntRange(from = 70, to = 512) int mtu);
@@ -106,15 +112,24 @@ public abstract class BleDeviceListener {
      *
      * @param session device
      */
-    public abstract void openSessionDirect(BleDeviceSession session);
+    public abstract void openSessionDirect(@NonNull BleDeviceSession session);
 
     /**
-     * aquire connection establishment, BleDeviceSessionStateChangedCallback callbacks are invoked
+     * Acquire connection establishment, BleDeviceSessionStateChangedCallback callbacks are invoked
      *
      * @param session device
      * @param uuids   needed uuids to be found from advertisement data, when reconnecting
      */
-    public abstract void openSessionDirect(BleDeviceSession session, List<String> uuids);
+    public abstract void openSessionDirect(@NonNull BleDeviceSession session, @NonNull List<String> uuids);
+
+    /**
+     * Produces: onNext: When a device session state has changed, Note use pair.second to check the state (see BleDeviceSession.DeviceSessionState)
+     *
+     * @return Observable stream
+     */
+    @NonNull
+    public abstract Observable<Pair<BleDeviceSession, BleDeviceSession.DeviceSessionState>> monitorDeviceSessionState();
+
 
     public interface BleDeviceSessionStateChangedCallback {
         /**
@@ -122,26 +137,30 @@ public abstract class BleDeviceListener {
          *
          * @param session check sessionState or session.getPreviousState() for actions
          */
-        void stateChanged(BleDeviceSession session, BleDeviceSession.DeviceSessionState sessionState);
+        void stateChanged(@NonNull BleDeviceSession session, @NonNull BleDeviceSession.DeviceSessionState sessionState);
     }
 
     /**
      * set or null state observer
      *
      * @param changedCallback @see BleDeviceSessionStateChangedCallback
+     * @deprecated Use {@link #monitorDeviceSessionState()} instead.
      */
+
+    @Deprecated
     public abstract void setDeviceSessionStateChangedCallback(@Nullable BleDeviceSessionStateChangedCallback changedCallback);
 
     /**
-     * aquires disconnection directly without Observable returned
+     * Acquires disconnection directly without Observable returned
      *
      * @param session device
      */
-    public abstract void closeSessionDirect(BleDeviceSession session);
+    public abstract void closeSessionDirect(@NonNull BleDeviceSession session);
 
     /**
      * @return List of current device sessions known
      */
+    @Nullable
     public abstract Set<BleDeviceSession> deviceSessions();
 
     /**
@@ -156,14 +175,14 @@ public abstract class BleDeviceListener {
      * @param deviceSession @see BleDeviceSession
      * @return true device was removed, false no( means device is considered to be alive )
      */
-    public abstract boolean removeSession(BleDeviceSession deviceSession);
+    public abstract boolean removeSession(@NonNull BleDeviceSession deviceSession);
 
     /**
      * @return count of sessions removed
      */
     public abstract int removeAllSessions();
 
-    public abstract int removeAllSessions(Set<BleDeviceSession.DeviceSessionState> inStates);
+    public abstract int removeAllSessions(@NonNull Set<BleDeviceSession.DeviceSessionState> inStates);
 
     /**
      * enable or disable automatic reconnection, by default true.

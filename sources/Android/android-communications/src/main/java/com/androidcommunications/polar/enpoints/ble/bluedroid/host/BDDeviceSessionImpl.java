@@ -283,7 +283,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                     }
                 }
             } else {
-                throw new BleGattNotInitialized("Attribute operation tryed while gatt is uninitialized");
+                throw new BleGattNotInitialized("Attribute operation tried while gatt is uninitialized");
             }
         }
         return false;
@@ -391,8 +391,8 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                     if (service.getUuid().equals(serviceUuid)) {
                         for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
                             if (characteristic.getUuid().equals(characteristicUuid)) {
-                                if ((characteristic.getProperties() & BleGattBase.PROPERTY_NOTIFY) > 0 ||
-                                        (characteristic.getProperties() & BleGattBase.PROPERTY_INDICATE) > 0) {
+                                if ((characteristic.getProperties() & BleGattBase.PROPERTY_NOTIFY) > 0
+                                        || (characteristic.getProperties() & BleGattBase.PROPERTY_INDICATE) > 0) {
                                     attOperations.add(new AttributeOperation(AttributeOperation.AttributeOperationCommand.DESCRIPTOR_WRITE, characteristic, enable));
                                     if (attOperations.size() == 1) {
                                         processNextAttributeOperation(false);
@@ -485,17 +485,16 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
             for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
                 BleLogger.d(TAG, "     CHARACTERISTIC: " + characteristic.getUuid().toString() + " PROPERTIES: " + characteristic.getProperties());
                 client.processCharacteristicDiscovered(characteristic.getUuid(), characteristic.getProperties());
-                if (client.containsNotifyCharacteristic(characteristic.getUuid()) &&
-                        ((characteristic.getProperties() & BleGattBase.PROPERTY_NOTIFY) != 0 ||
-                                (characteristic.getProperties() & BleGattBase.PROPERTY_INDICATE) != 0) &&
-                        client.isAutomatic(characteristic.getUuid())) {
+                if (client.containsNotifyCharacteristic(characteristic.getUuid())
+                        && ((characteristic.getProperties() & BleGattBase.PROPERTY_NOTIFY) != 0 || (characteristic.getProperties() & BleGattBase.PROPERTY_INDICATE) != 0)
+                        && client.isAutomatic(characteristic.getUuid())) {
                     AttributeOperation operation = new AttributeOperation(AttributeOperation.AttributeOperationCommand.DESCRIPTOR_WRITE, characteristic, true);
                     operation.setIsPartOfPrimaryService(client.isPrimaryService());
                     operations.add(operation);
                 }
-                if (client.containsCharacteristicRead(characteristic.getUuid()) &&
-                        (characteristic.getProperties() & BleGattBase.PROPERTY_READ) != 0 &&
-                        client.isAutomaticRead(characteristic.getUuid())) {
+                if (client.containsCharacteristicRead(characteristic.getUuid())
+                        && (characteristic.getProperties() & BleGattBase.PROPERTY_READ) != 0
+                        && client.isAutomaticRead(characteristic.getUuid())) {
                     AttributeOperation operation = new AttributeOperation(AttributeOperation.AttributeOperationCommand.CHARACTERISTIC_READ, characteristic);
                     operation.setIsPartOfPrimaryService(client.isPrimaryService());
                     operations.add(operation);
@@ -517,7 +516,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
             default: {
                 final BleGattBase client = fetchClient(service.getUuid());
                 if (client != null && client.containsCharacteristic(characteristic.getUuid())) {
-                    if (attOperations.size() != 0 && attOperations.peek().isWithResponse()) {
+                    if (!attOperations.isEmpty() && attOperations.peek().isWithResponse()) {
                         client.processServiceDataWrittenWithResponse(characteristic.getUuid(), status);
                     } else {
                         client.processServiceDataWritten(characteristic.getUuid(), status);
@@ -546,10 +545,8 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                     processNextAttributeOperation(true);
                 }
                 final BleGattBase client = fetchClient(service.getUuid());
-                if (client != null) {
-                    if (client.containsCharacteristic(characteristic.getUuid())) {
-                        client.processServiceData(characteristic.getUuid(), value, status, false);
-                    }
+                if (client != null && client.containsCharacteristic(characteristic.getUuid())) {
+                    client.processServiceData(characteristic.getUuid(), value, status, false);
                 }
                 break;
             }
@@ -558,10 +555,8 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
 
     void handleCharacteristicValueUpdated(final BluetoothGattService service, final BluetoothGattCharacteristic characteristic, byte[] value) {
         final BleGattBase client = fetchClient(service.getUuid());
-        if (client != null) {
-            if (client.containsCharacteristic(characteristic.getUuid())) {
-                client.processServiceData(characteristic.getUuid(), value, BleGattBase.ATT_SUCCESS, true);
-            }
+        if (client != null && client.containsCharacteristic(characteristic.getUuid())) {
+            client.processServiceData(characteristic.getUuid(), value, BleGattBase.ATT_SUCCESS, true);
         } else {
             BleLogger.e(TAG, "Unhandled notification received");
         }
@@ -595,10 +590,8 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                     activated = false;
                 }
                 final BleGattBase client = fetchClient(service.getUuid());
-                if (client != null) {
-                    if (client.containsCharacteristic(characteristic.getUuid())) {
-                        client.descriptorWritten(characteristic.getUuid(), activated, status);
-                    }
+                if (client != null && client.containsCharacteristic(characteristic.getUuid())) {
+                    client.descriptorWritten(characteristic.getUuid(), activated, status);
                 }
                 break;
             }
@@ -633,12 +626,12 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
     }
 
     void processNextAttributeOperation(boolean remove) {
-        if (attOperations.size() != 0) {
+        if (!attOperations.isEmpty()) {
             try {
                 if (remove) {
                     attOperations.take();
                 }
-                if (attOperations.size() != 0) {
+                if (!attOperations.isEmpty()) {
                     AttributeOperation operation = Objects.requireNonNull(attOperations.peek());
                     if (BuildConfig.DEBUG) {
                         BleLogger.d(TAG, "send next: " + operation.getCharacteristic().getUuid() + " op: " + operation.getAttributeOperation().toString());

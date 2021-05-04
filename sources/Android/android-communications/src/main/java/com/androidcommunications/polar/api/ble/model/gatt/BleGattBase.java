@@ -269,29 +269,43 @@ public abstract class BleGattBase {
     }
 
     /**
-     * Adds characteristic uuid to be handled by this client, by calling this characteristic shall be auto enable notification/indication after connection establishment <BR>
+     * Adds notification characteristic uuid to be handled by this client. This will set
+     * notification/indication automatic enabled after connection establishment
      *
-     * @param characteristicNotify <BR>
+     * @param characteristic characteristic which notification is set on
      */
-    protected void addCharacteristicNotification(UUID characteristicNotify) {
+    protected void addCharacteristicNotification(UUID characteristic) {
         // Note properties are just informal, as this is used by the client
-        addCharacteristic(characteristicNotify, PROPERTY_NOTIFY | PROPERTY_INDICATE);
+        BleLogger.d(TAG, "Added notification characteristic for " + characteristic.toString());
+        addCharacteristic(characteristic, PROPERTY_NOTIFY | PROPERTY_INDICATE);
     }
 
-    protected void addCharacteristic(UUID characteristic, int properties) {
-        if (((properties & PROPERTY_NOTIFY) != 0 || (properties & PROPERTY_INDICATE) != 0) &&
-                !containsNotifyCharacteristic(characteristic)) {
-            mandatoryNotificationCharacteristics.put(characteristic, new AtomicInteger(-1));
-            characteristics.put(characteristic, true);
+    /**
+     * Remove notification characteristic from this client. This will remove the
+     * notification/indication automatic enable after connection establishment
+     *
+     * @param characteristic characteristic which notification is set off
+     */
+    protected void removeCharacteristicNotification(UUID characteristic) {
+        BleLogger.d(TAG, "Remove notification characteristic for " + characteristic.toString());
+        if (containsNotifyCharacteristic(characteristic)) {
+            mandatoryNotificationCharacteristics.remove(characteristic);
         }
-        if ((properties & PROPERTY_READ) != 0 &&
-                !containsCharacteristicRead(characteristic)) {
-            characteristicsRead.put(characteristic, true);
-        }
-        if (!characteristics.containsKey(characteristic)) {
-            characteristics.put(characteristic, true);
+        if (containsCharacteristic(characteristic)) {
+            characteristics.remove(characteristic);
         }
     }
+
+    protected void addCharacteristic(final UUID characteristic, int properties) {
+        if (((properties & PROPERTY_NOTIFY) != 0 || (properties & PROPERTY_INDICATE) != 0) && !containsNotifyCharacteristic(characteristic)) {
+            mandatoryNotificationCharacteristics.put(characteristic, new AtomicInteger(-1));
+        }
+        if ((properties & PROPERTY_READ) != 0 && !containsCharacteristicRead(characteristic)) {
+            characteristicsRead.put(characteristic, true);
+        }
+        characteristics.putIfAbsent(characteristic, true);
+    }
+
 
     protected void addAvailableCharacteristic(UUID chr, int property) {
         if (containsCharacteristic(chr) && !contains(chr, availableCharacteristics.objects())) {
@@ -311,7 +325,7 @@ public abstract class BleGattBase {
     }
 
     protected boolean hasCharacteristics(Set<UUID> set, Set<UUID> list) {
-        return list.size() != 0 && set.containsAll(list);
+        return !list.isEmpty() && set.containsAll(list);
     }
 
     /**
