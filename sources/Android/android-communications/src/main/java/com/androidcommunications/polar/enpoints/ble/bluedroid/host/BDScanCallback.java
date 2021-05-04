@@ -11,6 +11,8 @@ import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.os.Build;
 
+import androidx.annotation.Nullable;
+
 import com.androidcommunications.polar.api.ble.BleLogger;
 import com.androidcommunications.polar.common.ble.BleUtils;
 
@@ -85,7 +87,7 @@ class BDScanCallback extends ScanCallback {
         this.lowPowerEnabled = lowPowerEnabled;
     }
 
-    void setScanFilters(final List<ScanFilter> filters) {
+    void setScanFilters(@Nullable List<ScanFilter> filters) {
         stopScan();
         this.filters = filters;
         startScan();

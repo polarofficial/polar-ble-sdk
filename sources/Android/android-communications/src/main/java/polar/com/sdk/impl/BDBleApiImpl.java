@@ -6,10 +6,10 @@ import android.bluetooth.le.ScanFilter;
 import android.content.Context;
 import android.os.Build;
 import android.os.ParcelUuid;
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
 import com.androidcommunications.polar.api.ble.BleDeviceListener;
 import com.androidcommunications.polar.api.ble.BleLogger;
@@ -56,6 +56,7 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.core.SingleSource;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.BiFunction;
+import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.schedulers.Timed;
 import polar.com.sdk.api.PolarBleApi;
@@ -88,20 +89,58 @@ import static com.androidcommunications.polar.api.ble.model.BleDeviceSession.Dev
 /**
  * The default implementation of the Polar API
  */
-public class BDBleApiImpl extends PolarBleApi implements
-        BleDeviceListener.BleDeviceSessionStateChangedCallback,
-        BleDeviceListener.BlePowerStateChangedCallback {
+public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePowerStateChangedCallback {
     private static final String TAG = BDBleApiImpl.class.getSimpleName();
-    protected BleDeviceListener listener;
-    protected Map<String, Disposable> connectSubscriptions = new HashMap<>();
-    protected Scheduler scheduler;
-    protected PolarBleApiCallbackProvider callback;
-    protected PolarBleApiLogger logger;
-    protected static final int ANDROID_VERSION_O = 26;
-    protected BleDeviceListener.BleSearchPreFilter filter = content -> content.getPolarDeviceId().length() != 0 && !content.getPolarDeviceType().equals("mobile");
 
-    @SuppressLint({"NewApi", "CheckResult"})
-    public BDBleApiImpl(final Context context, int features) {
+    private final BleDeviceListener listener;
+    private final Map<String, Disposable> connectSubscriptions = new HashMap<>();
+    private final Scheduler scheduler;
+    private final BleDeviceListener.BleSearchPreFilter filter = content -> !content.getPolarDeviceId().isEmpty() && !content.getPolarDeviceType().equals("mobile");
+    private final Disposable deviceSessionStateMonitorDisposable;
+    private PolarBleApiCallbackProvider callback;
+    private PolarBleApiLogger logger;
+
+    private final Consumer<Pair<BleDeviceSession, BleDeviceSession.DeviceSessionState>> deviceStateMonitorObserver = deviceSessionStatePair ->
+    {
+        BleDeviceSession session = deviceSessionStatePair.first;
+        BleDeviceSession.DeviceSessionState sessionState = deviceSessionStatePair.second;
+
+        //Guard
+        if (session == null || sessionState == null) {
+            return;
+        }
+
+        PolarDeviceInfo info = new PolarDeviceInfo(
+                session.getPolarDeviceId().isEmpty() ? session.getAddress() : session.getPolarDeviceId(),
+                session.getAddress(),
+                session.getRssi(),
+                session.getName(),
+                true);
+        switch (Objects.requireNonNull(sessionState)) {
+            case SESSION_OPEN:
+                if (callback != null) {
+                    callback.deviceConnected(info);
+                }
+                setupDevice(session);
+                break;
+            case SESSION_CLOSED:
+                if (callback != null
+                        && (session.getPreviousState() == SESSION_OPEN || session.getPreviousState() == BleDeviceSession.DeviceSessionState.SESSION_CLOSING)) {
+                    callback.deviceDisconnected(info);
+                }
+                break;
+            case SESSION_OPENING:
+                if (callback != null) {
+                    callback.deviceConnecting(info);
+                }
+                break;
+            default:
+                //Do nothing
+                break;
+        }
+    };
+
+    public BDBleApiImpl(@NonNull Context context, int features) {
         super(features);
         Set<Class<? extends BleGattBase>> clients = new HashSet<>();
         if ((this.features & PolarBleApi.FEATURE_HR) != 0) {
@@ -121,7 +160,7 @@ public class BDBleApiImpl extends PolarBleApi implements
         }
         listener = new BDDeviceListenerImpl(context, clients);
         listener.setScanPreFilter(filter);
-        listener.setDeviceSessionStateChangedCallback(this);
+        deviceSessionStateMonitorDisposable = listener.monitorDeviceSessionState().subscribe(deviceStateMonitorObserver);
         listener.setBlePowerStateCallback(this);
         scheduler = AndroidSchedulers.from(context.getMainLooper());
         BleLogger.setLoggerInterface(new BleLogger.BleLoggerInterface() {
@@ -145,15 +184,14 @@ public class BDBleApiImpl extends PolarBleApi implements
         });
     }
 
-    @SuppressLint("NewApi")
-    protected void enableAndroidScanFilter() {
-        if (Build.VERSION.SDK_INT >= ANDROID_VERSION_O) {
-            List<ScanFilter> filter = new ArrayList<>();
-            filter.add(new ScanFilter.Builder().setServiceUuid(
+    private void enableAndroidScanFilter() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            List<ScanFilter> scanFilter = new ArrayList<>();
+            scanFilter.add(new ScanFilter.Builder().setServiceUuid(
                     ParcelUuid.fromString(BleHrClient.HR_SERVICE.toString())).build());
-            filter.add(new ScanFilter.Builder().setServiceUuid(
+            scanFilter.add(new ScanFilter.Builder().setServiceUuid(
                     ParcelUuid.fromString(BlePsFtpUtils.RFC77_PFTP_SERVICE.toString())).build());
-            listener.setScanFilters(filter);
+            listener.setScanFilters(scanFilter);
         }
     }
 
@@ -164,6 +202,7 @@ public class BDBleApiImpl extends PolarBleApi implements
 
     @Override
     public void shutDown() {
+        deviceSessionStateMonitorDisposable.dispose();
         listener.shutDown();
     }
 
@@ -198,7 +237,7 @@ public class BDBleApiImpl extends PolarBleApi implements
     }
 
     @Override
-    public void setApiCallback(PolarBleApiCallbackProvider callback) {
+    public void setApiCallback(@NonNull PolarBleApiCallbackProvider callback) {
         this.callback = callback;
         callback.blePowerStateChanged(listener.bleActive());
     }
@@ -859,38 +898,8 @@ public class BDBleApiImpl extends PolarBleApi implements
         }
     }
 
-    @Override
-    public void stateChanged(BleDeviceSession session, BleDeviceSession.DeviceSessionState sessionState) {
-        PolarDeviceInfo info = new PolarDeviceInfo(
-                session.getPolarDeviceId().length() != 0 ?
-                        session.getPolarDeviceId() : session.getAddress(),
-                session.getAddress(),
-                session.getRssi(), session.getName(), true);
-        switch (sessionState) {
-            case SESSION_OPEN:
-                if (callback != null) {
-                    callback.deviceConnected(info);
-                }
-                setupDevice(session);
-                break;
-            case SESSION_CLOSED:
-                if (callback != null) {
-                    if (session.getPreviousState() == SESSION_OPEN ||
-                            session.getPreviousState() == BleDeviceSession.DeviceSessionState.SESSION_CLOSING) {
-                        callback.deviceDisconnected(info);
-                    }
-                }
-                break;
-            case SESSION_OPENING:
-                if (callback != null) {
-                    callback.deviceConnecting(info);
-                }
-                break;
-        }
-    }
-
-    @Override
-    public void stateChanged(Boolean power) {
+     @Override
+    public void stateChanged(boolean power) {
         if (callback != null) {
             callback.blePowerStateChanged(power);
         }
@@ -929,13 +938,13 @@ public class BDBleApiImpl extends PolarBleApi implements
                 });
     }
 
-    protected void log(final String message) {
+    protected void log(@NonNull String message) {
         if (logger != null) {
             logger.message("" + message);
         }
     }
 
-    protected void logError(final String message) {
+    protected void logError(@NonNull String message) {
         if (logger != null) {
             logger.message("Error: " + message);
         }
