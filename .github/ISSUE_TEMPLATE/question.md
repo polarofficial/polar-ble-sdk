@@ -7,10 +7,18 @@ assignees: JOikarinen
 
 ---
 
-**Question concerns:**
-- [ ] Android SDK
-- [ ] iOS SDK
-- [ ] Polar device
-- [ ] General
+***Platform your question concerns:*** 
+- [ ] Android 
+- [ ] iOS
+- [ ] Other
+- [ ] Platform is not relevant for this question
+
+***Device:***
+- [ ] Polar OH1
+- [ ] Polar Verity Sense
+- [ ] Polar H10
+- [ ] Polar H9
+- [ ] Other
+- [ ] Device is not relevant for this question
 
 **Description:**
