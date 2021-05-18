@@ -211,9 +211,9 @@ public protocol PolarBleApi {
     ///   - onError: see `PolarErrors` for possible errors invoked
     func requestRecordingStatus(_ identifier: String) -> Single<PolarRecordingStatus>
     
-    /// Start listening to broadcasts from one or more Polar devices
+    /// Start listening to heart rate broadcasts from one or more Polar devices
     ///
-    /// - Parameter identifiers: list of Polar device ids, or nil for a any device
+    /// - Parameter identifiers: set of Polar device ids to filter or null for a any Polar device
     /// - Returns: Observable stream
     func startListenForPolarHrBroadcasts(_ identifiers: Set<String>?) -> Observable<PolarHrBroadcastData>
     

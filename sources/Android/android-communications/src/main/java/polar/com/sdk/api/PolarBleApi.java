@@ -292,9 +292,9 @@ public abstract class PolarBleApi {
     public abstract Flowable<PolarDeviceInfo> searchForDevice();
 
     /**
-     * Starts listening to heart rate broadcast stream
+     * Start listening to heart rate broadcasts from one or more Polar devices
      *
-     * @param deviceIds set of Polar device ids. Null for a single Polar device
+     * @param deviceIds set of Polar device ids to filter or null for a any Polar device
      * @return Flowable stream of heart rate broadcasts.
      * Produces:
      * <BR> - onNext when new advertisement is detected based on deviceId list as filter
