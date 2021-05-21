@@ -14,13 +14,13 @@ public enum DeviceStreamingFeature: Int, CaseIterable {
     case magnetometer
 }
 
-/// recording interval in seconds for H10
+///  Recoding intervals for H10 recording start
 public enum RecordingInterval: Int {
     case interval_1s = 1
     case interval_5s = 5
 }
 
-/// sample type for H10 recording
+/// Sample types for H10 recording start
 public enum SampleType: Int {
     /// recording type to use is hr in BPM
     case hr
@@ -38,8 +38,8 @@ public enum Features: Int, CaseIterable {
     case batteryStatus = 4
     /// polarSensorStreaming enables stream client to start acc, ppg, ecg, ppi streams
     case polarSensorStreaming = 8
-    /// polarFileTransfer enables file transfer client to list and read stored exercises,
-    /// H10 recording start, stop and status. Set local time to device.
+    /// polarFileTransfer enables the listing, read stored exercises and setup of  local time to device.
+    /// Additionally enables the recording start, recoding stop and recording status request for Polar H10 .
     case polarFileTransfer = 16
     /// allFeatures enables all features available
     case allFeatures = 0xff
@@ -48,7 +48,7 @@ public enum Features: Int, CaseIterable {
 /// Polar device info
 ///
 ///     - deviceId = polar device id or UUID for 3rd party sensors
-///     - rssi = RSSI (Received Signal Strenght Indicator) value from advertisement
+///     - rssi = RSSI (Received Signal Strength Indicator) value from advertisement
 ///     - name = local name from advertisement
 ///     - connectable = true adv type is connectable
 public typealias PolarDeviceInfo = (deviceId: String, address: UUID, rssi: Int, name: String, connectable: Bool)
@@ -77,7 +77,7 @@ public typealias PolarAccData = (timeStamp: UInt64,samples: [(x: Int32,y: Int32,
 ///     - samples: gyro samples list x,y,z in °/s signed value
 public typealias PolarGyroData = (timeStamp: UInt64,samples: [(x: Float,y: Float,z: Float)])
 
-/// Polar mgn data
+/// Polar magnetometer data
 ///
 ///     - Timestamp: Last sample timestamp in nanoseconds. 
 ///     - samples: in Gauss
@@ -170,7 +170,7 @@ public protocol PolarBleApi {
     /// - Returns: true if requested feature is ready for use
     func isFeatureReady(_ identifier: String, feature: Features) -> Bool
     
-    /// set local time to device, requires ftp to be ready
+    /// set local time to device. Requires `polarFileTransfer` feature.
     ///
     /// - Parameters:
     ///   - identifier: polar device id or UUID
@@ -181,7 +181,7 @@ public protocol PolarBleApi {
     ///   - onError: see `PolarErrors` for possible errors invoked
     func setLocalTime(_ identifier: String, time: Date, zone: TimeZone) -> Completable
     
-    /// request start recording, only H10 supported, requires ftp to be ready
+    /// Request start recording. Supported only by Polar H10. Requires `polarFileTransfer` feature.
     ///
     /// - Parameters:
     ///   - identifier: Polar device id or UUID
@@ -193,7 +193,7 @@ public protocol PolarBleApi {
     ///   - onError: see `PolarErrors` for possible errors invoked
     func startRecording(_ identifier: String, exerciseId: String, interval: RecordingInterval, sampleType: SampleType) -> Completable
     
-    /// request stop for current recording, only H10 supported, requires ftp to be ready
+    /// Request stop for current recording. Supported only by Polar H10. Requires `polarFileTransfer` feature.
     ///
     /// - Parameters:
     ///   - identifier: Polar device id or UUID
@@ -202,7 +202,7 @@ public protocol PolarBleApi {
     ///   - onError: see `PolarErrors` for possible errors invoked
     func stopRecording(_ identifier: String) -> Completable
     
-    /// request current recording status, only H10 supported, requires ftp to be ready
+    /// Request current recording status. Supported only by Polar H10. Requires `polarFileTransfer` feature.
     ///
     /// - Parameters:
     ///   - identifier: Polar device id
@@ -210,6 +210,35 @@ public protocol PolarBleApi {
     ///   - success: see `PolarRecordingStatus`
     ///   - onError: see `PolarErrors` for possible errors invoked
     func requestRecordingStatus(_ identifier: String) -> Single<PolarRecordingStatus>
+    
+    /// Api for fetching stored exercises list from Polar H10 device. Requires `polarFileTransfer` feature. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.
+    ///
+    /// - Parameters:
+    ///   - identifier: Polar device id or device address
+    /// - Returns: Observable stream
+    ///   - onNext: see `PolarExerciseEntry`
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func fetchStoredExerciseList(_ identifier: String) -> Observable<PolarExerciseEntry>
+    
+    /// Api for fetching a single exercise from Polar H10 device. Requires `polarFileTransfer` feature. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.
+    ///
+    /// - Parameters:
+    ///   - identifier: Polar device id or device address
+    ///   - entry: single exercise entry to be fetched
+    /// - Returns: Single stream
+    ///   - success: invoked after exercise data has been fetched from the device. see `PolarExerciseEntry`
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func fetchExercise(_ identifier: String, entry: PolarExerciseEntry) -> Single<PolarExerciseData>
+    
+    /// Api for removing single exercise from Polar H10 device. Requires `polarFileTransfer` feature. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.
+    ///
+    /// - Parameters:
+    ///   - identifier: Polar device id or device address
+    ///   - entry: single exercise entry to be removed
+    /// - Returns: Completable stream
+    ///   - complete: entry successfully removed
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func removeExercise(_ identifier: String, entry: PolarExerciseEntry) ->Completable
     
     /// Start listening to heart rate broadcasts from one or more Polar devices
     ///
@@ -253,7 +282,7 @@ public protocol PolarBleApi {
     ///   - settings: selected settings to start the stream
     func startGyroStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarGyroData>
     
-    /// Starts mgn streaming
+    /// Starts magnetometer streaming
     /// - Parameters:
     ///   - identifier: Polar device id or device address
     ///   - settings: selected settings to start the stream
@@ -278,40 +307,11 @@ public protocol PolarBleApi {
     ///   - onNext: for every air packet received. see `PolarPpiData`
     ///   - onError: see `PolarErrors` for possible errors invoked
     func startOhrPPIStreaming(_ identifier: String) -> Observable<PolarPpiData>
-    
-    /// Api for fetching stored exercises from Polar OH1/H10 device
-    ///
-    /// - Parameters:
-    ///   - identifier: Polar device id or device address
-    /// - Returns: Observable stream
-    ///   - onNext: see `PolarExerciseEntry`
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func fetchStoredExerciseList(_ identifier: String) -> Observable<PolarExerciseEntry>
-    
-    /// Api for fetching a single exersice from Polar OH1/H10 device
-    ///
-    /// - Parameters:
-    ///   - identifier: Polar device id or device address
-    ///   - entry: single exercise entry to be fetched
-    /// - Returns: Single stream
-    ///   - success: invoked after exercise data has been fetched from the device. see `PolarExerciseEntry`
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func fetchExercise(_ identifier: String, entry: PolarExerciseEntry) -> Single<PolarExerciseData>
-    
-    /// Remove single exercise from device
-    ///
-    /// - Parameters:
-    ///   - identifier: Polar device id or device address
-    ///   - entry: single exercise entry to be removed
-    /// - Returns: Completable stream
-    ///   - complete: entry successfully removed
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func removeExercise(_ identifier: String, entry: PolarExerciseEntry) ->Completable
-    
+        
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }
     
-    /// Device info observer for DIS (Device information servive) and BAS (Battery service) GATT (Generic attributes) client
+    /// Device info observer for DIS (Device information service) and BAS (Battery service) GATT (Generic attributes) client
     var deviceInfoObserver: PolarBleApiDeviceInfoObserver? { get set }
     
     /// Device observer for HR GATT client

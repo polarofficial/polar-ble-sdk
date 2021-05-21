@@ -225,7 +225,8 @@ public abstract class PolarBleApi {
     public abstract void disconnectFromDevice(@NonNull final String identifier) throws PolarInvalidArgument;
 
     /**
-     * request start recording only supported by H10, requires feature PolarBleApi#FEATURE_POLAR_FILE_TRANSFER
+     * Request start recording. Supported only by Polar H10. Requires feature
+     * PolarBleApi#FEATURE_POLAR_FILE_TRANSFER
      *
      * @param identifier polar device id or bt address
      * @param exerciseId unique id for exercise entry
@@ -239,7 +240,8 @@ public abstract class PolarBleApi {
                                                @NonNull SampleType type);
 
     /**
-     * request stop recording only supported by H10, requires feature PolarBleApi#FEATURE_POLAR_FILE_TRANSFER
+     * Request stop recording. Supported only by Polar H10. Requires feature
+     * PolarBleApi#FEATURE_POLAR_FILE_TRANSFER
      *
      * @param identifier polar device id or bt address
      * @return Completable stream
@@ -247,7 +249,8 @@ public abstract class PolarBleApi {
     public abstract Completable stopRecording(@NonNull final String identifier);
 
     /**
-     * request current recording status only supported by H10, requires feature PolarBleApi#FEATURE_POLAR_FILE_TRANSFER
+     * Request current recording status. Supported only by Polar H10. Requires feature
+     * PolarBleApi#FEATURE_POLAR_FILE_TRANSFER
      *
      * @param identifier polar device id or bt address
      * @return Single stream Pair first recording status, second entryId if available
@@ -255,7 +258,10 @@ public abstract class PolarBleApi {
     public abstract Single<Pair<Boolean, String>> requestRecordingStatus(@NonNull final String identifier);
 
     /**
-     * List all exercises stored in the device OH1/H10 requires feature PolarBleApi#FEATURE_POLAR_FILE_TRANSFER
+     * List exercises stored in the device Polar H10 device. Requires feature
+     * PolarBleApi#FEATURE_POLAR_FILE_TRANSFER. This API is working for Polar OH1 and
+     * Polar Verity Sense devices too, however in those devices recording of exercise requires
+     * that sensor is registered to Polar Flow account.
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
      * @return Flowable stream of entries @see polar.com.sdk.api.model.PolarExerciseEntry for details
@@ -263,7 +269,10 @@ public abstract class PolarBleApi {
     public abstract Flowable<PolarExerciseEntry> listExercises(@NonNull final String identifier);
 
     /**
-     * Fetch single exercise data requires feature PolarBleApi#FEATURE_POLAR_FILE_TRANSFER
+     * Api for fetching a single exercise from Polar H10 device. Requires feature
+     * PolarBleApi#FEATURE_POLAR_FILE_TRANSFER. This API is working for Polar OH1 and
+     * Polar Verity Sense devices too, however in those devices recording of exercise requires
+     * that sensor is registered to Polar Flow account.
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
      * @param entry      PolarExerciseEntry object
@@ -272,7 +281,10 @@ public abstract class PolarBleApi {
     public abstract Single<PolarExerciseData> fetchExercise(@NonNull final String identifier, @NonNull final PolarExerciseEntry entry);
 
     /**
-     * Request to remove single exercise requires feature PolarBleApi#FEATURE_POLAR_FILE_TRANSFER
+     * Api for removing single exercise from Polar H10 device. Requires feature
+     * PolarBleApi#FEATURE_POLAR_FILE_TRANSFER. This API is working for Polar OH1 and
+     * Polar Verity Sense devices too, however in those devices recording of exercise requires
+     * that sensor is registered to Polar Flow account.
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
      * @param entry      entry to be removed
