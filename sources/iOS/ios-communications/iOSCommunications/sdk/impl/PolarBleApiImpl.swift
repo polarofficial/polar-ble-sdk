@@ -455,7 +455,7 @@ extension PolarBleApiImpl: PolarBleApi {
         }
     }
     
-    func startRecording(_ identifier: String, exerciseId: String, interval: RecordingInterval, sampleType: SampleType) -> Completable {
+    func startRecording(_ identifier: String, exerciseId: String, interval: RecordingInterval = RecordingInterval.interval_1s, sampleType: SampleType) -> Completable {
         do{
             guard exerciseId.count > 0 && exerciseId.count < 64 else {
                 throw InvalidArgument()
