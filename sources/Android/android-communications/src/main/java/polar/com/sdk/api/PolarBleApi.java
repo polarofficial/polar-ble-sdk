@@ -60,7 +60,7 @@ public abstract class PolarBleApi {
         INTERVAL_1S(1), /*!< 1 second interval */
         INTERVAL_5S(5); /*!< 5 second interval */
 
-        private int value;
+        private final int value;
 
         RecordingInterval(int value) {
             this.value = value;
@@ -230,13 +230,13 @@ public abstract class PolarBleApi {
      *
      * @param identifier polar device id or bt address
      * @param exerciseId unique id for exercise entry
-     * @param interval   recording interval to be used
-     * @param type       sample type to be used
+     * @param interval   recording interval to be used. Has no effect if `type` is `SampleType.RR`
+     * @param type       sample type to be used.
      * @return Completable stream
      */
     public abstract Completable startRecording(@NonNull final String identifier,
                                                @NonNull @Size(min = 1, max = 64) final String exerciseId,
-                                               @NonNull RecordingInterval interval,
+                                               @Nullable RecordingInterval interval,
                                                @NonNull SampleType type);
 
     /**

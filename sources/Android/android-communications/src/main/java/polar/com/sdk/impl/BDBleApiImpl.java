@@ -406,18 +406,21 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
     }
 
     @Override
-    public Completable startRecording(@NonNull String identifier, @NonNull String exerciseId, @NonNull RecordingInterval interval, @NonNull SampleType type) {
+    public Completable startRecording(@NonNull String identifier, @NonNull String exerciseId, @Nullable RecordingInterval interval, @NonNull SampleType type) {
         try {
             final BleDeviceSession session = sessionPsFtpClientReady(identifier);
             final BlePsFtpClient client = (BlePsFtpClient) session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE);
             final boolean recordingSupported = BlePolarDeviceCapabilitiesUtility.isRecordingSupported(session.getPolarDeviceType());
             if (recordingSupported) {
-                Types.PbSampleType t = type == SampleType.HR ?
-                        Types.PbSampleType.SAMPLE_TYPE_HEART_RATE :
-                        Types.PbSampleType.SAMPLE_TYPE_RR_INTERVAL;
-                Types.PbDuration duration = Types.PbDuration.newBuilder().setSeconds(interval.getValue()).build();
+                Types.PbSampleType pbSampleType = type == SampleType.HR ? Types.PbSampleType.SAMPLE_TYPE_HEART_RATE : Types.PbSampleType.SAMPLE_TYPE_RR_INTERVAL;
+                int recordingInterval = interval == null ? RecordingInterval.INTERVAL_1S.getValue() : interval.getValue();
+
+                Types.PbDuration duration = Types.PbDuration.newBuilder().setSeconds(recordingInterval).build();
                 PftpRequest.PbPFtpRequestStartRecordingParams params = PftpRequest.PbPFtpRequestStartRecordingParams.newBuilder().
-                        setSampleDataIdentifier(exerciseId).setSampleType(t).setRecordingInterval(duration).build();
+                        setSampleDataIdentifier(exerciseId)
+                        .setSampleType(pbSampleType)
+                        .setRecordingInterval(duration)
+                        .build();
                 return client.query(PftpRequest.PbPFtpQuery.REQUEST_START_RECORDING_VALUE, params.toByteArray())
                         .toObservable()
                         .ignoreElements()
@@ -898,7 +901,7 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
         }
     }
 
-     @Override
+    @Override
     public void stateChanged(boolean power) {
         if (callback != null) {
             callback.blePowerStateChanged(power);
