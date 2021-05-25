@@ -13,7 +13,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     var attNotifyQueue = [CBCharacteristic]()
     let queueBle: DispatchQueue
     let queue: DispatchQueue
-
+    
     init(peripheral: CBPeripheral,
          central: CBCentralManager,
          scanner: CBScanningProtocol,
@@ -103,8 +103,8 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
             object = RxObserver<CBUUID>.init(obs: observer)
             if self.isConnected() {
                 if self.peripheral.services != nil &&
-                   self.peripheral.services?.count != 0 &&
-                   self.serviceCount.get() >= (self.peripheral.services?.count)!  {
+                    self.peripheral.services?.count != 0 &&
+                    self.serviceCount.get() >= (self.peripheral.services?.count)!  {
                     for service in (self.peripheral.services)! {
                         observer.onNext(service.uuid)
                     }
@@ -131,7 +131,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     }
     
     // from BleGattTransmitter
-    func transmitMessage(_ parent: BleGattClientBase, serviceUuid: CBUUID , characteristicUuid: CBUUID , packet: Data, withResponse: Bool) throws{
+    func transmitMessage(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID, packet: Data, withResponse: Bool) throws {
         if isBleQueue() {
             try doTransmitMessage(parent, serviceUuid: serviceUuid, characteristicUuid: characteristicUuid, packet: packet, withResponse: withResponse)
         } else {
@@ -139,6 +139,25 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
                 try doTransmitMessage(parent, serviceUuid: serviceUuid, characteristicUuid: characteristicUuid, packet: packet, withResponse: withResponse)
             }
         }
+    }
+    
+    // from BleGattTransmitter
+    func setCharacteristicNotify(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID, notify: Bool) throws {
+        
+        if peripheral.state == CBPeripheralState.connected {
+            if let service = fetchService(serviceUuid) {
+                if let characteristic = fetchCharacteristic(service, characteristicUuid: characteristicUuid) {
+                    attNotifyQueue.append(characteristic)
+                    if attNotifyQueue.count == 1 {
+                        self.sendNextAttNotify(false, enableNotify: notify)
+                    }
+                    return
+                }
+                throw BleGattException.gattCharacteristicNotFound
+            }
+            throw BleGattException.gattServiceNotFound
+        }
+        throw BleGattException.gattDisconnected
     }
     
     func readValue(_ parent: BleGattClientBase, serviceUuid: CBUUID , characteristicUuid: CBUUID ) throws{
@@ -192,14 +211,14 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
         return String.init(cString: __dispatch_queue_get_label(nil)) == queueBle.label
     }
     
-    func sendNextAttNotify(_ remove: Bool) {
+    func sendNextAttNotify(_ remove: Bool, enableNotify enabled: Bool = true) {
         if(remove){
             attNotifyQueue.removeFirst()
         }
         if let chr = attNotifyQueue.first {
             BleLogger.trace("send next att notify: \(chr.description)")
             cccWriteCallback?.cccWrite(address, characteristic: chr.uuid)
-            peripheral.setNotifyValue(true, for: chr)
+            peripheral.setNotifyValue(enabled, for: chr)
         }
     }
     
@@ -249,7 +268,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
             if let services = peripheral.services {
                 for service in services {
                     BleLogger.trace("service discovered: ",service.uuid.description)
-                    fetchGattClient(service.uuid)?.setServiceDiscovered(true,serviceUuid: service.uuid)
+                    fetchGattClient(service.uuid)?.setServiceDiscovered(true, serviceUuid: service.uuid)
                     peripheral.discoverCharacteristics(nil, for: service)
                 }
             } else {
@@ -322,7 +341,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
         }
     }
     
-    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?){
+    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
         BleLogger.trace_if_error("didUpdateNotificationStateForCharacteristic \(characteristic.uuid.uuidString): ", error: error)
         let errorCode = (error as NSError?)?.code ?? 0
         if errorCode == CBError.Code.uuidNotAllowed.rawValue {
@@ -335,7 +354,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
         let isNotifying = errorCode == 0 ? characteristic.isNotifying : false
         if let client = fetchGattClient(characteristic.service.uuid) {
             if client.containsCharacteristic(characteristic.uuid) {
-                client.setCharacteristicNotify(characteristic.uuid, enabled: isNotifying, err: errorCode)
+                client.notifyDescriptorWritten(characteristic.uuid, enabled: isNotifying, err: errorCode)
             }
         }
         sendNextAttNotify(true)

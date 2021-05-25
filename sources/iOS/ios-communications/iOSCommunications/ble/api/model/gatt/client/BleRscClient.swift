@@ -15,7 +15,7 @@ public class BleRscClient: BleGattClientBase {
     
     public init(gattServiceTransmitter: BleAttributeTransportProtocol){
         super.init(serviceUuid: BleRscClient.RSC_SERVICE, gattServiceTransmitter: gattServiceTransmitter)
-        addCharacteristicNotification(RSC_MEASUREMENT)
+        automaticEnableNotificationsOnConnect(chr: RSC_MEASUREMENT)
         addCharacteristicRead(RSC_FEATURE)
     }
     

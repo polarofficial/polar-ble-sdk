@@ -1,3 +1,4 @@
+//  Copyright © 2021 Polar. All rights reserved.
 
 import XCTest
 import iOSCommunications

@@ -4,7 +4,7 @@ import Foundation
 import CoreBluetooth
 
 /// Polar Ble API connection observer.
-public protocol PolarBleApiObserver: class {
+public protocol PolarBleApiObserver: AnyObject {
     
     /// Callback when connection attempt is started to device
     ///
@@ -24,7 +24,7 @@ public protocol PolarBleApiObserver: class {
 }
 
 /// Bluetooth state observer.
-public protocol PolarBleApiPowerStateObserver: class {
+public protocol PolarBleApiPowerStateObserver: AnyObject {
     /// Ble powered on event.
     func blePowerOn()
     
@@ -33,7 +33,7 @@ public protocol PolarBleApiPowerStateObserver: class {
 }
 
 /// Device info observer.
-public protocol PolarBleApiDeviceInfoObserver: class {
+public protocol PolarBleApiDeviceInfoObserver: AnyObject {
     /// Battery level received from device.
     ///
     /// - Parameters:
@@ -50,7 +50,7 @@ public protocol PolarBleApiDeviceInfoObserver: class {
 }
 
 /// Heart rate observer
-public protocol PolarBleApiDeviceHrObserver: class {
+public protocol PolarBleApiDeviceHrObserver: AnyObject {
     /// Polar hr data
     ///
     ///     - hr in BPM
@@ -67,7 +67,7 @@ public protocol PolarBleApiDeviceHrObserver: class {
 }
 
 /// Data client observer
-public protocol PolarBleApiDeviceFeaturesObserver: class {
+public protocol PolarBleApiDeviceFeaturesObserver: AnyObject {
     
     /// Device HR feature is ready. HR transmission is starting in a short while.
     ///
@@ -85,7 +85,7 @@ public protocol PolarBleApiDeviceFeaturesObserver: class {
 }
 
 /// logger observer
-public protocol PolarBleApiLogger: class {
+public protocol PolarBleApiLogger: AnyObject {
     
     /// log message from sdk
     ///
@@ -94,6 +94,6 @@ public protocol PolarBleApiLogger: class {
 }
 
 /// observer for ccc write enable
-public protocol PolarBleApiCCCWriteObserver: class {
+public protocol PolarBleApiCCCWriteObserver: AnyObject {
     func cccWrite(_ address: UUID, characteristic: CBUUID)
 }

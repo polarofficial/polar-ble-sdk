@@ -61,12 +61,12 @@ public protocol BleDeviceListener{
     /// all session state changes, deprecated
     ///
     /// - Returns: Observable stream
-    @available(*, deprecated, message: "use deviceSessionStateObserver instead")
     func monitorDeviceSessionState() -> Observable<(session: BleDeviceSession, state: BleDeviceSession.DeviceSessionState)>
 
     /// all session state changes
     ///
     /// - Returns: Observable stream
+    @available(*, deprecated, message: "use monitorDeviceSessionState instead")
     var deviceSessionStateObserver: BleDeviceSessionStateObserver? {get set}
     
     /// Start disconnection request for device, callbacks are informed to monitorDeviceSessionState or

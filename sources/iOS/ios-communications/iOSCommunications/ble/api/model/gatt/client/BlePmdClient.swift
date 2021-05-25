@@ -359,8 +359,8 @@ public class BlePmdClient: BleGattClientBase {
     public init(gattServiceTransmitter: BleAttributeTransportProtocol){
         super.init(serviceUuid: BlePmdClient.PMD_SERVICE, gattServiceTransmitter: gattServiceTransmitter)
         addCharacteristicRead(BlePmdClient.PMD_CP)
-        addCharacteristicNotification(BlePmdClient.PMD_CP)
-        addCharacteristicNotification(BlePmdClient.PMD_MTU)
+        automaticEnableNotificationsOnConnect(chr: BlePmdClient.PMD_CP)
+        automaticEnableNotificationsOnConnect(chr: BlePmdClient.PMD_MTU)
         pmdCpEnabled = notificationAtomicInteger(BlePmdClient.PMD_CP)
     }
     

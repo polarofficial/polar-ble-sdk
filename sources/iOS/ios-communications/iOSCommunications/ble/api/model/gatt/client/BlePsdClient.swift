@@ -88,8 +88,8 @@ public class BlePsdClient: BleGattClientBase {
     
     public init(gattServiceTransmitter: BleAttributeTransportProtocol){
         super.init(serviceUuid: BlePsdClient.PSD_SERVICE, gattServiceTransmitter: gattServiceTransmitter)
-        addCharacteristicNotification(BlePsdClient.PSD_CP)
-        addCharacteristicNotification(BlePsdClient.PSD_PP)
+        automaticEnableNotificationsOnConnect(chr: BlePsdClient.PSD_CP)
+        automaticEnableNotificationsOnConnect(chr: BlePsdClient.PSD_PP)
         addCharacteristicRead(BlePsdClient.PSD_FEATURE)
         psdEnabled = notificationAtomicInteger(BlePsdClient.PSD_CP)
     }

@@ -117,7 +117,7 @@ public class BlePfcClient: BleGattClientBase{
     
     public init(gattServiceTransmitter: BleAttributeTransportProtocol){
         super.init(serviceUuid: BlePfcClient.PFC_SERVICE, gattServiceTransmitter: gattServiceTransmitter)
-        addCharacteristicNotification(BlePfcClient.PFC_CP)
+        automaticEnableNotificationsOnConnect(chr: BlePfcClient.PFC_CP)
         addCharacteristicRead(PFC_FEATURE)
         pfcEnabled = notificationAtomicInteger(BlePfcClient.PFC_CP)
     }

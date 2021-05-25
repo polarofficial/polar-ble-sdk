@@ -48,8 +48,8 @@ public class BlePsFtpClient: BleGattClientBase {
     
     public init(gattServiceTransmitter: BleAttributeTransportProtocol){
         super.init(serviceUuid: BlePsFtpClient.PSFTP_SERVICE, gattServiceTransmitter: gattServiceTransmitter)
-        addCharacteristicNotification(BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC)
-        addCharacteristicNotification(BlePsFtpClient.PSFTP_D2H_NOTIFICATION_CHARACTERISTIC)
+        automaticEnableNotificationsOnConnect(chr: BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC)
+        automaticEnableNotificationsOnConnect(chr: BlePsFtpClient.PSFTP_D2H_NOTIFICATION_CHARACTERISTIC)
         addCharacteristic(BlePsFtpClient.PSFTP_H2D_NOTIFICATION_CHARACTERISTIC)
         mtuNotificationEnabled = notificationAtomicInteger(BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC)
         pftpD2HNotificationEnabled = notificationAtomicInteger(BlePsFtpClient.PSFTP_D2H_NOTIFICATION_CHARACTERISTIC)
