@@ -186,8 +186,8 @@ public protocol PolarBleApi {
     /// - Parameters:
     ///   - identifier: Polar device id or UUID
     ///   - exerciseId: unique identifier for for exercise entry length from 1-64 bytes
-    ///   - interval: interval to be used
-    ///   - sampleType: sample type to be used
+    ///   - interval: recording interval to be used. Has no effect if `sampleType` is `SampleType.rr`
+    ///   - sampleType: sample type to be used.
     /// - Returns: Completable stream
     ///   - success: recording started
     ///   - onError: see `PolarErrors` for possible errors invoked
@@ -307,7 +307,7 @@ public protocol PolarBleApi {
     ///   - onNext: for every air packet received. see `PolarPpiData`
     ///   - onError: see `PolarErrors` for possible errors invoked
     func startOhrPPIStreaming(_ identifier: String) -> Observable<PolarPpiData>
-        
+    
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }
     
