@@ -3,11 +3,11 @@ import Foundation
 import RxSwift
 import CoreBluetooth
 
-public protocol BleCCCWriteProtocol: class {
+public protocol BleCCCWriteProtocol: AnyObject {
     func cccWrite(_ address: UUID, characteristic: CBUUID)
 }
 
-@objc open class BleDeviceSession: NSObject {
+@objc open class    BleDeviceSession: NSObject {
     
     public enum DeviceSessionState{
         case
@@ -76,7 +76,7 @@ public protocol BleCCCWriteProtocol: class {
         fatalError("not implemented")
     }
     
-    /// Helper observable to asynchronously wait all services dicovered
+    /// Helper observable to asynchronously wait all services discovered
     ///
     /// - Parameter checkConnection: check current connection
     /// - Returns: Observable<CBUUID>

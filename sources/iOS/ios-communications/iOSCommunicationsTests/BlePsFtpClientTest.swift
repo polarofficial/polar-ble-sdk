@@ -218,12 +218,9 @@ class BlePsFtpClientTest: XCTestCase {
             XCTFail("Observable should fail instead of complete")
             
         case .failed(_, let error):
-            
             guard case BlePsFtpException.responseError(errorCode:expectedError) = error else {
                 return XCTFail()
             }
-        @unknown default:
-            XCTFail("Observable should fail")
         }
     }
     
@@ -280,8 +277,7 @@ class BlePsFtpClientTest: XCTestCase {
             guard case BlePsFtpException.responseError(errorCode:expectedError) = error else {
                 return XCTFail()
             }
-        @unknown default:
-            XCTFail("Observable should fail")
         }
     }
 }
+

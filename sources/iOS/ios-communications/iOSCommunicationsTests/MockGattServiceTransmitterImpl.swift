@@ -1,18 +1,15 @@
-//
-//  Mock.swift
-//  iOSCommunicationsTests
-//
-//  Created by Jukka Oikarinen on 3.3.2021.
 //  Copyright © 2021 Polar. All rights reserved.
-//
 
 import Foundation
 import iOSCommunications
 import CoreBluetooth
 
 class MockGattServiceTransmitterImpl: BleAttributeTransportProtocol {
+    var mockConnectionStatus: Bool = true
+    var setCharateristicsNotifyCache: [(characteristicUuid: CBUUID, notify: Bool)] = []
+    
     func isConnected() -> Bool {
-        return true
+        return mockConnectionStatus
     }
     
     func transmitMessage(_ parent: BleGattClientBase, serviceUuid: CBUUID , characteristicUuid: CBUUID , packet: Data, withResponse: Bool) throws {
@@ -32,7 +29,8 @@ class MockGattServiceTransmitterImpl: BleAttributeTransportProtocol {
     }
     
     func setCharacteristicNotify(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID, notify: Bool) throws {
-        // Do nothing
+        setCharateristicsNotifyCache.append((characteristicUuid, notify))
+        parent.notifyDescriptorWritten(characteristicUuid, enabled: notify, err: 0)
     }
     
     func attributeOperationStarted(){

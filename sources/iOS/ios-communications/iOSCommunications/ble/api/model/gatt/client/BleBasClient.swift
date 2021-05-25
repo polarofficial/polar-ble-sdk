@@ -13,7 +13,7 @@ public class BleBasClient: BleGattClientBase {
     
     public init(gattServiceTransmitter: BleAttributeTransportProtocol){
         super.init(serviceUuid: BleBasClient.BATTERY_SERVICE, gattServiceTransmitter: gattServiceTransmitter)
-        addCharacteristicNotification(BleBasClient.BATTERY_LEVEL_CHARACTERISTIC)
+        automaticEnableNotificationsOnConnect(chr: BleBasClient.BATTERY_LEVEL_CHARACTERISTIC)
         addCharacteristicRead(BleBasClient.BATTERY_LEVEL_CHARACTERISTIC)
     }
     
