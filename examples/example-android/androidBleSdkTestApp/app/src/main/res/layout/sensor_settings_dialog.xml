@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/sensor_settings_dialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minWidth="100dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/sampling_rate"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/sampling_rate_no_values"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="-"
+            android:textAlignment="center"
+            android:visibility="gone" />
+
+        <RadioGroup
+            android:id="@+id/sampling_rate_group"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/resolution"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/resolution_no_values"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="-"
+            android:textAlignment="center"
+            android:visibility="gone" />
+
+        <RadioGroup
+            android:id="@+id/resolution_group"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/range"
+            android:textStyle="bold" />
+
+
+        <TextView
+            android:id="@+id/range_no_values"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="-"
+            android:textAlignment="center"
+            android:visibility="gone" />
+
+        <RadioGroup
+            android:id="@+id/range_group"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/channels"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/channel_no_values"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="-"
+            android:textAlignment="center"
+            android:visibility="gone" />
+
+        <RadioGroup
+            android:id="@+id/channel_group"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical" />
+
+        <Button
+            android:id="@+id/dialog_ok_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/ok" />
+    </LinearLayout>
+</ScrollView>
