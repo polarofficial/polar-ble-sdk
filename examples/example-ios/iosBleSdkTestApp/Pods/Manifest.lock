@@ -1,0 +1,20 @@
+PODS:
+  - PolarBleSdk (3.0.5):
+    - RxSwift (= 6.1.0)
+  - RxSwift (6.1.0)
+
+DEPENDENCIES:
+  - PolarBleSdk (~> 3.0)
+
+SPEC REPOS:
+  https://github.com/CocoaPods/Specs.git:
+    - PolarBleSdk
+    - RxSwift
+
+SPEC CHECKSUMS:
+  PolarBleSdk: cebb4d55b1a220ec5ba4c15bc9cafd3128f57b87
+  RxSwift: a834e5c538e89eca0cae86f403f4fbf0336786ce
+
+PODFILE CHECKSUM: 481784805cd994548acfac3f96053069d0bbef7b
+
+COCOAPODS: 1.10.1

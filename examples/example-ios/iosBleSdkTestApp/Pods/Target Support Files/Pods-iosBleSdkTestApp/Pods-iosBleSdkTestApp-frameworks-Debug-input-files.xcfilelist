@@ -1,0 +1,3 @@
+${PODS_ROOT}/Target Support Files/Pods-iosBleSdkTestApp/Pods-iosBleSdkTestApp-frameworks.sh
+${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework
+${PODS_XCFRAMEWORKS_BUILD_DIR}/PolarBleSdk/PolarBleSdk.framework/PolarBleSdk
