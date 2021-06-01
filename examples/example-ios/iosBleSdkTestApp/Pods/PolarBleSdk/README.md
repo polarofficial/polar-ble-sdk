@@ -101,14 +101,14 @@ polar-protobuf-release.aar
 3. Add the following dependencies to  `build.gradle` inside the dependencies clause:
 ```
 dependencies {
-	implementation files('libs/polar-ble-sdk.aar')
+    implementation files('libs/polar-ble-sdk.aar')
     // Only needed if FEATURE_POLAR_FILE_TRANSFER used
-	implementation files('libs/polar-protobuf-release.aar') 
+    implementation files('libs/polar-protobuf-release.aar') 
     // Only needed if FEATURE_POLAR_FILE_TRANSFER used
     implementation 'commons-io:commons-io:2.8.0'
     // Only needed if FEATURE_POLAR_FILE_TRANSFER used
-    implementation 'com.google.protobuf:protobuf-java:3.14.0'
-    implementation 'io.reactivex.rxjava3:rxjava:3.0.0'
+    implementation 'com.google.protobuf:protobuf-javalite:3.14.0'
+    implementation 'io.reactivex.rxjava3:rxjava:3.0.4'
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
 }
 ```

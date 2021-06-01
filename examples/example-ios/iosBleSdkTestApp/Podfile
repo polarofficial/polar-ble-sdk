@@ -4,7 +4,7 @@ platform :ios, '12.0'
 use_frameworks!
 
 target 'iosBleSdkTestApp' do
-    pod 'PolarBleSdk', '~> 3.0'
+    pod 'PolarBleSdk', '~> 3.1'
 end
 
 post_install do |installer|
