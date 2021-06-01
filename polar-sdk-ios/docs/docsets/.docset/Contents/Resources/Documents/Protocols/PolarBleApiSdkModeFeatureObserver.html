@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>SampleType Enumeration Reference</title>
+    <title>PolarBleApiSdkModeFeatureObserver Protocol Reference</title>
     <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
     <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
     <meta charset='utf-8'>
@@ -13,8 +13,8 @@
     <script src="../js/jazzy.search.js" defer></script>
   </head>
   <body>
-    <a name="//apple_ref/swift/Enum/SampleType" class="dashAnchor"></a>
-    <a title="SampleType Enumeration Reference"></a>
+    <a name="//apple_ref/swift/Protocol/PolarBleApiSdkModeFeatureObserver" class="dashAnchor"></a>
+    <a title="PolarBleApiSdkModeFeatureObserver Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
         <p><a href="../index.html"> Docs</a> (89% documented)</p>
@@ -29,7 +29,7 @@
       <p id="breadcrumbs">
         <a href="../index.html"> Reference</a>
         <img id="carat" src="../img/carat.png" />
-        SampleType Enumeration Reference
+        PolarBleApiSdkModeFeatureObserver Protocol Reference
       </p>
     </div>
     <div class="content-wrapper">
@@ -190,15 +190,15 @@
       <article class="main-content">
         <section>
           <section class="section">
-            <h1>SampleType</h1>
+            <h1>PolarBleApiSdkModeFeatureObserver</h1>
               <div class="declaration">
                 <div class="language">
                   
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SampleType</span> <span class="p">:</span> <span class="kt">Int</span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">PolarBleApiSdkModeFeatureObserver</span> <span class="p">:</span> <span class="kt">AnyObject</span></code></pre>
 
                 </div>
               </div>
-            <p>Sample types for H10 recording start</p>
+            <p>SDK Mode observer</p>
 
           </section>
           <section class="section task-group-section">
@@ -207,9 +207,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk10SampleTypeO2hryA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/hr" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk10SampleTypeO2hryA2CmF">hr</a>
+                    <a name="/s:11PolarBleSdk0ab3ApiC19ModeFeatureObserverP03sdkeF9AvailableyySSF"></a>
+                    <a name="//apple_ref/swift/Method/sdkModeFeatureAvailable(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0ab3ApiC19ModeFeatureObserverP03sdkeF9AvailableyySSF">sdkModeFeatureAvailable(_:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -217,41 +217,14 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>recording type to use is hr in BPM</p>
+                        <p>sdk mode feature available in this device and ready for usage callback</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">hr</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:11PolarBleSdk10SampleTypeO2rryA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/rr" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk10SampleTypeO2rryA2CmF">rr</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>recording type to use is rr interval</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">rr</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">sdkModeFeatureAvailable</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>

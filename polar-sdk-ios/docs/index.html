@@ -130,6 +130,9 @@
               <li class="nav-group-task">
                 <a href="Protocols/PolarBleApiPowerStateObserver.html">PolarBleApiPowerStateObserver</a>
               </li>
+              <li class="nav-group-task">
+                <a href="Protocols/PolarBleApiSdkModeFeatureObserver.html">PolarBleApiSdkModeFeatureObserver</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -187,110 +190,28 @@
         <section>
           <section class="section">
             
-            <h1 id='about-ios-communications' class='heading'>About iOS Communications</h1>
-
-<p>iOS Communications has two main functionalities. </p>
+            <h1 id='environment-requirements' class='heading'>Environment Requirements</h1>
 
 <ul>
-<li><strong>Functionality 1</strong>, the original purpose, the communication library provides connection and communication with devices and sensors over Bluetooth LE.  This original functionality is used by applications develop inside Polar.</li>
-<li><strong>Functionality 2</strong>, the communication library provides connection and communication with Polar devices and sensors over Bluetooth LE for third party developers.</li>
+<li>Xcode 12.x</li>
+<li>Swift 5.x</li>
 </ul>
-
-<p>iOS Communications XCode project (i.e. <code>iOSCommunications.xcodeproj</code>)  contains three targets <code>iOSCommunications</code>, <code>PolarBleSdk</code> and <code>PolarBleSdkWatchOs</code> which are for building different targets for mentioned functionalities. </p>
-
-<ul>
-<li><a href="#environment-requirements">Environment Requirements</a></li>
-<li><a href="#setup-dependencies">Setup Dependencies</a>
+<h1 id='dependencies' class='heading'>Dependencies</h1>
 
 <ul>
-<li><a href="#rxswift-and-rxtest">RxSwift and RxTest</a></li>
-</ul></li>
-<li><a href="#install">Install</a>
-
-<ul>
-<li><a href="#...-using-XCFramework">&hellip; using XCFramework</a></li>
-<li><a href="#...-using-git-submodules">&hellip; using git submodules</a></li>
-<li><a href="#...-using-Swift-Package-Manager">&hellip; using Swift Package Manager</a></li>
-<li><a href="#...-using-Carthage">&hellip; using Carthage</a></li>
-<li><a href="#...-using-CocoaPods">&hellip; using CocoaPods</a></li>
-</ul></li>
-<li><a href="#usage">Usage</a></li>
-<li><a href="#releasing">Releasing</a></li>
+<li><a href="https://github.com/ReactiveX/RxSwift">RxSwift 6.0</a> or above</li>
 </ul>
-<h2 id='environment-requirements' class='heading'>Environment Requirements</h2>
+<h2 id='update-dependency' class='heading'>Update dependency</h2>
 
-<ul>
-<li>Xcode 12.x +</li>
-<li>Swift 5.x +</li>
-</ul>
-<h2 id='setup-dependencies' class='heading'>Setup Dependencies</h2>
-
-<ul>
-<li>iOS Communications is dependent on following libraries
-
-<ul>
-<li><a href="https://github.com/ReactiveX/RxSwift">RxSwift</a></li>
-</ul></li>
-</ul>
-
-<p>### RxSwift</p>
-
-<ul>
-<li><strong>to setup</strong> RxSwift run the carthage: <code>carthage update --platform iOS,watchOS --use-xcframeworks</code></li>
-<li><strong>to update</strong> RxSwift modify the Cartfile line <code>github &quot;ReactiveX/RxSwift&quot; &quot;X.Y.Z&quot;</code> where &ldquo;X.Y.Z&rdquo; is version of your choice. Then run the carthage update: <code>carthage update --platform iOS,watchOS --use-xcframeworks</code></li>
-</ul>
-<h2 id='install' class='heading'>Install</h2>
-<h3 id='using-xcframework' class='heading'>&hellip; using XCFramework</h3>
-
-<ul>
-<li>From <code>/scripts</code> folder run the <code>./build_ios_communications.sh</code> or  <code>./build_sdk.sh</code> depending on target of your choice. Both scripts builds the XCFrameworks.</li>
-<li>Copy generated XCFramework from <code>iOSCommunicationsBuild/</code>  or from <code>SdkBuild/</code> to your project</li>
-</ul>
-<h3 id='using-git-submodules' class='heading'>&hellip; using git submodules</h3>
-
-<ul>
-<li><code>git submodule add ssh://git@git.polar.grp:7999/cs/ios-communications.git</code></li>
-<li>Drag and drop the iOS communications project file (i.e. <code>iOSCommunications.xcodeproj</code>) to project of your Project Navigator</li>
-<li>In your project choose the <code>Target → General → Frameworks, Libraries and Embedded Content → Press &quot;+&quot;</code>. From opened dialog select the target <code>iOSCommunications</code>, <code>PolarBleSdk</code> or `PolarBleSdkWatchOs depending on your needs.<br></li>
-</ul>
-<h3 id='using-swift-package-manager' class='heading'>&hellip; using Swift Package Manager</h3>
-
-<ul>
-<li>Not supported at the moment</li>
-</ul>
-<h3 id='using-carthage' class='heading'>&hellip; using Carthage</h3>
-
-<ul>
-<li>Not supported at the moment</li>
-</ul>
-<h3 id='using-cocoapods' class='heading'>&hellip; using CocoaPods</h3>
-
-<ul>
-<li>Not supported at the moment</li>
-</ul>
-<h2 id='usage' class='heading'>Usage</h2>
-
-<ul>
-<li><strong>RxSwift</strong>: 
-
-<ul>
-<li>To use iOS Communications API&rsquo;s you must have <a href="https://github.com/ReactiveX/RxSwift">RxSwift 6.0.0</a> added to your project.</li>
-</ul></li>
-<li>In project target settings enable <strong>Background Modes</strong>, add  <strong>Uses Bluetooth LE accessories</strong></li>
-</ul>
-<h2 id='releasing' class='heading'>Releasing</h2>
-<h3 id='ios-communications' class='heading'>&hellip; iOS Communications</h3>
-
-<ul>
-<li><a href="https://wiki.polar.grp/display/B2CMA/iOS+Communications+-+Release+Steps">https://wiki.polar.grp/display/B2CMA/iOS+Communications+-+Release+Steps</a>
-### &hellip; iOS SDK</li>
-<li><a href="https://wiki.polar.grp/display/B2CMA/iOS+SDK+-+Release+Steps">https://wiki.polar.grp/display/B2CMA/iOS+SDK+-+Release+Steps</a></li>
-</ul>
+<ol>
+<li>Download the XCFramework from <a href="https://github.com/ReactiveX/RxSwift/releases">RxSwift Releases</a></li>
+<li>Take XCFramework into use in iOSCommunications project like traditional framework. XCFramework detailed instructions see the <a href="https://developer.apple.com/videos/play/wwdc2019/416/">tutorial</a>.</li>
+</ol>
 
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2021 <a class="link" href="" target="_blank" rel="external"></a>. All rights reserved. (Last updated: 2021-03-31)</p>
+          <p>&copy; 2021 <a class="link" href="" target="_blank" rel="external"></a>. All rights reserved. (Last updated: 2021-06-01)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.6</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
