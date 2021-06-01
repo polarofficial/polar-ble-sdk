@@ -3,6 +3,7 @@ package com.androidcommunications.polar.api.ble.model;
 import android.bluetooth.BluetoothDevice;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.androidcommunications.polar.api.ble.model.advertisement.BleAdvertisementContent;
 import com.androidcommunications.polar.api.ble.model.advertisement.BlePolarHrAdvertisement;
@@ -163,7 +164,8 @@ public abstract class BleDeviceSession {
      * @param uuid service uuid
      * @return get a specific client from the list
      */
-    public BleGattBase fetchClient(UUID uuid) {
+    @Nullable
+    public BleGattBase fetchClient(@NonNull UUID uuid) {
         for (BleGattBase serviceBase : clients) {
             if (serviceBase.serviceBelongsToClient(uuid)) {
                 return serviceBase;

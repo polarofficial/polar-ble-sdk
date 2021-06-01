@@ -306,7 +306,6 @@ public abstract class BleGattBase {
         characteristics.putIfAbsent(characteristic, true);
     }
 
-
     protected void addAvailableCharacteristic(UUID chr, int property) {
         if (containsCharacteristic(chr) && !contains(chr, availableCharacteristics.objects())) {
             availableCharacteristics.add(chr);
