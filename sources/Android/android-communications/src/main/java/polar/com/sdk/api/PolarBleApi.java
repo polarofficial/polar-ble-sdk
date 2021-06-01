@@ -41,7 +41,7 @@ public abstract class PolarBleApi {
          *
          * @param str formatted string message
          */
-        void message(final String str);
+        void message(final @NonNull String str);
     }
 
     public enum DeviceStreamingFeature {
@@ -159,12 +159,12 @@ public abstract class PolarBleApi {
     /**
      * @param callback @see polar.com.sdk.api.PolarBleApiCallbackProvider
      */
-    public abstract void setApiCallback(@Nullable PolarBleApiCallbackProvider callback);
+    public abstract void setApiCallback(@NonNull PolarBleApiCallbackProvider callback);
 
     /**
      * @param logger @see polar.com.sdk.api.PolarBleApi.PolarBleApiLogger
      */
-    public abstract void setApiLogger(@Nullable PolarBleApiLogger logger);
+    public abstract void setApiLogger(@NonNull PolarBleApiLogger logger);
 
     /**
      * enable or disable automatic reconnection feature
@@ -181,16 +181,36 @@ public abstract class PolarBleApi {
      * @param calendar   time to set
      * @return Completable stream
      */
+    @NonNull
     public abstract Completable setLocalTime(@NonNull final String identifier, @NonNull Calendar calendar);
 
     /**
-     * request available settings for stream requires feature PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING
+     * Request the stream settings available in current operation mode. This request shall be used before the stream is started
+     * to decide currently available. The available settings depend on the state of the device. For
+     * example, if any stream(s) or optical heart rate measurement is already enabled, then
+     * the device may limit the offer of possible settings for other stream feature. Requires feature
+     * PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING
      *
      * @param identifier polar device id or bt address
+     * @param feature    the stream feature of interest
      * @return Single stream
      */
+    @NonNull
     public abstract Single<PolarSensorSetting> requestStreamSettings(@NonNull final String identifier,
                                                                      @NonNull DeviceStreamingFeature feature);
+
+    /**
+     * Request full steam settings capabilities. The request returns the all capabilities of the
+     * requested streaming feature not limited by the current operation mode. Requires feature
+     * PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING. This request is supported only by Polar Verity Sense (starting from firmware 1.1.5)
+     *
+     * @param identifier polar device id or bt address
+     * @param feature    the stream feature of interest
+     * @return Single stream
+     */
+    @NonNull
+    public abstract Single<PolarSensorSetting> requestFullStreamSettings(@NonNull final String identifier,
+                                                                         @NonNull DeviceStreamingFeature feature);
 
     /**
      * Start connecting to a nearby Polar device. PolarBleApiCallback#polarDeviceConnected callback is
@@ -204,14 +224,16 @@ public abstract class PolarBleApi {
      * @return rx Completable, complete invoked when nearby device found, and connection attempt started.
      * deviceConnecting callback invoked to inform connection attempt
      */
+    @NonNull
     public abstract Completable autoConnectToDevice(int rssiLimit, @Nullable String service, int timeout, @NonNull TimeUnit unit, @Nullable final String polarDeviceType);
-
+    @NonNull
     public abstract Completable autoConnectToDevice(int rssiLimit, @Nullable String service, @Nullable final String polarDeviceType);
 
     /**
      * Request a connection to a Polar device. Invokes PolarBleApiCallback#polarDeviceConnected callback.
      *
-     * @param identifier Polar device id found printed on the sensor/device (in format "12345678") or bt address (in format "00:11:22:33:44:55")
+     * @param identifier Polar device id found printed on the sensor/device (in format "12345678")
+     *                   or bt address (in format "00:11:22:33:44:55")
      * @throws PolarInvalidArgument if identifier is invalid formatted mac address or polar device id
      */
     public abstract void connectToDevice(@NonNull final String identifier) throws PolarInvalidArgument;
@@ -234,6 +256,7 @@ public abstract class PolarBleApi {
      * @param type       sample type to be used.
      * @return Completable stream
      */
+    @NonNull
     public abstract Completable startRecording(@NonNull final String identifier,
                                                @NonNull @Size(min = 1, max = 64) final String exerciseId,
                                                @Nullable RecordingInterval interval,
@@ -246,6 +269,7 @@ public abstract class PolarBleApi {
      * @param identifier polar device id or bt address
      * @return Completable stream
      */
+    @NonNull
     public abstract Completable stopRecording(@NonNull final String identifier);
 
     /**
@@ -255,6 +279,7 @@ public abstract class PolarBleApi {
      * @param identifier polar device id or bt address
      * @return Single stream Pair first recording status, second entryId if available
      */
+    @NonNull
     public abstract Single<Pair<Boolean, String>> requestRecordingStatus(@NonNull final String identifier);
 
     /**
@@ -266,6 +291,7 @@ public abstract class PolarBleApi {
      * @param identifier Polar device id found printed on the sensor/device or bt address
      * @return Flowable stream of entries @see polar.com.sdk.api.model.PolarExerciseEntry for details
      */
+    @NonNull
     public abstract Flowable<PolarExerciseEntry> listExercises(@NonNull final String identifier);
 
     /**
@@ -278,6 +304,7 @@ public abstract class PolarBleApi {
      * @param entry      PolarExerciseEntry object
      * @return Single stream @see polar.com.sdk.api.model.PolarExerciseData for details
      */
+    @NonNull
     public abstract Single<PolarExerciseData> fetchExercise(@NonNull final String identifier, @NonNull final PolarExerciseEntry entry);
 
     /**
@@ -290,6 +317,7 @@ public abstract class PolarBleApi {
      * @param entry      entry to be removed
      * @return Completable stream
      */
+    @NonNull
     public abstract Completable removeExercise(@NonNull final String identifier, @NonNull final PolarExerciseEntry entry);
 
     /**
@@ -301,6 +329,8 @@ public abstract class PolarBleApi {
      * <BR> - onError if scan start fails
      * <BR> - onComplete non produced unless stream is further configured
      */
+
+    @NonNull
     public abstract Flowable<PolarDeviceInfo> searchForDevice();
 
     /**
@@ -313,12 +343,13 @@ public abstract class PolarBleApi {
      * <BR> - onError if scan start fails
      * <BR> - onComplete non produced unless stream is further configured
      */
+    @NonNull
     public abstract Flowable<PolarHrBroadcastData> startListenForPolarHrBroadcasts(@Nullable final Set<String> deviceIds);
 
     /**
      * Start the ECG (Electrocardiography) stream. ECG stream is stopped if the connection is closed,
-     * error occurs during start or stream is disposed. Requires feature PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING.
-     * Query available settings before stream start PolarBleApi#requestStreamSettings
+     * error occurs or stream is disposed. Requires feature PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING.
+     * Before starting the stream it is recommended to query the available settings using PolarBleApi#requestStreamSettings
      *
      * @param identifier    Polar device id found printed on the sensor/device or bt address
      * @param sensorSetting settings to be used to start streaming
@@ -328,13 +359,14 @@ public abstract class PolarBleApi {
      * <BR> - onError @see errors package for possible errors invoked
      * <BR> - onComplete non produced unless stream is further configured
      */
+    @NonNull
     public abstract Flowable<PolarEcgData> startEcgStreaming(@NonNull final String identifier,
                                                              @NonNull PolarSensorSetting sensorSetting);
 
     /**
      * Start ACC (Accelerometer) stream. ACC stream is stopped if the connection is closed, error
-     * occurs during start or stream is disposed. Requires feature PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING.
-     * Query available settings before stream start PolarBleApi#requestStreamSettings
+     * occurs or stream is disposed. Requires feature PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING.
+     * Before starting the stream it is recommended to query the available settings using PolarBleApi#requestStreamSettings
      *
      * @param identifier    Polar device id found printed on the sensor/device or bt address
      * @param sensorSetting settings to be used to start streaming
@@ -344,14 +376,15 @@ public abstract class PolarBleApi {
      * <BR> - onError @see errors package for possible errors invoked
      * <BR> - onComplete non produced unless stream is further configured
      */
+    @NonNull
     public abstract Flowable<PolarAccelerometerData> startAccStreaming(@NonNull final String identifier,
                                                                        @NonNull PolarSensorSetting sensorSetting);
 
     /**
      * Start OHR (Optical heart rate) PPG (Photoplethysmography) stream. PPG stream is stopped if
-     * the connection is closed, error occurs during start or stream is disposed. Requires feature
-     * PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING. Query available settings before stream start
-     * PolarBleApi#requestStreamSettings
+     * the connection is closed, error occurs or stream is disposed. Requires feature
+     * PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING. Before starting the stream it is recommended to
+     * query the available settings using PolarBleApi#requestStreamSettings
      *
      * @param identifier    Polar device id found printed on the sensor/device or bt address
      * @param sensorSetting settings to be used to start streaming
@@ -361,14 +394,14 @@ public abstract class PolarBleApi {
      * <BR> - onError @see errors package for possible errors invoked
      * <BR> - onComplete non produced unless the stream is further configured
      */
+    @NonNull
     public abstract Flowable<PolarOhrData> startOhrStreaming(@NonNull final String identifier,
                                                              @NonNull PolarSensorSetting sensorSetting);
 
     /**
      * Start OHR (Optical heart rate) PPI (Pulse to Pulse interval) stream. PPI stream is stopped if
-     * the connection is closed, during start or stream is disposed. Notice that there is a
+     * the connection is closed, error occurs or stream is disposed. Notice that there is a
      * delay before PPI data stream starts. Requires feature PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING.
-     * When using OH1 timestamp produced by PPI stream is 0.
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
      * @return Flowable stream of OHR PPI data.
@@ -377,12 +410,13 @@ public abstract class PolarBleApi {
      * <BR> - onError @see errors package for possible errors invoked
      * <BR> - onComplete non produced unless the stream is further configured
      */
+    @NonNull
     public abstract Flowable<PolarOhrPPIData> startOhrPPIStreaming(@NonNull final String identifier);
 
     /**
      * Start magnetometer stream. Magnetometer stream is stopped if the connection is closed, error
-     * occurs during start or stream is disposed. Requires feature PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING.
-     * Query available settings before stream start PolarBleApi#requestStreamSettings
+     * occurs or stream is disposed. Requires feature PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING.
+     * Before starting the stream it is recommended to query the available settings using PolarBleApi#requestStreamSettings
      *
      * @param identifier    Polar device id found printed on the sensor/device or bt address
      * @param sensorSetting settings to be used to start streaming
@@ -392,13 +426,14 @@ public abstract class PolarBleApi {
      * <BR> - onError @see errors package for possible errors invoked
      * <BR> - onComplete non produced unless the stream is further configured
      */
+    @NonNull
     public abstract Flowable<PolarMagnetometerData> startMagnetometerStreaming(@NonNull final String identifier,
                                                                                @NonNull PolarSensorSetting sensorSetting);
 
     /**
      * Start Gyro stream. Gyro stream is stopped if the connection is closed, error occurs during
      * start or stream is disposed. Requires feature PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING.
-     * Query available settings before stream start PolarBleApi#requestStreamSettings
+     * Before starting the stream it is recommended to query the available settings using PolarBleApi#requestStreamSettings
      *
      * @param identifier    Polar device id found printed on the sensor/device or bt address
      * @param sensorSetting settings to be used to start streaming
@@ -408,6 +443,32 @@ public abstract class PolarBleApi {
      * <BR> - onError @see errors package for possible errors invoked
      * <BR> - onComplete non produced unless the stream is further configured
      */
+    @NonNull
     public abstract Flowable<PolarGyroData> startGyroStreaming(@NonNull final String identifier,
                                                                @NonNull PolarSensorSetting sensorSetting);
+
+    /**
+     * Enables SDK mode. In SDK mode the wider range of capabilities is available for the stream
+     * than in normal operation mode. SDK mode is only supported by Polar Verity Sense (starting from firmware 1.1.5).
+     * Requires feature PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING.
+     *
+     * @param identifier Polar device id found printed on the sensor/device or bt address
+     * @return Completable stream produces:
+     * success if SDK mode is enabled or device is already in SDK mode
+     * error if SDK mode enable failed
+     */
+    @NonNull
+    public abstract Completable enableSDKMode(@NonNull final String identifier);
+
+    /**
+     * Disables SDK mode. SDK mode is only supported by Polar Verity Sense (starting from firmware 1.1.5).
+     * Requires feature PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING.
+     *
+     * @param identifier Polar device id found printed on the sensor/device or bt address
+     * @return Completable stream produces:
+     * success if SDK mode is disabled or SDK mode was already disabled
+     * error if SDK mode disable failed
+     */
+    @NonNull
+    public abstract Completable disableSDKMode(@NonNull final String identifier);
 }

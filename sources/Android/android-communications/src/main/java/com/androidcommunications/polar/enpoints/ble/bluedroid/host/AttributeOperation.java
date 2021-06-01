@@ -3,6 +3,7 @@ package com.androidcommunications.polar.enpoints.ble.bluedroid.host;
 import android.bluetooth.BluetoothGattCharacteristic;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class AttributeOperation implements Comparable<AttributeOperation> {
 
@@ -67,6 +68,7 @@ public class AttributeOperation implements Comparable<AttributeOperation> {
         return attributeOperation;
     }
 
+    @Nullable
     public byte[] getData() {
         return data;
     }

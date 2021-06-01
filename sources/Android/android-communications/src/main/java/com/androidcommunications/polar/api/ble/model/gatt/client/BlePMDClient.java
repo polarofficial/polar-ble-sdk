@@ -2,9 +2,12 @@ package com.androidcommunications.polar.api.ble.model.gatt.client;
 
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
+
 import com.androidcommunications.polar.api.ble.BleLogger;
 import com.androidcommunications.polar.api.ble.exceptions.BleAttributeError;
 import com.androidcommunications.polar.api.ble.exceptions.BleCharacteristicNotificationNotEnabled;
+import com.androidcommunications.polar.api.ble.exceptions.BleControlPointCommandError;
 import com.androidcommunications.polar.api.ble.exceptions.BleDisconnected;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattBase;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattTxInterface;
@@ -31,7 +34,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.FlowableEmitter;
@@ -78,6 +80,7 @@ public class BlePMDClient extends BleGattBase {
         MAGNETOMETER(6),
         BAROMETER(7),
         AMBIENT(8),
+        SDK_MODE(9),
         UNKNOWN_TYPE(0xff);
 
         private final int numVal;
@@ -125,6 +128,7 @@ public class BlePMDClient extends BleGattBase {
         public final boolean magnetometerSupported;
         public final boolean barometerSupported;
         public final boolean ambientSupported;
+        public final boolean sdkModeSupported;
 
         public PmdFeature(final byte[] data) {
             ecgSupported = (data[1] & 0x01) != 0;
@@ -136,6 +140,7 @@ public class BlePMDClient extends BleGattBase {
             magnetometerSupported = (data[1] & 0x40) != 0;
             barometerSupported = (data[1] & 0x80) != 0;
             ambientSupported = (data[2] & 0x01) != 0;
+            sdkModeSupported = (data[2] & 0x02) != 0;
         }
     }
 
@@ -143,9 +148,10 @@ public class BlePMDClient extends BleGattBase {
         NULL_ITEM(0), // This fixes java enum bug
         GET_MEASUREMENT_SETTINGS(1),
         REQUEST_MEASUREMENT_START(2),
-        STOP_MEASUREMENT(3);
+        STOP_MEASUREMENT(3),
+        GET_SDK_MODE_MEASUREMENT_SETTINGS(4);
 
-        private int numVal;
+        private final int numVal;
 
         PmdControlPointCommand(int numVal) {
             this.numVal = numVal;
@@ -157,12 +163,12 @@ public class BlePMDClient extends BleGattBase {
     }
 
     public static class PmdControlPointResponse {
-        public byte responseCode;
-        public PmdControlPointCommand opCode;
-        public byte measurementType;
-        public PmdControlPointResponseCode status;
-        public ByteArrayOutputStream parameters = new ByteArrayOutputStream();
-        public boolean more;
+        public final byte responseCode;
+        public final PmdControlPointCommand opCode;
+        public final byte measurementType;
+        public final PmdControlPointResponseCode status;
+        public final ByteArrayOutputStream parameters = new ByteArrayOutputStream();
+        public final boolean more;
 
         public enum PmdControlPointResponseCode {
             SUCCESS(0),
@@ -171,14 +177,15 @@ public class BlePMDClient extends BleGattBase {
             ERROR_NOT_SUPPORTED(3),
             ERROR_INVALID_LENGTH(4),
             ERROR_INVALID_PARAMETER(5),
-            ERROR_INVALID_STATE(6),
+            ERROR_ALREADY_IN_STATE(6),
             ERROR_INVALID_RESOLUTION(7),
             ERROR_INVALID_SAMPLE_RATE(8),
             ERROR_INVALID_RANGE(9),
             ERROR_INVALID_MTU(10),
-            ERROR_INVALID_NUMBER_OF_CHANNELS(11);
-
-            private int numVal;
+            ERROR_INVALID_NUMBER_OF_CHANNELS(11),
+            ERROR_INVALID_STATE(12),
+            ERROR_DEVICE_IN_CHARGER(13);
+            private final int numVal;
 
             PmdControlPointResponseCode(int numVal) {
                 this.numVal = numVal;
@@ -194,12 +201,13 @@ public class BlePMDClient extends BleGattBase {
             opCode = PmdControlPointCommand.values()[data[1]];
             measurementType = data[2];
             status = PmdControlPointResponseCode.values()[data[3]];
-
             if (status == PmdControlPointResponseCode.SUCCESS) {
                 more = data.length > 4 && data[4] != 0;
                 if (data.length > 5) {
                     parameters.write(data, 5, data.length - 5);
                 }
+            } else {
+                more = false;
             }
         }
     }
@@ -1013,8 +1021,9 @@ public class BlePMDClient extends BleGattBase {
         // do nothing
     }
 
+    @NonNull
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return "PMD Client";
     }
 
@@ -1060,7 +1069,7 @@ public class BlePMDClient extends BleGattBase {
                             subscriber.onSuccess(response);
                             return;
                         }
-                        throw new Exception("Pmd cp failed: " + response.status);
+                        throw new BleControlPointCommandError("pmd cp command error: ", response.status);
                     }
                     throw new BleCharacteristicNotificationNotEnabled();
                 } catch (Throwable throwable) {
@@ -1073,12 +1082,26 @@ public class BlePMDClient extends BleGattBase {
     }
 
     /**
-     * helper to query settings by type
+     * Query settings by type
      *
      * @return Single stream
+     * - onSuccess settings query success, the queried settings emitted
+     * - onError settings query failed
      */
     public Single<PmdSetting> querySettings(PmdMeasurementType type) {
         return sendControlPointCommand(PmdControlPointCommand.GET_MEASUREMENT_SETTINGS, (byte) type.getNumVal())
+                .map(pmdControlPointResponse -> new PmdSetting(pmdControlPointResponse.parameters.toByteArray()));
+    }
+
+    /**
+     * Query full settings by type
+     *
+     * @return Single stream
+     * - onSuccess full settings query success, the queried settings emitted
+     * - onError full settings query failed
+     */
+    public Single<PmdSetting> queryFullSettings(PmdMeasurementType type) {
+        return sendControlPointCommand(PmdControlPointCommand.GET_SDK_MODE_MEASUREMENT_SETTINGS, (byte) type.getNumVal())
                 .map(pmdControlPointResponse -> new PmdSetting(pmdControlPointResponse.parameters.toByteArray()));
     }
 
@@ -1112,33 +1135,6 @@ public class BlePMDClient extends BleGattBase {
     }
 
     /**
-     * query ecg settings available on device
-     *
-     * @return Single stream
-     */
-    public Single<PmdSetting> queryEcgSettings() {
-        return querySettings(PmdMeasurementType.ECG);
-    }
-
-    /**
-     * query ppg settings available on device
-     *
-     * @return Single stream
-     */
-    public Single<PmdSetting> queryPpgSettings() {
-        return querySettings(PmdMeasurementType.PPG);
-    }
-
-    /**
-     * query acc settings available on device
-     *
-     * @return Single stream
-     */
-    public Single<PmdSetting> queryAccSettings() {
-        return querySettings(PmdMeasurementType.ACC);
-    }
-
-    /**
      * query bioz settings available on device
      *
      * @return Single stream
@@ -1154,7 +1150,8 @@ public class BlePMDClient extends BleGattBase {
      * @param setting desired settings
      * @return Completable stream
      */
-    public Completable startMeasurement(final PmdMeasurementType type, final PmdSetting setting) {
+    @NonNull
+    public Completable startMeasurement(@NonNull final PmdMeasurementType type, @NonNull final PmdSetting setting) {
         byte[] set = setting.serializeSelected();
         ByteBuffer bb = ByteBuffer.allocate(1 + set.length);
         bb.put((byte) type.getNumVal());
@@ -1168,13 +1165,44 @@ public class BlePMDClient extends BleGattBase {
     }
 
     /**
-     * request to stop measurement
+     * Request to start SDK mode
+     *
+     * @return Completable stream
+     * - onComplete start SDK mode request completed successfully
+     * - onError start SDK mode request failed
+     */
+    @NonNull
+    public Completable startSDKMode() {
+        return sendControlPointCommand(PmdControlPointCommand.REQUEST_MEASUREMENT_START, (byte) PmdMeasurementType.SDK_MODE.getNumVal())
+                .toObservable()
+                .ignoreElements();
+    }
+
+    /**
+     * Request to stop SDK mode
+     *
+     * @return Completable stream
+     * - onComplete stop SDK mode request completed successfully
+     * - onError stop SDK mode request failed
+     */
+    @NonNull
+    public Completable stopSDKMode() {
+        return sendControlPointCommand(PmdControlPointCommand.STOP_MEASUREMENT, (byte) PmdMeasurementType.SDK_MODE.getNumVal())
+                .toObservable()
+                .ignoreElements();
+    }
+
+    /**
+     * Request to stop measurement
      *
      * @param type measurement to stop
      * @return Completable stream
      */
-    public Completable stopMeasurement(final PmdMeasurementType type) {
-        return sendControlPointCommand(PmdControlPointCommand.STOP_MEASUREMENT, new byte[]{(byte) type.numVal}).toObservable().ignoreElements();
+    @NonNull
+    public Completable stopMeasurement(final @NonNull PmdMeasurementType type) {
+        return sendControlPointCommand(PmdControlPointCommand.STOP_MEASUREMENT, new byte[]{(byte) type.numVal})
+                .toObservable()
+                .ignoreElements();
     }
 
     /**
@@ -1185,6 +1213,7 @@ public class BlePMDClient extends BleGattBase {
      * - onComplete non produced if stream is not further configured <BR>
      * - onError BleDisconnected produced on disconnection <BR>
      */
+    @NonNull
     public Flowable<BlePMDClient.EcgData> monitorEcgNotifications(final boolean checkConnection) {
         return RxUtils.monitorNotifications(ecgObservers, txInterface, checkConnection);
     }

@@ -62,6 +62,16 @@ public abstract class PolarBleApiCallback implements PolarBleApiCallbackProvider
     }
 
     /**
+     * Polar SDK Mode feature is available in the device. Application may now enter to SDK mode.
+     * Requires feature PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING
+     *
+     * @param identifier Polar device id
+     */
+    @Override
+    public void sdkModeFeatureAvailable(@NonNull final String identifier) {
+    }
+
+    /**
      * Polar device HR client is now ready and HR transmission is starting in a moment.
      *
      * @param identifier Polar device id or bt address

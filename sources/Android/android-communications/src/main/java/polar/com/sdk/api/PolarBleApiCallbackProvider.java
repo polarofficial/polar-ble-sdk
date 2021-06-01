@@ -43,13 +43,21 @@ public interface PolarBleApiCallbackProvider {
 
     /**
      * Polar device's streaming features ready. Application may start any stream now if desired.
-     * requires feature PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING
+     * Requires feature PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING
      *
      * @param identifier Polar device id
      * @param features   set of features available and ready
      */
     void streamingFeaturesReady(@NonNull final String identifier,
                                 @NonNull final Set<PolarBleApi.DeviceStreamingFeature> features);
+
+    /**
+     * Polar SDK Mode feature is available in the device. Application may now enter to SDK mode.
+     * Requires feature PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING
+     *
+     * @param identifier Polar device id
+     */
+    void sdkModeFeatureAvailable(@NonNull final String identifier);
 
     /**
      * Polar device HR client is now ready and HR transmission is starting in a moment.

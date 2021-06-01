@@ -3,6 +3,8 @@ package polar.com.sdk.api;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import polar.com.sdk.impl.BDBleApiImpl;
 
 /**
@@ -16,14 +18,16 @@ public class PolarBleApiDefaultImpl {
      * @param features @see polar.com.sdk.api.PolarBleApi feature flags
      * @return default Polar API implementation
      */
-    public static PolarBleApi defaultImplementation(final Context context, int features) {
+    @NonNull
+    public static PolarBleApi defaultImplementation(final @NonNull Context context, int features) {
         return new BDBleApiImpl(context, features);
     }
 
     /**
      * @return SDK version number in format major.minor.patch
      */
+    @NonNull
     public static String versionInfo() {
-        return "3.0.6";
+        return "3.1.0";
     }
 }
