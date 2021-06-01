@@ -84,6 +84,12 @@ public protocol PolarBleApiDeviceFeaturesObserver: AnyObject {
     func streamingFeaturesReady(_ identifier: String, streamingFeatures: Set<DeviceStreamingFeature>)
 }
 
+/// SDK Mode observer
+public protocol PolarBleApiSdkModeFeatureObserver: AnyObject {
+    /// sdk mode feature available in this device and ready for usage callback
+    func sdkModeFeatureAvailable(_ identifier: String)
+}
+
 /// logger observer
 public protocol PolarBleApiLogger: AnyObject {
     
