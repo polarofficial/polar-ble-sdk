@@ -11,6 +11,7 @@ import RxSwift
     
     weak var deviceHrObserver: PolarBleApiDeviceHrObserver?
     weak var deviceFeaturesObserver: PolarBleApiDeviceFeaturesObserver?
+    weak var sdkModeFeatureObserver: PolarBleApiSdkModeFeatureObserver?
     weak var deviceInfoObserver: PolarBleApiDeviceInfoObserver?
     weak var powerStateObserver: PolarBleApiPowerStateObserver? {
         didSet {
@@ -234,7 +235,6 @@ import RxSwift
                             .andThen(pmdClient.readFeature(true)
                                         .observe(on: self.scheduler)
                                         .do(onSuccess: { (value: Pmd.PmdFeature) in
-                                            
                                             var featureSet = Set<DeviceStreamingFeature>()
                                             if value.ecgSupported {
                                                 featureSet.insert(.ecg)
@@ -255,6 +255,10 @@ import RxSwift
                                                 featureSet.insert(.magnetometer)
                                             }
                                             self.deviceFeaturesObserver?.streamingFeaturesReady(deviceId, streamingFeatures: featureSet)
+                                            
+                                            if value.sdkModeSupported {
+                                                self.sdkModeFeatureObserver?.sdkModeFeatureAvailable(deviceId)
+                                            }
                                         }))
                             .asObservable()
                             .map { (_) -> Any in
@@ -344,7 +348,8 @@ extension PolarBleApiImpl: PolarBleApi {
                     sess.isConnectable() &&
                     (polarDeviceType == nil || polarDeviceType == sess.advertisementContent.polarDeviceType) &&
                     (service == nil || sess.advertisementContent.containsService(service!))
-            }.take(1)
+            }
+            .take(1)
             .do(onNext: { (session) in
                 self.logMessage("auto connect search complete")
                 #if os(watchOS)
@@ -444,9 +449,9 @@ extension PolarBleApiImpl: PolarBleApi {
             params.tzOffset = Int32(zone.secondsFromGMT()/60)
             if let data = params.data() {
                 return client.query(PbPFtpQuery.setLocalTime.rawValue, parameters: data as NSData)
-                    .catch({ (err) -> Single<NSData> in
+                    .catch { (err) -> Single<NSData> in
                         return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
-                    })
+                    }
                     .asCompletable()
             }
             throw MessageEncodeFailed()
@@ -472,9 +477,9 @@ extension PolarBleApiImpl: PolarBleApi {
                 params.sampleType = sampleType == .hr ? PbSampleType.sampleTypeHeartRate : PbSampleType.sampleTypeRrInterval
                 if let data = params.data() {
                     return client.query(PbPFtpQuery.requestStartRecording.rawValue, parameters: data as NSData)
-                        .catch({ (err) -> Single<NSData> in
+                        .catch { (err) -> Single<NSData> in
                             return Single.error(err)
-                        })
+                        }
                         .asCompletable()
                 }
                 throw MessageEncodeFailed()
@@ -493,9 +498,9 @@ extension PolarBleApiImpl: PolarBleApi {
                 session.advertisementContent.polarDeviceType)
             {
                 return client.query(PbPFtpQuery.requestStopRecording.rawValue, parameters: nil)
-                    .catch({ (err) -> Single<NSData> in
+                    .catch { (err) -> Single<NSData> in
                         return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
-                    })
+                    }
                     .asCompletable()
             }
             throw OperationNotSupported()
@@ -508,17 +513,15 @@ extension PolarBleApiImpl: PolarBleApi {
         do{
             let session = try sessionFtpClientReady(identifier)
             let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
-            if BlePolarDeviceCapabilitiesUtility.isRecordingSupported(
-                session.advertisementContent.polarDeviceType)
-            {
+            if BlePolarDeviceCapabilitiesUtility.isRecordingSupported( session.advertisementContent.polarDeviceType) {
                 return client.query(PbPFtpQuery.requestRecordingStatus.rawValue, parameters: nil)
-                    .map({ (data) -> PolarRecordingStatus in
+                    .map { (data) -> PolarRecordingStatus in
                         let result = try PbRequestRecordingStatusResult.parse(from: data as Data)
                         return (ongoing: result.recordingOn, entryId: result.hasSampleDataIdentifier ? result.sampleDataIdentifier : "")
-                    })
-                    .catch({ (err) -> Single<PolarRecordingStatus> in
+                    }
+                    .catch { (err) -> Single<PolarRecordingStatus> in
                         return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
-                    })
+                    }
             }
             throw OperationNotSupported()
         } catch let err {
@@ -614,6 +617,23 @@ extension PolarBleApiImpl: PolarBleApi {
         }
     }
     
+    func requestFullStreamSettings(_ identifier: String, feature: DeviceStreamingFeature) -> Single<PolarSensorSetting> {
+        switch feature {
+        case .ecg:
+            return queryFullSettings(identifier, type: .ecg)
+        case .acc:
+            return queryFullSettings(identifier, type: .acc)
+        case .ppg:
+            return queryFullSettings(identifier, type: .ppg)
+        case .magnetometer:
+            return queryFullSettings(identifier, type: .mgn)
+        case .gyro:
+            return queryFullSettings(identifier, type: .gyro)
+        case .ppi:
+            return Single.error(OperationNotSupported())
+        }
+    }
+    
     fileprivate func startStreaming<T>(_ identifier: String,
                                        type: Pmd.PmdMeasurementType,
                                        settings: PolarSensorSetting,
@@ -624,11 +644,12 @@ extension PolarBleApiImpl: PolarBleApi {
             return client.startMeasurement(type, settings: settings.map2PmdSetting())
                 .andThen(observer(client)
                             .do(onDispose: {
-                                _ = client.stopMeasurement(type).subscribe()
+                                _ = client.stopMeasurement(type)
+                                    .subscribe()
                             }))
-                .catch({ (err) -> Observable<T> in
+                .catch { (err) -> Observable<T> in
                     return Observable.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
-                })
+                }
         } catch let err {
             return Observable.error(err)
         }
@@ -766,17 +787,33 @@ extension PolarBleApiImpl: PolarBleApi {
         }
     }
     
-    func querySettings(_ identifier: String, type: Pmd.PmdMeasurementType) -> Single<PolarSensorSetting> {
-        do{
+    private func querySettings(_ identifier: String, type: Pmd.PmdMeasurementType) -> Single<PolarSensorSetting> {
+        do {
             let session = try sessionPmdClientReady(identifier)
             let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
             return client.querySettings(type)
-                .map({ (setting) -> PolarSensorSetting in
+                .map { (setting) -> PolarSensorSetting in
                     return PolarSensorSetting(setting.settings)
-                })
-                .catch({ (err) -> Single<PolarSensorSetting> in
+                }
+                .catch { (err) -> Single<PolarSensorSetting> in
                     return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
-                })
+                }
+        } catch let err {
+            return Single.error(err)
+        }
+    }
+    
+    private func queryFullSettings(_ identifier: String, type: Pmd.PmdMeasurementType) -> Single<PolarSensorSetting> {
+        do {
+            let session = try sessionPmdClientReady(identifier)
+            let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
+            return client.queryFullSettings(type)
+                .map { (setting) -> PolarSensorSetting in
+                    return PolarSensorSetting(setting.settings)
+                }
+                .catch { (err) -> Single<PolarSensorSetting> in
+                    return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
+                }
         } catch let err {
             return Single.error(err)
         }
@@ -793,7 +830,7 @@ extension PolarBleApiImpl: PolarBleApi {
             })
     }
     
-    func fetchRecursive(_ path: String, client: BlePsFtpClient, condition: @escaping (_ p: String) -> Bool) -> Observable<String>  {
+    func fetchRecursive(_ path: String, client: BlePsFtpClient, condition: @escaping (_ p: String) -> Bool) -> Observable<String> {
         let operation = PbPFtpOperation()
         operation.command = PbPFtpOperation_Command.get
         operation.path = path
@@ -831,6 +868,26 @@ extension PolarBleApiImpl: PolarBleApi {
                 }
         }
         return Observable.error(MessageEncodeFailed())
+    }
+    
+    func enableSDKMode(_ identifier: String) -> Completable {
+        do {
+            let session = try sessionPmdClientReady(identifier)
+            let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
+            return client.startSdkMode()
+        } catch let err {
+            return Completable.error(err)
+        }
+    }
+    
+    func disableSDKMode(_ identifier: String) -> Completable {
+        do {
+            let session = try sessionPmdClientReady(identifier)
+            let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
+            return client.stopSdkMode()
+        } catch let err {
+            return Completable.error(err)
+        }
     }
 }
 

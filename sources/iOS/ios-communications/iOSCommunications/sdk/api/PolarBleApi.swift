@@ -246,7 +246,10 @@ public protocol PolarBleApi {
     /// - Returns: Observable stream
     func startListenForPolarHrBroadcasts(_ identifiers: Set<String>?) -> Observable<PolarHrBroadcastData>
     
-    /// request stream settings available
+    ///  Request the stream settings available in current operation mode. This request shall be used before the stream is started
+    ///  to decide currently available settings. The available settings depend on the state of the device. For example, if any stream(s)
+    ///  or optical heart rate measurement is already enabled, then the device may limit the offer of possible settings for other stream feature.
+    ///  Requires `polarSensorStreaming` feature.
     ///
     /// - Parameters:
     ///   - identifier: polar device id
@@ -256,7 +259,19 @@ public protocol PolarBleApi {
     ///   - onError: see `PolarErrors` for possible errors invoked
     func requestStreamSettings(_ identifier: String, feature: DeviceStreamingFeature) -> Single<PolarSensorSetting>
     
-    /// Starts the ECG (Electrocardiography) stream.
+    /// Request full steam settings capabilities. The request returns the all capabilities of the requested streaming feature not limited by the current operation mode.
+    /// Requires `polarSensorStreaming` feature. This request is supported only by Polar Verity Sense firmware 1.1.5
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id
+    ///   - feature: selected feature from`DeviceStreamingFeature`
+    /// - Returns: Single stream
+    ///   - success: once after full settings received from device
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func requestFullStreamSettings(_ identifier: String, feature: DeviceStreamingFeature) -> Single<PolarSensorSetting>
+    
+    /// Start the ECG (Electrocardiography) stream. ECG stream is stopped if the connection is closed, error occurs or stream is disposed.
+    /// Requires `polarSensorStreaming` feature. Before starting the stream it is recommended to query the available settings using `requestStreamSettings`
     ///
     /// - Parameters:
     ///   - identifier: Polar device id or device address
@@ -266,7 +281,8 @@ public protocol PolarBleApi {
     ///   - onError: see `PolarErrors` for possible errors invoked
     func startEcgStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarEcgData>
     
-    /// Start ACC (accelerometer) stream.
+    ///  Start ACC (Accelerometer) stream. ACC stream is stopped if the connection is closed, error occurs or stream is disposed.
+    ///  Requires `polarSensorStreaming` feature. Before starting the stream it is recommended to query the available settings using `requestStreamSettings`
     ///
     /// - Parameters:
     ///   - identifier: Polar device id or device address
@@ -276,19 +292,25 @@ public protocol PolarBleApi {
     ///   - onError: see `PolarErrors` for possible errors invoked
     func startAccStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarAccData>
     
-    /// starts gyro streaming
+    
+    /// Start Gyro stream. Gyro stream is stopped if the connection is closed, error occurs during start or stream is disposed.
+    /// Requires `polarSensorStreaming` feature. Before starting the stream it is recommended to query the available settings using `requestStreamSettings`
+    ///
     /// - Parameters:
     ///   - identifier: Polar device id or device address
     ///   - settings: selected settings to start the stream
     func startGyroStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarGyroData>
     
-    /// Starts magnetometer streaming
+    /// Start magnetometer stream. Magnetometer stream is stopped if the connection is closed, error occurs or stream is disposed.
+    /// Requires `polarSensorStreaming` feature. Before starting the stream it is recommended to query the available settings using `requestStreamSettings`
+    ///
     /// - Parameters:
     ///   - identifier: Polar device id or device address
     ///   - settings: selected settings to start the stream
     func startMagnetometerStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarMagnetometerData>
     
-    /// Start an OHR (optical heart rate) PPG (photoplethysmography) stream.
+    /// Start OHR (Optical heart rate) PPG (Photoplethysmography) stream. PPG stream is stopped if the connection is closed, error occurs or stream is disposed.
+    /// Requires `polarSensorStreaming` feature. Before starting the stream it is recommended to query the available settings using `requestStreamSettings`
     ///
     /// - Parameters:
     ///   - identifier: Polar device id or device address
@@ -298,8 +320,9 @@ public protocol PolarBleApi {
     ///   - onError: see `PolarErrors` for possible errors invoked
     func startOhrStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarOhrData>
     
-    /// Start PPI stream. Notice when using OH1 there is a delay before actual
-    /// PPI measurement starts and timestamp produced to PolarPpiData is 0
+    /// Start OHR (Optical heart rate) PPI (Pulse to Pulse interval) stream.
+    /// PPI stream is stopped if the connection is closed, error occurs or stream is disposed.
+    /// Notice that there is a delay before PPI data stream starts. Requires `polarSensorStreaming` feature.
     ///
     /// - Parameters:
     ///   - identifier: Polar device id or device address
@@ -307,6 +330,25 @@ public protocol PolarBleApi {
     ///   - onNext: for every air packet received. see `PolarPpiData`
     ///   - onError: see `PolarErrors` for possible errors invoked
     func startOhrPPIStreaming(_ identifier: String) -> Observable<PolarPpiData>
+    
+    ///  Enables SDK mode. In SDK mode the wider range of capabilities is available for the stream
+    ///  than in normal operation mode. SDK mode is only supported by Polar Verity Sense (starting from firmware 1.1.5).
+    ///  Requires `polarSensorStreaming` feature.
+    ///
+    /// - Parameter identifier: Polar device id or device address
+    /// - Returns: Completable stream
+    ///   - success: if SDK mode is enabled or device is already in SDK mode
+    ///   - onError: if SDK mode enable failed
+    func enableSDKMode(_ identifier: String) -> Completable
+    
+    /// Disables SDK mode. SDK mode is only supported by Polar Verity Sense (starting from firmware 1.1.5).
+    /// Requires `polarSensorStreaming` feature.
+    ///
+    /// - Parameter identifier: Polar device id or device address
+    /// - Returns: Completable stream
+    ///   - success: if SDK mode is disabled or SDK mode was already disabled
+    ///   - onError: if SDK mode disable failed
+    func disableSDKMode(_ identifier: String) -> Completable
     
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }
@@ -320,8 +362,11 @@ public protocol PolarBleApi {
     /// Bluetooth power state observer
     var powerStateObserver: PolarBleApiPowerStateObserver? { get set }
     
-    /// device features ready observer
+    /// Device features ready observer
     var deviceFeaturesObserver: PolarBleApiDeviceFeaturesObserver? { get set }
+    
+    /// SDK mode feature available in the device and ready observer
+    var sdkModeFeatureObserver: PolarBleApiSdkModeFeatureObserver? { get set }
     
     /// Helper to check if Ble is currently powered
     /// - Returns: current power state

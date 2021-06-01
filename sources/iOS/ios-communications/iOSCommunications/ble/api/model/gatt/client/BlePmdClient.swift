@@ -90,6 +90,7 @@ public struct Pmd {
         public let magnetometerSupported: Bool
         public let barometerSupported: Bool
         public let ambientSupported: Bool
+        public let sdkModeSupported: Bool
         
         public init(_ data: Data) {
             ecgSupported = (data[1] & 0x01) != 0
@@ -101,6 +102,7 @@ public struct Pmd {
             magnetometerSupported = (data[1] & 0x40) != 0
             barometerSupported = (data[1] & 0x80) != 0
             ambientSupported = (data[2] & 0x01) != 0
+            sdkModeSupported = (data[2] & 0x02) != 0
         }
     }
     
@@ -111,34 +113,38 @@ public struct Pmd {
         case errorNotSupported = 3
         case errorInvalidLength = 4
         case errorInvalidParameter = 5
-        case errorInvalidState = 6
+        case errorAlreadyInState = 6
         case errorInvalidResolution = 7
         case errorInvalidSampleRate = 8
         case errorInvalidRange = 9
         case errorInvalidMTU = 10
         case errorInvalidNumberOfChannels = 11
+        case errorInvalidState = 12
+        case errorDeviceInCharger = 13
         case unknown_error = 0xffff
         
         var description : String {
             switch self {
-            case .errorInvalidLength: return "aInvalid length"
-            case .errorInvalidMeasurementType: return "Invalid measurement type"
+            case .success: return "Success"
             case .errorInvalidOpCode: return "Invalid op code"
-            case .errorInvalidParameter: return "Invalid parameter"
-            case .errorInvalidState: return "Invalid state"
+            case .errorInvalidMeasurementType: return "Invalid measurement type"
             case .errorNotSupported: return "Not supported"
+            case .errorInvalidLength: return "Invalid length"
+            case .errorInvalidParameter: return "Invalid parameter"
+            case .errorAlreadyInState: return "Already in state"
             case .errorInvalidResolution: return "Invalid Resolution"
             case .errorInvalidSampleRate: return "Invalid Sample rate"
             case .errorInvalidRange: return "Invalid Range"
             case .errorInvalidMTU: return "Invalid MTU"
             case .errorInvalidNumberOfChannels: return "Invalid Number of channels"
-            case .success: return "Success"
+            case .errorInvalidState: return "Invalid state"
+            case .errorDeviceInCharger: return "Device in charger"
             case .unknown_error: return "unknown error"
             }
         }
     }
     
-    public enum PmdMeasurementType: UInt8{
+    public enum PmdMeasurementType: UInt8 {
         case ecg       = 0
         case ppg       = 1
         case acc       = 2
@@ -148,6 +154,7 @@ public struct Pmd {
         case mgn       = 6
         case barometer = 7
         case ambient   = 8
+        case sdkMode   = 9
         case unknown_type = 0xff
     }
     
@@ -343,6 +350,13 @@ public class BlePmdClient: BleGattClientBase {
     public static let PMD_CP      = CBUUID(string: "FB005C81-02E7-F387-1CAD-8ACD2D8DF0C8")
     public static let PMD_MTU     = CBUUID(string: "FB005C82-02E7-F387-1CAD-8ACD2D8DF0C8")
     
+    private struct PmdControlPointCommands {
+        static let GET_MEASUREMENT_SETTINGS: UInt8 = 0x01
+        static let REQUEST_MEASUREMENT_START: UInt8 = 0x02
+        static let STOP_MEASUREMENT: UInt8 = 0x03
+        static let GET_SDK_MODE_SETTINGS: UInt8 = 0x04
+    }
+    
     let pmdCpInputQueue = AtomicList<Data>()
     var features: Data?
     var pmdCpEnabled: AtomicInteger!
@@ -399,7 +413,7 @@ public class BlePmdClient: BleGattClientBase {
         return 1.0
     }
     
-    override public func processServiceData(_ chr: CBUUID, data: Data, err: Int ){
+    override public func processServiceData(_ chr: CBUUID, data: Data, err: Int ) {
         if chr.isEqual(BlePmdClient.PMD_CP) {
             if err == 0 {
                 if data[0] == 0x0f {
@@ -587,10 +601,10 @@ public class BlePmdClient: BleGattClientBase {
         storedSettings.accessItem { (settingsStored) in
             settingsStored[type] = settings
         }
-        return Completable.create{ observer in
+        return Completable.create { observer in
             do {
                 let serialized = settings.serialize()
-                var packet = Data([0x02,type.rawValue])
+                var packet = Data([PmdControlPointCommands.REQUEST_MEASUREMENT_START, type.rawValue])
                 packet.append(serialized)
                 let cpResponse = try self.sendControlPointCommand(packet as Data)
                 if cpResponse.errorCode == .success {
@@ -604,7 +618,7 @@ public class BlePmdClient: BleGattClientBase {
             } catch let err {
                 observer(.error(err))
             }
-            return Disposables.create{
+            return Disposables.create {
             }
         }.subscribe(on: baseSerialDispatchQueue)
     }
@@ -612,7 +626,7 @@ public class BlePmdClient: BleGattClientBase {
     public func stopMeasurement(_ type: Pmd.PmdMeasurementType) -> Completable {
         return Completable.create{ observer in
             do {
-                let packet = Data([0x03,type.rawValue])
+                let packet = Data([PmdControlPointCommands.STOP_MEASUREMENT ,type.rawValue])
                 let cpResponse = try self.sendControlPointCommand(packet)
                 if cpResponse.errorCode == .success {
                     observer(.completed)
@@ -622,14 +636,13 @@ public class BlePmdClient: BleGattClientBase {
             } catch let err {
                 observer(.error(err))
             }
-            return Disposables.create{
-            }
+            return Disposables.create{}
         }.subscribe(on: baseSerialDispatchQueue)
     }
     
     public func readFeature(_ checkConnection: Bool) -> Single<Pmd.PmdFeature> {
         var object: RxObserverSingle<Pmd.PmdFeature>!
-        return Single.create{ observer in
+        return Single.create { observer in
             object = RxObserverSingle<Pmd.PmdFeature>(obs: observer)
             if let f = self.features {
                 // available
@@ -650,13 +663,14 @@ public class BlePmdClient: BleGattClientBase {
     }
     
     public override func clientReady(_ checkConnection: Bool) -> Completable {
-        return waitNotificationEnabled(BlePmdClient.PMD_CP, checkConnection: checkConnection).andThen(waitNotificationEnabled(BlePmdClient.PMD_MTU, checkConnection: checkConnection))
+        return waitNotificationEnabled(BlePmdClient.PMD_CP, checkConnection: checkConnection)
+            .andThen(waitNotificationEnabled(BlePmdClient.PMD_MTU, checkConnection: checkConnection))
     }
     
     public func querySettings(_ setting: Pmd.PmdMeasurementType) -> Single<Pmd.PmdSetting> {
         return Single.create{ [unowned self] observer in
             do {
-                let packet = Data([0x01,setting.rawValue])
+                let packet = Data([PmdControlPointCommands.GET_MEASUREMENT_SETTINGS, setting.rawValue])
                 let cpResponse = try self.sendControlPointCommand(packet)
                 if cpResponse.errorCode == .success {
                     let query = Pmd.PmdSetting(cpResponse.parameters as Data)
@@ -673,6 +687,60 @@ public class BlePmdClient: BleGattClientBase {
         }.subscribe(on: baseSerialDispatchQueue)
     }
     
+    public func queryFullSettings(_ setting: Pmd.PmdMeasurementType) -> Single<Pmd.PmdSetting> {
+        return Single.create{ [unowned self] observer in
+            do {
+                let packet = Data([PmdControlPointCommands.GET_SDK_MODE_SETTINGS, setting.rawValue])
+                let cpResponse = try self.sendControlPointCommand(packet)
+                if cpResponse.errorCode == .success {
+                    let query = Pmd.PmdSetting(cpResponse.parameters as Data)
+                    observer(.success(query))
+                } else {
+                    observer(.failure(BleGattException.gattAttributeError(errorCode: cpResponse.errorCode.rawValue, errorDescription: cpResponse.errorCode.description)))
+                }
+            } catch let err {
+                observer(.failure(err))
+            }
+            return Disposables.create{
+                // do nothing
+            }
+        }.subscribe(on: baseSerialDispatchQueue)
+    }
+    
+    public func startSdkMode() -> Completable {
+        return Completable.create{ observer in
+            do {
+                let packet = Data([PmdControlPointCommands.REQUEST_MEASUREMENT_START, Pmd.PmdMeasurementType.sdkMode.rawValue])
+                let cpResponse = try self.sendControlPointCommand(packet)
+                if cpResponse.errorCode == .success || cpResponse.errorCode == .errorAlreadyInState {
+                    observer(.completed)
+                } else {
+                    observer(.error(Pmd.BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
+                }
+            } catch let err {
+                observer(.error(err))
+            }
+            return Disposables.create{}
+        }.subscribe(on: baseSerialDispatchQueue)
+    }
+    
+    public func stopSdkMode() -> Completable {
+        return Completable.create{ observer in
+            do {
+                let packet = Data([PmdControlPointCommands.STOP_MEASUREMENT, Pmd.PmdMeasurementType.sdkMode.rawValue])
+                let cpResponse = try self.sendControlPointCommand(packet)
+                if cpResponse.errorCode == .success || cpResponse.errorCode == .errorAlreadyInState{
+                    observer(.completed)
+                } else {
+                    observer(.error(Pmd.BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
+                }
+            } catch let err {
+                observer(.error(err))
+            }
+            return Disposables.create{}
+        }.subscribe(on: baseSerialDispatchQueue)
+    }
+    
     private func sendControlPointCommand(_ data: Data) throws -> Pmd.PmdControlPointResponse {
         guard let transport = self.gattServiceTransmitter else {
             throw BleGattException.gattTransportNotAvailable
@@ -681,7 +749,7 @@ public class BlePmdClient: BleGattClientBase {
         let response = try self.pmdCpInputQueue.poll(60)
         let resp = Pmd.PmdControlPointResponse(response)
         var more = resp.more
-        while(more){
+        while (more) {
             let parameters = try self.pmdCpInputQueue.poll(60)
             more = parameters[0] != 0
             resp.parameters.append(parameters.subdata(in: 1..<parameters.count))
