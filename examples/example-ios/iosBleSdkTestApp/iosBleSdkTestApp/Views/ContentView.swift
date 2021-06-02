@@ -3,7 +3,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject var viewModel: ViewModel
+    @ObservedObject var viewModel: PolarBleSdkManager
     
     var body: some View {
         VStack {
@@ -100,20 +100,30 @@ struct ContentView: View {
                         Group {
                             Button("Set time", action: { viewModel.setTime()})
                         }
-                    }
-                }.frame(maxWidth: .infinity)
+                    }.frame(maxWidth: .infinity)
+                }
             } else {
                 Text("Bluetooth OFF")
                     .bold()
                     .foregroundColor(.red)
                 Spacer()
             }
+        }.alert(item: $viewModel.error) { message in
+            Alert(
+                title: Text(message.text),
+                dismissButton: .cancel()
+            )
         }
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(viewModel: ViewModel())
+        ForEach(["iPhone 8", "iPAD Pro (12.9-inch)"], id: \.self) { deviceName in
+            ContentView(viewModel: PolarBleSdkManager())
+                .previewDevice(PreviewDevice(rawValue: deviceName))
+                .previewDisplayName(deviceName)
+        }
+        
     }
 }

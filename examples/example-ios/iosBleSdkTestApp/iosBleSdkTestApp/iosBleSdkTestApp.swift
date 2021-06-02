@@ -4,9 +4,12 @@ import SwiftUI
 
 @main
 struct iosBleSdkTestApp: App {
+    
+    @StateObject var viewModel = PolarBleSdkManager()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView(viewModel: ViewModel())
+            ContentView(viewModel: viewModel)
         }
     }
 }
