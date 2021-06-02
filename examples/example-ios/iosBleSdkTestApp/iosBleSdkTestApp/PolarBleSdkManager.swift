@@ -5,10 +5,13 @@ import PolarBleSdk
 import RxSwift
 import CoreBluetooth
 
-class ViewModel : ObservableObject {
+class PolarBleSdkManager : ObservableObject {
     
     // NOTICE this example utilizes all available features
     private var api = PolarBleApiDefaultImpl.polarImplementation(DispatchQueue.main, features: Features.allFeatures.rawValue)
+    
+    private var deviceId = "8C4CAD2D" //TODO replace this with your device id
+    
     private var broadcastDisposable: Disposable?
     private var autoConnectDisposable: Disposable?
     private var searchDisposable: Disposable?
@@ -19,8 +22,6 @@ class ViewModel : ObservableObject {
     private var ppgDisposable: Disposable?
     private var ppiDisposable: Disposable?
     private var exerciseEntry: PolarExerciseEntry?
-    private var deviceId = "8C4CAD2D" //TODO replace this with your device id
-    
     @Published private(set) var bluetoothPowerOn: Bool
     @Published private(set) var broadcastEnabled: Bool = false
     @Published private(set) var seachEnabled: Bool = false
@@ -32,6 +33,7 @@ class ViewModel : ObservableObject {
     @Published private(set) var ppiEnabled: Bool = false
     @Published private(set) var sdkModeEnabled: Bool = false
     @Published private(set) var deviceConnectionState: ConnectionState = ConnectionState.disconnected
+    @Published var error: ErrorMessage? = nil
     
     init() {
         self.bluetoothPowerOn = api.isBlePowered
@@ -289,7 +291,7 @@ class ViewModel : ObservableObject {
                             NSLog("    PPI: \(item.ppInMs) sample.blockerBit: \(item.blockerBit)  errorEstimate: \(item.ppErrorEstimate)")
                         }
                     case .error(let err):
-                        NSLog("PPI stream failed: \(err)")
+                        self.somethingFailed(text: "PPI stream failed: \(err)")
                         self.ppiEnabled = false
                     case .completed:
                         NSLog("PPI stream completed")
@@ -302,7 +304,7 @@ class ViewModel : ObservableObject {
             ppiDisposable = nil
         }
     }
-   
+    
     func sdkModeEnable() {
         if case .connected(let deviceId) = deviceConnectionState {
             _ = api.enableSDKMode(deviceId)
@@ -313,7 +315,7 @@ class ViewModel : ObservableObject {
                         NSLog("SDK mode enabled")
                         self.sdkModeEnabled = true
                     case .error(let err):
-                        NSLog("SDK mode enable failed: \(err)")
+                        self.somethingFailed(text: "SDK mode enable failed: \(err)")
                     }
                 }
         }
@@ -329,7 +331,7 @@ class ViewModel : ObservableObject {
                         NSLog("SDK mode disabled")
                         self.sdkModeEnabled = false
                     case .error(let err):
-                        NSLog("SDK mode disable failed: \(err)")
+                        self.somethingFailed(text: "SDK mode disable failed: \(err)")
                     }
                 }
         }
@@ -356,6 +358,7 @@ class ViewModel : ObservableObject {
     func readExercise() {
         if case .connected(let deviceId) = deviceConnectionState {
             guard let e = exerciseEntry else {
+                somethingFailed(text: "No exercise to read, please list the exercises first")
                 return
             }
             _ = api.fetchExercise(deviceId, entry: e)
@@ -374,6 +377,7 @@ class ViewModel : ObservableObject {
     func removeExercise() {
         if case .connected(let deviceId) = deviceConnectionState {
             guard let e = exerciseEntry else {
+                somethingFailed(text: "No exercise to read, please list the exercises first")
                 return
             }
             _ = api.removeExercise(deviceId, entry: e)
@@ -445,26 +449,33 @@ class ViewModel : ObservableObject {
                     case .completed:
                         NSLog("time set to device completed")
                     case .error(let err):
-                        NSLog("time set failed: \(err)")
+                        self.somethingFailed(text: "time set failed: \(err)")
                     }
                 }
         }
     }
+    
+    private func somethingFailed(text: String) {
+        error = ErrorMessage(text:text)
+        NSLog("Error \(text)")
+    }
 }
 
 // MARK: - PolarBleApiPowerStateObserver
-extension ViewModel : PolarBleApiPowerStateObserver {
+extension PolarBleSdkManager : PolarBleApiPowerStateObserver {
     func blePowerOn() {
+        NSLog("BLE ON")
         bluetoothPowerOn = true
     }
     
     func blePowerOff() {
+        NSLog("BLE OFF")
         bluetoothPowerOn = false
     }
 }
 
 // MARK: - PolarBleApiObserver
-extension ViewModel : PolarBleApiObserver {
+extension PolarBleSdkManager : PolarBleApiObserver {
     func deviceConnecting(_ polarDeviceInfo: PolarDeviceInfo) {
         NSLog("DEVICE CONNECTING: \(polarDeviceInfo)")
         deviceConnectionState = ConnectionState.connecting(polarDeviceInfo.deviceId)
@@ -483,7 +494,7 @@ extension ViewModel : PolarBleApiObserver {
 }
 
 // MARK: - PolarBleApiDeviceInfoObserver
-extension ViewModel : PolarBleApiDeviceInfoObserver {
+extension PolarBleSdkManager : PolarBleApiDeviceInfoObserver {
     func batteryLevelReceived(_ identifier: String, batteryLevel: UInt) {
         NSLog("battery level updated: \(batteryLevel)")
     }
@@ -494,7 +505,7 @@ extension ViewModel : PolarBleApiDeviceInfoObserver {
 }
 
 // MARK: - PolarBleApiSdkModeFeatureObserver
-extension ViewModel : PolarBleApiDeviceFeaturesObserver {
+extension PolarBleSdkManager : PolarBleApiDeviceFeaturesObserver {
     func hrFeatureReady(_ identifier: String) {
         NSLog("HR ready")
     }
@@ -511,27 +522,27 @@ extension ViewModel : PolarBleApiDeviceFeaturesObserver {
 }
 
 // MARK: - PolarBleApiSdkModeFeatureObserver
-extension ViewModel : PolarBleApiSdkModeFeatureObserver {
+extension PolarBleSdkManager : PolarBleApiSdkModeFeatureObserver {
     func sdkModeFeatureAvailable(_ identifier: String) {
         NSLog("SDK mode feature available. Device \(identifier)")
     }
 }
 
 // MARK: - PolarBleApiDeviceHrObserver
-extension ViewModel : PolarBleApiDeviceHrObserver {
+extension PolarBleSdkManager : PolarBleApiDeviceHrObserver {
     func hrValueReceived(_ identifier: String, data: PolarHrData) {
         NSLog("(\(identifier)) HR value: \(data.hr) rrsMs: \(data.rrsMs) rrs: \(data.rrs) contact: \(data.contact) contact supported: \(data.contactSupported)")
     }
 }
 
 // MARK: - PolarBleApiLogger
-extension ViewModel : PolarBleApiLogger {
+extension PolarBleSdkManager : PolarBleApiLogger {
     func message(_ str: String) {
         NSLog("Polar SDK log:  \(str)")
     }
 }
 
-extension ViewModel {
+extension PolarBleSdkManager {
     enum ConnectionState {
         case disconnected
         case connecting(String)
