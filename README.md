@@ -36,7 +36,6 @@ Reliable high quality heart rate chest strap.
 [Store page](https://www.polar.com/en/products/accessories/H9_heart_rate_sensor)
 
 #### H9 heart rate sensor available data types
-* From version 1.0.0 onwards. 
 * Heart rate as beats per minute. RR Interval in ms and 1/1024 format.
 * Heart rate broadcast.
 
@@ -45,7 +44,6 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 [Store page](https://www.polar.com/en/products/accessories/polar-verity-sense)
 
 #### Polar Verity Sense Optical heart rate sensor available data types
-* From version 1.0.0 onwards.
 * Heart rate as beats per minute. 
 * Heart rate broadcast.
 * Photoplethysmograpy (PPG) values.
@@ -53,7 +51,8 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 * Accelerometer data with sample rate of 52Hz and range of 8G. Axis specific acceleration data in mG.
 * Gyroscope data with sample rate of 52Hz and ranges of 250dps, 500dps, 1000dps and 2000dps. Axis specific gyroscope data in dps.
 * Magnetometer data with sample rates of 10Hz, 20Hz, 50HZ and 100Hz and range of +/-50 Gauss. Axis specific magnetometer data in Gauss.
-* List, read and remove stored exercise. Recording of exercise requires that sensor is registered to Polar Flow account. Stored sample data contains HR with one second sampletime. 
+* List, read and remove stored exercise. Recording of exercise requires that sensor is registered to Polar Flow account. Stored sample data contains HR with one second sampletime.
+* SDK mode (from version 1.1.5 onwards)
 
 ### OH1 Optical heart rate sensor
 Optical heart rate sensor is a rechargeable device that measures user’s heart rate with LED technology.
@@ -272,7 +271,7 @@ If you use [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) 
 use_frameworks!
 
 target 'YOUR_TARGET_NAME' do
-    pod 'PolarBleSdk', '~> 3.0'
+    pod 'PolarBleSdk', '~> 3.1'
 
 end
 
@@ -292,7 +291,7 @@ post_install do |installer|
 If you use [Cathage](https://github.com/Carthage/Carthage) to manage your dependencies, add PolarBleSdk to your `Cartfile`
 
 ```
-github "polarofficial/polar-ble-sdk" ~> 3.0
+github "polarofficial/polar-ble-sdk" ~> 3.1
 ```
 
 ```bash
