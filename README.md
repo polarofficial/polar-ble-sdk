@@ -52,7 +52,7 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 * Gyroscope data with sample rate of 52Hz and ranges of 250dps, 500dps, 1000dps and 2000dps. Axis specific gyroscope data in dps.
 * Magnetometer data with sample rates of 10Hz, 20Hz, 50HZ and 100Hz and range of +/-50 Gauss. Axis specific magnetometer data in Gauss.
 * List, read and remove stored exercise. Recording of exercise requires that sensor is registered to Polar Flow account. Stored sample data contains HR with one second sampletime.
-* SDK mode (from version 1.1.5 onwards)
+* [SDK mode](technical_documentation/SdkModeExplained.md) (from version 1.1.5 onwards)
 
 ### OH1 Optical heart rate sensor
 Optical heart rate sensor is a rechargeable device that measures user’s heart rate with LED technology.
