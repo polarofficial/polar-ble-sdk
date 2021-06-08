@@ -1,6 +1,8 @@
 // Copyright © 2019 Polar Electro Oy. All rights reserved.
 package polar.com.sdk.api.model;
 
+import androidx.annotation.NonNull;
+
 import java.util.Date;
 
 /**
@@ -12,7 +14,7 @@ public class PolarExerciseEntry {
      */
     public final String path;
     /**
-     * Date object contains the date and time of the exercise. Only valid with OH1.
+     * Date object contains the date and time of the exercise. Only valid with OH1 and Verity Sense.
      */
     public final Date date;
     /**
@@ -20,7 +22,7 @@ public class PolarExerciseEntry {
      */
     public final String identifier;
 
-    public PolarExerciseEntry(String path, Date date, String identifier) {
+    public PolarExerciseEntry(@NonNull String path, @NonNull Date date, @NonNull String identifier) {
         this.path = path;
         this.date = date;
         this.identifier = identifier;
