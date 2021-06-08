@@ -14,3 +14,10 @@
 - **Problem:** PPG stream settings returns incorrect sampling rate when read with `requestStreamSettings()`. The returned value for sampling rate is 130Hz. The correct sampling rate is 135Hz.
 - **Solution:** 
     - The PPG stream is working correctly even the `startOhrStreaming` request is made using the 130Hz as sampleRate parameter in `PolarSensorSetting`. The received PPG stream is sampled with 135Hz.
+
+#### Polar Verity Sense and Polar OH1
+- **Firmware:** all firmwares
+- **Feature:** time stamp in streams
+- **Problem:** When the time is set by the api call `setLocalTime` the time change is not changing the time stamp received by the streams until device is once powered off and powered on
+- **Solution:** 
+    - power off and power on the device once since the time set to get correct time stamps
