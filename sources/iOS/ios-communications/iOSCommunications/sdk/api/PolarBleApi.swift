@@ -61,25 +61,25 @@ public typealias PolarHrBroadcastData = (deviceInfo: PolarDeviceInfo, hr: UInt8,
 
 /// Polar Ecg data
 ///
-///     - timestamp: Last sample timestamp in nanoseconds. Default epoch is 1.1.2000
+///     - timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
 ///     - samples: ecg sample in µVolts
 public typealias PolarEcgData = (timeStamp: UInt64,samples: [Int32])
 
 /// Polar acc data
 ///
-///     - Timestamp: Last sample timestamp in nanoseconds. Default epoch is 1.1.2000 for H10.
+///     - Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
 ///     - samples: Acceleration samples list x,y,z in millig signed value
 public typealias PolarAccData = (timeStamp: UInt64,samples: [(x: Int32,y: Int32,z: Int32)])
 
 /// Polar gyro data
 ///
-///     - Timestamp: Last sample timestamp in nanoseconds.
+///     - Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
 ///     - samples: gyro samples list x,y,z in °/s signed value
 public typealias PolarGyroData = (timeStamp: UInt64,samples: [(x: Float,y: Float,z: Float)])
 
 /// Polar magnetometer data
 ///
-///     - Timestamp: Last sample timestamp in nanoseconds. 
+///     - Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
 ///     - samples: in Gauss
 public typealias PolarMagnetometerData = (timeStamp: UInt64,samples: [(x: Float,y: Float,z: Float)])
 
@@ -92,7 +92,7 @@ public enum OhrDataType: Int, CaseIterable {
 
 /// Polar Ohr data
 ///
-///     - Timestamp: Last sample timestamp in nanoseconds.
+///     - Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
 ///     - channels: amount of channels
 ///     - source: source of OHR data
 ///     - samples: ppg(s) and ambient(s) samples list
@@ -111,7 +111,7 @@ public typealias PolarPpiData = (timeStamp: UInt64,samples: [(hr: Int, ppInMs: U
 /// Polar exercise entry
 ///
 ///     - path: Resource location in the device,
-///     - date: Entry date and time. Only OH1 supports date and time
+///     - date: Entry date and time. Only OH1 and Polar Verity Sense supports date and time
 ///     - entryId: unique identifier
 public typealias PolarExerciseEntry = (path: String, date: Date, entryId: String)
 /// Polar Exercise Data

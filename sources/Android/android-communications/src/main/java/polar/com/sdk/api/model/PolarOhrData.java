@@ -44,7 +44,7 @@ public class PolarOhrData {
     public final List<PolarOhrSample> samples;
 
     /**
-     * Last sample timestamp in nanoseconds
+     * Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
      */
     public final long timeStamp;
 
