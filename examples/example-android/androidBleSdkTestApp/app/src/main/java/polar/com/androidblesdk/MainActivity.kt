@@ -128,6 +128,7 @@ class MainActivity : AppCompatActivity() {
                 deviceConnected = false
                 val buttonText = getString(R.string.connect_to_device, deviceId)
                 toggleButtonUp(connectButton, buttonText)
+                toggleButtonUp(toggleSdkModeButton, R.string.enable_sdk_mode)
             }
 
             override fun streamingFeaturesReady(
