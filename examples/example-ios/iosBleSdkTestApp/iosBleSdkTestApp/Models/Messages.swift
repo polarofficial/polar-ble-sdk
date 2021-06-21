@@ -1,8 +1,8 @@
-/// Copyright © 2019 Polar Electro Oy. All rights reserved.
+/// Copyright © 2021 Polar Electro Oy. All rights reserved.
 
 import Foundation
 
-struct ErrorMessage: Identifiable {
+struct Message: Identifiable {
     let id = UUID()
     let text: String
 }

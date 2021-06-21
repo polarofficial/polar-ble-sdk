@@ -1,15 +1,15 @@
-/// Copyright © 2019 Polar Electro Oy. All rights reserved.
+/// Copyright © 2021 Polar Electro Oy. All rights reserved.
 
 import SwiftUI
 
 @main
 struct iosBleSdkTestApp: App {
     
-    @StateObject var viewModel = PolarBleSdkManager()
+    @StateObject var bleSdkManager = PolarBleSdkManager()
     
     var body: some Scene {
         WindowGroup {
-            ContentView(viewModel: viewModel)
+            ContentView(bleSdkManager: bleSdkManager)
         }
     }
 }
