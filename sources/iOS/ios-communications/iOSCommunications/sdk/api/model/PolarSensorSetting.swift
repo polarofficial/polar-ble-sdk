@@ -50,7 +50,7 @@ public struct PolarSensorSetting {
         })
     }
     
-    /// helper to retreive max settings available
+    /// helper to retrieve max settings available
     ///
     /// - Returns: PolarSensorSetting with max settings
     public func maxSettings() -> PolarSensorSetting {

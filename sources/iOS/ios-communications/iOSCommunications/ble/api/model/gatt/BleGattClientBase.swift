@@ -7,30 +7,41 @@ public class BleGattClientBase: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(ObjectIdentifier(self).hashValue)
     }
-    var characteristics = Set<CBUUID>()
-    var characteristicsRead = Set<CBUUID>()
-    var characteristicsNotification = [[CBUUID : AtomicInteger]]()
-    let availableCharacteristics = AtomicList<CBUUID>()
-    let availableReadableCharacteristics = AtomicList<CBUUID>()
-    let serviceUuid: CBUUID
-    weak var gattServiceTransmitter: BleAttributeTransportProtocol?
-    let serviceDiscovered = AtomicBoolean(initialValue: false)
-    var mtuSize = 20
-    private let disposeBag = DisposeBag()
-    
-    public let ATT_NOTIFY_OR_INDICATE_STATE_UNKNOWN = -1
-    public let ATT_NOTIFY_OR_INDICATE_ON = 0
-    public let ATT_NOTIFY_OR_INDICATE_OFF = 1
-    public let ATT_NOTIFY_OR_INDICATE_ERROR = 2
-    
-    public var baseSerialDispatchQueue: SerialDispatchQueueScheduler!
-    public let baseConcurrentDispatchQueue = ConcurrentDispatchQueueScheduler.init(queue: DispatchQueue(label: "BaseConcurrentDispatchQueue", attributes: DispatchQueue.Attributes.concurrent))
     
     static func address<T: AnyObject>(o: T) -> Int {
         return unsafeBitCast(o, to: Int.self)
     }
     
-    class NotificationWaitObserver {
+    var baseSerialDispatchQueue: SerialDispatchQueueScheduler!
+    let baseConcurrentDispatchQueue = ConcurrentDispatchQueueScheduler.init(queue: DispatchQueue(label: "BaseConcurrentDispatchQueue", attributes: DispatchQueue.Attributes.concurrent))
+    
+    weak var gattServiceTransmitter: BleAttributeTransportProtocol?
+    var mtuSize = 20
+    
+    private struct notificationChr {
+        let uuid: CBUUID
+        var state: AtomicInteger = AtomicInteger.init(initialValue: -1)
+        let disableOnDisconnect: Bool
+    }
+    
+    private var notificationCharacteristics = [notificationChr]()
+    private var characteristics = Set<CBUUID>()
+    private let availableCharacteristics = AtomicList<CBUUID>()
+    private var characteristicsRead = Set<CBUUID>()
+    private let availableReadableCharacteristics = AtomicList<CBUUID>()
+    private let serviceUuid: CBUUID
+    private let serviceDiscovered = AtomicBoolean(initialValue: false)
+    private var disposeBag = DisposeBag()
+    
+    let ATT_NOTIFY_OR_INDICATE_STATE_UNKNOWN = -1
+    let ATT_NOTIFY_OR_INDICATE_ON = 0
+    let ATT_NOTIFY_OR_INDICATE_OFF = 1
+    let ATT_NOTIFY_OR_INDICATE_ERROR = 2
+    
+    private var notificationWaitObservers = AtomicList<NotificationWaitObserver>()
+    private var serviceWaitObservers = AtomicList<RxObserverCompletable>()
+    
+    private class NotificationWaitObserver {
         let obs: RxSwift.PrimitiveSequenceType.CompletableObserver
         let uuid: CBUUID
         init(_ obs: @escaping RxSwift.PrimitiveSequenceType.CompletableObserver, uuid: CBUUID){
@@ -38,9 +49,6 @@ public class BleGattClientBase: Hashable {
             self.uuid = uuid
         }
     }
-    
-    var notificationWaitObservers = AtomicList<NotificationWaitObserver>()
-    var serviceWaitObservers = AtomicList<RxObserverCompletable>()
     
     init(serviceUuid: CBUUID, gattServiceTransmitter: BleAttributeTransportProtocol){
         self.gattServiceTransmitter = gattServiceTransmitter
@@ -57,78 +65,22 @@ public class BleGattClientBase: Hashable {
         characteristics.insert(chr)
     }
     
-    /// Characteristic notification/indication is automatic enabled after connection establishment
-    /// - Parameter chr: characteristic which notification is set on
-    func automaticEnableNotificationsOnConnect(chr: CBUUID) {
-        BleLogger.trace("Automatically enable characteristic notification for \(chr.uuidString) in connect")
-        addCharacteristicNotification(chr)
+    /// Characteristic notification/indication is automatic enabled on connection establishment
+    ///
+    /// - Parameters:
+    ///     - chr: characteristic which notification is set on
+    ///     - disableOnDisconnect: true if enabled notification shall be disabled on disconnection.
+    func automaticEnableNotificationsOnConnect(chr: CBUUID, disableOnDisconnect: Bool = false) {
+        BleLogger.trace("Automatically enable characteristic notification \(chr.uuidString) on connect. Disable on disconnect: \(disableOnDisconnect)")
+        addCharacteristicNotification(chr, disableOnDisconnect:disableOnDisconnect)
     }
     
-    private func addCharacteristicNotification(_ chr: CBUUID) {
-        characteristics.insert(chr)
-        if(!containsNotifyCharacteristic(chr)){
-            characteristicsNotification.append([chr : AtomicInteger.init(initialValue: ATT_NOTIFY_OR_INDICATE_STATE_UNKNOWN)])
-        }
-    }
-    
-    ///  Remove notification characteristic from this client. This will remove the notification/indication automatic enable after connection establishment
-    /// - Parameter chr: characteristic which notification is set off
-    func removeCharacteristicNotification( _ chr: CBUUID ) {
-        BleLogger.trace("Remove notification characteristic for \(chr.uuidString)")
-        
-        characteristicsNotification.removeAll {
-            $0.keys.contains(chr)
-        }
-        characteristics.remove(chr);
-    }
-    
-    func containsCharacteristic( _ chr: CBUUID ) -> Bool {
-        return characteristics.contains(chr)
-    }
-    
-    public func containsAvailableCharacteristic( _ chr: CBUUID ) -> Bool {
-        return availableCharacteristics.fetch({ (uuid) -> Bool in
-            return uuid.isEqual(chr)
-        }) != nil
-    }
-    
-    func containsNotifyCharacteristic( _ chr: CBUUID ) -> Bool {
-        return characteristicsNotification.contains { (pair) -> Bool in
-            return pair.first?.key.isEqual(chr) ?? false
-        }
-    }
-    
-    func containsReadCharacteristic( _ chr: CBUUID ) -> Bool {
-        return characteristicsRead.contains(chr)
-    }
-    
-    func notificationAtomicInteger(_ chr: CBUUID) -> AtomicInteger? {
-        return characteristicsNotification.first(where: { (pair) -> Bool in
-            return pair.first?.key.isEqual(chr) ?? false
-        })?.first?.value ?? nil
-    }
-    
-    // from protocol
-    public func disconnected(){
-        serviceDiscovered.set(false)
-        mtuSize = 20
-        availableCharacteristics.removeAll()
-        availableReadableCharacteristics.removeAll()
-        characteristicsNotification.forEach { (pair) in
-            pair.first?.value.set(ATT_NOTIFY_OR_INDICATE_STATE_UNKNOWN)
-        }
-        RxUtils.emitNext(notificationWaitObservers) { (observer) in
-            observer.obs(.error(BleGattException.gattDisconnected))
-        }
-        notificationWaitObservers.removeAll()
-        RxUtils.postErrorOnCompletableAndClearList(serviceWaitObservers, error: BleGattException.gattDisconnected)
-    }
-    
-    public func processServiceData(_ chr: CBUUID , data: Data , err: Int ) {
-        assert(false, "processServiceData not overridden by parent class")
-    }
-    
-    func enableCharacteristicNotification(serviceUUID: CBUUID, chr: CBUUID) -> Completable {
+    /// Enable characteristic notification/indication
+    ///
+    /// - Parameters:
+    ///     - chr: characteristic which notification is set on
+    ///     - disableOnDisconnect: true if enabled notification shall be disabled on disconnection.
+    func enableCharacteristicNotification(chr: CBUUID, disableOnDisconnect: Bool = false) -> Completable {
         return Completable.create{ [weak self] observer in
             guard let self = self else {
                 observer(.completed)
@@ -136,23 +88,24 @@ public class BleGattClientBase: Hashable {
             }
             if(!self.containsNotifyCharacteristic(chr)) {
                 BleLogger.trace("GATT Base request notification enable for chr: \(chr)")
-                self.addCharacteristicNotification(chr)
-                self.writeCharacteristicNotification(serviceUUID: serviceUUID, chr: chr, enable: true)
+                self.addCharacteristicNotification(chr, disableOnDisconnect:disableOnDisconnect)
+                self.writeCharacteristicNotification(chr: chr, enable: true)
                     .subscribe(onCompleted: {
                         observer(.completed)
                     }, onError: { Error in
-                        self.removeCharacteristicNotification(chr)
                         observer(.error(Error))
                     })
                     .disposed(by: self.disposeBag)
             }
-            
-            observer(.completed)
             return Disposables.create {}
         }
     }
     
-    func disableCharacteristicNotification(serviceUUID: CBUUID, chr: CBUUID) -> Completable {
+    /// Disable characteristic notification/indication
+    ///
+    /// - Parameters:
+    ///     - chr: characteristic which notification is set on
+    func disableCharacteristicNotification(chr: CBUUID) -> Completable {
         return Completable.create{ [weak self] observer in
             guard let self = self else {
                 observer(.completed)
@@ -161,39 +114,57 @@ public class BleGattClientBase: Hashable {
             
             if(self.containsNotifyCharacteristic(chr)) {
                 BleLogger.trace("GATT Base request notification disable for chr: \(chr)")
-                self.writeCharacteristicNotification(serviceUUID: serviceUUID, chr: chr, enable: false)
+                self.writeCharacteristicNotification(chr: chr, enable: false)
                     .subscribe(onCompleted: {
-                        self.removeCharacteristicNotification(chr)
                         observer(.completed)
                     }, onError: { Error in
                         observer(.error(Error))
                     })
                     .disposed(by: self.disposeBag)
             }
-            observer(.completed)
             return Disposables.create {}
         }
     }
     
-    private func writeCharacteristicNotification(serviceUUID: CBUUID, chr: CBUUID, enable: Bool) -> Completable {
-        return Completable.create{ observer in
-            // set status to unknown state before prior to notification write
-            if let pair = self.characteristicsNotification.first(where: { (p) -> Bool in
-                return p.first?.key.isEqual(chr) ?? false
-            }) {
-                pair.first?.value.set(self.ATT_NOTIFY_OR_INDICATE_STATE_UNKNOWN)
-            }
-            
-            do {
-                try self.gattServiceTransmitter?.setCharacteristicNotify(self, serviceUuid: serviceUUID, characteristicUuid: chr, notify: enable)
-            } catch let err {
-                observer(.error(err))
-            }
-            
-            observer(.completed)
-            return Disposables.create {}
+    func containsCharacteristic( _ chr: CBUUID ) -> Bool {
+        return characteristics.contains(chr)
+    }
+    
+    func containsNotifyCharacteristic( _ chr: CBUUID ) -> Bool {
+        return notificationCharacteristics.contains {
+            return $0.uuid.isEqual(chr)
         }
-        .andThen(self.waitNotification(chr, true, toBeEnabled: enable))
+    }
+    
+    func containsReadCharacteristic( _ chr: CBUUID ) -> Bool {
+        return characteristicsRead.contains(chr)
+    }
+    
+    func getNotificationCharacteristicState(_ chr: CBUUID) -> AtomicInteger? {
+        return notificationCharacteristics.first {
+            return $0.uuid.isEqual(chr)
+        }?.state ?? nil
+    }
+    
+    // from protocol
+    public func disconnected() {
+        serviceDiscovered.set(false)
+        mtuSize = 20
+        availableCharacteristics.removeAll()
+        availableReadableCharacteristics.removeAll()
+        notificationCharacteristics.forEach { (pair) in
+            pair.state.set(ATT_NOTIFY_OR_INDICATE_STATE_UNKNOWN)
+        }
+        RxUtils.emitNext(notificationWaitObservers) { (observer) in
+            observer.obs(.error(BleGattException.gattDisconnected))
+        }
+        notificationWaitObservers.removeAll()
+        RxUtils.postErrorOnCompletableAndClearList(serviceWaitObservers, error: BleGattException.gattDisconnected)
+        disposeBag = DisposeBag() // Assigning new object disposes the current disposables
+    }
+    
+    public func processServiceData(_ chr: CBUUID , data: Data , err: Int ) {
+        assert(false, "processServiceData not overridden by parent class")
     }
     
     /// Call when notify descriptor is written on Gatt service
@@ -205,19 +176,16 @@ public class BleGattClientBase: Hashable {
     public func notifyDescriptorWritten(_ chr: CBUUID, enabled: Bool, err: Int) {
         BleLogger.trace("GATT Base notifyDescriptorWritten for chr: \(chr) enabled: \(enabled) err \(err)")
         
-        if let pair = characteristicsNotification.first(where: { (p) -> Bool in
-            return p.first?.key.isEqual(chr) ?? false
-        }) {
-            if err == 0 {
-                if enabled {
-                    pair.first?.value.set(ATT_NOTIFY_OR_INDICATE_ON)
-                } else {
-                    pair.first?.value.set(ATT_NOTIFY_OR_INDICATE_OFF)
-                }
+        if let notifChr = notificationCharacteristics.first(where: { return $0.uuid.isEqual(chr)}) {
+            if err == 0 && enabled {
+                notifChr.state.set(ATT_NOTIFY_OR_INDICATE_ON)
+            } else if err == 0 && !enabled {
+                notifChr.state.set(ATT_NOTIFY_OR_INDICATE_OFF)
             } else {
-                pair.first?.value.set(ATT_NOTIFY_OR_INDICATE_ERROR)
+                notifChr.state.set(ATT_NOTIFY_OR_INDICATE_ERROR)
             }
         }
+        
         let list = notificationWaitObservers.list().filter { (observer) -> Bool in
             return observer.uuid.isEqual(chr)
         }
@@ -226,7 +194,7 @@ public class BleGattClientBase: Hashable {
             if err == 0 {
                 object.obs(.completed)
             } else {
-                object.obs(.error(BleGattException.gattCharacteristicNotifyError(errorCode: err, errorDescription: "notify descprition write failed" )))
+                object.obs(.error(BleGattException.gattCharacteristicNotifyError(errorCode: err, errorDescription: "notify description write failed" )))
             }
         }
     }
@@ -275,7 +243,7 @@ public class BleGattClientBase: Hashable {
     }
     
     public func isCharacteristicNotificationEnabled(_ uuid: CBUUID) -> Bool {
-        if let integer = notificationAtomicInteger(uuid) {
+        if let integer = getNotificationCharacteristicState(uuid) {
             return integer.get() == 0
         }
         return false
@@ -306,29 +274,63 @@ public class BleGattClientBase: Hashable {
     ///
     /// - Parameters:
     ///   - chr: characteristic uuid to check
-    ///   - checkConnection: check intial connection from transport
-    /// - Returns: Observable, complete produced when notification is enabled or is already enabled
-    //                         error produced if attribute operation fails, or device disconnects
+    ///   - checkConnection: check initial connection from transport
+    /// - Returns: Observable, complete produced when notification is enabled or is already enabled. Error produced if attribute operation fails, or device disconnects
     public func waitNotificationEnabled(_ chr: CBUUID, checkConnection: Bool) -> Completable {
         return waitNotification(chr, checkConnection, toBeEnabled: true )
     }
     
-    /// Waits notification to be disabled
+    /// Tear down the client before connection closed
     ///
-    /// - Parameters:
-    ///   - chr: characteristic uuid to check
-    ///   - checkConnection: check intial connection from transport
-    /// - Returns: Observable, complete produced when notification is disabled or is already disabled
-    //                         error produced if attribute operation fails, or device disconnects
-    public func waitNotificationDisabled(_ chr: CBUUID, checkConnection: Bool) -> Completable {
-        return waitNotification(chr, checkConnection, toBeEnabled: false )
+    /// - Returns: Observable, complete produced when tear down is finished.
+    public func tearDown() -> Completable {
+        // notifications to be disabled before connection close
+        if let notification = notificationCharacteristics.first(where: { return $0.state.get() == ATT_NOTIFY_OR_INDICATE_ON && $0.disableOnDisconnect}) {
+            return self.disableCharacteristicNotification(chr: notification.uuid)
+        } else {
+            return Completable.empty()
+        }
+    }
+    
+    private func writeCharacteristicNotification(chr: CBUUID, enable: Bool) -> Completable {
+        return Completable.create{ observer in
+            // set status to unknown state prior to notification write
+            if let notifChr = self.notificationCharacteristics.first(where: {return $0.uuid.isEqual(chr)}) {
+                notifChr.state.set(self.ATT_NOTIFY_OR_INDICATE_STATE_UNKNOWN)
+            }
+            
+            do {
+                try self.gattServiceTransmitter?.setCharacteristicNotify(self, serviceUuid: self.serviceUuid, characteristicUuid: chr, notify: enable)
+                observer(.completed)
+                return Disposables.create {}
+            } catch let err {
+                observer(.error(err))
+                return Disposables.create {}
+            }
+        }
+        .andThen(self.waitNotification(chr, true, toBeEnabled: enable))
+    }
+    
+    private func addCharacteristicNotification(_ chr: CBUUID, disableOnDisconnect:Bool = false) {
+        characteristics.insert(chr)
+        if(!containsNotifyCharacteristic(chr)){
+            let chrNotification = notificationChr(uuid: chr, state: AtomicInteger.init(initialValue: ATT_NOTIFY_OR_INDICATE_STATE_UNKNOWN), disableOnDisconnect: disableOnDisconnect)
+            notificationCharacteristics.append(chrNotification)
+        }
+    }
+    
+    func removeCharacteristicNotification( _ chr: CBUUID ) {
+        BleLogger.trace("Remove notification characteristic for \(chr.uuidString)")
+        notificationCharacteristics.removeAll {
+            $0.uuid.isEqual(chr)
+        }
+        characteristics.remove(chr);
     }
     
     private func waitNotification(_ chr: CBUUID, _ checkConnection: Bool, toBeEnabled: Bool ) -> Completable {
-        var subscriber: NotificationWaitObserver!
-        return Completable.create{ observer in
-            let integer = self.notificationAtomicInteger(chr)
-            subscriber = NotificationWaitObserver(observer, uuid: chr)
+        return Completable.create { observer in
+            let integer = self.getNotificationCharacteristicState(chr)
+            let subscriber = NotificationWaitObserver(observer, uuid: chr)
             if integer != nil {
                 if !checkConnection || self.gattServiceTransmitter?.isConnected() ?? false {
                     if integer?.get() != self.ATT_NOTIFY_OR_INDICATE_STATE_UNKNOWN {
@@ -340,7 +342,7 @@ public class BleGattClientBase: Hashable {
                         } else if !toBeEnabled && integer?.get() == self.ATT_NOTIFY_OR_INDICATE_ON {
                             observer(.error(BleGattException.gattCharacteristicNotifyNotDisabled))
                         } else {
-                            observer(.error(BleGattException.gattCharacteristicNotifyError(errorCode: -1, errorDescription: "notify descprition failed. Waiting for enable: \(toBeEnabled). Error code is not known report as -1" )))
+                            observer(.error(BleGattException.gattCharacteristicNotifyError(errorCode: -1, errorDescription: "notify description failed. Waiting for enable: \(toBeEnabled). Error code is not known report as -1" )))
                         }
                     } else {
                         self.notificationWaitObservers.append(subscriber)

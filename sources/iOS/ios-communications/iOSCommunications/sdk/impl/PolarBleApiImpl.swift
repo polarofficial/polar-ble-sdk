@@ -822,11 +822,12 @@ extension PolarBleApiImpl: PolarBleApi {
     func searchForDevice() -> Observable<PolarDeviceInfo> {
         return listener.search(nil, identifiers: nil)
             .distinct()
-            .map({ (value) -> PolarDeviceInfo in
+            .map({ value -> PolarDeviceInfo in
                 return (value.advertisementContent.polarDeviceIdUntouched,
                         address: value.address,
                         rssi: Int(value.advertisementContent.medianRssi),
-                        name:value.advertisementContent.name,connectable:value.advertisementContent.isConnectable)
+                        name: value.advertisementContent.name,
+                        connectable: value.advertisementContent.isConnectable)
             })
     }
     
