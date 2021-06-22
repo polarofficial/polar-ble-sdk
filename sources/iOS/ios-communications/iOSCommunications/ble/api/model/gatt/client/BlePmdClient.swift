@@ -359,7 +359,7 @@ public class BlePmdClient: BleGattClientBase {
     
     let pmdCpInputQueue = AtomicList<Data>()
     var features: Data?
-    var pmdCpEnabled: AtomicInteger!
+    
     var observersAcc = AtomicList<RxObserver<(timeStamp: UInt64,samples: [(x: Int32,y: Int32,z: Int32)])>>()
     var observersGyro = AtomicList<RxObserver<(timeStamp: UInt64,samples: [(x: Float,y: Float,z: Float)])>>()
     var observersMagnetometer = AtomicList<RxObserver<(timeStamp: UInt64,samples: [(x: Float,y: Float,z: Float)])>>()
@@ -375,7 +375,6 @@ public class BlePmdClient: BleGattClientBase {
         addCharacteristicRead(BlePmdClient.PMD_CP)
         automaticEnableNotificationsOnConnect(chr: BlePmdClient.PMD_CP)
         automaticEnableNotificationsOnConnect(chr: BlePmdClient.PMD_MTU)
-        pmdCpEnabled = notificationAtomicInteger(BlePmdClient.PMD_CP)
     }
     
     // from base

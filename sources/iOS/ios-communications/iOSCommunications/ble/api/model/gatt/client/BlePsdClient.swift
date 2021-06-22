@@ -26,7 +26,7 @@ public struct Psd {
             skinContactSupported = (Int(data[4]) & 0x04) >> 2
         }
     }
-
+    
     
     public class PsdResponse {
         
@@ -46,7 +46,7 @@ public struct Psd {
             }
         }
     }
- 
+    
     public class PsdFeature {
         public let ecgSupported: Bool
         public let accSupported: Bool
@@ -77,7 +77,7 @@ public class BlePsdClient: BleGattClientBase {
     public static let PSD_OHR     = CBUUID(string: "FB005C24-02E7-F387-1CAD-8ACD2D8DF0C8")
     public static let PSD_ECG     = CBUUID(string: "FB005C23-02E7-F387-1CAD-8ACD2D8DF0C8")
     public static let PSD_ACC     = CBUUID(string: "FB005C25-02E7-F387-1CAD-8ACD2D8DF0C8")
-
+    
     var observers = AtomicList<RxObserver<Psd.PPData>>()
     var observersFeature = AtomicList<RxObserverSingle<Psd.PsdFeature>>()
     // operation locks
@@ -91,7 +91,7 @@ public class BlePsdClient: BleGattClientBase {
         automaticEnableNotificationsOnConnect(chr: BlePsdClient.PSD_CP)
         automaticEnableNotificationsOnConnect(chr: BlePsdClient.PSD_PP)
         addCharacteristicRead(BlePsdClient.PSD_FEATURE)
-        psdEnabled = notificationAtomicInteger(BlePsdClient.PSD_CP)
+        psdEnabled = getNotificationCharacteristicState(BlePsdClient.PSD_CP)
     }
     
     // from base
@@ -108,9 +108,9 @@ public class BlePsdClient: BleGattClientBase {
             stride(from: 0, to: data.count, by: PSD_PP_DATA_SIZE).map { (start) -> Data in
                 let end = (start.advanced(by: PSD_PP_DATA_SIZE) > data.count) ? data.count-start : PSD_PP_DATA_SIZE
                 return data.subdata(in: start..<start.advanced(by: end))
-                }.forEach { (content) in
-                    RxUtils.emitNext(observers) { (observer) in
-                        observer.obs.onNext(Psd.PPData(content))
+            }.forEach { (content) in
+                RxUtils.emitNext(observers) { (observer) in
+                    observer.obs.onNext(Psd.PPData(content))
                 }
             }
         } else if(chr.isEqual(BlePsdClient.PSD_CP)){
@@ -124,7 +124,7 @@ public class BlePsdClient: BleGattClientBase {
     }
     
     fileprivate func sendPsdCommandAndProcessResponse(_ observer: (RxSwift.SingleEvent<Psd.PsdResponse>) -> (),
-                                                        packet: Data) {
+                                                      packet: Data) {
         do{
             if let transport = self.gattServiceTransmitter {
                 try transport.transmitMessage(self, serviceUuid: BlePsdClient.PSD_SERVICE, characteristicUuid: BlePsdClient.PSD_CP, packet: packet, withResponse: true)
@@ -152,7 +152,7 @@ public class BlePsdClient: BleGattClientBase {
     //                              , next psd
     public func sendControlpointCommand(_ command: PsdMessage, value: [UInt8])  -> Single<Psd.PsdResponse> {       
         return Single.create{ observer in
-            if self.psdEnabled.get() == 0 {
+            if self.psdEnabled.get() == self.ATT_NOTIFY_OR_INDICATE_ON {
                 switch command {
                 case .psdStartOhrPpStream: fallthrough
                 case .psdStopOhrPpStream:

@@ -51,8 +51,8 @@ public class BlePsFtpClient: BleGattClientBase {
         automaticEnableNotificationsOnConnect(chr: BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC)
         automaticEnableNotificationsOnConnect(chr: BlePsFtpClient.PSFTP_D2H_NOTIFICATION_CHARACTERISTIC)
         addCharacteristic(BlePsFtpClient.PSFTP_H2D_NOTIFICATION_CHARACTERISTIC)
-        mtuNotificationEnabled = notificationAtomicInteger(BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC)
-        pftpD2HNotificationEnabled = notificationAtomicInteger(BlePsFtpClient.PSFTP_D2H_NOTIFICATION_CHARACTERISTIC)
+        mtuNotificationEnabled = getNotificationCharacteristicState(BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC)
+        pftpD2HNotificationEnabled = getNotificationCharacteristicState(BlePsFtpClient.PSFTP_D2H_NOTIFICATION_CHARACTERISTIC)
     }
     
     deinit {
@@ -182,7 +182,7 @@ public class BlePsFtpClient: BleGattClientBase {
     }
     
     fileprivate func handleResponseError(_ packet: [Data : Int]!, error: Error) throws {
-        if(mtuNotificationEnabled.get() != 0){
+        if(mtuNotificationEnabled.get() != ATT_NOTIFY_OR_INDICATE_ON){
             throw BleGattException.gattDisconnected
         }else if packet != nil && packet.first?.1 != 0 {
             throw BlePsFtpException.responseError(errorCode: (packet.first?.1)!)

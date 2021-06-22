@@ -46,8 +46,8 @@ public protocol BleDeviceListener{
     ///
     /// - Parameters:
     ///   - uuids: optional list of services, to look for from corebluetooth
-    ///   - identifiers: device identifiers to look for from corebluetooth
-    ///   - preFilter: pre filter before memory allocation, for pref reason
+    ///   - identifiers: optional list of device identifiers to look for from corebluetooth
+    ///   - preFilter: pre filter before memory allocation, for performance reason
     /// - Returns: Observable stream of device advertisements
     func search(_ uuids: [CBUUID]?, identifiers: [UUID]?, fetchKnownDevices: Bool)  -> Observable<BleDeviceSession>
     

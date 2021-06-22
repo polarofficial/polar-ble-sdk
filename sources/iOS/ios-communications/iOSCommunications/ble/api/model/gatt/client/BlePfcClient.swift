@@ -73,7 +73,7 @@ public class BlePfcClient: BleGattClientBase{
     let pfcInputQueue       = AtomicList<[Data: Int]>()
     var pfcFeatureData      = AtomicType<Data>(initialValue: Data())
     let pfcFeatureObservers = AtomicList<RxObserverSingle<Pfc.PfcFeature>>()
-
+    
     public enum PfcMessage: Int{
         /// configure hr broadcast setting, single byte parameter: 0 = off, 1 = on
         case pfcConfigureBroadcast = 1
@@ -100,17 +100,17 @@ public class BlePfcClient: BleGattClientBase{
         
         public var description : String {
             switch self {
-                case .pfcConfigureBroadcast:                     return "PFC_CONFIGURE_BROADCAST"
-                case .pfcRequestBroadcastSetting:               return "PFC_REQUEST_BROADCAST_SETTING"
-                case .pfcConfigure5khz:                          return "PFC_CONFIGURE_5KHZ"
-                case .pfcRequest5khzSetting:                    return "PFC_REQUEST_5KHZ_SETTING"
-                case .pfcConfigureAdaptiveTxPowerLevel:       return "PFC_CONFIGURE_ADAPTIVE_TX_POWER_LEVEL"
-                case .pfcRequestAdaptiveTxPowerLevelSetting: return "PFC_REQUEST_ADAPTIVE_TX_POWER_LEVEL_SETTING"
-                case .pfcConfigureBleMode: return "PFC_CONFIGURE_BLE_MODE"
-                case .pfcConfigureMultiConnection:              return "PFC_CONFIGURE_MULTI_CONNECTION"
-                case .pfcRequestMultiConnectionSetting:        return "PFC_REQUEST_MULTI_CONNECTION_SETTING"
-                case .pfcConfigureAntPlusSetting:              return "PFC_CONFIGURE_ANT_PLUS_SETTING"
-                case .pfcRequestAntPlusSetting:                return "PFC_REQUEST_ANT_PLUS_SETTING"
+            case .pfcConfigureBroadcast:                     return "PFC_CONFIGURE_BROADCAST"
+            case .pfcRequestBroadcastSetting:               return "PFC_REQUEST_BROADCAST_SETTING"
+            case .pfcConfigure5khz:                          return "PFC_CONFIGURE_5KHZ"
+            case .pfcRequest5khzSetting:                    return "PFC_REQUEST_5KHZ_SETTING"
+            case .pfcConfigureAdaptiveTxPowerLevel:       return "PFC_CONFIGURE_ADAPTIVE_TX_POWER_LEVEL"
+            case .pfcRequestAdaptiveTxPowerLevelSetting: return "PFC_REQUEST_ADAPTIVE_TX_POWER_LEVEL_SETTING"
+            case .pfcConfigureBleMode: return "PFC_CONFIGURE_BLE_MODE"
+            case .pfcConfigureMultiConnection:              return "PFC_CONFIGURE_MULTI_CONNECTION"
+            case .pfcRequestMultiConnectionSetting:        return "PFC_REQUEST_MULTI_CONNECTION_SETTING"
+            case .pfcConfigureAntPlusSetting:              return "PFC_CONFIGURE_ANT_PLUS_SETTING"
+            case .pfcRequestAntPlusSetting:                return "PFC_REQUEST_ANT_PLUS_SETTING"
             }
         }
     }
@@ -119,7 +119,7 @@ public class BlePfcClient: BleGattClientBase{
         super.init(serviceUuid: BlePfcClient.PFC_SERVICE, gattServiceTransmitter: gattServiceTransmitter)
         automaticEnableNotificationsOnConnect(chr: BlePfcClient.PFC_CP)
         addCharacteristicRead(PFC_FEATURE)
-        pfcEnabled = notificationAtomicInteger(BlePfcClient.PFC_CP)
+        pfcEnabled = getNotificationCharacteristicState(BlePfcClient.PFC_CP)
     }
     
     // from base
@@ -179,24 +179,24 @@ public class BlePfcClient: BleGattClientBase{
     /// - Returns: Single stream: success @see pfc.PfcResponse, error
     public func sendControlPointCommand(_ command: PfcMessage, value: [UInt8]) -> Single<Pfc.PfcResponse> {
         return Single.create{ observer in
-            if self.pfcEnabled.get() == 0 {
+            if self.pfcEnabled.get() == self.ATT_NOTIFY_OR_INDICATE_ON {
                 switch command {
-                    case .pfcRequestBroadcastSetting: fallthrough
-                    case .pfcRequest5khzSetting: fallthrough
-                    case .pfcRequestMultiConnectionSetting: fallthrough
-                    case .pfcRequestAdaptiveTxPowerLevelSetting: fallthrough
-                    case .pfcRequestAntPlusSetting:
-                        self.sendPfcCommandAndProcessResponse(observer, packet: Data([UInt8(command.rawValue)]))
-                    case .pfcConfigure5khz: fallthrough
-                    case .pfcConfigureBroadcast: fallthrough
-                    case .pfcConfigureMultiConnection: fallthrough
-                    case .pfcConfigureBleMode: fallthrough
-                    case .pfcConfigureAdaptiveTxPowerLevel: fallthrough
-                    case .pfcConfigureAntPlusSetting:
-                        var packet = Data()
-                        packet.append(UInt8(command.rawValue))
-                        packet.append(contentsOf: value)
-                        self.sendPfcCommandAndProcessResponse(observer, packet: packet)
+                case .pfcRequestBroadcastSetting: fallthrough
+                case .pfcRequest5khzSetting: fallthrough
+                case .pfcRequestMultiConnectionSetting: fallthrough
+                case .pfcRequestAdaptiveTxPowerLevelSetting: fallthrough
+                case .pfcRequestAntPlusSetting:
+                    self.sendPfcCommandAndProcessResponse(observer, packet: Data([UInt8(command.rawValue)]))
+                case .pfcConfigure5khz: fallthrough
+                case .pfcConfigureBroadcast: fallthrough
+                case .pfcConfigureMultiConnection: fallthrough
+                case .pfcConfigureBleMode: fallthrough
+                case .pfcConfigureAdaptiveTxPowerLevel: fallthrough
+                case .pfcConfigureAntPlusSetting:
+                    var packet = Data()
+                    packet.append(UInt8(command.rawValue))
+                    packet.append(contentsOf: value)
+                    self.sendPfcCommandAndProcessResponse(observer, packet: packet)
                 }
             } else {
                 observer(.failure(BleGattException.gattCharacteristicNotifyNotEnabled))

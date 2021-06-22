@@ -93,38 +93,6 @@ class BleHrClientTest: XCTestCase {
         }
     }
     
-    // GIVEN that observe HR notifications observable is subscriped multiple times
-    // WHEN observable is subscriped multiple times
-    // THEN enable notifications is sent only on first subscripe
-    // AND WHEN observable is disposed multiple times
-    // THEN disable notifications is sent only on last dispose
-    func testEnableNotificationsEvent() throws {
-        // Arrange
-        let observer1 = scheduler.createObserver(BleHrClient.BleHrNotification.self)
-        let observer2 = scheduler.createObserver(BleHrClient.BleHrNotification.self)
-        
-        // Act
-        let observable1 = bleHrClient.observeHrNotifications(true)
-        let observable2 = bleHrClient.observeHrNotifications(true)
-        
-        let disposable1 = observable1.subscribe(observer1)
-        let disposable2 = observable2.subscribe(observer2)
-        scheduler.start()
-        
-        // Assert
-        XCTAssertEqual(1, mockGattServiceTransmitterImpl.setCharateristicsNotifyCache.count)
-        XCTAssertEqual(BleHrClient.HR_MEASUREMENT, mockGattServiceTransmitterImpl.setCharateristicsNotifyCache[0].characteristicUuid)
-        XCTAssertEqual(true,  mockGattServiceTransmitterImpl.setCharateristicsNotifyCache[0].notify)
-        disposable1.dispose()
-        
-        XCTAssertEqual(1, mockGattServiceTransmitterImpl.setCharateristicsNotifyCache.count)
-        disposable2.dispose()
-        
-        XCTAssertEqual(2, mockGattServiceTransmitterImpl.setCharateristicsNotifyCache.count)
-        XCTAssertEqual(BleHrClient.HR_MEASUREMENT, mockGattServiceTransmitterImpl.setCharateristicsNotifyCache[1].characteristicUuid)
-        XCTAssertEqual(false,  mockGattServiceTransmitterImpl.setCharateristicsNotifyCache[1].notify)
-    }
-    
     // GIVEN that BLE HR Service client observable is receiving hr values
     // WHEN observable is subscriped
     // THEN no values in cache

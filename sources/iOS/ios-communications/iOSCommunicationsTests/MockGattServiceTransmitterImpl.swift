@@ -6,7 +6,7 @@ import CoreBluetooth
 
 class MockGattServiceTransmitterImpl: BleAttributeTransportProtocol {
     var mockConnectionStatus: Bool = true
-    var setCharateristicsNotifyCache: [(characteristicUuid: CBUUID, notify: Bool)] = []
+    var setCharacteristicsNotifyCache: [(characteristicUuid: CBUUID, notify: Bool)] = []
     
     func isConnected() -> Bool {
         return mockConnectionStatus
@@ -29,7 +29,7 @@ class MockGattServiceTransmitterImpl: BleAttributeTransportProtocol {
     }
     
     func setCharacteristicNotify(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID, notify: Bool) throws {
-        setCharateristicsNotifyCache.append((characteristicUuid, notify))
+        setCharacteristicsNotifyCache.append((characteristicUuid, notify))
         parent.notifyDescriptorWritten(characteristicUuid, enabled: notify, err: 0)
     }
     

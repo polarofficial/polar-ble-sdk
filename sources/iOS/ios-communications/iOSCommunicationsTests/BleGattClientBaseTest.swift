@@ -36,7 +36,7 @@ class BleGattClientBaseTest: XCTestCase {
         
         //Assert
         XCTAssertTrue(bleGattClientBase.containsNotifyCharacteristic(someBleCharacteristicsUUID))
-        XCTAssertEqual(-1, bleGattClientBase.notificationAtomicInteger(someBleCharacteristicsUUID)!.get())
+        XCTAssertEqual(-1, bleGattClientBase.getNotificationCharacteristicState(someBleCharacteristicsUUID)!.get())
         
         XCTAssertTrue(bleGattClientBase.containsCharacteristic(someBleCharacteristicsUUID))
         XCTAssertFalse(bleGattClientBase.containsReadCharacteristic(someBleCharacteristicsUUID))
@@ -102,35 +102,5 @@ class BleGattClientBaseTest: XCTestCase {
         case .failed(_, _):
             return XCTFail()
         }
-    }
-    
-    // GIVEN that service client enables the notifications
-    // WHEN notification is enabled
-    // THEN enable notification charteristic is sent once
-    // AND notification is disabled
-    // THEN disable notification charteristic is sent once
-    func testDisableNotificationsEvent() throws {
-        // Arrange
-        let someBleCharacteristicUUID = CBUUID(string: "12ff")
-        let observer = scheduler.createObserver(Void.self)
-        
-        // Act
-        let enableObservable = bleGattClientBase.enableCharacteristicNotification(serviceUUID: BleGattClientBaseTest.SOME_BLE_SERVICE_UUID, chr: someBleCharacteristicUUID)
-        let anotherEnableObservable = bleGattClientBase.enableCharacteristicNotification(serviceUUID: BleGattClientBaseTest.SOME_BLE_SERVICE_UUID, chr: someBleCharacteristicUUID)
-        let disableObserable = bleGattClientBase.disableCharacteristicNotification(serviceUUID: BleGattClientBaseTest.SOME_BLE_SERVICE_UUID, chr: someBleCharacteristicUUID)
-        let anotherDisableObserable = bleGattClientBase.disableCharacteristicNotification(serviceUUID: BleGattClientBaseTest.SOME_BLE_SERVICE_UUID, chr: someBleCharacteristicUUID)
-        scheduler.start()
-        
-        enableObservable.subscribe(with: observer).disposed(by: disposeBag)
-        anotherEnableObservable.subscribe(with: observer).disposed(by: disposeBag)
-        disableObserable.subscribe(with: observer).disposed(by: disposeBag)
-        anotherDisableObserable.subscribe(with: observer).disposed(by: disposeBag)
-        
-        // Assert
-        XCTAssertEqual(2,  mockGattServiceTransmitterImpl.setCharateristicsNotifyCache.count)
-        XCTAssertEqual(someBleCharacteristicUUID, mockGattServiceTransmitterImpl.setCharateristicsNotifyCache[0].characteristicUuid)
-        XCTAssertTrue(mockGattServiceTransmitterImpl.setCharateristicsNotifyCache[0].notify)
-        XCTAssertEqual(someBleCharacteristicUUID, mockGattServiceTransmitterImpl.setCharateristicsNotifyCache[1].characteristicUuid)
-        XCTAssertFalse(mockGattServiceTransmitterImpl.setCharateristicsNotifyCache[1].notify)
     }
 }
