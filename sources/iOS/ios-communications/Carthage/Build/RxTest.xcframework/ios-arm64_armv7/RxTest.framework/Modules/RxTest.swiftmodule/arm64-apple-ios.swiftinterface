@@ -1,5 +1,5 @@
 // swift-interface-format-version: 1.0
-// swift-compiler-version: Apple Swift version 5.3.2 (swiftlang-1200.0.45 clang-1200.0.32.28)
+// swift-compiler-version: Apple Swift version 5.4 (swiftlang-1205.0.26.9 clang-1205.0.19.55)
 // swift-module-flags: -target arm64-apple-ios9.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name RxTest
 import Foundation
 import RxSwift
@@ -67,8 +67,8 @@ public class TestScheduler : RxSwift.VirtualTimeScheduler<RxTest.TestSchedulerVi
   public func start<Element, OutputSequence>(created: RxTest.TestTime, subscribed: RxTest.TestTime, disposed: RxTest.TestTime, create: @escaping () -> OutputSequence) -> RxTest.TestableObserver<Element> where Element == OutputSequence.Element, OutputSequence : RxSwift.ObservableConvertibleType
   public func start<Element, OutputSequence>(disposed: RxTest.TestTime, create: @escaping () -> OutputSequence) -> RxTest.TestableObserver<Element> where Element == OutputSequence.Element, OutputSequence : RxSwift.ObservableConvertibleType
   public func start<Element, OutputSequence>(_ create: @escaping () -> OutputSequence) -> RxTest.TestableObserver<Element> where Element == OutputSequence.Element, OutputSequence : RxSwift.ObservableConvertibleType
-  @objc deinit
   override public init(initialClock: RxSwift.VirtualTimeScheduler<RxTest.TestSchedulerVirtualTimeConverter>.VirtualTime, converter: RxTest.TestSchedulerVirtualTimeConverter)
+  @objc deinit
 }
 extension Recorded {
   public static func next<T>(_ time: RxTest.TestTime, _ element: T) -> RxTest.Recorded<RxSwift.Event<T>> where Value == RxSwift.Event<T>

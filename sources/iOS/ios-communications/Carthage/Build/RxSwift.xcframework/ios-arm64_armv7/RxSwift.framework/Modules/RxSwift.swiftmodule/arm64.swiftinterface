@@ -1,5 +1,5 @@
 // swift-interface-format-version: 1.0
-// swift-compiler-version: Apple Swift version 5.3.2 (swiftlang-1200.0.45 clang-1200.0.32.28)
+// swift-compiler-version: Apple Swift version 5.4 (swiftlang-1205.0.26.9 clang-1205.0.19.55)
 // swift-module-flags: -target arm64-apple-ios9.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name RxSwift
 import Darwin
 import Dispatch
@@ -211,10 +211,10 @@ public enum TakeBehavior {
   case inclusive
   case exclusive
   public static func == (a: RxSwift.TakeBehavior, b: RxSwift.TakeBehavior) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
   public var hashValue: Swift.Int {
     get
   }
-  public func hash(into hasher: inout Swift.Hasher)
 }
 extension ObservableType where Self.Element : RxSwift.EventConvertible {
   public func dematerialize() -> RxSwift.Observable<Self.Element.Element>
@@ -266,8 +266,8 @@ extension ObserverType {
   final public func on(_ event: RxSwift.Event<Element>)
   override final public func subscribe<Observer>(_ observer: Observer) -> RxSwift.Disposable where Element == Observer.Element, Observer : RxSwift.ObserverType
   final public func asObserver() -> RxSwift.AsyncSubject<Element>
-  @objc deinit
   public typealias Observer = RxSwift.AsyncSubject<Element>
+  @objc deinit
 }
 extension ObservableType {
   public func enumerated() -> RxSwift.Observable<(index: Swift.Int, element: Self.Element)>
@@ -580,10 +580,10 @@ public enum VirtualTimeComparison {
   case equal
   case greaterThan
   public static func == (a: RxSwift.VirtualTimeComparison, b: RxSwift.VirtualTimeComparison) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
   public var hashValue: Swift.Int {
     get
   }
-  public func hash(into hasher: inout Swift.Hasher)
 }
 extension ObservableType {
   public func skip<Source>(until other: Source) -> RxSwift.Observable<Self.Element> where Source : RxSwift.ObservableType
@@ -684,8 +684,8 @@ public protocol SubjectType : RxSwift.ObservableType {
 }
 public class HistoricalScheduler : RxSwift.VirtualTimeScheduler<RxSwift.HistoricalSchedulerTimeConverter> {
   public init(initialClock: RxSwift.RxTime = Date(timeIntervalSince1970: 0))
-  @objc deinit
   override public init(initialClock: RxSwift.VirtualTimeScheduler<RxSwift.HistoricalSchedulerTimeConverter>.VirtualTime, converter: RxSwift.HistoricalSchedulerTimeConverter)
+  @objc deinit
 }
 @_inheritsConvenienceInitializers final public class PublishSubject<Element> : RxSwift.Observable<Element>, RxSwift.SubjectType, RxSwift.Cancelable, RxSwift.ObserverType {
   public typealias SubjectObserverType = RxSwift.PublishSubject<Element>
@@ -973,8 +973,8 @@ extension ObservableType {
   override final public func subscribe<Observer>(_ observer: Observer) -> RxSwift.Disposable where Element == Observer.Element, Observer : RxSwift.ObserverType
   final public func asObserver() -> RxSwift.BehaviorSubject<Element>
   final public func dispose()
-  @objc deinit
   public typealias Observer = RxSwift.BehaviorSubject<Element>
+  @objc deinit
 }
 extension ObservableType {
   public func window(timeSpan: RxSwift.RxTimeInterval, count: Swift.Int, scheduler: RxSwift.SchedulerType) -> RxSwift.Observable<RxSwift.Observable<Self.Element>>
@@ -1038,7 +1038,7 @@ extension ObservableType {
   }
   convenience public init(internalSerialQueueName: Swift.String, serialQueueConfiguration: ((Dispatch.DispatchQueue) -> Swift.Void)? = nil, leeway: Dispatch.DispatchTimeInterval = DispatchTimeInterval.nanoseconds(0))
   convenience public init(queue: Dispatch.DispatchQueue, internalSerialQueueName: Swift.String, leeway: Dispatch.DispatchTimeInterval = DispatchTimeInterval.nanoseconds(0))
-  @available(OSX 10.10, *)
+  @available(macOS 10.10, *)
   convenience public init(qos: Dispatch.DispatchQoS, internalSerialQueueName: Swift.String = "rx.global_dispatch_queue.serial", leeway: Dispatch.DispatchTimeInterval = DispatchTimeInterval.nanoseconds(0))
   final public func schedule<StateType>(_ state: StateType, action: @escaping (StateType) -> RxSwift.Disposable) -> RxSwift.Disposable
   final public func scheduleRelative<StateType>(_ state: StateType, dueTime: RxSwift.RxTimeInterval, action: @escaping (StateType) -> RxSwift.Disposable) -> RxSwift.Disposable
@@ -1097,10 +1097,10 @@ public enum SubjectLifetimeScope {
   case whileConnected
   case forever
   public static func == (a: RxSwift.SubjectLifetimeScope, b: RxSwift.SubjectLifetimeScope) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
   public var hashValue: Swift.Int {
     get
   }
-  public func hash(into hasher: inout Swift.Hasher)
 }
 extension ObservableType {
   public func share(replay: Swift.Int = 0, scope: RxSwift.SubjectLifetimeScope = .whileConnected) -> RxSwift.Observable<Self.Element>
