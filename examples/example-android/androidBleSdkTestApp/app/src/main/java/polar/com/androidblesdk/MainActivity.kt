@@ -524,7 +524,6 @@ class MainActivity : AppCompatActivity() {
 
         toggleSdkModeButton.setOnClickListener {
             toggleSdkModeButton.isEnabled = false
-            Log.d("TESTING", "status sdkMode $sdkModeEnabledStatus")
             if (!sdkModeEnabledStatus) {
                 sdkModeEnableDisposable = api.enableSDKMode(deviceId)
                     .observeOn(AndroidSchedulers.mainThread())
@@ -538,7 +537,6 @@ class MainActivity : AppCompatActivity() {
                             toggleSdkModeButton.isEnabled = true
                             sdkModeEnabledStatus = true
                             toggleButtonDown(toggleSdkModeButton, R.string.disable_sdk_mode)
-                            Log.d("TESTING", "status  enabled")
                         },
                         { error ->
                             toggleSdkModeButton.isEnabled = true
