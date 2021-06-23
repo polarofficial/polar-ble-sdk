@@ -480,7 +480,10 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
             final BlePsFtpClient client = (BlePsFtpClient) session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE);
             final boolean recordingSupported = BlePolarDeviceCapabilitiesUtility.isRecordingSupported(session.getPolarDeviceType());
             if (recordingSupported) {
-                return client.query(PftpRequest.PbPFtpQuery.REQUEST_STOP_RECORDING_VALUE, null).toObservable().ignoreElements().onErrorResumeNext(throwable -> Completable.error(handleError(throwable)));
+                return client.query(PftpRequest.PbPFtpQuery.REQUEST_STOP_RECORDING_VALUE, null)
+                        .toObservable()
+                        .ignoreElements()
+                        .onErrorResumeNext(throwable -> Completable.error(handleError(throwable)));
             }
             return Completable.error(new PolarOperationNotSupported());
         } catch (Throwable error) {
@@ -1013,11 +1016,11 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
     }
 
     @NonNull
-    protected Exception handleError(Throwable throwable) {
+    protected Exception handleError(@NonNull Throwable throwable) {
         if (throwable instanceof BleDisconnected) {
             return new PolarDeviceDisconnected();
         } else {
-            return new Exception("Unknown Error: " + throwable.getLocalizedMessage());
+            return new Exception(throwable);
         }
     }
 
