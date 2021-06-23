@@ -3,7 +3,7 @@ set -e
 
 cd ..
 
-XC_FRAMEWORK_OUTPUT_FOLDER="SdkBuild"
+XC_FRAMEWORK_OUTPUT_FOLDER="polar-sdk-ios"
 XC_FRAMEWORK_ARCHIVES_FOLDER="archives"
 
 # Clean up before building
