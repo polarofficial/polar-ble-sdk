@@ -380,13 +380,7 @@ public class BlePmdClient: BleGattClientBase {
     // from base
     override public func disconnected() {
         super.disconnected()
-        RxUtils.postErrorAndClearList(observersAcc, error: BleGattException.gattDisconnected)
-        RxUtils.postErrorAndClearList(observersGyro, error: BleGattException.gattDisconnected)
-        RxUtils.postErrorAndClearList(observersMagnetometer, error: BleGattException.gattDisconnected)
-        RxUtils.postErrorAndClearList(observersEcg, error: BleGattException.gattDisconnected)
-        RxUtils.postErrorAndClearList(observersPpg, error: BleGattException.gattDisconnected)
-        RxUtils.postErrorAndClearList(observersPpi, error: BleGattException.gattDisconnected)
-        RxUtils.postErrorAndClearList(observersBioz, error: BleGattException.gattDisconnected)
+        clearStreamObservers(error: BleGattException.gattDisconnected)
         RxUtils.postErrorOnSingleAndClearList(observersFeature, error: BleGattException.gattDisconnected)
         pmdCpInputQueue.removeAll()
         features = nil
@@ -630,7 +624,7 @@ public class BlePmdClient: BleGattClientBase {
                 if cpResponse.errorCode == .success {
                     observer(.completed)
                 } else {
-                    observer(.error(Pmd.BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
+                     observer(.error(Pmd.BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
                 }
             } catch let err {
                 observer(.error(err))
@@ -720,7 +714,15 @@ public class BlePmdClient: BleGattClientBase {
                 observer(.error(err))
             }
             return Disposables.create{}
-        }.subscribe(on: baseSerialDispatchQueue)
+        }
+        .andThen( { () -> Completable in
+            return Completable.create { observer in
+                self.clearStreamObservers(error: BleGattException.gattOperationModeChange(description: "SDK mode enabled"))
+                observer(.completed)
+                return Disposables.create()
+            }
+        }())
+        .subscribe(on: baseSerialDispatchQueue)
     }
     
     public func stopSdkMode() -> Completable {
@@ -737,7 +739,15 @@ public class BlePmdClient: BleGattClientBase {
                 observer(.error(err))
             }
             return Disposables.create{}
-        }.subscribe(on: baseSerialDispatchQueue)
+        }
+        .andThen( { () -> Completable in
+            return Completable.create { observer in
+                self.clearStreamObservers(error: BleGattException.gattOperationModeChange(description: "SDK mode disabled"))
+                observer(.completed)
+                return Disposables.create()
+            }
+        }())
+        .subscribe(on: baseSerialDispatchQueue)
     }
     
     private func sendControlPointCommand(_ data: Data) throws -> Pmd.PmdControlPointResponse {
@@ -754,5 +764,15 @@ public class BlePmdClient: BleGattClientBase {
             resp.parameters.append(parameters.subdata(in: 1..<parameters.count))
         }
         return resp
+    }
+    
+    private func clearStreamObservers(error : Error) {
+        RxUtils.postErrorAndClearList(observersAcc, error: error)
+        RxUtils.postErrorAndClearList(observersGyro, error: error)
+        RxUtils.postErrorAndClearList(observersMagnetometer, error: error)
+        RxUtils.postErrorAndClearList(observersEcg, error: error)
+        RxUtils.postErrorAndClearList(observersPpg, error: error)
+        RxUtils.postErrorAndClearList(observersPpi, error: error)
+        RxUtils.postErrorAndClearList(observersBioz, error: error)
     }
 }
