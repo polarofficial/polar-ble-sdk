@@ -1,5 +1,7 @@
 package com.androidcommunications.polar.common.ble;
 
+import androidx.annotation.NonNull;
+
 import com.androidcommunications.polar.api.ble.exceptions.BleDisconnected;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattTxInterface;
 
@@ -19,11 +21,15 @@ public final class RxUtils {
         throw new IllegalStateException("Utility class");
     }
 
-    public static <T> void postDisconnectedAndClearList(AtomicSet<T> list) {
+    public static <T> void postDisconnectedAndClearList(@NonNull AtomicSet<T> list) {
         postError(list, new BleDisconnected());
     }
 
-    public static <T> void postError(AtomicSet<T> list, Throwable throwable) {
+    public static <T> void postExceptionAndClearList(@NonNull AtomicSet<T> list, @NonNull Throwable throwable) {
+        postError(list, throwable);
+    }
+
+    public static <T> void postError(@NonNull AtomicSet<T> list, @NonNull Throwable throwable) {
         Set<T> objects = list.objects();
         for (T emitter : objects) {
             if (emitter instanceof ObservableEmitter) {

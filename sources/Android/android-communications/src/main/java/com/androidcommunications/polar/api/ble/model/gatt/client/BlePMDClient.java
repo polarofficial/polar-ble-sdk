@@ -3,12 +3,14 @@ package com.androidcommunications.polar.api.ble.model.gatt.client;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.androidcommunications.polar.api.ble.BleLogger;
 import com.androidcommunications.polar.api.ble.exceptions.BleAttributeError;
 import com.androidcommunications.polar.api.ble.exceptions.BleCharacteristicNotificationNotEnabled;
 import com.androidcommunications.polar.api.ble.exceptions.BleControlPointCommandError;
 import com.androidcommunications.polar.api.ble.exceptions.BleDisconnected;
+import com.androidcommunications.polar.api.ble.exceptions.BleOperationModeChange;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattBase;
 import com.androidcommunications.polar.api.ble.model.gatt.BleGattTxInterface;
 import com.androidcommunications.polar.common.ble.AtomicSet;
@@ -93,6 +95,7 @@ public class BlePMDClient extends BleGattBase {
             return numVal;
         }
 
+        @NonNull
         public static PmdMeasurementType fromId(byte id) {
             for (PmdMeasurementType type : values()) {
                 if (type.numVal == id) {
@@ -130,7 +133,7 @@ public class BlePMDClient extends BleGattBase {
         public final boolean ambientSupported;
         public final boolean sdkModeSupported;
 
-        public PmdFeature(final byte[] data) {
+        public PmdFeature(final @NonNull byte[] data) {
             ecgSupported = (data[1] & 0x01) != 0;
             ppgSupported = (data[1] & 0x02) != 0;
             accSupported = (data[1] & 0x04) != 0;
@@ -196,7 +199,7 @@ public class BlePMDClient extends BleGattBase {
             }
         }
 
-        public PmdControlPointResponse(byte[] data) {
+        public PmdControlPointResponse(@NonNull byte[] data) {
             responseCode = data[0];
             opCode = PmdControlPointCommand.values()[data[1]];
             measurementType = data[2];
@@ -242,21 +245,23 @@ public class BlePMDClient extends BleGattBase {
         }};
 
         // available settings
+        @Nullable
         public Map<PmdSettingType, Set<Integer>> settings = new TreeMap<>();
 
         // selected by client
+        @Nullable
         public Map<PmdSettingType, Integer> selected;
 
         public PmdSetting() {
         }
 
-        public PmdSetting(final byte[] data) {
+        public PmdSetting(final @NonNull byte[] data) {
             EnumMap<PmdSettingType, Set<Integer>> parsedSettings = parsePmdSettingsData(data);
             validateSettings(parsedSettings);
             this.settings = parsedSettings;
         }
 
-        public PmdSetting(Map<PmdSettingType, Integer> selected) {
+        public PmdSetting(@NonNull Map<PmdSettingType, Integer> selected) {
             PmdSetting.validateSelected(selected);
             this.selected = selected;
         }
@@ -290,27 +295,33 @@ public class BlePMDClient extends BleGattBase {
             }
         }
 
+        @NonNull
         public byte[] serializeSelected() {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            for (Map.Entry<PmdSettingType, Integer> p : selected.entrySet()) {
-                if (p.getKey() == PmdSettingType.FACTOR) {
-                    continue;
-                }
-                outputStream.write((byte) p.getKey().numVal);
-                outputStream.write((byte) 1);
-                int v = p.getValue();
-                int fieldSize = Objects.requireNonNull(typeToFieldSize.get(p.getKey()));
-                for (int i = 0; i < fieldSize; ++i) {
-                    outputStream.write((byte) (v >> (i * 8)));
+            if (selected != null) {
+                for (Map.Entry<PmdSettingType, Integer> p : selected.entrySet()) {
+                    if (p.getKey() == PmdSettingType.FACTOR) {
+                        continue;
+                    }
+                    outputStream.write((byte) p.getKey().numVal);
+                    outputStream.write((byte) 1);
+                    int v = p.getValue();
+                    int fieldSize = Objects.requireNonNull(typeToFieldSize.get(p.getKey()));
+                    for (int i = 0; i < fieldSize; ++i) {
+                        outputStream.write((byte) (v >> (i * 8)));
+                    }
                 }
             }
             return outputStream.toByteArray();
         }
 
+        @NonNull
         public PmdSetting maxSettings() {
             Map<PmdSettingType, Integer> set = new TreeMap<>();
-            for (Map.Entry<PmdSettingType, Set<Integer>> p : settings.entrySet()) {
-                set.put(p.getKey(), Collections.max(p.getValue()));
+            if (settings != null) {
+                for (Map.Entry<PmdSettingType, Set<Integer>> p : settings.entrySet()) {
+                    set.put(p.getKey(), Collections.max(p.getValue()));
+                }
             }
             return new PmdSetting(set);
         }
@@ -346,7 +357,8 @@ public class BlePMDClient extends BleGattBase {
         }
     }
 
-    public static List<List<Integer>> parseDeltaFrame(byte[] bytes, int channels, int bitWidth, int totalBitLength) {
+    @NonNull
+    public static List<List<Integer>> parseDeltaFrame(@NonNull byte[] bytes, int channels, int bitWidth, int totalBitLength) {
         int offset = 0;
         List<Boolean> bitSet = new ArrayList<>();
         for (byte b : bytes) {
@@ -376,7 +388,8 @@ public class BlePMDClient extends BleGattBase {
         return samples;
     }
 
-    public static List<Integer> parseDeltaFrameRefSamples(byte[] bytes, int channels, int resolution) {
+    @NonNull
+    public static List<Integer> parseDeltaFrameRefSamples(@NonNull byte[] bytes, int channels, int resolution) {
         List<Integer> samples = new ArrayList<>();
         int offset = 0;
         int channelCount = 0;
@@ -393,7 +406,8 @@ public class BlePMDClient extends BleGattBase {
         return samples;
     }
 
-    public static List<List<Integer>> parseDeltaFramesAll(byte[] value,
+    @NonNull
+    public static List<List<Integer>> parseDeltaFramesAll(@NonNull byte[] value,
                                                           int channels,
                                                           int resolution) {
         int offset = 0;
@@ -439,10 +453,10 @@ public class BlePMDClient extends BleGattBase {
             public byte paceDataTag;
         }
 
-        public long timeStamp;
-        public List<EcgSample> ecgSamples = new ArrayList<>();
+        public final long timeStamp;
+        public final List<EcgSample> ecgSamples = new ArrayList<>();
 
-        public EcgData(byte type, byte[] value, long timeStamp) {
+        public EcgData(byte type, @NonNull byte[] value, long timeStamp) {
             int offset = 0;
             this.timeStamp = timeStamp;
             while (offset < value.length) {
@@ -485,7 +499,7 @@ public class BlePMDClient extends BleGattBase {
         public final List<AccSample> accSamples = new ArrayList<>();
         public final long timeStamp;
 
-        public AccData(byte type, byte[] value, long timeStamp) {
+        public AccData(byte type, @NonNull byte[] value, long timeStamp) {
             int offset = 0;
             this.timeStamp = timeStamp;
             int resolution = (type + 1) * 8;
@@ -509,7 +523,7 @@ public class BlePMDClient extends BleGattBase {
          * @param resolution int bits
          * @param timeStamp  ns
          */
-        public AccData(byte[] value, float factor, int resolution, long timeStamp) {
+        public AccData(@NonNull byte[] value, float factor, int resolution, long timeStamp) {
             this.timeStamp = timeStamp;
             float accFactor = factor * 1000; // Modify the factor to get data in milliG
             ThreeAxisDeltaFramedData data = new ThreeAxisDeltaFramedData(value, accFactor, resolution, timeStamp);
@@ -544,7 +558,7 @@ public class BlePMDClient extends BleGattBase {
          * @param resolution int bits
          * @param timeStamp  ns
          */
-        public MagData(byte[] value, float factor, int resolution, long timeStamp) {
+        public MagData(@NonNull byte[] value, float factor, int resolution, long timeStamp) {
             this.timeStamp = timeStamp;
             ThreeAxisDeltaFramedData data = new ThreeAxisDeltaFramedData(value, factor, resolution, timeStamp);
             for (ThreeAxisDeltaFramedData.ThreeAxisSample sample : data.axisSamples) {
@@ -578,7 +592,7 @@ public class BlePMDClient extends BleGattBase {
          * @param resolution int bits
          * @param timeStamp  ns
          */
-        public GyrData(byte[] value, float factor, int resolution, long timeStamp) {
+        public GyrData(@NonNull byte[] value, float factor, int resolution, long timeStamp) {
             this.timeStamp = timeStamp;
             ThreeAxisDeltaFramedData data = new ThreeAxisDeltaFramedData(value, factor, resolution, timeStamp);
             for (ThreeAxisDeltaFramedData.ThreeAxisSample sample : data.axisSamples) {
@@ -608,6 +622,7 @@ public class BlePMDClient extends BleGattBase {
                 return numVal;
             }
 
+            @NonNull
             public static PpgFrameType fromId(int id) {
                 for (PpgFrameType type : values()) {
                     if (type.numVal == id) {
@@ -622,12 +637,12 @@ public class BlePMDClient extends BleGattBase {
             public final List<Integer> ppgDataSamples;
             public final long status;
 
-            public PpgSample(List<Integer> ppgDataSamples) {
+            public PpgSample(@NonNull List<Integer> ppgDataSamples) {
                 this.ppgDataSamples = ppgDataSamples;
                 this.status = 0;
             }
 
-            public PpgSample(List<Integer> ppgDataSamples, long status) {
+            public PpgSample(@NonNull List<Integer> ppgDataSamples, long status) {
                 this.ppgDataSamples = ppgDataSamples;
                 this.status = status;
             }
@@ -637,7 +652,7 @@ public class BlePMDClient extends BleGattBase {
         public final long timeStamp;
         public final int channels;
 
-        public PpgData(byte[] value, long timeStamp, int type) {
+        public PpgData(@NonNull byte[] value, long timeStamp, int type) {
             this.timeStamp = timeStamp;
             this.channels = type == 0 ? 4 : 18;
             final int step = 3;
@@ -665,7 +680,7 @@ public class BlePMDClient extends BleGattBase {
          * @param channels   number of channels in one sample
          * @param timeStamp  ns
          */
-        public PpgData(byte[] value, float factor, int resolution, int channels, long timeStamp) {
+        public PpgData(@NonNull byte[] value, float factor, int resolution, int channels, long timeStamp) {
             List<List<Integer>> samples = parseDeltaFramesAll(value, channels, resolution);
             for (List<Integer> sample : samples) {
                 for (int i = 0; i < sample.size(); i++) {
@@ -688,7 +703,7 @@ public class BlePMDClient extends BleGattBase {
             public final int skinContactStatus;
             public final int skinContactSupported;
 
-            public PPSample(byte[] data) {
+            public PPSample(@NonNull byte[] data) {
                 hr = (int) ((long) data[0] & 0xFFL);
                 ppInMs = (int) BleUtils.convertArrayToUnsignedLong(data, 1, 2);
                 ppErrorEstimate = (int) BleUtils.convertArrayToUnsignedLong(data, 3, 2);
@@ -701,7 +716,7 @@ public class BlePMDClient extends BleGattBase {
         public final List<PPSample> ppSamples = new ArrayList<>();
         public final long timeStamp;
 
-        public PpiData(byte[] data, long timeStamp) {
+        public PpiData(@NonNull byte[] data, long timeStamp) {
             int offset = 0;
             this.timeStamp = timeStamp;
             while (offset < data.length) {
@@ -819,7 +834,7 @@ public class BlePMDClient extends BleGattBase {
          * @param resolution int bits
          * @param timeStamp  ns
          */
-        public ThreeAxisDeltaFramedData(byte[] value, float factor, int resolution, long timeStamp) {
+        public ThreeAxisDeltaFramedData(@NonNull byte[] value, float factor, int resolution, long timeStamp) {
             this.timeStamp = timeStamp;
             List<List<Integer>> samples = parseDeltaFramesAll(value, 3, resolution);
             for (List<Integer> sample : samples) {
@@ -832,7 +847,7 @@ public class BlePMDClient extends BleGattBase {
         }
     }
 
-    public BlePMDClient(BleGattTxInterface txInterface) {
+    public BlePMDClient(@NonNull BleGattTxInterface txInterface) {
         super(txInterface, PMD_SERVICE);
         addCharacteristicNotification(PMD_CP);
         addCharacteristicRead(PMD_CP);
@@ -844,19 +859,7 @@ public class BlePMDClient extends BleGattBase {
     @Override
     public void reset() {
         super.reset();
-        RxUtils.postDisconnectedAndClearList(ecgObservers);
-        RxUtils.postDisconnectedAndClearList(accObservers);
-        RxUtils.postDisconnectedAndClearList(ppgObservers);
-        RxUtils.postDisconnectedAndClearList(ppiObservers);
-        RxUtils.postDisconnectedAndClearList(autoGainAFE4404Observers);
-        RxUtils.postDisconnectedAndClearList(autoGainAFE4410Observers);
-        RxUtils.postDisconnectedAndClearList(autoGainADPD4000Observers);
-        RxUtils.postDisconnectedAndClearList(biozObservers);
-        RxUtils.postDisconnectedAndClearList(afeOperationModeObservers);
-        RxUtils.postDisconnectedAndClearList(sportIdObservers);
-        RxUtils.postDisconnectedAndClearList(rdObservers);
-        RxUtils.postDisconnectedAndClearList(gyroObservers);
-        RxUtils.postDisconnectedAndClearList(magnetometerObservers);
+        clearStreamObservers(new BleDisconnected());
 
         synchronized (mutexFeature) {
             pmdFeatureData = null;
@@ -882,7 +885,7 @@ public class BlePMDClient extends BleGattBase {
     }
 
     @Override
-    public void processServiceData(UUID characteristic, final byte[] data, int status, boolean notifying) {
+    public void processServiceData(@NonNull UUID characteristic, final @NonNull byte[] data, int status, boolean notifying) {
         if (characteristic.equals(PMD_CP)) {
             if (notifying) {
                 pmdCpInputQueue.add(new Pair<>(data, status));
@@ -1088,7 +1091,8 @@ public class BlePMDClient extends BleGattBase {
      * - onSuccess settings query success, the queried settings emitted
      * - onError settings query failed
      */
-    public Single<PmdSetting> querySettings(PmdMeasurementType type) {
+    @NonNull
+    public Single<PmdSetting> querySettings(@NonNull PmdMeasurementType type) {
         return sendControlPointCommand(PmdControlPointCommand.GET_MEASUREMENT_SETTINGS, (byte) type.getNumVal())
                 .map(pmdControlPointResponse -> new PmdSetting(pmdControlPointResponse.parameters.toByteArray()));
     }
@@ -1100,7 +1104,8 @@ public class BlePMDClient extends BleGattBase {
      * - onSuccess full settings query success, the queried settings emitted
      * - onError full settings query failed
      */
-    public Single<PmdSetting> queryFullSettings(PmdMeasurementType type) {
+    @NonNull
+    public Single<PmdSetting> queryFullSettings(@NonNull PmdMeasurementType type) {
         return sendControlPointCommand(PmdControlPointCommand.GET_SDK_MODE_MEASUREMENT_SETTINGS, (byte) type.getNumVal())
                 .map(pmdControlPointResponse -> new PmdSetting(pmdControlPointResponse.parameters.toByteArray()));
     }
@@ -1108,6 +1113,7 @@ public class BlePMDClient extends BleGattBase {
     /**
      * @return Single stream
      */
+    @NonNull
     public Single<PmdFeature> readFeature(final boolean checkConnection) {
         return Single.create((SingleOnSubscribe<PmdFeature>) emitter -> {
             try {
@@ -1175,6 +1181,7 @@ public class BlePMDClient extends BleGattBase {
     public Completable startSDKMode() {
         return sendControlPointCommand(PmdControlPointCommand.REQUEST_MEASUREMENT_START, (byte) PmdMeasurementType.SDK_MODE.getNumVal())
                 .toObservable()
+                .doOnComplete(() -> clearStreamObservers(new BleOperationModeChange("SDK mode enabled")))
                 .ignoreElements();
     }
 
@@ -1189,6 +1196,7 @@ public class BlePMDClient extends BleGattBase {
     public Completable stopSDKMode() {
         return sendControlPointCommand(PmdControlPointCommand.STOP_MEASUREMENT, (byte) PmdMeasurementType.SDK_MODE.getNumVal())
                 .toObservable()
+                .doOnComplete(() -> clearStreamObservers(new BleOperationModeChange("SDK mode disabled")))
                 .ignoreElements();
     }
 
@@ -1226,6 +1234,7 @@ public class BlePMDClient extends BleGattBase {
      * - onComplete non produced if stream is not further configured <BR>
      * - onError BleDisconnected produced on disconnection <BR>
      */
+    @NonNull
     public Flowable<BlePMDClient.AccData> monitorAccNotifications(final boolean checkConnection) {
         return RxUtils.monitorNotifications(accObservers, txInterface, checkConnection);
     }
@@ -1238,6 +1247,7 @@ public class BlePMDClient extends BleGattBase {
      * - onComplete non produced if stream is not further configured <BR>
      * - onError BleDisconnected produced on disconnection <BR>
      */
+    @NonNull
     public Flowable<BlePMDClient.PpgData> monitorPpgNotifications(final boolean checkConnection) {
         return RxUtils.monitorNotifications(ppgObservers, txInterface, checkConnection);
     }
@@ -1248,6 +1258,7 @@ public class BlePMDClient extends BleGattBase {
      * @param checkConnection check initial connection
      * @return Flowable stream
      */
+    @NonNull
     public Flowable<BiozData> monitorBiozNotifications(final boolean checkConnection) {
         return RxUtils.monitorNotifications(biozObservers, txInterface, checkConnection);
     }
@@ -1260,42 +1271,52 @@ public class BlePMDClient extends BleGattBase {
      * - onComplete non produced if stream is not further configured <BR>
      * - onError BleDisconnected produced on disconnection <BR>
      */
-    public Flowable<BlePMDClient.PpiData> monitorPpiNotifications(final boolean checkConnection) {
+    @NonNull
+    public Flowable<PpiData> monitorPpiNotifications(final boolean checkConnection) {
         return RxUtils.monitorNotifications(ppiObservers, txInterface, checkConnection);
     }
 
+    @NonNull
     public Flowable<MagData> monitorMagnetometerNotifications(final boolean checkConnection) {
         return RxUtils.monitorNotifications(magnetometerObservers, txInterface, checkConnection);
     }
 
+    @NonNull
     public Flowable<GyrData> monitorGyroNotifications(final boolean checkConnection) {
         return RxUtils.monitorNotifications(gyroObservers, txInterface, checkConnection);
     }
 
+    @NonNull
     public Flowable<AutoGainAFE4404> monitorAutoGainAFE4404(final boolean checkConnection) {
         return RxUtils.monitorNotifications(autoGainAFE4404Observers, txInterface, checkConnection);
     }
 
+    @NonNull
     public Flowable<AutoGainAFE4410> monitorAutoGainAFE4410(final boolean checkConnection) {
         return RxUtils.monitorNotifications(autoGainAFE4410Observers, txInterface, checkConnection);
     }
 
+    @NonNull
     public Flowable<Pair<Long, Long>> monitorAfeOperationMode(final boolean checkConnection) {
         return RxUtils.monitorNotifications(afeOperationModeObservers, txInterface, checkConnection);
     }
 
+    @NonNull
     public Flowable<AutoGainADPD4000> monitorAutoGainADPD4000(final boolean checkConnection) {
         return RxUtils.monitorNotifications(autoGainADPD4000Observers, txInterface, checkConnection);
     }
 
+    @NonNull
     public Flowable<Pair<Long, Long>> monitorSportId(final boolean checkConnection) {
         return RxUtils.monitorNotifications(sportIdObservers, txInterface, checkConnection);
     }
 
+    @NonNull
     public Flowable<byte[]> monitorRDData(final boolean checkConnection) {
         return RxUtils.monitorNotifications(rdObservers, txInterface, checkConnection);
     }
 
+    @NonNull
     @Override
     public Completable clientReady(boolean checkConnection) {
         return Completable.concatArray(waitNotificationEnabled(PMD_CP, true),
@@ -1305,6 +1326,7 @@ public class BlePMDClient extends BleGattBase {
     /**
      * @return current pmd feature or null if no features not available
      */
+    @Nullable
     public PmdFeature getPmdFeatureData() {
         synchronized (mutexFeature) {
             if (pmdFeatureData != null) {
@@ -1313,5 +1335,21 @@ public class BlePMDClient extends BleGattBase {
                 return null;
             }
         }
+    }
+
+    private void clearStreamObservers(@NonNull Throwable throwable) {
+        RxUtils.postExceptionAndClearList(ecgObservers, throwable);
+        RxUtils.postExceptionAndClearList(accObservers, throwable);
+        RxUtils.postExceptionAndClearList(ppgObservers, throwable);
+        RxUtils.postExceptionAndClearList(ppiObservers, throwable);
+        RxUtils.postExceptionAndClearList(autoGainAFE4404Observers, throwable);
+        RxUtils.postExceptionAndClearList(autoGainAFE4410Observers, throwable);
+        RxUtils.postExceptionAndClearList(autoGainADPD4000Observers, throwable);
+        RxUtils.postExceptionAndClearList(biozObservers, throwable);
+        RxUtils.postExceptionAndClearList(afeOperationModeObservers, throwable);
+        RxUtils.postExceptionAndClearList(sportIdObservers, throwable);
+        RxUtils.postExceptionAndClearList(rdObservers, throwable);
+        RxUtils.postExceptionAndClearList(gyroObservers, throwable);
+        RxUtils.postExceptionAndClearList(magnetometerObservers, throwable);
     }
 }

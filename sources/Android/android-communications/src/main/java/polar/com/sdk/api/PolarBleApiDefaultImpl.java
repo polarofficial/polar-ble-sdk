@@ -28,6 +28,6 @@ public class PolarBleApiDefaultImpl {
      */
     @NonNull
     public static String versionInfo() {
-        return "3.1.0";
+        return "3.1.1";
     }
 }
