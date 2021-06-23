@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|  
     s.name              = 'PolarBleSdk'
-    s.version           = '3.1.0'
+    s.version           = '3.1.1'
     s.summary           = 'SDK for Polar sensors'
     s.homepage          = 'https://github.com/polarofficial/polar-ble-sdk'
     s.license           = { :type => 'Custom', :file => 'Polar_SDK_License.txt' }
@@ -10,5 +10,5 @@ Pod::Spec.new do |s|
     s.source            = { :git => 'https://github.com/polarofficial/polar-ble-sdk.git', :tag => s.version.to_s }
     s.ios.deployment_target = '12.0'
     s.ios.vendored_frameworks = 'polar-sdk-ios/PolarBleSdk.xcframework'
-    s.dependency 'RxSwift', '6.1.0'
+    s.dependency 'RxSwift', '6.2.0'
 end 
