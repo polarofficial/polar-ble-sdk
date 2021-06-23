@@ -1,5 +1,5 @@
 // swift-interface-format-version: 1.0
-// swift-compiler-version: Apple Swift version 5.4 (swiftlang-1205.0.26.9 clang-1205.0.19.55)
+// swift-compiler-version: Apple Swift version 5.4.2 (swiftlang-1205.0.28.2 clang-1205.0.19.57)
 // swift-module-flags: -target x86_64-apple-watchos4.3-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name PolarBleSdkWatchOs
 import CoreBluetooth
 import Foundation
@@ -624,6 +624,7 @@ public enum BleGattException : Swift.Error {
   case gattAttributeError(errorCode: Swift.Int, errorDescription: Swift.String = "")
   case gattOperationNotSupported
   case gattTransportNotAvailable
+  case gattOperationModeChange(description: Swift.String = "")
 }
 @_hasMissingDesignatedInitializers public class BleBasClient : PolarBleSdkWatchOs.BleGattClientBase {
   public static let BATTERY_SERVICE: CoreBluetooth.CBUUID
@@ -653,7 +654,6 @@ public enum BleGattException : Swift.Error {
 }
 @_hasMissingDesignatedInitializers public class BleHrClient : PolarBleSdkWatchOs.BleGattClientBase {
   public static let HR_SERVICE: CoreBluetooth.CBUUID
-  public static let HR_MEASUREMENT: CoreBluetooth.CBUUID
   public typealias BleHrNotification = (hr: Swift.Int, sensorContact: Swift.Bool, sensorContactSupported: Swift.Bool, energy: Swift.Int, rrs: [Swift.Int])
   public init(gattServiceTransmitter: PolarBleSdkWatchOs.BleAttributeTransportProtocol)
   override public func disconnected()
@@ -717,13 +717,6 @@ public struct Psd {
 }
 @_hasMissingDesignatedInitializers public class BleGattClientBase : Swift.Hashable {
   public func hash(into hasher: inout Swift.Hasher)
-  final public let ATT_NOTIFY_OR_INDICATE_STATE_UNKNOWN: Swift.Int
-  final public let ATT_NOTIFY_OR_INDICATE_ON: Swift.Int
-  final public let ATT_NOTIFY_OR_INDICATE_OFF: Swift.Int
-  final public let ATT_NOTIFY_OR_INDICATE_ERROR: Swift.Int
-  public var baseSerialDispatchQueue: RxSwift.SerialDispatchQueueScheduler!
-  final public let baseConcurrentDispatchQueue: RxSwift.ConcurrentDispatchQueueScheduler
-  public func containsAvailableCharacteristic(_ chr: CoreBluetooth.CBUUID) -> Swift.Bool
   public func disconnected()
   public func processServiceData(_ chr: CoreBluetooth.CBUUID, data: Foundation.Data, err: Swift.Int)
   public func notifyDescriptorWritten(_ chr: CoreBluetooth.CBUUID, enabled: Swift.Bool, err: Swift.Int)
@@ -737,7 +730,7 @@ public struct Psd {
   public func isCharacteristicNotificationEnabled(_ uuid: CoreBluetooth.CBUUID) -> Swift.Bool
   public func waitDiscovered(checkConnection: Swift.Bool) -> RxSwift.Completable
   public func waitNotificationEnabled(_ chr: CoreBluetooth.CBUUID, checkConnection: Swift.Bool) -> RxSwift.Completable
-  public func waitNotificationDisabled(_ chr: CoreBluetooth.CBUUID, checkConnection: Swift.Bool) -> RxSwift.Completable
+  public func tearDown() -> RxSwift.Completable
   @objc deinit
   public var hashValue: Swift.Int {
     get
