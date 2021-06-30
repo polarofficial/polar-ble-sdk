@@ -1,6 +1,7 @@
 package com.androidcommunications.polar.api.ble.model.advertisement;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.androidcommunications.polar.api.ble.model.polar.BlePolarDeviceIdUtility;
 import com.androidcommunications.polar.common.ble.BleUtils;
@@ -11,7 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+import static com.androidcommunications.polar.api.ble.model.polar.PolarAdvDataUtility.getPolarModelNameFromAdvLocalName;
+import static com.androidcommunications.polar.api.ble.model.polar.PolarAdvDataUtility.isPolarDevice;
+
 public class BleAdvertisementContent {
+    public static final String BLE_ADV_POLAR_PREFIX_IN_LOCAL_NAME = "Polar";
     private HashMap<BleUtils.AD_TYPE, byte[]> advertisementData = new HashMap<>(); // current
     private HashMap<BleUtils.AD_TYPE, byte[]> advertisementDataAll = new HashMap<>(); // current + "history"
     private String name = "";
@@ -19,7 +24,7 @@ public class BleAdvertisementContent {
     private long polarDeviceIdInt = 0;
     private String polarDeviceId = "";
     private BlePolarHrAdvertisement polarHrAdvertisement = new BlePolarHrAdvertisement();
-    private long advertisetTimeStamp = System.currentTimeMillis() / 1000L;
+    private long advertisementTimeStamp = System.currentTimeMillis() / 1000L;
     private BleUtils.EVENT_TYPE advertisementEventType = BleUtils.EVENT_TYPE.ADV_IND;
     // rssi related
     private List<Integer> rssiValues = new ArrayList<>();
@@ -35,7 +40,7 @@ public class BleAdvertisementContent {
         this.advertisementData.putAll(advData);
         this.advertisementDataAll.putAll(advData);
         this.advertisementEventType = advertisementEventType;
-        this.advertisetTimeStamp = System.currentTimeMillis() / 1000L;
+        this.advertisementTimeStamp = System.currentTimeMillis() / 1000L;
         if (advertisementData.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_LOCAL_NAME_COMPLETE)) {
             String name = new String(Objects.requireNonNull(advertisementData.get(BleUtils.AD_TYPE.GAP_ADTYPE_LOCAL_NAME_COMPLETE)));
             processName(name);
@@ -89,28 +94,22 @@ public class BleAdvertisementContent {
         }
     }
 
-    private void processName(final String name) {
+    private void processName(@Nullable final String name) {
         if (name != null && !this.name.equals(name)) {
             this.name = name;
-            if (name.startsWith("Polar ")) {
-                String[] names = this.name.split(" ");
-                if (names.length > 2) {
-                    polarDeviceType = names[1];
-                    polarDeviceId = names[names.length - 1];
-                    if (polarDeviceId.length() == 7) {
-                        polarDeviceId = BlePolarDeviceIdUtility.assemblyFullPolarDeviceId(names[names.length - 1]);
-                        this.name = "Polar " + polarDeviceType + " " + polarDeviceId;
-                    }
-                    try {
-                        polarDeviceIdInt = Long.parseLong(polarDeviceId, 16);
-                    } catch (NumberFormatException ex) {
-                        // ignore
-                        polarDeviceIdInt = 0;
-                    }
-                    // stupid Loop 2 format
-                    if (names.length == 4) {
-                        polarDeviceType += " " + names[2];
-                    }
+            if (isPolarDevice(name)) {
+                polarDeviceType = getPolarModelNameFromAdvLocalName(name);
+                String[] nameSplit = name.split(" ");
+                polarDeviceId = nameSplit[nameSplit.length - 1];
+                if (polarDeviceId.length() == 7) {
+                    polarDeviceId = BlePolarDeviceIdUtility.assemblyFullPolarDeviceId(nameSplit[nameSplit.length - 1]);
+                    this.name = "Polar " + polarDeviceType + " " + polarDeviceId;
+                }
+                try {
+                    polarDeviceIdInt = Long.parseLong(polarDeviceId, 16);
+                } catch (NumberFormatException ex) {
+                    // ignore
+                    polarDeviceIdInt = 0;
                 }
             }
         }
@@ -178,8 +177,8 @@ public class BleAdvertisementContent {
     /**
      * @return return last advertiset timestamp in unix timestamp
      */
-    public long getAdvertisetTimeStamp() {
-        return advertisetTimeStamp;
+    public long getAdvertisementTimeStamp() {
+        return advertisementTimeStamp;
     }
 
     /**
