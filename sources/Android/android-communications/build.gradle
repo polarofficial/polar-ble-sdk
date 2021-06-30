@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'org.jetbrains.dokka'
 
 if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPassword")) {
     apply plugin: 'com.jfrog.artifactory'
@@ -30,23 +31,28 @@ def getVersion = { ->
 }
 
 buildscript {
-    ext.kotlin_version = '1.4.32'
+    ext.kotlin_version = '1.5.20'
+    ext.dokka_version = '1.4.32'
+
     repositories {
         mavenCentral()
         google()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.3'
+        classpath 'com.android.tools.build:gradle:4.2.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version")
         if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPassword")) {
-            classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.18.0"
+            classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.21.0"
         }
     }
 }
 
 android {
     compileSdkVersion 29
-    buildToolsVersion '29.0.3'
 
     defaultConfig {
         minSdkVersion 21
@@ -67,7 +73,6 @@ android {
     }
     repositories {
         mavenCentral()
-        jcenter()
         google()
     }
     lintOptions {
@@ -79,6 +84,18 @@ android {
     }
     testOptions {
         unitTests.returnDefaultValues = true
+    }
+}
+
+tasks.dokkaJavadoc.configure {
+    outputDirectory.set(file("docs/html"))
+    dokkaSourceSets {
+        named("main") {
+            perPackageOption {
+                matchingRegex.set(".*\\.androidcommunications.*")
+                suppress.set(true)
+            }
+        }
     }
 }
 
@@ -126,29 +143,6 @@ if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPa
             }
         }
     }
-}
-
-task androidJavadocs(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
-    failOnError false
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    // skip internal sdk
-    exclude "com"
-}
-
-task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
-    classifier = 'javadoc'
-    from androidJavadocs.destinationDir
-}
-
-task androidSourcesJar(type: Jar) {
-    classifier = 'sources'
-    from android.sourceSets.main.java.srcDirs
-}
-
-artifacts {
-    archives androidSourcesJar
-    archives androidJavadocsJar
 }
 
 dependencies {

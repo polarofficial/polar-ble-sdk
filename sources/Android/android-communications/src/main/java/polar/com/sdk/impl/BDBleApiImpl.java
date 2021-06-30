@@ -687,13 +687,15 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
     @Override
     public Flowable<PolarEcgData> startEcgStreaming(@NonNull String identifier,
                                                     @NonNull PolarSensorSetting setting) {
-        return startStreaming(identifier, BlePMDClient.PmdMeasurementType.ECG, setting, client -> client.monitorEcgNotifications(true).map(ecgData -> {
-            List<Integer> samples = new ArrayList<>();
-            for (BlePMDClient.EcgData.EcgSample s : ecgData.ecgSamples) {
-                samples.add(s.microVolts);
-            }
-            return new PolarEcgData(samples, ecgData.timeStamp);
-        }));
+        return startStreaming(identifier, BlePMDClient.PmdMeasurementType.ECG, setting,
+                client -> client.monitorEcgNotifications(true)
+                        .map(ecgData -> {
+                            List<Integer> samples = new ArrayList<>();
+                            for (BlePMDClient.EcgData.EcgSample s : ecgData.ecgSamples) {
+                                samples.add(s.microVolts);
+                            }
+                            return new PolarEcgData(samples, ecgData.timeStamp);
+                        }));
     }
 
     @NonNull

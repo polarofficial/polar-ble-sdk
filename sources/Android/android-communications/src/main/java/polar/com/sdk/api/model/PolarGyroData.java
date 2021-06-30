@@ -1,5 +1,7 @@
 package polar.com.sdk.api.model;
 
+import androidx.annotation.NonNull;
+
 import java.util.List;
 
 /**
@@ -38,7 +40,7 @@ public class PolarGyroData {
      */
     public final long timeStamp;
 
-    public PolarGyroData(List<PolarGyroDataSample> samples, long timeStamp) {
+    public PolarGyroData(@NonNull List<PolarGyroDataSample> samples, long timeStamp) {
         this.samples = samples;
         this.timeStamp = timeStamp;
     }

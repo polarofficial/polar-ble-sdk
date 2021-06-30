@@ -1,5 +1,7 @@
 package polar.com.sdk.api.model;
 
+import androidx.annotation.NonNull;
+
 import java.util.List;
 
 public class PolarMagnetometerData {
@@ -41,7 +43,7 @@ public class PolarMagnetometerData {
      * @param samples   magnetometer samples
      * @param timeStamp in nanoseconds
      */
-    public PolarMagnetometerData(List<PolarMagnetometerDataSample> samples, long timeStamp) {
+    public PolarMagnetometerData(@NonNull List<PolarMagnetometerDataSample> samples, long timeStamp) {
         this.samples = samples;
         this.timeStamp = timeStamp;
     }

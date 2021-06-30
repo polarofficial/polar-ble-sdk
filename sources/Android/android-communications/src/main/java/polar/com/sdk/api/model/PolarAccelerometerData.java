@@ -1,6 +1,8 @@
 // Copyright © 2019 Polar Electro Oy. All rights reserved.
 package polar.com.sdk.api.model;
 
+import androidx.annotation.NonNull;
+
 import java.util.List;
 
 /**
@@ -45,7 +47,7 @@ public class PolarAccelerometerData {
      * @param samples   list of Accelerometer data samples
      * @param timeStamp in nanoseconds
      */
-    public PolarAccelerometerData(List<PolarAccelerometerDataSample> samples, long timeStamp) {
+    public PolarAccelerometerData(@NonNull List<PolarAccelerometerDataSample> samples, long timeStamp) {
         this.samples = samples;
         this.timeStamp = timeStamp;
     }

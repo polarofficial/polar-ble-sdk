@@ -51,7 +51,8 @@ public abstract class PolarBleApiCallback implements PolarBleApiCallbackProvider
 
     /**
      * Polar device's streaming features ready. Application may start any stream now if desired.
-     * requires feature PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING
+     * Requires feature {@link PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING} to be enabled for the
+     * Polar SDK instance.
      *
      * @param identifier Polar device id
      * @param features   set of features available and ready
