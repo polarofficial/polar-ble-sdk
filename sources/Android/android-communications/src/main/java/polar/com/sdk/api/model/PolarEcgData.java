@@ -1,6 +1,8 @@
 // Copyright © 2019 Polar Electro Oy. All rights reserved.
 package polar.com.sdk.api.model;
 
+import androidx.annotation.NonNull;
+
 import java.util.List;
 
 /**
@@ -19,7 +21,7 @@ public class PolarEcgData {
      */
     public final long timeStamp;
 
-    public PolarEcgData(List<Integer> samples, long timeStamp) {
+    public PolarEcgData(@NonNull List<Integer> samples, long timeStamp) {
         this.samples = samples;
         this.timeStamp = timeStamp;
     }

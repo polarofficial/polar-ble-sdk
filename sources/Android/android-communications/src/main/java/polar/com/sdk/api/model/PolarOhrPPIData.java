@@ -1,6 +1,8 @@
 // Copyright © 2019 Polar Electro Oy. All rights reserved.
 package polar.com.sdk.api.model;
 
+import androidx.annotation.NonNull;
+
 import java.util.List;
 
 /**
@@ -66,7 +68,7 @@ public class PolarOhrPPIData {
      */
     public final List<PolarOhrPPISample> samples;
 
-    public PolarOhrPPIData(long timeStamp, List<PolarOhrPPISample> samples) {
+    public PolarOhrPPIData(long timeStamp, @NonNull List<PolarOhrPPISample> samples) {
         this.timeStamp = timeStamp;
         this.samples = samples;
     }
