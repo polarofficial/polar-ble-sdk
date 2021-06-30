@@ -1,0 +1,19 @@
+$dokka.format:javadoc-v1
+$dokka.linkExtension:html
+$dokka.location:polar.com.sdk.api.model/PolarAccelerometerData.PolarAccelerometerDataSample///PointingToDeclaration/polar/com/sdk/api/model/PolarAccelerometerData.PolarAccelerometerDataSample.html
+$dokka.location:polar.com.sdk.api.model/PolarGyroData.PolarGyroDataSample///PointingToDeclaration/polar/com/sdk/api/model/PolarGyroData.PolarGyroDataSample.html
+$dokka.location:polar.com.sdk.api.model/PolarMagnetometerData.PolarMagnetometerDataSample///PointingToDeclaration/polar/com/sdk/api/model/PolarMagnetometerData.PolarMagnetometerDataSample.html
+$dokka.location:polar.com.sdk.api.model/PolarOhrData.OHR_DATA_TYPE///PointingToDeclaration/polar/com/sdk/api/model/PolarOhrData.OHR_DATA_TYPE.html
+$dokka.location:polar.com.sdk.api.model/PolarOhrData.PolarOhrSample///PointingToDeclaration/polar/com/sdk/api/model/PolarOhrData.PolarOhrSample.html
+$dokka.location:polar.com.sdk.api.model/PolarOhrPPIData.PolarOhrPPISample///PointingToDeclaration/polar/com/sdk/api/model/PolarOhrPPIData.PolarOhrPPISample.html
+$dokka.location:polar.com.sdk.api.model/PolarSensorSetting.Builder///PointingToDeclaration/polar/com/sdk/api/model/PolarSensorSetting.Builder.html
+$dokka.location:polar.com.sdk.api.model/PolarSensorSetting.SettingType///PointingToDeclaration/polar/com/sdk/api/model/PolarSensorSetting.SettingType.html
+$dokka.location:polar.com.sdk.api/PolarBleApi.DeviceStreamingFeature///PointingToDeclaration/polar/com/sdk/api/PolarBleApi.DeviceStreamingFeature.html
+$dokka.location:polar.com.sdk.api/PolarBleApi.PolarBleApiLogger///PointingToDeclaration/polar/com/sdk/api/PolarBleApi.PolarBleApiLogger.html
+$dokka.location:polar.com.sdk.api/PolarBleApi.RecordingInterval///PointingToDeclaration/polar/com/sdk/api/PolarBleApi.RecordingInterval.html
+$dokka.location:polar.com.sdk.api/PolarBleApi.SampleType///PointingToDeclaration/polar/com/sdk/api/PolarBleApi.SampleType.html
+polar.com.sdk.api
+polar.com.sdk.api.errors
+polar.com.sdk.api.model
+polar.com.sdk.impl
+
