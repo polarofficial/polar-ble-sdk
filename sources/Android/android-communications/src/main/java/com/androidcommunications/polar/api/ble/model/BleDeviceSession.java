@@ -77,7 +77,7 @@ public abstract class BleDeviceSession {
      * @return true, device is still somewhat considered "alive"
      */
     public boolean isDeviceAlive(long time, TimeUnit timeUnit) {
-        long deltaTime = (System.currentTimeMillis() / 1000L) - advertisementContent.getAdvertisetTimeStamp();
+        long deltaTime = (System.currentTimeMillis() / 1000L) - advertisementContent.getAdvertisementTimeStamp();
         DeviceSessionState sessionState = getSessionState();
         return (sessionState == DeviceSessionState.SESSION_OPEN ||
                 sessionState == DeviceSessionState.SESSION_OPENING ||
@@ -91,7 +91,7 @@ public abstract class BleDeviceSession {
      * @return true if device is advertising in the required timespan
      */
     public boolean isAdvertising(long time, TimeUnit timeUnit) {
-        long deltaTime = (System.currentTimeMillis() / 1000L) - advertisementContent.getAdvertisetTimeStamp();
+        long deltaTime = (System.currentTimeMillis() / 1000L) - advertisementContent.getAdvertisementTimeStamp();
         return advertisementContent.getAdvertisementData().size() != 0 && deltaTime <= timeUnit.toSeconds(time);
     }
 
