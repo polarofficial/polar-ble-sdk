@@ -1,4 +1,4 @@
-package polar.com.androidblesdk
+package com.polar.androidblesdk
 
 import android.app.Activity
 import android.app.Dialog

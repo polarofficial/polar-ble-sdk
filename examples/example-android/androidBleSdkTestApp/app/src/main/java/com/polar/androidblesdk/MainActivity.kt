@@ -1,4 +1,4 @@
-package polar.com.androidblesdk
+package com.polar.androidblesdk
 
 import android.Manifest
 import android.os.Build
