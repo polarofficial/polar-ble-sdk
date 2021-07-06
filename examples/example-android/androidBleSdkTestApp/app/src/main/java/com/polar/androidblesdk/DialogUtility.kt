@@ -8,11 +8,11 @@ import android.widget.Button
 import android.widget.RadioGroup
 import android.widget.TextView
 import com.google.android.material.radiobutton.MaterialRadioButton
+import com.polar.sdk.api.model.PolarSensorSetting
+import com.polar.sdk.api.model.PolarSensorSetting.SettingType
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
-import polar.com.sdk.api.model.PolarSensorSetting
-import polar.com.sdk.api.model.PolarSensorSetting.SettingType
 import java.util.*
 
 object DialogUtility {
