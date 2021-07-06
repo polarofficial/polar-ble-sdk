@@ -374,7 +374,7 @@ class MainActivity : AppCompatActivity() {
                                     for (data in polarOhrPPGData.samples) {
                                         Log.d(
                                             TAG,
-                                            "PPG    ppg0: ${data.channelSamples[0]} ppg1: ${data.channelSamples[0]} ppg2: ${data.channelSamples[0]} ambient: ${data.channelSamples[0]}"
+                                            "PPG    ppg0: ${data.channelSamples[0]} ppg1: ${data.channelSamples[1]} ppg2: ${data.channelSamples[2]} ambient: ${data.channelSamples[3]}"
                                         )
                                     }
                                 }
