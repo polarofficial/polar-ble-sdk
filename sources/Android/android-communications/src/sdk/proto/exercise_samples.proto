@@ -1,0 +1,16 @@
+syntax = "proto2";
+
+package data;
+
+import "types.proto";
+import "exercise_rr_samples.proto";
+
+option java_package = "fi.polar.remote.representation.protobuf";
+option java_outer_classname = "ExerciseSamples";
+
+message PbExerciseSamples {
+  required PbDuration recording_interval = 1;
+  repeated uint32 heart_rate_samples = 2 [packed = true, (type) = HEARTRATE];
+  optional PbExerciseRRIntervals rr_samples = 28;
+};
+

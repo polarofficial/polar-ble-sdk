@@ -5,7 +5,6 @@ rm -f polar-ble-sdk.aar
 
 cd ..
 ./gradlew clean
-./gradlew assembleRelease
+./gradlew assembleSdkRelease
 mkdir -p SdkBuild
-cp build/outputs/aar/android-communications-release.aar SdkBuild/polar-ble-sdk.aar
-cp libs/polar-protobuf-release.aar SdkBuild/polar-protobuf-release.aar
+cp build/outputs/aar/android-communications-sdk-release.aar SdkBuild/polar-ble-sdk.aar
