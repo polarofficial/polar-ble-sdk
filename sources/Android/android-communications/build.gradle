@@ -124,7 +124,7 @@ if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPa
                 artifactId project.getName()
 
                 // Tell maven to prepare the generated "*.aar" file for publishing
-                artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+                artifact("$buildDir/outputs/aar/${project.getName()}-androidCommunications-release.aar")
             }
         }
     }
