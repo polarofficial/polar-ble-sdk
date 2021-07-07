@@ -1,0 +1,24 @@
+syntax = "proto2";
+
+package protocol;
+
+import "types.proto";
+
+message PbPFtpEntry {
+  required string name = 1;
+  required uint64 size = 2;
+  optional PbSystemDateTime created = 3;
+  optional PbSystemDateTime modified = 4;
+  optional PbSystemDateTime touched = 5;
+}
+
+message PbPFtpDirectory {
+  repeated PbPFtpEntry entries = 1;
+}
+
+message PbRequestRecordingStatusResult {
+  required bool recording_on = 1;
+  optional string sample_data_identifier = 2;
+}
+
+
