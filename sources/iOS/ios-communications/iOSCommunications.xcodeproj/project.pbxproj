@@ -293,6 +293,10 @@
 		A580139725B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
 		A580139825B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
 		A580139925B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
+		A599EA9826899D3500414E26 /* PolarAdvDataUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A599EA9726899D3500414E26 /* PolarAdvDataUtility.swift */; };
+		A599EA9A26899D8400414E26 /* PolarAdvDataUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A599EA9726899D3500414E26 /* PolarAdvDataUtility.swift */; };
+		A599EA9B26899D8500414E26 /* PolarAdvDataUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A599EA9726899D3500414E26 /* PolarAdvDataUtility.swift */; };
+		A599EA9D2689AFE300414E26 /* PolarAdvDataUtilityTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A599EA9C2689AFE300414E26 /* PolarAdvDataUtilityTest.swift */; };
 		A5AD08B725E67064002DA200 /* BleBasClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5AD08B625E67064002DA200 /* BleBasClientTest.swift */; };
 		A5E75E95263BC9F700BEA32A /* BleGattClientBaseTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E75E94263BC9F700BEA32A /* BleGattClientBaseTest.swift */; };
 /* End PBXBuildFile section */
@@ -463,6 +467,8 @@
 		A5346A5425F218B0006752CA /* RxBlocking.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = RxBlocking.xcframework; path = Carthage/Build/RxBlocking.xcframework; sourceTree = "<group>"; };
 		A5488C4B264939A000B2DB5C /* BleHrClientTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleHrClientTest.swift; sourceTree = "<group>"; };
 		A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePolarDeviceCapabilitiesUtility.swift; path = ble/api/model/polar/BlePolarDeviceCapabilitiesUtility.swift; sourceTree = "<group>"; };
+		A599EA9726899D3500414E26 /* PolarAdvDataUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarAdvDataUtility.swift; sourceTree = "<group>"; };
+		A599EA9C2689AFE300414E26 /* PolarAdvDataUtilityTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarAdvDataUtilityTest.swift; sourceTree = "<group>"; };
 		A5AD08B625E67064002DA200 /* BleBasClientTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleBasClientTest.swift; sourceTree = "<group>"; };
 		A5E75E94263BC9F700BEA32A /* BleGattClientBaseTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleGattClientBaseTest.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -508,6 +514,7 @@
 		6C1079211D6D6EA000931948 /* iOSCommunicationsTests */ = {
 			isa = PBXGroup;
 			children = (
+				A599EA9C2689AFE300414E26 /* PolarAdvDataUtilityTest.swift */,
 				A5488C4B264939A000B2DB5C /* BleHrClientTest.swift */,
 				A5E75E94263BC9F700BEA32A /* BleGattClientBaseTest.swift */,
 				A5346A4A25F21877006752CA /* BlePsFtpUtilityTest.swift */,
@@ -753,6 +760,7 @@
 			children = (
 				A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */,
 				6C8BCD421CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift */,
+				A599EA9726899D3500414E26 /* PolarAdvDataUtility.swift */,
 			);
 			name = polar;
 			sourceTree = "<group>";
@@ -1204,6 +1212,7 @@
 				A5346A4125F21866006752CA /* BlePsFtpClientTest.swift in Sources */,
 				A5AD08B725E67064002DA200 /* BleBasClientTest.swift in Sources */,
 				A5E75E95263BC9F700BEA32A /* BleGattClientBaseTest.swift in Sources */,
+				A599EA9D2689AFE300414E26 /* PolarAdvDataUtilityTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1216,6 +1225,7 @@
 				6C5A44A31CB291790006220D /* AtomicInteger.swift in Sources */,
 				6C5A44AC1CB291A40006220D /* CBDeviceListenerImpl.swift in Sources */,
 				6CB902771D9B7F65001F1C9C /* BleH7SettingsClient.swift in Sources */,
+				A599EA9826899D3500414E26 /* PolarAdvDataUtility.swift in Sources */,
 				6C0C54FE1CFEB3C900FF23E9 /* TimeUtility.swift in Sources */,
 				6C5A44971CB291500006220D /* BleGattClientBase.swift in Sources */,
 				6C5A44981CB291500006220D /* BleGattClientFactory.swift in Sources */,
@@ -1290,6 +1300,7 @@
 				A580139925B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */,
 				6C2409412216A6E3001C1A84 /* PolarSensorSetting.swift in Sources */,
 				6C2409422216A6E3001C1A84 /* CBScanningProtocol.swift in Sources */,
+				A599EA9B26899D8500414E26 /* PolarAdvDataUtility.swift in Sources */,
 				6C2409432216A6E3001C1A84 /* BlePsFtpUtility.swift in Sources */,
 				6C2409442216A6E3001C1A84 /* BlePsFtpClient.swift in Sources */,
 				6C2409452216A6E3001C1A84 /* BlePmdClient.swift in Sources */,
@@ -1367,6 +1378,7 @@
 				A580139825B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */,
 				6CEA0FCF2174B17700E16FBF /* Types.pbobjc.m in Sources */,
 				6C770B8C206B77F300F3D51D /* BleAdvertisementContent.swift in Sources */,
+				A599EA9A26899D8400414E26 /* PolarAdvDataUtility.swift in Sources */,
 				6CEA10D42174B31700E16FBF /* GPBMessage.m in Sources */,
 				6C770B8D206B77F300F3D51D /* BlePolarHrAdvertisement.swift in Sources */,
 				6CEA109B2174B31700E16FBF /* GPBCodedInputStream.m in Sources */,
@@ -1688,7 +1700,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.1.1;
+				MARKETING_VERSION = 3.2.0;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdkWatchOs;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -1740,7 +1752,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.1.1;
+				MARKETING_VERSION = 3.2.0;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdkWatchOs;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -1793,7 +1805,7 @@
 					"@loader_path/Frameworks",
 				);
 				MACH_O_TYPE = mh_dylib;
-				MARKETING_VERSION = 3.1.1;
+				MARKETING_VERSION = 3.2.0;
 				"OTHER_CFLAGS[arch=*]" = "-fembed-bitcode";
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdk;
@@ -1850,7 +1862,7 @@
 					"@loader_path/Frameworks",
 				);
 				MACH_O_TYPE = mh_dylib;
-				MARKETING_VERSION = 3.1.1;
+				MARKETING_VERSION = 3.2.0;
 				"OTHER_CFLAGS[arch=*]" = "-fembed-bitcode";
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdk;
