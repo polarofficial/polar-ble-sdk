@@ -1,6 +1,27 @@
 {
   "warnings": [
     {
+      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/PolarAdvDataUtility.swift",
+      "line": 3,
+      "symbol": "PolarAdvDataUtility",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/PolarAdvDataUtility.swift",
+      "line": 7,
+      "symbol": "PolarAdvDataUtility.getPolarModelNameFromAdvLocalName(advLocalName:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/PolarAdvDataUtility.swift",
+      "line": 23,
+      "symbol": "PolarAdvDataUtility.isPolarDevice(advLocalName:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
       "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
       "line": 9,
       "symbol": "DeviceStreamingFeature.ecg",
