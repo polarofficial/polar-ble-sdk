@@ -30,7 +30,6 @@ android {
 
 dependencies {
     implementation files('libs/polar-ble-sdk.aar')
-    implementation files('libs/polar-protobuf-release.aar')
     implementation 'com.google.protobuf:protobuf-javalite:3.14.0'
     implementation 'io.reactivex.rxjava3:rxjava:3.0.4'
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'

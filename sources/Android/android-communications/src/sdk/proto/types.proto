@@ -1,0 +1,56 @@
+syntax = "proto2";
+
+import "google/protobuf/descriptor.proto";
+
+option java_package = "fi.polar.remote.representation.protobuf";
+
+enum PbDataType {
+  UNDEFINED = 0;
+  INHERITED = 1;
+  ENUM = 2;
+  MILLIS = 3;
+  SECOND = 4;
+  MINUTE = 5;
+  HOUR = 6;
+  HOURS = 7;
+  DAY = 8;
+  MONTH = 9;
+  YEAR = 10;
+  HEARTRATE = 20;
+  TIME_ZONE_OFFSET = 66;
+}
+
+enum PbSampleType {
+  SAMPLE_TYPE_HEART_RATE = 1;
+  SAMPLE_TYPE_RR_INTERVAL = 16;
+};
+
+extend google.protobuf.FieldOptions {
+  optional PbDataType type = 50000;
+}
+
+message PbDate {
+  required uint32 year = 1    [(type) = YEAR];
+  required uint32 month = 2   [(type) = MONTH];
+  required uint32 day = 3     [(type) = DAY];
+};
+
+message PbTime {
+  required uint32 hour = 1    [(type) = HOUR];
+  required uint32 minute = 2  [(type) = MINUTE];
+  required uint32 seconds = 3 [(type) = SECOND];
+  optional uint32 millis = 4  [default = 0, (type) = MILLIS];
+};
+
+message PbSystemDateTime {
+  required PbDate date = 1;
+  required PbTime time = 2;
+  required bool trusted = 3;
+};
+
+message PbDuration {
+  optional uint32 hours = 1 [default = 0, (type) = HOURS];
+  optional uint32 minutes = 2 [default = 0, (type) = MINUTE];
+  optional uint32 seconds = 3 [default = 0, (type) = SECOND];
+  optional uint32 millis = 4 [default = 0, (type) = MILLIS];
+};

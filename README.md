@@ -78,7 +78,7 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 # Android: Getting started
 Detailed documentation  [Full Documentation](polar-sdk-android/docs/html/). 
 ## Installation
-Compiled sdk and dependencies can be found from [polar-sdk-android](polar-sdk-android/libs/)
+The needed SDK .aar can be found from [polar-sdk-android](polar-sdk-android/libs/)
 
 1.  In `build.gradle` make sure the __minSdkVersion__ is set to __21__ or higher.
 ```
@@ -91,24 +91,19 @@ android {
 }
 ```
 2.  Copy the contents of [polar-sdk-android](polar-sdk-android/libs) folder into your project's __libs__ folder e.g `YourProjectName/app/libs/`
-The `YourProjectName/app/libs/` should now contain __two__ files
+The `YourProjectName/app/libs/` should now contain the files
 ```
 polar-ble-sdk.aar
-polar-protobuf-release.aar
 ```
 
 3. Add the following dependencies to  `build.gradle` inside the dependencies clause:
 ```
 dependencies {
-    implementation files('libs/polar-ble-sdk.aar')
-    // Only needed if FEATURE_POLAR_FILE_TRANSFER used
-    implementation files('libs/polar-protobuf-release.aar') 
-    // Only needed if FEATURE_POLAR_FILE_TRANSFER used
-    implementation 'commons-io:commons-io:2.8.0'
-    // Only needed if FEATURE_POLAR_FILE_TRANSFER used
-    implementation 'com.google.protobuf:protobuf-javalite:3.14.0'
+    implementation files('libs/polar-ble-sdk.aar')    
     implementation 'io.reactivex.rxjava3:rxjava:3.0.4'
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
+    implementation 'commons-io:commons-io:2.8.0' // Only needed if FEATURE_POLAR_FILE_TRANSFER used
+    implementation 'com.google.protobuf:protobuf-javalite:3.14.0' // Only needed if FEATURE_POLAR_FILE_TRANSFER used
 }
 ```
 4. Finally, add the following permissions to  `AndroidManifest.xml`:
@@ -118,47 +113,12 @@ dependencies {
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 ```
 
-## Android proguard-rules
-```
--dontwarn rx.internal.util.**
--dontwarn com.google.protobuf.**
--keep class fi.polar.remote.representation.protobuf.** {public private protected *;}
--keep class protocol.** {public private protected *;}
--keep class data.** {public private protected *;}
--keep class com.androidcommunications.polar.api.ble.model.** {public private protected *;}
--keep class com.androidcommunications.polar.enpoints.ble.bluedroid.host.**
-```
-
 ## Code example: Heart rate
 See the [example](examples/example-android) folder for the full project. 
 
 #### Key things
-`String DEVICE_ID` is your Polar device's id. 
-This is not required if you are using automatic connection.
 
- 1.  Import following packages.
-```
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.functions.Function;
-
-import polar.com.sdk.api.PolarBleApi;
-import polar.com.sdk.api.PolarBleApiCallback;
-import polar.com.sdk.api.PolarBleApiDefaultImpl;
-import polar.com.sdk.api.errors.PolarInvalidArgument;
-import polar.com.sdk.api.model.PolarAccelerometerData;
-import polar.com.sdk.api.model.PolarDeviceInfo;
-import polar.com.sdk.api.model.PolarEcgData;
-import polar.com.sdk.api.model.PolarExerciseEntry;
-import polar.com.sdk.api.model.PolarGyroData;
-import polar.com.sdk.api.model.PolarHrData;
-import polar.com.sdk.api.model.PolarMagnetometerData;
-import polar.com.sdk.api.model.PolarOhrData;
-import polar.com.sdk.api.model.PolarOhrPPIData;
-import polar.com.sdk.api.model.PolarSensorSetting;
-```
-
-2. Load the default api implementation and add callback.
+1. Load the default api implementation and add callback.
 ```
 // NOTICE all features are enabled, if only interested on particular feature(s) like info Heart rate and Battery info then
 // e.g. PolarBleApiDefaultImpl.defaultImplementation(this, PolarBleApi.FEATURE_HR |
@@ -218,7 +178,7 @@ api.setApiCallback(new PolarBleApiCallback() {
     }
 });
 ```
-3.  Request permissions if needed
+2.  Request permissions if needed
 ```
 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
     this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
@@ -229,7 +189,7 @@ public void onRequestPermissionsResult(int requestCode, @NonNull String permissi
 }
 ```
 
-4. Add background, foreground and cleanup functionality on desired callbacks e.g.
+3. Add background, foreground and cleanup functionality on desired callbacks e.g.
 ```
 @Override
 public void onPause() {
@@ -250,8 +210,7 @@ public void onDestroy() {
 }
 ```
 
-5.  Connect to a Polar device using  `api.connectToDevice(DEVICE_ID)`  ,  
-   `api.autoConnectToDevice(-50, null, null).subscribe()`  to connect nearby device or  `api.searchForDevice()` to scan and select the device
+4.  Connect to a Polar device using  `api.connectToDevice(<DEVICE_ID>)` where <DEVICE_ID> is the deviceID printed to your sensor,  using  `api.autoConnectToDevice(-50, null, null).subscribe()`  to connect nearby device or  `api.searchForDevice()` to scan and then select the device
 
 # iOS: Getting started
 Detailed documentation: [Documentation](polar-sdk-ios/docs/). Minimum iOS version is 12.

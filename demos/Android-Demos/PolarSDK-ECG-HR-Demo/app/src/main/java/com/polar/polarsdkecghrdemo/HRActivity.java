@@ -14,18 +14,17 @@ import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.StepMode;
 import com.androidplot.xy.XYGraphWidget;
 import com.androidplot.xy.XYPlot;
+import com.polar.sdk.api.PolarBleApi;
+import com.polar.sdk.api.PolarBleApiCallback;
+import com.polar.sdk.api.PolarBleApiDefaultImpl;
+import com.polar.sdk.api.errors.PolarInvalidArgument;
+import com.polar.sdk.api.model.PolarDeviceInfo;
+import com.polar.sdk.api.model.PolarHrData;
 
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import polar.com.sdk.api.PolarBleApi;
-import polar.com.sdk.api.PolarBleApiCallback;
-import polar.com.sdk.api.PolarBleApiDefaultImpl;
-import polar.com.sdk.api.errors.PolarInvalidArgument;
-import polar.com.sdk.api.model.PolarDeviceInfo;
-import polar.com.sdk.api.model.PolarHrData;
 
 public class HRActivity extends AppCompatActivity implements PlotterListener {
     private static final String TAG = "HRActivity";

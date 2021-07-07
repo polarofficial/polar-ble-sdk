@@ -5,12 +5,11 @@ import android.graphics.Color;
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeriesFormatter;
+import com.polar.sdk.api.model.PolarHrData;
 
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
-import polar.com.sdk.api.model.PolarHrData;
 
 /**
  * Implements two series for HR and RR using time for the x values.
@@ -21,14 +20,14 @@ public class TimePlotter {
     private static final double RR_SCALE = .1;
     private PlotterListener listener;
 
-    private XYSeriesFormatter hrFormatter;
-    private XYSeriesFormatter rrFormatter;
-    private SimpleXYSeries hrSeries;
-    private SimpleXYSeries rrSeries;
-    private Double[] xHrVals = new Double[NVALS];
-    private Double[] yHrVals = new Double[NVALS];
-    private Double[] xRrVals = new Double[NVALS];
-    private Double[] yRrVals = new Double[NVALS];
+    private final XYSeriesFormatter hrFormatter;
+    private final XYSeriesFormatter rrFormatter;
+    private final SimpleXYSeries hrSeries;
+    private final SimpleXYSeries rrSeries;
+    private final Double[] xHrVals = new Double[NVALS];
+    private final Double[] yHrVals = new Double[NVALS];
+    private final Double[] xRrVals = new Double[NVALS];
+    private final Double[] yRrVals = new Double[NVALS];
 
     public TimePlotter() {
         Date now = new Date();

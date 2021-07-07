@@ -10,18 +10,18 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.util.Pair
+import com.polar.sdk.api.PolarBleApi
+import com.polar.sdk.api.PolarBleApi.DeviceStreamingFeature
+import com.polar.sdk.api.PolarBleApiCallback
+import com.polar.sdk.api.PolarBleApiDefaultImpl
+import com.polar.sdk.api.errors.PolarInvalidArgument
+import com.polar.sdk.api.model.*
+
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.Function
-import polar.com.sdk.api.PolarBleApi
-import polar.com.sdk.api.PolarBleApi.DeviceStreamingFeature
-import polar.com.sdk.api.PolarBleApiCallback
-import polar.com.sdk.api.PolarBleApiDefaultImpl
-import polar.com.sdk.api.errors.PolarInvalidArgument
-import polar.com.sdk.api.model.*
-import polar.com.sdk.api.model.PolarOhrData.OHR_DATA_TYPE
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -370,7 +370,7 @@ class MainActivity : AppCompatActivity() {
                         }
                         .subscribe(
                             { polarOhrPPGData: PolarOhrData ->
-                                if (polarOhrPPGData.type == OHR_DATA_TYPE.PPG3_AMBIENT1) {
+                                if (polarOhrPPGData.type == PolarOhrData.OHR_DATA_TYPE.PPG3_AMBIENT1) {
                                     for (data in polarOhrPPGData.samples) {
                                         Log.d(
                                             TAG,
@@ -517,7 +517,7 @@ class MainActivity : AppCompatActivity() {
             calendar.time = Date()
             api.setLocalTime(deviceId, calendar)
                 .subscribe(
-                    { Log.d(TAG, "time set to device") },
+                    { Log.d(TAG, "time ${calendar.time} set to device") },
                     { error: Throwable -> Log.d(TAG, "set time failed: $error") }
                 )
         }
