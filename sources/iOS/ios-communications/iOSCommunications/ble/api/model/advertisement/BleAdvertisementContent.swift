@@ -18,11 +18,10 @@ public class BleAdvertisementContent {
     public private(set) var medianRssi: Int32 = -100
     public private(set) var manufacturerType: Int16 = 0
     public private(set) var advData = [String : Any]()
-    //private
-    public private(set) var name=""
-    public private(set) var polarDeviceId=""
-    public private(set) var polarDeviceIdUntouched=""
-    public private(set) var polarDeviceType=""
+    public private(set) var name = ""
+    public private(set) var polarDeviceId = ""
+    public private(set) var polarDeviceIdUntouched = ""
+    public private(set) var polarDeviceType = ""
     
     func processAdvertisementData(_ rssi: Int32, advertisementData: [String : Any]){
         advData = advertisementData
@@ -33,21 +32,15 @@ public class BleAdvertisementContent {
         if let localName = advertisementData[CBAdvertisementDataLocalNameKey] as? String{
             if !(localName == name) {
                 name = localName
-                let items=name.split(separator: " ").map(String.init)
-                if items.count > 2 {
-                    polarDeviceType = items[1]
-                    if let devId = items.last {
+                if PolarAdvDataUtility.isPolarDevice(advLocalName: name) {
+                    polarDeviceType = PolarAdvDataUtility.getPolarModelNameFromAdvLocalName(advLocalName: name)
+                    if let devId = name.split(separator: " ").map(String.init).last {
                         polarDeviceIdUntouched = devId
                         if let deviceId = UInt32(devId, radix: 16) {
                             polarDeviceId = BlePolarDeviceIdUtility.assemblyFullPolarDeviceId(deviceId, width: devId.count)
-                            polarDeviceIdInt =
-                                BlePolarDeviceIdUtility.polarDeviceIdToInt(polarDeviceId)
-                            polarDeviceIdIntUntouched =
-                                BlePolarDeviceIdUtility.polarDeviceIdToInt(polarDeviceIdUntouched)
+                            polarDeviceIdInt = BlePolarDeviceIdUtility.polarDeviceIdToInt(polarDeviceId)
+                            polarDeviceIdIntUntouched = BlePolarDeviceIdUtility.polarDeviceIdToInt(polarDeviceIdUntouched)
                         }
-                    }
-                    if items.count == 4 {
-                        polarDeviceType = polarDeviceType + " " + items[2]
                     }
                 }
             }
