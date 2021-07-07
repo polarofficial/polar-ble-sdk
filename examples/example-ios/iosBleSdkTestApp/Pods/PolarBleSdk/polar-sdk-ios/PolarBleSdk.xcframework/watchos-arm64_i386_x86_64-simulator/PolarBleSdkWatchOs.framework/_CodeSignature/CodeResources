@@ -14,7 +14,7 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		l8QNNsYBEJmplOAI+3FYCGzjL4w=
+		TjUZDxALvfWyZmjFw8TAZAv0R3s=
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/arm64-apple-watchos-simulator.swiftdoc</key>
 		<data>
@@ -22,11 +22,11 @@
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/arm64-apple-watchos-simulator.swiftinterface</key>
 		<data>
-		98LF2B4iWH1aVcLFR/jEeqTawXY=
+		CB7jbt5oMNF3BhOQLewnqK6HthM=
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/arm64-apple-watchos-simulator.swiftmodule</key>
 		<data>
-		IBUPxsRja6ROgnq+BHCZ6bFIF2s=
+		be7foIZj8nn3sui/ZViGDALpu8M=
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/arm64.swiftdoc</key>
 		<data>
@@ -34,11 +34,11 @@
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/arm64.swiftinterface</key>
 		<data>
-		98LF2B4iWH1aVcLFR/jEeqTawXY=
+		CB7jbt5oMNF3BhOQLewnqK6HthM=
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/arm64.swiftmodule</key>
 		<data>
-		IBUPxsRja6ROgnq+BHCZ6bFIF2s=
+		be7foIZj8nn3sui/ZViGDALpu8M=
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/i386-apple-watchos-simulator.swiftdoc</key>
 		<data>
@@ -46,11 +46,11 @@
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/i386-apple-watchos-simulator.swiftinterface</key>
 		<data>
-		TESlnN+M0gmh64WlitfftqAduCA=
+		j4+CWrI8uZHbQ8DCvYsnnfoHhI4=
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/i386-apple-watchos-simulator.swiftmodule</key>
 		<data>
-		D1fb+5fm4m3DRhV9VwnJAQ1QKLU=
+		KvMQAEbZfWT+3MgTkCNV6y3A5HI=
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/i386.swiftdoc</key>
 		<data>
@@ -58,11 +58,11 @@
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/i386.swiftinterface</key>
 		<data>
-		TESlnN+M0gmh64WlitfftqAduCA=
+		j4+CWrI8uZHbQ8DCvYsnnfoHhI4=
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/i386.swiftmodule</key>
 		<data>
-		D1fb+5fm4m3DRhV9VwnJAQ1QKLU=
+		KvMQAEbZfWT+3MgTkCNV6y3A5HI=
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/x86_64-apple-watchos-simulator.swiftdoc</key>
 		<data>
@@ -70,11 +70,11 @@
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/x86_64-apple-watchos-simulator.swiftinterface</key>
 		<data>
-		rIJX55WuYvMEWYSYBPmcCOpqH2U=
+		ypDXL3FotlWXJ2BdlMOzxPfNqu4=
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/x86_64-apple-watchos-simulator.swiftmodule</key>
 		<data>
-		XmqmMr5TstJNRdsT4L0W6XE2GHM=
+		jb0uZryT1TM7bqTnVKiR1KFWfbQ=
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/x86_64.swiftdoc</key>
 		<data>
@@ -82,11 +82,11 @@
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/x86_64.swiftinterface</key>
 		<data>
-		rIJX55WuYvMEWYSYBPmcCOpqH2U=
+		ypDXL3FotlWXJ2BdlMOzxPfNqu4=
 		</data>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/x86_64.swiftmodule</key>
 		<data>
-		XmqmMr5TstJNRdsT4L0W6XE2GHM=
+		jb0uZryT1TM7bqTnVKiR1KFWfbQ=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -132,22 +132,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			98LF2B4iWH1aVcLFR/jEeqTawXY=
+			CB7jbt5oMNF3BhOQLewnqK6HthM=
 			</data>
 			<key>hash2</key>
 			<data>
-			LEci8CV5kTisSYFtSw7hxXbsEItVEHMLxOKYSZyNb7Y=
+			cLVYdGSliaRgEsc58zxCkGehgNPMc83TP23VzBlX/vQ=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/arm64-apple-watchos-simulator.swiftmodule</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			IBUPxsRja6ROgnq+BHCZ6bFIF2s=
+			be7foIZj8nn3sui/ZViGDALpu8M=
 			</data>
 			<key>hash2</key>
 			<data>
-			aT8ZETRZzS0f7cBeGDPcAzdOfPFoM0skuSyBLJQbOP4=
+			db1rI6s2yUNYCJQv3MmrIwGQMilOXAazFwkA9u/CpA4=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/arm64.swiftdoc</key>
@@ -165,22 +165,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			98LF2B4iWH1aVcLFR/jEeqTawXY=
+			CB7jbt5oMNF3BhOQLewnqK6HthM=
 			</data>
 			<key>hash2</key>
 			<data>
-			LEci8CV5kTisSYFtSw7hxXbsEItVEHMLxOKYSZyNb7Y=
+			cLVYdGSliaRgEsc58zxCkGehgNPMc83TP23VzBlX/vQ=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/arm64.swiftmodule</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			IBUPxsRja6ROgnq+BHCZ6bFIF2s=
+			be7foIZj8nn3sui/ZViGDALpu8M=
 			</data>
 			<key>hash2</key>
 			<data>
-			aT8ZETRZzS0f7cBeGDPcAzdOfPFoM0skuSyBLJQbOP4=
+			db1rI6s2yUNYCJQv3MmrIwGQMilOXAazFwkA9u/CpA4=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/i386-apple-watchos-simulator.swiftdoc</key>
@@ -198,22 +198,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			TESlnN+M0gmh64WlitfftqAduCA=
+			j4+CWrI8uZHbQ8DCvYsnnfoHhI4=
 			</data>
 			<key>hash2</key>
 			<data>
-			6fI9ZRlmeiNcWl4Jb2KNQ4N8rpmm7VPUMsnWDulU+gE=
+			vccub1lGM1eeeq0kUfaV9WCBvTW/t0bz693a3nwmgo4=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/i386-apple-watchos-simulator.swiftmodule</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			D1fb+5fm4m3DRhV9VwnJAQ1QKLU=
+			KvMQAEbZfWT+3MgTkCNV6y3A5HI=
 			</data>
 			<key>hash2</key>
 			<data>
-			P1Th/gblym/Vj7j/pYWh2NQIDwBp9EAXjG2mSINy7dw=
+			ik94fAbD1vNQq28G9dk9+oZRqydfAMzoWu/BjLHcWis=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/i386.swiftdoc</key>
@@ -231,22 +231,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			TESlnN+M0gmh64WlitfftqAduCA=
+			j4+CWrI8uZHbQ8DCvYsnnfoHhI4=
 			</data>
 			<key>hash2</key>
 			<data>
-			6fI9ZRlmeiNcWl4Jb2KNQ4N8rpmm7VPUMsnWDulU+gE=
+			vccub1lGM1eeeq0kUfaV9WCBvTW/t0bz693a3nwmgo4=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/i386.swiftmodule</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			D1fb+5fm4m3DRhV9VwnJAQ1QKLU=
+			KvMQAEbZfWT+3MgTkCNV6y3A5HI=
 			</data>
 			<key>hash2</key>
 			<data>
-			P1Th/gblym/Vj7j/pYWh2NQIDwBp9EAXjG2mSINy7dw=
+			ik94fAbD1vNQq28G9dk9+oZRqydfAMzoWu/BjLHcWis=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/x86_64-apple-watchos-simulator.swiftdoc</key>
@@ -264,22 +264,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			rIJX55WuYvMEWYSYBPmcCOpqH2U=
+			ypDXL3FotlWXJ2BdlMOzxPfNqu4=
 			</data>
 			<key>hash2</key>
 			<data>
-			ZtvdfRmsXVTtOvdupyrPTui4Q6+TJAyg5Eh4TTjcHes=
+			/ss1CICRyenLa6rWc5vz06bIkwJMl7+ICjvYlWKKIY8=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/x86_64-apple-watchos-simulator.swiftmodule</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			XmqmMr5TstJNRdsT4L0W6XE2GHM=
+			jb0uZryT1TM7bqTnVKiR1KFWfbQ=
 			</data>
 			<key>hash2</key>
 			<data>
-			u9OyKC0muiSlBDeVKSbE5nB9eKV6F9b3TlwpQ0iP2+o=
+			XomlGmVLmIcltF+l1TMVPJj9yxl7XlnIsIWEmtV1KPI=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/x86_64.swiftdoc</key>
@@ -297,22 +297,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			rIJX55WuYvMEWYSYBPmcCOpqH2U=
+			ypDXL3FotlWXJ2BdlMOzxPfNqu4=
 			</data>
 			<key>hash2</key>
 			<data>
-			ZtvdfRmsXVTtOvdupyrPTui4Q6+TJAyg5Eh4TTjcHes=
+			/ss1CICRyenLa6rWc5vz06bIkwJMl7+ICjvYlWKKIY8=
 			</data>
 		</dict>
 		<key>Modules/PolarBleSdkWatchOs.swiftmodule/x86_64.swiftmodule</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			XmqmMr5TstJNRdsT4L0W6XE2GHM=
+			jb0uZryT1TM7bqTnVKiR1KFWfbQ=
 			</data>
 			<key>hash2</key>
 			<data>
-			u9OyKC0muiSlBDeVKSbE5nB9eKV6F9b3TlwpQ0iP2+o=
+			XomlGmVLmIcltF+l1TMVPJj9yxl7XlnIsIWEmtV1KPI=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

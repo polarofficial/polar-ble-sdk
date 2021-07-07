@@ -558,6 +558,11 @@ public protocol BleCCCWriteProtocol : AnyObject {
   public func containsService(_ service: CoreBluetooth.CBUUID) -> Swift.Bool
   @objc deinit
 }
+@_hasMissingDesignatedInitializers open class PolarAdvDataUtility {
+  public static func getPolarModelNameFromAdvLocalName(advLocalName: Swift.String) -> Swift.String
+  public static func isPolarDevice(advLocalName: Swift.String) -> Swift.Bool
+  @objc deinit
+}
 @_hasMissingDesignatedInitializers public class BlePolarHrAdvertisement {
   public var batteryStatus: Swift.Bool {
     get

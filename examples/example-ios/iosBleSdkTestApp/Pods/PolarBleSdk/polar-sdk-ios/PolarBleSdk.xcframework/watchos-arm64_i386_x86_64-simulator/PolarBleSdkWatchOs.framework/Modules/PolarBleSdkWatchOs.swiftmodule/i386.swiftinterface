@@ -39,6 +39,11 @@ public protocol CBScanningProtocol {
   func stopScanning()
   func continueScanning()
 }
+@_hasMissingDesignatedInitializers open class PolarAdvDataUtility {
+  public static func getPolarModelNameFromAdvLocalName(advLocalName: Swift.String) -> Swift.String
+  public static func isPolarDevice(advLocalName: Swift.String) -> Swift.Bool
+  @objc deinit
+}
 public enum BlePsFtpException : Swift.Error {
   case undefinedError
   case operationTimeout
