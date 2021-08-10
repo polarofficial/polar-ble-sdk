@@ -303,7 +303,9 @@ public abstract class BleGattBase {
         if ((properties & PROPERTY_READ) != 0 && !containsCharacteristicRead(characteristic)) {
             characteristicsRead.put(characteristic, true);
         }
-        characteristics.putIfAbsent(characteristic, true);
+        if (!characteristics.containsKey(characteristic)) {
+            characteristics.put(characteristic, true);
+        }
     }
 
     protected void addAvailableCharacteristic(UUID chr, int property) {
