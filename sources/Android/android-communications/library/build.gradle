@@ -1,0 +1,171 @@
+plugins {
+    id('com.android.library')
+    id('kotlin-android')
+    id('kotlin-kapt')
+    id('com.google.protobuf')
+    id('org.jetbrains.dokka')
+}
+
+if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPassword")) {
+    apply plugin: 'com.jfrog.artifactory'
+    apply plugin: 'maven-publish'
+}
+
+import java.util.regex.Pattern
+
+def getVersion = { ->
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'describe', '--tags'
+        standardOutput = stdout
+    }
+    def pattern = Pattern.compile("^([0-9]*)(\\.)([0-9]*)(\\.)([0-9]*)")
+    def matcher = pattern.matcher(stdout.toString().trim())
+    if (matcher.matches()) {
+        String MAJOR = matcher.group(1)
+        String MINOR = matcher.group(3)
+        String PATCH = matcher.group(5)
+        def VERSION = MAJOR + "." + MINOR + "." + PATCH
+        println VERSION
+        return VERSION
+    } else {
+        return stdout.toString().trim()
+    }
+}
+
+android {
+    compileSdkVersion 29
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 14
+        versionName "14"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes.all { buildType ->
+        def version = getVersion()
+        buildConfigField 'String', 'GIT_VERSION', "\"$version\""
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    flavorDimensions "CommunicationsLibrary"
+    productFlavors {
+        androidCommunications {
+            dimension "CommunicationsLibrary"
+        }
+        sdk {
+            dimension "CommunicationsLibrary"
+        }
+    }
+
+    repositories {
+        mavenCentral()
+        google()
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+}
+
+tasks.dokkaJavadoc.configure {
+    outputDirectory.set(file("docs/html"))
+    dokkaSourceSets {
+        named("main") {
+            perPackageOption {
+                matchingRegex.set(".*\\.androidcommunications.*")
+                suppress.set(true)
+            }
+        }
+    }
+}
+
+if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPassword")) {
+    publishing {
+        publications {
+            aar(MavenPublication) {
+                groupId 'com.polar'
+                version = getVersion()
+                artifactId project.getName()
+
+                // Tell maven to prepare the generated "*.aar" file for publishing
+                artifact("$buildDir/outputs/aar/${project.getName()}-androidCommunications-release.aar")
+            }
+        }
+    }
+
+    artifactory {
+        contextUrl = 'https://repository.polar.grp/artifactory/'
+        def artifactory_user = project.getProperty('artifactoryUser')
+        def artifactory_password = project.getProperty('artifactoryPassword')
+        println "USER: " + "${artifactory_user}"
+        println "PASSWD: " + "${artifactory_password}"
+        publish {
+            repository {
+                // The Artifactory repository key to publish to
+                repoKey = 'libs-release-local'
+                username = "${artifactory_user}" // The publisher user name
+                password = "${artifactory_password}" // The publisher password
+                // maven = true
+            }
+            defaults {
+                // Tell the Artifactory Plugin which artifacts should be published to Artifactory.
+                /* publications {
+                     mavenJava(MavenPublication) {
+                         from components.java
+                         artifact (sourcesJar) {
+                             classifier = 'sources'
+                         }
+                     }
+                 }*/
+                publications('aar')
+                // Properties to be attached to the published artifacts.
+                properties = ['qa.level': 'basic', 'dev.team': 'core']
+            }
+        }
+    }
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.14.0"
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                java {
+                    option "lite"
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
+    implementation 'io.reactivex.rxjava3:rxjava:3.0.4'
+    implementation 'commons-io:commons-io:2.10.0'
+    implementation 'androidx.annotation:annotation:1.2.0'
+    implementation "androidx.core:core-ktx:1.6.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    sdkImplementation 'com.google.protobuf:protobuf-javalite:3.14.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation "org.mockito:mockito-core:3.11.1"
+    testImplementation "io.mockk:mockk:1.10.4"
+    testImplementation 'androidx.test:runner:1.4.0'
+    testImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    testImplementation 'org.robolectric:robolectric:4.0'
+}
