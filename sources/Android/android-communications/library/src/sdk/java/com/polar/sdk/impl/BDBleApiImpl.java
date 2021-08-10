@@ -421,7 +421,7 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
                                 .observeOn(scheduler)
                                 .subscribe(
                                         listener::openSessionDirect,
-                                        throwable -> logError(throwable.getMessage()),
+                                        throwable -> logError("täällä ollaan " + throwable),
                                         () -> log("connect search complete")
                                 ));
             }
@@ -936,7 +936,7 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
                                                                     hrNotificationData.rrPresent));
                                                 }
                                             },
-                                            throwable -> logError(throwable.getMessage()),
+                                            throwable -> logError("onko tämä" + throwable.getMessage()),
                                             () -> {
                                             }
                                     );
@@ -950,7 +950,7 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
                                                     callback.batteryLevelReceived(deviceId, batteryLevel);
                                                 }
                                             },
-                                            error -> logError(error.getMessage()),
+                                            error -> logError("onko tämä 2" + error.getMessage()),
                                             () -> {
                                             }
                                     );
@@ -1013,7 +1013,7 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
                 .subscribe(
                         o -> {
                         },
-                        throwable -> logError(throwable.getMessage()),
+                        throwable -> logError("onko tämä 3" + throwable.getMessage()),
                         () -> log("complete"));
     }
 
