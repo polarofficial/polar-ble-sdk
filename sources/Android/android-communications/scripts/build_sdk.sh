@@ -1,10 +1,12 @@
 #!/bin/sh
 set -e
-# clean up
-rm -f polar-ble-sdk.aar
 
 cd ..
+# clean up
+rm -f SdkBuild/polar-ble-sdk.aar
 ./gradlew clean
+
+# build
 ./gradlew assembleSdkRelease
 mkdir -p SdkBuild
-cp build/outputs/aar/android-communications-sdk-release.aar SdkBuild/polar-ble-sdk.aar
+cp library/build/outputs/aar/library-sdk-release.aar SdkBuild/polar-ble-sdk.aar
