@@ -1,16 +1,13 @@
 // Copyright © 2019 Polar Electro Oy. All rights reserved.
-package com.polar.sdk.api;
+package com.polar.sdk.api
 
-import android.content.Context;
-
-import androidx.annotation.NonNull;
-
-import com.polar.sdk.impl.BDBleApiImpl;
+import android.content.Context
+import com.polar.sdk.impl.BDBleApiImpl
 
 /**
  * Simply returns a new default implementation of the API.
  */
-public class PolarBleApiDefaultImpl {
+object PolarBleApiDefaultImpl {
     /**
      * Default implementation constructor for the API.
      *
@@ -18,16 +15,14 @@ public class PolarBleApiDefaultImpl {
      * @param features @see polar.com.sdk.api.PolarBleApi feature flags
      * @return default Polar API implementation
      */
-    @NonNull
-    public static PolarBleApi defaultImplementation(final @NonNull Context context, int features) {
-        return new BDBleApiImpl(context, features);
+    fun defaultImplementation(context: Context, features: Int): PolarBleApi {
+        return BDBleApiImpl.getInstance(context, features)
     }
 
     /**
      * @return SDK version number in format major.minor.patch
      */
-    @NonNull
-    public static String versionInfo() {
-        return "3.2.1";
+    fun versionInfo(): String {
+        return "3.2.1"
     }
 }
