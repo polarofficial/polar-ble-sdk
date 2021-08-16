@@ -1,6 +1,11 @@
 // Copyright © 2019 Polar Electro Oy. All rights reserved.
 package com.polar.sdk.impl;
 
+import static com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceSessionState.SESSION_CLOSED;
+import static com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceSessionState.SESSION_OPEN;
+import static com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceSessionState.SESSION_OPENING;
+import static com.polar.androidcommunications.api.ble.model.gatt.client.BlePMDClient.PmdControlPointResponse.PmdControlPointResponseCode.ERROR_ALREADY_IN_STATE;
+
 import android.annotation.SuppressLint;
 import android.bluetooth.le.ScanFilter;
 import android.content.Context;
@@ -29,6 +34,7 @@ import com.polar.androidcommunications.common.ble.BleUtils;
 import com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceListenerImpl;
 import com.polar.sdk.api.PolarBleApi;
 import com.polar.sdk.api.PolarBleApiCallbackProvider;
+import com.polar.sdk.api.errors.PolarBleSdkInstanceException;
 import com.polar.sdk.api.errors.PolarDeviceDisconnected;
 import com.polar.sdk.api.errors.PolarDeviceNotFound;
 import com.polar.sdk.api.errors.PolarInvalidArgument;
@@ -83,15 +89,12 @@ import io.reactivex.rxjava3.schedulers.Timed;
 import protocol.PftpRequest;
 import protocol.PftpResponse;
 
-import static com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceSessionState.SESSION_CLOSED;
-import static com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceSessionState.SESSION_OPEN;
-import static com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceSessionState.SESSION_OPENING;
-import static com.polar.androidcommunications.api.ble.model.gatt.client.BlePMDClient.PmdControlPointResponse.PmdControlPointResponseCode.ERROR_ALREADY_IN_STATE;
-
 /**
  * The default implementation of the Polar API
  */
 public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePowerStateChangedCallback {
+
+    private static volatile BDBleApiImpl instance;
     @NonNull
     private final BleDeviceListener listener;
     private final Map<String, Disposable> connectSubscriptions = new HashMap<>();
@@ -141,7 +144,7 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
         }
     };
 
-    public BDBleApiImpl(@NonNull Context context, int features) {
+    private BDBleApiImpl(@NonNull Context context, int features) {
         super(features);
         Set<Class<? extends BleGattBase>> clients = new HashSet<>();
         if ((this.features & PolarBleApi.FEATURE_HR) != 0) {
@@ -183,6 +186,23 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
             public void i(String tag, String msg) {
             }
         });
+    }
+
+    public static BDBleApiImpl getInstance(@NonNull Context context, int features) throws PolarBleSdkInstanceException {
+        BDBleApiImpl result = instance;
+        if (result != null) {
+            if (result.features == features) {
+                return result;
+            } else {
+                throw new PolarBleSdkInstanceException("Attempt to create Polar BLE API with features " + features + ". Instance with features " + result.features + " already exists");
+            }
+        }
+        synchronized (BDBleApiImpl.class) {
+            if (instance == null) {
+                instance = new BDBleApiImpl(context, features);
+            }
+            return instance;
+        }
     }
 
     private void enableAndroidScanFilter() {

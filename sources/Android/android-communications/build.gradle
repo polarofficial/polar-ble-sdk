@@ -14,7 +14,7 @@ buildscript {
         classpath 'com.android.tools.build:gradle:7.0.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.google.protobuf:protobuf-gradle-plugin:$protobuf_version"
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version")
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
         if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPassword")) {
             classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.21.0"
         }
