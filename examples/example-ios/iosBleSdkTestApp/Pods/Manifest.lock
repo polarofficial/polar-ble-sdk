@@ -1,5 +1,5 @@
 PODS:
-  - PolarBleSdk (3.2.0):
+  - PolarBleSdk (3.2.1):
     - RxSwift (= 6.2.0)
   - RxSwift (6.2.0)
 
@@ -12,7 +12,7 @@ SPEC REPOS:
     - RxSwift
 
 SPEC CHECKSUMS:
-  PolarBleSdk: 3d9704a2cb09c8a2e25e140c9f2cb75db6ceb66f
+  PolarBleSdk: 3fbfbc3ff73307fd27a1cbde9101ea580be70609
   RxSwift: d356ab7bee873611322f134c5f9ef379fa183d8f
 
 PODFILE CHECKSUM: 4015aaac87aae78105639945687ca7c6e6de0e10
