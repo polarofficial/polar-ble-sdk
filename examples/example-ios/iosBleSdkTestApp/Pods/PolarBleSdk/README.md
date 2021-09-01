@@ -230,7 +230,7 @@ If you use [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) 
 use_frameworks!
 
 target 'YOUR_TARGET_NAME' do
-    pod 'PolarBleSdk', '~> 3.1'
+    pod 'PolarBleSdk', '~> 3.2'
 
 end
 
@@ -250,7 +250,7 @@ post_install do |installer|
 If you use [Cathage](https://github.com/Carthage/Carthage) to manage your dependencies, add PolarBleSdk to your `Cartfile`
 
 ```
-github "polarofficial/polar-ble-sdk" ~> 3.1
+github "polarofficial/polar-ble-sdk" ~> 3.2
 ```
 
 ```bash
