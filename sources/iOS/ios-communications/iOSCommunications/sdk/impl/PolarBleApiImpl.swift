@@ -146,7 +146,7 @@ import RxSwift
             // client ready
             return session
         }
-        throw NotificationNotEnabled()
+        throw PolarErrors.notificationNotEnabled
     }
     
     fileprivate func sessionFtpClientReady(_ identifier: String) throws -> BleDeviceSession {
@@ -155,7 +155,7 @@ import RxSwift
         if client.isCharacteristicNotificationEnabled(BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC) {
             return session
         }
-        throw NotificationNotEnabled()
+        throw PolarErrors.notificationNotEnabled
     }
     
     fileprivate func sessionServiceReady(_ identifier: String, service: CBUUID) throws -> BleDeviceSession {
@@ -165,13 +165,13 @@ import RxSwift
                     if client.isServiceDiscovered() {
                         return session
                     }
-                    throw NotificationNotEnabled()
+                    throw PolarErrors.notificationNotEnabled
                 }
-                throw ServiceNotFound()
+                throw PolarErrors.serviceNotFound
             }
-            throw DeviceNotConnected()
+            throw PolarErrors.deviceNotConnected
         }
-        throw DeviceNotFound()
+        throw PolarErrors.deviceNotFound
     }
     
     fileprivate func fetchSession(_ identifier: String) throws -> BleDeviceSession? {
@@ -180,7 +180,7 @@ import RxSwift
         } else if identifier.matches("([0-9a-fA-F]){6,8}") {
             return sessionByDeviceId(identifier)
         }
-        throw InvalidArgument()
+        throw PolarErrors.invalidArgument
     }
     
     fileprivate func sessionByDeviceAddress(_ identifier: String) -> BleDeviceSession? {
@@ -450,11 +450,11 @@ extension PolarBleApiImpl: PolarBleApi {
             if let data = params.data() {
                 return client.query(PbPFtpQuery.setLocalTime.rawValue, parameters: data as NSData)
                     .catch { (err) -> Single<NSData> in
-                        return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
+                        return Single.error(PolarErrors.deviceError(description: "\(err)"))
                     }
                     .asCompletable()
             }
-            throw MessageEncodeFailed()
+            throw PolarErrors.messageEncodeFailed
         } catch let err {
             return Completable.error(err)
         }
@@ -463,7 +463,7 @@ extension PolarBleApiImpl: PolarBleApi {
     func startRecording(_ identifier: String, exerciseId: String, interval: RecordingInterval = RecordingInterval.interval_1s, sampleType: SampleType) -> Completable {
         do{
             guard exerciseId.count > 0 && exerciseId.count < 64 else {
-                throw InvalidArgument()
+                throw PolarErrors.invalidArgument
             }
             let session = try sessionFtpClientReady(identifier)
             let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
@@ -482,9 +482,9 @@ extension PolarBleApiImpl: PolarBleApi {
                         }
                         .asCompletable()
                 }
-                throw MessageEncodeFailed()
+                throw PolarErrors.messageEncodeFailed
             }
-            throw OperationNotSupported()
+            throw PolarErrors.operationNotSupported
         } catch let err {
             return Completable.error(err)
         }
@@ -499,11 +499,11 @@ extension PolarBleApiImpl: PolarBleApi {
             {
                 return client.query(PbPFtpQuery.requestStopRecording.rawValue, parameters: nil)
                     .catch { (err) -> Single<NSData> in
-                        return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
+                        return Single.error(PolarErrors.deviceError(description: "\(err)"))
                     }
                     .asCompletable()
             }
-            throw OperationNotSupported()
+            throw PolarErrors.operationNotSupported
         } catch let err {
             return Completable.error(err)
         }
@@ -520,10 +520,10 @@ extension PolarBleApiImpl: PolarBleApi {
                         return (ongoing: result.recordingOn, entryId: result.hasSampleDataIdentifier ? result.sampleDataIdentifier : "")
                     }
                     .catch { (err) -> Single<PolarRecordingStatus> in
-                        return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
+                        return Single.error(PolarErrors.deviceError(description: "\(err)"))
                     }
             }
-            throw OperationNotSupported()
+            throw PolarErrors.operationNotSupported
         } catch let err {
             return Single.error(err)
         }
@@ -554,18 +554,18 @@ extension PolarBleApiImpl: PolarBleApi {
                                 if let remove = removeOperation.data() {
                                     return client.request(remove)
                                 } else {
-                                    return Single.error(MessageEncodeFailed())
+                                    return Single.error(PolarErrors.messageEncodeFailed)
                                 }
                             } catch {
-                                return Single.error(MessageDecodeFailed())
+                                return Single.error(PolarErrors.messageDecodeFailed)
                             }
                         }
                         .catch { (err) -> Single<NSData> in
-                            return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
+                            return Single.error(PolarErrors.deviceError(description: "\(err)"))
                         }
                         .asCompletable()
                 }
-                throw MessageEncodeFailed()
+                throw PolarErrors.messageEncodeFailed
             case .h10FileSystem:
                 operation.command = .remove
                 operation.path = entry.path
@@ -573,13 +573,13 @@ extension PolarBleApiImpl: PolarBleApi {
                     return client.request(data)
                         .observe(on: self.scheduler)
                         .catch { (err) -> Single<NSData> in
-                            return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
+                            return Single.error(PolarErrors.deviceError(description: "\(err)"))
                         }
                         .asCompletable()
                 }
-                throw MessageEncodeFailed()
+                throw PolarErrors.messageEncodeFailed
             default:
-                throw OperationNotSupported()
+                throw PolarErrors.operationNotSupported
             }
         } catch let err {
             return Completable.error(err)
@@ -613,7 +613,7 @@ extension PolarBleApiImpl: PolarBleApi {
         case .gyro:
             return querySettings(identifier, type: .gyro)
         case .ppi:
-            return Single.error(OperationNotSupported())
+            return Single.error(PolarErrors.operationNotSupported)
         }
     }
     
@@ -630,7 +630,7 @@ extension PolarBleApiImpl: PolarBleApi {
         case .gyro:
             return queryFullSettings(identifier, type: .gyro)
         case .ppi:
-            return Single.error(OperationNotSupported())
+            return Single.error(PolarErrors.operationNotSupported)
         }
     }
     
@@ -648,7 +648,7 @@ extension PolarBleApiImpl: PolarBleApi {
                                     .subscribe()
                             }))
                 .catch { (err) -> Observable<T> in
-                    return Observable.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
+                    return Observable.error(PolarErrors.deviceError(description: "\(err)"))
                 }
         } catch let err {
             return Observable.error(err)
@@ -733,12 +733,12 @@ extension PolarBleApiImpl: PolarBleApi {
                             return (samples.recordingInterval?.seconds ?? 0, samples: exSamples)
                         }
                         .catch({ (err) -> Single<PolarExerciseData> in
-                            return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
+                            return Single.error(PolarErrors.deviceError(description: "\(err)"))
                         })
                 }
-                throw MessageEncodeFailed()
+                throw PolarErrors.messageEncodeFailed
             }
-            throw OperationNotSupported()
+            throw PolarErrors.operationNotSupported
         } catch let err {
             return Single.error(err)
         }
@@ -764,10 +764,10 @@ extension PolarBleApiImpl: PolarBleApi {
                     if let date = dateFormatter.date(from: String(components[2] + components[4])) {
                         return (path,date: date, entryId: String(components[2] + components[4]))
                     }
-                    throw DateTimeFormatFailed()
+                    throw PolarErrors.dateTimeFormatFailed
                 })
                 .catch({ (err) -> Observable<PolarExerciseEntry> in
-                    return Observable.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
+                    return Observable.error(PolarErrors.deviceError(description: "\(err)"))
                 })
             } else if fsType == .h10FileSystem {
                 return fetchRecursive("/", client: client, condition: { (entry) -> Bool in
@@ -778,10 +778,10 @@ extension PolarBleApiImpl: PolarBleApi {
                     return (path,date: Date(), entryId: String(components[0]))
                 })
                 .catch({ (err) -> Observable<PolarExerciseEntry> in
-                    return Observable.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
+                    return Observable.error(PolarErrors.deviceError(description: "\(err)"))
                 })
             }
-            throw OperationNotSupported()
+            throw PolarErrors.operationNotSupported
         } catch let err {
             return Observable.error(err)
         }
@@ -796,7 +796,7 @@ extension PolarBleApiImpl: PolarBleApi {
                     return PolarSensorSetting(setting.settings)
                 }
                 .catch { (err) -> Single<PolarSensorSetting> in
-                    return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
+                    return Single.error(PolarErrors.deviceError(description: "\(err)"))
                 }
         } catch let err {
             return Single.error(err)
@@ -812,7 +812,7 @@ extension PolarBleApiImpl: PolarBleApi {
                     return PolarSensorSetting(setting.settings)
                 }
                 .catch { (err) -> Single<PolarSensorSetting> in
-                    return Single.error(UndefinedError.DeviceError(localizedDescription: "\(err)"))
+                    return Single.error(PolarErrors.deviceError(description: "\(err)"))
                 }
         } catch let err {
             return Single.error(err)
@@ -863,12 +863,11 @@ extension PolarBleApiImpl: PolarBleApi {
                         }
                         return Observable.empty()
                     } catch let err {
-                        return Observable.error(
-                            UndefinedError.DeviceError(localizedDescription: "\(err)"))
+                        return Observable.error(PolarErrors.deviceError(description: "\(err)"))
                     }
                 }
         }
-        return Observable.error(MessageEncodeFailed())
+        return Observable.error(PolarErrors.messageEncodeFailed)
     }
     
     func enableSDKMode(_ identifier: String) -> Completable {
