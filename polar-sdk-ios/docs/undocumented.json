@@ -92,22 +92,8 @@
       "warning": "undocumented"
     },
     {
-      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/errors/PolarErrors.swift",
-      "line": 47,
-      "symbol": "UndefinedError.DeviceError(localizedDescription:)",
-      "symbol_kind": "source.lang.swift.decl.enumelement",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/errors/PolarErrors.swift",
-      "line": 48,
-      "symbol": "UndefinedError.localizedDescription",
-      "symbol_kind": "source.lang.swift.decl.var.instance",
-      "warning": "undocumented"
-    },
-    {
       "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/impl/PolarBleApiImpl.swift",
-      "line": 905,
+      "line": 904,
       "symbol": "PrimitiveSequence.asCompletable()",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
