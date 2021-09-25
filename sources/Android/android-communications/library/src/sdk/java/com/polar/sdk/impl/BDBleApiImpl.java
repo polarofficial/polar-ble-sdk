@@ -441,7 +441,7 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
                                 .observeOn(scheduler)
                                 .subscribe(
                                         listener::openSessionDirect,
-                                        throwable -> logError("täällä ollaan " + throwable),
+                                        error -> logError(error.getMessage()),
                                         () -> log("connect search complete")
                                 ));
             }
@@ -956,7 +956,7 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
                                                                     hrNotificationData.rrPresent));
                                                 }
                                             },
-                                            throwable -> logError("onko tämä" + throwable.getMessage()),
+                                            error -> logError(error.getMessage()),
                                             () -> {
                                             }
                                     );
@@ -970,7 +970,7 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
                                                     callback.batteryLevelReceived(deviceId, batteryLevel);
                                                 }
                                             },
-                                            error -> logError("onko tämä 2" + error.getMessage()),
+                                            error -> logError(error.getMessage()),
                                             () -> {
                                             }
                                     );
@@ -1033,7 +1033,7 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
                 .subscribe(
                         o -> {
                         },
-                        throwable -> logError("onko tämä 3" + throwable.getMessage()),
+                        throwable -> logError(throwable.getMessage()),
                         () -> log("complete"));
     }
 
@@ -1093,9 +1093,13 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
         }
     }
 
-    protected void logError(@NonNull String message) {
+    protected void logError(@Nullable String message) {
         if (logger != null) {
-            logger.message("Error: " + message);
+            if (message != null) {
+                logger.message("Error: " + message);
+            } else {
+                logger.message("Error without known reason");
+            }
         }
     }
 }

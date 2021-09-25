@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import protocol.PftpError;
+
 /**
  * RFC76 and RFC 60 related utils
  */
@@ -21,8 +23,6 @@ public class BlePsFtpUtils {
     public static final UUID RFC77_PFTP_MTU_CHARACTERISTIC = UUID.fromString("FB005C51-02E7-F387-1CAD-8ACD2D8DF0C8");
     public static final UUID RFC77_PFTP_D2H_CHARACTERISTIC = UUID.fromString("FB005C52-02E7-F387-1CAD-8ACD2D8DF0C8");
     public static final UUID RFC77_PFTP_H2D_CHARACTERISTIC = UUID.fromString("FB005C53-02E7-F387-1CAD-8ACD2D8DF0C8");
-
-    public final int RFC77_PFTP_SERVICE_16BIT = 0xFEEE;
 
     public static final int RFC76_HEADER_SIZE = 1;
     public static final int RFC76_STATUS_MORE = 0x03;
@@ -61,7 +61,7 @@ public class BlePsFtpUtils {
         private final int error;
 
         public PftpResponseError(String detailMessage, int error) {
-            super(detailMessage + " Error: " + (error & 0x0000FFFF));
+            super(detailMessage + " Error: " + error + " : " + PftpError.PbPFtpError.forNumber(error));
             this.error = error;
         }
 
@@ -88,18 +88,6 @@ public class BlePsFtpUtils {
         @Override
         public String toString() {
             return "first: " + next + " length: " + status + " error: " + error + " payload: " + (payload != null ? new String(payload) : "null" + " seq: " + sequenceNumber);
-        }
-    }
-
-    public static class PftpRfc60Request {
-        public boolean isRequest;
-        public int headerSize;
-        public int queryId;
-        public byte[] payload;
-
-        @Override
-        public String toString() {
-            return "isRequest: " + isRequest + " headerSize: " + headerSize + " queryId: " + queryId + " payload: " + (payload != null ? new String(payload) : "null");
         }
     }
 
@@ -188,62 +176,6 @@ public class BlePsFtpUtils {
             packet = new byte[data.available() + RFC76_HEADER_SIZE];
             packet[0] = (byte) (packet[0] | next | 0x02 | (sequenceNumber.getSeq() << 4)); // 0x02 == LAST
             data.read(packet, offset, data.available());
-        } else {
-            packet = new byte[RFC76_HEADER_SIZE];
-            packet[0] = (byte) (packet[0] | next | 0x02 | (sequenceNumber.getSeq() << 4));
-        }
-        sequenceNumber.increment();
-        return packet;
-    }
-
-    /**
-     * Generate single air packet, from header content and optionally from data content
-     *
-     * @param header         typically protocol buffer data
-     * @param data           typically file data
-     * @param next           bit to indicate 0=first or 1=next air packet
-     * @param mtuSize        att mtu size used
-     * @param sequenceNumber RFC76 ring counter
-     * @return air packet
-     */
-    public static byte[] buildRfc76MessageFrame(final ByteArrayInputStream header,
-                                                final ByteArrayInputStream data,
-                                                int next,
-                                                int mtuSize,
-                                                Rfc76SequenceNumber sequenceNumber) {
-        int offset = RFC76_HEADER_SIZE;
-        byte[] packet;
-        if (header.available() > 0) {
-            int headerLen = header.available();
-            if (header.available() > mtuSize - RFC76_HEADER_SIZE) {
-                packet = new byte[mtuSize];
-            } else {
-                if (data.available() > mtuSize - RFC76_HEADER_SIZE) {
-                    packet = new byte[mtuSize];
-                } else {
-                    packet = new byte[header.available() + data.available() + RFC76_HEADER_SIZE];
-                }
-            }
-            if (header.read(packet, offset, mtuSize - offset) == -1) {
-                data.read(packet, headerLen + RFC76_HEADER_SIZE, data.available());
-                if (data.available() > 0) {
-                    packet[0] = (byte) (packet[0] | next | 0x06 | (sequenceNumber.getSeq() << 4)); // 0x06 == MORE
-                } else {
-                    packet[0] = (byte) (packet[0] | next | 0x02 | (sequenceNumber.getSeq() << 4)); // 0x02 == LAST
-                }
-            }
-        } else if (data.available() > 0) {
-            if (header.available() > mtuSize - RFC76_HEADER_SIZE) {
-                packet = new byte[mtuSize];
-            } else {
-                packet = new byte[data.available() + RFC76_HEADER_SIZE];
-            }
-            data.read(packet, offset, data.available());
-            if (data.available() > 0) {
-                packet[0] = (byte) (packet[0] | next | 0x06 | (sequenceNumber.getSeq() << 4)); // 0x06 == MORE
-            } else {
-                packet[0] = (byte) (packet[0] | next | 0x02 | (sequenceNumber.getSeq() << 4)); // 0x02 == LAST
-            }
         } else {
             packet = new byte[RFC76_HEADER_SIZE];
             packet[0] = (byte) (packet[0] | next | 0x02 | (sequenceNumber.getSeq() << 4));
