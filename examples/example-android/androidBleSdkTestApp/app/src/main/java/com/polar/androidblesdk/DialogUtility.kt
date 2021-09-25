@@ -16,11 +16,7 @@ import io.reactivex.rxjava3.core.SingleEmitter
 import java.util.*
 
 object DialogUtility {
-    fun showAllSettingsDialog(
-        activity: Activity,
-        available: Map<SettingType, Set<Int>>,
-        all: Map<SettingType, Set<Int>>
-    ): Single<PolarSensorSetting?> {
+    fun showAllSettingsDialog(activity: Activity, available: Map<SettingType, Set<Int>>, all: Map<SettingType, Set<Int>>): Single<PolarSensorSetting> {
 
         // custom dialog
         val dialog = Dialog(activity)
@@ -66,16 +62,11 @@ object DialogUtility {
         }
         val ok = dialog.findViewById<Button>(R.id.dialog_ok_button)
         ok.setOnClickListener { dialog.dismiss() }
-        return Single.create { e: SingleEmitter<PolarSensorSetting?> ->
+        return Single.create { e: SingleEmitter<PolarSensorSetting> ->
             val selected: MutableMap<SettingType, Int> = EnumMap(SettingType::class.java)
 
             dialog.setOnDismissListener {
-                handleSettingsGroupSelection(
-                    dialog,
-                    samplingRateRg,
-                    selected,
-                    SettingType.SAMPLE_RATE
-                )
+                handleSettingsGroupSelection(dialog, samplingRateRg, selected, SettingType.SAMPLE_RATE)
                 handleSettingsGroupSelection(dialog, resolutionRg, selected, SettingType.RESOLUTION)
                 handleSettingsGroupSelection(dialog, rangeRg, selected, SettingType.RANGE)
                 handleSettingsGroupSelection(dialog, channelsRg, selected, SettingType.CHANNELS)
@@ -88,12 +79,7 @@ object DialogUtility {
         }.subscribeOn(AndroidSchedulers.mainThread())
     }
 
-    private fun handleSettingsGroupSelection(
-        dialog: Dialog,
-        rg: RadioGroup,
-        selected: MutableMap<SettingType, Int>,
-        type: SettingType
-    ) {
+    private fun handleSettingsGroupSelection(dialog: Dialog, rg: RadioGroup, selected: MutableMap<SettingType, Int>, type: SettingType) {
         if (rg.childCount != 0) {
             val s = rg.indexOfChild(dialog.findViewById(rg.checkedRadioButtonId))
             val button = rg.getChildAt(s) as MaterialRadioButton
@@ -102,13 +88,7 @@ object DialogUtility {
         }
     }
 
-    private fun drawAllAndAvailableSettingsGroup(
-        activity: Activity,
-        rg: RadioGroup,
-        type: SettingType,
-        availableSettings: Map<SettingType, Set<Int>>,
-        allSettings: Map<SettingType, Set<Int>>
-    ) {
+    private fun drawAllAndAvailableSettingsGroup(activity: Activity, rg: RadioGroup, type: SettingType, availableSettings: Map<SettingType, Set<Int>>, allSettings: Map<SettingType, Set<Int>>) {
         if (availableSettings.containsKey(type) && allSettings.containsKey(type)) {
             val availableValues = availableSettings[type]?.toList()
             allSettings[type]?.toList()?.sorted()?.let { allValues ->
