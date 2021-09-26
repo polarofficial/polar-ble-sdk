@@ -322,10 +322,10 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?){
         BleLogger.trace_if_error("didUpdateValueFor: ", error: error)
-        let errorCode = (error as NSError?)?.code ?? 0
-        let data = characteristic.value ?? Data()
-        if let client = fetchGattClient(characteristic.service.uuid) {
+        if let serviceUuid = characteristic.service?.uuid, let client = fetchGattClient(serviceUuid) {
             if client.containsCharacteristic(characteristic.uuid) {
+                let errorCode = (error as NSError?)?.code ?? 0
+                let data = characteristic.value ?? Data()
                 client.processServiceData(characteristic.uuid, data: data, err: errorCode)
             }
         }
@@ -333,9 +333,9 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?){
         BleLogger.trace_if_error("didWriteValueForCharacteristic: ", error: error)
-        let errorCode = (error as NSError?)?.code ?? 0
-        if let client = fetchGattClient(characteristic.service.uuid) {
+        if let serviceUuid = characteristic.service?.uuid, let client = fetchGattClient(serviceUuid) {
             if client.containsCharacteristic(characteristic.uuid) {
+                let errorCode = (error as NSError?)?.code ?? 0
                 client.serviceDataWritten(characteristic.uuid, err: errorCode)
             }
         }
@@ -351,9 +351,9 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
             peripheral.discoverServices(nil)
             return
         }
-        let isNotifying = errorCode == 0 ? characteristic.isNotifying : false
-        if let client = fetchGattClient(characteristic.service.uuid) {
+        if let serviceUuid = characteristic.service?.uuid, let client = fetchGattClient(serviceUuid) {
             if client.containsCharacteristic(characteristic.uuid) {
+                let isNotifying = errorCode == 0 ? characteristic.isNotifying : false
                 client.notifyDescriptorWritten(characteristic.uuid, enabled: isNotifying, err: errorCode)
             }
         }

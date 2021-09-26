@@ -1611,7 +1611,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 14.1.6;
+				MARKETING_VERSION = 14.1.7;
 				MODULEMAP_FILE = "";
 				MODULEMAP_PRIVATE_FILE = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iOSCommunications;
@@ -1648,7 +1648,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 14.1.6;
+				MARKETING_VERSION = 14.1.7;
 				MODULEMAP_FILE = "";
 				MODULEMAP_PRIVATE_FILE = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iOSCommunications;
