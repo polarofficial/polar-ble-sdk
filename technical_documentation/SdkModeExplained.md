@@ -22,5 +22,5 @@ The SDK mode is the mode of the sensor in which the wider range of stream capabi
 | Acc         |26Hz, 52Hz, 104Hz, 208Hz, 416Hz | 2g, 4g, 8g, 16g                                      |16          |
 | Gyro        |26Hz, 52Hz, 104Hz, 208Hz, 416Hz | 250 deg/sec, 500 deg/sec, 1000 deg/sec, 2000 deg/sec |16          |
 | Magnetometer|10Hz, 20Hz, 50Hz, 100Hz         | 50 Gauss                                             |16          |
-| PPG        |28Hz, 44Hz, 135Hz, 176Hz        | -                                                    |22          |
-| PPI          |Not supported in SDK MODE      | -                                                    |-          |
+| PPG         |28Hz, 44Hz, 135Hz, 176Hz        | -                                                    |22          |
+| PPI         | PPI stream is not supported in SDK MODE    |
