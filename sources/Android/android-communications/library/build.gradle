@@ -56,13 +56,16 @@ android {
         }
     }
 
-    flavorDimensions "CommunicationsLibrary"
+    flavorDimensions 'library'
     productFlavors {
         androidCommunications {
-            dimension "CommunicationsLibrary"
+            dimension "library"
         }
         sdk {
-            dimension "CommunicationsLibrary"
+            dimension "library"
+        }
+        sdkProprietary {
+            dimension "library"
         }
     }
 
@@ -157,13 +160,13 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.2.0'
     implementation "androidx.core:core-ktx:1.6.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    sdkImplementation 'com.google.protobuf:protobuf-javalite:3.14.0'
+    sdkImplementation 'com.google.protobuf:protobuf-javalite:3.17.3'
+    sdkProprietaryImplementation 'com.google.protobuf:protobuf-javalite:3.17.3'
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.mockito:mockito-core:3.11.1"
-    testImplementation "io.mockk:mockk:1.10.4"
+    testImplementation "io.mockk:mockk:1.10.6"
     testImplementation 'androidx.test:runner:1.4.0'
     testImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-    testImplementation 'org.robolectric:robolectric:4.0'
     androidTestImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:core:1.4.0'
     androidTestImplementation 'androidx.test:runner:1.4.0'

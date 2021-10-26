@@ -17,11 +17,15 @@ public class PolarOhrData {
          */
         public final List<Integer> channelSamples;
 
-        public final long status;
+        /**
+         * Status of OHR data
+         * @deprecated status of the OHR data doesn't contain any relevant information. Will be removed in future releases.
+         */
+        @Deprecated
+        public final long status = 0L;
 
-        public PolarOhrSample(List<Integer> channelSamples, long status) {
+        public PolarOhrSample(List<Integer> channelSamples) {
             this.channelSamples = channelSamples;
-            this.status = status;
         }
     }
 

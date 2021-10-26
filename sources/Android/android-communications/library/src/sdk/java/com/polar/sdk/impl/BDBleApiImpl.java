@@ -4,7 +4,7 @@ package com.polar.sdk.impl;
 import static com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceSessionState.SESSION_CLOSED;
 import static com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceSessionState.SESSION_OPEN;
 import static com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceSessionState.SESSION_OPENING;
-import static com.polar.androidcommunications.api.ble.model.gatt.client.BlePMDClient.PmdControlPointResponse.PmdControlPointResponseCode.ERROR_ALREADY_IN_STATE;
+import static com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdControlPointResponse.PmdControlPointResponseCode.ERROR_ALREADY_IN_STATE;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.le.ScanFilter;
@@ -26,7 +26,14 @@ import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase;
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleBattClient;
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleDisClient;
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient;
-import com.polar.androidcommunications.api.ble.model.gatt.client.BlePMDClient;
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient;
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType;
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSetting;
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.AccData;
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.EcgData;
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.GyrData;
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.MagData;
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.PpiData;
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient;
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils;
 import com.polar.androidcommunications.api.ble.model.polar.BlePolarDeviceCapabilitiesUtility;
@@ -42,6 +49,7 @@ import com.polar.sdk.api.errors.PolarNotificationNotEnabled;
 import com.polar.sdk.api.errors.PolarOperationNotSupported;
 import com.polar.sdk.api.errors.PolarServiceNotAvailable;
 import com.polar.sdk.api.model.PolarAccelerometerData;
+import com.polar.sdk.api.model.PolarDataUtils;
 import com.polar.sdk.api.model.PolarDeviceInfo;
 import com.polar.sdk.api.model.PolarEcgData;
 import com.polar.sdk.api.model.PolarExerciseData;
@@ -304,17 +312,17 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
                                                             @NonNull DeviceStreamingFeature feature) {
         switch (feature) {
             case ECG:
-                return querySettings(identifier, BlePMDClient.PmdMeasurementType.ECG);
+                return querySettings(identifier, PmdMeasurementType.ECG);
             case ACC:
-                return querySettings(identifier, BlePMDClient.PmdMeasurementType.ACC);
+                return querySettings(identifier, PmdMeasurementType.ACC);
             case PPG:
-                return querySettings(identifier, BlePMDClient.PmdMeasurementType.PPG);
+                return querySettings(identifier, PmdMeasurementType.PPG);
             case PPI:
                 return Single.error(new PolarOperationNotSupported());
             case GYRO:
-                return querySettings(identifier, BlePMDClient.PmdMeasurementType.GYRO);
+                return querySettings(identifier, PmdMeasurementType.GYRO);
             case MAGNETOMETER:
-                return querySettings(identifier, BlePMDClient.PmdMeasurementType.MAGNETOMETER);
+                return querySettings(identifier, PmdMeasurementType.MAGNETOMETER);
             default:
                 return Single.error(new PolarInvalidArgument());
         }
@@ -326,39 +334,39 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
                                                                 @NonNull DeviceStreamingFeature feature) {
         switch (feature) {
             case ECG:
-                return queryFullSettings(identifier, BlePMDClient.PmdMeasurementType.ECG);
+                return queryFullSettings(identifier, PmdMeasurementType.ECG);
             case ACC:
-                return queryFullSettings(identifier, BlePMDClient.PmdMeasurementType.ACC);
+                return queryFullSettings(identifier, PmdMeasurementType.ACC);
             case PPG:
-                return queryFullSettings(identifier, BlePMDClient.PmdMeasurementType.PPG);
+                return queryFullSettings(identifier, PmdMeasurementType.PPG);
             case PPI:
                 return Single.error(new PolarOperationNotSupported());
             case GYRO:
-                return queryFullSettings(identifier, BlePMDClient.PmdMeasurementType.GYRO);
+                return queryFullSettings(identifier, PmdMeasurementType.GYRO);
             case MAGNETOMETER:
-                return queryFullSettings(identifier, BlePMDClient.PmdMeasurementType.MAGNETOMETER);
+                return queryFullSettings(identifier, PmdMeasurementType.MAGNETOMETER);
             default:
                 return Single.error(new PolarInvalidArgument());
         }
     }
 
-    private Single<PolarSensorSetting> querySettings(final String identifier, final BlePMDClient.PmdMeasurementType type) {
+    private Single<PolarSensorSetting> querySettings(final String identifier, final PmdMeasurementType type) {
         try {
             final BleDeviceSession session = sessionPmdClientReady(identifier);
             final BlePMDClient client = (BlePMDClient) session.fetchClient(BlePMDClient.PMD_SERVICE);
             return client.querySettings(type)
-                    .map(setting -> new PolarSensorSetting(setting.settings, type));
+                    .map(setting -> new PolarSensorSetting((Map<PmdSetting.PmdSettingType, Set<Integer>>) setting.settings, type));
         } catch (Throwable e) {
             return Single.error(e);
         }
     }
 
-    private Single<PolarSensorSetting> queryFullSettings(final String identifier, final BlePMDClient.PmdMeasurementType type) {
+    private Single<PolarSensorSetting> queryFullSettings(final String identifier, final PmdMeasurementType type) {
         try {
             final BleDeviceSession session = sessionPmdClientReady(identifier);
             final BlePMDClient client = (BlePMDClient) session.fetchClient(BlePMDClient.PMD_SERVICE);
             return client.queryFullSettings(type)
-                    .map(setting -> new PolarSensorSetting(setting.settings, type));
+                    .map(setting -> new PolarSensorSetting((Map<PmdSetting.PmdSettingType, Set<Integer>>) setting.settings, type));
         } catch (Throwable e) {
             return Single.error(e);
         }
@@ -686,7 +694,7 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
     }
 
     private <T> Flowable<T> startStreaming(String identifier,
-                                           BlePMDClient.PmdMeasurementType type,
+                                           PmdMeasurementType type,
                                            PolarSensorSetting setting,
                                            Function<BlePMDClient, Flowable<T>> observer) {
         try {
@@ -707,11 +715,11 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
     @Override
     public Flowable<PolarEcgData> startEcgStreaming(@NonNull String identifier,
                                                     @NonNull PolarSensorSetting setting) {
-        return startStreaming(identifier, BlePMDClient.PmdMeasurementType.ECG, setting,
+        return startStreaming(identifier, PmdMeasurementType.ECG, setting,
                 client -> client.monitorEcgNotifications(true)
                         .map(ecgData -> {
                             List<Integer> samples = new ArrayList<>();
-                            for (BlePMDClient.EcgData.EcgSample s : ecgData.ecgSamples) {
+                            for (EcgData.EcgSample s : ecgData.ecgSamples) {
                                 samples.add(s.microVolts);
                             }
                             return new PolarEcgData(samples, ecgData.timeStamp);
@@ -722,11 +730,11 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
     @Override
     public Flowable<PolarAccelerometerData> startAccStreaming(@NonNull String identifier,
                                                               @NonNull PolarSensorSetting setting) {
-        return startStreaming(identifier, BlePMDClient.PmdMeasurementType.ACC, setting, client -> client.monitorAccNotifications(true)
+        return startStreaming(identifier, PmdMeasurementType.ACC, setting, client -> client.monitorAccNotifications(true)
                 .map(accData -> {
                     List<PolarAccelerometerData.PolarAccelerometerDataSample> samples = new ArrayList<>();
-                    for (BlePMDClient.AccData.AccSample s : accData.accSamples) {
-                        samples.add(new PolarAccelerometerData.PolarAccelerometerDataSample(s.x, s.y, s.z));
+                    for (AccData.AccSample sample : accData.accSamples) {
+                        samples.add(new PolarAccelerometerData.PolarAccelerometerDataSample(sample.getX(), sample.getY(), sample.getZ()));
                     }
                     return new PolarAccelerometerData(samples, accData.timeStamp);
                 }));
@@ -736,26 +744,16 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
     @Override
     public Flowable<PolarOhrData> startOhrStreaming(@NonNull String identifier,
                                                     @NonNull PolarSensorSetting setting) {
-        return startStreaming(identifier, BlePMDClient.PmdMeasurementType.PPG, setting, client -> client.monitorPpgNotifications(true)
-                .map(ppgData -> {
-                    List<PolarOhrData.PolarOhrSample> samples = new ArrayList<>();
-                    PolarOhrData.OHR_DATA_TYPE type = PolarOhrData.OHR_DATA_TYPE.UNKNOWN;
-                    if (ppgData.channels == 4) {
-                        type = PolarOhrData.OHR_DATA_TYPE.PPG3_AMBIENT1;
-                    }
-                    for (BlePMDClient.PpgData.PpgSample s : ppgData.ppgSamples) {
-                        samples.add(new PolarOhrData.PolarOhrSample(s.ppgDataSamples, s.status));
-                    }
-                    return new PolarOhrData(samples, type, ppgData.timeStamp);
-                }));
+        return startStreaming(identifier, PmdMeasurementType.PPG, setting, client -> client.monitorPpgNotifications(true)
+                .map(PolarDataUtils::mapPMDClientOhrDataToPolarOhr));
     }
 
     @NonNull
     @Override
     public Flowable<PolarOhrPPIData> startOhrPPIStreaming(@NonNull String identifier) {
-        return startStreaming(identifier, BlePMDClient.PmdMeasurementType.PPI, new PolarSensorSetting(new HashMap<>()), client -> client.monitorPpiNotifications(true).map(ppiData -> {
+        return startStreaming(identifier, PmdMeasurementType.PPI, new PolarSensorSetting(new HashMap<>()), client -> client.monitorPpiNotifications(true).map(ppiData -> {
             List<PolarOhrPPIData.PolarOhrPPISample> samples = new ArrayList<>();
-            for (BlePMDClient.PpiData.PPSample ppSample : ppiData.ppSamples) {
+            for (PpiData.PPSample ppSample : ppiData.ppSamples) {
                 samples.add(new PolarOhrPPIData.PolarOhrPPISample(ppSample.ppInMs,
                         ppSample.ppErrorEstimate,
                         ppSample.hr,
@@ -771,13 +769,13 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
     @Override
     public Flowable<PolarMagnetometerData> startMagnetometerStreaming(@NonNull final String identifier,
                                                                       @NonNull PolarSensorSetting setting) {
-        return startStreaming(identifier, BlePMDClient.PmdMeasurementType.MAGNETOMETER, setting, client -> client.monitorMagnetometerNotifications(true)
+        return startStreaming(identifier, PmdMeasurementType.MAGNETOMETER, setting, client -> client.monitorMagnetometerNotifications(true)
                 .map(mgn -> {
                     List<PolarMagnetometerData.PolarMagnetometerDataSample> samples = new ArrayList<>();
-                    for (BlePMDClient.MagData.MagSample sample : mgn.magSamples) {
-                        samples.add(new PolarMagnetometerData.PolarMagnetometerDataSample(sample.x, sample.y, sample.z));
+                    for (MagData.MagSample sample : mgn.magSamples) {
+                        samples.add(new PolarMagnetometerData.PolarMagnetometerDataSample(sample.getX(), sample.getY(), sample.getZ()));
                     }
-                    return new PolarMagnetometerData(samples, mgn.timeStamp);
+                    return new PolarMagnetometerData(samples, mgn.getTimeStamp());
                 }));
     }
 
@@ -785,13 +783,13 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
     @Override
     public Flowable<PolarGyroData> startGyroStreaming(@NonNull final String identifier,
                                                       @NonNull PolarSensorSetting setting) {
-        return startStreaming(identifier, BlePMDClient.PmdMeasurementType.GYRO, setting, client -> client.monitorGyroNotifications(true)
+        return startStreaming(identifier, PmdMeasurementType.GYRO, setting, client -> client.monitorGyroNotifications(true)
                 .map(gyro -> {
                     List<PolarGyroData.PolarGyroDataSample> samples = new ArrayList<>();
-                    for (BlePMDClient.GyrData.GyrSample sample : gyro.gyrSamples) {
-                        samples.add(new PolarGyroData.PolarGyroDataSample(sample.x, sample.y, sample.z));
+                    for (GyrData.GyrSample sample : gyro.gyrSamples) {
+                        samples.add(new PolarGyroData.PolarGyroDataSample(sample.getX(), sample.getY(), sample.getZ()));
                     }
-                    return new PolarGyroData(samples, gyro.timeStamp);
+                    return new PolarGyroData(samples, gyro.getTimeStamp());
                 }));
     }
 
@@ -918,7 +916,7 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
     }
 
     @SuppressLint("CheckResult")
-    protected void stopPmdStreaming(@NonNull BleDeviceSession session, @NonNull BlePMDClient client, @NonNull BlePMDClient.PmdMeasurementType type) {
+    protected void stopPmdStreaming(@NonNull BleDeviceSession session, @NonNull BlePMDClient client, @NonNull PmdMeasurementType type) {
         if (session.getSessionState() == SESSION_OPEN) {
             // stop streaming
             client.stopMeasurement(type).subscribe(

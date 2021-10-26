@@ -7,10 +7,10 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.BleBattClient;
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleDisClient;
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleH7SettingsClient;
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient;
-import com.polar.androidcommunications.api.ble.model.gatt.client.BlePMDClient;
 import com.polar.androidcommunications.api.ble.model.gatt.client.BlePfcClient;
 import com.polar.androidcommunications.api.ble.model.gatt.client.BlePsdClient;
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleRscClient;
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient;
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient;
 
 import java.util.HashSet;
