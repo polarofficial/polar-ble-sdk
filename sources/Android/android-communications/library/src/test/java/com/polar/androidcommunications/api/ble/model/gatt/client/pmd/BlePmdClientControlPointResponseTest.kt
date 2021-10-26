@@ -1,4 +1,4 @@
-package com.polar.androidcommunications.api.ble.model.gatt.client
+package com.polar.androidcommunications.api.ble.model.gatt.client.pmd
 
 import io.mockk.MockKAnnotations
 import org.junit.Assert.assertEquals
@@ -21,12 +21,12 @@ class BlePmdClientControlPointResponseTest {
         // 0:       Response code                          size 1:     0xF0
         val expectedResponseCode = 0xF0.toByte()
         // 1:       Op code                                size 1:     0x01 (Request stream settings)
-        val expectedOpCode = BlePMDClient.PmdControlPointCommand.GET_MEASUREMENT_SETTINGS
+        val expectedOpCode = PmdControlPointCommand.GET_MEASUREMENT_SETTINGS
         // 2:       Measurement Type                       size 1:     0x02 (Acc)
         val expectedMeasurementType = 0x02.toByte()
         // 3:       Error Code                             size 1:     0x00 (Success)
         val expectedStatus =
-            BlePMDClient.PmdControlPointResponse.PmdControlPointResponseCode.SUCCESS
+            PmdControlPointResponse.PmdControlPointResponseCode.SUCCESS
         // 4:       More                                   size 1:     0x00 (No more)
         val expectedMore = false
         // 5..n:    Parameters                             size 3:     0xFF 0xFF 0xFF (some data)
@@ -45,7 +45,7 @@ class BlePmdClientControlPointResponseTest {
         )
 
         //Act
-        val response = BlePMDClient.PmdControlPointResponse(cpResponse)
+        val response = PmdControlPointResponse(cpResponse)
 
         //Assert
         assertEquals(expectedResponseCode, response.responseCode)
@@ -65,12 +65,12 @@ class BlePmdClientControlPointResponseTest {
         // 0:       Response code                          size 1:     0xF0
         val expectedResponseCode = 0xF0.toByte()
         // 1:       Op code                                size 1:     0x01 (Request stream settings)
-        val expectedOpCode = BlePMDClient.PmdControlPointCommand.GET_MEASUREMENT_SETTINGS
+        val expectedOpCode = PmdControlPointCommand.GET_MEASUREMENT_SETTINGS
         // 2:       Measurement Type                       size 1:     0x06 (mag)
         val expectedMeasurementType = 0x06.toByte()
         // 3:       Error Code                             size 1:     0x07 (Failure)
         val expectedStatus =
-            BlePMDClient.PmdControlPointResponse.PmdControlPointResponseCode.ERROR_INVALID_RESOLUTION
+            PmdControlPointResponse.PmdControlPointResponseCode.ERROR_INVALID_RESOLUTION
         // 4:       More                                   size 1:     0x00 (No more)
         val expectedMore = false
         // 5..n:    Parameters                             size 3:     0xFF 0xFF 0xFF (some data)
@@ -81,7 +81,7 @@ class BlePmdClientControlPointResponseTest {
             byteArrayOf(0xF0.toByte(), 0x01.toByte(), 0x06.toByte(), 0x07.toByte(), 0x00.toByte())
 
         //Act
-        val response = BlePMDClient.PmdControlPointResponse(cpResponse)
+        val response = PmdControlPointResponse(cpResponse)
 
         //Assert
         assertEquals(expectedResponseCode, response.responseCode)

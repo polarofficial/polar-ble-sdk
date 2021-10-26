@@ -53,11 +53,15 @@ class BDGattCallback extends BluetoothGattCallback {
                         gatt.setPreferredPhy(BluetoothDevice.PHY_LE_2M_MASK, BluetoothDevice.PHY_LE_2M_MASK, BluetoothDevice.PHY_OPTION_NO_PREFERRED);
                     }
                     if (smartPolarDeviceSession.isAuthenticated()) {
-                        smartPolarDeviceSession.getSubscriptions().add(Observable.timer(600, TimeUnit.MILLISECONDS, Schedulers.newThread()).observeOn(scheduler).subscribe(
-                                aLong -> {
-                                },
-                                throwable -> BleLogger.e(TAG, "Wait encryption start failed: " + throwable.getLocalizedMessage()),
-                                () -> startDiscovery(smartPolarDeviceSession, gatt)));
+                        smartPolarDeviceSession.getSubscriptions().add(
+                                Observable.timer(600, TimeUnit.MILLISECONDS, Schedulers.newThread())
+                                        .observeOn(scheduler)
+                                        .subscribe(
+                                                aLong -> {
+                                                },
+                                                throwable -> BleLogger.e(TAG, "Wait encryption start failed: " + throwable.getLocalizedMessage()),
+                                                () -> startDiscovery(smartPolarDeviceSession, gatt)
+                                        ));
                     } else {
                         handler.post(() -> startDiscovery(smartPolarDeviceSession, gatt));
                     }
@@ -114,6 +118,7 @@ class BDGattCallback extends BluetoothGattCallback {
     @Override
     public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         super.onCharacteristicWrite(gatt, characteristic, status);
+
         final BDDeviceSessionImpl session = sessions.getSession(gatt);
         if (session != null) {
             session.handleCharacteristicWrite(characteristic.getService(), characteristic, status);

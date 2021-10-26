@@ -1,12 +1,12 @@
 package com.polar.androidcommunications.api.ble.exceptions
 
-import com.polar.androidcommunications.api.ble.model.gatt.client.BlePMDClient
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdControlPointResponse
 
 /**
  * Error indicating that requested control point command operation failed with error code
  */
 class BleControlPointCommandError(
     message: String,
-    val error: BlePMDClient.PmdControlPointResponse.PmdControlPointResponseCode
+    val error: PmdControlPointResponse.PmdControlPointResponseCode
 ) :
     Exception("$message failed with error: $error")

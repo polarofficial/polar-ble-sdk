@@ -1,9 +1,10 @@
-package com.polar.androidcommunications.api.ble.model.gatt.client
+package com.polar.androidcommunications.api.ble.model.gatt.client.pmd
 
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.PpiData
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class BlePmdClientPpiTest {
+class PpiDataTest {
     @Test
     fun test_PPI_DataSample() {
         // Arrange
@@ -50,7 +51,7 @@ class BlePmdClientPpiTest {
         val timeStamp: Long = Long.MAX_VALUE
 
         // Act
-        val ppiData = BlePMDClient.PpiData(measurementFrame, timeStamp)
+        val ppiData = PpiData.parseDataFromDataFrame(isCompressed = false, BlePMDClient.PmdDataFrameType.TYPE_0, measurementFrame, 1.0f, timeStamp)
 
         // Assert
         assertEquals(heartRate.toLong(), ppiData.ppSamples[0].hr.toLong())
@@ -58,20 +59,14 @@ class BlePmdClientPpiTest {
         assertEquals(errorEstimate.toLong(), ppiData.ppSamples[0].ppErrorEstimate.toLong())
         assertEquals(blockerBit.toLong(), ppiData.ppSamples[0].blockerBit.toLong())
         assertEquals(skinContactStatus.toLong(), ppiData.ppSamples[0].skinContactStatus.toLong())
-        assertEquals(
-            skinContactSupported.toLong(),
-            ppiData.ppSamples[0].skinContactSupported.toLong()
-        )
+        assertEquals(skinContactSupported.toLong(), ppiData.ppSamples[0].skinContactSupported.toLong())
 
         assertEquals(heartRate2.toLong(), ppiData.ppSamples[1].hr.toLong())
         assertEquals(intervalInMs2.toLong(), ppiData.ppSamples[1].ppInMs.toLong())
         assertEquals(errorEstimate2.toLong(), ppiData.ppSamples[1].ppErrorEstimate.toLong())
         assertEquals(blockerBit2.toLong(), ppiData.ppSamples[1].blockerBit.toLong())
         assertEquals(skinContactStatus2.toLong(), ppiData.ppSamples[1].skinContactStatus.toLong())
-        assertEquals(
-            skinContactSupported2.toLong(),
-            ppiData.ppSamples[1].skinContactSupported.toLong()
-        )
+        assertEquals(skinContactSupported2.toLong(), ppiData.ppSamples[1].skinContactSupported.toLong())
 
         assertEquals(2, ppiData.ppSamples.size)
     }

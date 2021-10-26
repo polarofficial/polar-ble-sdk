@@ -660,9 +660,14 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
 
     void startAuthentication(Action complete) {
         // try next att operation anyway
-        subscriptions.add(authenticate().toObservable().delaySubscription(500, TimeUnit.MILLISECONDS).ignoreElements().
-                observeOn(AndroidSchedulers.from(context.getMainLooper())).subscribe(
-                complete,
-                this::handleAuthenticationFailed));
+        subscriptions.add(
+                authenticate().toObservable()
+                        .delaySubscription(500, TimeUnit.MILLISECONDS)
+                        .ignoreElements().
+                        observeOn(AndroidSchedulers.from(context.getMainLooper()))
+                        .subscribe(
+                                complete,
+                                this::handleAuthenticationFailed)
+        );
     }
 }
