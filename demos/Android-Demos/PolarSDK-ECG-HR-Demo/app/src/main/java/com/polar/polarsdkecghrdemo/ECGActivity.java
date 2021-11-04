@@ -1,6 +1,5 @@
 package com.polar.polarsdkecghrdemo;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -41,7 +40,6 @@ public class ECGActivity extends AppCompatActivity implements PlotterListener {
     private Plotter plotter;
 
     private Disposable ecgDisposable = null;
-    private final Context classContext = this;
     private String deviceId;
 
     @Override
@@ -54,7 +52,7 @@ public class ECGActivity extends AppCompatActivity implements PlotterListener {
 
         plot = findViewById(R.id.plot);
 
-        api = PolarBleApiDefaultImpl.defaultImplementation(this,
+        api = PolarBleApiDefaultImpl.defaultImplementation(getApplicationContext(),
                 PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING |
                         PolarBleApi.FEATURE_BATTERY_INFO |
                         PolarBleApi.FEATURE_DEVICE_INFO |
@@ -68,7 +66,7 @@ public class ECGActivity extends AppCompatActivity implements PlotterListener {
             @Override
             public void deviceConnected(@NonNull PolarDeviceInfo s) {
                 Log.d(TAG, "Device connected " + s.deviceId);
-                Toast.makeText(classContext, R.string.connected, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), R.string.connected, Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -153,6 +151,9 @@ public class ECGActivity extends AppCompatActivity implements PlotterListener {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (ecgDisposable != null && !ecgDisposable.isDisposed()) {
+            ecgDisposable.dispose();
+        }
         api.shutDown();
     }
 
