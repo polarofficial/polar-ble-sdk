@@ -1,6 +1,5 @@
 package com.polar.polarsdkecghrdemo;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -33,7 +32,6 @@ public class HRActivity extends AppCompatActivity implements PlotterListener {
     private TextView textViewHR;
     private TextView textViewFW;
     private PolarBleApi api;
-    private final Context classContext = this;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -45,10 +43,13 @@ public class HRActivity extends AppCompatActivity implements PlotterListener {
 
         plot = findViewById(R.id.plot2);
 
-        api = PolarBleApiDefaultImpl.defaultImplementation(this,
+        api = PolarBleApiDefaultImpl.defaultImplementation(getApplicationContext(),
                 PolarBleApi.FEATURE_BATTERY_INFO |
                         PolarBleApi.FEATURE_DEVICE_INFO |
                         PolarBleApi.FEATURE_HR);
+
+        api.setApiLogger(str -> Log.d("SDK", str));
+
         api.setApiCallback(new PolarBleApiCallback() {
             @Override
             public void blePowerStateChanged(boolean b) {
@@ -58,8 +59,7 @@ public class HRActivity extends AppCompatActivity implements PlotterListener {
             @Override
             public void deviceConnected(@NonNull PolarDeviceInfo s) {
                 Log.d(TAG, "Device connected " + s.deviceId);
-                Toast.makeText(classContext, R.string.connected,
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), R.string.connected, Toast.LENGTH_SHORT).show();
             }
 
             @Override
