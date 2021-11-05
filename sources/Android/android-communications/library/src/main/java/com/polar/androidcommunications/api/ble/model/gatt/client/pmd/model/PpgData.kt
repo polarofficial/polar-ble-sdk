@@ -1,6 +1,5 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
-import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClientUtils
 import com.polar.androidcommunications.common.ble.BleUtils
@@ -83,7 +82,6 @@ class PpgData internal constructor(val timeStamp: Long) {
         var dataType4Counter = 0
         private fun dataFromRawType4(frame: ByteArray, timeStamp: Long): PpgData {
             dataType4Counter++
-            BleLogger.d("TESTING", "PPG Data4 received. Counter: $dataType4Counter timeStamp: $timeStamp")
 
             val ppgData = PpgData(timeStamp)
             var offset = 0

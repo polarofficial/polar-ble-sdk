@@ -20,10 +20,13 @@ class PmdFeature(data: ByteArray) {
     val magnetometerSupported: Boolean = (data[1].toUInt() and 0x40u) != 0u
 
     @JvmField
+    val locationSupported: Boolean = (data[2].toUInt() and 0x04u) != 0u
+
+    @JvmField
     val barometerSupported: Boolean = (data[2].toUInt() and 0x08u) != 0u
 
     @JvmField
-    val locationSupported: Boolean = (data[2].toUInt() and 0x04u) != 0u
+    val temperatureSupported: Boolean = (data[2].toUInt() and 0x10u) != 0u
 
     @JvmField
     val sdkModeSupported: Boolean = (data[2].toUInt() and 0x02u) != 0u

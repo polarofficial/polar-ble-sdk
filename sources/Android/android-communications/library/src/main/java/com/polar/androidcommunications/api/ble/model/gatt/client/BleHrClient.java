@@ -126,7 +126,12 @@ public class BleHrClient extends BleGattBase {
                 .doFinally(() -> {
                     BleLogger.d(TAG, "Stop observing HR");
                     removeCharacteristicNotification(HR_MEASUREMENT);
-                    getTxInterface().setCharacteristicNotify(this, HR_SERVICE, HR_MEASUREMENT, false);
+                    try {
+                        getTxInterface().setCharacteristicNotify(this, HR_SERVICE, HR_MEASUREMENT, false);
+                    } catch (Exception e) {
+                        // this may happen if connection is already closed, no need sent the exception to downstream
+                        BleLogger.d(TAG, "HR client is not able to set characteristic notify to false. Reason " + e.toString());
+                    }
                 });
     }
 }

@@ -155,7 +155,7 @@ protobuf {
 
 dependencies {
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
-    implementation 'io.reactivex.rxjava3:rxjava:3.0.4'
+    implementation 'io.reactivex.rxjava3:rxjava:3.1.1'
     implementation 'commons-io:commons-io:2.10.0'
     implementation 'androidx.annotation:annotation:1.2.0'
     implementation "androidx.core:core-ktx:1.6.0"

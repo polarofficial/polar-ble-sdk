@@ -20,6 +20,7 @@ import com.polar.androidcommunications.api.ble.BleDeviceListener;
 import com.polar.androidcommunications.api.ble.BleLogger;
 import com.polar.androidcommunications.api.ble.exceptions.BleControlPointCommandError;
 import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected;
+import com.polar.androidcommunications.api.ble.exceptions.BleNotAvailableInDevice;
 import com.polar.androidcommunications.api.ble.model.BleDeviceSession;
 import com.polar.androidcommunications.api.ble.model.advertisement.BlePolarHrAdvertisement;
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase;
@@ -103,56 +104,17 @@ import protocol.PftpResponse;
 public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePowerStateChangedCallback {
 
     private static volatile BDBleApiImpl instance;
-    @NonNull
-    private final BleDeviceListener listener;
     private final Map<String, Disposable> connectSubscriptions = new HashMap<>();
-    private final Scheduler scheduler;
+    private final Map<String, Disposable> deviceDataMonitorDisposable = new HashMap<>();
+    private final Map<String, Disposable> stopPmdStreamingDisposable = new HashMap<>();
     private final BleDeviceListener.BleSearchPreFilter filter = content -> !content.getPolarDeviceId().isEmpty() && !content.getPolarDeviceType().equals("mobile");
-    private final Disposable deviceSessionStateMonitorDisposable;
+    private BleDeviceListener listener;
+    private Scheduler scheduler;
+    private Disposable devicesStateMonitorDisposable;
     private PolarBleApiCallbackProvider callback;
     private PolarBleApiLogger logger;
 
-    private final Consumer<Pair<BleDeviceSession, BleDeviceSession.DeviceSessionState>> deviceStateMonitorObserver = deviceSessionStatePair ->
-    {
-        BleDeviceSession session = deviceSessionStatePair.first;
-        BleDeviceSession.DeviceSessionState sessionState = deviceSessionStatePair.second;
-
-        //Guard
-        if (session == null || sessionState == null) {
-            return;
-        }
-
-        PolarDeviceInfo info = new PolarDeviceInfo(
-                session.getPolarDeviceId().isEmpty() ? session.getAddress() : session.getPolarDeviceId(),
-                session.getAddress(),
-                session.getRssi(),
-                session.getName(),
-                true);
-        switch (Objects.requireNonNull(sessionState)) {
-            case SESSION_OPEN:
-                if (callback != null) {
-                    callback.deviceConnected(info);
-                }
-                setupDevice(session);
-                break;
-            case SESSION_CLOSED:
-                if (callback != null
-                        && (session.getPreviousState() == SESSION_OPEN || session.getPreviousState() == BleDeviceSession.DeviceSessionState.SESSION_CLOSING)) {
-                    callback.deviceDisconnected(info);
-                }
-                break;
-            case SESSION_OPENING:
-                if (callback != null) {
-                    callback.deviceConnecting(info);
-                }
-                break;
-            default:
-                //Do nothing
-                break;
-        }
-    };
-
-    private BDBleApiImpl(@NonNull Context context, int features) {
+    private BDBleApiImpl(@NonNull Context context, int features) throws BleNotAvailableInDevice {
         super(features);
         Set<Class<? extends BleGattBase>> clients = new HashSet<>();
         if ((this.features & PolarBleApi.FEATURE_HR) != 0) {
@@ -172,7 +134,6 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
         }
         listener = new BDDeviceListenerImpl(context, clients);
         listener.setScanPreFilter(filter);
-        deviceSessionStateMonitorDisposable = listener.monitorDeviceSessionState().subscribe(deviceStateMonitorObserver);
         listener.setBlePowerStateCallback(this);
         scheduler = AndroidSchedulers.from(context.getMainLooper());
         BleLogger.setLoggerInterface(new BleLogger.BleLoggerInterface() {
@@ -196,7 +157,7 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
         });
     }
 
-    public static BDBleApiImpl getInstance(@NonNull Context context, int features) throws PolarBleSdkInstanceException {
+    public static BDBleApiImpl getInstance(@NonNull Context context, int features) throws PolarBleSdkInstanceException, BleNotAvailableInDevice {
         BDBleApiImpl result = instance;
         if (result != null) {
             if (result.features == features) {
@@ -211,6 +172,10 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
             }
             return instance;
         }
+    }
+
+    private static void clearInstance() {
+        instance = null;
     }
 
     private void enableAndroidScanFilter() {
@@ -231,8 +196,35 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
 
     @Override
     public void shutDown() {
-        deviceSessionStateMonitorDisposable.dispose();
+        for (Map.Entry<String, Disposable> deviceDisposable : deviceDataMonitorDisposable.entrySet()) {
+            if (deviceDisposable.getValue().isDisposed()) {
+                deviceDisposable.getValue().dispose();
+            }
+        }
+        if (devicesStateMonitorDisposable != null && !devicesStateMonitorDisposable.isDisposed()) {
+            devicesStateMonitorDisposable.dispose();
+        }
+        devicesStateMonitorDisposable = null;
+
+        for (Map.Entry<String, Disposable> connection : connectSubscriptions.entrySet()) {
+            if (!connection.getValue().isDisposed()) {
+                connection.getValue().dispose();
+            }
+        }
+
+        for (Map.Entry<String, Disposable> pmdStream : stopPmdStreamingDisposable.entrySet()) {
+            if (!pmdStream.getValue().isDisposed()) {
+                pmdStream.getValue().dispose();
+            }
+        }
+
         listener.shutDown();
+        logger = null;
+        callback = null;
+        listener = null;
+        scheduler = null;
+
+        clearInstance();
     }
 
     @Override
@@ -418,7 +410,7 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
                         .doOnSuccess(set -> {
                             List<BleDeviceSession> list = new ArrayList<>(set);
                             Collections.sort(list, (o1, o2) -> o1.getRssi() > o2.getRssi() ? -1 : 1);
-                            listener.openSessionDirect(list.get(0));
+                            openConnection(list.get(0));
                             log("auto connect search complete");
                         })
                         .toObservable()
@@ -440,7 +432,7 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
                 connectSubscriptions.remove(identifier);
             }
             if (session != null) {
-                listener.openSessionDirect(session);
+                openConnection(session);
             } else {
                 connectSubscriptions.put(identifier,
                         listener.search(false)
@@ -448,9 +440,9 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
                                 .take(1)
                                 .observeOn(scheduler)
                                 .subscribe(
-                                        listener::openSessionDirect,
-                                        error -> logError(error.getMessage()),
-                                        () -> log("connect search complete")
+                                        this::openConnection,
+                                        error -> logError("connect search error with device: " + identifier + " error: " + error.getMessage()),
+                                        () -> log("connect search completed for " + identifier)
                                 ));
             }
         }
@@ -711,6 +703,13 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
         }
     }
 
+    private void openConnection(@NonNull BleDeviceSession session) {
+        if (devicesStateMonitorDisposable == null || devicesStateMonitorDisposable.isDisposed()) {
+            devicesStateMonitorDisposable = listener.monitorDeviceSessionState().subscribe(deviceStateMonitorObserver);
+        }
+        listener.openSessionDirect(session);
+    }
+
     @NonNull
     @Override
     public Flowable<PolarEcgData> startEcgStreaming(@NonNull String identifier,
@@ -919,18 +918,59 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
     protected void stopPmdStreaming(@NonNull BleDeviceSession session, @NonNull BlePMDClient client, @NonNull PmdMeasurementType type) {
         if (session.getSessionState() == SESSION_OPEN) {
             // stop streaming
-            client.stopMeasurement(type).subscribe(
+            Disposable disposable = client.stopMeasurement(type).subscribe(
                     () -> {
                     },
                     throwable -> logError("failed to stop pmd stream: " + throwable.getLocalizedMessage())
             );
+            stopPmdStreamingDisposable.put(session.getAddress(), disposable);
         }
     }
 
-    @SuppressLint("CheckResult")
-    protected void setupDevice(final @NonNull BleDeviceSession session) {
+    private final Consumer<Pair<BleDeviceSession, BleDeviceSession.DeviceSessionState>> deviceStateMonitorObserver = deviceSessionStatePair ->
+    {
+        BleDeviceSession session = deviceSessionStatePair.first;
+        BleDeviceSession.DeviceSessionState sessionState = deviceSessionStatePair.second;
+
+        //Guard
+        if (session == null || sessionState == null) {
+            return;
+        }
+
+        PolarDeviceInfo info = new PolarDeviceInfo(
+                session.getPolarDeviceId().isEmpty() ? session.getAddress() : session.getPolarDeviceId(),
+                session.getAddress(),
+                session.getRssi(),
+                session.getName(),
+                true);
+        switch (Objects.requireNonNull(sessionState)) {
+            case SESSION_OPEN:
+                if (callback != null) {
+                    callback.deviceConnected(info);
+                }
+                setupDevice(session);
+                break;
+            case SESSION_CLOSED:
+                if (callback != null && (session.getPreviousState() == SESSION_OPEN || session.getPreviousState() == BleDeviceSession.DeviceSessionState.SESSION_CLOSING)) {
+                    callback.deviceDisconnected(info);
+                }
+                tearDownDevice(session);
+                break;
+            case SESSION_OPENING:
+                if (callback != null) {
+                    callback.deviceConnecting(info);
+                }
+                break;
+            default:
+                //Do nothing
+                break;
+        }
+    };
+
+    private void setupDevice(final @NonNull BleDeviceSession session) {
         final String deviceId = session.getPolarDeviceId().length() != 0 ? session.getPolarDeviceId() : session.getAddress();
-        session.monitorServicesDiscovered(true)
+
+        Disposable disposable = session.monitorServicesDiscovered(true)
                 .observeOn(scheduler)
                 .toFlowable()
                 .flatMapIterable((Function<List<UUID>, Iterable<UUID>>) uuids -> uuids)
@@ -1031,8 +1071,19 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
                 .subscribe(
                         o -> {
                         },
-                        throwable -> logError(throwable.getMessage()),
+                        throwable -> logError("Error while monitoring session services: " + throwable.getMessage()),
                         () -> log("complete"));
+        deviceDataMonitorDisposable.put(session.getAddress(), disposable);
+    }
+
+    private void tearDownDevice(final @NonNull BleDeviceSession session) {
+        final String address = session.getAddress();
+        if (deviceDataMonitorDisposable.containsKey(address)) {
+            if (!deviceDataMonitorDisposable.get(address).isDisposed()) {
+                Objects.requireNonNull(deviceDataMonitorDisposable.get(address)).dispose();
+            }
+            deviceDataMonitorDisposable.remove(address);
+        }
     }
 
     @NonNull
@@ -1091,13 +1142,9 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
         }
     }
 
-    protected void logError(@Nullable String message) {
+    protected void logError(@NonNull String message) {
         if (logger != null) {
-            if (message != null) {
-                logger.message("Error: " + message);
-            } else {
-                logger.message("Error without known reason");
-            }
+            logger.message("Error: " + message);
         }
     }
 }

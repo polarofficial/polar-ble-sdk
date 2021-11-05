@@ -1,5 +1,8 @@
 package com.polar.androidcommunications.api.ble.model.advertisement;
 
+import static com.polar.androidcommunications.api.ble.model.polar.PolarAdvDataUtility.getPolarModelNameFromAdvLocalName;
+import static com.polar.androidcommunications.api.ble.model.polar.PolarAdvDataUtility.isPolarDevice;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -11,9 +14,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-
-import static com.polar.androidcommunications.api.ble.model.polar.PolarAdvDataUtility.getPolarModelNameFromAdvLocalName;
-import static com.polar.androidcommunications.api.ble.model.polar.PolarAdvDataUtility.isPolarDevice;
 
 
 public class BleAdvertisementContent {

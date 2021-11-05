@@ -33,7 +33,7 @@ public class ConnectionHandler {
         DEVICE_DISCONNECTED
     }
 
-    private final static String TAG = ConnectionHandler.class.getSimpleName();
+    private static final String TAG = ConnectionHandler.class.getSimpleName();
     private ConnectionHandlerState state;
     private final ScannerInterface scannerInterface;
     private final ConnectionInterface connectionInterface;
@@ -68,6 +68,8 @@ public class ConnectionHandler {
                     updateSessionState(bleDeviceSession, BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
                     break;
                 }
+                default:
+                    break;
             }
         }
     }
@@ -116,7 +118,7 @@ public class ConnectionHandler {
     }
 
     private boolean containsRequiredUuids(final BDDeviceSessionImpl session) {
-        if (session.getConnectionUuids().size() != 0) {
+        if (!session.getConnectionUuids().isEmpty()) {
             HashMap<BleUtils.AD_TYPE, byte[]> content = session.getAdvertisementContent().getAdvertisementData();
             if (content.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_MORE) ||
                     content.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_COMPLETE)) {
@@ -162,6 +164,8 @@ public class ConnectionHandler {
                         updateSessionState(session, BleDeviceSession.DeviceSessionState.SESSION_OPEN);
                         break;
                     }
+                    case SESSION_OPENING:
+                        break;
                 }
                 break;
             }
@@ -260,6 +264,10 @@ public class ConnectionHandler {
                 connectionInterface.disconnectDevice(session);
                 break;
             }
+            case SESSION_CLOSED:
+            case SESSION_OPENING:
+            case SESSION_CLOSING:
+                break;
         }
     }
 
@@ -277,6 +285,10 @@ public class ConnectionHandler {
                 updateSessionState(session, BleDeviceSession.DeviceSessionState.SESSION_CLOSED);
                 break;
             }
+            case SESSION_CLOSED:
+            case SESSION_OPENING:
+            case SESSION_OPEN_PARK:
+                break;
         }
     }
 }

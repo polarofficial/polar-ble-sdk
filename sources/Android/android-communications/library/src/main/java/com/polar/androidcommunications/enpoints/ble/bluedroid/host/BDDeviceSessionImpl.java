@@ -45,9 +45,9 @@ import io.reactivex.rxjava3.functions.Action;
 public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxInterface {
 
     private static final UUID DESCRIPTOR_CCC = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
-    private final static String TAG = BDDeviceSessionImpl.class.getSimpleName();
+    private static final String TAG = BDDeviceSessionImpl.class.getSimpleName();
     // gatt is the only shared object between threads
-    final private Object gattMutex = new Object();
+    private final Object gattMutex = new Object();
     Disposable serviceDiscovery;
 
     private final LinkedBlockingDeque<AttributeOperation> attOperations = new LinkedBlockingDeque<>();
@@ -56,9 +56,9 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
     private BluetoothGatt gatt;
     private BDScanCallback bleScanCallback;
     private BDBondingListener bondingManager;
-    private AtomicSet<SingleEmitter<? super List<UUID>>> servicesSubscriberAtomicList = new AtomicSet<>();
-    private AtomicSet<SingleEmitter<? super Integer>> rssiObservers = new AtomicSet<>();
-    private List<Disposable> subscriptions = new ArrayList<>();
+    private final AtomicSet<SingleEmitter<? super List<UUID>>> servicesSubscriberAtomicList = new AtomicSet<>();
+    private final AtomicSet<SingleEmitter<? super Integer>> rssiObservers = new AtomicSet<>();
+    private final List<Disposable> subscriptions = new ArrayList<>();
     private Context context;
     private Handler handler;
 
@@ -120,8 +120,8 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                 } catch (Exception e) {
                     BleLogger.e(TAG, "gatt error: " + e.toString());
                 }
+                gatt = null;
             }
-            gatt = null;
         }
     }
 
@@ -210,10 +210,8 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
         synchronized (gattMutex) {
             if (gatt != null) {
                 try {
-                    Method localMethod = gatt.getClass().getMethod("refresh", new Class[0]);
-                    if (localMethod != null) {
-                        result = ((Boolean) localMethod.invoke(gatt, new Object[0])).booleanValue();
-                    }
+                    Method localMethod = gatt.getClass().getMethod("refresh");
+                    result = ((Boolean) localMethod.invoke(gatt, new Object[0])).booleanValue();
                 } catch (Exception localException) {
                     BleLogger.e(TAG, "An exception occured while refreshing device");
                 }
@@ -384,7 +382,8 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
     }
 
     @Override
-    public void setCharacteristicNotify(BleGattBase gattclient, UUID serviceUuid, UUID characteristicUuid, boolean enable) throws Exception {
+    public void setCharacteristicNotify(BleGattBase gattClient, UUID serviceUuid, UUID characteristicUuid, boolean enable)
+            throws BleCharacteristicNotFound, BleServiceNotFound, BleGattNotInitialized {
         synchronized (gattMutex) {
             if (gatt != null) {
                 for (BluetoothGattService service : gatt.getServices()) {
@@ -421,7 +420,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                         observer[0] = subscriber;
                         servicesSubscriberAtomicList.add(subscriber);
                         synchronized (gattMutex) {
-                            if (gatt != null && gatt.getServices().size() != 0) {
+                            if (gatt != null && !gatt.getServices().isEmpty()) {
                                 List<BluetoothGattService> s = gatt.getServices();
                                 List<UUID> uuids = new ArrayList<>();
                                 for (BluetoothGattService service : s) {

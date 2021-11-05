@@ -20,7 +20,7 @@ class BDBondingListener {
         void bondNone();
     }
 
-    private final static String TAG = BDBondingListener.class.getSimpleName();
+    private static final String TAG = BDBondingListener.class.getSimpleName();
     private final Context context;
     private final AtomicSet<BondingObserver> authenticationObservers = new AtomicSet<>();
 
@@ -38,7 +38,7 @@ class BDBondingListener {
         }
     }
 
-    static abstract class BondingObserver implements AuthenticationObserverInterface {
+    abstract static class BondingObserver implements AuthenticationObserverInterface {
         private final BluetoothDevice device;
 
         BondingObserver(BluetoothDevice device) {
