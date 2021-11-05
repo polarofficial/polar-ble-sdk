@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
 
     private val api: PolarBleApi by lazy {
         // Notice PolarBleApi.ALL_FEATURES are enabled
-        PolarBleApiDefaultImpl.defaultImplementation(this, PolarBleApi.ALL_FEATURES)
+        PolarBleApiDefaultImpl.defaultImplementation(applicationContext, PolarBleApi.ALL_FEATURES)
     }
     private lateinit var broadcastDisposable: Disposable
     private var scanDisposable: Disposable? = null
@@ -153,10 +153,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun hrNotificationReceived(identifier: String, data: PolarHrData) {
-                Log.d(
-                    TAG,
-                    "HR value: ${data.hr} rrsMs: ${data.rrsMs} rr: ${data.rrs} contact: ${data.contactStatus} , ${data.contactStatusSupported}"
-                )
+                Log.d(TAG, "HR value: ${data.hr} rrsMs: ${data.rrsMs} rr: ${data.rrs} contact: ${data.contactStatus} , ${data.contactStatusSupported}")
             }
 
             override fun polarFtpFeatureReady(s: String) {
@@ -170,12 +167,7 @@ class MainActivity : AppCompatActivity() {
                 broadcastDisposable = api.startListenForPolarHrBroadcasts(null)
                     .subscribe(
                         { polarBroadcastData: PolarHrBroadcastData ->
-                            Log.d(
-                                TAG,
-                                "HR BROADCAST ${polarBroadcastData.polarDeviceInfo.deviceId} " +
-                                        "HR: ${polarBroadcastData.hr} " +
-                                        "batt: ${polarBroadcastData.batteryStatus}"
-                            )
+                            Log.d(TAG, "HR BROADCAST ${polarBroadcastData.polarDeviceInfo.deviceId} HR: ${polarBroadcastData.hr} batt: ${polarBroadcastData.batteryStatus}")
                         },
                         { error: Throwable ->
                             toggleButtonUp(broadcastButton, R.string.listen_broadcast)
@@ -226,10 +218,7 @@ class MainActivity : AppCompatActivity() {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                         { polarDeviceInfo: PolarDeviceInfo ->
-                            Log.d(
-                                TAG,
-                                "polar device found id: " + polarDeviceInfo.deviceId + " address: " + polarDeviceInfo.address + " rssi: " + polarDeviceInfo.rssi + " name: " + polarDeviceInfo.name + " isConnectable: " + polarDeviceInfo.isConnectable
-                            )
+                            Log.d(TAG, "polar device found id: " + polarDeviceInfo.deviceId + " address: " + polarDeviceInfo.address + " rssi: " + polarDeviceInfo.rssi + " name: " + polarDeviceInfo.name + " isConnectable: " + polarDeviceInfo.isConnectable)
                         },
                         { error: Throwable ->
                             toggleButtonUp(scanButton, "Scan devices")
@@ -372,10 +361,7 @@ class MainActivity : AppCompatActivity() {
                             { polarOhrPPGData: PolarOhrData ->
                                 if (polarOhrPPGData.type == PolarOhrData.OHR_DATA_TYPE.PPG3_AMBIENT1) {
                                     for (data in polarOhrPPGData.samples) {
-                                        Log.d(
-                                            TAG,
-                                            "PPG    ppg0: ${data.channelSamples[0]} ppg1: ${data.channelSamples[1]} ppg2: ${data.channelSamples[2]} ambient: ${data.channelSamples[3]}"
-                                        )
+                                        Log.d(TAG, "PPG    ppg0: ${data.channelSamples[0]} ppg1: ${data.channelSamples[1]} ppg2: ${data.channelSamples[2]} ambient: ${data.channelSamples[3]}")
                                     }
                                 }
                             },
@@ -401,10 +387,7 @@ class MainActivity : AppCompatActivity() {
                     .subscribe(
                         { ppiData: PolarOhrPPIData ->
                             for (sample in ppiData.samples) {
-                                Log.d(
-                                    TAG,
-                                    "PPI    ppi: ${sample.ppi} blocker: ${sample.blockerBit} errorEstimate: ${sample.errorEstimate}"
-                                )
+                                Log.d(TAG, "PPI    ppi: ${sample.ppi} blocker: ${sample.blockerBit} errorEstimate: ${sample.errorEstimate}")
                             }
                         },
                         { error: Throwable ->
@@ -425,10 +408,7 @@ class MainActivity : AppCompatActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     { polarExerciseEntry: PolarExerciseEntry ->
-                        Log.d(
-                            TAG,
-                            "next: ${polarExerciseEntry.date} path: ${polarExerciseEntry.path} id: ${polarExerciseEntry.identifier}"
-                        )
+                        Log.d(TAG, "next: ${polarExerciseEntry.date} path: ${polarExerciseEntry.path} id: ${polarExerciseEntry.identifier}")
                         exerciseEntry = polarExerciseEntry
                     },
                     { error: Throwable -> Log.e(TAG, "Failed to list exercises: $error") },
@@ -442,10 +422,7 @@ class MainActivity : AppCompatActivity() {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                         { polarExerciseData: PolarExerciseData ->
-                            Log.d(
-                                TAG,
-                                "exercise data count: ${polarExerciseData.hrSamples.size} samples: ${polarExerciseData.hrSamples}"
-                            )
+                            Log.d(TAG, "exercise data count: ${polarExerciseData.hrSamples.size} samples: ${polarExerciseData.hrSamples}")
                         },
                         { error: Throwable ->
                             val errorDescription = "Failed to read exercise. Reason: $error"
