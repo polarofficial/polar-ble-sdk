@@ -202,7 +202,7 @@ extends <a href=../api/PolarBleApi.html>PolarBleApi</a>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BDBleApiImpl.html#shutDown()>shutDown</a>() </code>
                                             </th>
-                                            <td class="colLast">Must be called when application is destroyed.</td>
+                                            <td class="colLast">Releases the SDK resources.</td>
                                         </tr>
                                         
                                         <tr id="i4" class="altColor">
@@ -571,7 +571,7 @@ extends <a href=../api/PolarBleApi.html>PolarBleApi</a>
                                     <li class="blockList">
                                         <h4>shutDown</h4>
                                         <pre class="methodSignature"> void <a href=BDBleApiImpl.html#shutDown()>shutDown</a>()</pre>
-                                        <div class="block"><p>Must be called when application is destroyed.</p></div>
+                                        <div class="block"><p>Releases the SDK resources. When the SDK is used on scope ofthe android component (e.g. Activity or Service) then the shutDown may be calledon component destroy function. After shutDown the new instance of the SDK is needed:</p></div>
                                         
                                         <!-- TODO missing return annotation -->
                                     </li>
