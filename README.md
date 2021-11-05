@@ -100,10 +100,10 @@ polar-ble-sdk.aar
 ```
 dependencies {
     implementation files('libs/polar-ble-sdk.aar')    
-    implementation 'io.reactivex.rxjava3:rxjava:3.0.4'
+    implementation 'io.reactivex.rxjava3:rxjava:3.1.1'
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
-    implementation 'commons-io:commons-io:2.8.0' // Only needed if FEATURE_POLAR_FILE_TRANSFER used
-    implementation 'com.google.protobuf:protobuf-javalite:3.14.0' // Only needed if FEATURE_POLAR_FILE_TRANSFER used
+    implementation 'commons-io:commons-io:2.10.0' // Only needed if FEATURE_POLAR_FILE_TRANSFER used
+    implementation 'com.google.protobuf:protobuf-javalite:3.17.3' // Only needed if FEATURE_POLAR_FILE_TRANSFER used
 }
 ```
 4. Finally, add the following permissions to  `AndroidManifest.xml`:
@@ -124,7 +124,7 @@ See the [example](examples/example-android) folder for the full project.
 // e.g. PolarBleApiDefaultImpl.defaultImplementation(this, PolarBleApi.FEATURE_HR |
 // PolarBleApi.FEATURE_BATTERY_INFO); 
 // batteryLevelReceived callback is invoked after connection
-PolarBleApi api = PolarBleApiDefaultImpl.defaultImplementation(this,  PolarBleApi.ALL_FEATURES);
+PolarBleApi api = PolarBleApiDefaultImpl.defaultImplementation(getApplicationContext(),  PolarBleApi.ALL_FEATURES);
 
 api.setApiCallback(new PolarBleApiCallback() {
     @Override
