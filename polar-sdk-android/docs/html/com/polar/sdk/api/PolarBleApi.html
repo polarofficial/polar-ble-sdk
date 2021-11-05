@@ -265,7 +265,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#shutDown()>shutDown</a>() </code>
                                             </th>
-                                            <td class="colLast">Must be called when application is destroyed.</td>
+                                            <td class="colLast">Releases the SDK resources.</td>
                                         </tr>
                                         
                                         <tr id="i2" class="altColor">
@@ -582,7 +582,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                     <li class="blockList">
                                         <h4>shutDown</h4>
                                         <pre class="methodSignature"> abstract void <a href=PolarBleApi.html#shutDown()>shutDown</a>()</pre>
-                                        <div class="block"><p>Must be called when application is destroyed.</p></div>
+                                        <div class="block"><p>Releases the SDK resources. When the SDK is used on scope ofthe android component (e.g. Activity or Service) then the shutDown may be calledon component destroy function. After shutDown the new instance of the SDK is needed:</p></div>
                                         
                                         <!-- TODO missing return annotation -->
                                     </li>
