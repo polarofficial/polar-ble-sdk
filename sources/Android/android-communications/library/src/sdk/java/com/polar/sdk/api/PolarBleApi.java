@@ -131,7 +131,11 @@ public abstract class PolarBleApi {
     public abstract void setMtu(@IntRange(from = 70, to = 512) int mtu);
 
     /**
-     * Must be called when application is destroyed.
+     * Releases the SDK resources. When the SDK is used on scope of
+     * the android component (e.g. Activity or Service) then the shutDown may be called
+     * on component destroy function. After shutDown the new instance of the SDK is needed:
+     *
+     * @see PolarBleApiDefaultImpl#defaultImplementation
      */
     public abstract void shutDown();
 

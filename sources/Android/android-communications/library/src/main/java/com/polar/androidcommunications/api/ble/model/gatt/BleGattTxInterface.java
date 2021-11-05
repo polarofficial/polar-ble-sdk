@@ -1,5 +1,9 @@
 package com.polar.androidcommunications.api.ble.model.gatt;
 
+import com.polar.androidcommunications.api.ble.exceptions.BleCharacteristicNotFound;
+import com.polar.androidcommunications.api.ble.exceptions.BleGattNotInitialized;
+import com.polar.androidcommunications.api.ble.exceptions.BleServiceNotFound;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -13,7 +17,7 @@ public interface BleGattTxInterface {
 
     void readValue(BleGattBase gattServiceBase, UUID serviceUuid, UUID characteristicUuid) throws Exception;
 
-    void setCharacteristicNotify(BleGattBase gattServiceBase, UUID serviceUuid, UUID characteristicUuid, boolean enable) throws Exception;
+    void setCharacteristicNotify(BleGattBase gattServiceBase, UUID serviceUuid, UUID characteristicUuid, boolean enable) throws BleCharacteristicNotFound, BleServiceNotFound, BleGattNotInitialized;
 
     boolean isConnected(); // for client
 

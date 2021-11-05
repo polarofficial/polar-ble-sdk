@@ -15,6 +15,7 @@ import androidx.core.util.Pair;
 
 import com.polar.androidcommunications.api.ble.BleDeviceListener;
 import com.polar.androidcommunications.api.ble.BleLogger;
+import com.polar.androidcommunications.api.ble.exceptions.BleNotAvailableInDevice;
 import com.polar.androidcommunications.api.ble.exceptions.BleStartScanError;
 import com.polar.androidcommunications.api.ble.model.BleDeviceSession;
 import com.polar.androidcommunications.api.ble.model.advertisement.BleAdvertisementContent;
@@ -43,12 +44,7 @@ import io.reactivex.rxjava3.core.FlowableOnSubscribe;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 
-public class BDDeviceListenerImpl extends BleDeviceListener implements
-        BDScanCallback.BDScanCallbackInterface,
-        ScannerInterface,
-        ConnectionInterface,
-        BDPowerListener.BlePowerState,
-        ConnectionHandlerObserver {
+public class BDDeviceListenerImpl extends BleDeviceListener {
 
     private static final String TAG = BDDeviceListenerImpl.class.getSimpleName();
     private BluetoothAdapter bluetoothAdapter;
@@ -66,18 +62,24 @@ public class BDDeviceListenerImpl extends BleDeviceListener implements
     private BlePowerStateChangedCallback powerStateChangedCallback = null;
 
     public BDDeviceListenerImpl(@NonNull final Context context,
-                                @NonNull Set<Class<? extends BleGattBase>> clients) {
+                                @NonNull Set<Class<? extends BleGattBase>> clients) throws BleNotAvailableInDevice {
         super(clients);
         this.context = context;
         btManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+
         if (btManager != null) {
             bluetoothAdapter = btManager.getAdapter();
         }
-        connectionHandler = new ConnectionHandler(this, this, this);
+        // Guard
+        if (btManager == null || bluetoothAdapter == null) {
+            throw new BleNotAvailableInDevice("Device doesn't support BLE");
+        }
+
+        connectionHandler = new ConnectionHandler(connectionInterface, scannerInterface, connectionHandlerObserver);
         gattCallback = new BDGattCallback(context, connectionHandler, sessions);
         bondingManager = new BDBondingListener(context);
-        scanCallback = new BDScanCallback(context, btManager, this);
-        powerManager = new BDPowerListener(bluetoothAdapter, context, this);
+        scanCallback = new BDScanCallback(context, bluetoothAdapter, scanCallbackInterface);
+        powerManager = new BDPowerListener(bluetoothAdapter, context, blePowerStateListener);
     }
 
     @Override
@@ -200,58 +202,6 @@ public class BDDeviceListenerImpl extends BleDeviceListener implements
     }
 
     @Override
-    public void connectDevice(final BDDeviceSessionImpl session) {
-        BluetoothGatt gatt;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                int mask = BluetoothDevice.PHY_LE_1M_MASK;
-                if (bluetoothAdapter.isLe2MPhySupported()) mask |= BluetoothDevice.PHY_LE_2M_MASK;
-                gatt = session.getBluetoothDevice().connectGatt(context, false, gattCallback, BluetoothDevice.TRANSPORT_LE, mask);
-            } else {
-                gatt = session.getBluetoothDevice().connectGatt(context, false, gattCallback, BluetoothDevice.TRANSPORT_LE);
-            }
-        } else {
-            gatt = session.getBluetoothDevice().connectGatt(context, false, gattCallback);
-        }
-        synchronized (session.getGattMutex()) {
-            session.setGatt(gatt);
-        }
-    }
-
-    @Override
-    public void disconnectDevice(final BDDeviceSessionImpl session) {
-        synchronized (session.getGattMutex()) {
-            if (session.getGatt() != null) {
-                session.getGatt().disconnect();
-            }
-        }
-    }
-
-    @Override
-    public void cancelDeviceConnection(BDDeviceSessionImpl session) {
-        synchronized (session.getGattMutex()) {
-            if (session.getGatt() != null) {
-                session.getGatt().disconnect();
-            }
-        }
-    }
-
-    @Override
-    public boolean isPowered() {
-        return bleActive();
-    }
-
-    @Override
-    public void connectionHandlerResumeScanning() {
-        scanCallback.startScan();
-    }
-
-    @Override
-    public void connectionHandlerRequestStopScanning() {
-        scanCallback.stopScan();
-    }
-
-    @Override
     public void setPowerMode(@PowerMode int mode) {
         switch (mode) {
             case POWER_MODE_NORMAL:
@@ -267,64 +217,198 @@ public class BDDeviceListenerImpl extends BleDeviceListener implements
         }
     }
 
-    @Override
-    public void deviceDiscovered(BluetoothDevice device, int rssi, byte[] scanRecord, BleUtils.EVENT_TYPE type) {
-        BDDeviceSessionImpl deviceSession = sessions.getSession(device);
-        HashMap<BleUtils.AD_TYPE, byte[]> advData = BleUtils.advertisementBytes2Map(scanRecord);
-        final String manufacturer = Build.MANUFACTURER;
-        final String name = device.getName();
-        if (name != null && manufacturer.equalsIgnoreCase("samsung")) {
-            // BIG NOTE, this is workaround for uber stupid samsung bug where they mess up whoms advertisement data belongs to who
-            advData.remove(BleUtils.AD_TYPE.GAP_ADTYPE_LOCAL_NAME_SHORT);
-            advData.put(BleUtils.AD_TYPE.GAP_ADTYPE_LOCAL_NAME_COMPLETE, name.getBytes());
-        }
-
-        if (deviceSession == null) {
-            final BleAdvertisementContent content = new BleAdvertisementContent();
-            content.processAdvertisementData(advData, type, rssi);
-            if (preFilter == null || preFilter.process(content)) {
-                if (content.getPolarHrAdvertisement().isPresent() &&
-                        content.getPolarDeviceIdInt() != 0 &&
-                        (content.getPolarDeviceType().equals("H10") ||
-                                content.getPolarDeviceType().equals("H9"))) {
-                    // check if old can be found, NOTE this is a special case for H10 only (random static address)
-                    BDDeviceSessionImpl oldSession = sessions.fetch(smartPolarDeviceSession1 -> smartPolarDeviceSession1.getAdvertisementContent().getPolarDeviceId().equals(content.getPolarDeviceId()));
-                    if (oldSession != null && (oldSession.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_CLOSED ||
-                            oldSession.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK)) {
-                        BleLogger.d(TAG, "old polar device found name: " + oldSession.getAdvertisementContent().getName() + " dev name: " + device.getName() + " old name: " + oldSession.getBluetoothDevice().getName() + " old addr: " + oldSession.getAddress() + " device: " + device.toString());
-                        oldSession.setBluetoothDevice(device);
-                        deviceSession = oldSession;
-                        deviceSession.getAdvertisementContent().processAdvertisementData(advData, type, rssi);
-                    }
-                }
-                if (deviceSession == null) {
-                    deviceSession = new BDDeviceSessionImpl(context, device, scanCallback, bondingManager, factory);
-                    deviceSession.getAdvertisementContent().processAdvertisementData(advData, type, rssi);
-                    BleLogger.d(TAG, "new device allocated name: " + deviceSession.getAdvertisementContent().getName());
-                    sessions.addSession(deviceSession);
+    private final ConnectionInterface connectionInterface = new ConnectionInterface() {
+        @Override
+        public void connectDevice(final BDDeviceSessionImpl session) {
+            BluetoothGatt gatt;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    int mask = BluetoothDevice.PHY_LE_1M_MASK;
+                    if (bluetoothAdapter.isLe2MPhySupported())
+                        mask |= BluetoothDevice.PHY_LE_2M_MASK;
+                    gatt = session.getBluetoothDevice().connectGatt(context, false, gattCallback, BluetoothDevice.TRANSPORT_LE, mask);
+                } else {
+                    gatt = session.getBluetoothDevice().connectGatt(context, false, gattCallback, BluetoothDevice.TRANSPORT_LE);
                 }
             } else {
-                // device is not desired
-                return;
+                gatt = session.getBluetoothDevice().connectGatt(context, false, gattCallback);
             }
-        } else {
-            deviceSession.getAdvertisementContent().processAdvertisementData(advData, type, rssi);
+            synchronized (session.getGattMutex()) {
+                session.setGatt(gatt);
+            }
         }
 
-        connectionHandler.advertisementHeadReceived(deviceSession);
-        final BDDeviceSessionImpl finalDeviceSession = deviceSession;
-        RxUtils.emitNext(observers, object -> object.onNext(finalDeviceSession));
-    }
+        @Override
+        public void disconnectDevice(final BDDeviceSessionImpl session) {
+            synchronized (session.getGattMutex()) {
+                if (session.getGatt() != null) {
+                    session.getGatt().disconnect();
+                }
+            }
+        }
 
-    @Override
-    public void scanStartError(int error) {
-        RxUtils.postError(observers, new BleStartScanError("scan start failed ", error));
-    }
+        @Override
+        public void cancelDeviceConnection(BDDeviceSessionImpl session) {
+            synchronized (session.getGattMutex()) {
+                if (session.getGatt() != null) {
+                    session.getGatt().disconnect();
+                }
+            }
+        }
 
-    @Override
-    public boolean isScanningNeeded() {
-        return observers.size() != 0 || sessions.fetch(smartPolarDeviceSession1 -> smartPolarDeviceSession1.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK) != null;
-    }
+        @Override
+        public boolean isPowered() {
+            return bleActive();
+        }
+    };
+
+    private final BDScanCallback.BDScanCallbackInterface scanCallbackInterface = new BDScanCallback.BDScanCallbackInterface() {
+        @Override
+        public boolean isScanningNeeded() {
+            return observers.size() != 0 || sessions.fetch(smartPolarDeviceSession1 -> smartPolarDeviceSession1.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK) != null;
+        }
+
+        @Override
+        public void scanStartError(int error) {
+            RxUtils.postError(observers, new BleStartScanError("scan start failed ", error));
+        }
+
+        public void deviceDiscovered(BluetoothDevice device, int rssi, byte[] scanRecord, BleUtils.EVENT_TYPE type) {
+            BDDeviceSessionImpl deviceSession = sessions.getSession(device);
+            HashMap<BleUtils.AD_TYPE, byte[]> advData = BleUtils.advertisementBytes2Map(scanRecord);
+            final String manufacturer = Build.MANUFACTURER;
+            final String name = device.getName();
+            if (name != null && manufacturer.equalsIgnoreCase("samsung")) {
+                // BIG NOTE, this is workaround for uber stupid samsung bug where they mess up whoms advertisement data belongs to who
+                advData.remove(BleUtils.AD_TYPE.GAP_ADTYPE_LOCAL_NAME_SHORT);
+                advData.put(BleUtils.AD_TYPE.GAP_ADTYPE_LOCAL_NAME_COMPLETE, name.getBytes());
+            }
+
+            if (deviceSession == null) {
+                final BleAdvertisementContent content = new BleAdvertisementContent();
+                content.processAdvertisementData(advData, type, rssi);
+                if (preFilter == null || preFilter.process(content)) {
+                    if (content.getPolarHrAdvertisement().isPresent()
+                            && content.getPolarDeviceIdInt() != 0
+                            && (content.getPolarDeviceType().equals("H10") || content.getPolarDeviceType().equals("H9"))) {
+                        // check if old can be found, NOTE this is a special case for H10 only (random static address)
+                        BDDeviceSessionImpl oldSession = sessions.fetch(smartPolarDeviceSession1 -> smartPolarDeviceSession1.getAdvertisementContent().getPolarDeviceId().equals(content.getPolarDeviceId()));
+                        if (oldSession != null
+                                && (oldSession.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_CLOSED
+                                || oldSession.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK)) {
+                            BleLogger.d(TAG, "old polar device found name: " + oldSession.getAdvertisementContent().getName() + " dev name: " + device.getName() + " old name: " + oldSession.getBluetoothDevice().getName() + " old addr: " + oldSession.getAddress() + " device: " + device.toString());
+                            oldSession.setBluetoothDevice(device);
+                            deviceSession = oldSession;
+                            deviceSession.getAdvertisementContent().processAdvertisementData(advData, type, rssi);
+                        }
+                    }
+                    if (deviceSession == null) {
+                        deviceSession = new BDDeviceSessionImpl(context, device, scanCallback, bondingManager, factory);
+                        deviceSession.getAdvertisementContent().processAdvertisementData(advData, type, rssi);
+                        BleLogger.d(TAG, "new device allocated name: " + deviceSession.getAdvertisementContent().getName());
+                        sessions.addSession(deviceSession);
+                    }
+                } else {
+                    // device is not desired
+                    return;
+                }
+            } else {
+                deviceSession.getAdvertisementContent().processAdvertisementData(advData, type, rssi);
+            }
+
+            connectionHandler.advertisementHeadReceived(deviceSession);
+            final BDDeviceSessionImpl finalDeviceSession = deviceSession;
+            RxUtils.emitNext(observers, object -> object.onNext(finalDeviceSession));
+        }
+    };
+
+    private final ScannerInterface scannerInterface = new ScannerInterface() {
+        @Override
+        public void connectionHandlerResumeScanning() {
+            scanCallback.startScan();
+        }
+
+        @Override
+        public void connectionHandlerRequestStopScanning() {
+            scanCallback.stopScan();
+        }
+    };
+
+    private final ConnectionHandlerObserver connectionHandlerObserver = new ConnectionHandlerObserver() {
+        @Override
+        public void deviceSessionStateChanged(@NonNull BDDeviceSessionImpl session) {
+            if (sessions.fetch(smartPolarDeviceSession1 -> smartPolarDeviceSession1.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK) != null) {
+                scanCallback.clientAdded();
+            } else {
+                scanCallback.clientRemoved();
+            }
+            if (changedCallback != null || deviceSessionStateSubject.hasObservers()) {
+                if (session.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK &&
+                        session.getPreviousState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN) {
+                    //NOTE special case, we were connected so propagate closed event( informal )
+                    if (changedCallback != null)
+                        changedCallback.stateChanged(session, BleDeviceSession.DeviceSessionState.SESSION_CLOSED);
+                    deviceSessionStateSubject.onNext(new Pair<>(session, BleDeviceSession.DeviceSessionState.SESSION_CLOSED));
+                    if (session.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK) {
+                        if (changedCallback != null)
+                            changedCallback.stateChanged(session, BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
+                        deviceSessionStateSubject.onNext(new Pair<>(session, BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK));
+                    }
+                } else {
+                    if (changedCallback != null)
+                        changedCallback.stateChanged(session, session.getSessionState());
+                    deviceSessionStateSubject.onNext(new Pair<>(session, session.getSessionState()));
+                }
+            }
+        }
+
+        @Override
+        public void deviceConnected(@NonNull BDDeviceSessionImpl session) {
+        }
+
+        @Override
+        public void deviceDisconnected(@NonNull BDDeviceSessionImpl session) {
+            session.handleDisconnection();
+            session.reset();
+        }
+
+        @Override
+        public void deviceConnectionCancelled(@NonNull BDDeviceSessionImpl session) {
+            session.reset();
+        }
+    };
+
+    private final BDPowerListener.BlePowerState blePowerStateListener = new BDPowerListener.BlePowerState() {
+        @Override
+        public void blePoweredOff() {
+            BleLogger.e(TAG, "BLE powered off");
+            scanCallback.powerOff();
+            if (powerStateChangedCallback != null) {
+                powerStateChangedCallback.stateChanged(false);
+            }
+            for (BDDeviceSessionImpl deviceSession : sessions.getSessions().objects()) {
+                switch (deviceSession.getSessionState()) {
+                    case SESSION_OPEN:
+                    case SESSION_OPENING:
+                    case SESSION_CLOSING:
+                        gattCallback.onConnectionStateChange(deviceSession.getGatt(), 0, BluetoothProfile.STATE_DISCONNECTED);
+                        break;
+                    default:
+                        connectionHandler.deviceDisconnected(deviceSession);
+                        break;
+                }
+            }
+        }
+
+        @Override
+        public void blePoweredOn() {
+            BleLogger.d(TAG, "BLE powered on");
+            scanCallback.powerOn();
+            if (powerStateChangedCallback != null) {
+                powerStateChangedCallback.stateChanged(true);
+            }
+        }
+    };
 
     @Override
     public void setBlePowerStateCallback(@Nullable BlePowerStateChangedCallback cb) {
@@ -361,82 +445,9 @@ public class BDDeviceListenerImpl extends BleDeviceListener implements
         connectionHandler.setAutomaticReconnection(automaticReconnection);
     }
 
-    @Override
-    public void blePoweredOff() {
-        BleLogger.e(TAG, "BLE powered off");
-        scanCallback.powerOff();
-        if (powerStateChangedCallback != null) {
-            powerStateChangedCallback.stateChanged(false);
-        }
-        for (BDDeviceSessionImpl deviceSession : sessions.getSessions().objects()) {
-            switch (deviceSession.getSessionState()) {
-                case SESSION_OPEN:
-                case SESSION_OPENING:
-                case SESSION_CLOSING:
-                    gattCallback.onConnectionStateChange(deviceSession.getGatt(), 0, BluetoothGatt.STATE_DISCONNECTED);
-                    break;
-                default:
-                    connectionHandler.deviceDisconnected(deviceSession);
-                    break;
-            }
-        }
-    }
-
-    @Override
-    public void blePoweredOn() {
-        BleLogger.d(TAG, "BLE powered on");
-        scanCallback.powerOn();
-        if (powerStateChangedCallback != null) {
-            powerStateChangedCallback.stateChanged(true);
-        }
-    }
-
     @NonNull
     @Override
     public Observable<Pair<BleDeviceSession, BleDeviceSession.DeviceSessionState>> monitorDeviceSessionState() {
         return deviceSessionStateSubject;
-    }
-
-    @Override
-    public void deviceSessionStateChanged(@NonNull BDDeviceSessionImpl session) {
-        if (sessions.fetch(smartPolarDeviceSession1 -> smartPolarDeviceSession1.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK) != null) {
-            scanCallback.clientAdded();
-        } else {
-            scanCallback.clientRemoved();
-        }
-        if (changedCallback != null || deviceSessionStateSubject.hasObservers()) {
-            if (session.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK &&
-                    session.getPreviousState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN) {
-                //NOTE special case, we were connected so propagate closed event( informal )
-                if (changedCallback != null)
-                    changedCallback.stateChanged(session, BleDeviceSession.DeviceSessionState.SESSION_CLOSED);
-                deviceSessionStateSubject.onNext(new Pair<>(session, BleDeviceSession.DeviceSessionState.SESSION_CLOSED));
-                if (session.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK) {
-                    if (changedCallback != null)
-                        changedCallback.stateChanged(session, BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
-                    deviceSessionStateSubject.onNext(new Pair<>(session, BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK));
-                }
-            } else {
-                if (changedCallback != null)
-                    changedCallback.stateChanged(session, session.getSessionState());
-                deviceSessionStateSubject.onNext(new Pair<>(session, session.getSessionState()));
-            }
-        }
-    }
-
-    @Override
-    public void deviceConnected(@NonNull BDDeviceSessionImpl session) {
-
-    }
-
-    @Override
-    public void deviceDisconnected(@NonNull BDDeviceSessionImpl session) {
-        session.handleDisconnection();
-        session.reset();
-    }
-
-    @Override
-    public void deviceConnectionCancelled(@NonNull BDDeviceSessionImpl session) {
-        session.reset();
     }
 }

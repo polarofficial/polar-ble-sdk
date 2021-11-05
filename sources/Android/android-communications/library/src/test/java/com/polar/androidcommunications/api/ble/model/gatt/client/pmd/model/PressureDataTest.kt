@@ -1,6 +1,6 @@
-package com.polar.androidcommunications.api.ble.model.gatt.client.pmd
+package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.PressureData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
 import org.junit.Assert
 import org.junit.Test
 import java.lang.Float.intBitsToFloat
@@ -8,7 +8,7 @@ import java.lang.Float.intBitsToFloat
 class PressureDataTest {
 
     @Test
-    fun `process pressure data type 0`() {
+    fun `process compressed pressure data type 0`() {
         // Arrange
         // HEX: C2 87 80 44 0A 01 1F BF
         // index    type                                data
@@ -71,5 +71,28 @@ class PressureDataTest {
         Assert.assertEquals(expectedSamplesSize, pressureData.pressureSamples.size)
         Assert.assertEquals(factor * sample0, pressureData.pressureSamples[0].pressure)
         Assert.assertEquals(factor * sample1, pressureData.pressureSamples[1].pressure)
+    }
+
+    @Test
+    fun `process raw pressure data type 0`() {
+        // Arrange
+        // HEX: AE 27 7B 44
+        // index    type                                data
+        // 0..3     Pressure data                       AE 27 7B 44 (0x447B27AE)
+        val timeStamp: Long = 0
+        val frameType = BlePMDClient.PmdDataFrameType.TYPE_0
+        val isCompressed = false
+        val expectedSamplesSize = 1
+        val sample0 = intBitsToFloat(0x447B27AE)
+        val measurementFrame = byteArrayOf(0xAE.toByte(), 0x27.toByte(), 0x7B.toByte(), 0x44.toByte())
+        val factor = 1.0f
+
+        // Act
+        val pressureData = PressureData.parseDataFromDataFrame(isCompressed = isCompressed, frameType = frameType, frame = measurementFrame, factor = factor, timeStamp = timeStamp)
+
+        // Assert
+        Assert.assertEquals(timeStamp, pressureData.timeStamp)
+        Assert.assertEquals(expectedSamplesSize, pressureData.pressureSamples.size)
+        Assert.assertEquals(sample0, pressureData.pressureSamples[0].pressure)
     }
 }

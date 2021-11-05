@@ -22,9 +22,10 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.ceil
+
 /**
-* BLE Client for Polar Measurement Data Service (aka. PMD service)
-* */
+ * BLE Client for Polar Measurement Data Service (aka. PMD service)
+ * */
 class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, PMD_SERVICE) {
     private val pmdCpInputQueue = LinkedBlockingQueue<Pair<ByteArray, Int>>()
     private val ecgObservers = AtomicSet<FlowableEmitter<in EcgData>>()
@@ -35,6 +36,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
     private val ppiObservers = AtomicSet<FlowableEmitter<in PpiData>>()
     private val pressureObservers = AtomicSet<FlowableEmitter<in PressureData>>()
     private val locationObservers = AtomicSet<FlowableEmitter<in GnssLocationData>>()
+    private val temperatureObservers = AtomicSet<FlowableEmitter<in TemperatureData>>()
     private val rdObservers = AtomicSet<FlowableEmitter<in ByteArray>>()
     private var pmdFeatureData: ByteArray? = null
     private val controlPointMutex = Object()
@@ -95,7 +97,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
             val ieee754 = it
             return java.lang.Float.intBitsToFloat(ieee754)
         }
-        BleLogger.e(TAG, "No factor found for type: $type")
+        BleLogger.w(TAG, "No factor found for type: $type")
         return 1.0f
     }
 
@@ -169,6 +171,13 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
                             emitter.onNext(GnssLocationData.parseDataFromDataFrame(isCompressedFrameType, frameType, content, factor, timeStamp))
                         }
                     }
+                    PmdMeasurementType.TEMPERATURE -> {
+                        val factor = fetchFactor(PmdMeasurementType.TEMPERATURE)
+                        RxUtils.emitNext(temperatureObservers) { emitter: FlowableEmitter<in TemperatureData> ->
+                            emitter.onNext(TemperatureData.parseDataFromDataFrame(isCompressedFrameType, frameType, content, factor, timeStamp))
+                        }
+                    }
+
                     else -> {
                         val rdData = ByteArray(data.size - 1)
                         System.arraycopy(data, 1, content, 0, content.size)
@@ -423,6 +432,10 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
         return RxUtils.monitorNotifications(locationObservers, txInterface, checkConnection)
     }
 
+    fun monitorTemperatureNotifications(checkConnection: Boolean): Flowable<TemperatureData> {
+        return RxUtils.monitorNotifications(temperatureObservers, txInterface, checkConnection)
+    }
+
     override fun clientReady(checkConnection: Boolean): Completable {
         return Completable.concatArray(
             waitNotificationEnabled(PMD_CP, true),
@@ -453,6 +466,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
         RxUtils.postExceptionAndClearList(magnetometerObservers, throwable)
         RxUtils.postExceptionAndClearList(pressureObservers, throwable)
         RxUtils.postExceptionAndClearList(locationObservers, throwable)
+        RxUtils.postExceptionAndClearList(temperatureObservers, throwable)
     }
 
     companion object {

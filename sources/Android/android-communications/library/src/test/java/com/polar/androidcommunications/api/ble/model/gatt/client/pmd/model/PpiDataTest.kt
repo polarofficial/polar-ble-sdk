@@ -1,6 +1,6 @@
-package com.polar.androidcommunications.api.ble.model.gatt.client.pmd
+package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.PpiData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

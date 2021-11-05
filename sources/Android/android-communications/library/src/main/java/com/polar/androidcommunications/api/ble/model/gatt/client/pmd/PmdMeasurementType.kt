@@ -10,6 +10,7 @@ enum class PmdMeasurementType(val numVal: Int) {
     SDK_MODE(9),
     LOCATION(10),
     PRESSURE(11),
+    TEMPERATURE(12),
     UNKNOWN_TYPE(0xff);
 
     companion object {
