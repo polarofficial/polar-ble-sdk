@@ -1,103 +1,82 @@
 {
   "warnings": [
     {
-      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/PolarAdvDataUtility.swift",
-      "line": 3,
-      "symbol": "PolarAdvDataUtility",
-      "symbol_kind": "source.lang.swift.decl.class",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/PolarAdvDataUtility.swift",
-      "line": 7,
-      "symbol": "PolarAdvDataUtility.getPolarModelNameFromAdvLocalName(advLocalName:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/PolarAdvDataUtility.swift",
-      "line": 23,
-      "symbol": "PolarAdvDataUtility.isPolarDevice(advLocalName:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "file": "/Users/joikarin/Projects/polar-ble-sdk-master/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
       "line": 9,
       "symbol": "DeviceStreamingFeature.ecg",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "file": "/Users/joikarin/Projects/polar-ble-sdk-master/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
       "line": 10,
       "symbol": "DeviceStreamingFeature.acc",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "file": "/Users/joikarin/Projects/polar-ble-sdk-master/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
       "line": 11,
       "symbol": "DeviceStreamingFeature.ppg",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "file": "/Users/joikarin/Projects/polar-ble-sdk-master/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
       "line": 12,
       "symbol": "DeviceStreamingFeature.ppi",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "file": "/Users/joikarin/Projects/polar-ble-sdk-master/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
       "line": 13,
       "symbol": "DeviceStreamingFeature.gyro",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "file": "/Users/joikarin/Projects/polar-ble-sdk-master/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
       "line": 14,
       "symbol": "DeviceStreamingFeature.magnetometer",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "file": "/Users/joikarin/Projects/polar-ble-sdk-master/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
       "line": 19,
       "symbol": "RecordingInterval.interval_1s",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "file": "/Users/joikarin/Projects/polar-ble-sdk-master/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
       "line": 20,
       "symbol": "RecordingInterval.interval_5s",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
+      "file": "/Users/joikarin/Projects/polar-ble-sdk-master/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApi.swift",
       "line": 90,
       "symbol": "OhrDataType.unknown",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApiObservers.swift",
+      "file": "/Users/joikarin/Projects/polar-ble-sdk-master/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/api/PolarBleApiObservers.swift",
       "line": 104,
       "symbol": "PolarBleApiCCCWriteObserver.cccWrite(_:characteristic:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/impl/PolarBleApiImpl.swift",
+      "file": "/Users/joikarin/Projects/polar-ble-sdk-master/polar-ble-sdk/sources/iOS/ios-communications/iOSCommunications/sdk/impl/PolarBleApiImpl.swift",
       "line": 904,
       "symbol": "PrimitiveSequence.asCompletable()",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     }
   ],
-  "source_directory": "/Users/joikarin/Projects/polar-ble-sdk/sources/iOS/ios-communications"
+  "source_directory": "/Users/joikarin/Projects/polar-ble-sdk-master/polar-ble-sdk/sources/iOS/ios-communications"
 }
