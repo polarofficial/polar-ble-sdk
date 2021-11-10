@@ -166,7 +166,7 @@ public class CBDeviceListenerImpl: NSObject, CBCentralManagerDelegate {
         }
         queue.async(execute: {
             sess.advertisementContent.processAdvertisementData(RSSI.int32Value, advertisementData: advertisementData)
-          
+            
             RxUtils.emitNext(self.scanner.scanObservers) { (observer) in
                 observer.obs.onNext(sess)
             }
@@ -279,12 +279,14 @@ extension CBDeviceListenerImpl: BleDeviceListener {
         return Observable.create{ observer in
             object = RxObserver<BleDeviceSession>(obs: observer)
             self.scanner.addClient(object)
-           
+            
             var foundPeripherals = [CBPeripheral]()
             
             if uuids != nil {
                 foundPeripherals = self.manager.retrieveConnectedPeripherals(withServices: uuids!)
-                    .filter { identifiers?.contains($0.identifier) ?? true }
+                    .filter {
+                        return identifiers?.contains($0.identifier) ?? true
+                    }
             } else if identifiers != nil {
                 foundPeripherals = self.manager.retrievePeripherals(withIdentifiers: (identifiers)!)
             }
@@ -302,7 +304,6 @@ extension CBDeviceListenerImpl: BleDeviceListener {
                     self.centralManager(self.manager, didDiscover: device, advertisementData: advData, rssi: -20)
                 }
             }
-                        
             if fetchKnownDevices {
                 self.sessions.items.forEach { (sess) in
                     observer.onNext(sess)
@@ -373,7 +374,7 @@ extension CBDeviceListenerImpl: BleDeviceListener {
         return sessions.list()
     }
     
-    private func completeSessionClose(_ session: BleDeviceSession) {       
+    private func completeSessionClose(_ session: BleDeviceSession) {
         Observable
             .from(session.gattClients)
             .flatMap { client -> Completable in

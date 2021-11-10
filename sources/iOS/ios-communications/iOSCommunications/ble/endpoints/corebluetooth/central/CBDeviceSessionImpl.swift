@@ -4,7 +4,6 @@ import CoreBluetooth
 import RxSwift
 
 class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeTransportProtocol {
-    
     var peripheral: CBPeripheral
     let central: CBCentralManager
     let scanner: CBScanningProtocol
@@ -13,6 +12,11 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     var attNotifyQueue = [CBCharacteristic]()
     let queueBle: DispatchQueue
     let queue: DispatchQueue
+    
+    // non nil if there is pending write to be finished. Write can be completed by disposing the disposable.
+    fileprivate var pendingPeripheralWrite:Disposable? = nil
+    
+    private static let WRITE_FREEZE_SAFEGUARD_TIMEOUT_MS = 20
     
     init(peripheral: CBPeripheral,
          central: CBCentralManager,
@@ -177,10 +181,22 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
                     if( withResponse && (characteristic.properties.rawValue) & CBCharacteristicProperties.write.rawValue != 0 ) {
                         peripheral.writeValue(packet, for: characteristic, type: CBCharacteristicWriteType.withResponse)
                     } else if( characteristic.properties.rawValue & CBCharacteristicProperties.writeWithoutResponse.rawValue != 0){
-                        // BIG NOTE, check peripheral.canSendWriteWithoutResponse if this is possible
-                        // but there seems to be bugs in this prior 11.2 iOS version
-                        peripheral.writeValue(packet, for: characteristic, type: CBCharacteristicWriteType.withoutResponse)
-                        parent.serviceDataWritten(characteristicUuid, err: 0)
+                        if(peripheral.canSendWriteWithoutResponse) {
+                            peripheral.writeValue(packet, for: characteristic, type:CBCharacteristicWriteType.withoutResponse);
+                            parent.serviceDataWritten(characteristicUuid, err: 0)
+                        } else {
+                            // the delay is used to safe guard the scenario peripheralIsReady() is never called
+                            pendingPeripheralWrite = Completable.empty()
+                                .delay(RxTimeInterval.milliseconds(CBDeviceSessionImpl.WRITE_FREEZE_SAFEGUARD_TIMEOUT_MS), scheduler: SerialDispatchQueueScheduler(internalSerialQueueName: ""))
+                                .do( onDispose: {
+                                    self.peripheral.writeValue(packet, for: characteristic, type: CBCharacteristicWriteType.withoutResponse)
+                                    parent.serviceDataWritten(characteristicUuid, err: 0)
+                                }).subscribe(
+                                    onCompleted: {},
+                                    onError: { error in
+                                        BleLogger.trace("write failed: \(error)")
+                                    })
+                        }
                     } else {
                         throw BleGattException.gattCharacteristicError
                     }
@@ -373,6 +389,12 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor descriptor: CBDescriptor, error: Error?){
         // implement if needed
         BleLogger.trace("didWriteValueForDescriptor")
+    }
+    
+    func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheral) {
+        BleLogger.trace("peripheralIsReadyToSendWriteWithoutResponse")
+        pendingPeripheralWrite?.dispose()
+        pendingPeripheralWrite = nil
     }
 }
 

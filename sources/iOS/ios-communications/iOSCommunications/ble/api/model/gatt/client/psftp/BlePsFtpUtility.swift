@@ -2,7 +2,7 @@
 import Foundation
 
 // ps-ftp errors
-public enum BlePsFtpException: Error{
+public enum BlePsFtpException: Error {
     ///  Undefined error, after a single undefined error might still be recoverable to next operation
     case undefinedError
     /// Frame failed to receive in 30 sec, might be due to device side is unresponsive
