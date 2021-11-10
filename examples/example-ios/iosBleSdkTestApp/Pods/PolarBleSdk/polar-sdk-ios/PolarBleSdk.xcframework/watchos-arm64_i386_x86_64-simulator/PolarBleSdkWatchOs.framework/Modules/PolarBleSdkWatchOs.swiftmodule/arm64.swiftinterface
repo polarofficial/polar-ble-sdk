@@ -1,17 +1,17 @@
 // swift-interface-format-version: 1.0
-// swift-compiler-version: Apple Swift version 5.4.2 (swiftlang-1205.0.28.2 clang-1205.0.19.57)
+// swift-compiler-version: Apple Swift version 5.5.1 (swiftlang-1300.0.31.4 clang-1300.0.29.6)
 // swift-module-flags: -target arm64-apple-watchos4.3-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name PolarBleSdkWatchOs
 import CoreBluetooth
 import Foundation
 @_exported import PolarBleSdkWatchOs
 import RxSwift
 import Swift
+import _Concurrency
 @_hasMissingDesignatedInitializers public class AtomicType<T> : ObjectiveC.NSObject {
   public func get() -> T
-  public func accessItem(_ f: (inout T) -> Swift.Void)
+  public func accessItem(_ f: (_ item: inout T) -> Swift.Void)
   public func set(_ value: T)
   public func wait()
-  @objc override dynamic public init()
   @objc deinit
 }
 @_hasMissingDesignatedInitializers open class BlePolarDeviceCapabilitiesUtility {
@@ -249,44 +249,21 @@ public struct Pmd {
   public func stopSdkMode() -> RxSwift.Completable
   @objc deinit
 }
-extension PrimitiveSequence where Trait == RxSwift.SingleTrait {
+extension RxSwift.PrimitiveSequence where Trait == RxSwift.SingleTrait {
   public func asCompletable() -> RxSwift.PrimitiveSequence<RxSwift.CompletableTrait, Swift.Never>
 }
-@_hasMissingDesignatedInitializers public class NotificationNotEnabled : Swift.Error {
-  @objc deinit
-}
-@_hasMissingDesignatedInitializers public class ServiceNotFound : Swift.Error {
-  @objc deinit
-}
-@_hasMissingDesignatedInitializers public class DeviceNotConnected : Swift.Error {
-  @objc deinit
-}
-@_hasMissingDesignatedInitializers public class DeviceNotFound : Swift.Error {
-  @objc deinit
-}
-@_hasMissingDesignatedInitializers public class OperationNotSupported : Swift.Error {
-  @objc deinit
-}
-@_hasMissingDesignatedInitializers public class MessageEncodeFailed : Swift.Error {
-  @objc deinit
-}
-@_hasMissingDesignatedInitializers public class MessageDecodeFailed : Swift.Error {
-  @objc deinit
-}
-@_hasMissingDesignatedInitializers public class DateTimeFormatFailed : Swift.Error {
-  @objc deinit
-}
-@_hasMissingDesignatedInitializers public class UnableToStartStreaming : Swift.Error {
-  @objc deinit
-}
-@_hasMissingDesignatedInitializers public class InvalidArgument : Swift.Error {
-  @objc deinit
-}
-public enum UndefinedError : Foundation.LocalizedError {
-  case DeviceError(localizedDescription: Swift.String)
-  public var localizedDescription: Swift.String {
-    get
-  }
+public enum PolarErrors : Swift.Error {
+  case notificationNotEnabled
+  case serviceNotFound
+  case deviceNotConnected
+  case deviceNotFound
+  case operationNotSupported
+  case messageEncodeFailed
+  case messageDecodeFailed
+  case dateTimeFormatFailed
+  case unableToStartStreaming
+  case invalidArgument
+  case deviceError(description: Swift.String)
 }
 public enum DeviceStreamingFeature : Swift.Int, Swift.CaseIterable {
   case ecg
@@ -440,7 +417,7 @@ public protocol PolarBleApiCCCWriteObserver : AnyObject {
 @objc public class CBDeviceListenerImpl : ObjectiveC.NSObject, CoreBluetooth.CBCentralManagerDelegate {
   public var automaticH10Mapping: Swift.Bool
   public var automaticReconnection: Swift.Bool
-  public var scanPreFilter: ((PolarBleSdkWatchOs.BleAdvertisementContent) -> Swift.Bool)?
+  public var scanPreFilter: ((_ content: PolarBleSdkWatchOs.BleAdvertisementContent) -> Swift.Bool)?
   public var servicesToScanFor: [CoreBluetooth.CBUUID]? {
     get
     set
@@ -450,20 +427,19 @@ public protocol PolarBleApiCCCWriteObserver : AnyObject {
     get
     set
   }
-  public init(_ queue: Dispatch.DispatchQueue, clients: [(PolarBleSdkWatchOs.BleAttributeTransportProtocol) -> PolarBleSdkWatchOs.BleGattClientBase], identifier: Swift.Int)
+  public init(_ queue: Dispatch.DispatchQueue, clients: [(_ transport: PolarBleSdkWatchOs.BleAttributeTransportProtocol) -> PolarBleSdkWatchOs.BleGattClientBase], identifier: Swift.Int)
   @objc public func centralManagerDidUpdateState(_ central: CoreBluetooth.CBCentralManager)
   @objc public func centralManager(_ central: CoreBluetooth.CBCentralManager, didDiscover peripheral: CoreBluetooth.CBPeripheral, advertisementData: [Swift.String : Any], rssi RSSI: Foundation.NSNumber)
   @objc public func centralManager(_ central: CoreBluetooth.CBCentralManager, didConnect peripheral: CoreBluetooth.CBPeripheral)
   @objc public func centralManager(_ central: CoreBluetooth.CBCentralManager, didFailToConnect peripheral: CoreBluetooth.CBPeripheral, error: Swift.Error?)
   @objc public func centralManager(_ central: CoreBluetooth.CBCentralManager, didDisconnectPeripheral peripheral: CoreBluetooth.CBPeripheral, error: Swift.Error?)
-  @objc override dynamic public init()
   @objc deinit
 }
-extension CBDeviceListenerImpl : PolarBleSdkWatchOs.CBScanningProtocol {
+extension PolarBleSdkWatchOs.CBDeviceListenerImpl : PolarBleSdkWatchOs.CBScanningProtocol {
   public func stopScanning()
   public func continueScanning()
 }
-extension CBDeviceListenerImpl : PolarBleSdkWatchOs.BleDeviceListener {
+extension PolarBleSdkWatchOs.CBDeviceListenerImpl : PolarBleSdkWatchOs.BleDeviceListener {
   public func blePowered() -> Swift.Bool
   public func monitorBleState() -> RxSwift.Observable<PolarBleSdkWatchOs.BleState>
   public func search(_ uuids: [CoreBluetooth.CBUUID]?, identifiers: [Foundation.UUID]?, fetchKnownDevices: Swift.Bool) -> RxSwift.Observable<PolarBleSdkWatchOs.BleDeviceSession>
@@ -507,7 +483,6 @@ public protocol BleCCCWriteProtocol : AnyObject {
   public func isConnectable() -> Swift.Bool
   public func monitorServicesDiscovered(_ checkConnection: Swift.Bool) -> RxSwift.Observable<CoreBluetooth.CBUUID>
   public func clientsReady() -> RxSwift.Observable<Swift.Never>
-  @objc override dynamic public init()
   @objc deinit
 }
 @_hasMissingDesignatedInitializers open class BlePolarDeviceIdUtility {
@@ -788,7 +763,7 @@ public protocol BleDeviceListener {
   var powerStateObserver: PolarBleSdkWatchOs.BlePowerStateObserver? { get set }
   var automaticReconnection: Swift.Bool { get set }
   var servicesToScanFor: [CoreBluetooth.CBUUID]? { get set }
-  var scanPreFilter: ((PolarBleSdkWatchOs.BleAdvertisementContent) -> Swift.Bool)? { get set }
+  var scanPreFilter: ((_ content: PolarBleSdkWatchOs.BleAdvertisementContent) -> Swift.Bool)? { get set }
   var automaticH10Mapping: Swift.Bool { get set }
   func search(_ uuids: [CoreBluetooth.CBUUID]?, identifiers: [Foundation.UUID]?, fetchKnownDevices: Swift.Bool) -> RxSwift.Observable<PolarBleSdkWatchOs.BleDeviceSession>
   func openSessionDirect(_ session: PolarBleSdkWatchOs.BleDeviceSession)
@@ -808,10 +783,10 @@ public protocol BleDeviceSessionStateObserver : AnyObject {
 public protocol BlePowerStateObserver : AnyObject {
   func powerStateChanged(_ state: PolarBleSdkWatchOs.BleState)
 }
-extension BleDeviceListener {
+extension PolarBleSdkWatchOs.BleDeviceListener {
   public func search(_ uuids: [CoreBluetooth.CBUUID]? = nil, identifiers: [Foundation.UUID]? = nil, fetchKnownDevices: Swift.Bool = false) -> RxSwift.Observable<PolarBleSdkWatchOs.BleDeviceSession>
 }
-extension Observable where Element : Swift.Hashable {
+extension RxSwift.Observable where Element : Swift.Hashable {
   public func distinct() -> RxSwift.Observable<Element>
 }
 @_hasMissingDesignatedInitializers public class AtomicBoolean {
