@@ -16,7 +16,7 @@ public class BlePsFtpClient: BleGattClientBase {
     
     let mtuInputQueue=AtomicList<[Data: Int]>()
     let packetsWritten=AtomicInteger(initialValue:0)
-    // packet chuncks define which n packet shall use write with response
+    // packet chunks define which n packet shall use write with response (i.e. ATT write request), if set to 0 then all packets in frame are written with write without response (i.e. ATT write command)
     public let packetChunks = AtomicType<Int>.init(initialValue: 6)
     
     // notification rel
@@ -331,8 +331,9 @@ public class BlePsFtpClient: BleGattClientBase {
     public func write(_ header: NSData, data: InputStream) -> Observable<UInt> {
         return Observable.create{ observer in
             // TODO make improvement, if ex. rx retry is used this create could be called n times,
-            // now the InputStream on n=1... is allready consumed
+            // now the InputStream on n=1... is already consumed
             let block = BlockOperation()
+            
             block.addExecutionBlock { [unowned self, weak block] in
                 BleLogger.trace("PS-FTP new write operation")
                 self.gattServiceTransmitter?.attributeOperationStarted()
@@ -361,13 +362,19 @@ public class BlePsFtpClient: BleGattClientBase {
                             if( !more ) {
                                 self.currentOperationWrite.set(false)
                             }
-                            response = (pCounter % UInt64(self.packetChunks.get())) == 0
+                            if self.packetChunks.get() == 0 {
+                                response = false
+                            } else {
+                                response = (pCounter % UInt64(self.packetChunks.get())) == 0
+                            }
+                            
                             if next == 0 {
                                 // first write cannot be canceled
                                 try self.transmitMtuPacket(packet, canceled: BlockOperation(), response: response)
                             } else {
                                 try self.transmitMtuPacket(packet, canceled: block ?? BlockOperation(), response: response)
                             }
+                            
                             next = 1
                             totalTransmitted += Int64(packet.count - 1)
                             var transferred: Int64 = 0
@@ -416,9 +423,10 @@ public class BlePsFtpClient: BleGattClientBase {
                         }
                     } while more
                     let output = NSMutableData()
-                    do{
+                    do {
                         let error = try self.readResponse(output, inputQueue: self.mtuInputQueue, canceled: block ?? BlockOperation())
-                        switch ( error ){
+                        
+                        switch ( error ) {
                         case 0:
                             observer.onCompleted()
                             return
@@ -474,7 +482,7 @@ public class BlePsFtpClient: BleGattClientBase {
                         totalStream.close()
                     }
                     // send request
-                    do{
+                    do {
                         let sequenceNumber=BlePsFtpUtility.BlePsFtpRfc76SequenceNumber()
                         let requs = BlePsFtpUtility.buildRfc76MessageFrameAll(totalStream, mtuSize: self.mtuSize, sequenceNumber: sequenceNumber)
                         for packet in requs {
@@ -525,7 +533,7 @@ public class BlePsFtpClient: BleGattClientBase {
         }
     }
     
-    /// Sends a single notifcation to device, can be called many at once, but will internally make operations atomic
+    /// Sends a single notification to device, can be called many at once, but will internally make operations atomic
     ///
     /// - Parameters:
     ///   - id: one of the PbPFtpHostToDevNotification values
