@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity() {
         toggleSdkModeButton = findViewById(R.id.toggle_SDK_mode)
 
         api.setPolarFilter(false)
-        api.setApiLogger { s: String? -> Log.d(API_LOGGER_TAG, s) }
+        api.setApiLogger { s: String -> Log.d(API_LOGGER_TAG, s) }
         api.setApiCallback(object : PolarBleApiCallback() {
             override fun blePowerStateChanged(powered: Boolean) {
                 Log.d(TAG, "BLE power: $powered")
