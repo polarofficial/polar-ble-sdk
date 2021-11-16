@@ -22,15 +22,16 @@
         android:name="android.permission.BLUETOOTH_ADMIN"
         android:maxSdkVersion="30" />
 
-    <!-- Request legacy Bluetooth permission on devices with API 30 (Android Q) or older.-->
-    <uses-permission
-        android:name="android.permission.ACCESS_COARSE_LOCATION"
-        android:maxSdkVersion="30" />
-
     <!-- Polar SDK needs the fine location permission to get results for Bluetooth scan. Request
     fine location permission on devices with API 30 (Android Q). -->
     <uses-permission
         android:name="android.permission.ACCESS_FINE_LOCATION"
+        android:maxSdkVersion="30" />
+
+    <!-- The coarse location permission is needed, if fine location permission is requested. Request
+     coarse location permission on devices with API 30 (Android Q). -->
+    <uses-permission
+        android:name="android.permission.ACCESS_COARSE_LOCATION"
         android:maxSdkVersion="30" />
 
     <application
