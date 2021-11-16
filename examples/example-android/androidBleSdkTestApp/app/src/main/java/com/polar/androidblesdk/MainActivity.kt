@@ -1,6 +1,7 @@
 package com.polar.androidblesdk
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -28,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "MainActivity"
         private const val API_LOGGER_TAG = "API LOGGER"
+        private const val PERMISSION_REQUEST_CODE = 1
     }
 
     // ATTENTION! Replace with the device ID from your device.
@@ -107,7 +109,6 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     disableAllButtons()
                     showToast("Phone Bluetooth off")
-
                 }
             }
 
@@ -541,19 +542,29 @@ class MainActivity : AppCompatActivity() {
                     )
             }
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && savedInstanceState == null) {
-            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT), PERMISSION_REQUEST_CODE)
+            } else {
+                requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_REQUEST_CODE)
+            }
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 1) {
-            Log.d(TAG, "bt ready")
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            for (index in 0..grantResults.lastIndex) {
+                if (grantResults[index] == PackageManager.PERMISSION_DENIED) {
+                    disableAllButtons()
+                    Log.w(TAG, "No sufficient permissions")
+                    showToast("No sufficient permissions")
+                    return
+                }
+            }
+            Log.d(TAG, "Needed permissions are granted")
+            enableAllButtons()
         }
     }
 
