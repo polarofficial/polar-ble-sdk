@@ -118,14 +118,14 @@ public class HRActivity extends AppCompatActivity implements PlotterListener {
                                                @NonNull PolarHrData polarHrData) {
                 Log.d(TAG, "HR " + polarHrData.hr);
                 List<Integer> rrsMs = polarHrData.rrsMs;
-                String msg = polarHrData.hr + "\n";
+                StringBuilder msg = new StringBuilder(polarHrData.hr + "\n");
                 for (int i : rrsMs) {
-                    msg += i + ",";
+                    msg.append(i).append(",");
                 }
-                if (msg.endsWith(",")) {
-                    msg = msg.substring(0, msg.length() - 1);
+                if (msg.toString().endsWith(",")) {
+                    msg = new StringBuilder(msg.substring(0, msg.length() - 1));
                 }
-                textViewHR.setText(msg);
+                textViewHR.setText(msg.toString());
                 plotter.addValues(polarHrData);
             }
 
