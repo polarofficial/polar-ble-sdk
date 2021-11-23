@@ -557,6 +557,9 @@ class PolarBleSdkManager : ObservableObject {
                         var recordingStatus = "Recording on: \(pair.ongoing)."
                         if pair.ongoing {
                             recordingStatus.append(" Recording started with id: \(pair.entryId)")
+                            self.isH10RecordingEnabled = true
+                        } else {
+                            self.isH10RecordingEnabled = false
                         }
                         self.generalMessage = Message(text: recordingStatus)
                         NSLog(recordingStatus)
