@@ -73,17 +73,17 @@ import RxSwift
         self.listener.powerStateObserver = self
         BleLogger.setLogLevel(BleLogger.LOG_LEVEL_ALL)
         BleLogger.setLogger(self)
-        #if os(iOS)
+#if os(iOS)
         NotificationCenter.default.addObserver(self, selector: #selector(foreground), name: UIApplication.willEnterForegroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(background), name: UIApplication.didEnterBackgroundNotification, object: nil)
-        #endif
+#endif
     }
     
     deinit {
-        #if os(iOS)
+#if os(iOS)
         NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIApplication.didEnterBackgroundNotification, object: nil)
-        #endif
+#endif
     }
     
     // from BlePowerStateObserver
@@ -110,10 +110,9 @@ import RxSwift
         case .sessionOpen:
             self.observer?.deviceConnected(info)
             self.setupDevice(session)
-        case .sessionOpenPark where
-                session.previousState == .sessionOpen: fallthrough
-        case .sessionClosed where
-                session.previousState == .sessionClosing:
+        case .sessionOpenPark where session.previousState == .sessionOpen: fallthrough
+        case .sessionClosed where session.previousState == .sessionOpen: fallthrough
+        case .sessionClosed where session.previousState == .sessionClosing:
             self.observer?.deviceDisconnected(info)
         case .sessionOpening:
             self.observer?.deviceConnecting(info)
@@ -199,8 +198,8 @@ import RxSwift
     fileprivate func setupDevice(_ session: BleDeviceSession) {
         session.cccWriteCallback = self
         let deviceId = session.advertisementContent.polarDeviceIdUntouched.count != 0 ?
-            session.advertisementContent.polarDeviceIdUntouched :
-            session.address.uuidString
+        session.advertisementContent.polarDeviceIdUntouched :
+        session.address.uuidString
         _ = session.monitorServicesDiscovered(true)
             .observe(on: scheduler)
             .flatMap { (uuid: CBUUID) -> Observable<Any> in
@@ -235,31 +234,31 @@ import RxSwift
                             .andThen(pmdClient.readFeature(true)
                                         .observe(on: self.scheduler)
                                         .do(onSuccess: { (value: Pmd.PmdFeature) in
-                                            var featureSet = Set<DeviceStreamingFeature>()
-                                            if value.ecgSupported {
-                                                featureSet.insert(.ecg)
-                                            }
-                                            if value.accSupported {
-                                                featureSet.insert(.acc)
-                                            }
-                                            if value.ppgSupported {
-                                                featureSet.insert(.ppg)
-                                            }
-                                            if value.ppiSupported {
-                                                featureSet.insert(.ppi)
-                                            }
-                                            if value.gyroSupported {
-                                                featureSet.insert(.gyro)
-                                            }
-                                            if value.magnetometerSupported {
-                                                featureSet.insert(.magnetometer)
-                                            }
-                                            self.deviceFeaturesObserver?.streamingFeaturesReady(deviceId, streamingFeatures: featureSet)
-                                            
-                                            if value.sdkModeSupported {
-                                                self.sdkModeFeatureObserver?.sdkModeFeatureAvailable(deviceId)
-                                            }
-                                        }))
+                                var featureSet = Set<DeviceStreamingFeature>()
+                                if value.ecgSupported {
+                                    featureSet.insert(.ecg)
+                                }
+                                if value.accSupported {
+                                    featureSet.insert(.acc)
+                                }
+                                if value.ppgSupported {
+                                    featureSet.insert(.ppg)
+                                }
+                                if value.ppiSupported {
+                                    featureSet.insert(.ppi)
+                                }
+                                if value.gyroSupported {
+                                    featureSet.insert(.gyro)
+                                }
+                                if value.magnetometerSupported {
+                                    featureSet.insert(.magnetometer)
+                                }
+                                self.deviceFeaturesObserver?.streamingFeaturesReady(deviceId, streamingFeatures: featureSet)
+                                
+                                if value.sdkModeSupported {
+                                    self.sdkModeFeatureObserver?.sdkModeFeatureAvailable(deviceId)
+                                }
+                            }))
                             .asObservable()
                             .map { (_) -> Any in
                                 return Any.self
@@ -270,7 +269,7 @@ import RxSwift
                             .do(onCompleted: {
                                 switch (BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType)) {
                                 case .h10FileSystem,
-                                     .sagRfc2FileSystem:
+                                        .sagRfc2FileSystem:
                                     self.deviceFeaturesObserver?.ftpFeatureReady(deviceId)
                                     break
                                 default:
@@ -345,21 +344,21 @@ extension PolarBleApiImpl: PolarBleApi {
         return listener.search(serviceList, identifiers: nil)
             .filter { (sess: BleDeviceSession) -> Bool in
                 return sess.advertisementContent.medianRssi >= rssi &&
-                    sess.isConnectable() &&
-                    (polarDeviceType == nil || polarDeviceType == sess.advertisementContent.polarDeviceType) &&
-                    (service == nil || sess.advertisementContent.containsService(service!))
+                sess.isConnectable() &&
+                (polarDeviceType == nil || polarDeviceType == sess.advertisementContent.polarDeviceType) &&
+                (service == nil || sess.advertisementContent.containsService(service!))
             }
             .take(1)
             .do(onNext: { (session) in
                 self.logMessage("auto connect search complete")
-                #if os(watchOS)
+#if os(watchOS)
                 session.connectionType = .directConnection
-                #endif
+#endif
                 self.listener.openSessionDirect(session)
             })
-            .asSingle()
-            .asCompletable()
-    }
+                .asSingle()
+                .asCompletable()
+                }
     
     func connectToDevice(_ identifier: String) throws {
         let session = try fetchSession(identifier)
@@ -368,9 +367,9 @@ extension PolarBleApiImpl: PolarBleApi {
                 sub.dispose()
             }
             if session != nil {
-                #if os(watchOS)
+#if os(watchOS)
                 session!.connectionType = .directConnection
-                #endif
+#endif
                 self.listener.openSessionDirect(session!)
             } else {
                 connectSubscriptions[identifier] = listener.search(serviceList, identifiers: nil)
@@ -386,9 +385,9 @@ extension PolarBleApiImpl: PolarBleApi {
                         case .error(let error):
                             self.logMessage("\(error)")
                         case .next(let value):
-                            #if os(watchOS)
+#if os(watchOS)
                             value.connectionType = .directConnection
-                            #endif
+#endif
                             self.listener.openSessionDirect(value)
                         }
                     }
@@ -399,8 +398,8 @@ extension PolarBleApiImpl: PolarBleApi {
     func disconnectFromDevice(_ identifier: String) throws {
         if let session = try fetchSession(identifier) {
             if (session.state == BleDeviceSession.DeviceSessionState.sessionOpen ||
-                    session.state == BleDeviceSession.DeviceSessionState.sessionOpening ||
-                    session.state == BleDeviceSession.DeviceSessionState.sessionOpenPark){
+                session.state == BleDeviceSession.DeviceSessionState.sessionOpening ||
+                session.state == BleDeviceSession.DeviceSessionState.sessionOpenPark){
                 listener.closeSessionDirect(session)
             }
         }
@@ -590,7 +589,7 @@ extension PolarBleApiImpl: PolarBleApi {
         return listener.search(serviceList, identifiers: nil)
             .filter({ (session) -> Bool in
                 return (identifiers == nil ||    identifiers!.contains(session.advertisementContent.polarDeviceIdUntouched)) &&
-                    session.advertisementContent.polarHrAdvertisementData.isPresent
+                session.advertisementContent.polarHrAdvertisementData.isPresent
             })
             .map({ (value) -> PolarHrBroadcastData in
                 return (deviceInfo: (value.advertisementContent.polarDeviceIdUntouched,
@@ -644,9 +643,9 @@ extension PolarBleApiImpl: PolarBleApi {
             return client.startMeasurement(type, settings: settings.map2PmdSetting())
                 .andThen(observer(client)
                             .do(onDispose: {
-                                _ = client.stopMeasurement(type)
-                                    .subscribe()
-                            }))
+                    _ = client.stopMeasurement(type)
+                        .subscribe()
+                }))
                 .catch { (err) -> Observable<T> in
                     return Observable.error(PolarErrors.deviceError(description: "\(err)"))
                 }
@@ -716,6 +715,7 @@ extension PolarBleApiImpl: PolarBleApi {
                 let operation = PbPFtpOperation()
                 operation.command = PbPFtpOperation_Command.get
                 operation.path = entry.path
+                
                 if let header = operation.data() {
                     return client.request(header)
                         .map { (data) -> PolarExerciseData in
@@ -752,34 +752,34 @@ extension PolarBleApiImpl: PolarBleApi {
             if fsType == .sagRfc2FileSystem {
                 return fetchRecursive("/U/0/", client: client, condition: { (entry) -> Bool in
                     return entry.matches("^([0-9]{8})(\\/)") ||
-                        entry.matches("^([0-9]{6})(\\/)") ||
-                        entry == "E/" ||
-                        entry == "SAMPLES.BPB" ||
-                        entry == "00/"
+                    entry.matches("^([0-9]{6})(\\/)") ||
+                    entry == "E/" ||
+                    entry == "SAMPLES.BPB" ||
+                    entry == "00/"
                 })
-                .map({ (path) -> (path: String, date: Date, entryId: String) in
-                    let components = path.split(separator: "/")
-                    let dateFormatter = DateFormatter()
-                    dateFormatter.dateFormat = "yyyyMMddHHmmss"
-                    if let date = dateFormatter.date(from: String(components[2] + components[4])) {
-                        return (path,date: date, entryId: String(components[2] + components[4]))
-                    }
-                    throw PolarErrors.dateTimeFormatFailed
-                })
-                .catch({ (err) -> Observable<PolarExerciseEntry> in
-                    return Observable.error(PolarErrors.deviceError(description: "\(err)"))
-                })
+                    .map({ (path) -> (path: String, date: Date, entryId: String) in
+                        let components = path.split(separator: "/")
+                        let dateFormatter = DateFormatter()
+                        dateFormatter.dateFormat = "yyyyMMddHHmmss"
+                        if let date = dateFormatter.date(from: String(components[2] + components[4])) {
+                            return (path,date: date, entryId: String(components[2] + components[4]))
+                        }
+                        throw PolarErrors.dateTimeFormatFailed
+                    })
+                    .catch({ (err) -> Observable<PolarExerciseEntry> in
+                        return Observable.error(PolarErrors.deviceError(description: "\(err)"))
+                    })
             } else if fsType == .h10FileSystem {
                 return fetchRecursive("/", client: client, condition: { (entry) -> Bool in
                     return entry.hasSuffix("/") || entry == "SAMPLES.BPB"
                 })
-                .map({ (path) -> (path: String, date: Date, entryId: String) in
-                    let components = path.split(separator: "/")
-                    return (path,date: Date(), entryId: String(components[0]))
-                })
-                .catch({ (err) -> Observable<PolarExerciseEntry> in
-                    return Observable.error(PolarErrors.deviceError(description: "\(err)"))
-                })
+                    .map({ (path) -> (path: String, date: Date, entryId: String) in
+                        let components = path.split(separator: "/")
+                        return (path,date: Date(), entryId: String(components[0]))
+                    })
+                    .catch({ (err) -> Observable<PolarExerciseEntry> in
+                        return Observable.error(PolarErrors.deviceError(description: "\(err)"))
+                    })
             }
             throw PolarErrors.operationNotSupported
         } catch let err {
