@@ -106,11 +106,40 @@ dependencies {
     implementation 'com.google.protobuf:protobuf-javalite:3.17.3' // Only needed if FEATURE_POLAR_FILE_TRANSFER used
 }
 ```
-4. Finally, add the following permissions to  `AndroidManifest.xml`:
+4. Finally, to let the SDK use the bluetooth it needs to request [Bluetooth related permissions](https://developer.android.com/guide/topics/connectivity/bluetooth/permissions) on `AndroidManifest.xml`.:
 ```
-<uses-permission android:name="android.permission.BLUETOOTH"/>
-<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+   <!-- Polar SDK needs Bluetooth scan permission to search for BLE devices.-->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation" />
+
+    <!-- Polar SDK needs Bluetooth connect permission to connect for found BLE devices.-->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+    <!-- Allows Polar SDK to connect to paired bluetooth devices. Legacy Bluetooth permission,
+     which is needed on devices with API 30 (Android Q) or older. -->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30" />
+
+    <!-- Allows Polar SDK to discover and pair bluetooth devices. Legacy Bluetooth permission,
+     which is needed on devices with API 30 (Android Q) or older. -->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_ADMIN"
+        android:maxSdkVersion="30" />
+
+    <!-- Polar SDK needs the fine location permission to get results for Bluetooth scan. Request
+    fine location permission on devices with API 30 (Android Q). -->
+    <uses-permission
+        android:name="android.permission.ACCESS_FINE_LOCATION"
+        android:maxSdkVersion="30" />
+
+   <!-- The coarse location permission is needed, if fine location permission is requested. Request
+     coarse location permission on devices with API 30 (Android Q). -->
+    <uses-permission
+        android:name="android.permission.ACCESS_COARSE_LOCATION"
+        android:maxSdkVersion="30" />
+
 ```
 
 ## Code example: Heart rate
@@ -178,11 +207,19 @@ api.setApiCallback(new PolarBleApiCallback() {
     }
 });
 ```
-2.  Request permissions if needed
+2.  Request permissions
 ```
 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-    this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-}
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT), 1)
+        } else {
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+        }
+    }
+    requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), 1)
+}   
+
 // callback is invoked after granted or denied permissions
 @Override
 public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
