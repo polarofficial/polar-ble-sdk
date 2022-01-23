@@ -1,169 +1,144 @@
-package com.polar.polarsdkecghrdemo;
+package com.polar.polarsdkecghrdemo
 
-import android.os.Bundle;
-import android.util.Log;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.os.Bundle
+import android.util.Log
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.androidplot.xy.BoundaryMode
+import com.androidplot.xy.StepMode
+import com.androidplot.xy.XYGraphWidget
+import com.androidplot.xy.XYPlot
+import com.polar.sdk.api.PolarBleApi
+import com.polar.sdk.api.PolarBleApi.DeviceStreamingFeature
+import com.polar.sdk.api.PolarBleApiCallback
+import com.polar.sdk.api.PolarBleApiDefaultImpl.defaultImplementation
+import com.polar.sdk.api.errors.PolarInvalidArgument
+import com.polar.sdk.api.model.PolarDeviceInfo
+import com.polar.sdk.api.model.PolarHrData
+import java.text.DecimalFormat
+import java.util.*
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
+class HRActivity : AppCompatActivity(), PlotterListener {
+    companion object {
+        private const val TAG = "HRActivity"
+    }
 
-import com.androidplot.xy.BoundaryMode;
-import com.androidplot.xy.StepMode;
-import com.androidplot.xy.XYGraphWidget;
-import com.androidplot.xy.XYPlot;
-import com.polar.sdk.api.PolarBleApi;
-import com.polar.sdk.api.PolarBleApiCallback;
-import com.polar.sdk.api.PolarBleApiDefaultImpl;
-import com.polar.sdk.api.errors.PolarInvalidArgument;
-import com.polar.sdk.api.model.PolarDeviceInfo;
-import com.polar.sdk.api.model.PolarHrData;
+    private lateinit var api: PolarBleApi
+    private lateinit var plotter: HrAndRrPlotter
+    private lateinit var textViewHR: TextView
+    private lateinit var textViewRR: TextView
+    private lateinit var textViewDeviceId: TextView
+    private lateinit var textViewBattery: TextView
+    private lateinit var textViewFwVersion: TextView
+    private lateinit var plot: XYPlot
 
-import java.text.DecimalFormat;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_hr)
+        val deviceId = intent.getStringExtra("id") ?: throw Exception("HRActivity couldn't be created, no deviceId given")
+        textViewHR = findViewById(R.id.hr_view_hr)
+        textViewRR = findViewById(R.id.hr_view_rr)
+        textViewDeviceId = findViewById(R.id.hr_view_deviceId)
+        textViewBattery = findViewById(R.id.hr_view_battery_level)
+        textViewFwVersion = findViewById(R.id.hr_view_fw_version)
+        plot = findViewById(R.id.hr_view_plot)
 
-public class HRActivity extends AppCompatActivity implements PlotterListener {
-    private static final String TAG = "HRActivity";
-    private XYPlot plot;
-    private TimePlotter plotter;
-    private TextView textViewHR;
-    private TextView textViewFW;
-    private PolarBleApi api;
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_hr);
-        String deviceId = getIntent().getStringExtra("id");
-        textViewHR = findViewById(R.id.info2);
-        textViewFW = findViewById(R.id.fw2);
-
-        plot = findViewById(R.id.plot2);
-
-        api = PolarBleApiDefaultImpl.defaultImplementation(getApplicationContext(),
-                PolarBleApi.FEATURE_BATTERY_INFO |
-                        PolarBleApi.FEATURE_DEVICE_INFO |
-                        PolarBleApi.FEATURE_HR);
-
-        api.setApiLogger(str -> Log.d("SDK", str));
-
-        api.setApiCallback(new PolarBleApiCallback() {
-            @Override
-            public void blePowerStateChanged(boolean b) {
-                Log.d(TAG, "BluetoothStateChanged " + b);
+        api = defaultImplementation(
+            applicationContext,
+            PolarBleApi.FEATURE_BATTERY_INFO or
+                    PolarBleApi.FEATURE_DEVICE_INFO or
+                    PolarBleApi.FEATURE_HR
+        )
+        api.setApiLogger { str: String -> Log.d("SDK", str) }
+        api.setApiCallback(object : PolarBleApiCallback() {
+            override fun blePowerStateChanged(blePowerState: Boolean) {
+                Log.d(TAG, "BluetoothStateChanged $blePowerState")
             }
 
-            @Override
-            public void deviceConnected(@NonNull PolarDeviceInfo s) {
-                Log.d(TAG, "Device connected " + s.deviceId);
-                Toast.makeText(getApplicationContext(), R.string.connected, Toast.LENGTH_SHORT).show();
+            override fun deviceConnected(polarDeviceInfo: PolarDeviceInfo) {
+                Log.d(TAG, "Device connected ${polarDeviceInfo.deviceId}")
+                Toast.makeText(applicationContext, R.string.connected, Toast.LENGTH_SHORT).show()
             }
 
-            @Override
-            public void deviceConnecting(@NonNull PolarDeviceInfo polarDeviceInfo) {
-
+            override fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo) {
+                Log.d(TAG, "Device connecting ${polarDeviceInfo.deviceId}")
             }
 
-            @Override
-            public void deviceDisconnected(@NonNull PolarDeviceInfo s) {
-                Log.d(TAG, "Device disconnected " + s);
-
+            override fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {
+                Log.d(TAG, "Device disconnected ${polarDeviceInfo.deviceId}")
             }
 
-            @Override
-            public void streamingFeaturesReady(@NonNull final String identifier,
-                                               @NonNull final Set<PolarBleApi.DeviceStreamingFeature> features) {
-
-                for (PolarBleApi.DeviceStreamingFeature feature : features) {
-                    Log.d(TAG, "Streaming feature is ready: " + feature);
-                    switch (feature) {
-                        case ECG:
-                        case ACC:
-                        case MAGNETOMETER:
-                        case GYRO:
-                        case PPI:
-                        case PPG:
-                            break;
-                    }
+            override fun streamingFeaturesReady(identifier: String, features: Set<DeviceStreamingFeature>) {
+                for (feature in features) {
+                    Log.d(TAG, "Streaming feature is ready: $feature")
                 }
             }
 
-            @Override
-            public void hrFeatureReady(@NonNull String s) {
-                Log.d(TAG, "HR Feature ready " + s);
+            override fun hrFeatureReady(identifier: String) {
+                Log.d(TAG, "HR Feature ready $identifier")
             }
 
-            @Override
-            public void disInformationReceived(@NonNull String s, @NonNull UUID u, @NonNull String s1) {
-                if (u.equals(UUID.fromString("00002a28-0000-1000-8000-00805f9b34fb"))) {
-                    String msg = "Firmware: " + s1.trim();
-                    Log.d(TAG, "Firmware: " + s + " " + s1.trim());
-                    textViewFW.append(msg + "\n");
+            override fun disInformationReceived(identifier: String, uuid: UUID, value: String) {
+                if (uuid == UUID.fromString("00002a28-0000-1000-8000-00805f9b34fb")) {
+                    val msg = "Firmware: " + value.trim { it <= ' ' }
+                    Log.d(TAG, "Firmware: " + identifier + " " + value.trim { it <= ' ' })
+                    textViewFwVersion.append(msg.trimIndent())
                 }
             }
 
-            @Override
-            public void batteryLevelReceived(@NonNull String s, int i) {
-                String msg = "ID: " + s + "\nBattery level: " + i;
-                Log.d(TAG, "Battery level " + s + " " + i);
-//                Toast.makeText(classContext, msg, Toast.LENGTH_LONG).show();
-                textViewFW.append(msg + "\n");
+            override fun batteryLevelReceived(identifier: String, batteryLevel: Int) {
+                Log.d(TAG, "Battery level $identifier $batteryLevel%")
+                val batteryLevelText = "Battery level: $batteryLevel%"
+                textViewBattery.append(batteryLevelText)
             }
 
-            @Override
-            public void hrNotificationReceived(@NonNull String s,
-                                               @NonNull PolarHrData polarHrData) {
-                Log.d(TAG, "HR " + polarHrData.hr);
-                List<Integer> rrsMs = polarHrData.rrsMs;
-                StringBuilder msg = new StringBuilder(polarHrData.hr + "\n");
-                for (int i : rrsMs) {
-                    msg.append(i).append(",");
+            override fun hrNotificationReceived(s: String, polarHrData: PolarHrData) {
+                Log.d(TAG, "HR " + polarHrData.hr)
+
+                if (polarHrData.rrsMs.isNotEmpty()) {
+                    val rrText = "(${polarHrData.rrsMs.joinToString(separator = "ms, ")}ms)"
+                    textViewRR.text = rrText
                 }
-                if (msg.toString().endsWith(",")) {
-                    msg = new StringBuilder(msg.substring(0, msg.length() - 1));
-                }
-                textViewHR.setText(msg.toString());
-                plotter.addValues(polarHrData);
+                textViewHR.text = polarHrData.hr.toString()
+                plotter.addValues(polarHrData)
             }
 
-            @Override
-            public void polarFtpFeatureReady(@NonNull String s) {
-                Log.d(TAG, "Polar FTP ready " + s);
+            override fun polarFtpFeatureReady(identifier: String) {
+                Log.d(TAG, "Polar FTP ready $identifier")
             }
-        });
+        })
+
         try {
-            api.connectToDevice(deviceId);
-        } catch (PolarInvalidArgument a) {
-            a.printStackTrace();
+            api.connectToDevice(deviceId)
+        } catch (a: PolarInvalidArgument) {
+            a.printStackTrace()
         }
 
-        plotter = new TimePlotter();
-        plotter.setListener(this);
+        val deviceIdText = "ID: $deviceId"
+        textViewDeviceId.text = deviceIdText
 
-        plot.addSeries(plotter.getHrSeries(), plotter.getHrFormatter());
-        plot.addSeries(plotter.getRrSeries(), plotter.getRrFormatter());
-        plot.setRangeBoundaries(50, 100, BoundaryMode.AUTO);
-        plot.setDomainBoundaries(0, 360000, BoundaryMode.AUTO);
+        plotter = HrAndRrPlotter()
+        plotter.setListener(this)
+        plot.addSeries(plotter.hrSeries, plotter.hrFormatter)
+        plot.addSeries(plotter.rrSeries, plotter.rrFormatter)
+        plot.setRangeBoundaries(50, 100, BoundaryMode.AUTO)
+        plot.setDomainBoundaries(0, 360000, BoundaryMode.AUTO)
         // Left labels will increment by 10
-        plot.setRangeStep(StepMode.INCREMENT_BY_VAL, 10);
-        plot.setDomainStep(StepMode.INCREMENT_BY_VAL, 60000);
+        plot.setRangeStep(StepMode.INCREMENT_BY_VAL, 10.0)
+        plot.setDomainStep(StepMode.INCREMENT_BY_VAL, 60000.0)
         // Make left labels be an integer (no decimal places)
-        plot.getGraph().getLineLabelStyle(XYGraphWidget.Edge.LEFT).
-                setFormat(new DecimalFormat("#"));
+        plot.graph.getLineLabelStyle(XYGraphWidget.Edge.LEFT).format = DecimalFormat("#")
         // These don't seem to have an effect
-        plot.setLinesPerRangeLabel(2);
+        plot.linesPerRangeLabel = 2
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        api.shutDown();
+    public override fun onDestroy() {
+        super.onDestroy()
+        api.shutDown()
     }
 
-    public void update() {
-        runOnUiThread(() -> plot.redraw());
+    override fun update() {
+        runOnUiThread { plot.redraw() }
     }
 }

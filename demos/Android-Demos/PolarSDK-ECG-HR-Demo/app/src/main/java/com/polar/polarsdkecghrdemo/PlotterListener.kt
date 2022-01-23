@@ -1,5 +1,5 @@
-package com.polar.polarsdkecghrdemo;
+package com.polar.polarsdkecghrdemo
 
-public interface PlotterListener {
-    void update();
+interface PlotterListener {
+    fun update()
 }
