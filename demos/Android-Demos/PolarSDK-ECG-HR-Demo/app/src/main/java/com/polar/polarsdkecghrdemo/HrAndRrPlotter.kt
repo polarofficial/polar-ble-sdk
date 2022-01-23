@@ -1,70 +1,51 @@
-package com.polar.polarsdkecghrdemo;
+package com.polar.polarsdkecghrdemo
 
-import android.graphics.Color;
-
-import com.androidplot.xy.LineAndPointFormatter;
-import com.androidplot.xy.SimpleXYSeries;
-import com.androidplot.xy.XYSeriesFormatter;
-import com.polar.sdk.api.model.PolarHrData;
-
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import android.graphics.Color
+import com.androidplot.xy.LineAndPointFormatter
+import com.androidplot.xy.SimpleXYSeries
+import com.androidplot.xy.XYSeriesFormatter
+import com.polar.sdk.api.model.PolarHrData
+import java.util.*
 
 /**
  * Implements two series for HR and RR using time for the x values.
  */
-public class TimePlotter {
-    private static final String TAG = "TimePlotter";
-    private static final int NVALS = 300;  // 5 min
-    private static final double RR_SCALE = .1;
-    private PlotterListener listener;
+class HrAndRrPlotter {
+    companion object {
+        private const val TAG = "TimePlotter"
+        private const val NVALS = 300 // 5 min
+        private const val RR_SCALE = .1
+    }
 
-    private final XYSeriesFormatter hrFormatter;
-    private final XYSeriesFormatter rrFormatter;
-    private final SimpleXYSeries hrSeries;
-    private final SimpleXYSeries rrSeries;
-    private final Double[] xHrVals = new Double[NVALS];
-    private final Double[] yHrVals = new Double[NVALS];
-    private final Double[] xRrVals = new Double[NVALS];
-    private final Double[] yRrVals = new Double[NVALS];
+    private var listener: PlotterListener? = null
+    val hrFormatter: XYSeriesFormatter<*>
+    val rrFormatter: XYSeriesFormatter<*>
+    val hrSeries: SimpleXYSeries
+    val rrSeries: SimpleXYSeries
+    private val xHrVals = MutableList(NVALS) { 0.0 }
+    private val yHrVals = MutableList(NVALS) { 0.0 }
+    private val xRrVals = MutableList(NVALS) { 0.0 }
+    private val yRrVals = MutableList(NVALS) { 0.0 }
 
-    public TimePlotter() {
-        Date now = new Date();
-        double endTime = now.getTime();
-        double startTime = endTime - NVALS * 1000;
-        double delta = (endTime - startTime) / (NVALS - 1);
+    init {
+        val now = Date()
+        val endTime = now.time.toDouble()
+        val startTime = endTime - NVALS * 1000
+        val delta = (endTime - startTime) / (NVALS - 1)
 
         // Specify initial values to keep it from auto sizing
-        for (int i = 0; i < NVALS; i++) {
-            xHrVals[i] = startTime + i * delta;
-            yHrVals[i] = 60d;
-            xRrVals[i] = startTime + i * delta;
-            yRrVals[i] = 100d;
+        for (i in 0 until NVALS) {
+            xHrVals[i] = startTime + i * delta
+            yHrVals[i] = 60.0
+            xRrVals[i] = startTime + i * delta
+            yRrVals[i] = 100.0
         }
-
-        hrFormatter = new LineAndPointFormatter(Color.RED, null, null, null);
-        hrFormatter.setLegendIconEnabled(false);
-        hrSeries = new SimpleXYSeries(Arrays.asList(xHrVals), Arrays.asList(yHrVals), "HR");
-        rrFormatter = new LineAndPointFormatter(Color.BLUE, null, null, null);
-        rrFormatter.setLegendIconEnabled(false);
-        rrSeries = new SimpleXYSeries(Arrays.asList(xRrVals), Arrays.asList(yRrVals), "HR");
-    }
-
-    public SimpleXYSeries getHrSeries() {
-        return hrSeries;
-    }
-
-    public SimpleXYSeries getRrSeries() {
-        return rrSeries;
-    }
-
-    public XYSeriesFormatter getHrFormatter() {
-        return hrFormatter;
-    }
-
-    public XYSeriesFormatter getRrFormatter() {
-        return rrFormatter;
+        hrFormatter = LineAndPointFormatter(Color.RED, null, null, null)
+        hrFormatter.setLegendIconEnabled(false)
+        hrSeries = SimpleXYSeries(xHrVals, yHrVals, "HR")
+        rrFormatter = LineAndPointFormatter(Color.BLUE, null, null, null)
+        rrFormatter.setLegendIconEnabled(false)
+        rrSeries = SimpleXYSeries(xRrVals, yRrVals, "RR")
     }
 
     /**
@@ -73,17 +54,17 @@ public class TimePlotter {
      *
      * @param polarHrData The HR data that came in.
      */
-    public void addValues(PolarHrData polarHrData) {
-        Date now = new Date();
-        long time = now.getTime();
-        for (int i = 0; i < NVALS - 1; i++) {
-            xHrVals[i] = xHrVals[i + 1];
-            yHrVals[i] = yHrVals[i + 1];
-            hrSeries.setXY(xHrVals[i], yHrVals[i], i);
+    fun addValues(polarHrData: PolarHrData) {
+        val now = Date()
+        val time = now.time
+        for (i in 0 until NVALS - 1) {
+            xHrVals[i] = xHrVals[i + 1]
+            yHrVals[i] = yHrVals[i + 1]
+            hrSeries.setXY(xHrVals[i], yHrVals[i], i)
         }
-        xHrVals[NVALS - 1] = (double) time;
-        yHrVals[NVALS - 1] = (double) polarHrData.hr;
-        hrSeries.setXY(xHrVals[NVALS - 1], yHrVals[NVALS - 1], NVALS - 1);
+        xHrVals[NVALS - 1] = time.toDouble()
+        yHrVals[NVALS - 1] = polarHrData.hr.toDouble()
+        hrSeries.setXY(xHrVals[NVALS - 1], yHrVals[NVALS - 1], NVALS - 1)
 
         // Do RR
         // We don't know at what time the RR intervals start.  All we know is
@@ -94,33 +75,34 @@ public class TimePlotter {
 
         // Scale the RR values by this to use the same axis. (Could implement
         // NormedXYSeries and use two axes)
-        List<Integer> rrsMs = polarHrData.rrsMs;
-        int nRrVals = rrsMs.size();
+        val rrsMs = polarHrData.rrsMs
+        val nRrVals = rrsMs.size
         if (nRrVals > 0) {
-            for (int i = 0; i < NVALS - nRrVals; i++) {
-                xRrVals[i] = xRrVals[i + 1];
-                yRrVals[i] = yRrVals[i + 1];
-                rrSeries.setXY(xRrVals[i], yRrVals[i], i);
+            for (i in 0 until NVALS - nRrVals) {
+                xRrVals[i] = xRrVals[i + 1]
+                yRrVals[i] = yRrVals[i + 1]
+                rrSeries.setXY(xRrVals[i], yRrVals[i], i)
             }
-            double totalRR = 0;
-            for (int i = 0; i < nRrVals; i++) {
-                totalRR += RR_SCALE * rrsMs.get(i);
+            var totalRR = 0.0
+            for (i in 0 until nRrVals) {
+                totalRR += RR_SCALE * rrsMs[i]
             }
-            int index = 0;
-            double rr;
-            for (int i = NVALS - nRrVals; i < NVALS; i++) {
-                rr = RR_SCALE * rrsMs.get(index++);
-                xRrVals[i] = time - totalRR;
-                yRrVals[i] = rr;
-                totalRR -= rr;
-                rrSeries.setXY(xRrVals[i], yRrVals[i], i);
+            var index = 0
+            var rr: Double
+            for (i in NVALS - nRrVals until NVALS) {
+                rr = RR_SCALE * rrsMs[index++]
+                xRrVals[i] = time - totalRR
+                yRrVals[i] = rr
+                totalRR -= rr
+                rrSeries.setXY(xRrVals[i], yRrVals[i], i)
             }
         }
-
-        listener.update();
+        listener?.update()
     }
 
-    public void setListener(PlotterListener listener) {
-        this.listener = listener;
+    fun setListener(listener: PlotterListener?) {
+        this.listener = listener
     }
+
+
 }

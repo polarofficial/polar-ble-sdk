@@ -1,39 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".ECGActivity">
 
-    <TextView
-        android:id="@+id/fw"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/ecgViewHeading"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:textColor="#000000"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="@+id/info"
+        android:layout_marginTop="20dp"
+        android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.309" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/info"
-        android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/deviceId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            tools:text="Id 123456" />
+
+        <TextView
+            android:id="@+id/battery_level"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            tools:text="Battery level: 80%" />
+
+        <TextView
+            android:id="@+id/fw_version"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            tools:text="Firmware: 3.1.1" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ecgViewHrAndRr"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:textAlignment="center"
-        android:textColor="#C00000"
-        android:textSize="30sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/plot"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/fw"
-        app:layout_constraintVertical_bias="0.309" />
+        app:layout_constraintTop_toBottomOf="@+id/ecgViewHeading">
+
+        <TextView
+            android:id="@+id/hr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:textAlignment="center"
+            android:textColor="#C00000"
+            android:textSize="30sp"
+            tools:text="100" />
+
+        <TextView
+            android:id="@+id/rr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textColor="@android:color/holo_blue_dark"
+            android:textSize="16sp"
+            tools:text="(1002ms, 1009ms)" />
+    </LinearLayout>
 
     <com.androidplot.xy.XYPlot
         android:id="@+id/plot"
@@ -44,15 +83,17 @@
         app:graphBackgroundColor="@color/colorAccent"
         app:graphMarginBottom="12dp"
         app:graphMarginTop="12dp"
+        app:graphMarginLeft="16dp"
+        app:gridInsetLeft="25dp"
         app:gridBackgroundColor="@color/colorAccent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0"
         app:lineLabelInsetLeft="12dp"
+        app:rangeTitleTextColor="@android:color/black"
+        app:rangeTitleTextSize="12dp"
         app:lineLabels="left"
+        app:rangeTitle="mV"
         app:renderMode="use_background_thread"
         app:title="" />
 

@@ -1,192 +1,177 @@
-package com.polar.polarsdkecghrdemo;
+package com.polar.polarsdkecghrdemo
 
-import android.os.Bundle;
-import android.util.Log;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.os.Bundle
+import android.util.Log
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.androidplot.xy.BoundaryMode
+import com.androidplot.xy.StepMode
+import com.androidplot.xy.XYPlot
+import com.polar.sdk.api.PolarBleApi
+import com.polar.sdk.api.PolarBleApi.DeviceStreamingFeature
+import com.polar.sdk.api.PolarBleApiCallback
+import com.polar.sdk.api.PolarBleApiDefaultImpl.defaultImplementation
+import com.polar.sdk.api.errors.PolarInvalidArgument
+import com.polar.sdk.api.model.PolarDeviceInfo
+import com.polar.sdk.api.model.PolarEcgData
+import com.polar.sdk.api.model.PolarHrData
+import com.polar.sdk.api.model.PolarSensorSetting
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.Disposable
+import java.util.*
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
+class ECGActivity : AppCompatActivity(), PlotterListener {
+    companion object {
+        private const val TAG = "ECGActivity"
+    }
 
-import com.androidplot.xy.BoundaryMode;
-import com.androidplot.xy.StepMode;
-import com.androidplot.xy.XYPlot;
-import com.polar.sdk.api.PolarBleApi;
-import com.polar.sdk.api.PolarBleApiCallback;
-import com.polar.sdk.api.PolarBleApiDefaultImpl;
-import com.polar.sdk.api.errors.PolarInvalidArgument;
-import com.polar.sdk.api.model.PolarDeviceInfo;
-import com.polar.sdk.api.model.PolarEcgData;
-import com.polar.sdk.api.model.PolarHrData;
-import com.polar.sdk.api.model.PolarSensorSetting;
+    private lateinit var api: PolarBleApi
+    private lateinit var textViewHR: TextView
+    private lateinit var textViewRR: TextView
+    private lateinit var textViewDeviceId: TextView
+    private lateinit var textViewBattery: TextView
+    private lateinit var textViewFwVersion: TextView
+    private lateinit var plot: XYPlot
+    private lateinit var ecgPlotter: EcgPlotter
+    private var ecgDisposable: Disposable? = null
+    private lateinit var deviceId: String
 
-import org.reactivestreams.Publisher;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_ecg)
+        deviceId = intent.getStringExtra("id") ?: throw Exception("ECGActivity couldn't be created, no deviceId given")
+        textViewHR = findViewById(R.id.hr)
+        textViewRR = findViewById(R.id.rr)
+        textViewDeviceId = findViewById(R.id.deviceId)
+        textViewBattery = findViewById(R.id.battery_level)
+        textViewFwVersion = findViewById(R.id.fw_version)
+        plot = findViewById(R.id.plot)
 
-import java.util.Set;
-import java.util.UUID;
-
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.functions.Function;
-
-public class ECGActivity extends AppCompatActivity implements PlotterListener {
-    private static final String TAG = "ECGActivity";
-
-    private PolarBleApi api;
-    private TextView textViewHR;
-    private TextView textViewFW;
-    private XYPlot plot;
-    private Plotter plotter;
-
-    private Disposable ecgDisposable = null;
-    private String deviceId;
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ecg);
-        deviceId = getIntent().getStringExtra("id");
-        textViewHR = findViewById(R.id.info);
-        textViewFW = findViewById(R.id.fw);
-
-        plot = findViewById(R.id.plot);
-
-        api = PolarBleApiDefaultImpl.defaultImplementation(getApplicationContext(),
-                PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING |
-                        PolarBleApi.FEATURE_BATTERY_INFO |
-                        PolarBleApi.FEATURE_DEVICE_INFO |
-                        PolarBleApi.FEATURE_HR);
-        api.setApiCallback(new PolarBleApiCallback() {
-            @Override
-            public void blePowerStateChanged(boolean b) {
-                Log.d(TAG, "BluetoothStateChanged " + b);
+        api = defaultImplementation(
+            applicationContext,
+            PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING or
+                    PolarBleApi.FEATURE_BATTERY_INFO or
+                    PolarBleApi.FEATURE_DEVICE_INFO or
+                    PolarBleApi.FEATURE_HR
+        )
+        api.setApiCallback(object : PolarBleApiCallback() {
+            override fun blePowerStateChanged(blePowerState: Boolean) {
+                Log.d(TAG, "BluetoothStateChanged $blePowerState")
             }
 
-            @Override
-            public void deviceConnected(@NonNull PolarDeviceInfo s) {
-                Log.d(TAG, "Device connected " + s.deviceId);
-                Toast.makeText(getApplicationContext(), R.string.connected, Toast.LENGTH_SHORT).show();
+            override fun deviceConnected(polarDeviceInfo: PolarDeviceInfo) {
+                Log.d(TAG, "Device connected " + polarDeviceInfo.deviceId)
+                Toast.makeText(applicationContext, R.string.connected, Toast.LENGTH_SHORT).show()
             }
 
-            @Override
-            public void deviceConnecting(@NonNull PolarDeviceInfo polarDeviceInfo) {
-
+            override fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo) {
+                Log.d(TAG, "Device connecting ${polarDeviceInfo.deviceId}")
             }
 
-            @Override
-            public void deviceDisconnected(@NonNull PolarDeviceInfo s) {
-                Log.d(TAG, "Device disconnected " + s);
+            override fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {
+                Log.d(TAG, "Device disconnected ${polarDeviceInfo.deviceId}")
             }
 
-            @Override
-            public void streamingFeaturesReady(@NonNull final String identifier,
-                                               @NonNull final Set<PolarBleApi.DeviceStreamingFeature> features) {
-
-                for (PolarBleApi.DeviceStreamingFeature feature : features) {
-                    Log.d(TAG, "Streaming feature is ready: " + feature);
-                    switch (feature) {
-                        case ECG:
-                            streamECG();
-                            break;
-                        case ACC:
-                        case MAGNETOMETER:
-                        case GYRO:
-                        case PPI:
-                        case PPG:
-                            break;
+            override fun streamingFeaturesReady(identifier: String, features: Set<DeviceStreamingFeature>) {
+                for (feature in features) {
+                    Log.d(TAG, "Streaming feature is ready: $feature")
+                    when (feature) {
+                        DeviceStreamingFeature.ECG -> streamECG()
+                        else -> {}
                     }
                 }
             }
 
-            @Override
-            public void hrFeatureReady(@NonNull String s) {
-                Log.d(TAG, "HR Feature ready " + s);
+            override fun hrFeatureReady(identifier: String) {
+                Log.d(TAG, "HR Feature ready $identifier")
             }
 
-            @Override
-            public void disInformationReceived(@NonNull String s, @NonNull UUID u, @NonNull String s1) {
-                if (u.equals(UUID.fromString("00002a28-0000-1000-8000-00805f9b34fb"))) {
-                    String msg = "Firmware: " + s1.trim();
-                    Log.d(TAG, "Firmware: " + s + " " + s1.trim());
-                    textViewFW.append(msg + "\n");
+            override fun disInformationReceived(identifier: String, uuid: UUID, value: String) {
+                if (uuid == UUID.fromString("00002a28-0000-1000-8000-00805f9b34fb")) {
+                    val msg = "Firmware: " + value.trim { it <= ' ' }
+                    Log.d(TAG, "Firmware: " + identifier + " " + value.trim { it <= ' ' })
+                    textViewFwVersion.append(msg.trimIndent())
                 }
             }
 
-            @Override
-            public void batteryLevelReceived(@NonNull String s, int i) {
-                String msg = "ID: " + s + "\nBattery level: " + i;
-                Log.d(TAG, "Battery level " + s + " " + i);
-//                Toast.makeText(classContext, msg, Toast.LENGTH_LONG).show();
-                textViewFW.append(msg + "\n");
+            override fun batteryLevelReceived(identifier: String, batteryLevel: Int) {
+                Log.d(TAG, "Battery level $identifier $batteryLevel%")
+                val batteryLevelText = "Battery level: $batteryLevel%"
+                textViewBattery.append(batteryLevelText)
             }
 
-            @Override
-            public void hrNotificationReceived(@NonNull String s, @NonNull PolarHrData polarHrData) {
-                Log.d(TAG, "HR " + polarHrData.hr);
-                textViewHR.setText(String.valueOf(polarHrData.hr));
+            override fun hrNotificationReceived(identifier: String, polarHrData: PolarHrData) {
+                Log.d(TAG, "HR " + polarHrData.hr)
+                if (polarHrData.rrsMs.isNotEmpty()) {
+                    val rrText = "(${polarHrData.rrsMs.joinToString(separator = "ms, ")}ms)"
+                    textViewRR.text = rrText
+                }
+
+                textViewHR.text = polarHrData.hr.toString()
             }
 
-            @Override
-            public void polarFtpFeatureReady(@NonNull String s) {
-                Log.d(TAG, "Polar FTP ready " + s);
+            override fun polarFtpFeatureReady(identifier: String) {
+                Log.d(TAG, "Polar FTP ready $identifier")
             }
-        });
+        })
         try {
-            api.connectToDevice(deviceId);
-        } catch (PolarInvalidArgument a) {
-            a.printStackTrace();
+            api.connectToDevice(deviceId)
+        } catch (a: PolarInvalidArgument) {
+            a.printStackTrace()
         }
+        val deviceIdText = "ID: $deviceId"
+        textViewDeviceId.text = deviceIdText
 
-        plotter = new Plotter("ECG");
-        plotter.setListener(this);
+        ecgPlotter = EcgPlotter("ECG", 130)
+        ecgPlotter.setListener(this)
 
-        plot.addSeries(plotter.getSeries(), plotter.getFormatter());
-        plot.setRangeBoundaries(-3.3, 3.3, BoundaryMode.FIXED);
-        plot.setRangeStep(StepMode.INCREMENT_BY_FIT, 0.55);
-        plot.setDomainBoundaries(0, 500, BoundaryMode.GROW);
-        plot.setLinesPerRangeLabel(2);
+        //plot.setMarkupEnabled(true);
+        plot.addSeries(ecgPlotter.getSeries(), ecgPlotter.formatter)
+        plot.setRangeBoundaries(-1.5, 1.5, BoundaryMode.FIXED)
+        plot.setRangeStep(StepMode.INCREMENT_BY_FIT, 0.25)
+        plot.setDomainStep(StepMode.INCREMENT_BY_VAL, 130.0)
+        plot.setDomainBoundaries(0, 650, BoundaryMode.FIXED)
+        plot.linesPerRangeLabel = 2
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (ecgDisposable != null && !ecgDisposable.isDisposed()) {
-            ecgDisposable.dispose();
+    public override fun onDestroy() {
+        super.onDestroy()
+        ecgDisposable?.let {
+            if (!it.isDisposed) it.dispose()
         }
-        api.shutDown();
+        api.shutDown()
     }
 
-    public void streamECG() {
+    fun streamECG() {
         if (ecgDisposable == null) {
-            ecgDisposable =
-                    api.requestStreamSettings(deviceId, PolarBleApi.DeviceStreamingFeature.ECG)
-                            .toFlowable()
-                            .flatMap((Function<PolarSensorSetting, Publisher<PolarEcgData>>) sensorSetting -> api.startEcgStreaming(deviceId, sensorSetting.maxSettings()))
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(
-                                    polarEcgData -> {
-                                        Log.d(TAG, "ecg update");
-                                        for (Integer data : polarEcgData.samples) {
-                                            plotter.sendSingleSample((float) ((float) data / 1000.0));
-                                        }
-                                    },
-                                    throwable -> {
-                                        Log.e(TAG,
-                                                "" + throwable.getLocalizedMessage());
-                                        ecgDisposable = null;
-                                    },
-                                    () -> Log.d(TAG, "complete")
-                            );
+            ecgDisposable = api.requestStreamSettings(deviceId, DeviceStreamingFeature.ECG)
+                .toFlowable()
+                .flatMap { sensorSetting: PolarSensorSetting -> api.startEcgStreaming(deviceId, sensorSetting.maxSettings()) }
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    { polarEcgData: PolarEcgData ->
+                        Log.d(TAG, "ecg update")
+                        for (data in polarEcgData.samples) {
+                            ecgPlotter.sendSingleSample((data.toFloat() / 1000.0).toFloat())
+                        }
+                    },
+                    { error: Throwable ->
+                        Log.e(TAG, "Ecg stream failed $error")
+                        ecgDisposable = null
+                    },
+                    {
+                        Log.d(TAG, "Ecg stream complete")
+                    }
+                )
         } else {
             // NOTE stops streaming if it is "running"
-            ecgDisposable.dispose();
-            ecgDisposable = null;
+            ecgDisposable?.dispose()
+            ecgDisposable = null
         }
     }
 
-    @Override
-    public void update() {
-        runOnUiThread(() -> plot.redraw());
+    override fun update() {
+        runOnUiThread { plot.redraw() }
     }
 }

@@ -36,11 +36,14 @@ class MainActivity : AppCompatActivity() {
             Log.w(TAG, "Bluetooth off")
         }
     }
+    private var deviceId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         sharedPreferences = getPreferences(MODE_PRIVATE)
+        deviceId = sharedPreferences.getString(SHARED_PREFS_KEY, "")
+
         val setIdButton: Button = findViewById(R.id.buttonSetID)
         val ecgConnectButton: Button = findViewById(R.id.buttonConnectEcg)
         val hrConnectButton: Button = findViewById(R.id.buttonConnectHr)
@@ -53,8 +56,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun onClickConnectEcg(view: View) {
         checkBT()
-        val deviceId = sharedPreferences.getString(SHARED_PREFS_KEY, "")
         if (deviceId == null || deviceId == "") {
+            deviceId = sharedPreferences.getString(SHARED_PREFS_KEY, "")
             showDialog(view)
         } else {
             showToast(getString(R.string.connecting) + " " + deviceId)
@@ -66,8 +69,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun onClickConnectHr(view: View) {
         checkBT()
-        val deviceId = sharedPreferences.getString(SHARED_PREFS_KEY, "")
         if (deviceId == null || deviceId == "") {
+            deviceId = sharedPreferences.getString(SHARED_PREFS_KEY, "")
             showDialog(view)
         } else {
             showToast(getString(R.string.connecting) + " " + deviceId)
@@ -86,10 +89,11 @@ class MainActivity : AppCompatActivity() {
         dialog.setTitle("Enter your Polar device's ID")
         val viewInflated = LayoutInflater.from(applicationContext).inflate(R.layout.device_id_dialog_layout, view.rootView as ViewGroup, false)
         val input = viewInflated.findViewById<EditText>(R.id.input)
+        if (deviceId?.isNotEmpty() == true) input.setText(deviceId)
         input.inputType = InputType.TYPE_CLASS_TEXT
         dialog.setView(viewInflated)
         dialog.setPositiveButton("OK") { _: DialogInterface?, _: Int ->
-            val deviceId = input.text.toString().uppercase()
+            deviceId = input.text.toString().uppercase()
             val editor = sharedPreferences.edit()
             editor.putString(SHARED_PREFS_KEY, deviceId)
             editor.apply()
