@@ -68,7 +68,7 @@ public typealias PolarEcgData = (timeStamp: UInt64,samples: [Int32])
 /// Polar acc data
 ///
 ///     - Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
-///     - samples: Acceleration samples list x,y,z in millig signed value
+///     - samples: Acceleration samples (including gravity) list x,y,z in millig signed value 
 public typealias PolarAccData = (timeStamp: UInt64,samples: [(x: Int32,y: Int32,z: Int32)])
 
 /// Polar gyro data

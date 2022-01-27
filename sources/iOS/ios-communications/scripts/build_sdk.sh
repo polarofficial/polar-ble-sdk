@@ -19,7 +19,7 @@ function archive {
     local PLATFORM=$2
     local DESTINATION=${PLATFORM// /-}
     echo "Start Building scheme: $SCHEME for platform: $PLATFORM. Archive destination: $DESTINATION"; sleep 1
-    xcodebuild archive \
+    xcodebuild -workspace iOSCommunications.xcworkspace archive \
     -scheme $SCHEME \
     -destination "generic/platform=$PLATFORM" \
     -archivePath "$XC_FRAMEWORK_ARCHIVES_FOLDER/$SCHEME-$DESTINATION" \
