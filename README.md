@@ -250,7 +250,7 @@ public void onDestroy() {
 4.  Connect to a Polar device using  `api.connectToDevice(<DEVICE_ID>)` where <DEVICE_ID> is the deviceID printed to your sensor,  using  `api.autoConnectToDevice(-50, null, null).subscribe()`  to connect nearby device or  `api.searchForDevice()` to scan and then select the device
 
 # iOS: Getting started
-Detailed documentation: [Documentation](polar-sdk-ios/docs/). Minimum iOS version is 12.
+Detailed documentation: [Documentation](polar-sdk-ios/docs/). Minimum iOS version is 13.
 ## Requirements
 * Xcode 12.x
 * Swift 5.x
