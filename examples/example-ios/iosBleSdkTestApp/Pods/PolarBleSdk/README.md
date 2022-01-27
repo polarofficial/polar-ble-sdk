@@ -83,11 +83,11 @@ The needed SDK .aar can be found from [polar-sdk-android](polar-sdk-android/libs
 1.  In `build.gradle` make sure the __minSdkVersion__ is set to __21__ or higher.
 ```
 android {
-	...
-	defaultConfig {
-		...
-		minSdkVersion 21
-	}
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
 }
 ```
 2.  Copy the contents of [polar-sdk-android](polar-sdk-android/libs) folder into your project's __libs__ folder e.g `YourProjectName/app/libs/`
@@ -256,6 +256,7 @@ Detailed documentation: [Documentation](polar-sdk-ios/docs/). Minimum iOS versio
 * Swift 5.x
 ## Dependencies
 *  [RxSwift 6.0](https://github.com/ReactiveX/RxSwift) or above
+*  [Swift Protobuf 1.18.0](https://github.com/apple/swift-protobuf) or above
 ## Installation
 #### CocoaPods
 
@@ -270,20 +271,9 @@ target 'YOUR_TARGET_NAME' do
     pod 'PolarBleSdk', '~> 3.2'
 
 end
-
-post_install do |installer|
-        installer.pods_project.targets.each do |target|
-          target.build_configurations.each do |config|
-            config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
-          end
-        end
-      end
 ```
 
-> **Note**:  `post_install` section is required in the `Podfile`.  CocoaPods are not yet working fluently with the XCFrameworks. The progress is followed by [issue 141](https://github.com/polarofficial/polar-ble-sdk/issues/141)
-
 #### Carthage
-
 If you use [Cathage](https://github.com/Carthage/Carthage) to manage your dependencies, add PolarBleSdk to your `Cartfile`
 
 ```
@@ -296,12 +286,6 @@ $ carthage update --use-xcframeworks
 
 #### Swift Package Manager
 Not supported yet. Reported in [issue 132](https://github.com/polarofficial/polar-ble-sdk/issues/132)
-
-#### XCFrameworks
-1. **PolarBLE SDK**: Download the PolarBLE SDK XCFramework from [polar-sdk-ios](polar-sdk-ios/) or from the [releases](https://github.com/polarofficial/polar-ble-sdk/releases). 
-2. **RxSwift**: To use PolarBLE SDK XCFramework then you need to use [RxSwift](https://github.com/ReactiveX/RxSwift) added to your project as XCFramework too.
-
-For detailed information how to add XCFramework to XCode project, see the [tutorial](https://developer.apple.com/videos/play/wwdc2019/416/). 
 
 ## Setup your application
 In project target settings enable __Background Modes__, add  __Uses Bluetooth LE accessories__
