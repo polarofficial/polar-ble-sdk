@@ -68,7 +68,7 @@ struct ContentView: View {
                             Button( bleSdkManager.isStreamOn(feature: DeviceStreamingFeature.ecg) ? "Stop ECG Stream" : "Start ECG Stream", action: {
                                 streamButtonToggle(DeviceStreamingFeature.ecg) })
                                 .buttonStyle(SecondaryButtonStyle(buttonState: getStreamButtonState(DeviceStreamingFeature.ecg)))
-                             
+                            
                             Button(bleSdkManager.isStreamOn(feature: DeviceStreamingFeature.acc) ? "Stop ACC Stream" : "Start ACC Stream", action: { streamButtonToggle(DeviceStreamingFeature.acc)})
                                 .buttonStyle(SecondaryButtonStyle(buttonState: getStreamButtonState(DeviceStreamingFeature.acc)))
                             
@@ -88,7 +88,7 @@ struct ContentView: View {
                             
                             Button(bleSdkManager.isSdkStreamModeEnabled ? "Disable SDK mode" : "Enable SDK mode", action: {
                                 bleSdkManager.sdkModeToggle() })
-                            .buttonStyle(SecondaryButtonStyle(buttonState: getSdkModeButtonState()))
+                                .buttonStyle(SecondaryButtonStyle(buttonState: getSdkModeButtonState()))
                             
                         }.sheet(item: $bleSdkManager.streamSettings) { streamSettings in
                             if let settings = streamSettings {
@@ -103,11 +103,11 @@ struct ContentView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             Button("List exercises", action: { bleSdkManager.listExercises()})
-                                .buttonStyle(SecondaryButtonStyle(buttonState: getExerciseButtonState()))
+                                .buttonStyle(SecondaryButtonStyle(buttonState: getFtpButtonState()))
                             Button("Read exercise", action: {bleSdkManager.readExercise()})
-                                .buttonStyle(SecondaryButtonStyle(buttonState: getExerciseButtonState()))
+                                .buttonStyle(SecondaryButtonStyle(buttonState: getFtpButtonState()))
                             Button("Remove exercise", action: { bleSdkManager.removeExercise()})
-                                .buttonStyle(SecondaryButtonStyle(buttonState: getExerciseButtonState()))
+                                .buttonStyle(SecondaryButtonStyle(buttonState: getFtpButtonState()))
                             
                             Text("H10 recording:")
                                 .headerStyle()
@@ -117,14 +117,14 @@ struct ContentView: View {
                                 .buttonStyle(SecondaryButtonStyle(buttonState: getRecordingButtonState()))
                             
                             Button("Read H10 recording status", action: { bleSdkManager.getH10RecordingStatus()})
-                                .buttonStyle(SecondaryButtonStyle(buttonState: getExerciseButtonState()))
+                                .buttonStyle(SecondaryButtonStyle(buttonState: getRecordingStatusButtonState()))
                             
                             Text("Other:")
                                 .headerStyle()
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             Button("Set time", action: { bleSdkManager.setTime()})
-                                .buttonStyle(SecondaryButtonStyle(buttonState: getExerciseButtonState()))
+                                .buttonStyle(SecondaryButtonStyle(buttonState: getFtpButtonState()))
                         }
                     }.disabled(!bleSdkManager.isDeviceConnected)
                 }.frame(maxWidth: .infinity)
@@ -171,7 +171,7 @@ struct ContentView: View {
     
     func getBroadcastButtonState() -> ButtonState {
         if bleSdkManager.isBluetoothOn {
-             if bleSdkManager.isBroadcastListenOn {
+            if bleSdkManager.isBroadcastListenOn {
                 return ButtonState.pressedDown
             } else {
                 return ButtonState.released
@@ -221,16 +221,16 @@ struct ContentView: View {
         return ButtonState.disabled
     }
     
-    func getExerciseButtonState() -> ButtonState {
-        if !bleSdkManager.isDeviceConnected {
-            return ButtonState.disabled
-        } else {
+    func getFtpButtonState() -> ButtonState {
+        if bleSdkManager.isDeviceConnected && bleSdkManager.isFtpFeatureSupported {
             return ButtonState.released
+        } else {
+            return ButtonState.disabled
         }
     }
     
     func getRecordingButtonState() -> ButtonState {
-        if bleSdkManager.isDeviceConnected {
+        if bleSdkManager.isDeviceConnected && bleSdkManager.isH10RecordingSupported {
             if bleSdkManager.isH10RecordingEnabled {
                 return ButtonState.pressedDown
             } else {
@@ -238,6 +238,14 @@ struct ContentView: View {
             }
         }
         return ButtonState.disabled
+    }
+    
+    func getRecordingStatusButtonState() -> ButtonState {
+        if bleSdkManager.isDeviceConnected && bleSdkManager.isH10RecordingSupported {
+            return ButtonState.released
+        } else {
+            return ButtonState.disabled
+        }
     }
 }
 

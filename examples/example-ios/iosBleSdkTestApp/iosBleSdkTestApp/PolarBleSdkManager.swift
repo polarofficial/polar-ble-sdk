@@ -38,6 +38,8 @@ class PolarBleSdkManager : ObservableObject {
     @Published private(set) var supportedStreamFeatures: Set<DeviceStreamingFeature> = Set<DeviceStreamingFeature>()
     @Published private(set) var isSdkStreamModeEnabled: Bool = false
     @Published private(set) var isSdkFeatureSupported: Bool = false
+    @Published private(set) var isFtpFeatureSupported: Bool = false
+    @Published private(set) var isH10RecordingSupported: Bool = false
     @Published private(set) var isH10RecordingEnabled: Bool = false
     @Published var streamSettings: StreamSettings? = nil
     @Published var generalError: Message? = nil
@@ -616,6 +618,10 @@ extension PolarBleSdkManager : PolarBleApiObserver {
     
     func deviceConnected(_ polarDeviceInfo: PolarDeviceInfo) {
         NSLog("DEVICE CONNECTED: \(polarDeviceInfo)")
+        if(polarDeviceInfo.name.contains("H10")){
+            self.isH10RecordingSupported = true
+            getH10RecordingStatus()
+        }
         deviceConnectionState = ConnectionState.connected(polarDeviceInfo.deviceId)
     }
     
@@ -624,6 +630,9 @@ extension PolarBleSdkManager : PolarBleApiObserver {
         deviceConnectionState = ConnectionState.disconnected
         self.isSdkStreamModeEnabled = false
         self.isSdkFeatureSupported = false
+        self.isFtpFeatureSupported = false
+        self.isH10RecordingSupported = false
+        self.supportedStreamFeatures = Set<DeviceStreamingFeature>()
     }
 }
 
@@ -646,6 +655,7 @@ extension PolarBleSdkManager : PolarBleApiDeviceFeaturesObserver {
     
     func ftpFeatureReady(_ identifier: String) {
         NSLog("FTP ready")
+        isFtpFeatureSupported = true
     }
     
     func streamingFeaturesReady(_ identifier: String, streamingFeatures: Set<DeviceStreamingFeature>) {
