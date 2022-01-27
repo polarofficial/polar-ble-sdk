@@ -5,4 +5,4 @@ if [[ "$(gem list '^jazzy$' -i)" == "false" ]]; then
 fi
 
 cd ..
-jazzy --build-tool-arguments -target,PolarBleSdk --exclude=iOSCommunications/ble/*,iOSCommunications/sdk/impl/protobuf/*
+jazzy --build-tool-arguments -workspace,iOSCommunications.xcworkspace,-scheme,PolarBleSdk --exclude=iOSCommunications/ble/*,iOSCommunications/sdk/impl/protobuf/*

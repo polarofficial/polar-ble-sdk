@@ -9,5 +9,5 @@ FOUNDATION_EXPORT double PolarBleSdkWatchOsVersionNumber;
 FOUNDATION_EXPORT const unsigned char PolarBleSdkWatchOsVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <PolarBleSdkWatchOs/PublicHeader.h>
-#import <PolarProtobuf.h>
+
 

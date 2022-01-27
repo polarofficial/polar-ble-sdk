@@ -432,56 +432,53 @@ extension PolarBleApiImpl: PolarBleApi {
         do {
             let session = try sessionFtpClientReady(identifier)
             let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
-            let d = PbDate()
             let cal = Calendar.current
+            var d = PbDate()
             d.year = UInt32(cal.component(Calendar.Component.year, from: time))
             d.month = UInt32(cal.component(Calendar.Component.month, from: time))
             d.day = UInt32(cal.component(Calendar.Component.day, from: time))
-            let t = PbTime()
+            var t = PbTime()
             t.hour = UInt32(cal.component(Calendar.Component.hour, from: time))
             t.minute = UInt32(cal.component(Calendar.Component.minute, from: time))
             t.seconds = UInt32(cal.component(Calendar.Component.second, from: time))
             t.millis = 0
-            let params = PbPFtpSetLocalTimeParams()
+            var params = Protocol_PbPFtpSetLocalTimeParams()
             params.date = d
             params.time = t
             params.tzOffset = Int32(zone.secondsFromGMT()/60)
-            if let data = params.data() {
-                return client.query(PbPFtpQuery.setLocalTime.rawValue, parameters: data as NSData)
-                    .catch { (err) -> Single<NSData> in
-                        return Single.error(PolarErrors.deviceError(description: "\(err)"))
-                    }
-                    .asCompletable()
-            }
-            throw PolarErrors.messageEncodeFailed
+            let queryParams = try params.serializedData()
+            return client.query(Protocol_PbPFtpQuery.setLocalTime.rawValue, parameters: queryParams as NSData)
+                .catch { (err) -> Single<NSData> in
+                    return Single.error(PolarErrors.deviceError(description: "\(err)"))
+                }
+                .asCompletable()
         } catch let err {
             return Completable.error(err)
         }
     }
     
     func startRecording(_ identifier: String, exerciseId: String, interval: RecordingInterval = RecordingInterval.interval_1s, sampleType: SampleType) -> Completable {
-        do{
+        do {
             guard exerciseId.count > 0 && exerciseId.count < 64 else {
                 throw PolarErrors.invalidArgument
             }
             let session = try sessionFtpClientReady(identifier)
             let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
-            if BlePolarDeviceCapabilitiesUtility.isRecordingSupported(
-                session.advertisementContent.polarDeviceType) {
-                let duration = PbDuration()
+            if BlePolarDeviceCapabilitiesUtility.isRecordingSupported(session.advertisementContent.polarDeviceType) {
+                var duration = PbDuration()
                 duration.seconds = UInt32(interval.rawValue)
-                let params = PbPFtpRequestStartRecordingParams()
+                var params = Protocol_PbPFtpRequestStartRecordingParams()
                 params.recordingInterval = duration
                 params.sampleDataIdentifier = exerciseId
                 params.sampleType = sampleType == .hr ? PbSampleType.sampleTypeHeartRate : PbSampleType.sampleTypeRrInterval
-                if let data = params.data() {
-                    return client.query(PbPFtpQuery.requestStartRecording.rawValue, parameters: data as NSData)
-                        .catch { (err) -> Single<NSData> in
-                            return Single.error(err)
-                        }
-                        .asCompletable()
-                }
-                throw PolarErrors.messageEncodeFailed
+                let queryParams = try params.serializedData()
+                return client.query(Protocol_PbPFtpQuery.requestStartRecording.rawValue, parameters: queryParams as NSData)
+                    .catch { (err) -> Single<NSData> in
+                        return Single.error(err)
+                    }
+                    .asCompletable()
+                
+                
             }
             throw PolarErrors.operationNotSupported
         } catch let err {
@@ -490,13 +487,13 @@ extension PolarBleApiImpl: PolarBleApi {
     }
     
     func stopRecording(_ identifier: String) -> Completable {
-        do{
+        do {
             let session = try sessionFtpClientReady(identifier)
             let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
             if BlePolarDeviceCapabilitiesUtility.isRecordingSupported(
                 session.advertisementContent.polarDeviceType)
             {
-                return client.query(PbPFtpQuery.requestStopRecording.rawValue, parameters: nil)
+                return client.query(Protocol_PbPFtpQuery.requestStopRecording.rawValue, parameters: nil)
                     .catch { (err) -> Single<NSData> in
                         return Single.error(PolarErrors.deviceError(description: "\(err)"))
                     }
@@ -509,13 +506,13 @@ extension PolarBleApiImpl: PolarBleApi {
     }
     
     func requestRecordingStatus(_ identifier: String) -> Single<PolarRecordingStatus> {
-        do{
+        do {
             let session = try sessionFtpClientReady(identifier)
             let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
             if BlePolarDeviceCapabilitiesUtility.isRecordingSupported( session.advertisementContent.polarDeviceType) {
-                return client.query(PbPFtpQuery.requestRecordingStatus.rawValue, parameters: nil)
+                return client.query(Protocol_PbPFtpQuery.requestRecordingStatus.rawValue, parameters: nil)
                     .map { (data) -> PolarRecordingStatus in
-                        let result = try PbRequestRecordingStatusResult.parse(from: data as Data)
+                        let result = try Protocol_PbRequestRecordingStatusResult(serializedData: data as Data)
                         return (ongoing: result.recordingOn, entryId: result.hasSampleDataIdentifier ? result.sampleDataIdentifier : "")
                     }
                     .catch { (err) -> Single<PolarRecordingStatus> in
@@ -529,54 +526,48 @@ extension PolarBleApiImpl: PolarBleApi {
     }
     
     func removeExercise(_ identifier: String, entry: PolarExerciseEntry) -> Completable {
-        do{
+        do {
             let session = try sessionFtpClientReady(identifier)
             let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
             let components = entry.path.split(separator: "/")
-            let operation = PbPFtpOperation()
+            var operation = Protocol_PbPFtpOperation()
             switch BlePolarDeviceCapabilitiesUtility.fileSystemType( session.advertisementContent.polarDeviceType) {
             case .sagRfc2FileSystem:
                 operation.command = .get
                 operation.path = "/U/0/" + components[2] + "/E/"
-                if let data = operation.data() {
-                    return client.request(data)
-                        .flatMap { (content) -> Single<NSData> in
-                            do{
-                                let dir = try PbPFtpDirectory.parse(from: content as Data)
-                                let removeOperation = PbPFtpOperation()
-                                removeOperation.command = .remove
-                                if dir.entriesArray_Count <= 1 {
-                                    removeOperation.path = "/U/0/" + components[2] + "/"
-                                } else {
-                                    removeOperation.path = "/U/0/" + components[2] + "/E/" + components[4] + "/"
-                                }
-                                if let remove = removeOperation.data() {
-                                    return client.request(remove)
-                                } else {
-                                    return Single.error(PolarErrors.messageEncodeFailed)
-                                }
-                            } catch {
-                                return Single.error(PolarErrors.messageDecodeFailed)
+                let request = try operation.serializedData()
+                return client.request(request)
+                    .flatMap { (content) -> Single<NSData> in
+                        do {
+                            let dir = try Protocol_PbPFtpDirectory(serializedData: content as Data)
+                            var removeOperation = Protocol_PbPFtpOperation()
+                            removeOperation.command = .remove
+                            if dir.entries.count <= 1 {
+                                removeOperation.path = "/U/0/" + components[2] + "/"
+                            } else {
+                                removeOperation.path = "/U/0/" + components[2] + "/E/" + components[4] + "/"
                             }
+                            let request = try removeOperation.serializedData()
+                            return client.request(request)
+                        } catch {
+                            return Single.error(PolarErrors.messageDecodeFailed)
                         }
-                        .catch { (err) -> Single<NSData> in
-                            return Single.error(PolarErrors.deviceError(description: "\(err)"))
-                        }
-                        .asCompletable()
-                }
-                throw PolarErrors.messageEncodeFailed
+                    }
+                    .catch { (err) -> Single<NSData> in
+                        return Single.error(PolarErrors.deviceError(description: "\(err)"))
+                    }
+                    .asCompletable()
             case .h10FileSystem:
                 operation.command = .remove
                 operation.path = entry.path
-                if let data = operation.data() {
-                    return client.request(data)
-                        .observe(on: self.scheduler)
-                        .catch { (err) -> Single<NSData> in
-                            return Single.error(PolarErrors.deviceError(description: "\(err)"))
-                        }
-                        .asCompletable()
-                }
-                throw PolarErrors.messageEncodeFailed
+                let request = try operation.serializedData()
+                
+                return client.request(request)
+                    .observe(on: self.scheduler)
+                    .catch { (err) -> Single<NSData> in
+                        return Single.error(PolarErrors.deviceError(description: "\(err)"))
+                    }
+                    .asCompletable()
             default:
                 throw PolarErrors.operationNotSupported
             }
@@ -637,7 +628,7 @@ extension PolarBleApiImpl: PolarBleApi {
                                        type: Pmd.PmdMeasurementType,
                                        settings: PolarSensorSetting,
                                        observer: @escaping (_ client: BlePmdClient) -> Observable<T>) -> Observable<T> {
-        do{
+        do {
             let session = try sessionPmdClientReady(identifier)
             let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
             return client.startMeasurement(type, settings: settings.map2PmdSetting())
@@ -696,7 +687,7 @@ extension PolarBleApiImpl: PolarBleApi {
     }
     
     func fetchExercise(_ identifier: String, entry: PolarExerciseEntry) -> Single<PolarExerciseData> {
-        do{
+        do {
             let session = try sessionFtpClientReady(identifier)
             let fsType = BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType)
             if fsType == .sagRfc2FileSystem || fsType == .h10FileSystem {
@@ -712,31 +703,29 @@ extension PolarBleApiImpl: PolarBleApi {
                  client.sendNotification(PbPFtpHostToDevNotification.terminateSession.rawValue, parameters: nil).andThen(client.sendNotification(PbPFtpHostToDevNotification.stopSync.rawValue, parameters: nil))
                  */
                 
-                let operation = PbPFtpOperation()
-                operation.command = PbPFtpOperation_Command.get
+                var operation = Protocol_PbPFtpOperation()
+                operation.command =  Protocol_PbPFtpOperation.Command.get
                 operation.path = entry.path
+                let request = try operation.serializedData()
                 
-                if let header = operation.data() {
-                    return client.request(header)
-                        .map { (data) -> PolarExerciseData in
-                            let samples = try PbExerciseSamples.parse(from: data as Data)
-                            var exSamples = [UInt32]()
-                            if samples.hasRrSamples && samples.rrSamples.rrIntervalsArray_Count != 0 {
-                                for i in 0..<samples.rrSamples.rrIntervalsArray_Count {
-                                    exSamples.append(samples.rrSamples.rrIntervalsArray.value(at: i))
-                                }
-                            } else {
-                                for i in 0..<samples.heartRateSamplesArray_Count {
-                                    exSamples.append(samples.heartRateSamplesArray.value(at: i))
-                                }
+                return client.request(request)
+                    .map { (data) -> PolarExerciseData in
+                        let samples = try Data_PbExerciseSamples(serializedData: data as Data)
+                        var exSamples = [UInt32]()
+                        if samples.hasRrSamples && samples.rrSamples.rrIntervals.count != 0 {
+                            for rrInterval in samples.rrSamples.rrIntervals {
+                                exSamples.append(rrInterval)
                             }
-                            return (samples.recordingInterval?.seconds ?? 0, samples: exSamples)
+                        } else {
+                            for hrSample in samples.heartRateSamples {
+                                exSamples.append(hrSample)
+                            }
                         }
-                        .catch({ (err) -> Single<PolarExerciseData> in
-                            return Single.error(PolarErrors.deviceError(description: "\(err)"))
-                        })
-                }
-                throw PolarErrors.messageEncodeFailed
+                        return (samples.recordingInterval.seconds, samples: exSamples)
+                    }
+                    .catch({ (err) -> Single<PolarExerciseData> in
+                        return Single.error(PolarErrors.deviceError(description: "\(err)"))
+                    })
             }
             throw PolarErrors.operationNotSupported
         } catch let err {
@@ -832,27 +821,28 @@ extension PolarBleApiImpl: PolarBleApi {
     }
     
     func fetchRecursive(_ path: String, client: BlePsFtpClient, condition: @escaping (_ p: String) -> Bool) -> Observable<String> {
-        let operation = PbPFtpOperation()
-        operation.command = PbPFtpOperation_Command.get
-        operation.path = path
-        if let header = operation.data() {
-            return client.request(header)
+        do {
+            var operation = Protocol_PbPFtpOperation()
+            operation.command = Protocol_PbPFtpOperation.Command.get
+            operation.path = path
+            let request = try operation.serializedData()
+            
+            return client.request(request)
                 .asObservable()
                 .observe(on: MainScheduler.instance)
                 .flatMap { (data) -> Observable<String> in
-                    do{
-                        let dir = try PbPFtpDirectory.parse(from: data as Data, extensionRegistry: nil)
-                        let entrys = dir.entriesArray
-                            .compactMap({ (e) -> String? in
-                                if let entry = e as? PbPFtpEntry {
-                                    if condition(entry.name) {
-                                        return path + entry.name
-                                    }
+                    do {
+                        let dir = try Protocol_PbPFtpDirectory(serializedData: data as Data)
+                        let entries = dir.entries
+                            .compactMap({ (entry) -> String? in
+                                if condition(entry.name) {
+                                    return path + entry.name
                                 }
+                                
                                 return nil
                             })
-                        if entrys.count != 0 {
-                            return Observable<String>.from(entrys)
+                        if entries.count != 0 {
+                            return Observable<String>.from(entries)
                                 .flatMap({ (path) -> Observable<String> in
                                     if path.hasSuffix("/") {
                                         return self.fetchRecursive(path, client: client, condition: condition)
@@ -866,8 +856,9 @@ extension PolarBleApiImpl: PolarBleApi {
                         return Observable.error(PolarErrors.deviceError(description: "\(err)"))
                     }
                 }
+        } catch let err {
+            return Observable.error(err)
         }
-        return Observable.error(PolarErrors.messageEncodeFailed)
     }
     
     func enableSDKMode(_ identifier: String) -> Completable {

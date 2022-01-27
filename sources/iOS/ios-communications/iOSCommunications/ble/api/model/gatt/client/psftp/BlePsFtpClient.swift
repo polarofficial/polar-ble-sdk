@@ -462,20 +462,20 @@ public class BlePsFtpClient: BleGattClientBase {
     /// Sends a single query to device, can be called many at once, but will internally make operations atomic
     ///
     /// - Parameters:
-    ///   - id: one of the PbPFtpQuery value
+    ///   - id: one of the Protocol_PbPFtpQuery value
     ///   - parameters: optional parameters field, can be nil
     /// - Returns: Observable stream
     ///                      Produces:  onSuccess, only once when query has been received successfully response Note data might be 0  length
     ///                    onError, @see BlePsFtpException
     ///                             @see BleGattException
-    public func query(_ id: Int32, parameters: NSData?) -> Single<NSData>{
+    public func query(_ id: Int, parameters: NSData?) -> Single<NSData>{
         return Single.create{ observer in
             let block = BlockOperation()
             block.addExecutionBlock { [unowned self, weak block] in
                 BleLogger.trace("PS-FTP new query operation")
                 if !(block?.isCancelled ?? true) {
                     self.mtuInputQueue.removeAll()
-                    let totalStream = BlePsFtpUtility.makeCompleteMessageStream(parameters as Data?, type: BlePsFtpUtility.MessageType.query, id: Int(id))
+                    let totalStream = BlePsFtpUtility.makeCompleteMessageStream(parameters as Data?, type: BlePsFtpUtility.MessageType.query, id: id)
                     totalStream.open()
                     defer {
                         // poor mans raii
