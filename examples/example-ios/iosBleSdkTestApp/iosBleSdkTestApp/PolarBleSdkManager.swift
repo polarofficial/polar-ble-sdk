@@ -72,6 +72,7 @@ class PolarBleSdkManager : ObservableObject {
     
     func broadcastToggle() {
         if isBroadcastListenOn == false {
+            isBroadcastListenOn = true
             broadcastDisposable = api.startListenForPolarHrBroadcasts(nil)
                 .observe(on: MainScheduler.instance)
                 .subscribe{ e in
@@ -83,7 +84,6 @@ class PolarBleSdkManager : ObservableObject {
                         self.isBroadcastListenOn = false
                         NSLog("Broadcast listener failed. Reason: \(err)")
                     case .next(let broadcast):
-                        self.isBroadcastListenOn = true
                         NSLog("HR BROADCAST \(broadcast.deviceInfo.name) HR:\(broadcast.hr) Batt: \(broadcast.batteryStatus)")
                     }
                 }
