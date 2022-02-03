@@ -1,1 +1,8 @@
 .DS_Store
+
+# Swift Package Manager
+
+.build/
+Packages/
+.swiftpm
+Package.resolved
