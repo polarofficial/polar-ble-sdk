@@ -294,9 +294,9 @@ github "polarofficial/polar-ble-sdk" ~> 3.2
 $ carthage update --use-xcframeworks
 ```
 
-
 ## Setup your application
-In project target settings enable __Background Modes__, add  __Uses Bluetooth LE accessories__
+* In your project target settings enable __Background Modes__, add  __Uses Bluetooth LE accessories__
+* In your project target property list add the key  [NSBluetoothAlwaysUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/nsbluetoothalwaysusagedescription)
 
 ## Code example: Heart rate
 See the [example](examples/example-ios) folder for the full project
