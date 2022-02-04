@@ -22,53 +22,57 @@ struct StreamSettingsView: View {
                     ForEach(streamSettings.sortedSettings) { settings in
                         if(settings.type == PolarSensorSetting.SettingType.sampleRate) {
                             HStack {
-                                Picker(selection: $selectedSampleRate, label: Text("Sample rate")) {
+                                Picker("Sample rate", selection: $selectedSampleRate) {
                                     ForEach(0..<settings.sortedValues.count) {
                                         Text("\(settings.sortedValues[$0])")
                                     }
                                 }
                             }
-                        }
-                        
-                        if(settings.type == PolarSensorSetting.SettingType.range) {
-                            Picker("Range:", selection: $selectedRange) {
+                        } else if(settings.type == PolarSensorSetting.SettingType.range) {
+                            Picker("Range", selection: $selectedRange) {
                                 ForEach(0..<settings.sortedValues.count) {
                                     Text("\(settings.sortedValues[$0])")
                                 }
                             }
-                        }
-                        
-                        if(settings.type == PolarSensorSetting.SettingType.resolution) {
+                        } else if(settings.type == PolarSensorSetting.SettingType.resolution) {
                             HStack {
-                                Picker("Resolution:", selection: $selectedResolution) {
+                                Picker("Resolution", selection: $selectedResolution) {
                                     ForEach(0..<settings.sortedValues.count) {
                                         Text("\(settings.sortedValues[$0])")
                                     }
                                 }
                             }
-                        }
-                        
-                        if(settings.type == PolarSensorSetting.SettingType.channels) {
+                        } else if(settings.type == PolarSensorSetting.SettingType.channels) {
                             HStack {
-                                Picker("Channels:", selection: $selectedChannels) {
+                                Picker("Channels", selection: $selectedChannels) {
                                     ForEach(0..<settings.sortedValues.count) {
                                         Text("\(settings.sortedValues[$0])")
                                     }
                                 }
                             }
+                        } else {
+                            EmptyView()
                         }
                     }
-                    
                     
                     Button("Start \(getStreamingFeatureString(streamedFeature)) stream", action: {
                         startStream()
                         presentationMode.wrappedValue.dismiss()
                         
                     })
-                    .buttonStyle(PrimaryButtonStyle(buttonState: ButtonState.released))
-                    .padding(15)
+                        .buttonStyle(PrimaryButtonStyle(buttonState: ButtonState.released))
+                        .padding(15)
                 }
-            }.navigationTitle("Select \(getStreamingFeatureString(streamedFeature)) stream settings")
+            }.navigationTitle("\(getStreamingFeatureString(streamedFeature)) settings")
+                .toolbar(content: {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button {
+                            presentationMode.wrappedValue.dismiss()
+                        } label: {
+                            Text("Cancel")
+                        }
+                    }
+                })
         }
     }
     
@@ -97,16 +101,15 @@ struct StreamSettingsView: View {
 }
 
 let tempStreamSettings: StreamSettings =
-    StreamSettings( feature: DeviceStreamingFeature.ecg,
-                    settings:[ StreamSetting(type: PolarSensorSetting.SettingType.sampleRate, values:[150,160]),
-                               StreamSetting(type: PolarSensorSetting.SettingType.range, values: [3,4]),
-                               StreamSetting(type: PolarSensorSetting.SettingType.resolution, values: [3,4]),
-                               StreamSetting(type: PolarSensorSetting.SettingType.channels, values: [3,4])
-                    ])
+StreamSettings( feature: DeviceStreamingFeature.ecg,
+                settings:[ StreamSetting(type: PolarSensorSetting.SettingType.sampleRate, values:[150,160]),
+                           StreamSetting(type: PolarSensorSetting.SettingType.range, values: [3,4]),
+                           StreamSetting(type: PolarSensorSetting.SettingType.resolution, values: [3,4]),
+                           StreamSetting(type: PolarSensorSetting.SettingType.channels, values: [3,4])
+                         ])
 
 
 struct SheetView_Previews: PreviewProvider {
-    
     static var previews: some View {
         ForEach(["iPhone 8", "iPAD Pro (12.9-inch)"], id: \.self) { deviceName in
             StreamSettingsView(bleSdkManager: PolarBleSdkManager(), streamedFeature:DeviceStreamingFeature.ecg, streamSettings: tempStreamSettings)

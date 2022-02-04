@@ -90,7 +90,7 @@ struct ContentView: View {
                                 bleSdkManager.sdkModeToggle() })
                                 .buttonStyle(SecondaryButtonStyle(buttonState: getSdkModeButtonState()))
                             
-                        }.sheet(item: $bleSdkManager.streamSettings) { streamSettings in
+                        }.fullScreenCover(item: $bleSdkManager.streamSettings) { streamSettings in
                             if let settings = streamSettings {
                                 StreamSettingsView(bleSdkManager: bleSdkManager, streamedFeature: settings.feature, streamSettings: settings)
                             }
