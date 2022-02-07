@@ -10,7 +10,6 @@
 #endif
 #endif
 
-#import "iOSCommunications.h"
 
 FOUNDATION_EXPORT double PolarBleSdkVersionNumber;
 FOUNDATION_EXPORT const unsigned char PolarBleSdkVersionString[];
