@@ -11,7 +11,8 @@ Pod::Spec.new do |s|
 
     s.ios.deployment_target = '13.0'
     
-    s.source_files = 'sources/iOS/ios-communications/iOSCommunications/**/*.{swift,h}'
+    s.source_files = 'sources/iOS/ios-communications/Sources/**/*.swift'
+
     s.dependency 'RxSwift', '~> 6.5.0'
     s.dependency 'SwiftProtobuf', '~> 1.0'
 end 
