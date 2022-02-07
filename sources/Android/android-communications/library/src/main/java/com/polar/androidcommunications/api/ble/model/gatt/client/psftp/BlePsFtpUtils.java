@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import protocol.PftpError;
-
 /**
  * RFC76 and RFC 60 related utils
  */
@@ -61,7 +59,7 @@ public class BlePsFtpUtils {
         private final int error;
 
         public PftpResponseError(String detailMessage, int error) {
-            super(detailMessage + " Error: " + error + " : " + PftpError.PbPFtpError.forNumber(error));
+            super(detailMessage + " Error: " + error);
             this.error = error;
         }
 

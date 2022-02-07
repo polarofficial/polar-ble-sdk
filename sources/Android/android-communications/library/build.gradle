@@ -34,11 +34,11 @@ def getVersion = { ->
 }
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 31
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 29
+        targetSdkVersion 31
         versionCode 14
         versionName "14"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -155,16 +155,16 @@ protobuf {
 
 dependencies {
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
-    implementation 'io.reactivex.rxjava3:rxjava:3.1.1'
+    implementation 'io.reactivex.rxjava3:rxjava:3.1.3'
     implementation 'commons-io:commons-io:2.10.0'
-    implementation 'androidx.annotation:annotation:1.2.0'
-    implementation "androidx.core:core-ktx:1.6.0"
+    implementation 'androidx.annotation:annotation:1.3.0'
+    implementation "androidx.core:core-ktx:1.7.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     sdkImplementation 'com.google.protobuf:protobuf-javalite:3.17.3'
     sdkProprietaryImplementation 'com.google.protobuf:protobuf-javalite:3.17.3'
     testImplementation 'junit:junit:4.13.2'
-    testImplementation "org.mockito:mockito-core:3.11.1"
-    testImplementation "io.mockk:mockk:1.10.6"
+    testImplementation 'org.mockito:mockito-core:4.3.1'
+    testImplementation 'io.mockk:mockk:1.12.2'
     testImplementation 'androidx.test:runner:1.4.0'
     testImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     androidTestImplementation 'junit:junit:4.13.2'

@@ -52,8 +52,8 @@ internal class BDScanCallback(
     private var opportunisticScanTimer: Disposable? = null
 
     internal interface BDScanCallbackInterface {
-        fun deviceDiscovered(device: BluetoothDevice?, rssi: Int, scanRecord: ByteArray?, type: EVENT_TYPE?)
-        fun scanStartError(error: Int)
+        fun deviceDiscovered(device: BluetoothDevice?, rssi: Int, scanRecord: ByteArray, type: EVENT_TYPE)
+        fun scanStartError(error: String)
         fun isScanningNeeded(): Boolean
     }
 
@@ -102,8 +102,9 @@ internal class BDScanCallback(
         }
 
         override fun onScanFailed(errorCode: Int) {
-            BleLogger.e(TAG, "START scan error: $errorCode")
-            scanCallbackInterface.scanStartError(errorCode)
+            val scanFailureString = "Scan start failed to ScanCallback errorCode: $errorCode"
+            BleLogger.e(TAG, scanFailureString)
+            scanCallbackInterface.scanStartError(scanFailureString)
         }
     }
 
@@ -131,6 +132,7 @@ internal class BDScanCallback(
     private fun scannerIdleState(action: ScanAction) {
         when (action) {
             ScanAction.ENTRY -> {
+                bluetoothAdapter.isEnabled
                 if (bluetoothAdapter.isEnabled && scanCallbackInterface.isScanningNeeded()) {
                     changeState(ScannerState.SCANNING)
                 }
@@ -297,7 +299,9 @@ internal class BDScanCallback(
         try {
             bluetoothAdapter.bluetoothLeScanner.startScan(filters, scanSettings, leScanCallback)
         } catch (e: Exception) {
-            BleLogger.e(TAG, "Failed to start scan e: " + e.localizedMessage)
+            val errorString = "Failed to start scan. Reason: ${e.message}"
+            BleLogger.e(TAG, errorString)
+            scanCallbackInterface.scanStartError(errorString)
             changeState(ScannerState.IDLE)
             return
         }

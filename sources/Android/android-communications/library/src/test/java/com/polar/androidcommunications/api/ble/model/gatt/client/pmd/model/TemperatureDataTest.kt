@@ -3,7 +3,7 @@ package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
 import org.junit.Assert
 import org.junit.Test
-import java.lang.Float
+import java.lang.Float.intBitsToFloat
 
 class TemperatureDataTest {
     @Test
@@ -20,9 +20,9 @@ class TemperatureDataTest {
 
         val expectedSamplesSize = 1 + 2 // reference sample + delta samples
         val expectedTimeStamp = 578437695752307201L
-        val sample0 = Float.intBitsToFloat(0x41DC51EC)
-        val sample1 = Float.intBitsToFloat(0x41DC51EC + 0x0)
-        val sample2 = Float.intBitsToFloat(0x41DC51EC + 0x0)
+        val sample0 = intBitsToFloat(0x41DC51EC)
+        val sample1 = intBitsToFloat(0x41DC51EC + 0x0)
+        val sample2 = intBitsToFloat(0x41DC51EC + 0x0)
 
         val measurementFrame = byteArrayOf(
             0xEC.toByte(), 0x51.toByte(), 0xDC.toByte(), 0x41.toByte(), 0x03.toByte(), 0x02.toByte(), 0x00.toByte()
@@ -52,7 +52,7 @@ class TemperatureDataTest {
         val frameType = BlePMDClient.PmdDataFrameType.TYPE_0
         val isCompressed = false
         val expectedSamplesSize = 1
-        val sample0 = Float.intBitsToFloat(0x41C028F6)
+        val sample0 = intBitsToFloat(0x41C028F6)
         val measurementFrame = byteArrayOf(0xF6.toByte(), 0x28.toByte(), 0xC0.toByte(), 0x41.toByte())
         val factor = 1.0f
 

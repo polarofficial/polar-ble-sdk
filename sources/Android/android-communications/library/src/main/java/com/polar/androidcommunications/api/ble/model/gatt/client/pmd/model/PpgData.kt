@@ -27,9 +27,9 @@ class PpgData internal constructor(val timeStamp: Long) {
 
     // PPG Data frame type 4
     data class PpgDataSampleFrameType4 internal constructor(
-        val channel1GainTs: List<Int>,
-        val channel2GainTs: List<Int>,
-        val numIntTs: List<UInt>
+        val numIntTs: List<UInt>,
+        val channel1GainTs: List<UInt>,
+        val channel2GainTs: List<UInt>
     ) : PpgDataSample()
 
     // PPG Data frame type 5
@@ -86,18 +86,16 @@ class PpgData internal constructor(val timeStamp: Long) {
             val ppgData = PpgData(timeStamp)
             var offset = 0
             while (offset < frame.size) {
-                val channel1GainTs = frame.sliceArray(offset..(offset + 11)).map { (it and 0x07).toInt() }
-                offset += 12
-                val channel2GainTs = frame.sliceArray(offset..(offset + 11)).map { (it and 0x07).toInt() }
-                offset += 12
                 val numIntTs = frame.sliceArray(offset..(offset + 11)).map { it.toUByte().toUInt() }
                 offset += 12
-
+                val channel1GainTs = frame.sliceArray(offset..(offset + 23)).toList().mapIndexedNotNull { idx, v -> if (idx % 2 == 0) (v and 0x07).toUInt() else null }
+                val channel2GainTs = frame.sliceArray(offset..(offset + 23)).toList().mapIndexedNotNull { idx, v -> if (idx % 2 == 1) (v and 0x07).toUInt() else null }
+                offset += 24
                 ppgData.ppgSamples.add(
                     PpgDataSampleFrameType4(
+                        numIntTs = numIntTs,
                         channel1GainTs = channel1GainTs,
-                        channel2GainTs = channel2GainTs,
-                        numIntTs = numIntTs
+                        channel2GainTs = channel2GainTs
                     )
                 )
             }

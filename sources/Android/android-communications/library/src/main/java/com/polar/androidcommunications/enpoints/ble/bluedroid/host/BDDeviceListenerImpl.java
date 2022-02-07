@@ -269,11 +269,11 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
         }
 
         @Override
-        public void scanStartError(int error) {
-            RxUtils.postError(observers, new BleStartScanError("scan start failed ", error));
+        public void scanStartError(@NonNull String error) {
+            RxUtils.postError(observers, new BleStartScanError(error));
         }
 
-        public void deviceDiscovered(BluetoothDevice device, int rssi, byte[] scanRecord, BleUtils.EVENT_TYPE type) {
+        public void deviceDiscovered(BluetoothDevice device, int rssi, @NonNull byte[] scanRecord, @NonNull BleUtils.EVENT_TYPE type) {
             BDDeviceSessionImpl deviceSession = sessions.getSession(device);
             HashMap<BleUtils.AD_TYPE, byte[]> advData = BleUtils.advertisementBytes2Map(scanRecord);
             final String manufacturer = Build.MANUFACTURER;

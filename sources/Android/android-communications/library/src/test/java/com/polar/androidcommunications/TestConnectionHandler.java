@@ -17,7 +17,7 @@ public class TestConnectionHandler {
 
     private ConnectionHandler connectionHandler;
 
-    private ConnectionInterface connectionInterface = new ConnectionInterface() {
+    private final ConnectionInterface connectionInterface = new ConnectionInterface() {
         @Override
         public void connectDevice(BDDeviceSessionImpl session) {
 
@@ -56,7 +56,7 @@ public class TestConnectionHandler {
         BDDeviceSessionImpl bleDeviceSession = new BDDeviceSessionImpl();
         connectionHandler.connectDevice(bleDeviceSession, true);
         connectionHandler.deviceConnected(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, bleDeviceSession.getSessionState());
     }
 
 
@@ -64,13 +64,13 @@ public class TestConnectionHandler {
     public void testConnectionHandler_2() {
         BDDeviceSessionImpl bleDeviceSession = new BDDeviceSessionImpl();
         connectionHandler.connectDevice(bleDeviceSession, true);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPENING);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPENING, bleDeviceSession.getSessionState());
         connectionHandler.deviceDisconnected(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK, bleDeviceSession.getSessionState());
         connectionHandler.advertisementHeadReceived(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPENING);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPENING, bleDeviceSession.getSessionState());
         connectionHandler.deviceConnected(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, bleDeviceSession.getSessionState());
     }
 
     @Test
@@ -88,35 +88,35 @@ public class TestConnectionHandler {
         // multi connections
         connectionHandler.connectDevice(bleDeviceSession, true);
         connectionHandler.connectDevice(bleDeviceSession2, true);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPENING);
-        Assert.assertEquals(bleDeviceSession2.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPENING, bleDeviceSession.getSessionState());
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK, bleDeviceSession2.getSessionState());
         connectionHandler.deviceConnected(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, bleDeviceSession.getSessionState());
         connectionHandler.advertisementHeadReceived(bleDeviceSession2);
-        Assert.assertEquals(bleDeviceSession2.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPENING);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPENING, bleDeviceSession2.getSessionState());
         connectionHandler.deviceConnected(bleDeviceSession2);
-        Assert.assertEquals(bleDeviceSession2.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, bleDeviceSession2.getSessionState());
 
         // multi disconnection
         connectionHandler.disconnectDevice(bleDeviceSession);
         connectionHandler.disconnectDevice(bleDeviceSession2);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_CLOSING);
-        Assert.assertEquals(bleDeviceSession2.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_CLOSING);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSING, bleDeviceSession.getSessionState());
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSING, bleDeviceSession2.getSessionState());
         connectionHandler.deviceDisconnected(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_CLOSED);
-        Assert.assertEquals(bleDeviceSession2.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_CLOSING);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSED, bleDeviceSession.getSessionState());
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSING, bleDeviceSession2.getSessionState());
         connectionHandler.deviceDisconnected(bleDeviceSession2);
-        Assert.assertEquals(bleDeviceSession2.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_CLOSED);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSED, bleDeviceSession2.getSessionState());
 
         // multi connect / disconnect
         bleDeviceSession2.setSessionState(BleDeviceSession.DeviceSessionState.SESSION_OPEN);
         connectionHandler.connectDevice(bleDeviceSession, true);
         connectionHandler.disconnectDevice(bleDeviceSession2);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPENING);
-        Assert.assertEquals(bleDeviceSession2.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_CLOSING);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPENING, bleDeviceSession.getSessionState());
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSING, bleDeviceSession2.getSessionState());
         connectionHandler.deviceConnected(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN);
-        Assert.assertEquals(bleDeviceSession2.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_CLOSING);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, bleDeviceSession.getSessionState());
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSING, bleDeviceSession2.getSessionState());
         connectionHandler.deviceDisconnected(bleDeviceSession2);
 
         // maintaining multi connections
@@ -124,77 +124,77 @@ public class TestConnectionHandler {
         bleDeviceSession2.setSessionState(BleDeviceSession.DeviceSessionState.SESSION_OPEN);
         connectionHandler.deviceDisconnected(bleDeviceSession);
         connectionHandler.deviceDisconnected(bleDeviceSession2);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
-        Assert.assertEquals(bleDeviceSession2.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK, bleDeviceSession.getSessionState());
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK, bleDeviceSession2.getSessionState());
         connectionHandler.advertisementHeadReceived(bleDeviceSession);
         connectionHandler.advertisementHeadReceived(bleDeviceSession2);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPENING);
-        Assert.assertEquals(bleDeviceSession2.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPENING, bleDeviceSession.getSessionState());
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK, bleDeviceSession2.getSessionState());
         connectionHandler.deviceConnected(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN);
-        Assert.assertEquals(bleDeviceSession2.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, bleDeviceSession.getSessionState());
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK, bleDeviceSession2.getSessionState());
         connectionHandler.advertisementHeadReceived(bleDeviceSession2);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN);
-        Assert.assertEquals(bleDeviceSession2.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPENING);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, bleDeviceSession.getSessionState());
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPENING, bleDeviceSession2.getSessionState());
         connectionHandler.deviceConnected(bleDeviceSession2);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN);
-        Assert.assertEquals(bleDeviceSession2.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, bleDeviceSession.getSessionState());
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, bleDeviceSession2.getSessionState());
 
         // same state tests
         bleDeviceSession.setSessionState(BleDeviceSession.DeviceSessionState.SESSION_OPEN);
         connectionHandler.connectDevice(bleDeviceSession, true);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, bleDeviceSession.getSessionState());
         bleDeviceSession.setSessionState(BleDeviceSession.DeviceSessionState.SESSION_CLOSED);
         connectionHandler.connectDevice(bleDeviceSession, true);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPENING);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPENING, bleDeviceSession.getSessionState());
         connectionHandler.connectDevice(bleDeviceSession, true);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPENING);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPENING, bleDeviceSession.getSessionState());
         connectionHandler.deviceConnected(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, bleDeviceSession.getSessionState());
         connectionHandler.connectDevice(bleDeviceSession, true);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, bleDeviceSession.getSessionState());
 
         bleDeviceSession.setSessionState(BleDeviceSession.DeviceSessionState.SESSION_CLOSED);
         connectionHandler.disconnectDevice(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_CLOSED);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSED, bleDeviceSession.getSessionState());
         bleDeviceSession.setSessionState(BleDeviceSession.DeviceSessionState.SESSION_OPEN);
         connectionHandler.disconnectDevice(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_CLOSING);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSING, bleDeviceSession.getSessionState());
         connectionHandler.disconnectDevice(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_CLOSING);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSING, bleDeviceSession.getSessionState());
         connectionHandler.deviceDisconnected(bleDeviceSession);
 
         //
         bleDeviceSession.setSessionState(BleDeviceSession.DeviceSessionState.SESSION_CLOSED);
         connectTable[0] = false;
         connectionHandler.connectDevice(bleDeviceSession, true);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK, bleDeviceSession.getSessionState());
         connectionHandler.advertisementHeadReceived(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK, bleDeviceSession.getSessionState());
         connectTable[0] = true;
         connectionHandler.advertisementHeadReceived(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPENING);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPENING, bleDeviceSession.getSessionState());
         connectionHandler.deviceConnected(bleDeviceSession);
 
         //
         connectionHandler.disconnectDevice(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_CLOSING);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSING, bleDeviceSession.getSessionState());
         connectionHandler.connectDevice(bleDeviceSession, true);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK, bleDeviceSession.getSessionState());
         connectionHandler.deviceDisconnected(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK, bleDeviceSession.getSessionState());
 
         bleDeviceSession.setSessionState(BleDeviceSession.DeviceSessionState.SESSION_CLOSED);
         connectionHandler.connectDevice(bleDeviceSession, false);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK, bleDeviceSession.getSessionState());
 
         bleDeviceSession.setSessionState(BleDeviceSession.DeviceSessionState.SESSION_OPEN);
         connectionHandler.setAutomaticReconnection(false);
         connectionHandler.deviceDisconnected(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_CLOSED);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSED, bleDeviceSession.getSessionState());
         bleDeviceSession.setSessionState(BleDeviceSession.DeviceSessionState.SESSION_OPEN);
         connectionHandler.setAutomaticReconnection(true);
         connectionHandler.deviceDisconnected(bleDeviceSession);
-        Assert.assertEquals(bleDeviceSession.getSessionState(), BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK);
+        Assert.assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK, bleDeviceSession.getSessionState());
     }
 }

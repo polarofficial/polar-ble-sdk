@@ -5,16 +5,10 @@ import java.io.ByteArrayOutputStream
 class PmdControlPointResponse(data: ByteArray) {
     val responseCode: Byte = data[0]
     val opCode: PmdControlPointCommand = PmdControlPointCommand.values()[data[1].toInt()]
-    val measurementType: Byte
-
-    @JvmField
-    val status: PmdControlPointResponseCode
-
-    @JvmField
+    val measurementType: Byte = data[2]
+    val status: PmdControlPointResponseCode = PmdControlPointResponseCode.values()[data[3].toInt()]
+    val more: Boolean
     val parameters = ByteArrayOutputStream()
-
-    @JvmField
-    var more = false
 
     enum class PmdControlPointResponseCode(val numVal: Int) {
         SUCCESS(0),
@@ -34,8 +28,6 @@ class PmdControlPointResponse(data: ByteArray) {
     }
 
     init {
-        measurementType = data[2]
-        status = PmdControlPointResponseCode.values()[data[3].toInt()]
         if (status == PmdControlPointResponseCode.SUCCESS) {
             more = data.size > 4 && data[4] != 0.toByte()
             if (data.size > 5) {
