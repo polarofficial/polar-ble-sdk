@@ -1,5 +1,5 @@
 PODS:
-  - PolarBleSdk (3.2.6):
+  - PolarBleSdk (3.2.7):
     - RxSwift (~> 6.5.0)
     - SwiftProtobuf (~> 1.0)
   - RxSwift (6.5.0)
@@ -15,7 +15,7 @@ SPEC REPOS:
     - SwiftProtobuf
 
 SPEC CHECKSUMS:
-  PolarBleSdk: 4b5f5b151aac5804a496cfce41b9256ba38d81b0
+  PolarBleSdk: 4bb6aca272d73192b5314b3fe32051ec6db8959c
   RxSwift: 5710a9e6b17f3c3d6e40d6e559b9fa1e813b2ef8
   SwiftProtobuf: c3c12645230d9b09c72267e0de89468c5543bd86
 
