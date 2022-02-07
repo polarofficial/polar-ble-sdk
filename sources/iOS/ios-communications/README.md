@@ -1,11 +1,12 @@
 # Environment Requirements
 
-* Xcode 12.x
+* Xcode 13.x
 * Swift 5.x
 
 # Dependencies
-* [RxSwift 6.0](https://github.com/ReactiveX/RxSwift) or above
+* [RxSwift 6.5](https://github.com/ReactiveX/RxSwift) or above
+* [Swift Protobuf 1.18.0](https://github.com/apple/swift-protobuf) or above
+
 
 ## Update dependency
-1. Download the XCFramework from [RxSwift Releases](https://github.com/ReactiveX/RxSwift/releases)
-2. Take XCFramework into use in iOSCommunications project like traditional framework. XCFramework detailed instructions see the [tutorial](https://developer.apple.com/videos/play/wwdc2019/416/).
+Project uses Cocoapods as dependencies, to update the dependencies please modify the `Podfile`
