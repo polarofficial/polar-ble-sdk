@@ -12,15 +12,15 @@ public class PolarAccelerometerData {
 
     public static class PolarAccelerometerDataSample {
         /**
-         * x axis in millig
+         * x axis in millig (including gravity)
          */
         public final int x;
         /**
-         * y axis in millig
+         * y axis in millig (including gravity)
          */
         public final int y;
         /**
-         * z axis in millig
+         * z axis in millig (including gravity)
          */
         public final int z;
 

@@ -517,7 +517,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
             var offset = 0
             var channelCount = 0
             val mask = -0x1 shl resolution - 1
-            val resolutionInBytes = Math.ceil(resolution / 8.0).toInt()
+            val resolutionInBytes = ceil(resolution / 8.0).toInt()
             while (channelCount++ < channels) {
                 var sample: Int
                 if (type == PmdDataFieldEncoding.SIGNED_INT) {
