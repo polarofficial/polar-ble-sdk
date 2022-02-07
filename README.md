@@ -148,7 +148,7 @@ See the [example](examples/example-android) folder for the full project.
 #### Key things
 
 1. Load the default api implementation and add callback.
-```
+```java
 // NOTICE all features are enabled, if only interested on particular feature(s) like info Heart rate and Battery info then
 // e.g. PolarBleApiDefaultImpl.defaultImplementation(this, PolarBleApi.FEATURE_HR |
 // PolarBleApi.FEATURE_BATTERY_INFO); 
@@ -208,7 +208,7 @@ api.setApiCallback(new PolarBleApiCallback() {
 });
 ```
 2.  Request permissions
-```
+```java
 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -227,7 +227,7 @@ public void onRequestPermissionsResult(int requestCode, @NonNull String permissi
 ```
 
 3. Add background, foreground and cleanup functionality on desired callbacks e.g.
-```
+```java
 @Override
 public void onPause() {
     super.onPause();
@@ -273,6 +273,16 @@ target 'YOUR_TARGET_NAME' do
 end
 ```
 
+#### Swift Package Manager
+Add PolarBleSdk as a dependency to your `Package.swift` manifest
+
+```swift
+dependencies: [
+    .package(name: "PolarBleSdk", url: "https://github.com/polarofficial/polar-ble-sdk.git", .upToNextMajor(from: "3.2.0"))
+]
+```
+or alternatively use [XCode package manager](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) to add Swift package to your project. 
+
 #### Carthage
 If you use [Cathage](https://github.com/Carthage/Carthage) to manage your dependencies, add PolarBleSdk to your `Cartfile`
 
@@ -284,11 +294,9 @@ github "polarofficial/polar-ble-sdk" ~> 3.2
 $ carthage update --use-xcframeworks
 ```
 
-#### Swift Package Manager
-Not supported yet. Reported in [issue 132](https://github.com/polarofficial/polar-ble-sdk/issues/132)
-
 ## Setup your application
-In project target settings enable __Background Modes__, add  __Uses Bluetooth LE accessories__
+* In your project target settings enable __Background Modes__, add  __Uses Bluetooth LE accessories__
+* In your project target property list add the key  [NSBluetoothAlwaysUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/nsbluetoothalwaysusagedescription)
 
 ## Code example: Heart rate
 See the [example](examples/example-ios) folder for the full project
@@ -298,13 +306,13 @@ See the [example](examples/example-ios) folder for the full project
 This is not required if you are using automatic connection.
 
 1. Import needed packages.
-```
+```swift
 import PolarBleSdk
 import RxSwift
 ```
 
 2. Load the default api implementation and implement desired protocols.
-```
+```swift
 
 class MyController: UIViewController,
                     PolarBleApiObserver,

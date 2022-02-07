@@ -542,13 +542,13 @@ public class BlePsFtpClient: BleGattClientBase {
     ///         Produces:  onSuccess, notification has been send
     ///                 onError, @see BlePsFtpException
     ///                       @see BleGattException
-    public func sendNotification(_ id: Int32, parameters: NSData?) -> Completable {
+    public func sendNotification(_ id: Int, parameters: NSData?) -> Completable {
         return Completable.create{ observer in
             let block = BlockOperation()
             block.addExecutionBlock { [unowned self, weak block] in
                 BleLogger.trace("PS-FTP new notification")
                 if !(block?.isCancelled ?? true) {
-                    let totalStream = BlePsFtpUtility.makeCompleteMessageStream(parameters as Data?, type: BlePsFtpUtility.MessageType.notification, id: Int(id))
+                    let totalStream = BlePsFtpUtility.makeCompleteMessageStream(parameters as Data?, type: BlePsFtpUtility.MessageType.notification, id: id)
                     totalStream.open()
                     defer {
                         // poor mans raii

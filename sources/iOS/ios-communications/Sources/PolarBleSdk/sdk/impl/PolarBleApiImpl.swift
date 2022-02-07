@@ -4,6 +4,10 @@ import Foundation
 import CoreBluetooth
 import RxSwift
 
+#if os(iOS)
+import UIKit
+#endif
+
 /// Default implementation
 @objc class PolarBleApiImpl: NSObject,
                              BleDeviceSessionStateObserver,
