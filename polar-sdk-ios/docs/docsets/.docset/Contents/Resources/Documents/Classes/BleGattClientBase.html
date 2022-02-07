@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>BleGattClientBase Class Reference</title>
+    <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
+    <meta charset='utf-8'>
+    <script src="../js/jquery.min.js" defer></script>
+    <script src="../js/jazzy.js" defer></script>
+    
+    <script src="../js/lunr.min.js" defer></script>
+    <script src="../js/typeahead.jquery.js" defer></script>
+    <script src="../js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+    <a name="//apple_ref/swift/Class/BleGattClientBase" class="dashAnchor"></a>
+    <a title="BleGattClientBase Class Reference"></a>
+    <header>
+      <div class="content-wrapper">
+        <p><a href="../index.html"> Docs</a> (19% documented)</p>
+        <p class="header-right">
+          <form role="search" action="../search.json">
+            <input type="text" placeholder="Search documentation" data-typeahead>
+          </form>
+        </p>
+      </div>
+    </header>
+    <div class="content-wrapper">
+      <p id="breadcrumbs">
+        <a href="../index.html"> Reference</a>
+        <img id="carat" src="../img/carat.png" />
+        BleGattClientBase Class Reference
+      </p>
+    </div>
+    <div class="content-wrapper">
+      <nav class="sidebar">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a href="../Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Classes/AtomicBoolean.html">AtomicBoolean</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/AtomicType.html">AtomicType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BleAdvertisementContent.html">BleAdvertisementContent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BleBasClient.html">BleBasClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BleDeviceSession.html">BleDeviceSession</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BleDeviceSession/DeviceSessionState.html">– DeviceSessionState</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BleDeviceSession/ConnectionType.html">– ConnectionType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BleDisClient.html">BleDisClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BleGattClientBase.html">BleGattClientBase</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BleHrClient.html">BleHrClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BleLogger.html">BleLogger</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BlePmdClient.html">BlePmdClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BlePolarDeviceCapabilitiesUtility.html">BlePolarDeviceCapabilitiesUtility</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BlePolarDeviceCapabilitiesUtility/FileSystemType.html">– FileSystemType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BlePolarDeviceIdUtility.html">BlePolarDeviceIdUtility</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BlePolarHrAdvertisement.html">BlePolarHrAdvertisement</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BlePsFtpClient.html">BlePsFtpClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BlePsFtpClient/PsFtpNotification.html">– PsFtpNotification</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BlePsFtpUtility.html">BlePsFtpUtility</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BlePsFtpUtility/MessageType.html">– MessageType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BlePsFtpUtility/RFC76FrameProcessError.html">– RFC76FrameProcessError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BlePsFtpUtility/BlePsFtpRfc76Frame.html">– BlePsFtpRfc76Frame</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BlePsFtpUtility/BlePsFtpRfc76SequenceNumber.html">– BlePsFtpRfc76SequenceNumber</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BlePsdClient.html">BlePsdClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BlePsdClient/PsdMessage.html">– PsdMessage</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BleRssiFilter.html">BleRssiFilter</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/CBDeviceListenerImpl.html">CBDeviceListenerImpl</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarAdvDataUtility.html">PolarAdvDataUtility</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/TimeUtility.html">TimeUtility</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Enums.html">Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Enums/AtomicIntegerException.html">AtomicIntegerException</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/AtomicListException.html">AtomicListException</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/BleGattException.html">BleGattException</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/BlePsFtpException.html">BlePsFtpException</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/BleState.html">BleState</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Extensions.html">Extensions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Extensions/Observable.html">Observable</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Functions.html">Functions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Functions.html#/s:11PolarBleSdk2eeoiySbAA0B14GattClientBaseC_ADtF">==(_:_:)</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Protocols.html">Protocols</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Protocols/BleAttributeTransportProtocol.html">BleAttributeTransportProtocol</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/BleCCCWriteProtocol.html">BleCCCWriteProtocol</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/BleDeviceListener.html">BleDeviceListener</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/BleDeviceSessionStateObserver.html">BleDeviceSessionStateObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/BleLoggerProtocol.html">BleLoggerProtocol</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/BlePowerStateObserver.html">BlePowerStateObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/CBScanningProtocol.html">CBScanningProtocol</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Structs/Pmd.html">Pmd</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Pmd/PmdSetting.html">– PmdSetting</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Pmd/BlePmdError.html">– BlePmdError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Pmd/PmdFeature.html">– PmdFeature</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Pmd/PmdResponseCode.html">– PmdResponseCode</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Pmd/PmdMeasurementType.html">– PmdMeasurementType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Pmd/PmdControlPointResponse.html">– PmdControlPointResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Psd.html">Psd</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Psd/PPData.html">– PPData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Psd/PsdResponse.html">– PsdResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Psd/PsdFeature.html">– PsdFeature</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+        <section>
+          <section class="section">
+            <h1>BleGattClientBase</h1>
+              <div class="declaration">
+                <div class="language">
+                  
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">BleGattClientBase</span> <span class="p">:</span> <span class="kt">Hashable</span></code></pre>
+
+                </div>
+              </div>
+            <p>Undocumented</p>
+
+          </section>
+          <section class="section task-group-section">
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:SH4hash4intoys6HasherVz_tF"></a>
+                    <a name="//apple_ref/swift/Method/hash(into:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:SH4hash4intoys6HasherVz_tF">hash(into:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">hash</span><span class="p">(</span><span class="n">into</span> <span class="nv">hasher</span><span class="p">:</span> <span class="k">inout</span> <span class="kt">Hasher</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0B14GattClientBaseC12disconnectedyyF"></a>
+                    <a name="//apple_ref/swift/Method/disconnected()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0B14GattClientBaseC12disconnectedyyF">disconnected()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">disconnected</span><span class="p">()</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0B14GattClientBaseC18processServiceData_4data3errySo6CBUUIDC_10Foundation0I0VSitF"></a>
+                    <a name="//apple_ref/swift/Method/processServiceData(_:data:err:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0B14GattClientBaseC18processServiceData_4data3errySo6CBUUIDC_10Foundation0I0VSitF">processServiceData(_:<wbr>data:<wbr>err:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">processServiceData</span><span class="p">(</span><span class="n">_</span> <span class="nv">chr</span><span class="p">:</span> <span class="kt">CBUUID</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="kt">Data</span><span class="p">,</span> <span class="nv">err</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0B14GattClientBaseC23notifyDescriptorWritten_7enabled3errySo6CBUUIDC_SbSitF"></a>
+                    <a name="//apple_ref/swift/Method/notifyDescriptorWritten(_:enabled:err:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0B14GattClientBaseC23notifyDescriptorWritten_7enabled3errySo6CBUUIDC_SbSitF">notifyDescriptorWritten(_:<wbr>enabled:<wbr>err:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Call when notify descriptor is written on Gatt service</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">notifyDescriptorWritten</span><span class="p">(</span><span class="n">_</span> <span class="nv">chr</span><span class="p">:</span> <span class="kt">CBUUID</span><span class="p">,</span> <span class="nv">enabled</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">,</span> <span class="nv">err</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>chr</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>charcteristic written</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>enabled</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>true if notification was enabled</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>err</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>error on notification setting change attempt</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0B14GattClientBaseC18serviceDataWritten_3errySo6CBUUIDC_SitF"></a>
+                    <a name="//apple_ref/swift/Method/serviceDataWritten(_:err:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0B14GattClientBaseC18serviceDataWritten_3errySo6CBUUIDC_SitF">serviceDataWritten(_:<wbr>err:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">serviceDataWritten</span><span class="p">(</span><span class="n">_</span> <span class="nv">chr</span><span class="p">:</span> <span class="kt">CBUUID</span><span class="p">,</span> <span class="nv">err</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0B14GattClientBaseC31processCharacteristicDiscovered_10propertiesySo6CBUUIDC_SutF"></a>
+                    <a name="//apple_ref/swift/Method/processCharacteristicDiscovered(_:properties:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0B14GattClientBaseC31processCharacteristicDiscovered_10propertiesySo6CBUUIDC_SutF">processCharacteristicDiscovered(_:<wbr>properties:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">processCharacteristicDiscovered</span><span class="p">(</span><span class="n">_</span> <span class="nv">characteristic</span><span class="p">:</span> <span class="kt">CBUUID</span><span class="p">,</span> <span class="nv">properties</span><span class="p">:</span> <span class="kt">UInt</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0B14GattClientBaseC11clientReadyy7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSbF"></a>
+                    <a name="//apple_ref/swift/Method/clientReady(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0B14GattClientBaseC11clientReadyy7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSbF">clientReady(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">clientReady</span><span class="p">(</span><span class="n">_</span> <span class="nv">checkConnection</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0B14GattClientBaseC20setServiceDiscovered_11serviceUuidySb_So6CBUUIDCtF"></a>
+                    <a name="//apple_ref/swift/Method/setServiceDiscovered(_:serviceUuid:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0B14GattClientBaseC20setServiceDiscovered_11serviceUuidySb_So6CBUUIDCtF">setServiceDiscovered(_:<wbr>serviceUuid:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">setServiceDiscovered</span><span class="p">(</span><span class="n">_</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">,</span> <span class="nv">serviceUuid</span><span class="p">:</span> <span class="kt">CBUUID</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0B14GattClientBaseC19isServiceDiscoveredSbyF"></a>
+                    <a name="//apple_ref/swift/Method/isServiceDiscovered()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0B14GattClientBaseC19isServiceDiscoveredSbyF">isServiceDiscovered()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">isServiceDiscovered</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0B14GattClientBaseC016serviceBelongsToE0ySbSo6CBUUIDCF"></a>
+                    <a name="//apple_ref/swift/Method/serviceBelongsToClient(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0B14GattClientBaseC016serviceBelongsToE0ySbSo6CBUUIDCF">serviceBelongsToClient(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">serviceBelongsToClient</span><span class="p">(</span><span class="n">_</span> <span class="nv">uuid</span><span class="p">:</span> <span class="kt">CBUUID</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0B14GattClientBaseC6setMtuyySiF"></a>
+                    <a name="//apple_ref/swift/Method/setMtu(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0B14GattClientBaseC6setMtuyySiF">setMtu(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">setMtu</span><span class="p">(</span><span class="n">_</span> <span class="nv">mtuSize</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0B14GattClientBaseC35isCharacteristicNotificationEnabledySbSo6CBUUIDCF"></a>
+                    <a name="//apple_ref/swift/Method/isCharacteristicNotificationEnabled(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0B14GattClientBaseC35isCharacteristicNotificationEnabledySbSo6CBUUIDCF">isCharacteristicNotificationEnabled(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">isCharacteristicNotificationEnabled</span><span class="p">(</span><span class="n">_</span> <span class="nv">uuid</span><span class="p">:</span> <span class="kt">CBUUID</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0B14GattClientBaseC14waitDiscovered15checkConnection7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSb_tF"></a>
+                    <a name="//apple_ref/swift/Method/waitDiscovered(checkConnection:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0B14GattClientBaseC14waitDiscovered15checkConnection7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSb_tF">waitDiscovered(checkConnection:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">waitDiscovered</span><span class="p">(</span><span class="nv">checkConnection</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0B14GattClientBaseC23waitNotificationEnabled_15checkConnection7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSo6CBUUIDC_SbtF"></a>
+                    <a name="//apple_ref/swift/Method/waitNotificationEnabled(_:checkConnection:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0B14GattClientBaseC23waitNotificationEnabled_15checkConnection7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSo6CBUUIDC_SbtF">waitNotificationEnabled(_:<wbr>checkConnection:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Waits notification to be enabled</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">waitNotificationEnabled</span><span class="p">(</span><span class="n">_</span> <span class="nv">chr</span><span class="p">:</span> <span class="kt">CBUUID</span><span class="p">,</span> <span class="nv">checkConnection</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>chr</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>characteristic uuid to check</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>checkConnection</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>check initial connection from transport</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Observable, complete produced when notification is enabled or is already enabled. Error produced if attribute operation fails, or device disconnects</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0B14GattClientBaseC8tearDown7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGyF"></a>
+                    <a name="//apple_ref/swift/Method/tearDown()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0B14GattClientBaseC8tearDown7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGyF">tearDown()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Tear down the client before connection closed</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">tearDown</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Observable, complete produced when tear down is finished.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </section>
+        </section>
+        <section id="footer">
+          <p>&copy; 2022 <a class="link" href="" target="_blank" rel="noopener" rel="external"></a>. All rights reserved. (Last updated: 2022-02-07)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="noopener" rel="external">jazzy ♪♫ v0.14.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="noopener" rel="external">Realm</a> project.</p>
+        </section>
+      </article>
+    </div>
+  </body>
+</div>
+</html>
