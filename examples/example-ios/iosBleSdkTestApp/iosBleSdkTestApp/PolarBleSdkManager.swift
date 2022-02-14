@@ -202,8 +202,6 @@ class PolarBleSdkManager : ObservableObject {
             ppiStreamStart()
         case .gyro:
             gyrStreamStart(settings: PolarSensorSetting(polarSensorSettings))
-        @unknown default:
-            fatalError()
         }
     }
     
@@ -221,8 +219,6 @@ class PolarBleSdkManager : ObservableObject {
             ppiStreamStop()
         case .gyro:
             gyrStreamStop()
-        @unknown default:
-            fatalError()
         }
     }
     
@@ -240,8 +236,6 @@ class PolarBleSdkManager : ObservableObject {
             return isPpiStreamOn
         case .gyro:
             return isGyrStreamOn
-        @unknown default:
-            fatalError()
         }
     }
     
