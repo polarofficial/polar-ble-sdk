@@ -17,7 +17,5 @@ func getStreamingFeatureString(_ feature: DeviceStreamingFeature) -> String {
         return "GYR"
     case .magnetometer:
         return "MAG"
-    @unknown default:
-        fatalError()
     }
 }
