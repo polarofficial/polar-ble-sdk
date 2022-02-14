@@ -81,7 +81,7 @@ Detailed documentation  [Full Documentation](polar-sdk-android/docs/html/).
 The needed SDK .aar can be found from [polar-sdk-android](polar-sdk-android/libs/)
 
 1.  In `build.gradle` make sure the __minSdkVersion__ is set to __21__ or higher.
-```
+```gradle
 android {
     ...
     defaultConfig {
@@ -97,17 +97,17 @@ polar-ble-sdk.aar
 ```
 
 3. Add the following dependencies to  `build.gradle` inside the dependencies clause:
-```
+```gradle
 dependencies {
     implementation files('libs/polar-ble-sdk.aar')    
-    implementation 'io.reactivex.rxjava3:rxjava:3.1.1'
+    implementation 'io.reactivex.rxjava3:rxjava:3.1.3'
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
-    implementation 'commons-io:commons-io:2.10.0' // Only needed if FEATURE_POLAR_FILE_TRANSFER used
+    implementation 'commons-io:commons-io:2.11.0' // Only needed if FEATURE_POLAR_FILE_TRANSFER used
     implementation 'com.google.protobuf:protobuf-javalite:3.17.3' // Only needed if FEATURE_POLAR_FILE_TRANSFER used
 }
 ```
 4. Finally, to let the SDK use the bluetooth it needs to request [Bluetooth related permissions](https://developer.android.com/guide/topics/connectivity/bluetooth/permissions) on `AndroidManifest.xml`.:
-```
+```xml
    <!-- Polar SDK needs Bluetooth scan permission to search for BLE devices.-->
     <uses-permission
         android:name="android.permission.BLUETOOTH_SCAN"
