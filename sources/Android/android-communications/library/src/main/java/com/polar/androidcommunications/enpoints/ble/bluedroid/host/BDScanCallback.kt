@@ -8,14 +8,16 @@ import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.os.Build
+import android.os.ParcelUuid
 import com.polar.androidcommunications.api.ble.BleLogger
+import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient
+import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils
 import com.polar.androidcommunications.common.ble.BleUtils.EVENT_TYPE
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Scheduler
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 internal class BDScanCallback(
@@ -23,6 +25,23 @@ internal class BDScanCallback(
     private val bluetoothAdapter: BluetoothAdapter,
     private val scanCallbackInterface: BDScanCallbackInterface
 ) {
+    companion object {
+        private const val TAG = "BDScanCallback"
+        private const val POLAR_MANUFACTURER_ID = 0x006b
+
+        // scan window limit, for android's "is scanning too frequently"
+        private const val SCAN_WINDOW_LIMIT = 30000
+    }
+
+    private var scanFilter: List<ScanFilter>? = null
+
+    init {
+        val defaultFilter: MutableList<ScanFilter> = ArrayList()
+        defaultFilter.add(ScanFilter.Builder().setServiceUuid(ParcelUuid.fromString(BleHrClient.HR_SERVICE.toString())).build())
+        defaultFilter.add(ScanFilter.Builder().setServiceUuid(ParcelUuid.fromString(BlePsFtpUtils.RFC77_PFTP_SERVICE.toString())).build())
+        defaultFilter.add(ScanFilter.Builder().setManufacturerData(POLAR_MANUFACTURER_ID, byteArrayOf()).build())
+        this.scanFilter = defaultFilter
+    }
 
     private enum class ScanAction {
         ENTRY,
@@ -47,7 +66,7 @@ internal class BDScanCallback(
     var lowPowerEnabled = false
     var opportunistic = true
     private var adminStops = 0
-    private var filters: List<ScanFilter>? = null
+
     private var delaySubscription: Disposable? = null
     private var opportunisticScanTimer: Disposable? = null
 
@@ -59,7 +78,12 @@ internal class BDScanCallback(
 
     fun setScanFilters(filters: List<ScanFilter>?) {
         stopScan()
-        this.filters = filters
+        this.scanFilter = filters
+        startScan()
+    }
+
+    fun scanRestart() {
+        stopScan()
         startScan()
     }
 
@@ -297,7 +321,7 @@ internal class BDScanCallback(
 
     private fun callStartScanL(scanSettings: ScanSettings) {
         try {
-            bluetoothAdapter.bluetoothLeScanner.startScan(filters, scanSettings, leScanCallback)
+            bluetoothAdapter.bluetoothLeScanner.startScan(scanFilter, scanSettings, leScanCallback)
         } catch (e: Exception) {
             val errorString = "Failed to start scan. Reason: ${e.message}"
             BleLogger.e(TAG, errorString)
@@ -324,10 +348,5 @@ internal class BDScanCallback(
         }
     }
 
-    companion object {
-        private val TAG = BDScanCallback::class.java.simpleName
 
-        // scan window limit, for android's "is scanning too frequently"
-        private const val SCAN_WINDOW_LIMIT = 30000
-    }
 }

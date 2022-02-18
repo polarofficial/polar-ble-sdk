@@ -73,6 +73,11 @@ public abstract class BleDeviceListener {
     }
 
     /**
+     * Restarts the scan
+     */
+    public abstract void scanRestart();
+
+    /**
      * @param filters scan filter list, android specific
      */
     public abstract void setScanFilters(@Nullable List<ScanFilter> filters);

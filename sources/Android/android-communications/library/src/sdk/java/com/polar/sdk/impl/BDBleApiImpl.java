@@ -7,10 +7,7 @@ import static com.polar.androidcommunications.api.ble.model.BleDeviceSession.Dev
 import static com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdControlPointResponse.PmdControlPointResponseCode.ERROR_ALREADY_IN_STATE;
 
 import android.annotation.SuppressLint;
-import android.bluetooth.le.ScanFilter;
 import android.content.Context;
-import android.os.Build;
-import android.os.ParcelUuid;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -102,7 +99,7 @@ import protocol.PftpResponse;
  * The default implementation of the Polar API
  */
 public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePowerStateChangedCallback {
-
+    private static final String TAG = "BDBleApiImpl";
     private static volatile BDBleApiImpl instance;
     private final Map<String, Disposable> connectSubscriptions = new HashMap<>();
     private final Map<String, Disposable> deviceDataMonitorDisposable = new HashMap<>();
@@ -176,17 +173,6 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
 
     private static void clearInstance() {
         instance = null;
-    }
-
-    private void enableAndroidScanFilter() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            List<ScanFilter> scanFilter = new ArrayList<>();
-            scanFilter.add(new ScanFilter.Builder().setServiceUuid(
-                    ParcelUuid.fromString(BleHrClient.HR_SERVICE.toString())).build());
-            scanFilter.add(new ScanFilter.Builder().setServiceUuid(
-                    ParcelUuid.fromString(BlePsFtpUtils.RFC77_PFTP_SERVICE.toString())).build());
-            listener.setScanFilters(scanFilter);
-        }
     }
 
     @Override
@@ -366,12 +352,12 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
 
     @Override
     public void backgroundEntered() {
-        enableAndroidScanFilter();
+        BleLogger.w(TAG, "call of deprecated backgroundEntered() method");
     }
 
     @Override
     public void foregroundEntered() {
-        listener.setScanFilters(null);
+        listener.scanRestart();
     }
 
     @NonNull
