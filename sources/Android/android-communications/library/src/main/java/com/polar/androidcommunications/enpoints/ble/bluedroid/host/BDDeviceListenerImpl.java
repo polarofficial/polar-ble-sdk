@@ -88,6 +88,11 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
     }
 
     @Override
+    public void scanRestart() {
+        scanCallback.scanRestart();
+    }
+
+    @Override
     public void setScanFilters(@Nullable List<ScanFilter> filters) {
         scanCallback.setScanFilters(filters);
     }
@@ -270,6 +275,7 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
 
         @Override
         public void scanStartError(@NonNull String error) {
+            BleLogger.e(TAG, "scanStartError " + error);
             RxUtils.postError(observers, new BleStartScanError(error));
         }
 
