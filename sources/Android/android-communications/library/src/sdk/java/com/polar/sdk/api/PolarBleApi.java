@@ -135,7 +135,7 @@ public abstract class PolarBleApi {
      * the android component (e.g. Activity or Service) then the shutDown may be called
      * on component destroy function. After shutDown the new instance of the SDK is needed:
      *
-     * @see PolarBleApiDefaultImpl#defaultImplementation
+     * @see PolarBleApiDefaultImpl#defaultImplementation(Context, int)
      */
     public abstract void shutDown();
 
@@ -145,7 +145,11 @@ public abstract class PolarBleApi {
     public abstract void cleanup();
 
     /**
-     * @param enable false disable polar filter which means in all apis identifier can be bt address too
+     * When enabled only Polar devices are found by the {@link #searchForDevice()}, if set to false
+     * any BLE devices with HR services are returned by the {@link #searchForDevice()}. The default setting for
+     * Polar filter is true.
+     *
+     * @param enable false disables polar filter
      */
     public abstract void setPolarFilter(boolean enable);
 
@@ -161,11 +165,18 @@ public abstract class PolarBleApi {
 
     /**
      * enables scan filter while on background
+     *
+     * @deprecated in release 3.2.8. Move to the background is not relevant information for SDK starting from release 3.2.8
      */
+    @Deprecated
     public abstract void backgroundEntered();
 
     /**
-     * disables scan filter while on foreground
+     * Optionally call when application enters to the foreground. By calling foregroundEntered() you make
+     * sure BLE scan is restarted. BLE scan start is not working when Android device display is off
+     * (related to Android power save). By calling foregroundEntered() helps in some rare situations
+     * e.g. if connection is lost to the device and {@link #setAutomaticReconnection(boolean)} is enabled,
+     * reconnection is created when application is back in foreground.
      */
     public abstract void foregroundEntered();
 
@@ -184,7 +195,7 @@ public abstract class PolarBleApi {
     public abstract void setApiLogger(@NonNull PolarBleApiLogger logger);
 
     /**
-     * Enable or disable automatic reconnection feature
+     * When enabled the reconnection is attempted if device connection is lost. By default automatic reconnection is enabled.
      *
      * @param enable true = automatic reconnection is enabled, false = automatic reconnection is disabled
      */
@@ -248,7 +259,7 @@ public abstract class PolarBleApi {
     public abstract Completable autoConnectToDevice(int rssiLimit, @Nullable String service, @Nullable final String polarDeviceType);
 
     /**
-     * Request a connection to a Polar device. Invokes {@link PolarBleApiCallback#deviceConnected(PolarDeviceInfo)} callback.
+     * Request a connection to a BLE device. Invokes {@link PolarBleApiCallback#deviceConnected(PolarDeviceInfo)} callback.
      *
      * @param identifier Polar device id found printed on the sensor/device (in format "12345678")
      *                   or bt address (in format "00:11:22:33:44:55")
@@ -257,9 +268,9 @@ public abstract class PolarBleApi {
     public abstract void connectToDevice(@NonNull final String identifier) throws PolarInvalidArgument;
 
     /**
-     * Request disconnecting from a Polar device. Invokes {@link PolarBleApiCallback#deviceDisconnected(PolarDeviceInfo)} callback.
+     * Request disconnecting from a BLE device. Invokes {@link PolarBleApiCallback#deviceDisconnected(PolarDeviceInfo)} callback.
      *
-     * @param identifier Polar device id found printed on the sensor/device or bt address
+     * @param identifier Polar device id found printed on the sensor/device or bt address (in format "00:11:22:33:44:55")
      * @throws PolarInvalidArgument if identifier is invalid formatted mac address or polar device id
      */
     public abstract void disconnectFromDevice(@NonNull final String identifier) throws PolarInvalidArgument;
@@ -339,11 +350,14 @@ public abstract class PolarBleApi {
     public abstract Completable removeExercise(@NonNull final String identifier, @NonNull final PolarExerciseEntry entry);
 
     /**
-     * Start searching for device(s)
+     * Starts searching for BLE devices when subscribed. Search continues as long as observable is
+     * subscribed or error. Each found device is emitted only once. By default searches only for Polar devices,
+     * but can be controlled by {@link #setPolarFilter(boolean)}. If {@link #setPolarFilter(boolean)} is false
+     * then searches for any BLE heart rate capable devices
      *
      * @return Flowable stream of {@link PolarDeviceInfo}
      * Produces:
-     * <BR> - onNext for any new Polar device detected
+     * <BR> - onNext for any new Polar (or BLE) device detected
      * <BR> - onError if scan start fails
      * <BR> - onComplete non produced unless stream is further configured
      */
@@ -351,7 +365,9 @@ public abstract class PolarBleApi {
     public abstract Flowable<PolarDeviceInfo> searchForDevice();
 
     /**
-     * Start listening to heart rate broadcasts from one or more Polar devices
+     * Start listening the heart rate from Polar devices when subscribed. This observable listens BLE
+     * broadcast and parses heart rate from BLE broadcast. The BLE device is not connected when
+     * using this function.
      *
      * @param deviceIds set of Polar device ids to filter or null for a any Polar device
      * @return Flowable stream of {@link PolarHrBroadcastData}

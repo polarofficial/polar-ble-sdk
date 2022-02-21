@@ -7,7 +7,9 @@ package com.polar.sdk.api.model;
 public class PolarHrBroadcastData {
 
     /**
-     * @see polar.com.sdk.api.model.PolarDeviceInfo
+     * Device information
+     *
+     * @see PolarDeviceInfo
      */
     public final PolarDeviceInfo polarDeviceInfo;
 
