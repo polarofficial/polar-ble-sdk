@@ -1,34 +1,3 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.polar.androidcommunications">
-    <!-- Polar SDK needs Bluetooth scan permission to search for BLE devices.-->
-    <uses-permission
-        android:name="android.permission.BLUETOOTH_SCAN"
-        android:usesPermissionFlags="neverForLocation" />
+<manifest package="com.polar.androidcommunications">
 
-    <!-- Polar SDK needs Bluetooth connect permission to connect for found BLE devices.-->
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-
-    <!-- Allows Polar SDK to connect to paired bluetooth devices. Legacy Bluetooth permission,
-     which is needed on devices with API 30 (Android Q) or older. -->
-    <uses-permission
-        android:name="android.permission.BLUETOOTH"
-        android:maxSdkVersion="30" />
-
-    <!-- Allows Polar SDK to discover and pair bluetooth devices. Legacy Bluetooth permission,
-     which is needed on devices with API 30 (Android Q) or older. -->
-    <uses-permission
-        android:name="android.permission.BLUETOOTH_ADMIN"
-        android:maxSdkVersion="30" />
-
-    <!-- Polar SDK needs the fine location permission to get results for Bluetooth scan. Request
-    fine location permission on devices with API 30 (Android Q). -->
-    <uses-permission
-        android:name="android.permission.ACCESS_FINE_LOCATION"
-        android:maxSdkVersion="30" />
-
-    <!-- The coarse location permission is needed, if fine location permission is requested. Request
-     coarse location permission on devices with API 30 (Android Q). -->
-    <uses-permission
-        android:name="android.permission.ACCESS_COARSE_LOCATION"
-        android:maxSdkVersion="30" />
 </manifest>
