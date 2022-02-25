@@ -108,39 +108,14 @@ dependencies {
 ```
 4. Finally, to let the SDK use the bluetooth it needs to request [Bluetooth related permissions](https://developer.android.com/guide/topics/connectivity/bluetooth/permissions) on `AndroidManifest.xml`.:
 ```xml
-   <!-- Polar SDK needs Bluetooth scan permission to search for BLE devices.-->
-    <uses-permission
-        android:name="android.permission.BLUETOOTH_SCAN"
-        android:usesPermissionFlags="neverForLocation" />
-
-    <!-- Polar SDK needs Bluetooth connect permission to connect for found BLE devices.-->
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-
-    <!-- Allows Polar SDK to connect to paired bluetooth devices. Legacy Bluetooth permission,
-     which is needed on devices with API 30 (Android Q) or older. -->
-    <uses-permission
-        android:name="android.permission.BLUETOOTH"
-        android:maxSdkVersion="30" />
-
-    <!-- Allows Polar SDK to discover and pair bluetooth devices. Legacy Bluetooth permission,
-     which is needed on devices with API 30 (Android Q) or older. -->
-    <uses-permission
-        android:name="android.permission.BLUETOOTH_ADMIN"
-        android:maxSdkVersion="30" />
-
-    <!-- Polar SDK needs the fine location permission to get results for Bluetooth scan. Request
-    fine location permission on devices with API 30 (Android Q). -->
-    <uses-permission
-        android:name="android.permission.ACCESS_FINE_LOCATION"
-        android:maxSdkVersion="30" />
-
-   <!-- The coarse location permission is needed, if fine location permission is requested. Request
-     coarse location permission on devices with API 30 (Android Q). -->
-    <uses-permission
-        android:name="android.permission.ACCESS_COARSE_LOCATION"
-        android:maxSdkVersion="30" />
-
+<uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:maxSdkVersion="30" />
 ```
+
+If you use `BLUETOOTH_SCAN` to determine location, remove `android:usesPermissionFlags="neverForLocation"`
+
+If you use location services in your app, remove `android:maxSdkVersion="30"` from the location permission tags
 
 ## Code example: Heart rate
 See the [example](examples/example-android) folder for the full project. 
