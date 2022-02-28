@@ -218,7 +218,7 @@ extends <a href=../api/PolarBleApi.html>PolarBleApi</a>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BDBleApiImpl.html#setPolarFilter(boolean)>setPolarFilter</a>(boolean enable) </code>
                                             </th>
-                                            <td class="colLast"></td>
+                                            <td class="colLast">When enabled only Polar devices are found by the <a href=../api/PolarBleApi.html#searchForDevice()>searchForDevice</a>, if set to falseany BLE devices with HR services are returned by the <a href=../api/PolarBleApi.html#searchForDevice()>searchForDevice</a>.</td>
                                         </tr>
                                         
                                         <tr id="i6" class="altColor">
@@ -250,7 +250,7 @@ extends <a href=../api/PolarBleApi.html>PolarBleApi</a>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BDBleApiImpl.html#setAutomaticReconnection(boolean)>setAutomaticReconnection</a>(boolean disable) </code>
                                             </th>
-                                            <td class="colLast">Enable or disable automatic reconnection feature</td>
+                                            <td class="colLast">When enabled the reconnection is attempted if device connection is lost.</td>
                                         </tr>
                                         
                                         <tr id="i10" class="altColor">
@@ -290,7 +290,7 @@ extends <a href=../api/PolarBleApi.html>PolarBleApi</a>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BDBleApiImpl.html#foregroundEntered()>foregroundEntered</a>() </code>
                                             </th>
-                                            <td class="colLast">disables scan filter while on foreground</td>
+                                            <td class="colLast">Optionally call when application enters to the foreground.</td>
                                         </tr>
                                         
                                         <tr id="i15" class="rowColor">
@@ -314,7 +314,7 @@ extends <a href=../api/PolarBleApi.html>PolarBleApi</a>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BDBleApiImpl.html#connectToDevice(String)>connectToDevice</a>(@<a href=https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html>NonNull</a>() <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
-                                            <td class="colLast">Request a connection to a Polar device.</td>
+                                            <td class="colLast">Request a connection to a BLE device.</td>
                                         </tr>
                                         
                                         <tr id="i18" class="altColor">
@@ -322,7 +322,7 @@ extends <a href=../api/PolarBleApi.html>PolarBleApi</a>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BDBleApiImpl.html#disconnectFromDevice(String)>disconnectFromDevice</a>(@<a href=https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html>NonNull</a>() <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
-                                            <td class="colLast">Request disconnecting from a Polar device.</td>
+                                            <td class="colLast">Request disconnecting from a BLE device.</td>
                                         </tr>
                                         
                                         <tr id="i19" class="rowColor">
@@ -378,7 +378,7 @@ extends <a href=../api/PolarBleApi.html>PolarBleApi</a>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BDBleApiImpl.html#searchForDevice()>searchForDevice</a>() </code>
                                             </th>
-                                            <td class="colLast">Start searching for device(s)</td>
+                                            <td class="colLast">Starts searching for BLE devices when subscribed.</td>
                                         </tr>
                                         
                                         <tr id="i26" class="altColor">
@@ -386,7 +386,7 @@ extends <a href=../api/PolarBleApi.html>PolarBleApi</a>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BDBleApiImpl.html#startListenForPolarHrBroadcasts(Set)>startListenForPolarHrBroadcasts</a>(@<a href=https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html>Nullable</a>() <a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; deviceIds) </code>
                                             </th>
-                                            <td class="colLast">Start listening to heart rate broadcasts from one or more Polar devices</td>
+                                            <td class="colLast">Start listening the heart rate from Polar devices when subscribed.</td>
                                         </tr>
                                         
                                         <tr id="i27" class="rowColor">
@@ -601,13 +601,13 @@ extends <a href=../api/PolarBleApi.html>PolarBleApi</a>
                                     <li class="blockList">
                                         <h4>setPolarFilter</h4>
                                         <pre class="methodSignature"> void <a href=BDBleApiImpl.html#setPolarFilter(boolean)>setPolarFilter</a>(boolean enable)</pre>
-                                        <div class="block"></div>
+                                        <div class="block"><p>When enabled only Polar devices are found by the <a href=../api/PolarBleApi.html#searchForDevice()>searchForDevice</a>, if set to falseany BLE devices with HR services are returned by the <a href=../api/PolarBleApi.html#searchForDevice()>searchForDevice</a>. The default setting forPolar filter is true.</p></div>
                                         
                                         <dl>
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
-                                            <dd><code>enable</code> - false disable polar filter which means in all apis identifier can be bt address too</dd>
+                                            <dd><code>enable</code> - false disables polar filter</dd>
                                             
                                             
                                         </dl>
@@ -701,7 +701,7 @@ extends <a href=../api/PolarBleApi.html>PolarBleApi</a>
                                     <li class="blockList">
                                         <h4>setAutomaticReconnection</h4>
                                         <pre class="methodSignature"> void <a href=BDBleApiImpl.html#setAutomaticReconnection(boolean)>setAutomaticReconnection</a>(boolean disable)</pre>
-                                        <div class="block"><p>Enable or disable automatic reconnection feature</p></div>
+                                        <div class="block"><p>When enabled the reconnection is attempted if device connection is lost. By default automatic reconnection is enabled.</p></div>
                                         
                                         <!-- TODO missing return annotation -->
                                     </li>
@@ -813,7 +813,7 @@ extends <a href=../api/PolarBleApi.html>PolarBleApi</a>
                                     <li class="blockList">
                                         <h4>foregroundEntered</h4>
                                         <pre class="methodSignature"> void <a href=BDBleApiImpl.html#foregroundEntered()>foregroundEntered</a>()</pre>
-                                        <div class="block"><p>disables scan filter while on foreground</p></div>
+                                        <div class="block"><p>Optionally call when application enters to the foreground. By calling foregroundEntered() you makesure BLE scan is restarted. BLE scan start is not working when Android device display is off(related to Android power save). By calling foregroundEntered() helps in some rare situationse.g. if connection is lost to the device and <a href=../api/PolarBleApi.html#setAutomaticReconnection(boolean)>setAutomaticReconnection</a> is enabled,reconnection is created when application is back in foreground.</p></div>
                                         
                                         <!-- TODO missing return annotation -->
                                     </li>
@@ -883,7 +883,7 @@ extends <a href=../api/PolarBleApi.html>PolarBleApi</a>
                                     <li class="blockList">
                                         <h4>connectToDevice</h4>
                                         <pre class="methodSignature"> void <a href=BDBleApiImpl.html#connectToDevice(String)>connectToDevice</a>(@<a href=https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html>NonNull</a>() <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Request a connection to a Polar device. Invokes <a href=../api/PolarBleApiCallback.html#deviceConnected(PolarDeviceInfo)>deviceConnected</a> callback.</p></div>
+                                        <div class="block"><p>Request a connection to a BLE device. Invokes <a href=../api/PolarBleApiCallback.html#deviceConnected(PolarDeviceInfo)>deviceConnected</a> callback.</p></div>
                                         
                                         <dl>
                                             <dt><span class="paramLabel">Parameters:</span></dt>
@@ -907,13 +907,13 @@ extends <a href=../api/PolarBleApi.html>PolarBleApi</a>
                                     <li class="blockList">
                                         <h4>disconnectFromDevice</h4>
                                         <pre class="methodSignature"> void <a href=BDBleApiImpl.html#disconnectFromDevice(String)>disconnectFromDevice</a>(@<a href=https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html>NonNull</a>() <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Request disconnecting from a Polar device. Invokes <a href=../api/PolarBleApiCallback.html#deviceDisconnected(PolarDeviceInfo)>deviceDisconnected</a> callback.</p></div>
+                                        <div class="block"><p>Request disconnecting from a BLE device. Invokes <a href=../api/PolarBleApiCallback.html#deviceDisconnected(PolarDeviceInfo)>deviceDisconnected</a> callback.</p></div>
                                         
                                         <dl>
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
-                                            <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address</dd>
+                                            <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address (in format "00:11:22:33:44:55")</dd>
                                             
                                             
                                         </dl>
@@ -1095,7 +1095,7 @@ extends <a href=../api/PolarBleApi.html>PolarBleApi</a>
                                     <li class="blockList">
                                         <h4>searchForDevice</h4>
                                         <pre class="methodSignature">@<a href=https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html>NonNull</a>() Flowable&lt;<a href=../api/model/PolarDeviceInfo.html>PolarDeviceInfo</a>&gt; <a href=BDBleApiImpl.html#searchForDevice()>searchForDevice</a>()</pre>
-                                        <div class="block"><p>Start searching for device(s)</p></div>
+                                        <div class="block"><p>Starts searching for BLE devices when subscribed. Search continues as long as observable issubscribed or error. Each found device is emitted only once. By default searches only for Polar devices,but can be controlled by <a href=../api/PolarBleApi.html#setPolarFilter(boolean)>setPolarFilter</a>. If <a href=../api/PolarBleApi.html#setPolarFilter(boolean)>setPolarFilter</a> is falsethen searches for any BLE heart rate capable devices</p></div>
                                         
                                         <!-- TODO missing return annotation -->
                                     </li>
@@ -1110,7 +1110,7 @@ extends <a href=../api/PolarBleApi.html>PolarBleApi</a>
                                     <li class="blockList">
                                         <h4>startListenForPolarHrBroadcasts</h4>
                                         <pre class="methodSignature">@<a href=https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html>NonNull</a>() Flowable&lt;<a href=../api/model/PolarHrBroadcastData.html>PolarHrBroadcastData</a>&gt; <a href=BDBleApiImpl.html#startListenForPolarHrBroadcasts(Set)>startListenForPolarHrBroadcasts</a>(@<a href=https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html>Nullable</a>() <a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; deviceIds)</pre>
-                                        <div class="block"><p>Start listening to heart rate broadcasts from one or more Polar devices</p></div>
+                                        <div class="block"><p>Start listening the heart rate from Polar devices when subscribed. This observable listens BLEbroadcast and parses heart rate from BLE broadcast. The BLE device is not connected whenusing this function.</p></div>
                                         
                                         <dl>
                                             <dt><span class="paramLabel">Parameters:</span></dt>
