@@ -4,11 +4,11 @@ plugins {
     id('kotlin-kapt')
     id('com.google.protobuf')
     id('org.jetbrains.dokka')
+    id('maven-publish')
 }
 
 if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPassword")) {
     apply plugin: 'com.jfrog.artifactory'
-    apply plugin: 'maven-publish'
 }
 
 import java.util.regex.Pattern
@@ -133,6 +133,20 @@ if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPa
                 publications('aar')
                 // Properties to be attached to the published artifacts.
                 properties = ['qa.level': 'basic', 'dev.team': 'core']
+            }
+        }
+    }
+} else {
+    afterEvaluate {
+        publishing {
+            publications {
+                aar(MavenPublication) {
+                    from components.sdkRelease
+
+                    groupId 'com.polar'
+                    version = getVersion()
+                    artifactId project.getName()
+                }
             }
         }
     }
