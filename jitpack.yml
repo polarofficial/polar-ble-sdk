@@ -1,0 +1,4 @@
+before_install:
+  - find . -mindepth 1 -maxdepth 1 -not \( -name sources -o -name .git \) -exec rm -rf '{}' \;
+  - cp -r sources/Android/android-communications/* .
+  - rm -rf sources
