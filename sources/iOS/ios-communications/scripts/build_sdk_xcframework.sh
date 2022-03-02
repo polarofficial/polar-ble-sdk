@@ -14,23 +14,26 @@ rm -fr $XC_FRAMEWORK_ARCHIVES_FOLDER
 mkdir $XC_FRAMEWORK_OUTPUT_FOLDER
 mkdir $XC_FRAMEWORK_ARCHIVES_FOLDER
 
+# Archive takes 3 params
+#
+# 1st == SCHEME
+# 2nd == destination
+# 3rd == archivePath
 function archive {
-    local SCHEME=$1
-    local PLATFORM=$2
-    local DESTINATION=${PLATFORM// /-}
-    echo "Start Building scheme: $SCHEME for platform: $PLATFORM. Archive destination: $DESTINATION"; sleep 1
-    xcodebuild -workspace iOSCommunications.xcworkspace archive \
-    -scheme $SCHEME \
-    -destination "generic/platform=$PLATFORM" \
-    -archivePath "$XC_FRAMEWORK_ARCHIVES_FOLDER/$SCHEME-$DESTINATION" \
+    echo "▸ Starts archiving the scheme: ${1} for destination: ${2};\n▸ Archive path: ${3}.xcarchive"
+    xcodebuild clean archive \
+    -workspace iOSCommunications.xcworkspace \
+    -scheme ${1} \
+    -destination "${2}" \
+    -archivePath "${3}" \
     SKIP_INSTALL=NO \
     BUILD_LIBRARY_FOR_DISTRIBUTION=YES
 }
 
-archive PolarBleSdk iOS
-archive PolarBleSdk "iOS Simulator"
-archive PolarBleSdkWatchOs watchOS
-archive PolarBleSdkWatchOs "watchOS Simulator"
+archive PolarBleSdk "generic/platform=iOS" $XC_FRAMEWORK_ARCHIVES_FOLDER/PolarBleSdk-iOS
+archive PolarBleSdk "generic/platform=iOS Simulator" $XC_FRAMEWORK_ARCHIVES_FOLDER/PolarBleSdk-iOS-Simulator
+archive PolarBleSdkWatchOs "generic/platform=watchOS" $XC_FRAMEWORK_ARCHIVES_FOLDER/PolarBleSdkWatchOs-WatchOS
+archive PolarBleSdkWatchOs "generic/platform=watchOS Simulator" $XC_FRAMEWORK_ARCHIVES_FOLDER/PolarBleSdkWatchOs-WatchOS-Simulator
 
 # Create XCFramework 
 echo "Create XCFramework"; sleep 1
