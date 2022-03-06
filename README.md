@@ -152,7 +152,7 @@ permissions need to be listed:
 
 On your application you must request for the [permissions](https://developer.android.com/guide/topics/permissions). Here is the example how could you request the needed permissions for the SDK:
 
-```
+```kt
 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -287,7 +287,7 @@ Detailed documentation: [Documentation](polar-sdk-ios/docs/). Minimum iOS versio
 
 If you use [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) to manage your dependencies, add PolarBleSdk to your `Podfile`:
 
-```
+```rb
 # Podfile
 
 use_frameworks!
