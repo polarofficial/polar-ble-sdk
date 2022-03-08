@@ -18,7 +18,8 @@ let package = Package(
         .target(
             name: "PolarBleSdk",
             dependencies: ["SwiftProtobuf", "RxSwift"],
-            path: "sources/iOS/ios-communications/Sources"
+            path: "sources/iOS/ios-communications/Sources",
+            exclude: ["iOSCommunications/Info.plist", "PolarBleSdk/Info.plist"]
         ),
     ]
 )
