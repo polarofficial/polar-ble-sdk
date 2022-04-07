@@ -65,7 +65,8 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
         TYPE_4(4),
         TYPE_5(5),
         TYPE_6(6),
-        TYPE_7(7);
+        TYPE_7(7),
+        TYPE_8(8);
 
         companion object {
             fun getTypeById(id: Int): PmdDataFrameType {
@@ -213,7 +214,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
 
     @Throws(Exception::class)
     private fun sendPmdCommand(packet: ByteArray): PmdControlPointResponse {
-        txInterface.transmitMessage(this@BlePMDClient, PMD_SERVICE, PMD_CP, packet, true)
+        txInterface.transmitMessage(PMD_SERVICE, PMD_CP, packet, true)
         val first = receiveControlPointPacket()
         val response = PmdControlPointResponse(first)
         var more = response.more

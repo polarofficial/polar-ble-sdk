@@ -120,7 +120,7 @@ public class BleH7SettingsClient extends BleGattBase {
     }
 
     private byte[] readSettingsValue() throws Exception {
-        txInterface.readValue(BleH7SettingsClient.this, H7_SETTINGS_SERVICE, H7_SETTINGS_CHARACTERISTIC);
+        txInterface.readValue(H7_SETTINGS_SERVICE, H7_SETTINGS_CHARACTERISTIC);
         byte[] packet = h7InputQueue.poll(30, TimeUnit.SECONDS);
         if (packet != null) {
             return packet;
@@ -164,8 +164,7 @@ public class BleH7SettingsClient extends BleGattBase {
                                         } else {
                                             values[0] = (byte) ((parameter << 1) | broadcastValue);
                                         }
-                                        txInterface.transmitMessages(BleH7SettingsClient.this,
-                                                H7_SETTINGS_SERVICE,
+                                        txInterface.transmitMessages(H7_SETTINGS_SERVICE,
                                                 H7_SETTINGS_CHARACTERISTIC,
                                                 Collections.singletonList(values), true);
                                         Integer error = h7WrittenQueue.poll(30, TimeUnit.SECONDS);

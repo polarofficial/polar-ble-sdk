@@ -233,7 +233,7 @@ class PpgDataTest {
 
     @Test
     fun `test compressed PPG frame type 7`() {
-
+        // Arrange
         // HEX:
         // 09 AE 20   0
         // 8A 7C 23   1
@@ -306,5 +306,88 @@ class PpgDataTest {
         Assert.assertEquals(sample0ChannelStatus, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType2).status)
         Assert.assertEquals(sample1Channel0, (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType2).ppgDataSamples[0])
         Assert.assertEquals(sample1Channel1, (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType2).ppgDataSamples[1])
+    }
+
+    @Test
+    fun `test compressed PPG frame type 8`() {
+        // Arrange
+        //HEX:
+        // 03 10 01 //0
+        // 05 10 02 //1
+        // FF FF FF //2
+        // 09 10 04 //3
+        // 0B 10 05 //4
+        // 03 10 06 //5
+        // 05 10 07 //6
+        // 07 10 08 //7
+        // 09 10 09 //8
+        // 0B 10 0A //9
+        // 03 10 0B //10
+        // 05 10 0C //11
+        // 07 10 0D //12
+        // 09 10 0E //13
+        // 0B 10 0F //14
+        // 03 10 10 //15
+        // 05 10 11 //16
+        // 07 10 12 //17
+        // 09 10 13 //18
+        // 0B 10 14 //19
+        // 03 10 15 //20
+        // 05 10 16 //21
+        // 07 10 17 //22
+        // 09 10 18 //23
+        // FF FF FF //24
+        // 03
+        // 01
+        // 49 92 24 49 ...
+
+        // index    type                                    data:
+        // 0..74:   Reference sample                        03 10 01 ...
+        //      Sample 0 (aka. reference sample):
+        //      channel 0: 03 10 01 => 0x011003 = 69635
+        val sample0Channel0 = 69635
+        //      channel 1: 05 10 02 => 0x021005 = 135173
+        val sample0Channel1 = 135173
+        //      channel 2: FF FF FF => 0xFFFFFF = -1
+        val sample0Channel2 = -1
+        //      channel 23: 09 10 18 => 0x181009 = 1576969
+        val sample0Channel23 = 1576969
+        //      status: FF FF FF => 0xFFFFFF = 16777215
+        val sample0ChannelStatus = 16777215u
+        // Delta dump: 03 01 | 49 92 24 49 92 ...
+        // 75:      Delta size                           size 1:    0x03 (3 bits)
+        // 76:      Sample amount                        size 1:    0x01 (Delta block contains 1 sample)
+        val amountOfSamples = 1 + 1 // reference sample + delta samples
+        // 77:                                                      0x49( 01 | 001 | 001
+        val sample1Channel0 = sample0Channel0 + 1
+        val sample1Channel1 = sample0Channel1 + 1
+
+        val factor = 1.0f
+        val timeStamp = 0xFFFL
+        val measurementFrame = byteArrayOf(
+            0x03.toByte(), 0x10.toByte(), 0x01.toByte(), 0x05.toByte(), 0x10.toByte(), 0x02.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(),
+            0x09.toByte(), 0x10.toByte(), 0x04.toByte(), 0x0B.toByte(), 0x10.toByte(), 0x05.toByte(), 0x03.toByte(), 0x10.toByte(), 0x06.toByte(),
+            0x05.toByte(), 0x10.toByte(), 0x07.toByte(), 0x07.toByte(), 0x10.toByte(), 0x08.toByte(), 0x09.toByte(), 0x10.toByte(), 0x09.toByte(),
+            0x0B.toByte(), 0x10.toByte(), 0x0A.toByte(), 0x03.toByte(), 0x10.toByte(), 0x0B.toByte(), 0x05.toByte(), 0x10.toByte(), 0x0C.toByte(),
+            0x07.toByte(), 0x10.toByte(), 0x0D.toByte(), 0x09.toByte(), 0x10.toByte(), 0x0E.toByte(), 0x0B.toByte(), 0x10.toByte(), 0x0F.toByte(),
+            0x03.toByte(), 0x10.toByte(), 0x10.toByte(), 0x05.toByte(), 0x10.toByte(), 0x11.toByte(), 0x07.toByte(), 0x10.toByte(), 0x12.toByte(),
+            0x09.toByte(), 0x10.toByte(), 0x13.toByte(), 0x0B.toByte(), 0x10.toByte(), 0x14.toByte(), 0x03.toByte(), 0x10.toByte(), 0x15.toByte(),
+            0x05.toByte(), 0x10.toByte(), 0x16.toByte(), 0x07.toByte(), 0x10.toByte(), 0x17.toByte(), 0x09.toByte(), 0x10.toByte(), 0x18.toByte(),
+            0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0x03.toByte(), 0x01.toByte(), 0x49.toByte(), 0x92.toByte(), 0x24.toByte(), 0x49.toByte(),
+            0x92.toByte(), 0x24.toByte(), 0x49.toByte(), 0x92.toByte(), 0x24.toByte(), 0x00.toByte(),
+        )
+        // Act
+        val ppgData = PpgData.parseDataFromDataFrame(true, BlePMDClient.PmdDataFrameType.TYPE_8, measurementFrame, factor, timeStamp)
+
+        // Assert
+        Assert.assertEquals(amountOfSamples, ppgData.ppgSamples.size)
+        Assert.assertEquals(24, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType3).ppgDataSamples.size)
+        Assert.assertEquals(sample0Channel0, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType3).ppgDataSamples[0])
+        Assert.assertEquals(sample0Channel1, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType3).ppgDataSamples[1])
+        Assert.assertEquals(sample0Channel2, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType3).ppgDataSamples[2])
+        Assert.assertEquals(sample0Channel23, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType3).ppgDataSamples[23])
+        Assert.assertEquals(sample0ChannelStatus, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType3).status)
+        Assert.assertEquals(sample1Channel0, (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType3).ppgDataSamples[0])
+        Assert.assertEquals(sample1Channel1, (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType3).ppgDataSamples[1])
     }
 }

@@ -23,7 +23,7 @@ class BleHrClientTest {
         MockKAnnotations.init(this)
         bleHrClient = BleHrClient(txInterface)
         every { txInterface.isConnected } returns true
-        every { txInterface.setCharacteristicNotify(any(), any(), any(), any()) } returns Unit
+        every { txInterface.setCharacteristicNotify(any(), any(), any()) } returns Unit
     }
 
     @Test

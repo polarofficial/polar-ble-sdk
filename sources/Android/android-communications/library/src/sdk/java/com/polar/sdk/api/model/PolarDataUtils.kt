@@ -1,6 +1,7 @@
 package com.polar.sdk.api.model
 
 import com.polar.androidcommunications.api.ble.BleLogger
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.EcgData
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.PpgData
 
 object PolarDataUtils {
@@ -25,5 +26,21 @@ object PolarDataUtils {
             }
         }
         return PolarOhrData(listOfSamples, type, ohrData.timeStamp)
+    }
+
+    @JvmStatic
+    fun mapPmdClientEcgDataToPolarEcg(ecgData: EcgData): PolarEcgData {
+        val listOfSamples = mutableListOf<Int>()
+        for (sample in ecgData.ecgSamples) {
+            when (sample) {
+                is EcgData.EcgSample -> {
+                    listOfSamples.add(sample.microVolts)
+                }
+                else -> {
+                    BleLogger.w(TAG, "Not supported ECG sample type: $sample")
+                }
+            }
+        }
+        return PolarEcgData(listOfSamples, ecgData.timeStamp)
     }
 }

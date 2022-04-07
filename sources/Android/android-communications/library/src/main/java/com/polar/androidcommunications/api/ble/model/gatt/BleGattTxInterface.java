@@ -11,13 +11,13 @@ import java.util.UUID;
  * Note any of these functions might be called from different thread
  */
 public interface BleGattTxInterface {
-    void transmitMessages(BleGattBase gattServiceBase, UUID serviceUuid, UUID characteristicUuid, List<byte[]> packets, boolean withResponse) throws Exception;
+    void transmitMessages(UUID serviceUuid, UUID characteristicUuid, List<byte[]> packets, boolean withResponse) throws Exception;
 
-    void transmitMessage(BleGattBase gattServiceBase, UUID serviceUuid, UUID characteristicUuid, byte[] packet, boolean withResponse) throws Exception;
+    void transmitMessage(UUID serviceUuid, UUID characteristicUuid, byte[] packet, boolean withResponse) throws Exception;
 
-    void readValue(BleGattBase gattServiceBase, UUID serviceUuid, UUID characteristicUuid) throws Exception;
+    void readValue(UUID serviceUuid, UUID characteristicUuid) throws Exception;
 
-    void setCharacteristicNotify(BleGattBase gattServiceBase, UUID serviceUuid, UUID characteristicUuid, boolean enable) throws BleCharacteristicNotFound, BleServiceNotFound, BleGattNotInitialized;
+    void setCharacteristicNotify(UUID serviceUuid, UUID characteristicUuid, boolean enable) throws BleCharacteristicNotFound, BleServiceNotFound, BleGattNotInitialized;
 
     boolean isConnected(); // for client
 

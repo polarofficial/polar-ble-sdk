@@ -3,7 +3,6 @@ package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClientUtils
 import com.polar.androidcommunications.common.ble.BleUtils
-import java.util.*
 import kotlin.experimental.and
 
 /**
@@ -21,6 +20,12 @@ class PpgData internal constructor(val timeStamp: Long) {
 
     // PPG Data Sample 2
     data class PpgDataSampleType2 internal constructor(
+        val ppgDataSamples: List<Int>,
+        val status: UInt
+    ) : PpgDataSample()
+
+    // PPG Data Sample 3
+    data class PpgDataSampleType3 internal constructor(
         val ppgDataSamples: List<Int>,
         val status: UInt
     ) : PpgDataSample()
@@ -51,6 +56,7 @@ class PpgData internal constructor(val timeStamp: Long) {
                 when (frameType) {
                     BlePMDClient.PmdDataFrameType.TYPE_0 -> dataFromCompressedType0(frame, factor, timeStamp)
                     BlePMDClient.PmdDataFrameType.TYPE_7 -> dataFromCompressedType7(frame, factor, timeStamp)
+                    BlePMDClient.PmdDataFrameType.TYPE_8 -> dataFromCompressedType8(frame, factor, timeStamp)
                     else -> throw java.lang.Exception("Compressed FrameType: $frameType is not supported by PPG data parser")
                 }
             } else {
@@ -140,9 +146,23 @@ class PpgData internal constructor(val timeStamp: Long) {
                 val channels = sample.subList(0, 16).map {
                     if (factor != 1.0f) (it.toFloat() * factor).toInt() else it
                 }
-                val status = sample[16].toUInt()
+                val status = (sample[16] and 0xFFFFFF).toUInt()
 
                 ppgData.ppgSamples.add(PpgDataSampleType2(ppgDataSamples = channels, status))
+            }
+            return ppgData
+        }
+
+        private fun dataFromCompressedType8(value: ByteArray, factor: Float, timeStamp: Long): PpgData {
+            val samples = BlePMDClient.parseDeltaFramesAll(value, 25, 24, BlePMDClient.PmdDataFieldEncoding.SIGNED_INT)
+            val ppgData = PpgData(timeStamp)
+            for (sample in samples) {
+                val channels = sample.subList(0, 24).map {
+                    if (factor != 1.0f) (it.toFloat() * factor).toInt() else it
+                }
+                val status = (sample[24] and 0xFFFFFF).toUInt()
+
+                ppgData.ppgSamples.add(PpgDataSampleType3(ppgDataSamples = channels, status))
             }
             return ppgData
         }

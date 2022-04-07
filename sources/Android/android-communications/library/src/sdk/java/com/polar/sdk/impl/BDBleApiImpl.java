@@ -28,7 +28,6 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClien
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType;
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSetting;
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.AccData;
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.EcgData;
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.GyrData;
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.MagData;
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.PpiData;
@@ -702,13 +701,7 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
                                                     @NonNull PolarSensorSetting setting) {
         return startStreaming(identifier, PmdMeasurementType.ECG, setting,
                 client -> client.monitorEcgNotifications(true)
-                        .map(ecgData -> {
-                            List<Integer> samples = new ArrayList<>();
-                            for (EcgData.EcgSample s : ecgData.ecgSamples) {
-                                samples.add(s.microVolts);
-                            }
-                            return new PolarEcgData(samples, ecgData.timeStamp);
-                        }));
+                        .map(PolarDataUtils::mapPmdClientEcgDataToPolarEcg));
     }
 
     @NonNull

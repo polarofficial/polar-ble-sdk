@@ -325,15 +325,15 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
 
     // GATT
     @Override
-    public void transmitMessages(BleGattBase gattclient, UUID serviceUuid, UUID characteristicUuid, List<byte[]> packets, boolean withResponse) throws Exception {
+    public void transmitMessages(UUID serviceUuid, UUID characteristicUuid, List<byte[]> packets, boolean withResponse) throws Exception {
         // note most likely this comes from a different thread
         for (byte[] packet : packets) {
-            transmitMessage(gattclient, serviceUuid, characteristicUuid, packet, withResponse);
+            transmitMessage(serviceUuid, characteristicUuid, packet, withResponse);
         }
     }
 
     @Override
-    public void transmitMessage(BleGattBase gattclient, UUID serviceUuid, UUID characteristicUuid, byte[] packet, boolean withResponse) throws Exception {
+    public void transmitMessage(UUID serviceUuid, UUID characteristicUuid, byte[] packet, boolean withResponse) throws Exception {
         // note most likely this comes from a different thread
         synchronized (gattMutex) {
             if (gatt != null) {
@@ -358,7 +358,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
     }
 
     @Override
-    public void readValue(BleGattBase gattclient, UUID serviceUuid, UUID characteristicUuid) throws Exception {
+    public void readValue(UUID serviceUuid, UUID characteristicUuid) throws Exception {
         synchronized (gattMutex) {
             if (gatt != null) {
                 for (BluetoothGattService service : gatt.getServices()) {
@@ -382,7 +382,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
     }
 
     @Override
-    public void setCharacteristicNotify(BleGattBase gattClient, UUID serviceUuid, UUID characteristicUuid, boolean enable)
+    public void setCharacteristicNotify(UUID serviceUuid, UUID characteristicUuid, boolean enable)
             throws BleCharacteristicNotFound, BleServiceNotFound, BleGattNotInitialized {
         synchronized (gattMutex) {
             if (gatt != null) {

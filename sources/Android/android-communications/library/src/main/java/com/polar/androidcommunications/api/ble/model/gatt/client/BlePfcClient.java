@@ -199,8 +199,7 @@ public class BlePfcClient extends BleGattBase {
     }
 
     private PfcResponse sendPfcCommandAndProcessResponse(byte[] packet) throws Exception {
-        txInterface.transmitMessages(BlePfcClient.this, PFC_SERVICE, PFC_CP,
-                Collections.singletonList(packet), true);
+        txInterface.transmitMessages(PFC_SERVICE, PFC_CP, Collections.singletonList(packet), true);
         Pair<byte[], Integer> pair = pfcCpInputQueue.poll(30, TimeUnit.SECONDS);
         if (pair != null) {
             if (pair.second == 0) {

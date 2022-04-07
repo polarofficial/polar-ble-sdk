@@ -2,14 +2,7 @@ syntax = "proto2";
 
 package protocol;
 
-/*
- * author: Sami Rantanen
- *
- * SAGRFC9 PFTP error codes.
- */
-
 import "types.proto";
-
 
 /*
  * Error codes.

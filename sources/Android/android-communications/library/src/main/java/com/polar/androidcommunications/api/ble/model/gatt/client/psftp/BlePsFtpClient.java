@@ -1,8 +1,8 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.psftp;
 
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 
 import com.polar.androidcommunications.api.ble.BleLogger;
 import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError;
@@ -54,7 +54,7 @@ public class BlePsFtpClient extends BleGattBase {
      * true  = uses attribute operation WRITE
      * false = uses attribute operation WRITE_NO_RESPONSE
      */
-    private final AtomicBoolean USE_ATTRIBUTE_LEVEL_RESPONSE = new AtomicBoolean(false);
+    private final AtomicBoolean useAttributeLevelResponse = new AtomicBoolean(false);
     private final Object pftpOperationMutex = new Object();
     private final Object pftpNotificationMutex = new Object();
     private final Object pftpWaitNotificationMutex = new Object();
@@ -70,12 +70,21 @@ public class BlePsFtpClient extends BleGattBase {
     }
 
     /**
-     * set amount of packets which to be written before att level response
+     * set amount of packets written consecutive with BLE ATT WRITE before adding the BLE ATT WRITE REQUEST
+     * <p>
+     * BLE ATT WRITE is the write which don't wait response from the GATT server as BLE ATT WRITE
+     * REQUEST waits that GATT server responses before next write is attempt. With BLE ATT WRITE
+     * REQUEST server can control if its getting too busy to handle all the write events by delaying the response.
+     * So it is good send BLE ATT WRITE REQUEST every now and then.
      *
      * @param count number of packets
      */
     public void setPacketsCount(int count) {
         packetsCount.set(count);
+    }
+
+    public int getPacketsCount() {
+        return packetsCount.get();
     }
 
     @Override
@@ -120,7 +129,7 @@ public class BlePsFtpClient extends BleGattBase {
                     mtuInputQueue.notifyAll();
                 }
                 if (currentOperationWrite.get() && mtuWaiting.get() && data.length == 3) {
-                    // special case stream cancelation has been received before att response
+                    // special case stream cancellation has been received before att response
                     synchronized (packetsWritten) {
                         packetsWritten.incrementAndGet();
                         packetsWritten.notifyAll();
@@ -218,19 +227,19 @@ public class BlePsFtpClient extends BleGattBase {
                         // transmit header first
                         ByteArrayInputStream totalStream = BlePsFtpUtils.makeCompleteMessageStream(new ByteArrayInputStream(header), null, BlePsFtpUtils.MessageType.REQUEST, 0);
                         BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();
-                        List<byte[]> requs = BlePsFtpUtils.buildRfc76MessageFrameAll(totalStream, mtuSize.get(), sequenceNumber);
+                        List<byte[]> requestData = BlePsFtpUtils.buildRfc76MessageFrameAll(totalStream, mtuSize.get(), sequenceNumber);
                         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                         //
                         try {
-                            txInterface.transmitMessages(BlePsFtpClient.this, BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, requs, false);
-                            waitPacketsWritten(packetsWritten, mtuWaiting, requs.size());
-                            requs.clear();
+                            txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, requestData, false);
+                            waitPacketsWritten(packetsWritten, mtuWaiting, requestData.size());
+                            requestData.clear();
                             // start waiting for packets
                             readResponse(outputStream);
                             emitter.onSuccess(outputStream);
                         } catch (InterruptedException ex) {
                             // canceled, note make improvement, only wait amount of packets transmitted
-                            handleMtuInterrupted(true, requs.size());
+                            handleMtuInterrupted(true, requestData.size());
                         }
                     } else {
                         throw new BleCharacteristicNotificationNotEnabled("PS-FTP MTU not enabled");
@@ -241,7 +250,9 @@ public class BlePsFtpClient extends BleGattBase {
                     emitter.tryOnError(ex);
                 }
             }
-        }).doOnSubscribe(disposable -> txInterface.gattClientRequestStopScanning()).doFinally(() -> txInterface.gattClientResumeScanning()).subscribeOn(scheduler);
+        }).doOnSubscribe(disposable -> txInterface.gattClientRequestStopScanning())
+                .doFinally(txInterface::gattClientResumeScanning)
+                .subscribeOn(scheduler);
     }
 
     private void waitPacketsWritten(final AtomicInteger written, AtomicBoolean waiting, int count) throws InterruptedException, BleDisconnected, BlePsFtpUtils.PftpOperationTimeout {
@@ -309,10 +320,10 @@ public class BlePsFtpClient extends BleGattBase {
                             airPacket = BlePsFtpUtils.buildRfc76MessageFrame(totalStream, temp, mtuSize.get(), sequenceNumber);
                             next = 1;
                             // transmit one frame
-                            USE_ATTRIBUTE_LEVEL_RESPONSE.set((++pCounter % (packetsCount.get())) == 0);
-                            txInterface.transmitMessage(BlePsFtpClient.this, BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, airPacket, USE_ATTRIBUTE_LEVEL_RESPONSE.get());
+                            useAttributeLevelResponse.set((++pCounter % (packetsCount.get())) == 0);
+                            txInterface.transmitMessage(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, airPacket, useAttributeLevelResponse.get());
                             if (totalStream.available() != 0) {
-                                if (USE_ATTRIBUTE_LEVEL_RESPONSE.get()) {
+                                if (useAttributeLevelResponse.get()) {
                                     counter = 1;
                                     packetsWrittenWithResponse.set(0);
                                     waitPacketsWritten(packetsWrittenWithResponse, mtuWaiting, 1);
@@ -394,7 +405,7 @@ public class BlePsFtpClient extends BleGattBase {
                 if (mtuWaiting.get()) {
                     waitPacketsWritten(packetsWritten, mtuWaiting, lastRequest);
                 }
-                txInterface.transmitMessages(BlePsFtpClient.this, BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, Collections.singletonList(cancelPacket), USE_ATTRIBUTE_LEVEL_RESPONSE.get());
+                txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, Collections.singletonList(cancelPacket), useAttributeLevelResponse.get());
                 waitPacketsWritten(packetsWritten, mtuWaiting, 1);
                 BleLogger.d(TAG, "Stream cancel has been successfully send");
             } catch (Throwable throwable) {
@@ -425,7 +436,7 @@ public class BlePsFtpClient extends BleGattBase {
                         List<byte[]> requs = BlePsFtpUtils.buildRfc76MessageFrameAll(totalStream, mtuSize.get(), sequenceNumber);
                         ByteArrayOutputStream response = new ByteArrayOutputStream();
                         try {
-                            txInterface.transmitMessages(BlePsFtpClient.this, BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, requs, false);
+                            txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, requs, false);
                             waitPacketsWritten(packetsWritten, mtuWaiting, requs.size());
                             requs.clear();
                             readResponse(response);
@@ -476,7 +487,7 @@ public class BlePsFtpClient extends BleGattBase {
                             ByteArrayInputStream totalStream = BlePsFtpUtils.makeCompleteMessageStream(parameters != null ? new ByteArrayInputStream(parameters) : null, null, BlePsFtpUtils.MessageType.NOTIFICATION, id);
                             BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();
                             List<byte[]> requs = BlePsFtpUtils.buildRfc76MessageFrameAll(totalStream, mtuSize.get(), sequenceNumber);
-                            txInterface.transmitMessages(BlePsFtpClient.this, BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_H2D_CHARACTERISTIC, requs, false);
+                            txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_H2D_CHARACTERISTIC, requs, false);
                             waitPacketsWritten(notificationPacketsWritten, notificationWaiting, requs.size());
                             emitter.onComplete();
                         } else {
@@ -609,7 +620,7 @@ public class BlePsFtpClient extends BleGattBase {
                 if (sequenceNumber.getSeq() != response.sequenceNumber) {
                     if (response.status == BlePsFtpUtils.RFC76_STATUS_MORE) {
                         byte[] cancelPacket = new byte[]{0x00, 0x00, 0x00};
-                        txInterface.transmitMessages(BlePsFtpClient.this, BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, Collections.singletonList(cancelPacket), true);
+                        txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, Collections.singletonList(cancelPacket), true);
                         waitPacketsWritten(packetsWritten, mtuWaiting, 1);
                         BleLogger.d(TAG, "Stream cancel has been successfully send");
                     }

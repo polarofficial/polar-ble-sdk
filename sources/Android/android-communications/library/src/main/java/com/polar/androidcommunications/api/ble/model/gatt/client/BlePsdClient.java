@@ -38,7 +38,6 @@ public class BlePsdClient extends BleGattBase {
     public static final byte OPERATION_FAILED = 0x04;
     public static final byte NOT_ALLOWED = 0x05;
 
-
     public static final UUID PSD_SERVICE = UUID.fromString("FB005C20-02E7-F387-1CAD-8ACD2D8DF0C8");
     public static final UUID PSD_FEATURE = UUID.fromString("FB005C21-02E7-F387-1CAD-8ACD2D8DF0C8");
     public static final UUID PSD_CP = UUID.fromString("FB005C22-02E7-F387-1CAD-8ACD2D8DF0C8");
@@ -276,7 +275,7 @@ public class BlePsdClient extends BleGattBase {
     }
 
     private PsdResponse sendPsdCommandAndProcessResponse(byte[] packet) throws Exception {
-        txInterface.transmitMessages(BlePsdClient.this, PSD_SERVICE, PSD_CP, Arrays.asList(packet), true);
+        txInterface.transmitMessages(PSD_SERVICE, PSD_CP, Arrays.asList(packet), true);
         Pair<byte[], Integer> pair = psdCpInputQueue.poll(30, TimeUnit.SECONDS);
         if (pair != null) {
             if (pair.second == 0) {
