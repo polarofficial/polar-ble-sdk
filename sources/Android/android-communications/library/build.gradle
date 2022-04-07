@@ -101,7 +101,7 @@ afterEvaluate {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.14.0"
+        artifact = "com.google.protobuf:protoc:3.20.0"
     }
     generateProtoTasks {
         all().each { task ->
@@ -121,7 +121,7 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.3.0'
     implementation "androidx.core:core-ktx:1.7.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    sdkImplementation 'com.google.protobuf:protobuf-javalite:3.19.2'
+    sdkImplementation 'com.google.protobuf:protobuf-javalite:3.20.0'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:4.3.1'
     testImplementation 'io.mockk:mockk:1.12.2'
