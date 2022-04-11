@@ -91,6 +91,7 @@ import io.reactivex.rxjava3.functions.BiFunction;
 import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.schedulers.Timed;
+import protocol.PftpError;
 import protocol.PftpRequest;
 import protocol.PftpResponse;
 
@@ -469,7 +470,7 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
                 return client.query(PftpRequest.PbPFtpQuery.REQUEST_START_RECORDING_VALUE, params.toByteArray())
                         .toObservable()
                         .ignoreElements()
-                        .onErrorResumeNext(Completable::error);
+                        .onErrorResumeNext(throwable -> Completable.error(handleError(throwable)));
             }
             return Completable.error(new PolarOperationNotSupported());
         } catch (Throwable error) {
@@ -654,7 +655,6 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
     @NonNull
     @Override
     public Flowable<PolarHrBroadcastData> startListenForPolarHrBroadcasts(@Nullable final Set<String> deviceIds) {
-        // set filter to null, NOTE this disables reconnection in background
         return listener.search(false)
                 .filter(bleDeviceSession -> (deviceIds == null || deviceIds.contains(bleDeviceSession.getPolarDeviceId())) &&
                         bleDeviceSession.getAdvertisementContent().getPolarHrAdvertisement().isPresent())
@@ -1069,9 +1069,12 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
     protected Exception handleError(@NonNull Throwable throwable) {
         if (throwable instanceof BleDisconnected) {
             return new PolarDeviceDisconnected();
-        } else {
-            return new Exception(throwable);
+        } else if (throwable instanceof BlePsFtpUtils.PftpResponseError) {
+            int errorId = ((BlePsFtpUtils.PftpResponseError) throwable).getError();
+            PftpError.PbPFtpError pftpError = PftpError.PbPFtpError.forNumber(errorId);
+            if (pftpError != null) return new Exception(pftpError.toString());
         }
+        return new Exception(throwable);
     }
 
     @Override
