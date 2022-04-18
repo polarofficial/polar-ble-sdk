@@ -43,7 +43,7 @@ package google.protobuf;
 
 option go_package = "google.golang.org/protobuf/types/descriptorpb";
 option java_package = "com.google.protobuf";
-option java_outer_classname = "DescriptorProtos";
+option java_outer_classname = "GoogleDescriptorProtos";
 option csharp_namespace = "Google.Protobuf.Reflection";
 option objc_class_prefix = "GPB";
 option cc_enable_arenas = true;
