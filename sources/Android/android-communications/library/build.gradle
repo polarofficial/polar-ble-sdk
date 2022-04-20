@@ -3,7 +3,7 @@ plugins {
     id('kotlin-android')
     id('kotlin-kapt')
     id('com.google.protobuf')
-    id('org.jetbrains.dokka')
+    id("org.jetbrains.dokka") version "1.6.0"
     id('maven-publish')
 }
 
@@ -30,6 +30,8 @@ def getVersion = { ->
 }
 
 android {
+    namespace = 'com.polar.androidcommunications'
+
     compileSdkVersion 31
 
     defaultConfig {
@@ -62,14 +64,15 @@ android {
         }
     }
 
-    repositories {
-        mavenCentral()
-        google()
-    }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    publishing {
+        singleVariant("sdkRelease") {
+            withSourcesJar()
+        }
     }
 }
 
