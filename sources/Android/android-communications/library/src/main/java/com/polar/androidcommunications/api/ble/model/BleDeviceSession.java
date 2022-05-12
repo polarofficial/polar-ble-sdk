@@ -8,10 +8,8 @@ import androidx.annotation.Nullable;
 import com.polar.androidcommunications.api.ble.model.advertisement.BleAdvertisementContent;
 import com.polar.androidcommunications.api.ble.model.advertisement.BlePolarHrAdvertisement;
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase;
-import com.polar.androidcommunications.common.ble.BleUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -56,7 +54,9 @@ public abstract class BleDeviceSession {
     /**
      * Members
      */
+    @NonNull
     protected DeviceSessionState state = DeviceSessionState.SESSION_CLOSED;
+    @NonNull
     protected DeviceSessionState previousState = DeviceSessionState.SESSION_CLOSED;
     protected Set<BleGattBase> clients;
     // needs to be set by 'upper' class
@@ -149,6 +149,7 @@ public abstract class BleDeviceSession {
     /**
      * @return get current state (DeviceSessionState.SESSION_XXXXX)
      */
+    @NonNull
     public DeviceSessionState getSessionState() {
         return state;
     }
@@ -156,6 +157,7 @@ public abstract class BleDeviceSession {
     /**
      * @return state before current one
      */
+    @NonNull
     public DeviceSessionState getPreviousState() {
         return previousState;
     }
@@ -181,14 +183,18 @@ public abstract class BleDeviceSession {
      * @return Observable stream
      */
     public Completable clientsReady(final boolean checkConnection) {
-        return Completable.fromPublisher(monitorServicesDiscovered(checkConnection).toFlowable().flatMapIterable((Function<List<UUID>, Iterable<UUID>>) uuids -> uuids).flatMap(
-                uuid -> {
-                    BleGattBase bleGattBase = fetchClient(uuid);
-                    if (bleGattBase != null) {
-                        return bleGattBase.clientReady(checkConnection).toFlowable();
-                    }
-                    return Completable.fromPublisher(Flowable.empty()).toFlowable();
-                }));
+        return Completable.fromPublisher(
+                monitorServicesDiscovered(checkConnection)
+                        .toFlowable()
+                        .flatMapIterable((Function<List<UUID>, Iterable<UUID>>) uuids -> uuids)
+                        .flatMap(
+                                uuid -> {
+                                    BleGattBase bleGattBase = fetchClient(uuid);
+                                    if (bleGattBase != null) {
+                                        return bleGattBase.clientReady(checkConnection).toFlowable();
+                                    }
+                                    return Completable.fromPublisher(Flowable.empty()).toFlowable();
+                                }));
     }
 
     /**
@@ -258,20 +264,6 @@ public abstract class BleDeviceSession {
      */
     public int getRssi() {
         return advertisementContent.getRssi();
-    }
-
-    /**
-     * @return current advertisement data received from device
-     */
-    public HashMap<BleUtils.AD_TYPE, byte[]> getAdvertisementData() {
-        return advertisementContent.getAdvertisementData();
-    }
-
-    /**
-     * @return all advertisement data received in current session lifespan
-     */
-    public HashMap<BleUtils.AD_TYPE, byte[]> getAdvertisementDataAll() {
-        return advertisementContent.getAdvertisementDataAll();
     }
 
     /**

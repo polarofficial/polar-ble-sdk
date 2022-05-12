@@ -1,10 +1,9 @@
 package com.polar.androidcommunications.api.ble.model.polar
 
-import com.polar.androidcommunications.api.ble.model.advertisement.BleAdvertisementContent.BLE_ADV_POLAR_PREFIX_IN_LOCAL_NAME
+import com.polar.androidcommunications.api.ble.model.advertisement.BleAdvertisementContent.Companion.BLE_ADV_POLAR_PREFIX_IN_LOCAL_NAME
 
 object PolarAdvDataUtility {
 
-    @JvmStatic
     fun getPolarModelNameFromAdvLocalName(advLocalName: String): String {
         return if (isPolarDevice(advLocalName)) {
             val modelName = advLocalName.trim()
@@ -16,7 +15,6 @@ object PolarAdvDataUtility {
         }
     }
 
-    @JvmStatic
     fun isPolarDevice(name: String): Boolean {
         return name.trim().startsWith(BLE_ADV_POLAR_PREFIX_IN_LOCAL_NAME) && name.trim()
             .split(" ").size > 2

@@ -656,8 +656,11 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
     @Override
     public Flowable<PolarHrBroadcastData> startListenForPolarHrBroadcasts(@Nullable final Set<String> deviceIds) {
         return listener.search(false)
-                .filter(bleDeviceSession -> (deviceIds == null || deviceIds.contains(bleDeviceSession.getPolarDeviceId())) &&
-                        bleDeviceSession.getAdvertisementContent().getPolarHrAdvertisement().isPresent())
+                .filter(bleDeviceSession ->
+                        (deviceIds == null || deviceIds.contains(bleDeviceSession.getPolarDeviceId())) &&
+                                bleDeviceSession.getAdvertisementContent().getPolarHrAdvertisement().isPresent() &&
+                                bleDeviceSession.getAdvertisementContent().getPolarHrAdvertisement().isHrDataUpdated()
+                )
                 .map(bleDeviceSession -> {
                     BlePolarHrAdvertisement advertisement = bleDeviceSession.getBlePolarHrAdvertisement();
                     return new PolarHrBroadcastData(new PolarDeviceInfo(bleDeviceSession.getPolarDeviceId(),

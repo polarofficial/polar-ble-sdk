@@ -5,7 +5,7 @@ import com.polar.androidcommunications.api.ble.model.BleDeviceSession;
 import com.polar.androidcommunications.common.ble.BleUtils;
 import com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl;
 
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Connection handler handles connection serialization, by using simple state pattern
@@ -119,7 +119,7 @@ public class ConnectionHandler {
 
     private boolean containsRequiredUuids(final BDDeviceSessionImpl session) {
         if (!session.getConnectionUuids().isEmpty()) {
-            HashMap<BleUtils.AD_TYPE, byte[]> content = session.getAdvertisementContent().getAdvertisementData();
+            Map<BleUtils.AD_TYPE, byte[]> content = session.getAdvertisementContent().getAdvertisementData();
             if (content.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_MORE) ||
                     content.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_COMPLETE)) {
 
