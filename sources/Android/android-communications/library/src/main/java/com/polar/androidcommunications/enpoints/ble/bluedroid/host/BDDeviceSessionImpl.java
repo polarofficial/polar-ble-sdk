@@ -1,5 +1,6 @@
 package com.polar.androidcommunications.enpoints.ble.bluedroid.host;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -8,6 +9,7 @@ import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.os.Handler;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import com.polar.androidcommunications.BuildConfig;
@@ -111,6 +113,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
         return subscriptions;
     }
 
+    @SuppressLint("MissingPermission")
     void resetGatt() {
         synchronized (gattMutex) {
             if (gatt != null) {
@@ -136,7 +139,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
      *
      * @param sessionState @see BleDeviceSession.DeviceSessionState
      */
-    public void setSessionState(BleDeviceSession.DeviceSessionState sessionState) {
+    public void setSessionState(@NonNull BleDeviceSession.DeviceSessionState sessionState) {
         this.previousState = this.state;
         this.state = sessionState;
     }
@@ -157,6 +160,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
     }
 
     @Override
+    @SuppressLint("MissingPermission")
     public Completable authenticate() {
         final BDBondingListener.BondingObserver[] observer = {null};
         return Completable.create(subscriber -> {
@@ -199,6 +203,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
         }).doFinally(() -> bondingManager.removeObserver(observer[0]));
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public boolean isAuthenticated() {
         return bluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDED;
@@ -220,6 +225,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
         return result;
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public Single<Integer> readRssiValue() {
         final SingleEmitter<? super Integer>[] observer = new SingleEmitter[1];
@@ -244,6 +250,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                 }).doFinally(() -> rssiObservers.remove(observer[0]));
     }
 
+    @SuppressLint("MissingPermission")
     private boolean sendNextAttributeOperation(AttributeOperation operation) throws Throwable {
         BluetoothGattCharacteristic characteristic = operation.getCharacteristic();
         synchronized (getGattMutex()) {
@@ -290,13 +297,13 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
     @Override
     public void gattClientRequestStopScanning() {
         BleLogger.d(TAG, "GATT client request stop scanning");
-        handler.post(() -> bleScanCallback.stopScan());
+        handler.post(bleScanCallback::stopScan);
     }
 
     @Override
     public void gattClientResumeScanning() {
         BleLogger.d(TAG, "GATT client request continue scanning");
-        handler.post(() -> bleScanCallback.startScan());
+        handler.post(bleScanCallback::startScan);
     }
 
     @Override
@@ -308,8 +315,8 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
         BleLogger.d(TAG, "disconnected");
         advertisementContent.resetAdvertisementData();
         attOperations.clear();
-        for (BleGattBase gattclient : clients) {
-            gattclient.reset();
+        for (BleGattBase gattClient : clients) {
+            gattClient.reset();
         }
         RxUtils.postDisconnectedAndClearList(servicesSubscriberAtomicList);
         RxUtils.postDisconnectedAndClearList(rssiObservers);
@@ -511,6 +518,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
             case BleGattBase.ATT_INSUFFICIENT_ENCRYPTION: {
                 BleLogger.e(TAG, "Attribute operation write failed due the reason: " + status);
                 startAuthentication(this::handleAuthenticationComplete);
+                // fallthrough
             }
             default: {
                 final BleGattBase client = fetchClient(service.getUuid());
@@ -537,6 +545,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
             case BleGattBase.ATT_INSUFFICIENT_ENCRYPTION: {
                 BleLogger.e(TAG, "Attribute operation read failed due the reason: " + status);
                 startAuthentication(this::handleAuthenticationComplete);
+                // fallthrough
             }
             default: {
                 if (status != BleGattBase.ATT_INSUFFICIENT_AUTHENTICATION &&
@@ -577,6 +586,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
             case BleGattBase.ATT_INSUFFICIENT_ENCRYPTION: {
                 BleLogger.e(TAG, "Attribute operation descriptor write failed due the reason: " + status);
                 startAuthentication(this::handleAuthenticationComplete);
+                // fallthrough
             }
             default: {
                 if (status != BleGattBase.ATT_INSUFFICIENT_AUTHENTICATION &&
@@ -604,8 +614,8 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
     void handleMtuChanged(int mtu, int status) {
         BleLogger.d(TAG, "handleMtuChanged status: " + status + " mtu: " + mtu);
         if (status == BleGattBase.ATT_SUCCESS) {
-            for (BleGattBase gattclient : clients) {
-                gattclient.setMtuSize(mtu);
+            for (BleGattBase gattClient : clients) {
+                gattClient.setMtuSize(mtu);
             }
         }
     }
@@ -662,8 +672,8 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
         subscriptions.add(
                 authenticate().toObservable()
                         .delaySubscription(500, TimeUnit.MILLISECONDS)
-                        .ignoreElements().
-                        observeOn(AndroidSchedulers.from(context.getMainLooper()))
+                        .ignoreElements()
+                        .observeOn(AndroidSchedulers.from(context.getMainLooper()))
                         .subscribe(
                                 complete,
                                 this::handleAuthenticationFailed)

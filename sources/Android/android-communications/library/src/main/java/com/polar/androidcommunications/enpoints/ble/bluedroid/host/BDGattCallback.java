@@ -1,5 +1,7 @@
 package com.polar.androidcommunications.enpoints.ble.bluedroid.host;
 
+import static com.polar.androidcommunications.common.ble.AndroidBuildUtils.getBuildVersion;
+
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -49,7 +51,7 @@ class BDGattCallback extends BluetoothGattCallback {
             if (newState == BluetoothGatt.STATE_CONNECTED) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     handler.post(() -> connectionHandler.deviceConnected(smartPolarDeviceSession));
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    if (getBuildVersion() >= Build.VERSION_CODES.O) {
                         gatt.setPreferredPhy(BluetoothDevice.PHY_LE_2M_MASK, BluetoothDevice.PHY_LE_2M_MASK, BluetoothDevice.PHY_OPTION_NO_PREFERRED);
                     }
                     if (smartPolarDeviceSession.isAuthenticated()) {

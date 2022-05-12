@@ -1,5 +1,6 @@
 package com.polar.androidcommunications.enpoints.ble.bluedroid.host
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanCallback
@@ -12,6 +13,7 @@ import android.os.ParcelUuid
 import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils
+import com.polar.androidcommunications.common.ble.AndroidBuildUtils.Companion.getBuildVersion
 import com.polar.androidcommunications.common.ble.BleUtils.EVENT_TYPE
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
@@ -256,7 +258,7 @@ internal class BDScanCallback(
     }
 
     private fun startScanning() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (getBuildVersion() >= Build.VERSION_CODES.N) {
             if (scanPool.isNotEmpty()) {
                 val elapsed = System.currentTimeMillis() - scanPool[0]
                 if (scanPool.size > 3 && elapsed < SCAN_WINDOW_LIMIT) {
@@ -282,9 +284,10 @@ internal class BDScanCallback(
         startLScan()
     }
 
+    @SuppressLint("NewApi")
     private fun fetchAdvType(result: ScanResult): EVENT_TYPE {
         var type = EVENT_TYPE.ADV_IND
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !result.isConnectable) {
+        if (getBuildVersion() >= Build.VERSION_CODES.O && !result.isConnectable) {
             type = EVENT_TYPE.ADV_NONCONN_IND
         }
         return type
@@ -299,7 +302,7 @@ internal class BDScanCallback(
         }
         try {
             callStartScanL(scanSettings)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && opportunistic) {
+            if (getBuildVersion() >= Build.VERSION_CODES.N && opportunistic) {
                 opportunisticScanTimer = Observable.interval(30, TimeUnit.MINUTES)
                     .subscribeOn(Schedulers.io())
                     .observeOn(delayScheduler)
@@ -319,6 +322,7 @@ internal class BDScanCallback(
         }
     }
 
+    @SuppressLint("MissingPermission", "NewApi")
     private fun callStartScanL(scanSettings: ScanSettings) {
         try {
             bluetoothAdapter.bluetoothLeScanner.startScan(scanFilter, scanSettings, leScanCallback)
@@ -329,15 +333,16 @@ internal class BDScanCallback(
             changeState(ScannerState.IDLE)
             return
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (getBuildVersion() >= Build.VERSION_CODES.N) {
             scanPool.removeIf { aLong: Long -> System.currentTimeMillis() - aLong >= SCAN_WINDOW_LIMIT }
             scanPool.add(System.currentTimeMillis())
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun stopScanning() {
         BleLogger.d(TAG, "Stop scanning")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (getBuildVersion() >= Build.VERSION_CODES.N) {
             delaySubscription?.dispose()
             delaySubscription = null
         }
@@ -347,6 +352,4 @@ internal class BDScanCallback(
             BleLogger.e(TAG, "stopScan did throw exception: " + ex.localizedMessage)
         }
     }
-
-
 }

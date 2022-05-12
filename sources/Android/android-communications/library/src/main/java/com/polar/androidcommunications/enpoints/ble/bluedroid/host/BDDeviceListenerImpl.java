@@ -1,5 +1,8 @@
 package com.polar.androidcommunications.enpoints.ble.bluedroid.host;
 
+import static com.polar.androidcommunications.common.ble.AndroidBuildUtils.getBuildVersion;
+
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -107,6 +110,7 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
         scanCallback.setOpportunistic(disable);
     }
 
+    @SuppressLint("MissingPermission")
     @NonNull
     @Override
     public Flowable<BleDeviceSession> search(final boolean fetchKnownDevices) {
@@ -223,11 +227,12 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
     }
 
     private final ConnectionInterface connectionInterface = new ConnectionInterface() {
+        @SuppressLint({"NewApi", "MissingPermission"})
         @Override
         public void connectDevice(final BDDeviceSessionImpl session) {
             BluetoothGatt gatt;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (getBuildVersion() >= Build.VERSION_CODES.M) {
+                if (getBuildVersion() >= Build.VERSION_CODES.O) {
                     int mask = BluetoothDevice.PHY_LE_1M_MASK;
                     if (bluetoothAdapter.isLe2MPhySupported())
                         mask |= BluetoothDevice.PHY_LE_2M_MASK;
@@ -243,6 +248,7 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
             }
         }
 
+        @SuppressLint("MissingPermission")
         @Override
         public void disconnectDevice(final BDDeviceSessionImpl session) {
             synchronized (session.getGattMutex()) {
@@ -252,6 +258,7 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
             }
         }
 
+        @SuppressLint("MissingPermission")
         @Override
         public void cancelDeviceConnection(BDDeviceSessionImpl session) {
             synchronized (session.getGattMutex()) {
@@ -279,6 +286,7 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
             RxUtils.postError(observers, new BleStartScanError(error));
         }
 
+        @SuppressLint("MissingPermission")
         public void deviceDiscovered(BluetoothDevice device, int rssi, @NonNull byte[] scanRecord, @NonNull BleUtils.EVENT_TYPE type) {
             BDDeviceSessionImpl deviceSession = sessions.getSession(device);
             HashMap<BleUtils.AD_TYPE, byte[]> advData = BleUtils.advertisementBytes2Map(scanRecord);

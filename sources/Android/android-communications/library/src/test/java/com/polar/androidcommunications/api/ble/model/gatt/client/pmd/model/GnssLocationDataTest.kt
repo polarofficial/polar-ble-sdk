@@ -1,12 +1,18 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
+import com.polar.androidcommunications.testrules.BleLoggerTestRule
 import org.junit.Assert
+import org.junit.Rule
 import org.junit.Test
 import java.lang.Double.longBitsToDouble
 import java.lang.Float.intBitsToFloat
 
 class GnssLocationDataTest {
+
+    @Rule
+    @JvmField
+    val bleLoggerTestRule = BleLoggerTestRule()
 
     @Test
     fun `process location data type 0`() {
@@ -106,37 +112,77 @@ class GnssLocationDataTest {
     @Test
     fun `process location data type 2`() {
         // Arrange
-        // HEX: 00 01 02 03 04 05 06 07 FF EF 80 00 01 02 03 04
+        // HEX: 00 01 02 03 04 05 06 07 08 09
+        //      FF EF 80 00 01 02 03 04 00 00
+        //      00 01 02 03 04 05 06 07 08 09
+        //      FF EF 80 00 01 02 03 04 00 00
+        //      FF
         // index    type                                data
-        // 0..7:    Seen satellite summary              00 01 02 03 04 05 06 07
-        // 8..15:   Used satellite summary              FF EF 80 00 01 02 03 04
-
+        // 0..9:    Seen satellite summary              00 01 02 03 04 05 06 07 08 09
+        // 10..19:   Used satellite summary             FF EF 80 00 01 02 03 04 00 00
+        // 20..29:    Seen satellite summary            00 01 02 03 04 05 06 07 08 09
+        // 30..39:   Used satellite summary             FF EF 80 00 01 02 03 04 00 00
+        // 40:      MaxSnr                              FF
         val expectedSamplesSize = 1
         val expectedTimeStamp = 946784976788085937L
-        val seenSatelliteSummary = GnssLocationData.GnssSatelliteSummary(
-            gpsSat = 0u,
+        val seenBand1 = GnssLocationData.GnssSatelliteSummary(
+            gpsNbrOfSat = 0u,
             gpsMaxSnr = 1u,
-            glonassSat = 2u,
+            glonassNbrOfSat = 2u,
             glonassMaxSnr = 3u,
-            sbasSat = 4u,
-            sbasMaxSnr = 5u,
-            snrTop5Avg = 6u,
-            sbasSnrTop5Avg = 7u
+            galileoNbrOfSat = 4u,
+            galileoMaxSnr = 5u,
+            beidouNbrOfSat = 6u,
+            beidouMaxSnr = 7u,
+            nbrOfSat = 8u,
+            snrTop5Avg = 9u
         )
-        val usedSatelliteSummary = GnssLocationData.GnssSatelliteSummary(
-            gpsSat = 0xFFu,
+        val usedBand1 = GnssLocationData.GnssSatelliteSummary(
+            gpsNbrOfSat = 0xFFu,
             gpsMaxSnr = 0xEFu,
-            glonassSat = 0x80u,
+            glonassNbrOfSat = 0x80u,
             glonassMaxSnr = 0x00u,
-            sbasSat = 1u,
-            sbasMaxSnr = 2u,
-            snrTop5Avg = 3u,
-            sbasSnrTop5Avg = 4u
+            galileoNbrOfSat = 1u,
+            galileoMaxSnr = 2u,
+            beidouNbrOfSat = 3u,
+            beidouMaxSnr = 4u,
+            nbrOfSat = 0u,
+            snrTop5Avg = 0u
+        )
+        val seenBand2 = GnssLocationData.GnssSatelliteSummary(
+            gpsNbrOfSat = 0u,
+            gpsMaxSnr = 1u,
+            glonassNbrOfSat = 2u,
+            glonassMaxSnr = 3u,
+            galileoNbrOfSat = 4u,
+            galileoMaxSnr = 5u,
+            beidouNbrOfSat = 6u,
+            beidouMaxSnr = 7u,
+            nbrOfSat = 8u,
+            snrTop5Avg = 9u
         )
 
+        val usedBand2 = GnssLocationData.GnssSatelliteSummary(
+            gpsNbrOfSat = 0xFFu,
+            gpsMaxSnr = 0xEFu,
+            glonassNbrOfSat = 0x80u,
+            glonassMaxSnr = 0x00u,
+            galileoNbrOfSat = 1u,
+            galileoMaxSnr = 2u,
+            beidouNbrOfSat = 3u,
+            beidouMaxSnr = 4u,
+            nbrOfSat = 0u,
+            snrTop5Avg = 0u
+        )
+        val maxSnr = 0xFFu
+
+
         val measurementFrame = byteArrayOf(
-            0x00.toByte(), 0x01.toByte(), 0x02.toByte(), 0x03.toByte(), 0x04.toByte(), 0x05.toByte(), 0x06.toByte(), 0x07.toByte(),
-            0xFF.toByte(), 0xEF.toByte(), 0x80.toByte(), 0x00.toByte(), 0x01.toByte(), 0x02.toByte(), 0x03.toByte(), 0x04.toByte(),
+            0x00.toByte(), 0x01.toByte(), 0x02.toByte(), 0x03.toByte(), 0x04.toByte(), 0x05.toByte(), 0x06.toByte(), 0x07.toByte(), 0x08.toByte(), 0x09.toByte(),
+            0xFF.toByte(), 0xEF.toByte(), 0x80.toByte(), 0x00.toByte(), 0x01.toByte(), 0x02.toByte(), 0x03.toByte(), 0x04.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x00.toByte(), 0x01.toByte(), 0x02.toByte(), 0x03.toByte(), 0x04.toByte(), 0x05.toByte(), 0x06.toByte(), 0x07.toByte(), 0x08.toByte(), 0x09.toByte(),
+            0xFF.toByte(), 0xEF.toByte(), 0x80.toByte(), 0x00.toByte(), 0x01.toByte(), 0x02.toByte(), 0x03.toByte(), 0x04.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0xFF.toByte()
         )
 
         // Act
@@ -145,8 +191,11 @@ class GnssLocationDataTest {
         // Assert
         Assert.assertEquals(expectedTimeStamp, gnssData.timeStamp)
         Assert.assertEquals(expectedSamplesSize, gnssData.gnssLocationDataSamples.size)
-        Assert.assertEquals(seenSatelliteSummary, (gnssData.gnssLocationDataSamples[0] as GnssLocationData.GnssSatelliteSummarySample).seenGnssSatelliteSummary)
-        Assert.assertEquals(usedSatelliteSummary, (gnssData.gnssLocationDataSamples[0] as GnssLocationData.GnssSatelliteSummarySample).usedGnssSatelliteSummary)
+        Assert.assertEquals(seenBand1, (gnssData.gnssLocationDataSamples[0] as GnssLocationData.GnssSatelliteSummarySample).seenGnssSatelliteSummaryBand1)
+        Assert.assertEquals(usedBand1, (gnssData.gnssLocationDataSamples[0] as GnssLocationData.GnssSatelliteSummarySample).usedGnssSatelliteSummaryBand1)
+        Assert.assertEquals(seenBand2, (gnssData.gnssLocationDataSamples[0] as GnssLocationData.GnssSatelliteSummarySample).seenGnssSatelliteSummaryBand2)
+        Assert.assertEquals(usedBand2, (gnssData.gnssLocationDataSamples[0] as GnssLocationData.GnssSatelliteSummarySample).usedGnssSatelliteSummaryBand2)
+        Assert.assertEquals(maxSnr, (gnssData.gnssLocationDataSamples[0] as GnssLocationData.GnssSatelliteSummarySample).max_snr)
     }
 
     @Test

@@ -4,6 +4,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils.RFC77_PFTP_SERVICE
+import com.polar.androidcommunications.testrules.BleLoggerTestRule
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import io.reactivex.rxjava3.schedulers.TestScheduler
@@ -12,12 +13,17 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import java.io.ByteArrayOutputStream
 import java.util.*
 import java.util.concurrent.TimeUnit
 
 class BlePsFtpClientTest {
+    @Rule
+    @JvmField
+    val bleLoggerTestRule = BleLoggerTestRule()
+
     @MockK
     lateinit var mockGattTxInterface: BleGattTxInterface
 
