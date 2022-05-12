@@ -928,19 +928,25 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
         switch (Objects.requireNonNull(sessionState)) {
             case SESSION_OPEN:
                 if (callback != null) {
-                    callback.deviceConnected(info);
+                    Completable.fromAction(() -> callback.deviceConnected(info))
+                            .subscribeOn(AndroidSchedulers.mainThread())
+                            .subscribe();
                 }
                 setupDevice(session);
                 break;
             case SESSION_CLOSED:
                 if (callback != null && (session.getPreviousState() == SESSION_OPEN || session.getPreviousState() == BleDeviceSession.DeviceSessionState.SESSION_CLOSING)) {
-                    callback.deviceDisconnected(info);
+                    Completable.fromAction(() -> callback.deviceDisconnected(info))
+                            .subscribeOn(AndroidSchedulers.mainThread())
+                            .subscribe();
                 }
                 tearDownDevice(session);
                 break;
             case SESSION_OPENING:
                 if (callback != null) {
-                    callback.deviceConnecting(info);
+                    Completable.fromAction(() -> callback.deviceConnecting(info))
+                            .subscribeOn(AndroidSchedulers.mainThread())
+                            .subscribe();
                 }
                 break;
             default:
