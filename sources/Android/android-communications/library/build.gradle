@@ -73,6 +73,10 @@ android {
             withSourcesJar()
         }
     }
+
+    packagingOptions {
+        exclude "**/*.proto"
+    }
 }
 
 tasks.dokkaJavadoc.configure {
