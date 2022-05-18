@@ -236,33 +236,33 @@ import UIKit
                         let pmdClient = (client as! BlePmdClient)
                         return pmdClient.clientReady(true)
                             .andThen(pmdClient.readFeature(true)
-                                        .observe(on: self.scheduler)
-                                        .do(onSuccess: { (value: Pmd.PmdFeature) in
-                                var featureSet = Set<DeviceStreamingFeature>()
-                                if value.ecgSupported {
-                                    featureSet.insert(.ecg)
-                                }
-                                if value.accSupported {
-                                    featureSet.insert(.acc)
-                                }
-                                if value.ppgSupported {
-                                    featureSet.insert(.ppg)
-                                }
-                                if value.ppiSupported {
-                                    featureSet.insert(.ppi)
-                                }
-                                if value.gyroSupported {
-                                    featureSet.insert(.gyro)
-                                }
-                                if value.magnetometerSupported {
-                                    featureSet.insert(.magnetometer)
-                                }
-                                self.deviceFeaturesObserver?.streamingFeaturesReady(deviceId, streamingFeatures: featureSet)
-                                
-                                if value.sdkModeSupported {
-                                    self.sdkModeFeatureObserver?.sdkModeFeatureAvailable(deviceId)
-                                }
-                            }))
+                                .observe(on: self.scheduler)
+                                .do(onSuccess: { (value: Pmd.PmdFeature) in
+                                    var featureSet = Set<DeviceStreamingFeature>()
+                                    if value.ecgSupported {
+                                        featureSet.insert(.ecg)
+                                    }
+                                    if value.accSupported {
+                                        featureSet.insert(.acc)
+                                    }
+                                    if value.ppgSupported {
+                                        featureSet.insert(.ppg)
+                                    }
+                                    if value.ppiSupported {
+                                        featureSet.insert(.ppi)
+                                    }
+                                    if value.gyroSupported {
+                                        featureSet.insert(.gyro)
+                                    }
+                                    if value.magnetometerSupported {
+                                        featureSet.insert(.magnetometer)
+                                    }
+                                    self.deviceFeaturesObserver?.streamingFeaturesReady(deviceId, streamingFeatures: featureSet)
+                                    
+                                    if value.sdkModeSupported {
+                                        self.sdkModeFeatureObserver?.sdkModeFeatureAvailable(deviceId)
+                                    }
+                                }))
                             .asObservable()
                             .map { (_) -> Any in
                                 return Any.self
@@ -583,8 +583,9 @@ extension PolarBleApiImpl: PolarBleApi {
     func startListenForPolarHrBroadcasts(_ identifiers: Set<String>?) -> Observable<PolarHrBroadcastData> {
         return listener.search(serviceList, identifiers: nil)
             .filter({ (session) -> Bool in
-                return (identifiers == nil ||    identifiers!.contains(session.advertisementContent.polarDeviceIdUntouched)) &&
-                session.advertisementContent.polarHrAdvertisementData.isPresent
+                return (identifiers == nil || identifiers!.contains(session.advertisementContent.polarDeviceIdUntouched)) &&
+                session.advertisementContent.polarHrAdvertisementData.isPresent &&
+                session.advertisementContent.polarHrAdvertisementData.isHrDataUpdated
             })
             .map({ (value) -> PolarHrBroadcastData in
                 return (deviceInfo: (value.advertisementContent.polarDeviceIdUntouched,
@@ -637,10 +638,10 @@ extension PolarBleApiImpl: PolarBleApi {
             let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
             return client.startMeasurement(type, settings: settings.map2PmdSetting())
                 .andThen(observer(client)
-                            .do(onDispose: {
-                    _ = client.stopMeasurement(type)
-                        .subscribe()
-                }))
+                    .do(onDispose: {
+                        _ = client.stopMeasurement(type)
+                            .subscribe()
+                    }))
                 .catch { (err) -> Observable<T> in
                     return Observable.error(PolarErrors.deviceError(description: "\(err)"))
                 }
@@ -750,29 +751,29 @@ extension PolarBleApiImpl: PolarBleApi {
                     entry == "SAMPLES.BPB" ||
                     entry == "00/"
                 })
-                    .map({ (path) -> (path: String, date: Date, entryId: String) in
-                        let components = path.split(separator: "/")
-                        let dateFormatter = DateFormatter()
-                        dateFormatter.dateFormat = "yyyyMMddHHmmss"
-                        if let date = dateFormatter.date(from: String(components[2] + components[4])) {
-                            return (path,date: date, entryId: String(components[2] + components[4]))
-                        }
-                        throw PolarErrors.dateTimeFormatFailed
-                    })
-                    .catch({ (err) -> Observable<PolarExerciseEntry> in
-                        return Observable.error(PolarErrors.deviceError(description: "\(err)"))
-                    })
+                .map({ (path) -> (path: String, date: Date, entryId: String) in
+                    let components = path.split(separator: "/")
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "yyyyMMddHHmmss"
+                    if let date = dateFormatter.date(from: String(components[2] + components[4])) {
+                        return (path,date: date, entryId: String(components[2] + components[4]))
+                    }
+                    throw PolarErrors.dateTimeFormatFailed
+                })
+                .catch({ (err) -> Observable<PolarExerciseEntry> in
+                    return Observable.error(PolarErrors.deviceError(description: "\(err)"))
+                })
             } else if fsType == .h10FileSystem {
                 return fetchRecursive("/", client: client, condition: { (entry) -> Bool in
                     return entry.hasSuffix("/") || entry == "SAMPLES.BPB"
                 })
-                    .map({ (path) -> (path: String, date: Date, entryId: String) in
-                        let components = path.split(separator: "/")
-                        return (path,date: Date(), entryId: String(components[0]))
-                    })
-                    .catch({ (err) -> Observable<PolarExerciseEntry> in
-                        return Observable.error(PolarErrors.deviceError(description: "\(err)"))
-                    })
+                .map({ (path) -> (path: String, date: Date, entryId: String) in
+                    let components = path.split(separator: "/")
+                    return (path,date: Date(), entryId: String(components[0]))
+                })
+                .catch({ (err) -> Observable<PolarExerciseEntry> in
+                    return Observable.error(PolarErrors.deviceError(description: "\(err)"))
+                })
             }
             throw PolarErrors.operationNotSupported
         } catch let err {

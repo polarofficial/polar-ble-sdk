@@ -78,10 +78,9 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 # Android: Getting started
 Detailed documentation  [Full Documentation](polar-sdk-android/docs/html/). 
 ## Installation
-The needed SDK .aar can be found from [polar-sdk-android](polar-sdk-android/libs/)
 
 1.  In `build.gradle` make sure the __minSdkVersion__ is set to __21__ or higher.
-```
+```gradle
 android {
     ...
     defaultConfig {
@@ -90,25 +89,32 @@ android {
     }
 }
 ```
-2.  Copy the contents of [polar-sdk-android](polar-sdk-android/libs) folder into your project's __libs__ folder e.g `YourProjectName/app/libs/`
-The `YourProjectName/app/libs/` should now contain the files
-```
-polar-ble-sdk.aar
-```
 
-3. Add the following dependencies to  `build.gradle` inside the dependencies clause:
-```
-dependencies {
-    implementation files('libs/polar-ble-sdk.aar')    
-    implementation 'io.reactivex.rxjava3:rxjava:3.1.1'
-    implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
-    implementation 'commons-io:commons-io:2.10.0' // Only needed if FEATURE_POLAR_FILE_TRANSFER used
-    implementation 'com.google.protobuf:protobuf-javalite:3.17.3' // Only needed if FEATURE_POLAR_FILE_TRANSFER used
+2. Add the JitPack repository to your build file
+```gradle
+allprojects {
+    repositories {
+        ...
+        maven { url 'https://jitpack.io' }
+    }
 }
 ```
-4. Finally, to let the SDK use the bluetooth it needs to request [Bluetooth related permissions](https://developer.android.com/guide/topics/connectivity/bluetooth/permissions) on `AndroidManifest.xml`.:
+
+3. Add the dependency
+```gradle
+dependencies {
+    implementation 'io.reactivex.rxjava3:rxjava:3.1.3'
+    implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
+    implementation 'com.github.polarofficial:polar-ble-sdk:${sdk_version}'
+}
 ```
-   <!-- Polar SDK needs Bluetooth scan permission to search for BLE devices.-->
+
+4. Finally, to let the SDK use the bluetooth it needs [Bluetooth related permissions](https://developer.android.com/guide/topics/connectivity/bluetooth/permissions). On your application `AndroidManifest.xml` following 
+permissions need to be listed:
+
+```xml
+   <!-- Polar SDK needs Bluetooth scan permission to search for BLE devices. Polar BLE SDK doesn't use the scan
+    to decide the location so "neverForLocation" permission flag can be used.-->
     <uses-permission
         android:name="android.permission.BLUETOOTH_SCAN"
         android:usesPermissionFlags="neverForLocation" />
@@ -129,18 +135,37 @@ dependencies {
         android:maxSdkVersion="30" />
 
     <!-- Polar SDK needs the fine location permission to get results for Bluetooth scan. Request
-    fine location permission on devices with API 30 (Android Q). -->
+    fine location permission on devices with API 30 (Android Q). Note, if your application 
+    needs location for other purposes than bluetooth then remove android:maxSdkVersion="30"-->
     <uses-permission
         android:name="android.permission.ACCESS_FINE_LOCATION"
         android:maxSdkVersion="30" />
 
    <!-- The coarse location permission is needed, if fine location permission is requested. Request
-     coarse location permission on devices with API 30 (Android Q). -->
+     coarse location permission on devices with API 30 (Android Q). Note, if your application 
+    needs location for other purposes than bluetooth then remove android:maxSdkVersion="30" -->
     <uses-permission
         android:name="android.permission.ACCESS_COARSE_LOCATION"
         android:maxSdkVersion="30" />
 
 ```
+
+On your application you must request for the [permissions](https://developer.android.com/guide/topics/permissions). Here is the example how could you request the needed permissions for the SDK:
+
+```kt
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT), PERMISSION_REQUEST_CODE)
+        } else {
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_REQUEST_CODE)
+        }
+    } else {
+        requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), PERMISSION_REQUEST_CODE)
+    }
+}
+```
+
 
 ## Code example: Heart rate
 See the [example](examples/example-android) folder for the full project. 
@@ -262,7 +287,7 @@ Detailed documentation: [Documentation](polar-sdk-ios/docs/). Minimum iOS versio
 
 If you use [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) to manage your dependencies, add PolarBleSdk to your `Podfile`:
 
-```
+```rb
 # Podfile
 
 use_frameworks!

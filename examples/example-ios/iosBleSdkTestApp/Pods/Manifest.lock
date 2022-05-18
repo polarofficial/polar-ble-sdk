@@ -1,9 +1,9 @@
 PODS:
-  - PolarBleSdk (3.2.7):
+  - PolarBleSdk (3.3.0):
     - RxSwift (~> 6.5.0)
     - SwiftProtobuf (~> 1.0)
   - RxSwift (6.5.0)
-  - SwiftProtobuf (1.18.0)
+  - SwiftProtobuf (1.19.0)
 
 DEPENDENCIES:
   - PolarBleSdk (~> 3.2)
@@ -15,9 +15,9 @@ SPEC REPOS:
     - SwiftProtobuf
 
 SPEC CHECKSUMS:
-  PolarBleSdk: 4bb6aca272d73192b5314b3fe32051ec6db8959c
+  PolarBleSdk: 74ed616d0ad8ddcbc74cbe0b0ab7f5c75f4f4ff3
   RxSwift: 5710a9e6b17f3c3d6e40d6e559b9fa1e813b2ef8
-  SwiftProtobuf: c3c12645230d9b09c72267e0de89468c5543bd86
+  SwiftProtobuf: 6ef3f0e422ef90d6605ca20b21a94f6c1324d6b3
 
 PODFILE CHECKSUM: 4fb83d433e7978769eea29c1c61d3ad3e9acfdfd
 

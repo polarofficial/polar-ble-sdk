@@ -16,12 +16,12 @@ public class BleAdvertisementContent {
     public private(set) var polarDeviceIdIntUntouched: UInt32 = 0
     public private(set) var isConnectable = true
     public private(set) var medianRssi: Int32 = -100
-    public private(set) var manufacturerType: Int16 = 0
     public private(set) var advData = [String : Any]()
     public private(set) var name = ""
     public private(set) var polarDeviceId = ""
     public private(set) var polarDeviceIdUntouched = ""
     public private(set) var polarDeviceType = ""
+    
     
     func processAdvertisementData(_ rssi: Int32, advertisementData: [String : Any]){
         advData = advertisementData
@@ -29,6 +29,16 @@ public class BleAdvertisementContent {
         advertisementTimestamp = TimeUtility.currentTime()
         rssiFilter.processRssiValueUpdated(rssi)
         medianRssi = rssiFilter.medianRssi
+        
+        processAdvName(advertisementData)
+        
+        if let connectable = advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber{
+            isConnectable = connectable == 1
+        }
+        processManufacturerData(advertisementData)
+    }
+    
+    fileprivate func processAdvName(_ advertisementData: [String : Any]) {
         if let localName = advertisementData[CBAdvertisementDataLocalNameKey] as? String{
             if !(localName == name) {
                 name = localName
@@ -45,20 +55,13 @@ public class BleAdvertisementContent {
                 }
             }
         }
-        
-        if let connectable = advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber{
-            isConnectable = connectable == 1
-        }
-        if (advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data) != nil {
-            processManufacturerData(advertisementData)
-        }
     }
     
     func processManufacturerData(_ advertisementData: [String : Any]) {
-        if let manData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data {
-            var manufacturer: Int16=0
+        var didContainHrData = false
+        if let manData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data, manData.count >= 2 {
+            var manufacturer: Int16 = 0
             memcpy(&manufacturer, (manData as NSData).bytes, 2)
-            manufacturerType = manufacturer
             if manufacturer == 0x006B {
                 var offset = 0
                 // polar manufacturer data example from OH1: 6b 00 72 06 7f 44 37 00 00 00 33 00 3c
@@ -67,6 +70,7 @@ public class BleAdvertisementContent {
                 case POLAR_OLD_H7_MANUFACTURER_DATA_LENGTH: fallthrough
                 case POLAR_H7_UPDATE_MANUFACTURER_DATA_LENGTH:
                     polarHrAdvertisementData.processPolarManufacturerData(content)
+                    didContainHrData = true
                     break
                 default:
                     while offset < content.count {
@@ -75,6 +79,7 @@ public class BleAdvertisementContent {
                         case 0:
                             if ( (offset+3) <= content.count ){
                                 polarHrAdvertisementData.processPolarManufacturerData(content.subdata(in: offset..<content.count))
+                                didContainHrData = true
                             }
                             offset += 3
                         default:
@@ -83,6 +88,9 @@ public class BleAdvertisementContent {
                     }
                 }
             }
+        }
+        if(!didContainHrData) {
+            polarHrAdvertisementData.resetToDefault()
         }
     }
     
