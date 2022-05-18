@@ -341,13 +341,12 @@ public class BlePsFtpClient extends BleGattBase {
                                         if (!subscriber.isCancelled()) {
                                             subscriber.tryOnError(new BlePsFtpUtils.PftpResponseError("Stream canceled: ", response.error));
                                         }
-                                        return;
                                     } else {
                                         if (!subscriber.isCancelled()) {
                                             subscriber.tryOnError(new Throwable("Stream canceled"));
                                         }
-                                        return;
                                     }
+                                    return;
                                 }
                             }
                             long transferred = totalPayload - totalStream.available() - headerSize - 2;
@@ -387,10 +386,12 @@ public class BlePsFtpClient extends BleGattBase {
                     throw new BleCharacteristicNotificationNotEnabled("PS-FTP MTU not enabled");
                 }
             }
-        }, BackpressureStrategy.LATEST).doOnSubscribe(subscription -> txInterface.gattClientRequestStopScanning()).doFinally(() -> {
-            txInterface.gattClientResumeScanning();
-            currentOperationWrite.set(false);
-        }).subscribeOn(scheduler).serialize();
+        }, BackpressureStrategy.LATEST)
+                .doOnSubscribe(subscription -> txInterface.gattClientRequestStopScanning())
+                .doFinally(() -> {
+                    txInterface.gattClientResumeScanning();
+                    currentOperationWrite.set(false);
+                }).subscribeOn(scheduler).serialize();
     }
 
     public Single<ByteArrayOutputStream> query(final int id, final byte[] parameters) {

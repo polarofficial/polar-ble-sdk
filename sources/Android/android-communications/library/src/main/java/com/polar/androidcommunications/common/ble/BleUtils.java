@@ -1,5 +1,7 @@
 package com.polar.androidcommunications.common.ble;
 
+import androidx.annotation.NonNull;
+
 import com.polar.androidcommunications.api.ble.BleLogger;
 
 import java.util.HashMap;
@@ -76,26 +78,27 @@ public final class BleUtils {
         }
     }
 
-    public static HashMap<AD_TYPE, byte[]> advertisementBytes2Map(byte[] record) {
+    @NonNull
+    public static HashMap<AD_TYPE, byte[]> advertisementBytes2Map(byte[] advBytes) {
         int offset = 0;
         HashMap<AD_TYPE, byte[]> adTypeHashMap = new HashMap<>();
         try {
-            while ((offset + 2) < record.length) {
-                AD_TYPE type = getCode(record[offset + 1]);
-                int fieldLen = record[offset];
+            while ((offset + 2) < advBytes.length) {
+                AD_TYPE type = getCode(advBytes[offset + 1]);
+                int fieldLen = advBytes[offset];
                 if (fieldLen <= 0) {
                     // skip if incorrect adv is detected
                     break;
                 }
                 if (adTypeHashMap.containsKey(type) && type == AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC) {
                     byte[] data = new byte[Objects.requireNonNull(adTypeHashMap.get(type)).length + fieldLen - 1];
-                    System.arraycopy(record, offset + 2, data, 0, fieldLen - 1);
+                    System.arraycopy(advBytes, offset + 2, data, 0, fieldLen - 1);
                     System.arraycopy(Objects.requireNonNull(adTypeHashMap.get(type)), 0, data, fieldLen - 1,
                             Objects.requireNonNull(adTypeHashMap.get(type)).length);
                     adTypeHashMap.put(type, data);
                 } else {
                     byte[] data = new byte[fieldLen - 1];
-                    System.arraycopy(record, offset + 2, data, 0, fieldLen - 1);
+                    System.arraycopy(advBytes, offset + 2, data, 0, fieldLen - 1);
                     adTypeHashMap.put(type, data);
                 }
                 offset += fieldLen + 1;

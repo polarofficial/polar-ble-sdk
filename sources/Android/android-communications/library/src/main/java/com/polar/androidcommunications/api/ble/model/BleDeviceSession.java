@@ -198,7 +198,7 @@ public abstract class BleDeviceSession {
     }
 
     /**
-     * @return advertisement content object <BR>
+     * @return advertisement content object
      */
     @NonNull
     public BleAdvertisementContent getAdvertisementContent() {

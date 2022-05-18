@@ -135,21 +135,23 @@ public class BDBleApiImpl extends PolarBleApi implements BleDeviceListener.BlePo
         scheduler = AndroidSchedulers.from(context.getMainLooper());
         BleLogger.setLoggerInterface(new BleLogger.BleLoggerInterface() {
             @Override
-            public void d(String tag, String msg) {
+            public void d(@NonNull String tag, @NonNull String msg) {
                 log(tag + "/" + msg);
             }
 
             @Override
-            public void e(String tag, String msg) {
+            public void e(@NonNull String tag, @NonNull String msg) {
                 logError(tag + "/" + msg);
             }
 
             @Override
-            public void w(String tag, String msg) {
+            public void w(@NonNull String tag, @NonNull String msg) {
+                log(tag + "/" + msg);
             }
 
             @Override
-            public void i(String tag, String msg) {
+            public void i(@NonNull String tag, @NonNull String msg) {
+                log(tag + "/" + msg);
             }
         });
     }

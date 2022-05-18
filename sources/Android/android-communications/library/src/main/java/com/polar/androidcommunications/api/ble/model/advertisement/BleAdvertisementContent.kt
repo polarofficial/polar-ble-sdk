@@ -13,7 +13,19 @@ class BleAdvertisementContent {
         const val BLE_ADV_POLAR_PREFIX_IN_LOCAL_NAME = "Polar"
     }
 
-    private val advertisementData = HashMap<AD_TYPE, ByteArray>() // current
+    /**
+     * The latest received advertisement data. Old data is cleared when
+     * new advertisement data arrives
+     */
+    @JvmField
+    val advertisementData = HashMap<AD_TYPE, ByteArray>()
+
+    /**
+     * The latest up to date advertisement data. When new advertisement data
+     * arrives the matching data fields are updated, rest are kept in previous values
+     */
+    @JvmField
+    val advertisementDataAll = HashMap<AD_TYPE, ByteArray>()
 
     /**
      * @return Advertised local name <BR></BR>
@@ -76,10 +88,12 @@ class BleAdvertisementContent {
     var rssi = -100
         private set
 
-    fun processAdvertisementData(advData: Map<AD_TYPE, ByteArray>?, advertisementEventType: EVENT_TYPE, rssi: Int) {
+    fun processAdvertisementData(advData: Map<AD_TYPE, ByteArray>, advertisementEventType: EVENT_TYPE, rssi: Int) {
         // start access of atomic section
         advertisementData.clear()
-        advertisementData.putAll(advData!!)
+        advertisementData.putAll(advData)
+        advertisementDataAll.putAll(advData)
+
         this.advertisementEventType = advertisementEventType
         advertisementTimeStamp = System.currentTimeMillis() / 1000L
         val nameFromAdv = getNameFromAdvData(advertisementData)
