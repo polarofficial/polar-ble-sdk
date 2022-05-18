@@ -101,7 +101,7 @@ class BleAdvertisementContent {
             processName(nameFromAdv)
         }
         processAdvManufacturerData(advertisementData, polarHrAdvertisement)
-        if (rssi >= 0) {
+        if (rssi < 0) {
             processRssi(rssi)
         }
     }
