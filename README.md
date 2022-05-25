@@ -79,38 +79,39 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 Detailed documentation  [Full Documentation](polar-sdk-android/docs/html/). 
 ## Installation
 
-1.  In `build.gradle` make sure the __minSdkVersion__ is set to __21__ or higher.
+1.  In `build.gradle` make sure the __minSdk__ is set to __21__ or higher.
 ```gradle
 android {
     ...
     defaultConfig {
         ...
-        minSdkVersion 21
+        minSdk 21
     }
 }
 ```
 
-2. Add the JitPack repository to your build file
+2. Add the JitPack repository to your repositories settings
+
 ```gradle
-allprojects {
+   ...
     repositories {
         ...
         maven { url 'https://jitpack.io' }
+        ...
     }
 }
 ```
 
-3. Add the dependency
+3. Add the dependency Polar BLE SDK library. Also you will need the dependencies to [RxJava](https://github.com/ReactiveX/RxJava) to use the Polar BLE SDK Library
 ```gradle
 dependencies {
+    implementation 'com.github.polarofficial:polar-ble-sdk:${sdk_version}'
     implementation 'io.reactivex.rxjava3:rxjava:3.1.3'
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
-    implementation 'com.github.polarofficial:polar-ble-sdk:${sdk_version}'
 }
 ```
 
-4. Finally, to let the SDK use the bluetooth it needs [Bluetooth related permissions](https://developer.android.com/guide/topics/connectivity/bluetooth/permissions). On your application `AndroidManifest.xml` following 
-permissions need to be listed:
+4. Finally, to let the SDK use the bluetooth it needs [Bluetooth related permissions](https://developer.android.com/guide/topics/connectivity/bluetooth/permissions). On your application `AndroidManifest.xml` following permissions need to be listed:
 
 ```xml
    <!-- Polar SDK needs Bluetooth scan permission to search for BLE devices. Polar BLE SDK doesn't use the scan
