@@ -12,6 +12,8 @@ $dokka.location:com.polar.sdk.api/PolarBleApi.DeviceStreamingFeature///PointingT
 $dokka.location:com.polar.sdk.api/PolarBleApi.PolarBleApiLogger///PointingToDeclaration/com/polar/sdk/api/PolarBleApi.PolarBleApiLogger.html
 $dokka.location:com.polar.sdk.api/PolarBleApi.RecordingInterval///PointingToDeclaration/com/polar/sdk/api/PolarBleApi.RecordingInterval.html
 $dokka.location:com.polar.sdk.api/PolarBleApi.SampleType///PointingToDeclaration/com/polar/sdk/api/PolarBleApi.SampleType.html
+$dokka.location:com.polar.sdk.impl/BDBleApiImpl.Companion///PointingToDeclaration/com/polar/sdk/impl/BDBleApiImpl.Companion.html
+$dokka.location:com.polar.sdk.impl/BDBleApiImpl.FetchRecursiveCondition///PointingToDeclaration/com/polar/sdk/impl/BDBleApiImpl.FetchRecursiveCondition.html
 com.polar.sdk.api
 com.polar.sdk.api.errors
 com.polar.sdk.api.model
