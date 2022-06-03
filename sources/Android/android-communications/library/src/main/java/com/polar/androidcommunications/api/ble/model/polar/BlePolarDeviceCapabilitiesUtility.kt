@@ -23,7 +23,7 @@ class BlePolarDeviceCapabilitiesUtility {
                 "sense" -> FileSystemType.SAGRFC2_FILE_SYSTEM
                 "oh1" -> FileSystemType.SAGRFC2_FILE_SYSTEM
                 "h10" -> FileSystemType.H10_FILE_SYSTEM
-                else -> FileSystemType.UNKNOWN_FILE_SYSTEM
+                else -> FileSystemType.SAGRFC2_FILE_SYSTEM
             }
         }
 

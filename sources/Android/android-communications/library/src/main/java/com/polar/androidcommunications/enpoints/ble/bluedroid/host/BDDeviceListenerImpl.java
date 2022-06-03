@@ -1,6 +1,12 @@
 package com.polar.androidcommunications.enpoints.ble.bluedroid.host;
 
+
+import static com.polar.androidcommunications.api.ble.model.gatt.BleGattBase.DEFAULT_ATT_MTU_SIZE;
+import static com.polar.androidcommunications.common.ble.AndroidBuildUtils.getBrand;
 import static com.polar.androidcommunications.common.ble.AndroidBuildUtils.getBuildVersion;
+import static com.polar.androidcommunications.common.ble.AndroidBuildUtils.getModel;
+import static com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection.ConnectionHandler.MTU_SKIP_NEGOTIATION;
+import static com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection.ConnectionHandler.POLAR_PREFERRED_MTU;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
@@ -18,6 +24,7 @@ import androidx.core.util.Pair;
 
 import com.polar.androidcommunications.api.ble.BleDeviceListener;
 import com.polar.androidcommunications.api.ble.BleLogger;
+import com.polar.androidcommunications.api.ble.exceptions.BleInvalidMtu;
 import com.polar.androidcommunications.api.ble.exceptions.BleNotAvailableInDevice;
 import com.polar.androidcommunications.api.ble.exceptions.BleStartScanError;
 import com.polar.androidcommunications.api.ble.model.BleDeviceSession;
@@ -25,6 +32,7 @@ import com.polar.androidcommunications.api.ble.model.advertisement.BleAdvertisem
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase;
 import com.polar.androidcommunications.common.ble.AtomicSet;
 import com.polar.androidcommunications.common.ble.BleUtils;
+import com.polar.androidcommunications.common.ble.PhoneUtils;
 import com.polar.androidcommunications.common.ble.RxUtils;
 import com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection.ConnectionHandler;
 import com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection.ConnectionHandlerObserver;
@@ -41,10 +49,12 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.core.BackpressureOverflowStrategy;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.FlowableEmitter;
 import io.reactivex.rxjava3.core.FlowableOnSubscribe;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 
 public class BDDeviceListenerImpl extends BleDeviceListener {
@@ -52,7 +62,7 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
     private static final String TAG = BDDeviceListenerImpl.class.getSimpleName();
     private BluetoothAdapter bluetoothAdapter;
     private final BDDeviceList sessions = new BDDeviceList();
-    private final BDGattCallback gattCallback;
+    private final GattCallback gattCallback;
     private final BDScanCallback scanCallback;
     private final BluetoothManager btManager;
     private final BDPowerListener powerManager;
@@ -63,6 +73,7 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
     private final BehaviorSubject<Pair<BleDeviceSession, BleDeviceSession.DeviceSessionState>> deviceSessionStateSubject = BehaviorSubject.create();
     private BleDeviceSessionStateChangedCallback changedCallback = null;
     private BlePowerStateChangedCallback powerStateChangedCallback = null;
+    private int preferredMTU = POLAR_PREFERRED_MTU;
 
     public BDDeviceListenerImpl(@NonNull final Context context,
                                 @NonNull Set<Class<? extends BleGattBase>> clients) throws BleNotAvailableInDevice {
@@ -77,9 +88,8 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
         if (btManager == null || bluetoothAdapter == null) {
             throw new BleNotAvailableInDevice("Device doesn't support BLE");
         }
-
         connectionHandler = new ConnectionHandler(connectionInterface, scannerInterface, connectionHandlerObserver);
-        gattCallback = new BDGattCallback(context, connectionHandler, sessions);
+        gattCallback = new GattCallback(connectionHandler, sessions);
         bondingManager = new BDBondingListener(context);
         scanCallback = new BDScanCallback(context, bluetoothAdapter, scanCallbackInterface);
         powerManager = new BDPowerListener(bluetoothAdapter, context, blePowerStateListener);
@@ -116,34 +126,34 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
     public Flowable<BleDeviceSession> search(final boolean fetchKnownDevices) {
         final FlowableEmitter<BleDeviceSession>[] subscriber1 = new FlowableEmitter[1];
         return Flowable.create((FlowableOnSubscribe<BleDeviceSession>) subscriber -> {
-                    if (fetchKnownDevices) {
-                        List<BluetoothDevice> devices =
-                                btManager.getDevicesMatchingConnectionStates(BluetoothProfile.GATT,
-                                        new int[]{BluetoothProfile.STATE_CONNECTED | BluetoothProfile.STATE_CONNECTING});
-                        for (BluetoothDevice device : devices) {
-                            if (device.getType() == BluetoothDevice.DEVICE_TYPE_LE && sessions.getSession(device) == null) {
-                                BDDeviceSessionImpl newDevice = new BDDeviceSessionImpl(context, device, scanCallback, bondingManager, factory);
-                                sessions.addSession(newDevice);
+                            if (fetchKnownDevices) {
+                                List<BluetoothDevice> devices =
+                                        btManager.getDevicesMatchingConnectionStates(BluetoothProfile.GATT,
+                                                new int[]{BluetoothProfile.STATE_CONNECTED | BluetoothProfile.STATE_CONNECTING});
+                                for (BluetoothDevice device : devices) {
+                                    if (device.getType() == BluetoothDevice.DEVICE_TYPE_LE && sessions.getSession(device) == null) {
+                                        BDDeviceSessionImpl newDevice = new BDDeviceSessionImpl(context, device, scanCallback, bondingManager, factory);
+                                        sessions.addSession(newDevice);
+                                    }
+                                }
+                                Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
+                                for (BluetoothDevice device : bondedDevices) {
+                                    if (device.getType() == BluetoothDevice.DEVICE_TYPE_LE && sessions.getSession(device) == null) {
+                                        BDDeviceSessionImpl newDevice = new BDDeviceSessionImpl(context, device, scanCallback, bondingManager, factory);
+                                        sessions.addSession(newDevice);
+                                    }
+                                }
+                                Set<BleDeviceSession> sessionsList = sessions.copyDeviceList();
+                                for (BleDeviceSession deviceSession : sessionsList) {
+                                    subscriber.onNext(deviceSession);
+                                }
                             }
-                        }
-                        Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
-                        for (BluetoothDevice device : bondedDevices) {
-                            if (device.getType() == BluetoothDevice.DEVICE_TYPE_LE && sessions.getSession(device) == null) {
-                                BDDeviceSessionImpl newDevice = new BDDeviceSessionImpl(context, device, scanCallback, bondingManager, factory);
-                                sessions.addSession(newDevice);
-                            }
-                        }
-                        Set<BleDeviceSession> sessionsList = sessions.copyDeviceList();
-                        for (BleDeviceSession deviceSession : sessionsList) {
-                            subscriber.onNext(deviceSession);
-                        }
-                    }
 
-                    subscriber1[0] = subscriber;
-                    observers.add(subscriber);
-                    scanCallback.clientAdded();
-                },
-                BackpressureStrategy.BUFFER)
+                            subscriber1[0] = subscriber;
+                            observers.add(subscriber);
+                            scanCallback.clientAdded();
+                        },
+                        BackpressureStrategy.BUFFER)
                 .onBackpressureBuffer(200, () -> BleLogger.w(TAG, "search backpressure buffer full"), BackpressureOverflowStrategy.DROP_OLDEST)
                 .doFinally(() -> {
                     observers.remove(subscriber1[0]);
@@ -152,8 +162,17 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
     }
 
     @Override
-    public void setMtu(int mtu) {
-        gattCallback.setPolarMaxMtu(mtu);
+    public void setPreferredMtu(int mtu) throws BleInvalidMtu {
+        if (mtu >= 0) {
+            preferredMTU = mtu;
+        } else {
+            throw new BleInvalidMtu();
+        }
+    }
+
+    @Override
+    public int getPreferredMtu() {
+        return preferredMTU;
     }
 
     @Override
@@ -243,8 +262,32 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
             } else {
                 gatt = session.getBluetoothDevice().connectGatt(context, false, gattCallback);
             }
-            synchronized (session.getGattMutex()) {
-                session.setGatt(gatt);
+            session.setGatt(gatt);
+        }
+
+        @SuppressLint({"MissingPermission", "NewApi"})
+        @Override
+        public void setPhy(final BDDeviceSessionImpl session) {
+            if (session.getGatt() != null) {
+                if (getBuildVersion() >= Build.VERSION_CODES.O) {
+                    synchronized (session.getGattMutex()) {
+                        session.getGatt().setPreferredPhy(BluetoothDevice.PHY_LE_2M_MASK, BluetoothDevice.PHY_LE_2M_MASK, BluetoothDevice.PHY_OPTION_NO_PREFERRED);
+                    }
+                } else {
+                    // PHY is not supported below Android 8.0, call the callback straight
+                    gattCallback.onPhyUpdate(session.getGatt(), BluetoothDevice.PHY_LE_1M_MASK, BluetoothDevice.PHY_LE_1M_MASK, 0);
+                }
+            }
+        }
+
+        @SuppressLint({"MissingPermission", "NewApi"})
+        @Override
+        public void readPhy(BDDeviceSessionImpl session) {
+            if (getBuildVersion() >= Build.VERSION_CODES.O) {
+                session.getGatt().readPhy();
+            } else {
+                // PHY is not supported below Android 8.0, call the callback straight
+                gattCallback.onPhyUpdate(session.getGatt(), BluetoothDevice.PHY_LE_1M_MASK, BluetoothDevice.PHY_LE_1M_MASK, 0);
             }
         }
 
@@ -266,6 +309,47 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
                     session.getGatt().disconnect();
                 }
             }
+        }
+
+        @SuppressLint("MissingPermission")
+        @Override
+        public boolean setMtu(BDDeviceSessionImpl session) {
+            boolean result = false;
+            if (preferredMTU == MTU_SKIP_NEGOTIATION || PhoneUtils.isMtuNegotiationBroken(getBrand(), getModel())) {
+                // Do not start MTU request, fall back to default MTU
+                gattCallback.onMtuChanged(session.getGatt(), DEFAULT_ATT_MTU_SIZE, 0);
+                result = true;
+            } else {
+                synchronized (session.getGattMutex()) {
+                    if (session.getGatt() != null) {
+                        result = session.getGatt().requestMtu(preferredMTU);
+                    }
+                }
+            }
+            return result;
+        }
+
+        @SuppressLint("MissingPermission")
+        @Override
+        public boolean startServiceDiscovery(BDDeviceSessionImpl session) {
+            boolean result = false;
+            synchronized (session.getGattMutex()) {
+                if (session.getGatt() != null) {
+                    result = session.getGatt().discoverServices();
+                }
+            }
+
+            // Protection mechanism if service discovery won't complete
+            if (session.serviceDiscovery != null) {
+                session.serviceDiscovery.dispose();
+            }
+            session.serviceDiscovery = Completable.timer(10, TimeUnit.SECONDS, Schedulers.newThread())
+                    .observeOn(Schedulers.io())
+                    .subscribe(
+                            () -> gattCallback.onServicesDiscovered(session.getGatt(), 0),
+                            throwable -> BleLogger.e(BDDeviceListenerImpl.TAG, "service discovery timer failed: " + throwable.getLocalizedMessage())
+                    );
+            return result;
         }
 
         @Override

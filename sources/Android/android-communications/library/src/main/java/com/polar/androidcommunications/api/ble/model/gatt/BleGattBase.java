@@ -25,6 +25,9 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public abstract class BleGattBase {
     private static final String TAG = BleGattBase.class.getSimpleName();
 
+    public static final int DEFAULT_ATT_MTU_SIZE = 23;
+    private static final int DEFAULT_MTU_SIZE = DEFAULT_ATT_MTU_SIZE - 3;
+
     /**
      * Characteristic properties
      */
@@ -98,9 +101,9 @@ public abstract class BleGattBase {
     // transport layer interface
     protected final BleGattTxInterface txInterface;
     // current usable mtu size
-    protected final AtomicInteger mtuSize = new AtomicInteger(20);
+    protected final AtomicInteger mtuSize = new AtomicInteger(DEFAULT_MTU_SIZE);
     // mtu size with att layer
-    private final AtomicInteger attMtuSize = new AtomicInteger(23);
+    private final AtomicInteger attMtuSize = new AtomicInteger(DEFAULT_ATT_MTU_SIZE);
     // flag to set client as primary
     protected boolean isPrimaryService = false;
     protected final AtomicBoolean serviceDiscovered = new AtomicBoolean(false);
@@ -136,8 +139,8 @@ public abstract class BleGattBase {
             serviceDiscovered.set(false);
             serviceDiscovered.notifyAll();
         }
-        mtuSize.set(20);
-        attMtuSize.set(23);
+        mtuSize.set(DEFAULT_MTU_SIZE);
+        attMtuSize.set(DEFAULT_ATT_MTU_SIZE);
     }
 
     /**

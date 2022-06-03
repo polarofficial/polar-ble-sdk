@@ -212,4 +212,49 @@ class BleAdvertisementContentTest {
         Assert.assertFalse(bleAdvertisementContent.containsService("FEEE"))
         Assert.assertFalse(bleAdvertisementContent.containsService("180D"))
     }
+
+    @Test
+    fun `test advertisement data is updated and cleared`() {
+        // Arrange
+        val adType16bitMoreData = byteArrayOf(0x0d.toByte(), 0x18.toByte(), 0xee.toByte(), 0xfe.toByte())
+        val adType16bitMore: MutableMap<BleUtils.AD_TYPE, ByteArray> = hashMapOf(BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_MORE to adType16bitMoreData)
+
+        val manufacturerData1 = byteArrayOf(
+            0x6b.toByte(), 0x00.toByte(), 0x72.toByte(), 0x08.toByte(), 0x97.toByte(), 0xc9.toByte(), 0xc3.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte()
+        )
+        val adTypeManufacturerSpecific1: Map<BleUtils.AD_TYPE, ByteArray> = hashMapOf(BleUtils.AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC to manufacturerData1)
+
+        val manufacturerData2 = byteArrayOf(
+            0x00.toByte(), 0xFF.toByte()
+        )
+        val adTypeManufacturerSpecific2: Map<BleUtils.AD_TYPE, ByteArray> = hashMapOf(BleUtils.AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC to manufacturerData2)
+
+        // Act & Assert
+        bleAdvertisementContent.processAdvertisementData(adType16bitMore, BleUtils.EVENT_TYPE.ADV_IND, 0)
+        Assert.assertTrue(bleAdvertisementContent.advertisementData.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_MORE))
+        Assert.assertEquals(adType16bitMoreData, bleAdvertisementContent.advertisementData[BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_MORE])
+
+        Assert.assertTrue(bleAdvertisementContent.advertisementDataAll.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_MORE))
+        Assert.assertEquals(adType16bitMoreData, bleAdvertisementContent.advertisementDataAll[BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_MORE])
+
+        bleAdvertisementContent.processAdvertisementData(adTypeManufacturerSpecific1, BleUtils.EVENT_TYPE.ADV_IND, 0)
+        Assert.assertTrue(bleAdvertisementContent.advertisementData.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC))
+        Assert.assertEquals(manufacturerData1, bleAdvertisementContent.advertisementData[BleUtils.AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC])
+        Assert.assertFalse(bleAdvertisementContent.advertisementData.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_MORE))
+
+        Assert.assertTrue(bleAdvertisementContent.advertisementDataAll.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_MORE))
+        Assert.assertEquals(adType16bitMoreData, bleAdvertisementContent.advertisementDataAll[BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_MORE])
+        Assert.assertTrue(bleAdvertisementContent.advertisementData.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC))
+        Assert.assertEquals(manufacturerData1, bleAdvertisementContent.advertisementData[BleUtils.AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC])
+
+        bleAdvertisementContent.processAdvertisementData(adTypeManufacturerSpecific2, BleUtils.EVENT_TYPE.ADV_IND, 0)
+        Assert.assertTrue(bleAdvertisementContent.advertisementData.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC))
+        Assert.assertEquals(manufacturerData2, bleAdvertisementContent.advertisementData[BleUtils.AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC])
+        Assert.assertFalse(bleAdvertisementContent.advertisementData.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_MORE))
+
+        Assert.assertTrue(bleAdvertisementContent.advertisementDataAll.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_MORE))
+        Assert.assertEquals(adType16bitMoreData, bleAdvertisementContent.advertisementDataAll[BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_MORE])
+        Assert.assertTrue(bleAdvertisementContent.advertisementData.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC))
+        Assert.assertEquals(manufacturerData2, bleAdvertisementContent.advertisementData[BleUtils.AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC])
+    }
 }

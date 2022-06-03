@@ -10,7 +10,6 @@ import android.content.Context;
 import android.os.Handler;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.VisibleForTesting;
 
 import com.polar.androidcommunications.BuildConfig;
 import com.polar.androidcommunications.api.ble.BleLogger;
@@ -56,17 +55,13 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
 
     private BluetoothDevice bluetoothDevice;
     private BluetoothGatt gatt;
-    private BDScanCallback bleScanCallback;
-    private BDBondingListener bondingManager;
+    private final BDScanCallback bleScanCallback;
+    private final BDBondingListener bondingManager;
     private final AtomicSet<SingleEmitter<? super List<UUID>>> servicesSubscriberAtomicList = new AtomicSet<>();
     private final AtomicSet<SingleEmitter<? super Integer>> rssiObservers = new AtomicSet<>();
     private final List<Disposable> subscriptions = new ArrayList<>();
-    private Context context;
-    private Handler handler;
-
-    @VisibleForTesting
-    public BDDeviceSessionImpl() {
-    }
+    private final Context context;
+    private final Handler handler;
 
     BDDeviceSessionImpl(Context context,
                         BluetoothDevice bluetoothDevice,
@@ -98,7 +93,9 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
     }
 
     void setGatt(BluetoothGatt gatt) {
-        this.gatt = gatt;
+        synchronized (getGattMutex()) {
+            this.gatt = gatt;
+        }
     }
 
     Object getGattMutex() {
@@ -107,10 +104,6 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
 
     AtomicSet<SingleEmitter<? super Integer>> getRssiObservers() {
         return rssiObservers;
-    }
-
-    List<Disposable> getSubscriptions() {
-        return subscriptions;
     }
 
     @SuppressLint("MissingPermission")
@@ -667,7 +660,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
         }
     }
 
-    void startAuthentication(Action complete) {
+    private void startAuthentication(Action complete) {
         // try next att operation anyway
         subscriptions.add(
                 authenticate().toObservable()

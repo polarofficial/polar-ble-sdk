@@ -2,6 +2,7 @@ package com.polar.androidcommunications.api.ble.model.gatt.client.psftp;
 
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import androidx.core.util.Pair;
 
 import com.polar.androidcommunications.api.ble.BleLogger;
@@ -598,7 +599,8 @@ public class BlePsFtpClient extends BleGattBase {
         return Completable.concatArray(mtuEnabled, d2hEnabled);
     }
 
-    private void readResponse(ByteArrayOutputStream outputStream) throws Exception {
+    @VisibleForTesting
+    void readResponse(ByteArrayOutputStream outputStream) throws Exception {
         long status = 0;
         int next = 0;
         BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();

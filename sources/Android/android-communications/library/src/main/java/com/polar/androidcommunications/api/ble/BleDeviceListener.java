@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
+import com.polar.androidcommunications.api.ble.exceptions.BleInvalidMtu;
 import com.polar.androidcommunications.api.ble.model.BleDeviceSession;
 import com.polar.androidcommunications.api.ble.model.advertisement.BleAdvertisementContent;
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase;
@@ -105,7 +106,23 @@ public abstract class BleDeviceListener {
     @NonNull
     public abstract Flowable<BleDeviceSession> search(boolean fetchKnownDevices);
 
-    public abstract void setMtu(@IntRange(from = 70, to = 512) int mtu);
+    /**
+     * Set the preferred MTU. This value will be negotiated between the central and peripheral devices,
+     * so it might not always take effect if peripheral is not capable
+     *
+     * If set to 0 before the connection is created then MTU negotiation is skipped. Value 0 can be
+     * used in cases we don't want MTU negotiation, this can be handy with phones we know the MTU
+     * negotiation is not working.
+     *
+     * @param mtu preferred mtu
+     */
+    public abstract void setPreferredMtu(@IntRange(from = 0, to = 512) int mtu) throws BleInvalidMtu;
+
+    /**
+     * Read the preferred MTU. This is not the negotiated MTU, but the value suggested by host
+     * during MTU negotiation.
+     */
+    public abstract int getPreferredMtu();
 
     /**
      * As java does not support destructor/RAII, Client/App should call this whenever the application is being destroyed
