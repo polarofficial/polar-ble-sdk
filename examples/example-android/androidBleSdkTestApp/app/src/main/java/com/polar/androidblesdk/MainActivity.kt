@@ -212,7 +212,7 @@ class MainActivity : AppCompatActivity() {
             if (autoConnectDisposable != null) {
                 autoConnectDisposable?.dispose()
             }
-            autoConnectDisposable = api.autoConnectToDevice(-50, "180D", null)
+            autoConnectDisposable = api.autoConnectToDevice(-60, "180D", null)
                 .subscribe(
                     { Log.d(TAG, "auto connect search complete") },
                     { throwable: Throwable -> Log.e(TAG, "" + throwable.toString()) }
@@ -233,7 +233,10 @@ class MainActivity : AppCompatActivity() {
                             toggleButtonUp(scanButton, "Scan devices")
                             Log.e(TAG, "Device scan failed. Reason $error")
                         },
-                        { Log.d(TAG, "complete") }
+                        {
+                            toggleButtonUp(scanButton, "Scan devices")
+                            Log.d(TAG, "complete")
+                        }
                     )
             } else {
                 toggleButtonUp(scanButton, "Scan devices")
@@ -596,7 +599,7 @@ class MainActivity : AppCompatActivity() {
             api.setLocalTime(deviceId, calendar)
                 .subscribe(
                     { Log.d(TAG, "time ${calendar.time} set to device") },
-                    { error: Throwable -> Log.d(TAG, "set time failed: $error") }
+                    { error: Throwable -> Log.e(TAG, "set time failed: $error") }
                 )
         }
 
@@ -715,10 +718,7 @@ class MainActivity : AppCompatActivity() {
         button.background = buttonDrawable
     }
 
-    private fun requestStreamSettings(
-        identifier: String,
-        feature: DeviceStreamingFeature
-    ): Flowable<PolarSensorSetting> {
+    private fun requestStreamSettings(identifier: String, feature: DeviceStreamingFeature): Flowable<PolarSensorSetting> {
 
         val availableSettings = api.requestStreamSettings(identifier, feature)
             .observeOn(AndroidSchedulers.mainThread())
