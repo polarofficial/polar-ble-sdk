@@ -279,6 +279,7 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
         }
     }
 
+    @Deprecated("in release 3.2.8. Move to the background is not relevant information for SDK starting from release 3.2.8")
     override fun backgroundEntered() {
         logError("call of deprecated backgroundEntered() method")
     }
@@ -856,24 +857,30 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
         val info = PolarDeviceInfo(session.polarDeviceId.ifEmpty { session.address }, session.address, session.rssi, session.name, true)
         when (Objects.requireNonNull(sessionState)) {
             DeviceSessionState.SESSION_OPEN -> {
-                if (callback != null) {
-                    Completable.fromAction { callback!!.deviceConnected(info) }
+                callback?.let {
+                    Completable.fromAction { it.deviceConnected(info) }
                         .subscribeOn(AndroidSchedulers.mainThread())
                         .subscribe()
                 }
                 setupDevice(session)
             }
             DeviceSessionState.SESSION_CLOSED -> {
-                if (callback != null && (session.previousState == DeviceSessionState.SESSION_OPEN || session.previousState == DeviceSessionState.SESSION_CLOSING)) {
-                    Completable.fromAction { callback!!.deviceDisconnected(info) }
-                        .subscribeOn(AndroidSchedulers.mainThread())
-                        .subscribe()
+                callback?.let {
+                    if (session.previousState == DeviceSessionState.SESSION_OPEN ||
+                        session.previousState == DeviceSessionState.SESSION_OPENING ||
+                        session.previousState == DeviceSessionState.SESSION_OPEN_PARK ||
+                        session.previousState == DeviceSessionState.SESSION_CLOSING
+                    ) {
+                        Completable.fromAction { it.deviceDisconnected(info) }
+                            .subscribeOn(AndroidSchedulers.mainThread())
+                            .subscribe()
+                    }
                 }
                 tearDownDevice(session)
             }
             DeviceSessionState.SESSION_OPENING -> {
-                if (callback != null) {
-                    Completable.fromAction { callback!!.deviceConnecting(info) }
+                callback?.let {
+                    Completable.fromAction { it.deviceConnecting(info) }
                         .subscribeOn(AndroidSchedulers.mainThread())
                         .subscribe()
                 }
@@ -887,17 +894,19 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
     private fun setupDevice(session: BleDeviceSession) {
         val deviceId = session.polarDeviceId.ifEmpty { session.address }
         val disposable = session.monitorServicesDiscovered(true)
-            .observeOn(AndroidSchedulers.mainThread())
             .toFlowable()
             .flatMapIterable { uuids: List<UUID> -> uuids }
             .flatMap { uuid: UUID ->
                 if (session.fetchClient(uuid) != null) {
                     when (uuid) {
                         BleHrClient.HR_SERVICE -> {
-                            callback?.hrFeatureReady(deviceId)
+                            Completable.fromAction { callback?.hrFeatureReady(deviceId) }
+                                .subscribeOn(AndroidSchedulers.mainThread())
+                                .subscribe()
+
                             val client = session.fetchClient(BleHrClient.HR_SERVICE) as BleHrClient?
                             client?.observeHrNotifications(true)
-                                ?.subscribeOn(AndroidSchedulers.mainThread())
+                                ?.observeOn(AndroidSchedulers.mainThread())
                                 ?.subscribe(
                                     { hrNotificationData: HrNotificationData ->
                                         callback?.hrNotificationReceived(
@@ -917,7 +926,7 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
                         BleBattClient.BATTERY_SERVICE -> {
                             val client = session.fetchClient(BleBattClient.BATTERY_SERVICE) as BleBattClient?
                             client?.monitorBatteryStatus(true)
-                                ?.subscribeOn(AndroidSchedulers.mainThread())
+                                ?.observeOn(AndroidSchedulers.mainThread())
                                 ?.subscribe(
                                     { batteryLevel: Int? ->
                                         callback?.batteryLevelReceived(deviceId, batteryLevel!!)
@@ -933,6 +942,7 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
                                     .concatWith(client.waitNotificationEnabled(BlePMDClient.PMD_DATA, true))
                                     .andThen(
                                         client.readFeature(true)
+                                            .observeOn(AndroidSchedulers.mainThread())
                                             .doOnSuccess { pmdFeature: PmdFeature ->
                                                 val deviceStreamingFeatures: MutableSet<DeviceStreamingFeature> = HashSet()
                                                 if (pmdFeature.ecgSupported) {
@@ -957,7 +967,6 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
                                                 if (pmdFeature.sdkModeSupported) {
                                                     callback?.sdkModeFeatureAvailable(deviceId)
                                                 }
-
                                             })
                                     .toFlowable()
                             }
@@ -966,7 +975,7 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
                             val client = session.fetchClient(BleDisClient.DIS_SERVICE) as BleDisClient?
                             if (client != null) {
                                 return@flatMap client.observeDisInfo(true)
-                                    .subscribeOn(AndroidSchedulers.mainThread())
+                                    .observeOn(AndroidSchedulers.mainThread())
                                     .doOnNext { pair: android.util.Pair<UUID?, String?> ->
                                         callback?.disInformationReceived(deviceId, pair.first!!, pair.second!!)
                                     }
@@ -976,7 +985,7 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
                             val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
                             if (client != null) {
                                 return@flatMap client.waitPsFtpClientReady(true)
-                                    .subscribeOn(AndroidSchedulers.mainThread())
+                                    .observeOn(AndroidSchedulers.mainThread())
                                     .doOnComplete {
                                         callback?.polarFtpFeatureReady(deviceId)
                                     }.toFlowable<Any>()

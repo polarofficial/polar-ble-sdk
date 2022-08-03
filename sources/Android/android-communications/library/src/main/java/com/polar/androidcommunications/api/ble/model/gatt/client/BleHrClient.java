@@ -50,6 +50,7 @@ public class BleHrClient extends BleGattBase {
     public static final UUID BODY_SENSOR_LOCATION = UUID.fromString("00002a38-0000-1000-8000-00805f9b34fb");
     public static final UUID HR_MEASUREMENT = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb");
     public static final UUID HR_SERVICE = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb");
+    public static final String HR_SERVICE_16BIT_UUID = "180D";
 
     public BleHrClient(BleGattTxInterface txInterface) {
         super(txInterface, HR_SERVICE);

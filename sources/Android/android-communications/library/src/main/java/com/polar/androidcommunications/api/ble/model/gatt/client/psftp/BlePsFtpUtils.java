@@ -16,8 +16,9 @@ public class BlePsFtpUtils {
 
     public static final String TAG = BlePsFtpUtils.class.getSimpleName();
 
-    // NOTE temporarily leave old 128bit uuid
+
     public static final UUID RFC77_PFTP_SERVICE = UUID.fromString("0000FEEE-0000-1000-8000-00805f9b34fb");
+    public static final String PFTP_SERVICE_16BIT_UUID = "FEEE";
     public static final UUID RFC77_PFTP_MTU_CHARACTERISTIC = UUID.fromString("FB005C51-02E7-F387-1CAD-8ACD2D8DF0C8");
     public static final UUID RFC77_PFTP_D2H_CHARACTERISTIC = UUID.fromString("FB005C52-02E7-F387-1CAD-8ACD2D8DF0C8");
     public static final UUID RFC77_PFTP_H2D_CHARACTERISTIC = UUID.fromString("FB005C53-02E7-F387-1CAD-8ACD2D8DF0C8");

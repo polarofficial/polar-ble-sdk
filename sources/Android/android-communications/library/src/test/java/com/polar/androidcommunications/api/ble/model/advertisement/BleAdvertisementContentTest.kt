@@ -1,5 +1,7 @@
 package com.polar.androidcommunications.api.ble.model.advertisement
 
+import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.HR_SERVICE_16BIT_UUID
+import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils.PFTP_SERVICE_16BIT_UUID
 import com.polar.androidcommunications.common.ble.BleUtils
 import com.polar.androidcommunications.testrules.BleLoggerTestRule
 import org.junit.Assert
@@ -202,15 +204,19 @@ class BleAdvertisementContentTest {
         // Arrange
         val services = byteArrayOf(0x0d.toByte(), 0x18.toByte(), 0xee.toByte(), 0xfe.toByte())
         val servicesAdvData: HashMap<BleUtils.AD_TYPE, ByteArray> = hashMapOf(BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_MORE to services)
+        val singleServiceAdvData: HashMap<BleUtils.AD_TYPE, ByteArray> = hashMapOf(BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_MORE to byteArrayOf(0x0d.toByte(), 0x18.toByte()))
         val emptyServicesAdvData: HashMap<BleUtils.AD_TYPE, ByteArray> = hashMapOf(BleUtils.AD_TYPE.GAP_ADTYPE_16BIT_MORE to byteArrayOf())
 
         // Act & Assert
         bleAdvertisementContent.processAdvertisementData(servicesAdvData, BleUtils.EVENT_TYPE.ADV_IND, 0)
-        Assert.assertTrue(bleAdvertisementContent.containsService("FEEE"))
-        Assert.assertTrue(bleAdvertisementContent.containsService("180D"))
+        Assert.assertTrue(bleAdvertisementContent.containsService(PFTP_SERVICE_16BIT_UUID))
+        Assert.assertTrue(bleAdvertisementContent.containsService(HR_SERVICE_16BIT_UUID))
         bleAdvertisementContent.processAdvertisementData(emptyServicesAdvData, BleUtils.EVENT_TYPE.ADV_IND, 0)
-        Assert.assertFalse(bleAdvertisementContent.containsService("FEEE"))
-        Assert.assertFalse(bleAdvertisementContent.containsService("180D"))
+        Assert.assertFalse(bleAdvertisementContent.containsService(PFTP_SERVICE_16BIT_UUID))
+        Assert.assertFalse(bleAdvertisementContent.containsService(HR_SERVICE_16BIT_UUID))
+        bleAdvertisementContent.processAdvertisementData(singleServiceAdvData, BleUtils.EVENT_TYPE.ADV_IND, 0)
+        Assert.assertFalse(bleAdvertisementContent.containsService(PFTP_SERVICE_16BIT_UUID))
+        Assert.assertTrue(bleAdvertisementContent.containsService(HR_SERVICE_16BIT_UUID))
     }
 
     @Test
