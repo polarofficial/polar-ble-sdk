@@ -5,8 +5,20 @@ import RxSwift
 
 public class CBDeviceListenerImpl: NSObject, CBCentralManagerDelegate {
     private let SESSION_TEAR_DOWN_TIMEOUT_MS = 1000
+  
+    public func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
+      let devices = dict[CBCentralManagerRestoredStatePeripheralsKey] as! Array<CBPeripheral>
+      for device in devices {
+        // TODO(korzonkiee): not sure what to put for advertisementData & rssi.
+        handleDeviceDiscovered(central, didDiscover: device, advertisementData: [:], rssi: 0)
+      }
+    }
+
     
-    fileprivate lazy var manager = CBCentralManager(delegate: self, queue: queueBle, options: nil)
+    fileprivate lazy var manager = CBCentralManager(delegate: self, queue: queueBle, options: [
+      CBCentralManagerOptionRestoreIdentifierKey: "PolarBleSDKCBCentralManagerOptionRestoreIdentifierKey"
+    ])
+  
     fileprivate let sessions = AtomicList<CBDeviceSessionImpl>()
     fileprivate var queue: DispatchQueue
     fileprivate var queueBle: DispatchQueue
