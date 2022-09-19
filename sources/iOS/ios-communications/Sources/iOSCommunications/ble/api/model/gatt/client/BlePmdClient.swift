@@ -360,15 +360,15 @@ public class BlePmdClient: BleGattClientBase {
     let pmdCpInputQueue = AtomicList<Data>()
     var features: Data?
     
-    var observersAcc = AtomicList<RxObserver<(timeStamp: UInt64,samples: [(x: Int32,y: Int32,z: Int32)])>>()
-    var observersGyro = AtomicList<RxObserver<(timeStamp: UInt64,samples: [(x: Float,y: Float,z: Float)])>>()
-    var observersMagnetometer = AtomicList<RxObserver<(timeStamp: UInt64,samples: [(x: Float,y: Float,z: Float)])>>()
-    var observersEcg = AtomicList<RxObserver<(timeStamp: UInt64,samples: [Int32])>>()
-    var observersPpg = AtomicList<RxObserver<(timeStamp: UInt64, channels: UInt8, samples: [[Int32]])>>()
-    var observersPpi = AtomicList<RxObserver<(timeStamp: UInt64,samples: [(hr: Int, ppInMs: UInt16, ppErrorEstimate: UInt16, blockerBit: Int, skinContactStatus: Int, skinContactSupported: Int)])>>()
-    var observersBioz = AtomicList<RxObserver<(timeStamp: UInt64,samples: [Int32])>>()
-    var observersFeature = AtomicList<RxObserverSingle<Pmd.PmdFeature>>()
-    var storedSettings  = AtomicType<[Pmd.PmdMeasurementType : Pmd.PmdSetting]>(initialValue: [Pmd.PmdMeasurementType : Pmd.PmdSetting]())
+    private var observersAcc = AtomicList<RxObserver<(timeStamp: UInt64,samples: [(x: Int32,y: Int32,z: Int32)])>>()
+    private var observersGyro = AtomicList<RxObserver<(timeStamp: UInt64,samples: [(x: Float,y: Float,z: Float)])>>()
+    private var observersMagnetometer = AtomicList<RxObserver<(timeStamp: UInt64,samples: [(x: Float,y: Float,z: Float)])>>()
+    private var observersEcg = AtomicList<RxObserver<(timeStamp: UInt64,samples: [Int32])>>()
+    private var observersPpg = AtomicList<RxObserver<(timeStamp: UInt64, channels: UInt8, samples: [[Int32]])>>()
+    private var observersPpi = AtomicList<RxObserver<(timeStamp: UInt64,samples: [(hr: Int, ppInMs: UInt16, ppErrorEstimate: UInt16, blockerBit: Int, skinContactStatus: Int, skinContactSupported: Int)])>>()
+    private var observersBioz = AtomicList<RxObserver<(timeStamp: UInt64,samples: [Int32])>>()
+    private var observersFeature = AtomicList<RxObserverSingle<Pmd.PmdFeature>>()
+    private var storedSettings  = AtomicType<[Pmd.PmdMeasurementType : Pmd.PmdSetting]>(initialValue: [Pmd.PmdMeasurementType : Pmd.PmdSetting]())
     
     public init(gattServiceTransmitter: BleAttributeTransportProtocol){
         super.init(serviceUuid: BlePmdClient.PMD_SERVICE, gattServiceTransmitter: gattServiceTransmitter)
@@ -624,7 +624,7 @@ public class BlePmdClient: BleGattClientBase {
                 if cpResponse.errorCode == .success {
                     observer(.completed)
                 } else {
-                     observer(.error(Pmd.BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
+                    observer(.error(Pmd.BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
                 }
             } catch let err {
                 observer(.error(err))
@@ -634,9 +634,9 @@ public class BlePmdClient: BleGattClientBase {
     }
     
     public func readFeature(_ checkConnection: Bool) -> Single<Pmd.PmdFeature> {
-        var object: RxObserverSingle<Pmd.PmdFeature>!
         return Single.create { observer in
-            object = RxObserverSingle<Pmd.PmdFeature>(obs: observer)
+            let object = RxObserverSingle<Pmd.PmdFeature>(obs: observer)
+            
             if let f = self.features {
                 // available
                 observer(.success(Pmd.PmdFeature(f)))
@@ -648,9 +648,11 @@ public class BlePmdClient: BleGattClientBase {
                 }
             }
             return Disposables.create {
-                self.observersFeature.remove({ (item) -> Bool in
-                    return item === object
-                })
+                self.observersFeature.remove(
+                    { (item) -> Bool in
+                        return item === object
+                    }
+                )
             }
         }
     }

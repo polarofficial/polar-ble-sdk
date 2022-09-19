@@ -28,6 +28,7 @@ import UIKit
     }
     weak var cccWriteObserver: PolarBleApiCCCWriteObserver?
     weak var observer: PolarBleApiObserver?
+    
     var isBlePowered: Bool {
         get {
             return listener.blePowered()
@@ -360,8 +361,8 @@ extension PolarBleApiImpl: PolarBleApi {
 #endif
                 self.listener.openSessionDirect(session)
             })
-                .asSingle()
-                .asCompletable()
+            .asSingle()
+            .asCompletable()
                 }
     
     func connectToDevice(_ identifier: String) throws {

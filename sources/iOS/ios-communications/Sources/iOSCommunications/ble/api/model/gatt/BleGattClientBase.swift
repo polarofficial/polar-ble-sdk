@@ -218,7 +218,7 @@ public class BleGattClientBase: Hashable {
         return Completable.empty()
     }
     
-    public func setServiceDiscovered(_ value: Bool, serviceUuid: CBUUID){
+    public func setServiceDiscovered(_ value: Bool) {
         serviceDiscovered.set(value)
     }
     
