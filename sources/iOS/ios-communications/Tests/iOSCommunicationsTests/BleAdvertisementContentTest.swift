@@ -132,17 +132,21 @@ class BleAdvertisementContentTest: XCTestCase {
     
     func testAdvContainsService() throws {
         // Arrange
-        let services:[CBUUID] = [CBUUID(string: "180D"), CBUUID(string: "FEEE")]
+        let services:[CBUUID] = [BleHrClient.HR_SERVICE, BlePsFtpClient.PSFTP_SERVICE]
         let servicesAdvData:[String : [CBUUID]] = [CBAdvertisementDataServiceUUIDsKey : services]
+        let singleServiceAdvData: [String : [CBUUID]] = [CBAdvertisementDataServiceUUIDsKey : [BleHrClient.HR_SERVICE]]
         let emptyServicesAdvData: [String : Data] = [CBAdvertisementDataServiceUUIDsKey : Data()]
                 
         // Act & Assert
         bleAdvertisementContent.processAdvertisementData(0, advertisementData:servicesAdvData)
-        XCTAssertTrue(bleAdvertisementContent.containsService(CBUUID(string: "FEEE")))
-        XCTAssertTrue(bleAdvertisementContent.containsService(CBUUID(string: "180D")))
+        XCTAssertTrue(bleAdvertisementContent.containsService(BlePsFtpClient.PSFTP_SERVICE))
+        XCTAssertTrue(bleAdvertisementContent.containsService(BleHrClient.HR_SERVICE))
         bleAdvertisementContent.processAdvertisementData(0, advertisementData:emptyServicesAdvData)
-        XCTAssertFalse(bleAdvertisementContent.containsService(CBUUID(string: "FEEE")))
-        XCTAssertFalse(bleAdvertisementContent.containsService(CBUUID(string: "180D")))
+        XCTAssertFalse(bleAdvertisementContent.containsService(BlePsFtpClient.PSFTP_SERVICE))
+        XCTAssertFalse(bleAdvertisementContent.containsService(BleHrClient.HR_SERVICE))
+        bleAdvertisementContent.processAdvertisementData(0, advertisementData:singleServiceAdvData)
+        XCTAssertFalse(bleAdvertisementContent.containsService(BlePsFtpClient.PSFTP_SERVICE))
+        XCTAssertTrue(bleAdvertisementContent.containsService(BleHrClient.HR_SERVICE))
     }
     
     func testProcessingOfConsecutiveAdvPackets() throws {
