@@ -79,13 +79,13 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 Detailed documentation  [Full Documentation](polar-sdk-android/docs/html/). 
 ## Installation
 
-1.  In `build.gradle` make sure the __minSdk__ is set to __21__ or higher.
+1.  In `build.gradle` make sure the __minSdk__ is set to __24__ or higher.
 ```gradle
 android {
     ...
     defaultConfig {
         ...
-        minSdk 21
+        minSdk 24
     }
 }
 ```
@@ -154,7 +154,6 @@ dependencies {
 On your application you must request for the [permissions](https://developer.android.com/guide/topics/permissions). Here is the example how could you request the needed permissions for the SDK:
 
 ```kt
-if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT), PERMISSION_REQUEST_CODE)
@@ -164,7 +163,6 @@ if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
     } else {
         requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), PERMISSION_REQUEST_CODE)
     }
-}
 ```
 
 
