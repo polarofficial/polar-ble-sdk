@@ -5,11 +5,11 @@ plugins {
 
 android {
     namespace 'com.polar.polarsdkecghrdemo'
-    compileSdk 32
+    compileSdk 33
     defaultConfig {
         applicationId "com.polar.polarsdkdemo"
-        minSdk 21
-        targetSdk 32
+        minSdk 24
+        targetSdk 33
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -27,12 +27,12 @@ android {
 }
 
 dependencies {
-    implementation 'com.github.polarofficial:polar-ble-sdk:3.3.2'
+    implementation 'com.github.polarofficial:polar-ble-sdk:3.3.3'
     implementation 'com.androidplot:androidplot-core:1.5.9'
     implementation 'io.reactivex.rxjava3:rxjava:3.1.3'
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
-    implementation 'androidx.appcompat:appcompat:1.4.2'
-    implementation "androidx.core:core-ktx:1.8.0"
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation "androidx.core:core-ktx:1.9.0"
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${rootProject.ext.kotlin_version}"
     testImplementation 'junit:junit:4.13.2'
