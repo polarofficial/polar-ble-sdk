@@ -107,7 +107,7 @@ var pathtoroot = "../../../../../";
                     <hr>
                     <pre class="wrap-overflow">
 
-public class <span class="typeNameLabel"><a href=PolarDeviceInfo.html>PolarDeviceInfo</a></span>
+public final class <span class="typeNameLabel"><a href=PolarDeviceInfo.html>PolarDeviceInfo</a></span>
 
                     </pre>
                     <div class="block"><p>Contains information about the current Device.</p></div>
@@ -137,31 +137,31 @@ public class <span class="typeNameLabel"><a href=PolarDeviceInfo.html>PolarDevic
                                         </tr>
                                         
                                         <tr class="altColor">
-                                            <td class="colFirst"><code>public final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code></td>
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code></td>
                                             <th class="colSecond" scope="row"><code><a href=PolarDeviceInfo.html#deviceId>deviceId</a></code></th>
                                             <td class="colLast"></td>
                                         </tr>
                                         
                                         <tr class="rowColor">
-                                            <td class="colFirst"><code>public final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code></td>
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code></td>
                                             <th class="colSecond" scope="row"><code><a href=PolarDeviceInfo.html#address>address</a></code></th>
                                             <td class="colLast"></td>
                                         </tr>
                                         
                                         <tr class="altColor">
-                                            <td class="colFirst"><code>public final int</code></td>
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code></td>
                                             <th class="colSecond" scope="row"><code><a href=PolarDeviceInfo.html#rssi>rssi</a></code></th>
                                             <td class="colLast"></td>
                                         </tr>
                                         
                                         <tr class="rowColor">
-                                            <td class="colFirst"><code>public final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code></td>
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code></td>
                                             <th class="colSecond" scope="row"><code><a href=PolarDeviceInfo.html#name>name</a></code></th>
                                             <td class="colLast"></td>
                                         </tr>
                                         
                                         <tr class="altColor">
-                                            <td class="colFirst"><code>public final boolean</code></td>
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code></td>
                                             <th class="colSecond" scope="row"><code><a href=PolarDeviceInfo.html#isConnectable>isConnectable</a></code></th>
                                             <td class="colLast"></td>
                                         </tr>
@@ -192,7 +192,7 @@ public class <span class="typeNameLabel"><a href=PolarDeviceInfo.html>PolarDevic
                                         
                                             <tr class="altColor">
                                                 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a
-                                                        href="#PolarDeviceInfo(String,String,int,String,boolean)">PolarDeviceInfo</a></span>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> address, int rssi, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> name, boolean isConnectable)</code></th>
+                                                        href="#PolarDeviceInfo(String,String,Integer,String,Boolean)">PolarDeviceInfo</a></span>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> address, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> rssi, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> name, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> isConnectable)</code></th>
                                                 <td class="colLast"></td>
                                             </tr>
                                         
@@ -207,6 +207,81 @@ public class <span class="typeNameLabel"><a href=PolarDeviceInfo.html>PolarDevic
                     <!-- =========== ENUM CONSTANT SUMMARY =========== -->
                     
                     <!-- ========== METHOD SUMMARY =========== -->
+                    
+                    <section role="region">
+                        <ul class="blockList">
+                            <li class="blockList"><a id="method.summary">
+                                <!--   -->
+                            </a>
+                                <h3>Method Summary</h3>
+                                <div class="memberSummary">
+                                    <div role="tablist" aria-orientation="horizontal">
+                                        <button role="tab" aria-selected="true" aria-controls="memberSummary_tabpanel" tabindex="0" onkeydown="switchTab(event)" id="t0" class="activeTableTab">All Methods</button>
+                                        <!-- TODO: Instance and Concrete Methods #1118 -->
+                                    </div>
+                                    <div id="memberSummary_tabpanel" role="tabpanel">
+                                    <table aria-labelledby="t0">
+                                        <tr>
+                                            <th class="colFirst" scope="col">Modifier and Type</th>
+                                            <th class="colSecond" scope="col">Method</th>
+                                            <th class="colLast" scope="col">Description</th>
+                                        </tr>
+                                        
+                                        <tr id="i0" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarDeviceInfo.html#getDeviceId()>getDeviceId</a>() </code>
+                                            </th>
+                                            <td class="colLast">Polar device id</td>
+                                        </tr>
+                                        
+                                        <tr id="i1" class="rowColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarDeviceInfo.html#getAddress()>getAddress</a>() </code>
+                                            </th>
+                                            <td class="colLast">Bt mac address</td>
+                                        </tr>
+                                        
+                                        <tr id="i2" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarDeviceInfo.html#getRssi()>getRssi</a>() </code>
+                                            </th>
+                                            <td class="colLast">Received signal strength indication value in dBm.</td>
+                                        </tr>
+                                        
+                                        <tr id="i3" class="rowColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarDeviceInfo.html#getName()>getName</a>() </code>
+                                            </th>
+                                            <td class="colLast">Device name.</td>
+                                        </tr>
+                                        
+                                        <tr id="i4" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarDeviceInfo.html#getIsConnectable()>getIsConnectable</a>() </code>
+                                            </th>
+                                            <td class="colLast">true adv type is connectable</td>
+                                        </tr>
+                                        
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <ul class="blockList">
+                                
+                                    <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
+                                        <!--   -->
+                                    </a>
+                                        <h3>Methods inherited from class&nbsp;java.lang.Object</h3>
+                                        <code>clone, equals, finalize, getClass, hashCode, notify, notifyAll, toString,
+                                            wait, wait, wait</code></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </section>
                     
                 </li>
             </ul>
@@ -223,11 +298,11 @@ public class <span class="typeNameLabel"><a href=PolarDeviceInfo.html>PolarDevic
                             </a>
                                 <h3>Constructor Detail</h3>
                                 
-                                <a name="PolarDeviceInfo(String,String,int,String,boolean)"></a>
+                                <a name="PolarDeviceInfo(String,String,Integer,String,Boolean)"></a>
                                 <ul class="blockList">
                                     <li class="blockList">
                                         <h4>PolarDeviceInfo</h4>
-                                        <pre>PolarDeviceInfo(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> address, int rssi, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> name, boolean isConnectable)</pre>
+                                        <pre>PolarDeviceInfo(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> address, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> rssi, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> name, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> isConnectable)</pre>
                                         <div class="block"></div>
                                         
                                     </li>
@@ -238,6 +313,92 @@ public class <span class="typeNameLabel"><a href=PolarDeviceInfo.html>PolarDevic
                     </section>
                     
                     <!-- ============ METHOD DETAIL ========== -->
+                    
+                    <section role="region">
+                        <ul class="blockList">
+                            <li class="blockList"><a id="method.detail">
+                                <!--   -->
+                            </a>
+                                <h3>Method Detail</h3>
+                                
+                                <a id="getDeviceId()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getDeviceId</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> <a href=PolarDeviceInfo.html#getDeviceId()>getDeviceId</a>()</pre>
+                                        <div class="block"><p>Polar device id</p></div>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="getAddress()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getAddress</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> <a href=PolarDeviceInfo.html#getAddress()>getAddress</a>()</pre>
+                                        <div class="block"><p>Bt mac address</p></div>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="getRssi()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getRssi</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> <a href=PolarDeviceInfo.html#getRssi()>getRssi</a>()</pre>
+                                        <div class="block"><p>Received signal strength indication value in dBm.</p></div>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="getName()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getName</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> <a href=PolarDeviceInfo.html#getName()>getName</a>()</pre>
+                                        <div class="block"><p>Device name.</p></div>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="getIsConnectable()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getIsConnectable</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarDeviceInfo.html#getIsConnectable()>getIsConnectable</a>()</pre>
+                                        <div class="block"><p>true adv type is connectable</p></div>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                            </li>
+                        </ul>
+                    </section>
                     
                 </li>
             </ul>
