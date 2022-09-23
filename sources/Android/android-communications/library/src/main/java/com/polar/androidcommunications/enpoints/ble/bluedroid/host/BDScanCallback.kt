@@ -258,29 +258,29 @@ internal class BDScanCallback(
     }
 
     private fun startScanning() {
-        if (getBuildVersion() >= Build.VERSION_CODES.N) {
-            if (scanPool.isNotEmpty()) {
-                val elapsed = System.currentTimeMillis() - scanPool[0]
-                if (scanPool.size > 3 && elapsed < SCAN_WINDOW_LIMIT) {
-                    val sift = SCAN_WINDOW_LIMIT - elapsed + 200
-                    BleLogger.d(TAG, "Prevent scanning too frequently delay: " + sift + "ms" + " elapsed: " + elapsed + "ms")
-                    delaySubscription?.dispose()
-                    delaySubscription = Observable.timer(sift, TimeUnit.MILLISECONDS)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(delayScheduler)
-                        .subscribe(
-                            { },
-                            { throwable: Throwable -> BleLogger.e(TAG, "timer failed: " + throwable.localizedMessage) },
-                            {
-                                BleLogger.d(TAG, "delayed scan starting")
-                                if (scanPool.isNotEmpty()) scanPool.removeAt(0)
-                                startLScan()
-                            })
-                    return
-                }
+
+        if (scanPool.isNotEmpty()) {
+            val elapsed = System.currentTimeMillis() - scanPool[0]
+            if (scanPool.size > 3 && elapsed < SCAN_WINDOW_LIMIT) {
+                val sift = SCAN_WINDOW_LIMIT - elapsed + 200
+                BleLogger.d(TAG, "Prevent scanning too frequently delay: " + sift + "ms" + " elapsed: " + elapsed + "ms")
+                delaySubscription?.dispose()
+                delaySubscription = Observable.timer(sift, TimeUnit.MILLISECONDS)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(delayScheduler)
+                    .subscribe(
+                        { },
+                        { throwable: Throwable -> BleLogger.e(TAG, "timer failed: " + throwable.localizedMessage) },
+                        {
+                            BleLogger.d(TAG, "delayed scan starting")
+                            if (scanPool.isNotEmpty()) scanPool.removeAt(0)
+                            startLScan()
+                        })
+                return
             }
-            BleLogger.d(TAG, "timestamps left: " + scanPool.size)
         }
+        BleLogger.d(TAG, "timestamps left: " + scanPool.size)
+
         startLScan()
     }
 
@@ -302,7 +302,7 @@ internal class BDScanCallback(
         }
         try {
             callStartScanL(scanSettings)
-            if (getBuildVersion() >= Build.VERSION_CODES.N && opportunistic) {
+            if (opportunistic) {
                 opportunisticScanTimer = Observable.interval(30, TimeUnit.MINUTES)
                     .subscribeOn(Schedulers.io())
                     .observeOn(delayScheduler)
@@ -333,19 +333,17 @@ internal class BDScanCallback(
             changeState(ScannerState.IDLE)
             return
         }
-        if (getBuildVersion() >= Build.VERSION_CODES.N) {
-            scanPool.removeIf { aLong: Long -> System.currentTimeMillis() - aLong >= SCAN_WINDOW_LIMIT }
-            scanPool.add(System.currentTimeMillis())
-        }
+        scanPool.removeIf { aLong: Long -> System.currentTimeMillis() - aLong >= SCAN_WINDOW_LIMIT }
+        scanPool.add(System.currentTimeMillis())
     }
 
     @SuppressLint("MissingPermission")
     private fun stopScanning() {
         BleLogger.d(TAG, "Stop scanning")
-        if (getBuildVersion() >= Build.VERSION_CODES.N) {
-            delaySubscription?.dispose()
-            delaySubscription = null
-        }
+
+        delaySubscription?.dispose()
+        delaySubscription = null
+
         try {
             bluetoothAdapter.bluetoothLeScanner.stopScan(leScanCallback)
         } catch (ex: Exception) {

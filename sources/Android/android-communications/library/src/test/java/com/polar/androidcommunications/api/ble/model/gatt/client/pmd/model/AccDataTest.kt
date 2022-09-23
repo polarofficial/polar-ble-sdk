@@ -1,11 +1,16 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
+import com.polar.androidcommunications.testrules.BleLoggerTestRule
 import org.junit.Assert
+import org.junit.Rule
 import org.junit.Test
 import kotlin.math.abs
 
 class AccDataTest {
+    @Rule
+    @JvmField
+    val bleLoggerTestRule = BleLoggerTestRule()
 
     @Test
     fun `process acc raw data type 1`() {
@@ -74,14 +79,14 @@ class AccDataTest {
         // Arrange
         // HEX: 71 07 F0 6A 9E 8D 0A 38 BE 5C BE BA 2F 96 B3 EE 4B E5 AD FB 42 B9 EB BE 4C FE BA 2F 92 BF EE 4B E4 B1 FB 12 B9 EC BD 3C 3E BB 2F 8F D3 DE 4B E3 B5 F7 D2 B8 ED BD 30 7E 7B 2F 8B E3 CE 8B E2 BA F7 A2 B8 EE BC 20 BE 7B 2F 88 F3 CE CB E1 BD EF 52 F8 EF BC 18 FE 3B 2F 84 03 BF CB E0 C2 EF 32 B8 F0 BB 04 4E BC 2E 81 13 AF 0B E0 C6 EF F2 F7 F1 B9 FC 7D BC 2E 7D 27 9F 4B DF CA EB C2 F7 F2 B8 EC CD 7C 2E 7B 37 8F 4B DE CE E3 92 F7 F3 B8 E0 0D FD 2D 77 4B 7F CB DD D2 DF 62 37 F5 B7 D4 4D BD 2D 74 5B 6F CB DC D7 D7 32 37 F6 B5 C8 8D 7D 2D 71 6B 4F 4B DC DC D3 F2 36 F7 B4 BC DD FD 2C 6F 7B 3F 4B DB E0 CF D2 36 F8 B2 B0 2D BE 2C 6C 8F 1F CB DA E3 C7 A2 76 F9
         // index    type                                            data:
-        // 0-5:    Reference sample                                 0xC9 0xFF 0x12 0x00 0x11 0x00
+        // 0-5:    Reference sample                                 0x71 0x07 0xF0 0x6A 0x9E 0x8D
         //      Sample 0 (aka. reference sample):
         //      channel 0: 71 07 => 0x0771 => 1905
-        val refSample0Channel0 = 1905
+        val sample0Channel0 = 1905
         //      channel 1: F0 6A => 0x6AF0 => 27376
-        val refSample0Channel1 = 27376
+        val sample0Channel1 = 27376
         //      channel 2: 9E 8D => 0x8D9E => -29282
-        val refSample0Channel2 = -29282
+        val sample0Channel2 = -29282
         // Delta dump: 0A 38 | BE 5C BE BA 2F 96 B3 EE 4B E5 AD ...
         // 6:      Delta size                           size 1:    0x0A (10 bits)
         // 7:      Sample amount                        size 1:    0x38 (Delta block contains 56 samples)
@@ -92,9 +97,9 @@ class AccDataTest {
         //      Sample 1 - channel 1, size 10 bits: 11 1001 0111
         // 11:                                                     0xBA (binary: 10 | 11 1010)
         //      Sample 1 - channel 2, size 10 bits: 11 1010 1011
-        val refSample1Channel0 = 190
-        val refSample1Channel1 = -105
-        val refSample1Channel2 = -85
+        val sample1Channel0 = sample0Channel0 + 190
+        val sample1Channel1 = sample0Channel1 - 105
+        val sample1Channel2 = sample0Channel2 - 85
         val amountOfSamples = 1 + 56 // reference sample + delta samples
         val measurementFrame = byteArrayOf(
             0x71.toByte(), 0x07.toByte(), 0xF0.toByte(), 0x6A.toByte(), 0x9E.toByte(), 0x8D.toByte(), 0x0A.toByte(), 0x38.toByte(),
@@ -136,12 +141,12 @@ class AccDataTest {
         val accData = AccData.parseDataFromDataFrame(isCompressed, frameType, measurementFrame, factor, timeStamp)
 
         // Assert
-        Assert.assertEquals((factor * refSample0Channel0.toFloat() * 1000f).toInt(), accData.accSamples[0].x)
-        Assert.assertEquals((factor * refSample0Channel1.toFloat() * 1000f).toInt(), accData.accSamples[0].y)
-        Assert.assertEquals((factor * refSample0Channel2.toFloat() * 1000f).toInt(), accData.accSamples[0].z)
-        Assert.assertEquals((factor * (refSample0Channel0 + refSample1Channel0) * 1000f).toInt(), accData.accSamples[1].x)
-        Assert.assertEquals((factor * (refSample0Channel1 + refSample1Channel1) * 1000f).toInt(), accData.accSamples[1].y)
-        Assert.assertEquals((factor * (refSample0Channel2 + refSample1Channel2) * 1000f).toInt(), accData.accSamples[1].z)
+        Assert.assertEquals((factor * sample0Channel0 * 1000f).toInt(), accData.accSamples[0].x)
+        Assert.assertEquals((factor * sample0Channel1 * 1000f).toInt(), accData.accSamples[0].y)
+        Assert.assertEquals((factor * sample0Channel2 * 1000f).toInt(), accData.accSamples[0].z)
+        Assert.assertEquals((factor * sample1Channel0 * 1000f).toInt(), accData.accSamples[1].x)
+        Assert.assertEquals((factor * sample1Channel1 * 1000f).toInt(), accData.accSamples[1].y)
+        Assert.assertEquals((factor * sample1Channel2 * 1000f).toInt(), accData.accSamples[1].z)
 
         // validate data in range
         for (sample in accData.accSamples) {

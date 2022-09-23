@@ -250,17 +250,13 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
         @Override
         public void connectDevice(final BDDeviceSessionImpl session) {
             BluetoothGatt gatt;
-            if (getBuildVersion() >= Build.VERSION_CODES.M) {
-                if (getBuildVersion() >= Build.VERSION_CODES.O) {
-                    int mask = BluetoothDevice.PHY_LE_1M_MASK;
-                    if (bluetoothAdapter.isLe2MPhySupported())
-                        mask |= BluetoothDevice.PHY_LE_2M_MASK;
-                    gatt = session.getBluetoothDevice().connectGatt(context, false, gattCallback, BluetoothDevice.TRANSPORT_LE, mask);
-                } else {
-                    gatt = session.getBluetoothDevice().connectGatt(context, false, gattCallback, BluetoothDevice.TRANSPORT_LE);
-                }
+            if (getBuildVersion() >= Build.VERSION_CODES.O) {
+                int mask = BluetoothDevice.PHY_LE_1M_MASK;
+                if (bluetoothAdapter.isLe2MPhySupported())
+                    mask |= BluetoothDevice.PHY_LE_2M_MASK;
+                gatt = session.getBluetoothDevice().connectGatt(context, false, gattCallback, BluetoothDevice.TRANSPORT_LE, mask);
             } else {
-                gatt = session.getBluetoothDevice().connectGatt(context, false, gattCallback);
+                gatt = session.getBluetoothDevice().connectGatt(context, false, gattCallback, BluetoothDevice.TRANSPORT_LE);
             }
             session.setGatt(gatt);
         }

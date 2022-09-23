@@ -439,8 +439,8 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
 
     override fun clientReady(checkConnection: Boolean): Completable {
         return Completable.concatArray(
-            waitNotificationEnabled(PMD_CP, true),
-            waitNotificationEnabled(PMD_DATA, true)
+            waitNotificationEnabled(PMD_CP, checkConnection),
+            waitNotificationEnabled(PMD_DATA, checkConnection)
         )
     }
 

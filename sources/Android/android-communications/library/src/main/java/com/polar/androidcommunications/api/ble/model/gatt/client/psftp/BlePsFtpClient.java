@@ -595,11 +595,11 @@ public class BlePsFtpClient extends BleGattBase {
                 .serialize();
     }
 
-    public Completable waitPsFtpClientReady(final boolean checkConnection) {
+    private Completable waitPsFtpClientReady(final boolean checkConnection) {
         return waitPsFtpClientReady(checkConnection, Schedulers.io());
     }
 
-    public Completable waitPsFtpClientReady(final boolean checkConnection, Scheduler scheduler) {
+    private Completable waitPsFtpClientReady(final boolean checkConnection, Scheduler scheduler) {
         Completable mtuEnabled = waitNotificationEnabled(BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, checkConnection, scheduler);
         Completable d2hEnabled = waitNotificationEnabled(BlePsFtpUtils.RFC77_PFTP_D2H_CHARACTERISTIC, checkConnection, scheduler);
         return Completable.concatArray(mtuEnabled, d2hEnabled);

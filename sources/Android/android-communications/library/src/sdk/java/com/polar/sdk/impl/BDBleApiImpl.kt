@@ -134,10 +134,9 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
                 value.dispose()
             }
         }
-        if (devicesStateMonitorDisposable != null && !devicesStateMonitorDisposable!!.isDisposed) {
-            devicesStateMonitorDisposable!!.dispose()
-        }
+        devicesStateMonitorDisposable?.dispose()
         devicesStateMonitorDisposable = null
+
         for ((_, value) in connectSubscriptions) {
             if (!value.isDisposed) {
                 value.dispose()
@@ -281,7 +280,7 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
 
     @Deprecated("in release 3.2.8. Move to the background is not relevant information for SDK starting from release 3.2.8")
     override fun backgroundEntered() {
-        logError("call of deprecated backgroundEntered() method")
+        BleLogger.w(TAG, "call of deprecated backgroundEntered() method")
     }
 
     override fun foregroundEntered() {
@@ -904,8 +903,8 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
                                 .subscribeOn(AndroidSchedulers.mainThread())
                                 .subscribe()
 
-                            val client = session.fetchClient(BleHrClient.HR_SERVICE) as BleHrClient?
-                            client?.observeHrNotifications(true)
+                            val bleHrClient = session.fetchClient(BleHrClient.HR_SERVICE) as BleHrClient?
+                            bleHrClient?.observeHrNotifications(true)
                                 ?.observeOn(AndroidSchedulers.mainThread())
                                 ?.subscribe(
                                     { hrNotificationData: HrNotificationData ->
@@ -924,8 +923,8 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
                                     {})
                         }
                         BleBattClient.BATTERY_SERVICE -> {
-                            val client = session.fetchClient(BleBattClient.BATTERY_SERVICE) as BleBattClient?
-                            client?.monitorBatteryStatus(true)
+                            val bleBattClient = session.fetchClient(BleBattClient.BATTERY_SERVICE) as BleBattClient?
+                            bleBattClient?.monitorBatteryStatus(true)
                                 ?.observeOn(AndroidSchedulers.mainThread())
                                 ?.subscribe(
                                     { batteryLevel: Int? ->
@@ -936,12 +935,11 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
                                 )
                         }
                         BlePMDClient.PMD_SERVICE -> {
-                            val client = session.fetchClient(BlePMDClient.PMD_SERVICE) as BlePMDClient?
-                            if (client != null) {
-                                return@flatMap client.waitNotificationEnabled(BlePMDClient.PMD_CP, true)
-                                    .concatWith(client.waitNotificationEnabled(BlePMDClient.PMD_DATA, true))
+                            val blePMDClient = session.fetchClient(BlePMDClient.PMD_SERVICE) as BlePMDClient?
+                            if (blePMDClient != null) {
+                                return@flatMap blePMDClient.clientReady(true)
                                     .andThen(
-                                        client.readFeature(true)
+                                        blePMDClient.readFeature(true)
                                             .observeOn(AndroidSchedulers.mainThread())
                                             .doOnSuccess { pmdFeature: PmdFeature ->
                                                 val deviceStreamingFeatures: MutableSet<DeviceStreamingFeature> = HashSet()
@@ -972,9 +970,9 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
                             }
                         }
                         BleDisClient.DIS_SERVICE -> {
-                            val client = session.fetchClient(BleDisClient.DIS_SERVICE) as BleDisClient?
-                            if (client != null) {
-                                return@flatMap client.observeDisInfo(true)
+                            val bleDisClient = session.fetchClient(BleDisClient.DIS_SERVICE) as BleDisClient?
+                            if (bleDisClient != null) {
+                                return@flatMap bleDisClient.observeDisInfo(true)
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .doOnNext { pair: android.util.Pair<UUID?, String?> ->
                                         callback?.disInformationReceived(deviceId, pair.first!!, pair.second!!)
@@ -982,9 +980,9 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
                             }
                         }
                         BlePsFtpUtils.RFC77_PFTP_SERVICE -> {
-                            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-                            if (client != null) {
-                                return@flatMap client.waitPsFtpClientReady(true)
+                            val blePsftpClient = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                            if (blePsftpClient != null) {
+                                return@flatMap blePsftpClient.clientReady(true)
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .doOnComplete {
                                         callback?.polarFtpFeatureReady(deviceId)
