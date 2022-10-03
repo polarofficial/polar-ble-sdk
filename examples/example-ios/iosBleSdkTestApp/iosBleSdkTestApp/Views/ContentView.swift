@@ -67,7 +67,7 @@ struct ContentView: View {
                             
                             Button( bleSdkManager.isStreamOn(feature: DeviceStreamingFeature.ecg) ? "Stop ECG Stream" : "Start ECG Stream", action: {
                                 streamButtonToggle(DeviceStreamingFeature.ecg) })
-                                .buttonStyle(SecondaryButtonStyle(buttonState: getStreamButtonState(DeviceStreamingFeature.ecg)))
+                            .buttonStyle(SecondaryButtonStyle(buttonState: getStreamButtonState(DeviceStreamingFeature.ecg)))
                             
                             Button(bleSdkManager.isStreamOn(feature: DeviceStreamingFeature.acc) ? "Stop ACC Stream" : "Start ACC Stream", action: { streamButtonToggle(DeviceStreamingFeature.acc)})
                                 .buttonStyle(SecondaryButtonStyle(buttonState: getStreamButtonState(DeviceStreamingFeature.acc)))
@@ -80,15 +80,15 @@ struct ContentView: View {
                             
                             Button(bleSdkManager.isStreamOn(feature: DeviceStreamingFeature.ppg) ? "Stop PPG Stream" : "Start PPG Stream", action: {
                                 streamButtonToggle(DeviceStreamingFeature.ppg) })
-                                .buttonStyle(SecondaryButtonStyle(buttonState: getStreamButtonState(DeviceStreamingFeature.ppg)))
+                            .buttonStyle(SecondaryButtonStyle(buttonState: getStreamButtonState(DeviceStreamingFeature.ppg)))
                             
                             Button(bleSdkManager.isStreamOn(feature: DeviceStreamingFeature.ppi) ? "Stop PPI Stream" : "Start PPI Stream", action: {
                                 streamButtonToggle(DeviceStreamingFeature.ppi)})
-                                .buttonStyle(SecondaryButtonStyle(buttonState: getStreamButtonState(DeviceStreamingFeature.ppi)))
+                            .buttonStyle(SecondaryButtonStyle(buttonState: getStreamButtonState(DeviceStreamingFeature.ppi)))
                             
                             Button(bleSdkManager.isSdkStreamModeEnabled ? "Disable SDK mode" : "Enable SDK mode", action: {
                                 bleSdkManager.sdkModeToggle() })
-                                .buttonStyle(SecondaryButtonStyle(buttonState: getSdkModeButtonState()))
+                            .buttonStyle(SecondaryButtonStyle(buttonState: getSdkModeButtonState()))
                             
                         }.fullScreenCover(item: $bleSdkManager.streamSettings) { streamSettings in
                             if let settings = streamSettings {
@@ -104,8 +104,8 @@ struct ContentView: View {
                             
                             Button("List exercises", action: { bleSdkManager.listExercises()})
                                 .buttonStyle(SecondaryButtonStyle(buttonState: getFtpButtonState()))
-                            Button("Read exercise", action: {bleSdkManager.readExercise()})
-                                .buttonStyle(SecondaryButtonStyle(buttonState: getFtpButtonState()))
+                            Button(bleSdkManager.isExerciseFetchInProgress ?  "Reading exercise" : "Read exercise"  , action: {bleSdkManager.readExercise()})
+                                .buttonStyle(SecondaryButtonStyle(buttonState: getRecordingReadButtonState()))
                             Button("Remove exercise", action: { bleSdkManager.removeExercise()})
                                 .buttonStyle(SecondaryButtonStyle(buttonState: getFtpButtonState()))
                             
@@ -243,6 +243,18 @@ struct ContentView: View {
     func getRecordingStatusButtonState() -> ButtonState {
         if bleSdkManager.isDeviceConnected && bleSdkManager.isH10RecordingSupported {
             return ButtonState.released
+        } else {
+            return ButtonState.disabled
+        }
+    }
+    
+    func getRecordingReadButtonState() -> ButtonState {
+        if bleSdkManager.isDeviceConnected && bleSdkManager.isFtpFeatureSupported {
+            if(bleSdkManager.isExerciseFetchInProgress) {
+                return ButtonState.pressedDown
+            } else {
+                return ButtonState.released
+            }
         } else {
             return ButtonState.disabled
         }

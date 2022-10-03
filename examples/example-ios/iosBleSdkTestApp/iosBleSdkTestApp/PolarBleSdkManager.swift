@@ -41,6 +41,7 @@ class PolarBleSdkManager : ObservableObject {
     @Published private(set) var isFtpFeatureSupported: Bool = false
     @Published private(set) var isH10RecordingSupported: Bool = false
     @Published private(set) var isH10RecordingEnabled: Bool = false
+    @Published private(set) var isExerciseFetchInProgress: Bool = false
     @Published var streamSettings: StreamSettings? = nil
     @Published var generalError: Message? = nil
     @Published var generalMessage: Message? = nil
@@ -475,16 +476,22 @@ class PolarBleSdkManager : ObservableObject {
                 somethingFailed(text: "No exercise to read, please list the exercises first")
                 return
             }
-            api.fetchExercise(deviceId, entry: e)
-                .observe(on: MainScheduler.instance)
-                .subscribe{ e in
-                    switch e {
-                    case .failure(let err):
-                        NSLog("failed to read exercises: \(err)")
-                    case .success(let data):
-                        NSLog("exercise data count: \(data.samples.count) samples: \(data.samples)")
-                    }
-                }.disposed(by: disposeBag)
+            if(!isExerciseFetchInProgress) {
+                isExerciseFetchInProgress = true
+                api.fetchExercise(deviceId, entry: e)
+                    .observe(on: MainScheduler.instance)
+                    .do(onDispose: { self.isExerciseFetchInProgress = false})
+                    .subscribe{ e in
+                        switch e {
+                        case .failure(let err):
+                            NSLog("failed to read exercises: \(err)")
+                        case .success(let data):
+                            NSLog("exercise data count: \(data.samples.count) samples: \(data.samples)")
+                        }
+                    }.disposed(by: disposeBag)
+            } else {
+                NSLog("Reading of exercise is in progress at the moment.")
+            }
         }
     }
     
