@@ -23,6 +23,7 @@
     <string name="scanning_devices">stop device scan</string>
     <string name="list_exercises">list exercises</string>
     <string name="read_exercise">read exercise</string>
+    <string name="reading_exercise">reading exercise</string>
     <string name="remove_exercise">remove exercise</string>
     <string name="start_h10_recording">Start H10 recording</string>
     <string name="stop_h10_recording">Stop H10 recording</string>

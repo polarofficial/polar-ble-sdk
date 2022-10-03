@@ -446,9 +446,13 @@ class MainActivity : AppCompatActivity() {
             val isDisposed = fetchExerciseDisposable?.isDisposed ?: true
             if (isDisposed) {
                 if (exerciseEntries.isNotEmpty()) {
+                    toggleButtonDown(fetchExerciseButton, R.string.reading_exercise)
                     // just for the example purpose read the entry which is first on the exerciseEntries list
                     fetchExerciseDisposable = api.fetchExercise(deviceId, exerciseEntries.first())
                         .observeOn(AndroidSchedulers.mainThread())
+                        .doFinally {
+                            toggleButtonUp(fetchExerciseButton, R.string.read_exercise)
+                        }
                         .subscribe(
                             { polarExerciseData: PolarExerciseData ->
                                 Log.d(TAG, "Exercise data count: ${polarExerciseData.hrSamples.size} samples: ${polarExerciseData.hrSamples}")
@@ -717,21 +721,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestStreamSettings(identifier: String, feature: DeviceStreamingFeature): Flowable<PolarSensorSetting> {
-
         val availableSettings = api.requestStreamSettings(identifier, feature)
-            .observeOn(AndroidSchedulers.mainThread())
-            .onErrorReturn { error: Throwable ->
-                val errorString = "Settings are not available for feature $feature. REASON: $error"
-                Log.w(TAG, errorString)
-                showToast(errorString)
-                PolarSensorSetting(emptyMap())
-            }
         val allSettings = api.requestFullStreamSettings(identifier, feature)
             .onErrorReturn { error: Throwable ->
-                Log.w(
-                    TAG,
-                    "Full stream settings are not available for feature $feature. REASON: $error"
-                )
+                Log.w(TAG, "Full stream settings are not available for feature $feature. REASON: $error")
                 PolarSensorSetting(emptyMap())
             }
         return Single.zip(availableSettings, allSettings) { available: PolarSensorSetting, all: PolarSensorSetting ->
