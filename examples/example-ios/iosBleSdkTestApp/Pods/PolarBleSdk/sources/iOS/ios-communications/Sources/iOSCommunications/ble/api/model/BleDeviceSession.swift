@@ -7,7 +7,7 @@ public protocol BleCCCWriteProtocol: AnyObject {
     func cccWrite(_ address: UUID, characteristic: CBUUID)
 }
 
-@objc open class    BleDeviceSession: NSObject {
+@objc open class BleDeviceSession: NSObject {
     
     public enum DeviceSessionState{
         case
@@ -24,16 +24,16 @@ public protocol BleCCCWriteProtocol: AnyObject {
         
         public func description() -> String {
             switch self {
-                case .sessionClosed:
-                    return "sessionClosed"
-                case .sessionOpening:
-                    return "sessionOpening"
-                case .sessionOpenPark:
-                    return "sessionOpenPark"
-                case .sessionOpen:
-                    return "sessionOpen"
-                case .sessionClosing:
-                    return "sessionClosing"
+            case .sessionClosed:
+                return "sessionClosed"
+            case .sessionOpening:
+                return "sessionOpening"
+            case .sessionOpenPark:
+                return "sessionOpenPark"
+            case .sessionOpen:
+                return "sessionOpen"
+            case .sessionClosing:
+                return "sessionClosing"
             }
         }
     }
@@ -46,7 +46,7 @@ public protocol BleCCCWriteProtocol: AnyObject {
     }
     
     // apis to access
-    public let address:UUID 
+    public let address:UUID
     public let advertisementContent = BleAdvertisementContent()
     public var state = DeviceSessionState.sessionClosed
     public var previousState = DeviceSessionState.sessionClosed

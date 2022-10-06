@@ -6,7 +6,10 @@ import RxSwift
 public class CBDeviceListenerImpl: NSObject, CBCentralManagerDelegate {
     private let SESSION_TEAR_DOWN_TIMEOUT_MS = 1000
     
-    fileprivate lazy var manager = CBCentralManager(delegate: self, queue: queueBle, options: nil)
+    fileprivate lazy var manager = CBCentralManager(delegate: self, queue: queueBle, options: [
+        CBCentralManagerOptionRestoreIdentifierKey: "PolarBleSDKCBCentralManagerOptionRestoreIdentifierKey"
+    ])
+    
     fileprivate let sessions = AtomicList<CBDeviceSessionImpl>()
     fileprivate var queue: DispatchQueue
     fileprivate var queueBle: DispatchQueue
@@ -30,7 +33,7 @@ public class CBDeviceListenerImpl: NSObject, CBCentralManagerDelegate {
         }
     }
     
-    public init(_ queue: DispatchQueue, clients: [(_ transport: BleAttributeTransportProtocol) -> BleGattClientBase], identifier: Int){
+    public init(_ queue: DispatchQueue, clients: [(_ transport: BleAttributeTransportProtocol) -> BleGattClientBase], identifier: Int) {
         self.queue = queue
         self.factory = BleGattClientFactory(clients)
         self.queueBle = DispatchQueue(label: "CBDeviceListenerImplQueue\(identifier)", attributes: [])
@@ -40,8 +43,7 @@ public class CBDeviceListenerImpl: NSObject, CBCentralManagerDelegate {
     fileprivate func session(_ peripheral: CBPeripheral) -> CBDeviceSessionImpl? {
         return sessions.fetch( { (item: CBDeviceSessionImpl) -> Bool in
             return (item.peripheral.identifier == peripheral.identifier)
-        }
-        )
+        })
     }
     
     fileprivate func updateSessionState(_ session: CBDeviceSessionImpl, state: BleDeviceSession.DeviceSessionState) {
@@ -120,28 +122,52 @@ public class CBDeviceListenerImpl: NSObject, CBCentralManagerDelegate {
         })
     }
     
-    public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber){
+    public func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
+        BleLogger.trace("CentralManager state restored")
+        
+        guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? Array<CBPeripheral> else {
+            BleLogger.trace("CentralManager state restored, but no connected peripherals")
+            return
+        }
+        
+        for peripheral in peripherals {
+            let session = self.session(peripheral)
+            if session == nil {
+                self.sessions.append(CBDeviceSessionImpl(peripheral: peripheral, central: central, scanner: self, factory: self.factory, queueBle: self.queueBle, queue: self.queue))
+            }
+            
+            if let device = self.session(peripheral) {
+                device.connected()
+                self.updateSessionState(device,state: BleDeviceSession.DeviceSessionState.sessionOpen)
+            } else {
+                BleLogger.error("out of memory")
+                return
+            }
+        }
+    }
+    
+    public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         if self.session(peripheral) == nil, let filter = self.scanPreFilter {
-            let c=BleAdvertisementContent()
+            let advContent = BleAdvertisementContent()
             if peripheral.name != nil && advertisementData[CBAdvertisementDataLocalNameKey] == nil {
                 var advData = [String : AnyObject]()
                 advData[CBAdvertisementDataLocalNameKey] = peripheral.name as AnyObject?
-                c.processAdvertisementData(Int32(RSSI.intValue), advertisementData: advData)
+                advContent.processAdvertisementData(Int32(RSSI.intValue), advertisementData: advData)
             }
-            c.processAdvertisementData(Int32(RSSI.intValue), advertisementData: advertisementData as [String : AnyObject])
-            if !filter(c) {
+            advContent.processAdvertisementData(Int32(RSSI.intValue), advertisementData: advertisementData as [String : AnyObject])
+            if !filter(advContent) {
                 return
             }
         }
         handleDeviceDiscovered(central, didDiscover: peripheral, advertisementData: advertisementData, rssi: RSSI)
     }
     
-    private func handleDeviceDiscovered(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber){
+    private func handleDeviceDiscovered(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         var session = self.session(peripheral)
         if automaticH10Mapping &&
             peripheral.name?.contains("H10") ?? false ||
             peripheral.name?.contains("H9") ?? false {
-            let items=peripheral.name?.split(separator: " ").map(String.init)
+            let items = peripheral.name?.split(separator: " ").map(String.init)
             let deviceId = items?.last
             if let old = self.sessions.fetch({ (impl) -> Bool in
                 return impl.advertisementContent.polarDeviceIdUntouched == deviceId
@@ -156,14 +182,17 @@ public class CBDeviceListenerImpl: NSObject, CBCentralManagerDelegate {
                 }
             }
         }
+        
         if session == nil {
-            self.sessions.append(CBDeviceSessionImpl(peripheral: peripheral, central: manager, scanner: self, factory: factory, queueBle: self.queueBle, queue: self.queue))
-            BleLogger.trace("new peripheral discovered: ",peripheral.description)
+            self.sessions.append(CBDeviceSessionImpl(peripheral: peripheral, central: self.manager, scanner: self, factory: self.factory, queueBle: self.queueBle, queue: self.queue))
+            BleLogger.trace("new peripheral discovered: ", peripheral.description)
         }
+        
         guard let sess = self.session(peripheral) else {
             BleLogger.error("out of memory")
             return
         }
+        
         queue.async(execute: {
             sess.advertisementContent.processAdvertisementData(RSSI.int32Value, advertisementData: advertisementData)
             
@@ -184,14 +213,15 @@ public class CBDeviceListenerImpl: NSObject, CBCentralManagerDelegate {
     
     public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral){
         BleLogger.trace("didConnect: ", peripheral.description)
-        queue.async(execute: {
-            if let device = self.session(peripheral){
-                device.connected()
-                self.updateSessionState(device,state: BleDeviceSession.DeviceSessionState.sessionOpen)
-            } else {
-                BleLogger.error("didConnect: Unknown peripheral received")
+        queue.async(
+            execute: {
+                if let device = self.session(peripheral) {
+                    device.connected()
+                    self.updateSessionState(device,state: BleDeviceSession.DeviceSessionState.sessionOpen)
+                } else {
+                    BleLogger.error("didConnect: Unknown peripheral received")
+                }
             }
-        }
         )
     }
     

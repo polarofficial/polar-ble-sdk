@@ -26,7 +26,7 @@ Most accurate Heart rate sensor in the markets. The H10 is used in the Getting s
 * From version 3.0.35 onwards. 
 * Heart rate as beats per minute. RR Interval in ms and 1/1024 format.
 * Heart rate broadcast.
-* Electrocardiography (ECG) data in µV. Default epoch for timestamp is 1.1.2000
+* Electrocardiography (ECG) data in µV with sample rate 130Hz. Default epoch for timestamp is 1.1.2000
 * Accelerometer data with sample rates of 25Hz, 50Hz, 100Hz and 200Hz and range of 2G, 4G and 8G. Axis specific acceleration data in mG. Default epoch for timestamp is 1.1.2000
 * Start and stop of internal recording and request for internal recording status. Recording supports RR, HR with one second sampletime or HR with five second sampletime.
 * List, read and remove for stored internal recording (sensor supports only one recording at the time).
@@ -79,38 +79,39 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 Detailed documentation  [Full Documentation](polar-sdk-android/docs/html/). 
 ## Installation
 
-1.  In `build.gradle` make sure the __minSdkVersion__ is set to __21__ or higher.
+1.  In `build.gradle` make sure the __minSdk__ is set to __24__ or higher.
 ```gradle
 android {
     ...
     defaultConfig {
         ...
-        minSdkVersion 21
+        minSdk 24
     }
 }
 ```
 
-2. Add the JitPack repository to your build file
+2. Add the JitPack repository to your repositories settings
+
 ```gradle
-allprojects {
+   ...
     repositories {
         ...
         maven { url 'https://jitpack.io' }
+        ...
     }
 }
 ```
 
-3. Add the dependency
+3. Add the dependency Polar BLE SDK library. Also you will need the dependencies to [RxJava](https://github.com/ReactiveX/RxJava) to use the Polar BLE SDK Library
 ```gradle
 dependencies {
+    implementation 'com.github.polarofficial:polar-ble-sdk:${sdk_version}'
     implementation 'io.reactivex.rxjava3:rxjava:3.1.3'
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
-    implementation 'com.github.polarofficial:polar-ble-sdk:${sdk_version}'
 }
 ```
 
-4. Finally, to let the SDK use the bluetooth it needs [Bluetooth related permissions](https://developer.android.com/guide/topics/connectivity/bluetooth/permissions). On your application `AndroidManifest.xml` following 
-permissions need to be listed:
+4. Finally, to let the SDK use the bluetooth it needs [Bluetooth related permissions](https://developer.android.com/guide/topics/connectivity/bluetooth/permissions). On your application `AndroidManifest.xml` following permissions need to be listed:
 
 ```xml
    <!-- Polar SDK needs Bluetooth scan permission to search for BLE devices. Polar BLE SDK doesn't use the scan
@@ -153,7 +154,6 @@ permissions need to be listed:
 On your application you must request for the [permissions](https://developer.android.com/guide/topics/permissions). Here is the example how could you request the needed permissions for the SDK:
 
 ```kt
-if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT), PERMISSION_REQUEST_CODE)
@@ -163,7 +163,6 @@ if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
     } else {
         requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), PERMISSION_REQUEST_CODE)
     }
-}
 ```
 
 
