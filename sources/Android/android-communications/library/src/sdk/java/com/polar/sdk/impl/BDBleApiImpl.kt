@@ -57,6 +57,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.schedulers.Timed
 import org.reactivestreams.Publisher
 import protocol.PftpError.PbPFtpError
+import protocol.PftpNotification
 import protocol.PftpRequest
 import protocol.PftpResponse.PbPFtpDirectory
 import protocol.PftpResponse.PbRequestRecordingStatusResult
@@ -69,16 +70,14 @@ import java.util.concurrent.TimeUnit
  * The default implementation of the Polar API
  */
 class BDBleApiImpl private constructor(context: Context, features: Int) : PolarBleApi(features), BlePowerStateChangedCallback {
-    private val connectSubscriptions: MutableMap<String, Disposable> = HashMap()
-    private val deviceDataMonitorDisposable: MutableMap<String, Disposable> = HashMap()
-    private val stopPmdStreamingDisposable: MutableMap<String, Disposable> = HashMap()
+    private val connectSubscriptions: MutableMap<String, Disposable> = mutableMapOf()
+    private val deviceDataMonitorDisposable: MutableMap<String, Disposable> = mutableMapOf()
+    private val stopPmdStreamingDisposable: MutableMap<String, Disposable> = mutableMapOf()
     private val filter = BleSearchPreFilter { content: BleAdvertisementContent -> content.polarDeviceId.isNotEmpty() && content.polarDeviceType != "mobile" }
     private var listener: BleDeviceListener?
-
     private var devicesStateMonitorDisposable: Disposable? = null
     private var callback: PolarBleApiCallbackProvider? = null
     private var logger: PolarBleApiLogger? = null
-
 
     init {
         val clients: MutableSet<Class<out BleGattBase>> = HashSet()
@@ -129,22 +128,22 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
     }
 
     override fun shutDown() {
-        for ((_, value) in deviceDataMonitorDisposable) {
-            if (value.isDisposed) {
-                value.dispose()
+        for (dataDisposable in deviceDataMonitorDisposable.values) {
+            if (!dataDisposable.isDisposed) {
+                dataDisposable.dispose()
             }
         }
         devicesStateMonitorDisposable?.dispose()
         devicesStateMonitorDisposable = null
 
-        for ((_, value) in connectSubscriptions) {
-            if (!value.isDisposed) {
-                value.dispose()
+        for (connectSubscription in connectSubscriptions.values) {
+            if (!connectSubscription.isDisposed) {
+                connectSubscription.dispose()
             }
         }
-        for ((_, value) in stopPmdStreamingDisposable) {
-            if (!value.isDisposed) {
-                value.dispose()
+        for (pmdStreamingDisposable in stopPmdStreamingDisposable.values) {
+            if (!pmdStreamingDisposable.isDisposed) {
+                pmdStreamingDisposable.dispose()
             }
         }
         listener?.shutDown()
@@ -490,41 +489,43 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
     override fun fetchExercise(identifier: String, entry: PolarExerciseEntry): Single<PolarExerciseData> {
         return try {
             val session = sessionPsFtpClientReady(identifier)
-            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Single.error(PolarServiceNotAvailable())
+            val fsType = getFileSystemType(session.polarDeviceType)
+
+            val beforeFetch = if (fsType == FileSystemType.H10_FILE_SYSTEM) {
+                client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE, null)
+                    .andThen(client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.START_SYNC_VALUE, null))
+            } else {
+                Completable.complete()
+            }
+
+            val afterFetch = if (fsType == FileSystemType.H10_FILE_SYSTEM) {
+                client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.STOP_SYNC_VALUE, null)
+                    .andThen(client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.TERMINATE_SESSION_VALUE, null))
+            } else {
+                Completable.complete()
+            }
+
             val builder = PftpRequest.PbPFtpOperation.newBuilder()
             builder.command = PftpRequest.PbPFtpOperation.Command.GET
             builder.path = entry.path
-            val fsType = getFileSystemType(session.polarDeviceType)
-            if (fsType === FileSystemType.SAGRFC2_FILE_SYSTEM
-                || fsType === FileSystemType.H10_FILE_SYSTEM
-            ) {
-                /*
-                TODO to improve throughput (device will request parameter update from mobile):
 
-                Add these two notifications before reading ex
-                client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.START_SYNC_VALUE, null).andThen(
-                        client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE, null)
-                );
-
-                Add these two notifications after reading ex
-                client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.STOP_SYNC_VALUE,
-                        PftpNotification.PbPFtpStopSyncParams.newBuilder().setCompleted(true).build().toByteArray()).andThen(
-                        client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.TERMINATE_SESSION_VALUE, null)
-                );
-                 */
-                if (client != null) {
-                    client.request(builder.build().toByteArray())
-                        .map { byteArrayOutputStream: ByteArrayOutputStream ->
-                            val samples = PbExerciseSamples.parseFrom(byteArrayOutputStream.toByteArray())
-                            if (samples.hasRrSamples()) {
-                                return@map PolarExerciseData(samples.recordingInterval.seconds, samples.rrSamples.rrIntervalsList)
-                            } else {
-                                return@map PolarExerciseData(samples.recordingInterval.seconds, samples.heartRateSamplesList)
-                            }
-                        }
-                        .onErrorResumeNext { throwable: Throwable -> Single.error(handleError(throwable)) }
-                } else Single.error(PolarServiceNotAvailable())
-            } else Single.error(PolarOperationNotSupported())
+            beforeFetch
+                .andThen(client.request(builder.build().toByteArray()))
+                .map { byteArrayOutputStream: ByteArrayOutputStream ->
+                    val samples = PbExerciseSamples.parseFrom(byteArrayOutputStream.toByteArray())
+                    if (samples.hasRrSamples()) {
+                        return@map PolarExerciseData(samples.recordingInterval.seconds, samples.rrSamples.rrIntervalsList)
+                    } else {
+                        return@map PolarExerciseData(samples.recordingInterval.seconds, samples.heartRateSamplesList)
+                    }
+                }
+                .onErrorResumeNext { throwable: Throwable -> Single.error(handleError(throwable)) }
+                .doFinally {
+                    afterFetch
+                        .onErrorComplete()
+                        .subscribe()
+                }
         } catch (error: Throwable) {
             Single.error(error)
         }
@@ -995,7 +996,7 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
             }
             .subscribe(
                 { },
-                { throwable: Throwable -> logError("Error while monitoring session services: " + throwable.message) },
+                { throwable: Throwable -> logError("Error while monitoring session services: $throwable") },
                 { log("complete") }
             )
         deviceDataMonitorDisposable[session.address] = disposable
@@ -1074,13 +1075,13 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
 
         @Throws(PolarBleSdkInstanceException::class, BleNotAvailableInDevice::class)
         fun getInstance(context: Context, features: Int): BDBleApiImpl {
-            return if (instance != null) {
-                if (instance!!.features == features) {
-                    instance!!
+            return instance?.let {
+                if (it.features == features) {
+                    it
                 } else {
                     throw PolarBleSdkInstanceException("Attempt to create Polar BLE API with features " + features + ". Instance with features " + instance!!.features + " already exists")
                 }
-            } else {
+            } ?: run {
                 instance = BDBleApiImpl(context, features)
                 instance!!
             }

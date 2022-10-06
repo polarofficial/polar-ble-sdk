@@ -1,0 +1,10 @@
+syntax = "proto2";
+
+package protocol;
+
+enum PbPFtpHostToDevNotification {
+    START_SYNC = 0;
+    STOP_SYNC = 1;
+    INITIALIZE_SESSION = 8;
+    TERMINATE_SESSION = 9;
+}
