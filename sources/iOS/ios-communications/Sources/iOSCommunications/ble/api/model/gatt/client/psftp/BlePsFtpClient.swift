@@ -80,7 +80,6 @@ public class BlePsFtpClient: BleGattClientBase {
     override public func processServiceData(_ chr: CBUUID , data: Data , err: Int ){
         if( data.count != 0 ){
             if chr.isEqual(BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC) {
-                BleLogger.trace_hex("MTU in ", data: data)
                 mtuInputQueue.push([data : err])
                 if self.currentOperationWrite.get() && data.count == 3 {
                     // special case
