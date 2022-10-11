@@ -343,13 +343,19 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
                         }
                         
                         if client.containsReadCharacteristic(chr.uuid) {
-                            if chr.value?.isEmpty ?? true {
-                                peripheral.readValue(for: chr)
-                            } else {
-                                // Characteristics value is already known, fake the "didUpdateValueFor" call
+                            // Note:
+                            // 1: In the case connection was recovered from the Bluetooth State Preservation and Restoration, the readValue() call is never returning any result -> call directly the didUpdateValueFor with already existing 'chr.value'
+                            // 2: In the case connection was just created 'chr.value' contains the old data from the old connection. -> readValue() from the device
+                            // 1 & 2: At this point of execution 1 or 2 cannot be identified, so execute both, shall not cause any problems.
+                                                        
+                            // 1)
+                            if let chrValue = chr.value, !chrValue.isEmpty {
                                 BleLogger.trace("Characteristics value already known")
                                 self.peripheral(peripheral, didUpdateValueFor: chr, error: nil)
+                   
                             }
+                            // 2)
+                            peripheral.readValue(for: chr)
                         }
                     }
                 }
@@ -368,6 +374,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         BleLogger.trace_if_error("didUpdateValueFor: ", error: error)
+        BleLogger.trace_hex("TESTING, chr \(characteristic.uuid) didUpdateValueFor ", data: characteristic.value ?? Data())
         if let serviceUuid = characteristic.service?.uuid, let client = fetchGattClient(serviceUuid) {
             if client.containsCharacteristic(characteristic.uuid) {
                 let errorCode = (error as NSError?)?.code ?? 0
