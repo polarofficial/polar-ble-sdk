@@ -332,7 +332,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
                         if client.containsNotifyCharacteristic(chr.uuid) {
                             if(chr.isNotifying) {
                                 // Characteristics is already in notifying state, fake the "notifyDescriptorWritten"
-                                BleLogger.trace("Notify characteristics already enabled")
+                                BleLogger.trace("Notify chr: \(chr.uuid) already enabled")
                                 client.notifyDescriptorWritten(chr.uuid, enabled: true, err: 0)
                             } else {
                                 attNotifyQueue.append(chr)
@@ -343,13 +343,8 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
                         }
                         
                         if client.containsReadCharacteristic(chr.uuid) {
-                            if chr.value?.isEmpty ?? true {
-                                peripheral.readValue(for: chr)
-                            } else {
-                                // Characteristics value is already known, fake the "didUpdateValueFor" call
-                                BleLogger.trace("Characteristics value already known")
-                                self.peripheral(peripheral, didUpdateValueFor: chr, error: nil)
-                            }
+                            BleLogger.trace("Read value for chr: \(chr.uuid)")
+                            peripheral.readValue(for: chr)
                         }
                     }
                 }
@@ -367,7 +362,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        BleLogger.trace_if_error("didUpdateValueFor: ", error: error)
+        BleLogger.trace_if_error("didUpdateValueFor \(characteristic.uuid): ", error: error)
         if let serviceUuid = characteristic.service?.uuid, let client = fetchGattClient(serviceUuid) {
             if client.containsCharacteristic(characteristic.uuid) {
                 let errorCode = (error as NSError?)?.code ?? 0
