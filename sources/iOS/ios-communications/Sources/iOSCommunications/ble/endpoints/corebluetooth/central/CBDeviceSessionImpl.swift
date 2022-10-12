@@ -332,7 +332,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
                         if client.containsNotifyCharacteristic(chr.uuid) {
                             if(chr.isNotifying) {
                                 // Characteristics is already in notifying state, fake the "notifyDescriptorWritten"
-                                BleLogger.trace("Notify characteristics already enabled")
+                                BleLogger.trace("Notify chr: \(chr.uuid) already enabled")
                                 client.notifyDescriptorWritten(chr.uuid, enabled: true, err: 0)
                             } else {
                                 attNotifyQueue.append(chr)
@@ -343,18 +343,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
                         }
                         
                         if client.containsReadCharacteristic(chr.uuid) {
-                            // Note:
-                            // 1: In the case connection was recovered from the Bluetooth State Preservation and Restoration, the readValue() call is never returning any result -> call directly the didUpdateValueFor with already existing 'chr.value'
-                            // 2: In the case connection was just created 'chr.value' contains the old data from the old connection. -> readValue() from the device
-                            // 1 & 2: At this point of execution 1 or 2 cannot be identified, so execute both, shall not cause any problems.
-                                                        
-                            // 1)
-                            if let chrValue = chr.value, !chrValue.isEmpty {
-                                BleLogger.trace("Characteristics value already known")
-                                self.peripheral(peripheral, didUpdateValueFor: chr, error: nil)
-                   
-                            }
-                            // 2)
+                            BleLogger.trace("Read value for chr: \(chr.uuid)")
                             peripheral.readValue(for: chr)
                         }
                     }
@@ -373,8 +362,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        BleLogger.trace_if_error("didUpdateValueFor: ", error: error)
-        BleLogger.trace_hex("TESTING, chr \(characteristic.uuid) didUpdateValueFor ", data: characteristic.value ?? Data())
+        BleLogger.trace_if_error("didUpdateValueFor \(characteristic.uuid): ", error: error)
         if let serviceUuid = characteristic.service?.uuid, let client = fetchGattClient(serviceUuid) {
             if client.containsCharacteristic(characteristic.uuid) {
                 let errorCode = (error as NSError?)?.code ?? 0
