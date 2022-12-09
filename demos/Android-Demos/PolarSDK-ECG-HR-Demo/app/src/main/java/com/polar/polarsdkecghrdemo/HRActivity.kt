@@ -94,7 +94,7 @@ class HRActivity : AppCompatActivity(), PlotterListener {
             }
 
             override fun hrNotificationReceived(s: String, polarHrData: PolarHrData) {
-                Log.d(TAG, "HR " + polarHrData.hr)
+                Log.d(TAG, "HR ${polarHrData.hr} RR ${polarHrData.rrsMs}")
 
                 if (polarHrData.rrsMs.isNotEmpty()) {
                     val rrText = "(${polarHrData.rrsMs.joinToString(separator = "ms, ")}ms)"
