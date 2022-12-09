@@ -16,7 +16,7 @@ import java.io.ByteArrayOutputStream
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class BlePsFtpClientTest {
+internal class BlePsFtpClientTest {
     @Rule
     @JvmField
     val bleLoggerTestRule = BleLoggerTestRule()

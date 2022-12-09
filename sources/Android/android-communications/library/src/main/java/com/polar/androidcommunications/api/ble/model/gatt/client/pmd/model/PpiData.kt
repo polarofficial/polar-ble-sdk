@@ -1,61 +1,48 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
-import com.polar.androidcommunications.common.ble.BleUtils
-import java.util.*
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
+import com.polar.androidcommunications.common.ble.TypeUtils
 
-class PpiData(@JvmField val timeStamp: Long) {
-    data class PPSample internal constructor(
-        @JvmField
+internal class PpiData {
+    data class PpiSample internal constructor(
         val hr: Int,
-
-        @JvmField
         val ppInMs: Int,
-
-        @JvmField
         val ppErrorEstimate: Int,
-
-        @JvmField
         val blockerBit: Int,
-
-        @JvmField
         val skinContactStatus: Int,
-
-        @JvmField
         val skinContactSupported: Int,
     )
 
-    @JvmField
-    val ppSamples: MutableList<PPSample> = ArrayList()
+    val ppiSamples: MutableList<PpiSample> = mutableListOf()
 
     companion object {
-        fun parseDataFromDataFrame(isCompressed: Boolean, frameType: BlePMDClient.PmdDataFrameType, frame: ByteArray, factor: Float, timeStamp: Long): PpiData {
-            return if (isCompressed) {
-                throw java.lang.Exception("Compressed FrameType: $frameType is not supported by PPI data parser")
+        fun parseDataFromDataFrame(frame: PmdDataFrame): PpiData {
+            return if (frame.isCompressedFrame) {
+                throw java.lang.Exception("Compressed FrameType: ${frame.frameType} is not supported by PPI data parser")
             } else {
-                when (frameType) {
-                    BlePMDClient.PmdDataFrameType.TYPE_0 -> dataFromType0(frame, timeStamp)
-                    else -> throw java.lang.Exception("Raw FrameType: $frameType is not supported by PPI data parser")
+                when (frame.frameType) {
+                    PmdDataFrame.PmdDataFrameType.TYPE_0 -> dataFromType0(frame)
+                    else -> throw java.lang.Exception("Raw FrameType: ${frame.frameType} is not supported by PPI data parser")
                 }
             }
         }
 
-        private fun dataFromType0(value: ByteArray, timeStamp: Long): PpiData {
-            val ppiData = PpiData(timeStamp)
+        private fun dataFromType0(frame: PmdDataFrame): PpiData {
+            val ppiData = PpiData()
             var offset = 0
-            while (offset < value.size) {
+            while (offset < frame.dataContent.size) {
                 val finalOffset = offset
-                val sample = value.copyOfRange(finalOffset, finalOffset + 6)
+                val sample = frame.dataContent.copyOfRange(finalOffset, finalOffset + 6)
 
                 val hr = sample[0].toInt() and 0xFF
-                val ppInMs = BleUtils.convertArrayToUnsignedLong(sample, 1, 2).toInt()
-                val ppErrorEstimate = BleUtils.convertArrayToUnsignedLong(sample, 3, 2).toInt()
+                val ppInMs = TypeUtils.convertArrayToUnsignedLong(sample, 1, 2).toInt()
+                val ppErrorEstimate = TypeUtils.convertArrayToUnsignedLong(sample, 3, 2).toInt()
                 val blockerBit: Int = sample[5].toInt() and 0x01
                 val skinContactStatus: Int = sample[5].toInt() and 0x02 shr 1
                 val skinContactSupported: Int = sample[5].toInt() and 0x04 shr 2
 
-                ppiData.ppSamples.add(
-                    PPSample(
+                ppiData.ppiSamples.add(
+                    PpiSample(
                         hr = hr,
                         ppInMs = ppInMs,
                         ppErrorEstimate = ppErrorEstimate,

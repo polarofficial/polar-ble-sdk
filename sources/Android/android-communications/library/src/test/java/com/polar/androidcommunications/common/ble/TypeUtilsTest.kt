@@ -144,4 +144,68 @@ class TypeUtilsTest {
             TypeUtils.convertArrayToUnsignedLong(byteArray)
         }
     }
+
+    @Test
+    fun `test array conversion to signed int max value`() {
+        // Arrange
+        val byteArray = byteArrayOf(0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte())
+        val expectedValue = -1
+
+        // Act
+        val result = TypeUtils.convertArrayToSignedInt(byteArray)
+
+        // Assert
+        Assert.assertEquals(expectedValue, result)
+    }
+
+    @Test
+    fun `test array conversion to signed int min value`() {
+        // Arrange
+        val byteArray = byteArrayOf(0x00, 0x00, 0x00, 0x00)
+        val expectedValue = 0
+
+        // Act
+        val result = TypeUtils.convertArrayToSignedInt(byteArray)
+
+        // Assert
+        Assert.assertEquals(expectedValue, result)
+    }
+
+    @Test
+    fun `test array conversion to signed int max positive int`() {
+        // Arrange
+        val byteArray = byteArrayOf(0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0x7F.toByte())
+        val expectedValue = Int.MAX_VALUE
+
+        // Act
+        val result = TypeUtils.convertArrayToSignedInt(byteArray)
+
+        // Assert
+        Assert.assertEquals(expectedValue, result)
+    }
+
+    @Test
+    fun `test array conversion to signed int small array`() {
+        // Arrange
+        val byteArray = byteArrayOf(0xFF.toByte())
+        val expectedValue = -1
+
+        // Act
+        val result = TypeUtils.convertArrayToSignedInt(byteArray)
+
+        // Assert
+        Assert.assertEquals(expectedValue, result)
+    }
+
+
+    @Test
+    fun `test array conversion to signed int too big array`() {
+        // Arrange
+        val byteArray = byteArrayOf(0x00, 0x00, 0x00, 0x00, 0x00)
+
+        // Act & Assert
+        assertThrows(AssertionError::class.java) {
+            TypeUtils.convertArrayToSignedInt(byteArray)
+        }
+    }
 }

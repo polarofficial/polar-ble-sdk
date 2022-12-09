@@ -1,43 +1,33 @@
 // Copyright © 2019 Polar Electro Oy. All rights reserved.
-package com.polar.sdk.api;
+package com.polar.sdk.api
 
-import androidx.annotation.NonNull;
-
-import com.polar.sdk.api.model.PolarDeviceInfo;
-import com.polar.sdk.api.model.PolarHrData;
-
-import java.util.Set;
-import java.util.UUID;
+import com.polar.sdk.api.PolarBleApi.DeviceStreamingFeature
+import com.polar.sdk.api.model.PolarDeviceInfo
+import com.polar.sdk.api.model.PolarHrData
+import java.util.*
 
 /**
  * Contains the callbacks of the API.
  */
-public abstract class PolarBleApiCallback implements PolarBleApiCallbackProvider {
-
+abstract class PolarBleApiCallback : PolarBleApiCallbackProvider {
     /**
      * @param powered true = Bluetooth power on, false = Bluetooth power off
      */
-    @Override
-    public void blePowerStateChanged(final boolean powered) {
-    }
+    override fun blePowerStateChanged(powered: Boolean) {}
 
     /**
      * Device is now connected
      *
      * @param polarDeviceInfo Polar device information
      */
-    @Override
-    public void deviceConnected(@NonNull final PolarDeviceInfo polarDeviceInfo) {
-    }
+    override fun deviceConnected(polarDeviceInfo: PolarDeviceInfo) {}
 
     /**
      * Connecting to device
      *
      * @param polarDeviceInfo Polar device information
      */
-    @Override
-    public void deviceConnecting(@NonNull final PolarDeviceInfo polarDeviceInfo) {
-    }
+    override fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo) {}
 
     /**
      * Device is now disconnected, no further action is needed from the application
@@ -45,22 +35,17 @@ public abstract class PolarBleApiCallback implements PolarBleApiCallbackProvider
      *
      * @param polarDeviceInfo Polar device information
      */
-    @Override
-    public void deviceDisconnected(@NonNull final PolarDeviceInfo polarDeviceInfo) {
-    }
+    override fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {}
 
     /**
      * Polar device's streaming features ready. Application may start any stream now if desired.
-     * Requires feature {@link PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING} to be enabled for the
+     * Requires feature [PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING] to be enabled for the
      * Polar SDK instance.
      *
      * @param identifier Polar device id
      * @param features   set of features available and ready
      */
-    @Override
-    public void streamingFeaturesReady(@NonNull final String identifier,
-                                       @NonNull final Set<PolarBleApi.DeviceStreamingFeature> features) {
-    }
+    override fun streamingFeaturesReady(identifier: String, features: Set<DeviceStreamingFeature>) {}
 
     /**
      * Polar SDK Mode feature is available in the device. Application may now enter to SDK mode.
@@ -68,18 +53,14 @@ public abstract class PolarBleApiCallback implements PolarBleApiCallbackProvider
      *
      * @param identifier Polar device id
      */
-    @Override
-    public void sdkModeFeatureAvailable(@NonNull final String identifier) {
-    }
+    override fun sdkModeFeatureAvailable(identifier: String) {}
 
     /**
      * Polar device HR client is now ready and HR transmission is starting in a moment.
      *
      * @param identifier Polar device id or bt address
      */
-    @Override
-    public void hrFeatureReady(@NonNull final String identifier) {
-    }
+    override fun hrFeatureReady(identifier: String) {}
 
     /**
      * DIS information received
@@ -89,9 +70,7 @@ public abstract class PolarBleApiCallback implements PolarBleApiCallbackProvider
      * @param uuid       uuid of dis value
      * @param value      dis value for uuid
      */
-    @Override
-    public void disInformationReceived(@NonNull final String identifier, @NonNull UUID uuid, @NonNull final String value) {
-    }
+    override fun disInformationReceived(identifier: String, uuid: UUID, value: String) {}
 
     /**
      * Battery level received
@@ -100,9 +79,7 @@ public abstract class PolarBleApiCallback implements PolarBleApiCallbackProvider
      * @param identifier Polar device id or bt address
      * @param level      battery level (value between 0-100%)
      */
-    @Override
-    public void batteryLevelReceived(@NonNull final String identifier, final int level) {
-    }
+    override fun batteryLevelReceived(identifier: String, level: Int) {}
 
     /**
      * HR notification data received from device. Notice when using OH1
@@ -111,9 +88,7 @@ public abstract class PolarBleApiCallback implements PolarBleApiCallbackProvider
      * @param identifier Polar device id or bt address
      * @param data       @see polar.com.sdk.api.model.PolarHrData.java
      */
-    @Override
-    public void hrNotificationReceived(@NonNull final String identifier, @NonNull final PolarHrData data) {
-    }
+    override fun hrNotificationReceived(identifier: String, data: PolarHrData) {}
 
     /**
      * File transfer ready
@@ -121,7 +96,5 @@ public abstract class PolarBleApiCallback implements PolarBleApiCallbackProvider
      *
      * @param identifier Polar device id
      */
-    @Override
-    public void polarFtpFeatureReady(@NonNull final String identifier) {
-    }
+    override fun polarFtpFeatureReady(identifier: String) {}
 }

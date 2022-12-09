@@ -80,13 +80,13 @@ public final class RxUtils {
                                                        final boolean checkConnection) {
         final FlowableEmitter<? super E>[] listener = new FlowableEmitter[1];
         return Flowable.create((FlowableOnSubscribe<E>) subscriber -> {
-            if (!checkConnection || transport.isConnected()) {
-                listener[0] = subscriber;
-                observers.add(subscriber);
-            } else {
-                subscriber.tryOnError(new BleDisconnected());
-            }
-        }, BackpressureStrategy.BUFFER)
+                    if (!checkConnection || transport.isConnected()) {
+                        listener[0] = subscriber;
+                        observers.add(subscriber);
+                    } else {
+                        subscriber.tryOnError(new BleDisconnected());
+                    }
+                }, BackpressureStrategy.BUFFER)
                 .doFinally(() -> observers.remove(listener[0]))
                 .serialize();
     }

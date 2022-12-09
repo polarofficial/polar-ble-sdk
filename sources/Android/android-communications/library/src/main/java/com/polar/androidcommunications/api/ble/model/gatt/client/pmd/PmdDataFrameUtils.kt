@@ -5,22 +5,22 @@ import com.polar.androidcommunications.common.ble.TypeUtils
 import java.lang.Double.longBitsToDouble
 import java.lang.Float.intBitsToFloat
 
-object BlePMDClientUtils {
+internal object PmdDataFrameUtils {
     fun parseFrameDataField(data: ByteArray, coding: BlePMDClient.PmdDataFieldEncoding): Any {
         when (coding) {
             BlePMDClient.PmdDataFieldEncoding.FLOAT_IEEE754 -> {
                 BleUtils.validate(data.size == 4, "PMD parser expects data size 4 when FLOAT_IEEE754 parsed. Input data size was " + data.size)
-                val intIEEE754 = BleUtils.convertArrayToUnsignedInt(data, 0, data.size)
+                val intIEEE754 = TypeUtils.convertArrayToUnsignedInt(data, 0, data.size).toInt()
                 return intBitsToFloat(intIEEE754)
             }
             BlePMDClient.PmdDataFieldEncoding.DOUBLE_IEEE754 -> {
                 BleUtils.validate(data.size == 8, "PMD parser expects data size 8 when DOUBLE_IEEE754 parsed. Input data size was " + data.size)
-                val longIEEE754 = BleUtils.convertArrayToUnsignedLong(data, 0, data.size)
+                val longIEEE754 = TypeUtils.convertArrayToUnsignedLong(data, 0, data.size).toLong()
                 return longBitsToDouble(longIEEE754)
             }
             BlePMDClient.PmdDataFieldEncoding.SIGNED_INT -> {
                 BleUtils.validate(data.size <= 4, "PMD parser expects data size smaller than 4 when SIGNED_INT parsed. Input data size was " + data.size)
-                return BleUtils.convertArrayToSignedInt(data, 0, data.size)
+                return TypeUtils.convertArrayToSignedInt(data, 0, data.size)
             }
             BlePMDClient.PmdDataFieldEncoding.UNSIGNED_BYTE -> {
                 BleUtils.validate(data.size == 1, "PMD parser expects data size 1 when UNSIGNED_BYTE parsed. Input data size was " + data.size)
@@ -40,13 +40,5 @@ object BlePMDClientUtils {
                 return (data[0].toInt() != 0)
             }
         }
-    }
-
-    fun isCompressedFrame(frameType: Long): Boolean {
-        return frameType and BlePMDClient.PmdFrameCompressionType.DELTA_FRAME.numVal.toLong() > 0
-    }
-
-    fun getDataFrameType(frameType: Long): BlePMDClient.PmdDataFrameType {
-        return BlePMDClient.PmdDataFrameType.getTypeById((frameType and 0x7F).toInt())
     }
 }

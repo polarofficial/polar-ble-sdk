@@ -1,6 +1,6 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
 import org.junit.Assert
 import org.junit.Test
 
@@ -8,9 +8,19 @@ class PpgDataTest {
     @Test
     fun `test raw PPG frame type 0`() {
         // Arrange
-        val frameType = BlePMDClient.PmdDataFrameType.TYPE_0
-        val timeStamp: Long = 0
-        val measurementFrame = byteArrayOf(
+        // HEX: 01 00 94 35 77 00 00 00 00 00
+        // index                                                   data:
+        // 0        type                                           01 (PPG)
+        // 1..9     timestamp                                      00 94 35 77 00 00 00 00
+        val timeStamp = 2000000000uL
+        // 10       frame type                                     00 (raw, type 0)
+        val ppgDataFrameHeader = byteArrayOf(
+            0x01.toByte(),
+            0x00.toByte(), 0x94.toByte(), 0x35.toByte(), 0x77.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x00.toByte(),
+        )
+        val previousTimeStamp = 100uL
+        val ppgDataFrameContent = byteArrayOf(
             0x01.toByte(), 0x02.toByte(), 0x03.toByte(),  //PPG0 (197121)
             0x04.toByte(), 0x05.toByte(), 0x06.toByte(),  //PPG1 (394500)
             0xFF.toByte(), 0xFF.toByte(), 0x7F.toByte(),  //PPG2 (8388607)
@@ -29,33 +39,50 @@ class PpgDataTest {
         val ppg2Sample1 = -8388608
         val ambientSample1 = -1052913
 
+        val factor = 1.0f
+        val dataFrame = PmdDataFrame(
+            data = ppgDataFrameHeader + ppgDataFrameContent,
+            getPreviousTimeStamp = { previousTimeStamp },
+            getFactor = { factor },
+            getSampleRate = { 0 })
+
         // Act
-        val ppgData = PpgData.parseDataFromDataFrame(
-            isCompressed = false,
-            frameType = frameType,
-            frame = measurementFrame,
-            factor = 1.0f,
-            timeStamp = timeStamp
-        )
+        val ppgData = PpgData.parseDataFromDataFrame(dataFrame)
 
         // Assert
         Assert.assertEquals(2, ppgData.ppgSamples.size)
-        Assert.assertEquals(3, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType0).ppgDataSamples.size)
-        Assert.assertEquals(ppg0Sample0, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType0).ppgDataSamples[0])
-        Assert.assertEquals(ppg1Sample0, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType0).ppgDataSamples[1])
-        Assert.assertEquals(ppg2Sample0, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType0).ppgDataSamples[2])
-        Assert.assertEquals(ambientSample0, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType0).ambientSample)
+        Assert.assertEquals(3, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType0).ppgDataSamples.size)
+        Assert.assertEquals(ppg0Sample0, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType0).ppgDataSamples[0])
+        Assert.assertEquals(ppg1Sample0, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType0).ppgDataSamples[1])
+        Assert.assertEquals(ppg2Sample0, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType0).ppgDataSamples[2])
+        Assert.assertEquals(ambientSample0, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType0).ambientSample)
 
-        Assert.assertEquals(3, (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType0).ppgDataSamples.size)
-        Assert.assertEquals(ppg0Sample1, (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType0).ppgDataSamples[0])
-        Assert.assertEquals(ppg1Sample1, (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType0).ppgDataSamples[1])
-        Assert.assertEquals(ppg2Sample1, (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType0).ppgDataSamples[2])
-        Assert.assertEquals(ambientSample1, (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType0).ambientSample)
+        Assert.assertEquals(3, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType0).ppgDataSamples.size)
+        Assert.assertEquals(ppg0Sample1, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType0).ppgDataSamples[0])
+        Assert.assertEquals(ppg1Sample1, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType0).ppgDataSamples[1])
+        Assert.assertEquals(ppg2Sample1, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType0).ppgDataSamples[2])
+        Assert.assertEquals(ambientSample1, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType0).ambientSample)
+
+        Assert.assertEquals(timeStamp, ppgData.timeStamp)
+        Assert.assertEquals(timeStamp, (ppgData.ppgSamples.last() as PpgData.PpgDataFrameType0).timeStamp)
     }
 
     @Test
     fun `test raw PPG frame type 4`() {
         // Arrange
+        // HEX: 01 00 94 35 77 00 00 00 00 04
+        // index                                                   data:
+        // 0        type                                           01 (PPG)
+        // 1..9     timestamp                                      00 94 35 77 00 00 00 00
+        val timeStamp = 2000000000uL
+        // 10       frame type                                     04 (raw, type 4)
+        val ppgDataFrameHeader = byteArrayOf(
+            0x01.toByte(),
+            0x00.toByte(), 0x94.toByte(), 0x35.toByte(), 0x77.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x04.toByte(),
+        )
+        val previousTimeStamp = 100uL
+
         // HEX: 02 7F 06 02 06 04 02 06 03 02 01 FF
         //      01 07 FF 00 00 00 00 00 00 00 00 01
         //      00 7F 00 00 00 00 00 00 01 02 EF F8
@@ -70,10 +97,6 @@ class PpgDataTest {
         // 33: channel2 Gain Ts11           02 => 2
         // 34: channel1 Gain Ts12           EF => 7
         // 35: channel2 Gain Ts12           F8 => 0
-
-        val frameType = BlePMDClient.PmdDataFrameType.TYPE_4
-        val isCompressed = false
-        val timeStamp: Long = 0
         val expectedNumIntTs1 = 2u
         val expectedNumIntTs2 = 0x7Fu
         val expectedNumIntTs12 = 0xFFu
@@ -87,73 +110,187 @@ class PpgDataTest {
         val expectedChannel1GainTs12 = 7u
         val expectedChannel2GainTs12 = 0u
 
-        val measurementFrame = byteArrayOf(
+        val ppgDataFrameContent = byteArrayOf(
             0x02.toByte(), 0x7F.toByte(), 0x06.toByte(), 0x02.toByte(), 0x06.toByte(), 0x04.toByte(), 0x02.toByte(), 0x06.toByte(), 0x03.toByte(), 0x02.toByte(), 0x01.toByte(), 0xFF.toByte(),
             0x01.toByte(), 0x07.toByte(), 0xFF.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x01.toByte(),
             0xF8.toByte(), 0x7F.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x01.toByte(), 0x02.toByte(), 0xEF.toByte(), 0xF8.toByte(),
         )
+        val factor = 1.0f
+        val dataFrame = PmdDataFrame(
+            data = ppgDataFrameHeader + ppgDataFrameContent,
+            getPreviousTimeStamp = { previousTimeStamp },
+            getFactor = { factor },
+            getSampleRate = { 0 })
+
 
         // Act
-        val ppgData = PpgData.parseDataFromDataFrame(
-            isCompressed = isCompressed,
-            frameType = frameType,
-            frame = measurementFrame,
-            factor = 1.0f,
-            timeStamp = timeStamp
-        )
+        val ppgData = PpgData.parseDataFromDataFrame(dataFrame)
 
         // Assert
         Assert.assertEquals(1, ppgData.ppgSamples.size)
 
-        Assert.assertEquals(12, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleFrameType4).numIntTs.size)
-        Assert.assertEquals(expectedNumIntTs1, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleFrameType4).numIntTs[0])
-        Assert.assertEquals(expectedNumIntTs2, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleFrameType4).numIntTs[1])
-        Assert.assertEquals(expectedNumIntTs12, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleFrameType4).numIntTs[11])
+        Assert.assertEquals(12, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType4).numIntTs.size)
+        Assert.assertEquals(expectedNumIntTs1, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType4).numIntTs[0])
+        Assert.assertEquals(expectedNumIntTs2, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType4).numIntTs[1])
+        Assert.assertEquals(expectedNumIntTs12, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType4).numIntTs[11])
 
-        Assert.assertEquals(12, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleFrameType4).channel1GainTs.size)
-        Assert.assertEquals(expectedChannel1GainTs1, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleFrameType4).channel1GainTs[0])
-        Assert.assertEquals(expectedChannel1GainTs2, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleFrameType4).channel1GainTs[1])
-        Assert.assertEquals(expectedChannel1GainTs11, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleFrameType4).channel1GainTs[10])
-        Assert.assertEquals(expectedChannel1GainTs12, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleFrameType4).channel1GainTs[11])
+        Assert.assertEquals(12, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType4).channel1GainTs.size)
+        Assert.assertEquals(expectedChannel1GainTs1, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType4).channel1GainTs[0])
+        Assert.assertEquals(expectedChannel1GainTs2, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType4).channel1GainTs[1])
+        Assert.assertEquals(expectedChannel1GainTs11, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType4).channel1GainTs[10])
+        Assert.assertEquals(expectedChannel1GainTs12, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType4).channel1GainTs[11])
 
-        Assert.assertEquals(12, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleFrameType4).channel2GainTs.size)
-        Assert.assertEquals(expectedChannel2GainTs1, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleFrameType4).channel2GainTs[0])
-        Assert.assertEquals(expectedChannel2GainTs2, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleFrameType4).channel2GainTs[1])
-        Assert.assertEquals(expectedChannel2GainTs11, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleFrameType4).channel2GainTs[10])
-        Assert.assertEquals(expectedChannel2GainTs12, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleFrameType4).channel2GainTs[11])
+        Assert.assertEquals(12, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType4).channel2GainTs.size)
+        Assert.assertEquals(expectedChannel2GainTs1, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType4).channel2GainTs[0])
+        Assert.assertEquals(expectedChannel2GainTs2, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType4).channel2GainTs[1])
+        Assert.assertEquals(expectedChannel2GainTs11, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType4).channel2GainTs[10])
+        Assert.assertEquals(expectedChannel2GainTs12, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType4).channel2GainTs[11])
+
+        Assert.assertEquals(timeStamp, ppgData.timeStamp)
+        Assert.assertEquals(timeStamp, (ppgData.ppgSamples.last() as PpgData.PpgDataFrameType4).timeStamp)
     }
 
     @Test
     fun `test raw PPG frame type 5`() {
         // Arrange
+        // HEX: 01 00 94 35 77 00 00 00 00 05
+        // index                                                   data:
+        // 0        type                                           01 (PPG)
+        // 1..9     timestamp                                      00 94 35 77 00 00 00 00
+        val timeStamp = 2000000000uL
+        // 10       frame type                                     05 (raw, type 5)
+        val ppgDataFrameHeader = byteArrayOf(
+            0x01.toByte(),
+            0x00.toByte(), 0x94.toByte(), 0x35.toByte(), 0x77.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x05.toByte(),
+        )
+        val previousTimeStamp = 100uL
+
         // HEX: FF FF FF FF
         // index    type                    data:
         // 0..3:    operation mode          FF FF FF FF
-
-        val frameType = BlePMDClient.PmdDataFrameType.TYPE_5
-        val isCompressed = false
-        val timeStamp: Long = 0
         val expectedOperationMode = 0xFFFFFFFFu
 
-        val measurementFrame = byteArrayOf(0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte())
+        val ppgDataFrameContent = byteArrayOf(0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte())
+
+        val factor = 1.0f
+        val dataFrame = PmdDataFrame(
+            data = ppgDataFrameHeader + ppgDataFrameContent,
+            getPreviousTimeStamp = { previousTimeStamp },
+            getFactor = { factor },
+            getSampleRate = { 0 })
 
         // Act
-        val ppgData = PpgData.parseDataFromDataFrame(
-            isCompressed = isCompressed,
-            frameType = frameType,
-            frame = measurementFrame,
-            factor = 1.0f,
-            timeStamp = timeStamp
-        )
+        val ppgData = PpgData.parseDataFromDataFrame(dataFrame)
 
         // Assert
         Assert.assertEquals(1, ppgData.ppgSamples.size)
-        Assert.assertEquals(expectedOperationMode, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleFrameType5).operationMode)
+        Assert.assertEquals(expectedOperationMode, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType5).operationMode)
+
+        Assert.assertEquals(timeStamp, ppgData.timeStamp)
+        Assert.assertEquals(timeStamp, (ppgData.ppgSamples.last() as PpgData.PpgDataFrameType5).timeStamp)
+
+    }
+
+    @Test
+    fun `test raw PPG frame type 9`() {
+        // Arrange
+        // HEX: 01 00 94 35 77 00 00 00 00 09
+        // index                                                   data:
+        // 0        type                                           01 (PPG)
+        // 1..9     timestamp                                      00 94 35 77 00 00 00 00
+        val timeStamp = 2000000000uL
+        // 10       frame type                                     04 (raw, type 9)
+        val ppgDataFrameHeader = byteArrayOf(
+            0x01.toByte(),
+            0x00.toByte(), 0x94.toByte(), 0x35.toByte(), 0x77.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x09.toByte(),
+        )
+        val previousTimeStamp = 100uL
+
+        // HEX: 06 06 06 06 06 06 06 06 06 06 06 06
+        //      FF 00 00 00 00 00 00 00 00 00 00 FF
+        //      01 00 00 00 00 00 00 00 00 00 FF FF
+        // index    type                    data:
+        // 0..11:   num Int Ts1-12          06 06 06 06 06 06 06 06 06 06 06 06
+        // 12:  channel1 Gain Ts1           01 => 1
+        // 13:  channel2 Gain Ts1           07 => 7
+        // 14:  channel1 Gain Ts2           FF => 7
+        // 15:  channel2 Gain Ts2           00 => 0
+        // ..
+        // 32: channel1 Gain Ts11           01 => 1
+        // 33: channel2 Gain Ts11           02 => 2
+        // 34: channel1 Gain Ts12           EF => 7
+        // 35: channel2 Gain Ts12           F8 => 0
+
+        val expectedNumIntTs1 = 6u
+        val expectedNumIntTs2 = 0x6u
+        val expectedNumIntTs12 = 0x6u
+
+        val expectedChannel1GainTs1 = 7u
+        val expectedChannel2GainTs1 = 0u
+        val expectedChannel1GainTs2 = 0u
+        val expectedChannel2GainTs2 = 0u
+        val expectedChannel1GainTs11 = 0u
+        val expectedChannel2GainTs11 = 0u
+        val expectedChannel1GainTs12 = 7u
+        val expectedChannel2GainTs12 = 7u
+
+        val ppgDataFrameContent = byteArrayOf(
+            0x06.toByte(), 0x06.toByte(), 0x06.toByte(), 0x06.toByte(), 0x06.toByte(), 0x06.toByte(), 0x06.toByte(), 0x06.toByte(), 0x06.toByte(), 0x06.toByte(), 0x06.toByte(), 0x06.toByte(),
+            0xFF.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0xFF.toByte(),
+            0x01.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0xFF.toByte(), 0xFF.toByte()
+        )
+        val factor = 1.0f
+        val dataFrame = PmdDataFrame(
+            data = ppgDataFrameHeader + ppgDataFrameContent,
+            getPreviousTimeStamp = { previousTimeStamp },
+            getFactor = { factor },
+            getSampleRate = { 0 })
+
+        // Act
+        val ppgData = PpgData.parseDataFromDataFrame(dataFrame)
+
+        // Assert
+        Assert.assertEquals(1, ppgData.ppgSamples.size)
+
+        Assert.assertEquals(12, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType9).numIntTs.size)
+        Assert.assertEquals(expectedNumIntTs1, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType9).numIntTs[0])
+        Assert.assertEquals(expectedNumIntTs2, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType9).numIntTs[1])
+        Assert.assertEquals(expectedNumIntTs12, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType9).numIntTs[11])
+
+        Assert.assertEquals(12, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType9).channel1GainTs.size)
+        Assert.assertEquals(expectedChannel1GainTs1, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType9).channel1GainTs[0])
+        Assert.assertEquals(expectedChannel1GainTs2, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType9).channel1GainTs[1])
+        Assert.assertEquals(expectedChannel1GainTs11, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType9).channel1GainTs[10])
+        Assert.assertEquals(expectedChannel1GainTs12, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType9).channel1GainTs[11])
+
+        Assert.assertEquals(12, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType9).channel2GainTs.size)
+        Assert.assertEquals(expectedChannel2GainTs1, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType9).channel2GainTs[0])
+        Assert.assertEquals(expectedChannel2GainTs2, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType9).channel2GainTs[1])
+        Assert.assertEquals(expectedChannel2GainTs11, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType9).channel2GainTs[10])
+        Assert.assertEquals(expectedChannel2GainTs12, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType9).channel2GainTs[11])
+
+        Assert.assertEquals(timeStamp, ppgData.timeStamp)
+        Assert.assertEquals(timeStamp, (ppgData.ppgSamples.last() as PpgData.PpgDataFrameType9).timeStamp)
     }
 
     @Test
     fun `test compressed PPG frame type 0`() {
         // Arrange
+        // HEX: 01 00 94 35 77 00 00 00 00 80
+        // index                                                   data:
+        // 0        type                                           01 (PPG)
+        // 1..9     timestamp                                      00 94 35 77 00 00 00 00
+        val timeStamp = 2000000000uL
+        // 10       frame type                                     80 (compressed, type 0)
+        val ppgDataFrameHeader = byteArrayOf(
+            0x01.toByte(),
+            0x00.toByte(), 0x94.toByte(), 0x35.toByte(), 0x77.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x80.toByte(),
+        )
+        val previousTimeStamp = 100uL
+
         // HEX: 2C 2D 00 C2 77 00 D3 D2 FF 3D 88 FF 0A 29 B2 F0 EE 34 11 B2 EC EE 74 11 B1 E8 FE B4 11 B1 E8 FE B4 11 B1 E0 FE 34 12 B0 DC 0E 75 12 B0 D8 0E B5 12 AF D4 1E F5 12 AF D0 1E 35 13 AE CC 2E 75 13 AE C8 2E B5 13 AD C4 3E F5 13 AD BC 3E 75 14 AD BC 3E 75 14 AC B8 4E B5 14 AC B4 4E F5 14 AB B0 5E 35 15 AA AC 6E 75 15 AA A8 6E B5 15 AA A4 6E F5 15 A9 A0 7E 35 16 A9 9C 7E 75 16 A8 98 8E B5 16 A7 94 9E F5 16 A7 90 9E 35 17 A7 8C 9E 75 17 A6 88 AE B5 17 A5 88 BE B5 17 A5 80 BE 35 18 A4 7C CE 75 18 A4 78 CE B5 18 A3 78 DE B5 18 A2 70 EE 35 19 A2 6C EE 75 19 A2 6C EE 75 19 A1 68 FE B5 19 A0 60 0E 36 1A 9F 60 1E 36 1A 9F 5C 1E 76 1A 9F 58 1E B6 1A 9D 54 3E F6 1A
         // index    type                                    data:
         // 0..11:    Reference sample                       0x2C 0x2D 0x00 0xC2 0x77 0x00 0xD3 0xD2 0xFF 0x3D 0x88 0xFF
@@ -183,7 +320,7 @@ class PpgDataTest {
         val refSample1Channel2 = -178
         val refSample1Channel3 = 68
         val amountOfSamples = 1 + 41 // reference sample + delta samples
-        val measurementFrame = byteArrayOf(
+        val ppgDataFrameContent = byteArrayOf(
             0x2C.toByte(), 0x2D.toByte(), 0x00.toByte(), 0xC2.toByte(), 0x77.toByte(), 0x00.toByte(), 0xD3.toByte(), 0xD2.toByte(), 0xFF.toByte(),
             0x3D.toByte(), 0x88.toByte(), 0xFF.toByte(), 0x0A.toByte(), 0x29.toByte(), 0xB2.toByte(), 0xF0.toByte(), 0xEE.toByte(), 0x34.toByte(),
             0x11.toByte(), 0xB2.toByte(), 0xEC.toByte(), 0xEE.toByte(), 0x74.toByte(), 0x11.toByte(), 0xB1.toByte(), 0xE8.toByte(), 0xFE.toByte(),
@@ -211,29 +348,48 @@ class PpgDataTest {
             0x3E.toByte(), 0xF6.toByte(), 0x1A.toByte()
         )
         val factor = 1.0f
-        val timeStamp: Long = 0
+        val dataFrame = PmdDataFrame(
+            data = ppgDataFrameHeader + ppgDataFrameContent,
+            getPreviousTimeStamp = { previousTimeStamp },
+            getFactor = { factor },
+            getSampleRate = { 0 })
 
         // Act
-        val ppgData = PpgData.parseDataFromDataFrame(true, BlePMDClient.PmdDataFrameType.TYPE_0, measurementFrame, factor, timeStamp)
+        val ppgData = PpgData.parseDataFromDataFrame(dataFrame)
 
         // Assert
         Assert.assertEquals(amountOfSamples, ppgData.ppgSamples.size)
-        Assert.assertEquals(3, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType0).ppgDataSamples.size)
-        Assert.assertEquals((factor * refSample0Channel0).toInt(), (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType0).ppgDataSamples[0])
-        Assert.assertEquals((factor * refSample0Channel1).toInt(), (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType0).ppgDataSamples[1])
-        Assert.assertEquals((factor * refSample0Channel2).toInt(), (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType0).ppgDataSamples[2])
-        Assert.assertEquals((factor * refSample0Channel3).toInt(), (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType0).ambientSample)
+        Assert.assertEquals(3, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType0).ppgDataSamples.size)
+        Assert.assertEquals((factor * refSample0Channel0).toInt(), (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType0).ppgDataSamples[0])
+        Assert.assertEquals((factor * refSample0Channel1).toInt(), (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType0).ppgDataSamples[1])
+        Assert.assertEquals((factor * refSample0Channel2).toInt(), (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType0).ppgDataSamples[2])
+        Assert.assertEquals((factor * refSample0Channel3).toInt(), (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType0).ambientSample)
 
-        Assert.assertEquals(3, (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType0).ppgDataSamples.size)
-        Assert.assertEquals((factor * (refSample0Channel0 + refSample1Channel0)).toInt(), (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType0).ppgDataSamples[0])
-        Assert.assertEquals((factor * (refSample0Channel1 + refSample1Channel1)).toInt(), (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType0).ppgDataSamples[1])
-        Assert.assertEquals((factor * (refSample0Channel2 + refSample1Channel2)).toInt(), (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType0).ppgDataSamples[2])
-        Assert.assertEquals((factor * (refSample0Channel3 + refSample1Channel3)).toInt(), (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType0).ambientSample)
+        Assert.assertEquals(3, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType0).ppgDataSamples.size)
+        Assert.assertEquals((factor * (refSample0Channel0 + refSample1Channel0)).toInt(), (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType0).ppgDataSamples[0])
+        Assert.assertEquals((factor * (refSample0Channel1 + refSample1Channel1)).toInt(), (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType0).ppgDataSamples[1])
+        Assert.assertEquals((factor * (refSample0Channel2 + refSample1Channel2)).toInt(), (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType0).ppgDataSamples[2])
+        Assert.assertEquals((factor * (refSample0Channel3 + refSample1Channel3)).toInt(), (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType0).ambientSample)
+
+        Assert.assertEquals(timeStamp, ppgData.timeStamp)
+        Assert.assertEquals(timeStamp, (ppgData.ppgSamples.last() as PpgData.PpgDataFrameType0).timeStamp)
     }
 
     @Test
     fun `test compressed PPG frame type 7`() {
         // Arrange
+        // HEX: 01 00 94 35 77 00 00 00 00 87
+        // index                                                   data:
+        // 0        type                                           01 (PPG)
+        // 1..9     timestamp                                      00 94 35 77 00 00 00 00
+        val timeStamp = 2000000000uL
+        // 10       frame type                                     87 (compressed, type 7)
+        val ppgDataFrameHeader = byteArrayOf(
+            0x01.toByte(),
+            0x00.toByte(), 0x94.toByte(), 0x35.toByte(), 0x77.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x87.toByte(),
+        )
+        val previousTimeStamp = 100uL
         // HEX:
         // 09 AE 20   0
         // 8A 7C 23   1
@@ -279,8 +435,7 @@ class PpgDataTest {
         val sample1Channel1 = sample0Channel1 + 748
 
         val factor = 1.0f
-        val timeStamp = 0xFFFL
-        val measurementFrame = byteArrayOf(
+        val ppgDataFrameContent = byteArrayOf(
             0x09.toByte(), 0xAE.toByte(), 0x20.toByte(), 0x8A.toByte(), 0x7C.toByte(), 0x23.toByte(), 0x58.toByte(), 0x3B.toByte(), 0x19.toByte(),
             0x80.toByte(), 0xB9.toByte(), 0x18.toByte(), 0xDB.toByte(), 0x2E.toByte(), 0x22.toByte(), 0xFA.toByte(), 0x88.toByte(), 0x1D.toByte(),
             0xD7.toByte(), 0xBB.toByte(), 0x18.toByte(), 0xC2.toByte(), 0xB8.toByte(), 0x1F.toByte(), 0x7A.toByte(), 0x44.toByte(), 0x26.toByte(),
@@ -294,23 +449,45 @@ class PpgDataTest {
             0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
             0x00.toByte(), 0x00.toByte(), 0xAE.toByte(), 0xA6.toByte(), 0x8F.toByte()
         )
+
+        val dataFrame = PmdDataFrame(
+            data = ppgDataFrameHeader + ppgDataFrameContent,
+            getPreviousTimeStamp = { previousTimeStamp },
+            getFactor = { factor },
+            getSampleRate = { 0 })
+
         // Act
-        val ppgData = PpgData.parseDataFromDataFrame(true, BlePMDClient.PmdDataFrameType.TYPE_7, measurementFrame, factor, timeStamp)
+        val ppgData = PpgData.parseDataFromDataFrame(dataFrame)
 
         // Assert
         Assert.assertEquals(amountOfSamples, ppgData.ppgSamples.size)
-        Assert.assertEquals(16, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType2).ppgDataSamples.size)
-        Assert.assertEquals(sample0Channel0, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType2).ppgDataSamples[0])
-        Assert.assertEquals(sample0Channel1, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType2).ppgDataSamples[1])
-        Assert.assertEquals(sample0Channel15, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType2).ppgDataSamples[15])
-        Assert.assertEquals(sample0ChannelStatus, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType2).status)
-        Assert.assertEquals(sample1Channel0, (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType2).ppgDataSamples[0])
-        Assert.assertEquals(sample1Channel1, (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType2).ppgDataSamples[1])
+        Assert.assertEquals(16, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType7).ppgDataSamples.size)
+        Assert.assertEquals(sample0Channel0, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType7).ppgDataSamples[0])
+        Assert.assertEquals(sample0Channel1, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType7).ppgDataSamples[1])
+        Assert.assertEquals(sample0Channel15, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType7).ppgDataSamples[15])
+        Assert.assertEquals(sample0ChannelStatus, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType7).status)
+        Assert.assertEquals(sample1Channel0, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType7).ppgDataSamples[0])
+        Assert.assertEquals(sample1Channel1, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType7).ppgDataSamples[1])
+
+        Assert.assertEquals(timeStamp, ppgData.timeStamp)
+        Assert.assertEquals(timeStamp, (ppgData.ppgSamples.last() as PpgData.PpgDataFrameType7).timeStamp)
     }
 
     @Test
     fun `test compressed PPG frame type 8`() {
         // Arrange
+        // HEX: 01 00 94 35 77 00 00 00 00 88
+        // index                                                   data:
+        // 0        type                                           01 (PPG)
+        // 1..9     timestamp                                      00 94 35 77 00 00 00 00
+        val timeStamp = 2000000000uL
+        // 10       frame type                                     80 (compressed, type 8)
+        val ppgDataFrameHeader = byteArrayOf(
+            0x01.toByte(),
+            0x00.toByte(), 0x94.toByte(), 0x35.toByte(), 0x77.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x88.toByte(),
+        )
+        val previousTimeStamp = 100uL
         //HEX:
         // 03 10 01 //0
         // 05 10 02 //1
@@ -362,9 +539,7 @@ class PpgDataTest {
         val sample1Channel0 = sample0Channel0 + 1
         val sample1Channel1 = sample0Channel1 + 1
 
-        val factor = 1.0f
-        val timeStamp = 0xFFFL
-        val measurementFrame = byteArrayOf(
+        val ppgDataFrameContent = byteArrayOf(
             0x03.toByte(), 0x10.toByte(), 0x01.toByte(), 0x05.toByte(), 0x10.toByte(), 0x02.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(),
             0x09.toByte(), 0x10.toByte(), 0x04.toByte(), 0x0B.toByte(), 0x10.toByte(), 0x05.toByte(), 0x03.toByte(), 0x10.toByte(), 0x06.toByte(),
             0x05.toByte(), 0x10.toByte(), 0x07.toByte(), 0x07.toByte(), 0x10.toByte(), 0x08.toByte(), 0x09.toByte(), 0x10.toByte(), 0x09.toByte(),
@@ -376,18 +551,28 @@ class PpgDataTest {
             0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0x03.toByte(), 0x01.toByte(), 0x49.toByte(), 0x92.toByte(), 0x24.toByte(), 0x49.toByte(),
             0x92.toByte(), 0x24.toByte(), 0x49.toByte(), 0x92.toByte(), 0x24.toByte(), 0x00.toByte(),
         )
+        val factor = 1.0f
+        val dataFrame = PmdDataFrame(
+            data = ppgDataFrameHeader + ppgDataFrameContent,
+            getPreviousTimeStamp = { previousTimeStamp },
+            getFactor = { factor },
+            getSampleRate = { 0 })
+
         // Act
-        val ppgData = PpgData.parseDataFromDataFrame(true, BlePMDClient.PmdDataFrameType.TYPE_8, measurementFrame, factor, timeStamp)
+        val ppgData = PpgData.parseDataFromDataFrame(dataFrame)
 
         // Assert
         Assert.assertEquals(amountOfSamples, ppgData.ppgSamples.size)
-        Assert.assertEquals(24, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType3).ppgDataSamples.size)
-        Assert.assertEquals(sample0Channel0, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType3).ppgDataSamples[0])
-        Assert.assertEquals(sample0Channel1, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType3).ppgDataSamples[1])
-        Assert.assertEquals(sample0Channel2, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType3).ppgDataSamples[2])
-        Assert.assertEquals(sample0Channel23, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType3).ppgDataSamples[23])
-        Assert.assertEquals(sample0ChannelStatus, (ppgData.ppgSamples[0] as PpgData.PpgDataSampleType3).status)
-        Assert.assertEquals(sample1Channel0, (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType3).ppgDataSamples[0])
-        Assert.assertEquals(sample1Channel1, (ppgData.ppgSamples[1] as PpgData.PpgDataSampleType3).ppgDataSamples[1])
+        Assert.assertEquals(24, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType8).ppgDataSamples.size)
+        Assert.assertEquals(sample0Channel0, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType8).ppgDataSamples[0])
+        Assert.assertEquals(sample0Channel1, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType8).ppgDataSamples[1])
+        Assert.assertEquals(sample0Channel2, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType8).ppgDataSamples[2])
+        Assert.assertEquals(sample0Channel23, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType8).ppgDataSamples[23])
+        Assert.assertEquals(sample0ChannelStatus, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType8).status)
+        Assert.assertEquals(sample1Channel0, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType8).ppgDataSamples[0])
+        Assert.assertEquals(sample1Channel1, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType8).ppgDataSamples[1])
+
+        Assert.assertEquals(timeStamp, ppgData.timeStamp)
+        Assert.assertEquals(timeStamp, (ppgData.ppgSamples.last() as PpgData.PpgDataFrameType8).timeStamp)
     }
 }

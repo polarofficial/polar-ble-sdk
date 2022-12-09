@@ -122,19 +122,20 @@ protobuf {
 
 dependencies {
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
-    implementation 'io.reactivex.rxjava3:rxjava:3.1.3'
+    implementation 'io.reactivex.rxjava3:rxjava:3.1.5'
     implementation 'commons-io:commons-io:2.11.0'
     implementation 'androidx.annotation:annotation:1.5.0'
     implementation "androidx.core:core-ktx:1.9.0"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation "joda-time:joda-time:2.11.2"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.7.20"
     sdkImplementation 'com.google.protobuf:protobuf-javalite:3.20.0'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:4.3.1'
-    testImplementation 'io.mockk:mockk:1.12.2'
-    testImplementation 'androidx.test:runner:1.4.0'
-    testImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    testImplementation 'io.mockk:mockk:1.13.2'
+    testImplementation 'androidx.test:runner:1.5.1'
+    testImplementation 'androidx.test.espresso:espresso-core:3.5.0'
     androidTestImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test:core:1.4.0'
-    androidTestImplementation 'androidx.test:runner:1.4.0'
-    androidTestImplementation 'androidx.test:rules:1.4.0'
+    androidTestImplementation 'androidx.test:core:1.5.0'
+    androidTestImplementation 'androidx.test:runner:1.5.1'
+    androidTestImplementation 'androidx.test:rules:1.5.0'
 }

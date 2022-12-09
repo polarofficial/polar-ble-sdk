@@ -14,7 +14,7 @@ import org.junit.Rule
 import org.junit.Test
 import java.util.concurrent.TimeUnit
 
-class ConnectionHandlerTest {
+internal class ConnectionHandlerTest {
     private lateinit var connectionHandler: ConnectionHandler
     private lateinit var testScheduler: TestScheduler
 

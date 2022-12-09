@@ -109,7 +109,7 @@ public abstract class BleDeviceListener {
     /**
      * Set the preferred MTU. This value will be negotiated between the central and peripheral devices,
      * so it might not always take effect if peripheral is not capable
-     *
+     * <p>
      * If set to 0 before the connection is created then MTU negotiation is skipped. Value 0 can be
      * used in cases we don't want MTU negotiation, this can be handy with phones we know the MTU
      * negotiation is not working.

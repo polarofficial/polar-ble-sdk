@@ -390,7 +390,7 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
                         if (oldSession != null
                                 && (oldSession.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_CLOSED
                                 || oldSession.getSessionState() == BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK)) {
-                            BleLogger.d(TAG, "old polar device found name: " + oldSession.getAdvertisementContent().getName() + " dev name: " + device.getName() + " old name: " + oldSession.getBluetoothDevice().getName() + " old addr: " + oldSession.getAddress() + " device: " + device.toString());
+                            BleLogger.d(TAG, "old polar device found name: " + oldSession.getAdvertisementContent().getName() + " dev name: " + device.getName() + " old name: " + oldSession.getBluetoothDevice().getName() + " old addr: " + oldSession.getAddress() + " device: " + device);
                             oldSession.setBluetoothDevice(device);
                             deviceSession = oldSession;
                             deviceSession.getAdvertisementContent().processAdvertisementData(advData, type, rssi);

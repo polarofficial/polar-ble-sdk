@@ -6,14 +6,12 @@ import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.exceptions.*
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClientUtils.getDataFrameType
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClientUtils.isCompressedFrame
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType.Companion.fromId
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSetting.PmdSettingType
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.*
 import com.polar.androidcommunications.common.ble.AtomicSet
 import com.polar.androidcommunications.common.ble.BleUtils
 import com.polar.androidcommunications.common.ble.RxUtils
+import com.polar.androidcommunications.common.ble.TypeUtils
 import io.reactivex.rxjava3.core.*
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.nio.ByteBuffer
@@ -37,13 +35,13 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
     private val pressureObservers = AtomicSet<FlowableEmitter<in PressureData>>()
     private val locationObservers = AtomicSet<FlowableEmitter<in GnssLocationData>>()
     private val temperatureObservers = AtomicSet<FlowableEmitter<in TemperatureData>>()
-    private val rdObservers = AtomicSet<FlowableEmitter<in ByteArray>>()
     private var pmdFeatureData: ByteArray? = null
     private val controlPointMutex = Object()
     private val mutexFeature = Object()
+    private val previousTimeStampMap: EnumMap<PmdMeasurementType, ULong> = EnumMap(PmdMeasurementType.values().associateWith { 0UL })
 
     @VisibleForTesting
-    val currentSettings: MutableMap<PmdMeasurementType, PmdSetting> = HashMap()
+    val currentSettings: MutableMap<PmdMeasurementType, PmdSetting> = mutableMapOf()
     private val pmdCpEnabled: AtomicInteger
     private val pmdDataEnabled: AtomicInteger
 
@@ -57,33 +55,6 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
         BOOLEAN
     }
 
-    enum class PmdDataFrameType(val id: Int) {
-        TYPE_0(0),
-        TYPE_1(1),
-        TYPE_2(2),
-        TYPE_3(3),
-        TYPE_4(4),
-        TYPE_5(5),
-        TYPE_6(6),
-        TYPE_7(7),
-        TYPE_8(8);
-
-        companion object {
-            fun getTypeById(id: Int): PmdDataFrameType {
-                for (type in values()) {
-                    if (type.id == id) {
-                        return type
-                    }
-                }
-                throw BleNotImplemented("FrameType id:$id is not implemented")
-            }
-        }
-    }
-
-    enum class PmdFrameCompressionType(val numVal: Int) {
-        DELTA_FRAME(0x80);
-    }
-
     override fun reset() {
         super.reset()
         clearStreamObservers(BleDisconnected())
@@ -91,15 +62,25 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
             pmdFeatureData = null
             mutexFeature.notifyAll()
         }
+        previousTimeStampMap.replaceAll { _, _ -> 0uL }
     }
 
-    private fun fetchFactor(type: PmdMeasurementType): Float {
+    private fun getFactor(type: PmdMeasurementType): Float {
         currentSettings[type]?.selected?.get(PmdSettingType.FACTOR)?.let {
             val ieee754 = it
             return java.lang.Float.intBitsToFloat(ieee754)
         }
         BleLogger.w(TAG, "No factor found for type: $type")
         return 1.0f
+    }
+
+    private fun getSampleRate(type: PmdMeasurementType): Int {
+        return currentSettings[type]?.selected?.get(PmdSettingType.SAMPLE_RATE) ?: 0
+    }
+
+    @VisibleForTesting
+    fun getPreviousFrameTimeStamp(type: PmdMeasurementType): ULong {
+        return previousTimeStampMap[type] ?: 0UL
     }
 
     override fun processServiceData(characteristic: UUID, data: ByteArray, status: Int, notifying: Boolean) {
@@ -116,73 +97,75 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
         } else if (characteristic == PMD_DATA) {
             if (status == 0) {
                 BleLogger.d_hex(TAG, "pmd data: ", data)
-                val type = fromId(data[0])
-                val timeStamp = BleUtils.convertArrayToUnsignedLong(data, 1, 8)
-                val frameTypeField = BleUtils.convertArrayToUnsignedLong(data, 9, 1)
-                val frameType = getDataFrameType(frameTypeField)
-                val isCompressedFrameType = isCompressedFrame(frameTypeField)
-                val content = ByteArray(data.size - 10)
-                System.arraycopy(data, 10, content, 0, content.size)
-                when (type) {
+                val frame = PmdDataFrame(data, this::getPreviousFrameTimeStamp, this::getFactor, this::getSampleRate)
+                previousTimeStampMap[frame.measurementType] = frame.timeStamp
+
+                when (frame.measurementType) {
                     PmdMeasurementType.ECG -> {
-                        val factor = fetchFactor(PmdMeasurementType.ECG)
                         RxUtils.emitNext(ecgObservers) { emitter: FlowableEmitter<in EcgData> ->
-                            emitter.onNext(EcgData.parseDataFromDataFrame(isCompressedFrameType, frameType, content, factor, timeStamp))
+                            emitter.onNext(
+                                EcgData.parseDataFromDataFrame(frame)
+                            )
                         }
                     }
                     PmdMeasurementType.PPG -> {
-                        val factor = fetchFactor(PmdMeasurementType.PPG)
                         RxUtils.emitNext(ppgObservers) { emitter: FlowableEmitter<in PpgData> ->
-                            emitter.onNext(PpgData.parseDataFromDataFrame(isCompressedFrameType, frameType, content, factor, timeStamp))
+                            emitter.onNext(
+                                PpgData.parseDataFromDataFrame(frame)
+                            )
                         }
                     }
                     PmdMeasurementType.ACC -> {
-                        val factor = fetchFactor(PmdMeasurementType.ACC)
                         RxUtils.emitNext(accObservers) { emitter: FlowableEmitter<in AccData> ->
-                            emitter.onNext(AccData.parseDataFromDataFrame(isCompressedFrameType, frameType, content, factor, timeStamp))
+                            emitter.onNext(
+                                AccData.parseDataFromDataFrame(frame)
+                            )
                         }
                     }
                     PmdMeasurementType.PPI -> {
-                        val factor = fetchFactor(PmdMeasurementType.PPI)
                         RxUtils.emitNext(ppiObservers) { emitter: FlowableEmitter<in PpiData> ->
-                            emitter.onNext(PpiData.parseDataFromDataFrame(isCompressedFrameType, frameType, content, factor, timeStamp))
+                            emitter.onNext(
+                                PpiData.parseDataFromDataFrame(frame)
+                            )
                         }
                     }
                     PmdMeasurementType.GYRO -> {
-                        val factor = fetchFactor(PmdMeasurementType.GYRO)
                         RxUtils.emitNext(gyroObservers) { emitter: FlowableEmitter<in GyrData> ->
-                            emitter.onNext(GyrData.parseDataFromDataFrame(isCompressedFrameType, frameType, content, factor, timeStamp))
+                            emitter.onNext(
+                                GyrData.parseDataFromDataFrame(frame)
+                            )
                         }
                     }
                     PmdMeasurementType.MAGNETOMETER -> {
-                        val factor = fetchFactor(PmdMeasurementType.MAGNETOMETER)
                         RxUtils.emitNext(magnetometerObservers) { emitter: FlowableEmitter<in MagData> ->
-                            emitter.onNext(MagData.parseDataFromDataFrame(isCompressedFrameType, frameType, content, factor, timeStamp))
+                            emitter.onNext(
+                                MagData.parseDataFromDataFrame(frame)
+                            )
                         }
                     }
                     PmdMeasurementType.PRESSURE -> {
-                        val factor = fetchFactor(PmdMeasurementType.PRESSURE)
                         RxUtils.emitNext(pressureObservers) { emitter: FlowableEmitter<in PressureData> ->
-                            emitter.onNext(PressureData.parseDataFromDataFrame(isCompressedFrameType, frameType, content, factor, timeStamp))
+                            emitter.onNext(
+                                PressureData.parseDataFromDataFrame(frame)
+                            )
                         }
                     }
                     PmdMeasurementType.LOCATION -> {
-                        val factor = fetchFactor(PmdMeasurementType.LOCATION)
                         RxUtils.emitNext(locationObservers) { emitter: FlowableEmitter<in GnssLocationData> ->
-                            emitter.onNext(GnssLocationData.parseDataFromDataFrame(isCompressedFrameType, frameType, content, factor, timeStamp))
+                            emitter.onNext(
+                                GnssLocationData.parseDataFromDataFrame(frame)
+                            )
                         }
                     }
                     PmdMeasurementType.TEMPERATURE -> {
-                        val factor = fetchFactor(PmdMeasurementType.TEMPERATURE)
                         RxUtils.emitNext(temperatureObservers) { emitter: FlowableEmitter<in TemperatureData> ->
-                            emitter.onNext(TemperatureData.parseDataFromDataFrame(isCompressedFrameType, frameType, content, factor, timeStamp))
+                            emitter.onNext(
+                                TemperatureData.parseDataFromDataFrame(frame)
+                            )
                         }
                     }
-
                     else -> {
-                        val rdData = ByteArray(data.size - 1)
-                        System.arraycopy(data, 1, content, 0, content.size)
-                        RxUtils.emitNext(rdObservers) { emitter: FlowableEmitter<in ByteArray> -> emitter.onNext(rdData) }
+                        BleLogger.w(TAG, "Unknown or not supported PMD type ${frame.measurementType} received")
                     }
                 }
             } else {
@@ -221,7 +204,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
         while (more) {
             val moreParameters = receiveControlPointPacket()
             more = moreParameters[0].toInt() != 0
-            response.parameters.write(moreParameters, 1, moreParameters.size - 1)
+            response.parameters = response.parameters.copyOf() + moreParameters.copyOfRange(1, moreParameters.size)
         }
         return response
     }
@@ -230,20 +213,20 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
         return sendControlPointCommand(command, byteArrayOf(value))
     }
 
-    private fun sendControlPointCommand(command: PmdControlPointCommand, params: ByteArray): Single<PmdControlPointResponse> {
+    private fun sendControlPointCommand(command: PmdControlPointCommand, params: ByteArray = byteArrayOf()): Single<PmdControlPointResponse> {
         return Single.create(SingleOnSubscribe { subscriber: SingleEmitter<PmdControlPointResponse> ->
             synchronized(controlPointMutex) {
                 try {
                     if (pmdCpEnabled.get() == ATT_SUCCESS && pmdDataEnabled.get() == ATT_SUCCESS) {
                         val bb = ByteBuffer.allocate(1 + params.size)
                         bb.put(byteArrayOf(command.numVal.toByte()))
-                        bb.put(params)
+                        if (params.isNotEmpty()) bb.put(params)
                         val response = sendPmdCommand(bb.array())
                         if (response.status === PmdControlPointResponse.PmdControlPointResponseCode.SUCCESS) {
                             subscriber.onSuccess(response)
                             return@SingleOnSubscribe
                         }
-                        throw BleControlPointCommandError("pmd cp command error: ", response.status)
+                        throw BleControlPointCommandError("pmd cp command $command error:", response.status)
                     }
                     throw BleCharacteristicNotificationNotEnabled()
                 } catch (throwable: Throwable) {
@@ -265,7 +248,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
      */
     fun querySettings(type: PmdMeasurementType): Single<PmdSetting> {
         return sendControlPointCommand(PmdControlPointCommand.GET_MEASUREMENT_SETTINGS, type.numVal.toByte())
-            .map { pmdControlPointResponse: PmdControlPointResponse -> PmdSetting(pmdControlPointResponse.parameters.toByteArray()) }
+            .map { pmdControlPointResponse: PmdControlPointResponse -> PmdSetting(pmdControlPointResponse.parameters) }
     }
 
     /**
@@ -277,27 +260,29 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
      */
     fun queryFullSettings(type: PmdMeasurementType): Single<PmdSetting> {
         return sendControlPointCommand(PmdControlPointCommand.GET_SDK_MODE_MEASUREMENT_SETTINGS, type.numVal.toByte())
-            .map { pmdControlPointResponse: PmdControlPointResponse -> PmdSetting(pmdControlPointResponse.parameters.toByteArray()) }
+            .map { pmdControlPointResponse: PmdControlPointResponse -> PmdSetting(pmdControlPointResponse.parameters) }
     }
 
     /**
      * @return Single stream
      */
-    fun readFeature(checkConnection: Boolean): Single<PmdFeature> {
-        return Single.create(SingleOnSubscribe { emitter: SingleEmitter<PmdFeature> ->
+    fun readFeature(checkConnection: Boolean): Single<Set<PmdMeasurementType>> {
+        return Single.create(SingleOnSubscribe { emitter: SingleEmitter<Set<PmdMeasurementType>> ->
             try {
                 if (!checkConnection || txInterface.isConnected) {
                     synchronized(mutexFeature) {
                         if (pmdFeatureData == null) {
                             mutexFeature.wait()
                         }
-                        if (pmdFeatureData != null) {
-                            emitter.onSuccess(PmdFeature(pmdFeatureData!!))
+                        pmdFeatureData?.let {
+                            emitter.onSuccess(PmdMeasurementType.fromByteArray(it))
                             return@SingleOnSubscribe
-                        } else if (!txInterface.isConnected) {
-                            throw BleDisconnected()
                         }
-                        throw Exception("Undefined device error")
+                        if (!txInterface.isConnected) {
+                            throw BleDisconnected()
+                        } else {
+                            throw Exception("Undefined device error")
+                        }
                     }
                 }
                 throw BleDisconnected()
@@ -324,7 +309,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
         currentSettings[type] = setting
 
         return sendControlPointCommand(PmdControlPointCommand.REQUEST_MEASUREMENT_START, bb.array())
-            .doOnSuccess { pmdControlPointResponse: PmdControlPointResponse -> currentSettings[type]!!.updateSelectedFromStartResponse(pmdControlPointResponse.parameters.toByteArray()) }
+            .doOnSuccess { pmdControlPointResponse: PmdControlPointResponse -> currentSettings[type]!!.updateSelectedFromStartResponse(pmdControlPointResponse.parameters) }
             .toObservable()
             .ignoreElements()
     }
@@ -366,6 +351,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
     fun stopMeasurement(type: PmdMeasurementType): Completable {
         return sendControlPointCommand(PmdControlPointCommand.STOP_MEASUREMENT, byteArrayOf(type.numVal.toByte()))
             .toObservable()
+            .doOnComplete { previousTimeStampMap[type] = 0UL }
             .ignoreElements()
     }
 
@@ -377,7 +363,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
      * - onComplete non produced if stream is not further configured <BR></BR>
      * - onError BleDisconnected produced on disconnection <BR></BR>
      */
-    fun monitorEcgNotifications(checkConnection: Boolean): Flowable<EcgData> {
+    internal fun monitorEcgNotifications(checkConnection: Boolean): Flowable<EcgData> {
         return RxUtils.monitorNotifications(ecgObservers, txInterface, checkConnection)
     }
 
@@ -389,7 +375,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
      * - onComplete non produced if stream is not further configured <BR></BR>
      * - onError BleDisconnected produced on disconnection <BR></BR>
      */
-    fun monitorAccNotifications(checkConnection: Boolean): Flowable<AccData> {
+    internal fun monitorAccNotifications(checkConnection: Boolean): Flowable<AccData> {
         return RxUtils.monitorNotifications(accObservers, txInterface, checkConnection)
     }
 
@@ -401,7 +387,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
      * - onComplete non produced if stream is not further configured <BR></BR>
      * - onError BleDisconnected produced on disconnection <BR></BR>
      */
-    fun monitorPpgNotifications(checkConnection: Boolean): Flowable<PpgData> {
+    internal fun monitorPpgNotifications(checkConnection: Boolean): Flowable<PpgData> {
         return RxUtils.monitorNotifications(ppgObservers, txInterface, checkConnection)
     }
 
@@ -413,27 +399,27 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
      * - onComplete non produced if stream is not further configured <BR></BR>
      * - onError BleDisconnected produced on disconnection <BR></BR>
      */
-    fun monitorPpiNotifications(checkConnection: Boolean): Flowable<PpiData> {
+    internal fun monitorPpiNotifications(checkConnection: Boolean): Flowable<PpiData> {
         return RxUtils.monitorNotifications(ppiObservers, txInterface, checkConnection)
     }
 
-    fun monitorMagnetometerNotifications(checkConnection: Boolean): Flowable<MagData> {
+    internal fun monitorMagnetometerNotifications(checkConnection: Boolean): Flowable<MagData> {
         return RxUtils.monitorNotifications(magnetometerObservers, txInterface, checkConnection)
     }
 
-    fun monitorGyroNotifications(checkConnection: Boolean): Flowable<GyrData> {
+    internal fun monitorGyroNotifications(checkConnection: Boolean): Flowable<GyrData> {
         return RxUtils.monitorNotifications(gyroObservers, txInterface, checkConnection)
     }
 
-    fun monitorPressureNotifications(checkConnection: Boolean): Flowable<PressureData> {
+    internal fun monitorPressureNotifications(checkConnection: Boolean): Flowable<PressureData> {
         return RxUtils.monitorNotifications(pressureObservers, txInterface, checkConnection)
     }
 
-    fun monitorLocationNotifications(checkConnection: Boolean): Flowable<GnssLocationData> {
+    internal fun monitorLocationNotifications(checkConnection: Boolean): Flowable<GnssLocationData> {
         return RxUtils.monitorNotifications(locationObservers, txInterface, checkConnection)
     }
 
-    fun monitorTemperatureNotifications(checkConnection: Boolean): Flowable<TemperatureData> {
+    internal fun monitorTemperatureNotifications(checkConnection: Boolean): Flowable<TemperatureData> {
         return RxUtils.monitorNotifications(temperatureObservers, txInterface, checkConnection)
     }
 
@@ -444,25 +430,11 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
         )
     }
 
-    /**
-     * @return current pmd feature or null if no features not available
-     */
-    fun getPmdFeatureData(): PmdFeature? {
-        synchronized(mutexFeature) {
-            return if (pmdFeatureData != null) {
-                PmdFeature(pmdFeatureData!!)
-            } else {
-                null
-            }
-        }
-    }
-
     private fun clearStreamObservers(throwable: Throwable) {
         RxUtils.postExceptionAndClearList(ecgObservers, throwable)
         RxUtils.postExceptionAndClearList(accObservers, throwable)
         RxUtils.postExceptionAndClearList(ppgObservers, throwable)
         RxUtils.postExceptionAndClearList(ppiObservers, throwable)
-        RxUtils.postExceptionAndClearList(rdObservers, throwable)
         RxUtils.postExceptionAndClearList(gyroObservers, throwable)
         RxUtils.postExceptionAndClearList(magnetometerObservers, throwable)
         RxUtils.postExceptionAndClearList(pressureObservers, throwable)
@@ -522,12 +494,12 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
             while (channelCount++ < channels) {
                 var sample: Int
                 if (type == PmdDataFieldEncoding.SIGNED_INT) {
-                    sample = BleUtils.convertArrayToSignedInt(bytes, offset, resolutionInBytes)
+                    sample = TypeUtils.convertArrayToSignedInt(bytes, offset, resolutionInBytes)
                     if (sample and mask != 0) {
                         sample = sample or mask
                     }
                 } else {
-                    sample = BleUtils.convertArrayToUnsignedInt(bytes, offset, resolutionInBytes)
+                    sample = TypeUtils.convertArrayToUnsignedInt(bytes, offset, resolutionInBytes).toInt()
                 }
                 offset += resolutionInBytes
                 samples.add(sample)

@@ -2,57 +2,65 @@ package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient.PmdDataFieldEncoding
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClientUtils
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrameUtils
 import java.lang.Float.intBitsToFloat
-import java.util.*
 
-/**
- * Pressure data
- * @param timeStamp ns in epoch time. The time stamp represent time of last sample in pressureSamples list
- */
-class PressureData internal constructor(val timeStamp: Long) {
+internal class PressureData {
 
     data class PressureSample internal constructor(
+        val timeStamp: ULong = 0uL,
         // Sample contains signed pressure value in bar
         val pressure: Float
     )
 
-    @JvmField
-    val pressureSamples: MutableList<PressureSample> = ArrayList()
+    val pressureSamples: MutableList<PressureSample> = mutableListOf()
 
     companion object {
-        fun parseDataFromDataFrame(isCompressed: Boolean, frameType: BlePMDClient.PmdDataFrameType, frame: ByteArray, factor: Float, timeStamp: Long): PressureData {
-            return if (isCompressed) {
-                when (frameType) {
-                    BlePMDClient.PmdDataFrameType.TYPE_0 -> dataFromCompressedType0(frame, factor, timeStamp)
-                    else -> throw java.lang.Exception("Compressed FrameType: $frameType is not supported by Pressure data parser")
+        private const val TYPE_0_SAMPLE_SIZE_IN_BYTES = 4
+        private const val TYPE_0_SAMPLE_SIZE_IN_BITS = TYPE_0_SAMPLE_SIZE_IN_BYTES * 8
+        private const val TYPE_0_CHANNELS_IN_SAMPLE = 1
+
+        fun parseDataFromDataFrame(frame: PmdDataFrame): PressureData {
+            return if (frame.isCompressedFrame) {
+                when (frame.frameType) {
+                    PmdDataFrame.PmdDataFrameType.TYPE_0 -> dataFromCompressedType0(frame)
+                    else -> throw java.lang.Exception("Compressed FrameType: ${frame.frameType} is not supported by Pressure data parser")
                 }
             } else {
-                when (frameType) {
-                    BlePMDClient.PmdDataFrameType.TYPE_0 -> dataFromRawType0(frame, timeStamp)
-                    else -> throw java.lang.Exception("Raw FrameType: $frameType is not supported by Pressure data parser")
+                when (frame.frameType) {
+                    PmdDataFrame.PmdDataFrameType.TYPE_0 -> dataFromRawType0(frame)
+                    else -> throw java.lang.Exception("Raw FrameType: ${frame.frameType} is not supported by Pressure data parser")
                 }
             }
         }
 
-        private fun dataFromCompressedType0(frame: ByteArray, factor: Float, timeStamp: Long): PressureData {
-            val samples = BlePMDClient.parseDeltaFramesAll(frame, 1, 32, PmdDataFieldEncoding.FLOAT_IEEE754)
-            val pressureData = PressureData(timeStamp)
-            for (sample in samples) {
-                val pressure = if (factor != 1.0f) intBitsToFloat(sample[0]) * factor else intBitsToFloat(sample[0])
-                pressureData.pressureSamples.add(PressureSample(pressure))
+        private fun dataFromCompressedType0(frame: PmdDataFrame): PressureData {
+            val pressureData = PressureData()
+            val samples = BlePMDClient.parseDeltaFramesAll(frame.dataContent, TYPE_0_CHANNELS_IN_SAMPLE, TYPE_0_SAMPLE_SIZE_IN_BITS, PmdDataFieldEncoding.FLOAT_IEEE754)
+
+            val timeStamps = PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp = frame.previousTimeStamp, frameTimeStamp = frame.timeStamp, samplesSize = samples.size, frame.sampleRate)
+            for ((index, sample) in samples.withIndex()) {
+                val pressure = if (frame.factor != 1.0f) intBitsToFloat(sample[0]) * frame.factor else intBitsToFloat(sample[0])
+                pressureData.pressureSamples.add(PressureSample(timeStamp = timeStamps[index], pressure))
             }
             return pressureData
         }
 
-        private fun dataFromRawType0(frame: ByteArray, timeStamp: Long): PressureData {
-            val pressureData = PressureData(timeStamp)
+        private fun dataFromRawType0(frame: PmdDataFrame): PressureData {
+            val pressureData = PressureData()
             var offset = 0
+            val step = TYPE_0_SAMPLE_SIZE_IN_BYTES
 
-            while (offset < frame.size) {
-                val pressure = BlePMDClientUtils.parseFrameDataField(frame.sliceArray(offset..(offset + 3)), PmdDataFieldEncoding.FLOAT_IEEE754) as Float
-                offset += 4
-                pressureData.pressureSamples.add(PressureSample(pressure))
+            val samplesSize = frame.dataContent.size / (step * TYPE_0_CHANNELS_IN_SAMPLE)
+            val timeStamps = PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp = frame.previousTimeStamp, frameTimeStamp = frame.timeStamp, samplesSize = samplesSize, frame.sampleRate)
+            var timeStampIndex = 0
+
+            while (offset < frame.dataContent.size) {
+                val pressure = PmdDataFrameUtils.parseFrameDataField(frame.dataContent.sliceArray(offset until (offset + TYPE_0_SAMPLE_SIZE_IN_BYTES)), PmdDataFieldEncoding.FLOAT_IEEE754) as Float
+                offset += TYPE_0_SAMPLE_SIZE_IN_BYTES
+                pressureData.pressureSamples.add(PressureSample(timeStamp = timeStamps[timeStampIndex], pressure))
+                timeStampIndex++
             }
             return pressureData
         }

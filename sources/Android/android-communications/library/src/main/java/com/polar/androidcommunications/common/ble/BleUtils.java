@@ -112,29 +112,4 @@ public final class BleUtils {
     public static void validate(boolean valid, String message) {
         if (!valid) throw new AssertionError(message);
     }
-
-    public static int convertArrayToSignedInt(byte[] data, int offset, int length) {
-        int result = (int) convertArrayToUnsignedLong(data, offset, length);
-        if ((data[offset + length - 1] & 0x80) != 0) {
-            int mask = 0xFFFFFFFF << length * 8;
-            result |= mask;
-        }
-        return result;
-    }
-
-    public static int convertArrayToUnsignedInt(byte[] data, int offset, int length) {
-        int result = 0;
-        for (int i = 0; i < length; ++i) {
-            result |= (((int) data[i + offset] & 0xFF) << i * 8);
-        }
-        return result;
-    }
-
-    public static long convertArrayToUnsignedLong(byte[] data, int offset, int length) {
-        long result = 0;
-        for (int i = 0; i < length; ++i) {
-            result |= (((long) data[i + offset] & 0xFFL) << i * 8);
-        }
-        return result;
-    }
 }

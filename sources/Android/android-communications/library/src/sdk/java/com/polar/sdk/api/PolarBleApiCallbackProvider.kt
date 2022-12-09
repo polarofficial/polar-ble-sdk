@@ -1,37 +1,33 @@
 // Copyright © 2019 Polar Electro Oy. All rights reserved.
-package com.polar.sdk.api;
+package com.polar.sdk.api
 
-import androidx.annotation.NonNull;
-
-import com.polar.sdk.api.model.PolarDeviceInfo;
-import com.polar.sdk.api.model.PolarHrData;
-
-import java.util.Set;
-import java.util.UUID;
+import com.polar.sdk.api.PolarBleApi.DeviceStreamingFeature
+import com.polar.sdk.api.model.PolarDeviceInfo
+import com.polar.sdk.api.model.PolarHrData
+import java.util.*
 
 /**
  * Contains the callbacks of the API.
  */
-public interface PolarBleApiCallbackProvider {
-
+interface PolarBleApiCallbackProvider {
     /**
      * @param powered true = Bluetooth power on, false = Bluetooth power off
      */
-    void blePowerStateChanged(final boolean powered);
+    fun blePowerStateChanged(powered: Boolean)
 
     /**
      * Device is now connected
      *
      * @param polarDeviceInfo Polar device information
      */
-    void deviceConnected(@NonNull final PolarDeviceInfo polarDeviceInfo);
+    fun deviceConnected(polarDeviceInfo: PolarDeviceInfo)
 
     /**
      * Connecting to device
      *
      * @param polarDeviceInfo Polar device information
      */
-    void deviceConnecting(@NonNull final PolarDeviceInfo polarDeviceInfo);
+    fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo)
 
     /**
      * Device is now disconnected, no further action is needed from the application
@@ -39,7 +35,7 @@ public interface PolarBleApiCallbackProvider {
      *
      * @param polarDeviceInfo Polar device information
      */
-    void deviceDisconnected(@NonNull final PolarDeviceInfo polarDeviceInfo);
+    fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo)
 
     /**
      * Polar device's streaming features ready. Application may start any stream now if desired.
@@ -48,8 +44,10 @@ public interface PolarBleApiCallbackProvider {
      * @param identifier Polar device id
      * @param features   set of features available and ready
      */
-    void streamingFeaturesReady(@NonNull final String identifier,
-                                @NonNull final Set<PolarBleApi.DeviceStreamingFeature> features);
+    fun streamingFeaturesReady(
+        identifier: String,
+        features: Set<DeviceStreamingFeature>
+    )
 
     /**
      * Polar SDK Mode feature is available in the device. Application may now enter to SDK mode.
@@ -57,14 +55,14 @@ public interface PolarBleApiCallbackProvider {
      *
      * @param identifier Polar device id
      */
-    void sdkModeFeatureAvailable(@NonNull final String identifier);
+    fun sdkModeFeatureAvailable(identifier: String)
 
     /**
      * Polar device HR client is now ready and HR transmission is starting in a moment.
      *
      * @param identifier Polar device id or bt address
      */
-    void hrFeatureReady(@NonNull final String identifier);
+    fun hrFeatureReady(identifier: String)
 
     /**
      * DIS information received
@@ -74,7 +72,7 @@ public interface PolarBleApiCallbackProvider {
      * @param uuid       uuid of dis value
      * @param value      dis value for uuid
      */
-    void disInformationReceived(@NonNull final String identifier, @NonNull UUID uuid, @NonNull final String value);
+    fun disInformationReceived(identifier: String, uuid: UUID, value: String)
 
     /**
      * Battery level received
@@ -83,7 +81,7 @@ public interface PolarBleApiCallbackProvider {
      * @param identifier Polar device id or bt address
      * @param level      battery level (value between 0-100%)
      */
-    void batteryLevelReceived(@NonNull final String identifier, final int level);
+    fun batteryLevelReceived(identifier: String, level: Int)
 
     /**
      * HR notification data received from device. Notice when using OH1
@@ -92,7 +90,7 @@ public interface PolarBleApiCallbackProvider {
      * @param identifier Polar device id or bt address
      * @param data       @see polar.com.sdk.api.model.PolarHrData.java
      */
-    void hrNotificationReceived(@NonNull final String identifier, @NonNull final PolarHrData data);
+    fun hrNotificationReceived(identifier: String, data: PolarHrData)
 
     /**
      * File transfer ready
@@ -100,5 +98,5 @@ public interface PolarBleApiCallbackProvider {
      *
      * @param identifier Polar device id
      */
-    void polarFtpFeatureReady(@NonNull final String identifier);
+    fun polarFtpFeatureReady(identifier: String)
 }

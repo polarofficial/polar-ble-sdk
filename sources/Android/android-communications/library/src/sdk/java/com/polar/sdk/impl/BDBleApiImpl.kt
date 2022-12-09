@@ -2,16 +2,12 @@
 package com.polar.sdk.impl
 
 import android.content.Context
-import androidx.core.util.Pair
 import com.polar.androidcommunications.api.ble.BleDeviceListener
 import com.polar.androidcommunications.api.ble.BleDeviceListener.BlePowerStateChangedCallback
 import com.polar.androidcommunications.api.ble.BleDeviceListener.BleSearchPreFilter
 import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.BleLogger.Companion.setLoggerInterface
-import com.polar.androidcommunications.api.ble.exceptions.BleControlPointCommandError
-import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected
-import com.polar.androidcommunications.api.ble.exceptions.BleInvalidMtu
-import com.polar.androidcommunications.api.ble.exceptions.BleNotAvailableInDevice
+import com.polar.androidcommunications.api.ble.exceptions.*
 import com.polar.androidcommunications.api.ble.model.BleDeviceSession
 import com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceSessionState
 import com.polar.androidcommunications.api.ble.model.advertisement.BleAdvertisementContent
@@ -20,11 +16,8 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.BleBattClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleDisClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.HrNotificationData
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.*
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdControlPointResponse.PmdControlPointResponseCode
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdFeature
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSetting
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.*
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils
@@ -32,16 +25,22 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpU
 import com.polar.androidcommunications.api.ble.model.polar.BlePolarDeviceCapabilitiesUtility.Companion.getFileSystemType
 import com.polar.androidcommunications.api.ble.model.polar.BlePolarDeviceCapabilitiesUtility.Companion.isRecordingSupported
 import com.polar.androidcommunications.api.ble.model.polar.BlePolarDeviceCapabilitiesUtility.FileSystemType
-import com.polar.androidcommunications.common.ble.BleUtils
 import com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceListenerImpl
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.PolarBleApiCallbackProvider
 import com.polar.sdk.api.errors.*
 import com.polar.sdk.api.model.*
-import com.polar.sdk.api.model.PolarAccelerometerData.PolarAccelerometerDataSample
-import com.polar.sdk.api.model.PolarGyroData.PolarGyroDataSample
-import com.polar.sdk.api.model.PolarMagnetometerData.PolarMagnetometerDataSample
-import com.polar.sdk.api.model.PolarOhrPPIData.PolarOhrPPISample
+import com.polar.sdk.api.model.utils.PolarDataUtils
+import com.polar.sdk.api.model.utils.PolarDataUtils.mapPMDClientOhrDataToPolarOhr
+import com.polar.sdk.api.model.utils.PolarDataUtils.mapPMDClientPpiDataToPolarOhrPpiData
+import com.polar.sdk.api.model.utils.PolarDataUtils.mapPmdClientAccDataToPolarAcc
+import com.polar.sdk.api.model.utils.PolarDataUtils.mapPmdClientGyroDataToPolarGyro
+import com.polar.sdk.api.model.utils.PolarDataUtils.mapPmdClientMagDataToPolarMagnetometer
+import com.polar.sdk.api.model.utils.PolarDataUtils.mapPmdSettingsToPolarSettings
+import com.polar.sdk.api.model.utils.PolarDataUtils.mapPolarSettingsToPmdSettings
+import com.polar.sdk.api.model.utils.PolarTimeUtils.javaCalendarToPbPftpSetLocalTime
+import com.polar.sdk.api.model.utils.PolarTimeUtils.javaCalendarToPbPftpSetSystemTime
+import com.polar.sdk.api.model.utils.PolarTimeUtils.pbLocalTimeToJavaCalendar
 import fi.polar.remote.representation.protobuf.ExerciseSamples.PbExerciseSamples
 import fi.polar.remote.representation.protobuf.Types.*
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -133,6 +132,7 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
                 dataDisposable.dispose()
             }
         }
+
         devicesStateMonitorDisposable?.dispose()
         devicesStateMonitorDisposable = null
 
@@ -201,27 +201,50 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
     override fun setLocalTime(identifier: String, calendar: Calendar): Completable {
         return try {
             val session = sessionPsFtpClientReady(identifier)
-            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-            if (client != null) {
-                val builder = PftpRequest.PbPFtpSetLocalTimeParams.newBuilder()
-                val date = PbDate.newBuilder()
-                    .setYear(calendar[Calendar.YEAR])
-                    .setMonth(calendar[Calendar.MONTH] + 1)
-                    .setDay(calendar[Calendar.DAY_OF_MONTH]).build()
-                val time = PbTime.newBuilder()
-                    .setHour(calendar[Calendar.HOUR_OF_DAY])
-                    .setMinute(calendar[Calendar.MINUTE])
-                    .setSeconds(calendar[Calendar.SECOND])
-                    .setMillis(calendar[Calendar.MILLISECOND]).build()
-                builder.setDate(date).setTime(time).tzOffset = TimeUnit.MINUTES.convert(calendar[Calendar.ZONE_OFFSET].toLong(), TimeUnit.MILLISECONDS).toInt()
-                client.query(PftpRequest.PbPFtpQuery.SET_LOCAL_TIME_VALUE, builder.build().toByteArray())
-                    .toObservable()
-                    .ignoreElements()
-            } else {
-                Completable.error(PolarServiceNotAvailable())
-            }
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Completable.error(PolarServiceNotAvailable())
+
+            BleLogger.d(TAG, "set local time to ${calendar.time} device $identifier")
+            val pbLocalTime = javaCalendarToPbPftpSetLocalTime(calendar)
+            setSystemTime(client, calendar)
+                .onErrorComplete()
+                .andThen(
+                    client.query(PftpRequest.PbPFtpQuery.SET_LOCAL_TIME_VALUE, pbLocalTime.toByteArray())
+                        .ignoreElement()
+                )
+
         } catch (error: Throwable) {
             Completable.error(error)
+        }
+    }
+
+    private fun setSystemTime(client: BlePsFtpClient, calendar: Calendar): Completable {
+        val pbTime = javaCalendarToPbPftpSetSystemTime(calendar)
+        return client.query(PftpRequest.PbPFtpQuery.SET_SYSTEM_TIME_VALUE, pbTime.toByteArray())
+            .ignoreElement()
+    }
+
+    override fun getLocalTime(identifier: String): Single<Calendar> {
+        return try {
+            val session = sessionPsFtpClientReady(identifier)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            if (client != null) {
+                BleLogger.d(TAG, "get local time from device $identifier")
+                client.query(PftpRequest.PbPFtpQuery.GET_LOCAL_TIME_VALUE, null)
+                    .map {
+                        val dateTime: PftpRequest.PbPFtpSetLocalTimeParams = PftpRequest.PbPFtpSetLocalTimeParams.parseFrom(it.toByteArray())
+                        pbLocalTimeToJavaCalendar(dateTime)
+                    }.onErrorResumeNext {
+                        if (it is PftpResponseError && it.error == 201) {
+                            Single.error(BleNotSupported("${session.name} do not support getTime"))
+                        } else {
+                            Single.error(it)
+                        }
+                    }
+            } else {
+                Single.error(PolarServiceNotAvailable())
+            }
+        } catch (error: Throwable) {
+            Single.error(error)
         }
     }
 
@@ -253,7 +276,7 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
             val client = session.fetchClient(BlePMDClient.PMD_SERVICE) as BlePMDClient?
             if (client != null) {
                 client.querySettings(type)
-                    .map { setting: PmdSetting -> PolarSensorSetting(setting.settings, type) }
+                    .map { setting: PmdSetting -> mapPmdSettingsToPolarSettings(setting, fromSelected = false) }
             } else {
                 Single.error(PolarServiceNotAvailable())
             }
@@ -268,7 +291,7 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
             val client = session.fetchClient(BlePMDClient.PMD_SERVICE) as BlePMDClient?
             if (client != null) {
                 client.queryFullSettings(type)
-                    .map { setting: PmdSetting -> PolarSensorSetting(setting.settings, type) }
+                    .map { setting: PmdSetting -> mapPmdSettingsToPolarSettings(setting, fromSelected = false) }
             } else {
                 Single.error(PolarServiceNotAvailable())
             }
@@ -424,7 +447,7 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
         }
     }
 
-    override fun requestRecordingStatus(identifier: String): Single<Pair<Boolean, String>> {
+    override fun requestRecordingStatus(identifier: String): Single<androidx.core.util.Pair<Boolean, String>> {
         return try {
             val session = sessionPsFtpClientReady(identifier)
             if (isRecordingSupported(session.polarDeviceType)) {
@@ -433,7 +456,7 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
                     client.query(PftpRequest.PbPFtpQuery.REQUEST_RECORDING_STATUS_VALUE, null)
                         .map { byteArrayOutputStream: ByteArrayOutputStream ->
                             val result = PbRequestRecordingStatusResult.parseFrom(byteArrayOutputStream.toByteArray())
-                            Pair(result.recordingOn, if (result.hasSampleDataIdentifier()) result.sampleDataIdentifier else "")
+                            androidx.core.util.Pair(result.recordingOn, if (result.hasSampleDataIdentifier()) result.sampleDataIdentifier else "")
                         }.onErrorResumeNext { throwable: Throwable -> Single.error(handleError(throwable)) }
                 } else Single.error(PolarServiceNotAvailable())
             } else Single.error(PolarOperationNotSupported())
@@ -459,11 +482,11 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
                                         entry == "SAMPLES.BPB" ||
                                         entry == "00/"
                             }
-                        ).map { path: String ->
-                            val components = path.split("/").toTypedArray()
+                        ).map { entry: Pair<String, Long> ->
+                            val components = entry.first.split("/").toTypedArray()
                             val format = SimpleDateFormat("yyyyMMdd HHmmss", Locale.getDefault())
                             val date = format.parse(components[3] + " " + components[5])
-                            PolarExerciseEntry(path, date, components[3] + components[5])
+                            PolarExerciseEntry(entry.first, date, components[3] + components[5])
                         }.onErrorResumeNext { throwable: Throwable -> Flowable.error(handleError(throwable)) }
                     }
                     FileSystemType.H10_FILE_SYSTEM -> {
@@ -471,9 +494,9 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
                             client = client,
                             path = "/",
                             condition = { entry -> entry.endsWith("/") || entry == "SAMPLES.BPB" }
-                        ).map { p: String ->
-                            val components = p.split("/").toTypedArray()
-                            PolarExerciseEntry(p, Date(), components[1])
+                        ).map { entry: Pair<String, Long> ->
+                            val components = entry.first.split("/").toTypedArray()
+                            PolarExerciseEntry(entry.first, Date(), components[1])
                         }
                             .onErrorResumeNext { throwable: Throwable -> Flowable.error(handleError(throwable)) }
                     }
@@ -626,7 +649,7 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
             val session = sessionPmdClientReady(identifier)
             val client = session.fetchClient(BlePMDClient.PMD_SERVICE) as BlePMDClient?
             if (client != null) {
-                client.startMeasurement(type, setting.map2PmdSettings())
+                client.startMeasurement(type, mapPolarSettingsToPmdSettings(setting))
                     .andThen(observer.apply(client)
                         .onErrorResumeNext { throwable: Throwable -> Flowable.error(handleError(throwable)) }
                         .doFinally { stopPmdStreaming(session, client, type) })
@@ -654,49 +677,34 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
         })
     }
 
-    override fun startAccStreaming(identifier: String, setting: PolarSensorSetting): Flowable<PolarAccelerometerData> {
-        return startStreaming(identifier, PmdMeasurementType.ACC, setting, observer = { client: BlePMDClient ->
+    override fun startAccStreaming(identifier: String, sensorSetting: PolarSensorSetting): Flowable<PolarAccelerometerData> {
+        return startStreaming(identifier, PmdMeasurementType.ACC, sensorSetting, observer = { client: BlePMDClient ->
             client.monitorAccNotifications(true)
-                .map { accData: AccData ->
-                    val samples: MutableList<PolarAccelerometerDataSample> = ArrayList()
-                    for ((x, y, z) in accData.accSamples) {
-                        samples.add(PolarAccelerometerDataSample(x, y, z))
-                    }
-                    PolarAccelerometerData(samples, accData.timeStamp)
-                }
+                .map { accData: AccData -> mapPmdClientAccDataToPolarAcc(accData) }
         })
     }
 
     override fun startOhrStreaming(identifier: String, sensorSetting: PolarSensorSetting): Flowable<PolarOhrData> {
         return startStreaming(identifier, PmdMeasurementType.PPG, sensorSetting, observer = { client: BlePMDClient ->
             client.monitorPpgNotifications(true)
-                .map { ppgData: PpgData -> PolarDataUtils.mapPMDClientOhrDataToPolarOhr(ppgData) }
+                .map { ppgData: PpgData -> mapPMDClientOhrDataToPolarOhr(ppgData) }
         })
     }
 
     override fun startOhrPPIStreaming(identifier: String): Flowable<PolarOhrPPIData> {
-        return startStreaming(identifier, PmdMeasurementType.PPI, PolarSensorSetting(HashMap()), observer = { client: BlePMDClient ->
-            client.monitorPpiNotifications(true).map { ppiData: PpiData ->
-                val samples: MutableList<PolarOhrPPISample> = ArrayList()
-                for ((hr, ppInMs, ppErrorEstimate, blockerBit, skinContactStatus, skinContactSupported) in ppiData.ppSamples) {
-                    samples.add(
-                        PolarOhrPPISample(ppInMs, ppErrorEstimate, hr, blockerBit != 0, skinContactStatus != 0, skinContactSupported != 0)
-                    )
+        return startStreaming(identifier, PmdMeasurementType.PPI, PolarSensorSetting(emptyMap())) { client: BlePMDClient ->
+            client.monitorPpiNotifications(true)
+                .map { ppiData: PpiData ->
+                    mapPMDClientPpiDataToPolarOhrPpiData(ppiData)
                 }
-                PolarOhrPPIData(ppiData.timeStamp, samples)
-            }
-        })
+        }
     }
 
     override fun startMagnetometerStreaming(identifier: String, sensorSetting: PolarSensorSetting): Flowable<PolarMagnetometerData> {
         return startStreaming(identifier, PmdMeasurementType.MAGNETOMETER, sensorSetting, observer = { client: BlePMDClient ->
             client.monitorMagnetometerNotifications(true)
-                .map { mgn: MagData ->
-                    val samples: MutableList<PolarMagnetometerDataSample> = ArrayList()
-                    for ((x, y, z) in mgn.magSamples) {
-                        samples.add(PolarMagnetometerDataSample(x, y, z))
-                    }
-                    PolarMagnetometerData(samples, mgn.timeStamp)
+                .map { mag: MagData ->
+                    mapPmdClientMagDataToPolarMagnetometer(mag)
                 }
         })
     }
@@ -705,11 +713,7 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
         return startStreaming(identifier, PmdMeasurementType.GYRO, sensorSetting, observer = { client: BlePMDClient ->
             client.monitorGyroNotifications(true)
                 .map { gyro: GyrData ->
-                    val samples: MutableList<PolarGyroDataSample> = ArrayList()
-                    for ((x, y, z) in gyro.gyrSamples) {
-                        samples.add(PolarGyroDataSample(x, y, z))
-                    }
-                    PolarGyroData(samples, gyro.timeStamp)
+                    mapPmdClientGyroDataToPolarGyro(gyro)
                 }
         })
     }
@@ -807,30 +811,25 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
     @Throws(Throwable::class)
     fun sessionPmdClientReady(identifier: String): BleDeviceSession {
         val session = sessionServiceReady(identifier, BlePMDClient.PMD_SERVICE)
-        val client = session.fetchClient(BlePMDClient.PMD_SERVICE) as BlePMDClient?
-        if (client != null) {
-            val pair = client.getNotificationAtomicInteger(BlePMDClient.PMD_CP)
-            val pairData = client.getNotificationAtomicInteger(BlePMDClient.PMD_DATA)
-            if (pair != null && pairData != null && pair.get() == BleGattBase.ATT_SUCCESS && pairData.get() == BleGattBase.ATT_SUCCESS) {
-                return session
-            }
-            throw PolarNotificationNotEnabled()
+        val client = session.fetchClient(BlePMDClient.PMD_SERVICE) as BlePMDClient? ?: throw PolarServiceNotAvailable()
+        val pair = client.getNotificationAtomicInteger(BlePMDClient.PMD_CP)
+        val pairData = client.getNotificationAtomicInteger(BlePMDClient.PMD_DATA)
+        if (pair != null && pairData != null && pair.get() == BleGattBase.ATT_SUCCESS && pairData.get() == BleGattBase.ATT_SUCCESS) {
+            return session
         }
-        throw PolarServiceNotAvailable()
+        throw PolarNotificationNotEnabled()
     }
 
     @Throws(Throwable::class)
     protected fun sessionPsFtpClientReady(identifier: String): BleDeviceSession {
         val session = sessionServiceReady(identifier, BlePsFtpUtils.RFC77_PFTP_SERVICE)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-        if (client != null) {
-            val pair = client.getNotificationAtomicInteger(BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC)
-            if (pair != null && pair.get() == BleGattBase.ATT_SUCCESS) {
-                return session
-            }
-            throw PolarNotificationNotEnabled()
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: throw PolarServiceNotAvailable()
+        val pair = client.getNotificationAtomicInteger(BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC)
+        if (pair != null && pair.get() == BleGattBase.ATT_SUCCESS) {
+            return session
         }
-        throw PolarServiceNotAvailable()
+        throw PolarNotificationNotEnabled()
+
     }
 
     private fun stopPmdStreaming(session: BleDeviceSession, client: BlePMDClient, type: PmdMeasurementType) {
@@ -846,7 +845,7 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
         }
     }
 
-    private val deviceStateMonitorObserver = Consumer { deviceSessionStatePair: Pair<BleDeviceSession?, DeviceSessionState?> ->
+    private val deviceStateMonitorObserver = Consumer { deviceSessionStatePair: androidx.core.util.Pair<BleDeviceSession?, DeviceSessionState?> ->
         val session = deviceSessionStatePair.first
         val sessionState = deviceSessionStatePair.second
 
@@ -942,28 +941,28 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
                                     .andThen(
                                         blePMDClient.readFeature(true)
                                             .observeOn(AndroidSchedulers.mainThread())
-                                            .doOnSuccess { pmdFeature: PmdFeature ->
+                                            .doOnSuccess { pmdFeature: Set<PmdMeasurementType> ->
                                                 val deviceStreamingFeatures: MutableSet<DeviceStreamingFeature> = HashSet()
-                                                if (pmdFeature.ecgSupported) {
+                                                if (pmdFeature.contains(PmdMeasurementType.ECG)) {
                                                     deviceStreamingFeatures.add(DeviceStreamingFeature.ECG)
                                                 }
-                                                if (pmdFeature.accSupported) {
+                                                if (pmdFeature.contains(PmdMeasurementType.ACC)) {
                                                     deviceStreamingFeatures.add(DeviceStreamingFeature.ACC)
                                                 }
-                                                if (pmdFeature.ppgSupported) {
+                                                if (pmdFeature.contains(PmdMeasurementType.PPG)) {
                                                     deviceStreamingFeatures.add(DeviceStreamingFeature.PPG)
                                                 }
-                                                if (pmdFeature.ppiSupported) {
+                                                if (pmdFeature.contains(PmdMeasurementType.PPI)) {
                                                     deviceStreamingFeatures.add(DeviceStreamingFeature.PPI)
                                                 }
-                                                if (pmdFeature.gyroSupported) {
+                                                if (pmdFeature.contains(PmdMeasurementType.GYRO)) {
                                                     deviceStreamingFeatures.add(DeviceStreamingFeature.GYRO)
                                                 }
-                                                if (pmdFeature.magnetometerSupported) {
+                                                if (pmdFeature.contains(PmdMeasurementType.MAGNETOMETER)) {
                                                     deviceStreamingFeatures.add(DeviceStreamingFeature.MAGNETOMETER)
                                                 }
                                                 callback?.streamingFeaturesReady(deviceId, deviceStreamingFeatures)
-                                                if (pmdFeature.sdkModeSupported) {
+                                                if (pmdFeature.contains(PmdMeasurementType.SDK_MODE)) {
                                                     callback?.sdkModeFeatureAvailable(deviceId)
                                                 }
                                             })
@@ -1029,32 +1028,31 @@ class BDBleApiImpl private constructor(context: Context, features: Int) : PolarB
         fun include(entry: String): Boolean
     }
 
-    private fun fetchRecursively(client: BlePsFtpClient, path: String, condition: FetchRecursiveCondition): Flowable<String> {
+    private fun fetchRecursively(client: BlePsFtpClient, path: String, condition: FetchRecursiveCondition): Flowable<Pair<String, Long>> {
         val builder = PftpRequest.PbPFtpOperation.newBuilder()
         builder.command = PftpRequest.PbPFtpOperation.Command.GET
         builder.path = path
         return client.request(builder.build().toByteArray())
             .toFlowable()
-            .flatMap(Function<ByteArrayOutputStream, Publisher<String>> { byteArrayOutputStream: ByteArrayOutputStream ->
+            .flatMap(Function<ByteArrayOutputStream, Publisher<Pair<String, Long>>> { byteArrayOutputStream: ByteArrayOutputStream ->
                 val dir = PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray())
-                val entries: MutableSet<String> = HashSet()
-                var i = 0
-                while (i < dir.entriesCount) {
-                    val entry = dir.getEntries(i)
+                val entries: MutableMap<String, Long> = mutableMapOf()
+
+                for (entry in dir.entriesList) {
                     if (condition.include(entry.name)) {
-                        BleUtils.validate(entries.add(path + entry.name), "duplicate entry")
+                        entries[path + entry.name] = entry.size
                     }
-                    ++i
                 }
+
                 if (entries.isNotEmpty()) {
-                    return@Function Flowable.fromIterable(entries)
-                        .flatMap(Function<String, Publisher<String>> { s: String ->
-                            if (s.endsWith("/")) {
-                                return@Function fetchRecursively(client, s, condition)
+                    return@Function Flowable.fromIterable(entries.toList())
+                        .flatMap { entry ->
+                            if (entry.first.endsWith("/")) {
+                                return@flatMap fetchRecursively(client, entry.first, condition)
                             } else {
-                                return@Function Flowable.just(s)
+                                return@flatMap Flowable.just(entry)
                             }
-                        })
+                        }
                 }
                 Flowable.empty()
             })

@@ -16,7 +16,9 @@ message PbPFtpOperation {
 }
 
 enum PbPFtpQuery {
+  SET_SYSTEM_TIME = 1;
   SET_LOCAL_TIME = 3;
+  GET_LOCAL_TIME = 4;
   REQUEST_START_RECORDING = 14;
   REQUEST_STOP_RECORDING = 15;
   REQUEST_RECORDING_STATUS = 16;
@@ -32,4 +34,13 @@ message PbPFtpSetLocalTimeParams {
   required PbDate date = 1;
   required PbTime time = 2;
   optional int32 tz_offset = 3 [(type) = TIME_ZONE_OFFSET];
+}
+
+message PbPFtpSetSystemTimeParams {
+  // UTC date to be set.
+  required PbDate date = 1;
+  // UTC time to be set.
+  required PbTime time = 2;
+  // True, if date and time are from trusted source.
+  required bool trusted = 3;
 }

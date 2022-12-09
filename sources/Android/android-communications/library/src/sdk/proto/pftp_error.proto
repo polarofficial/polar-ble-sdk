@@ -8,32 +8,32 @@ import "types.proto";
  * Error codes.
  */
 enum PbPFtpError {
-    /* Succeeding or no error */
-    OPERATION_SUCCEEDED             = 0;
-    REBOOTING                       = 1;
-    TRY_AGAIN                       = 2;
+  /* Succeeding or no error */
+  OPERATION_SUCCEEDED = 0;
+  REBOOTING = 1;
+  TRY_AGAIN = 2;
 
-    /* Host errors */
-    UNIDENTIFIED_HOST_ERROR         = 100;
-    INVALID_COMMAND                 = 101;
-    INVALID_PARAMETER               = 102;
-    NO_SUCH_FILE_OR_DIRECTORY       = 103;
-    DIRECTORY_EXISTS                = 104;
-    FILE_EXISTS                     = 105;
-    OPERATION_NOT_PERMITTED         = 106;
-    NO_SUCH_USER                    = 107;
-    TIMEOUT                         = 108;
+  /* Host errors */
+  UNIDENTIFIED_HOST_ERROR = 100;
+  INVALID_COMMAND = 101;
+  INVALID_PARAMETER = 102;
+  NO_SUCH_FILE_OR_DIRECTORY = 103;
+  DIRECTORY_EXISTS = 104;
+  FILE_EXISTS = 105;
+  OPERATION_NOT_PERMITTED = 106;
+  NO_SUCH_USER = 107;
+  TIMEOUT = 108;
 
-    /* Device errors */
-    UNIDENTIFIED_DEVICE_ERROR       = 200;
-    NOT_IMPLEMENTED                 = 201;
-    SYSTEM_BUSY                     = 202;
-    INVALID_CONTENT                 = 203;
-    CHECKSUM_FAILURE                = 204;
-    DISK_FULL                       = 205;
-    PREREQUISITE_NOT_MET            = 206;
-    INSUFFICIENT_BUFFER             = 207;
-    WAIT_FOR_IDLING                 = 208;
-    BATTERY_TOO_LOW                 = 209;
-    /* 300-399 reserved for communication interface specific errors */
+  /* Device errors */
+  UNIDENTIFIED_DEVICE_ERROR = 200;
+  NOT_IMPLEMENTED = 201;
+  SYSTEM_BUSY = 202;
+  INVALID_CONTENT = 203;
+  CHECKSUM_FAILURE = 204;
+  DISK_FULL = 205;
+  PREREQUISITE_NOT_MET = 206;
+  INSUFFICIENT_BUFFER = 207;
+  WAIT_FOR_IDLING = 208;
+  BATTERY_TOO_LOW = 209;
+  /* 300-399 reserved for communication interface specific errors */
 };

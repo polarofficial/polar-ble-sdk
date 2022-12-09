@@ -1,14 +1,12 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd
 
-import java.io.ByteArrayOutputStream
-
 class PmdControlPointResponse(data: ByteArray) {
     val responseCode: Byte = data[0]
     val opCode: PmdControlPointCommand = PmdControlPointCommand.values()[data[1].toInt()]
     val measurementType: Byte = data[2]
     val status: PmdControlPointResponseCode = PmdControlPointResponseCode.values()[data[3].toInt()]
     val more: Boolean
-    val parameters = ByteArrayOutputStream()
+    var parameters: ByteArray
 
     enum class PmdControlPointResponseCode(val numVal: Int) {
         SUCCESS(0),
@@ -28,13 +26,25 @@ class PmdControlPointResponse(data: ByteArray) {
     }
 
     init {
+        var receivedParams = byteArrayOf()
         if (status == PmdControlPointResponseCode.SUCCESS) {
             more = data.size > 4 && data[4] != 0.toByte()
             if (data.size > 5) {
-                parameters.write(data, 5, data.size - 5)
+                receivedParams = data.copyOfRange(5, data.size)
             }
         } else {
             more = false
         }
+        parameters = receivedParams
+    }
+
+    override fun toString(): String {
+        return "\n" +
+                "responseCode: ${"%02x".format(responseCode)}\n" +
+                "opCode: $opCode\n" +
+                "measurementType: $measurementType\n" +
+                "status: $status\n" +
+                "more: $more\n" +
+                "parameters: ${parameters.joinToString(separator = " ") { eachByte -> "%02x".format(eachByte) }}"
     }
 }
