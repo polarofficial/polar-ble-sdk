@@ -285,7 +285,7 @@ If you use [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) 
 use_frameworks!
 
 target 'YOUR_TARGET_NAME' do
-    pod 'PolarBleSdk', '~> 3.2'
+    pod 'PolarBleSdk', '~> 3.3'
 
 end
 ```
@@ -295,7 +295,7 @@ Add PolarBleSdk as a dependency to your `Package.swift` manifest
 
 ```swift
 dependencies: [
-    .package(name: "PolarBleSdk", url: "https://github.com/polarofficial/polar-ble-sdk.git", .upToNextMajor(from: "3.2.0"))
+    .package(name: "PolarBleSdk", url: "https://github.com/polarofficial/polar-ble-sdk.git", .upToNextMajor(from: "3.3.0"))
 ]
 ```
 or alternatively use [XCode package manager](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) to add Swift package to your project. 
@@ -304,7 +304,7 @@ or alternatively use [XCode package manager](https://developer.apple.com/documen
 If you use [Cathage](https://github.com/Carthage/Carthage) to manage your dependencies, add PolarBleSdk to your `Cartfile`
 
 ```
-github "polarofficial/polar-ble-sdk" ~> 3.2
+github "polarofficial/polar-ble-sdk" ~> 3.3
 ```
 
 ```bash
