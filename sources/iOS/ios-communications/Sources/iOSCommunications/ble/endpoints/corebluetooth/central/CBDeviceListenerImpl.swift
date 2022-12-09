@@ -226,7 +226,7 @@ public class CBDeviceListenerImpl: NSObject, CBCentralManagerDelegate {
     }
     
     public func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?){
-        BleLogger.trace("didFailToConnect: ", peripheral.description)
+        BleLogger.trace("didFailToConnect: ", peripheral.description, "error: ", error?.localizedDescription ?? "error reason unknown")
         queue.async(execute: {
             if let device = self.session(peripheral) {
                 self.handleDisconnected(device)

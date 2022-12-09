@@ -31,3 +31,7 @@ target 'iOSCommunicationsTests' do
   pod 'RxTest', '~> 6.5.0'
 end
 
+target 'PolarBleSdkTests' do
+  pod 'RxBlocking', '~> 6.5.0'
+  pod 'RxTest', '~> 6.5.0'
+end

@@ -3,20 +3,19 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		09325C7F9D6CA0A9A220F202 /* Pods_PolarBleSdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C7FC1E17586F4C27CB1D5B8E /* Pods_PolarBleSdk.framework */; };
 		0DFAF2EA59DAEA10F18F5BE0 /* Pods_PolarBleSdkWatchOs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55E3AB18FEB8DCE1A28CC905 /* Pods_PolarBleSdkWatchOs.framework */; };
+		6A3A15A2CFB16518D832804B /* Pods_PolarBleSdkTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04A6C932098F2F3060E95109 /* Pods_PolarBleSdkTests.framework */; };
 		6C0C54FE1CFEB3C900FF23E9 /* TimeUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C54FD1CFEB3C900FF23E9 /* TimeUtility.swift */; };
-		6C1079231D6D6EA000931948 /* iOSCommunicationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1079221D6D6EA000931948 /* iOSCommunicationsTests.swift */; };
 		6C10792D1D6D9C4800931948 /* iOSCommunications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C34DE881CAA3F240083EB1F /* iOSCommunications.framework */; };
 		6C2408F8220D9581001C1A84 /* CBScanningProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */; };
 		6C2409422216A6E3001C1A84 /* CBScanningProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */; };
 		6C2409432216A6E3001C1A84 /* BlePsFtpUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD381CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift */; };
 		6C2409442216A6E3001C1A84 /* BlePsFtpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD391CE5BCEA00A4C6A8 /* BlePsFtpClient.swift */; };
-		6C2409452216A6E3001C1A84 /* BlePmdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C98104421622D52002820A2 /* BlePmdClient.swift */; };
 		6C2409462216A6F3001C1A84 /* AtomicType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9810392154AEDD002820A2 /* AtomicType.swift */; };
 		6C32C6D7220AD3CA006615C3 /* CBScanningProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */; };
 		6C39E8DA209B07BC001F7E44 /* CBDeviceListenerImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44A91CB291A40006220D /* CBDeviceListenerImpl.swift */; };
@@ -43,7 +42,6 @@
 		6C39E8F8209B07BC001F7E44 /* TimeUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C54FD1CFEB3C900FF23E9 /* TimeUtility.swift */; };
 		6C39E8FA209B07BC001F7E44 /* RxObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7709F72036D15F00F3D51D /* RxObserver.swift */; };
 		6C39E8FB209B07BC001F7E44 /* RxUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB9DB982087188E00505269 /* RxUtils.swift */; };
-		6C48395D21C79C1C00747D78 /* BlePmdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C98104421622D52002820A2 /* BlePmdClient.swift */; };
 		6C4A6A291CC0BA0400E3AD73 /* BleAdvertisementContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A251CC0BA0400E3AD73 /* BleAdvertisementContent.swift */; };
 		6C4A6A2A1CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A261CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift */; };
 		6C4A6A2B1CC0BA0400E3AD73 /* BleRssiFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A271CC0BA0400E3AD73 /* BleRssiFilter.swift */; };
@@ -95,7 +93,6 @@
 		6C98103A2154AEDE002820A2 /* AtomicType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9810392154AEDD002820A2 /* AtomicType.swift */; };
 		6C9810402158A943002820A2 /* RecursiveCondition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C98103F2158A943002820A2 /* RecursiveCondition.swift */; };
 		6C981041215B7136002820A2 /* AtomicType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9810392154AEDD002820A2 /* AtomicType.swift */; };
-		6C98104521622D52002820A2 /* BlePmdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C98104421622D52002820A2 /* BlePmdClient.swift */; };
 		6CB902771D9B7F65001F1C9C /* BleH7SettingsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB902761D9B7F65001F1C9C /* BleH7SettingsClient.swift */; };
 		6CB9DB992087188E00505269 /* RxUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB9DB982087188E00505269 /* RxUtils.swift */; };
 		6CCFE4001E5D76C100FAA131 /* BlePsdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */; };
@@ -109,6 +106,10 @@
 		A543BC17282261E900852672 /* BlePolarHrAdvertisementTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A543BC16282261E900852672 /* BlePolarHrAdvertisementTest.swift */; };
 		A543BC192825236000852672 /* BleAdvertisementContentTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A543BC182825236000852672 /* BleAdvertisementContentTest.swift */; };
 		A5488C4C264939A000B2DB5C /* BleHrClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5488C4B264939A000B2DB5C /* BleHrClientTest.swift */; };
+		A5743683291A7DB400E901A4 /* PolarTimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5743682291A7DB400E901A4 /* PolarTimeUtils.swift */; };
+		A5743684291A7DB400E901A4 /* PolarTimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5743682291A7DB400E901A4 /* PolarTimeUtils.swift */; };
+		A5743690291B81F500E901A4 /* PolarBleSdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C770B6C206B779900F3D51D /* PolarBleSdk.framework */; platformFilter = ios; };
+		A5743696291B824300E901A4 /* PolarTimeUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5743686291A825F00E901A4 /* PolarTimeUtilsTests.swift */; };
 		A57728A027CE860600855884 /* PolarBleApiImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577288D27CE860600855884 /* PolarBleApiImpl.swift */; };
 		A57728A127CE860600855884 /* PolarBleApiImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577288D27CE860600855884 /* PolarBleApiImpl.swift */; };
 		A57728A227CE860600855884 /* pftp_error.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577288F27CE860600855884 /* pftp_error.pb.swift */; };
@@ -139,6 +140,51 @@
 		A57728BB27CE860600855884 /* PolarBleApiDefaultImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289D27CE860600855884 /* PolarBleApiDefaultImpl.swift */; };
 		A57728BC27CE860600855884 /* PolarErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289F27CE860600855884 /* PolarErrors.swift */; };
 		A57728BD27CE860600855884 /* PolarErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289F27CE860600855884 /* PolarErrors.swift */; };
+		A57D050A292254E2002824D9 /* BlePmdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0509292254E2002824D9 /* BlePmdClient.swift */; };
+		A57D050B292254E2002824D9 /* BlePmdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0509292254E2002824D9 /* BlePmdClient.swift */; };
+		A57D050C292254E2002824D9 /* BlePmdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0509292254E2002824D9 /* BlePmdClient.swift */; };
+		A57D050E29225779002824D9 /* PmdSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D050D29225779002824D9 /* PmdSetting.swift */; };
+		A57D050F29225779002824D9 /* PmdSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D050D29225779002824D9 /* PmdSetting.swift */; };
+		A57D051029225779002824D9 /* PmdSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D050D29225779002824D9 /* PmdSetting.swift */; };
+		A57D0512292258D5002824D9 /* PmdMeasurementType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0511292258D5002824D9 /* PmdMeasurementType.swift */; };
+		A57D0513292258D5002824D9 /* PmdMeasurementType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0511292258D5002824D9 /* PmdMeasurementType.swift */; };
+		A57D0514292258D5002824D9 /* PmdMeasurementType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0511292258D5002824D9 /* PmdMeasurementType.swift */; };
+		A57D051629225991002824D9 /* PmdDataFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D051529225991002824D9 /* PmdDataFrame.swift */; };
+		A57D051729225991002824D9 /* PmdDataFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D051529225991002824D9 /* PmdDataFrame.swift */; };
+		A57D051829225991002824D9 /* PmdDataFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D051529225991002824D9 /* PmdDataFrame.swift */; };
+		A57D051D2922658F002824D9 /* GyrData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D051C2922658F002824D9 /* GyrData.swift */; };
+		A57D051E2922658F002824D9 /* GyrData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D051C2922658F002824D9 /* GyrData.swift */; };
+		A57D051F29226590002824D9 /* GyrData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D051C2922658F002824D9 /* GyrData.swift */; };
+		A57D05212924C800002824D9 /* PmdTimeStampUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05202924C800002824D9 /* PmdTimeStampUtils.swift */; };
+		A57D05222924C800002824D9 /* PmdTimeStampUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05202924C800002824D9 /* PmdTimeStampUtils.swift */; };
+		A57D05232924C800002824D9 /* PmdTimeStampUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05202924C800002824D9 /* PmdTimeStampUtils.swift */; };
+		A57D0525292F316B002824D9 /* GyrDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0524292F316B002824D9 /* GyrDataTest.swift */; };
+		A57D0527292F360F002824D9 /* PmdTimeStampUtilsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0526292F360F002824D9 /* PmdTimeStampUtilsTest.swift */; };
+		A57D0529292F60E3002824D9 /* AccData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0528292F60E3002824D9 /* AccData.swift */; };
+		A57D052A292F60E3002824D9 /* AccData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0528292F60E3002824D9 /* AccData.swift */; };
+		A57D052B292F60E3002824D9 /* AccData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0528292F60E3002824D9 /* AccData.swift */; };
+		A57D052D292F72A5002824D9 /* AccDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D052C292F72A5002824D9 /* AccDataTest.swift */; };
+		A57D052F29308AE6002824D9 /* TypeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D052E29308AE6002824D9 /* TypeUtils.swift */; };
+		A57D053029308AE6002824D9 /* TypeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D052E29308AE6002824D9 /* TypeUtils.swift */; };
+		A57D053129308AE6002824D9 /* TypeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D052E29308AE6002824D9 /* TypeUtils.swift */; };
+		A57D053329308BDF002824D9 /* TypeUtilsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D053229308BDF002824D9 /* TypeUtilsTest.swift */; };
+		A57D053529309329002824D9 /* MagData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D053429309329002824D9 /* MagData.swift */; };
+		A57D05362930932A002824D9 /* MagData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D053429309329002824D9 /* MagData.swift */; };
+		A57D05372930932A002824D9 /* MagData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D053429309329002824D9 /* MagData.swift */; };
+		A57D0539293098C1002824D9 /* MagDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0538293098C1002824D9 /* MagDataTest.swift */; };
+		A57D053B29309B71002824D9 /* PpiData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D053A29309B71002824D9 /* PpiData.swift */; };
+		A57D053C29309B71002824D9 /* PpiData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D053A29309B71002824D9 /* PpiData.swift */; };
+		A57D053D29309B71002824D9 /* PpiData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D053A29309B71002824D9 /* PpiData.swift */; };
+		A57D053F29309FB4002824D9 /* PpiDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D053E29309FB4002824D9 /* PpiDataTest.swift */; };
+		A57D05412930A8CA002824D9 /* EcgData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05402930A8CA002824D9 /* EcgData.swift */; };
+		A57D05422930A8CA002824D9 /* EcgData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05402930A8CA002824D9 /* EcgData.swift */; };
+		A57D05432930A8CA002824D9 /* EcgData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05402930A8CA002824D9 /* EcgData.swift */; };
+		A57D05452930B01D002824D9 /* EcgDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05442930B01D002824D9 /* EcgDataTest.swift */; };
+		A57D05472930B217002824D9 /* PpgData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05462930B217002824D9 /* PpgData.swift */; };
+		A57D05482930B217002824D9 /* PpgData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05462930B217002824D9 /* PpgData.swift */; };
+		A57D05492930B217002824D9 /* PpgData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05462930B217002824D9 /* PpgData.swift */; };
+		A57D054B2930C84B002824D9 /* PpgDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D054A2930C84B002824D9 /* PpgDataTest.swift */; };
+		A57D054D2934B745002824D9 /* PmdSettingTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D054C2934B745002824D9 /* PmdSettingTest.swift */; };
 		A580139725B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
 		A580139825B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
 		A580139925B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
@@ -159,6 +205,13 @@
 			remoteGlobalIDString = 6C34DE871CAA3F240083EB1F;
 			remoteInfo = iOSCommunications;
 		};
+		A5743691291B81F500E901A4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6C34DE7F1CAA3F240083EB1F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6C770B6B206B779900F3D51D;
+			remoteInfo = PolarBleSdk;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -175,6 +228,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		04A6C932098F2F3060E95109 /* Pods_PolarBleSdkTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PolarBleSdkTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0589FCFBA59BE6EAC026B618 /* Pods-iOSCommunicationsTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSCommunicationsTests.release.xcconfig"; path = "Target Support Files/Pods-iOSCommunicationsTests/Pods-iOSCommunicationsTests.release.xcconfig"; sourceTree = "<group>"; };
 		22D143190B2E87D1B9513370 /* Pods_iOSCommunications.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iOSCommunications.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		31B96557CEC8A05DA8C92B82 /* Pods-PolarBleSdk.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdk.debug.xcconfig"; path = "Target Support Files/Pods-PolarBleSdk/Pods-PolarBleSdk.debug.xcconfig"; sourceTree = "<group>"; };
@@ -184,7 +238,6 @@
 		55E3AB18FEB8DCE1A28CC905 /* Pods_PolarBleSdkWatchOs.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PolarBleSdkWatchOs.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C0C54FD1CFEB3C900FF23E9 /* TimeUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TimeUtility.swift; path = ble/common/TimeUtility.swift; sourceTree = "<group>"; };
 		6C1079201D6D6EA000931948 /* iOSCommunicationsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iOSCommunicationsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		6C1079221D6D6EA000931948 /* iOSCommunicationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSCommunicationsTests.swift; sourceTree = "<group>"; };
 		6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CBScanningProtocol.swift; path = ble/endpoints/corebluetooth/central/CBScanningProtocol.swift; sourceTree = "<group>"; };
 		6C34DE881CAA3F240083EB1F /* iOSCommunications.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = iOSCommunications.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C39E8C3209B0754001F7E44 /* PolarBleSdkWatchOs.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PolarBleSdkWatchOs.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -215,18 +268,21 @@
 		6C9209061D93B2DC0035B928 /* CBScanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CBScanner.swift; path = ble/endpoints/corebluetooth/central/CBScanner.swift; sourceTree = "<group>"; };
 		6C9810392154AEDD002820A2 /* AtomicType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AtomicType.swift; path = ble/common/AtomicType.swift; sourceTree = "<group>"; };
 		6C98103F2158A943002820A2 /* RecursiveCondition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecursiveCondition.swift; path = ble/common/RecursiveCondition.swift; sourceTree = "<group>"; };
-		6C98104421622D52002820A2 /* BlePmdClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BlePmdClient.swift; path = ble/api/model/gatt/client/BlePmdClient.swift; sourceTree = "<group>"; };
 		6CB902761D9B7F65001F1C9C /* BleH7SettingsClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleH7SettingsClient.swift; path = ble/api/model/gatt/client/BleH7SettingsClient.swift; sourceTree = "<group>"; };
 		6CB9DB982087188E00505269 /* RxUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RxUtils.swift; path = ble/common/RxUtils.swift; sourceTree = "<group>"; };
 		6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePsdClient.swift; path = ble/api/model/gatt/client/BlePsdClient.swift; sourceTree = "<group>"; };
 		6CD12AC9201F126500F3A417 /* BleGattException.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleGattException.swift; path = ble/api/model/gatt/exceptions/BleGattException.swift; sourceTree = "<group>"; };
 		8C2C93D3BADEED88F88E65BD /* Pods-PolarBleSdkWatchOs.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdkWatchOs.debug.xcconfig"; path = "Target Support Files/Pods-PolarBleSdkWatchOs/Pods-PolarBleSdkWatchOs.debug.xcconfig"; sourceTree = "<group>"; };
+		9252CA4DD4A74A0CD806CB5A /* Pods-PolarBleSdkTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdkTests.release.xcconfig"; path = "Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests.release.xcconfig"; sourceTree = "<group>"; };
 		A5346A3625F21858006752CA /* MockGattServiceTransmitterImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockGattServiceTransmitterImpl.swift; sourceTree = "<group>"; };
 		A5346A4025F21866006752CA /* BlePsFtpClientTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlePsFtpClientTest.swift; sourceTree = "<group>"; };
 		A5346A4A25F21877006752CA /* BlePsFtpUtilityTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlePsFtpUtilityTest.swift; sourceTree = "<group>"; };
 		A543BC16282261E900852672 /* BlePolarHrAdvertisementTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlePolarHrAdvertisementTest.swift; sourceTree = "<group>"; };
 		A543BC182825236000852672 /* BleAdvertisementContentTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleAdvertisementContentTest.swift; sourceTree = "<group>"; };
 		A5488C4B264939A000B2DB5C /* BleHrClientTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleHrClientTest.swift; sourceTree = "<group>"; };
+		A5743682291A7DB400E901A4 /* PolarTimeUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarTimeUtils.swift; sourceTree = "<group>"; };
+		A5743686291A825F00E901A4 /* PolarTimeUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarTimeUtilsTests.swift; sourceTree = "<group>"; };
+		A574368C291B81F500E901A4 /* PolarBleSdkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PolarBleSdkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A577288D27CE860600855884 /* PolarBleApiImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarBleApiImpl.swift; sourceTree = "<group>"; };
 		A577288F27CE860600855884 /* pftp_error.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = pftp_error.pb.swift; sourceTree = "<group>"; };
 		A577289027CE860600855884 /* pftp_notification.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = pftp_notification.pb.swift; sourceTree = "<group>"; };
@@ -242,6 +298,27 @@
 		A577289C27CE860600855884 /* PolarSensorSetting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarSensorSetting.swift; sourceTree = "<group>"; };
 		A577289D27CE860600855884 /* PolarBleApiDefaultImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarBleApiDefaultImpl.swift; sourceTree = "<group>"; };
 		A577289F27CE860600855884 /* PolarErrors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarErrors.swift; sourceTree = "<group>"; };
+		A57D0509292254E2002824D9 /* BlePmdClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlePmdClient.swift; sourceTree = "<group>"; };
+		A57D050D29225779002824D9 /* PmdSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdSetting.swift; sourceTree = "<group>"; };
+		A57D0511292258D5002824D9 /* PmdMeasurementType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdMeasurementType.swift; sourceTree = "<group>"; };
+		A57D051529225991002824D9 /* PmdDataFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdDataFrame.swift; sourceTree = "<group>"; };
+		A57D051C2922658F002824D9 /* GyrData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GyrData.swift; sourceTree = "<group>"; };
+		A57D05202924C800002824D9 /* PmdTimeStampUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdTimeStampUtils.swift; sourceTree = "<group>"; };
+		A57D0524292F316B002824D9 /* GyrDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GyrDataTest.swift; sourceTree = "<group>"; };
+		A57D0526292F360F002824D9 /* PmdTimeStampUtilsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdTimeStampUtilsTest.swift; sourceTree = "<group>"; };
+		A57D0528292F60E3002824D9 /* AccData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccData.swift; sourceTree = "<group>"; };
+		A57D052C292F72A5002824D9 /* AccDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccDataTest.swift; sourceTree = "<group>"; };
+		A57D052E29308AE6002824D9 /* TypeUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeUtils.swift; sourceTree = "<group>"; };
+		A57D053229308BDF002824D9 /* TypeUtilsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeUtilsTest.swift; sourceTree = "<group>"; };
+		A57D053429309329002824D9 /* MagData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagData.swift; sourceTree = "<group>"; };
+		A57D0538293098C1002824D9 /* MagDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagDataTest.swift; sourceTree = "<group>"; };
+		A57D053A29309B71002824D9 /* PpiData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PpiData.swift; sourceTree = "<group>"; };
+		A57D053E29309FB4002824D9 /* PpiDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PpiDataTest.swift; sourceTree = "<group>"; };
+		A57D05402930A8CA002824D9 /* EcgData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EcgData.swift; sourceTree = "<group>"; };
+		A57D05442930B01D002824D9 /* EcgDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EcgDataTest.swift; sourceTree = "<group>"; };
+		A57D05462930B217002824D9 /* PpgData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PpgData.swift; sourceTree = "<group>"; };
+		A57D054A2930C84B002824D9 /* PpgDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PpgDataTest.swift; sourceTree = "<group>"; };
+		A57D054C2934B745002824D9 /* PmdSettingTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdSettingTest.swift; sourceTree = "<group>"; };
 		A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePolarDeviceCapabilitiesUtility.swift; path = ble/api/model/polar/BlePolarDeviceCapabilitiesUtility.swift; sourceTree = "<group>"; };
 		A599EA9C2689AFE300414E26 /* PolarAdvDataUtilityTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarAdvDataUtilityTest.swift; sourceTree = "<group>"; };
 		A5A127DF273689E0007874B8 /* PolarAdvDataUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PolarAdvDataUtility.swift; path = ble/api/model/polar/PolarAdvDataUtility.swift; sourceTree = "<group>"; };
@@ -251,6 +328,7 @@
 		A5E75E94263BC9F700BEA32A /* BleGattClientBaseTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleGattClientBaseTest.swift; sourceTree = "<group>"; };
 		BDCE4324D5DED29DF72CBDF5 /* Pods-PolarBleSdkWatchOs.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdkWatchOs.release.xcconfig"; path = "Target Support Files/Pods-PolarBleSdkWatchOs/Pods-PolarBleSdkWatchOs.release.xcconfig"; sourceTree = "<group>"; };
 		C7FC1E17586F4C27CB1D5B8E /* Pods_PolarBleSdk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PolarBleSdk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E5EEC2FB74FCE3D16A4804D2 /* Pods-PolarBleSdkTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdkTests.debug.xcconfig"; path = "Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests.debug.xcconfig"; sourceTree = "<group>"; };
 		ED3B778C8226252A704091D8 /* Pods_iOSCommunicationsTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iOSCommunicationsTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEE0BC7670744DC53B583745 /* Pods-iOSCommunicationsTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSCommunicationsTests.debug.xcconfig"; path = "Target Support Files/Pods-iOSCommunicationsTests/Pods-iOSCommunicationsTests.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -289,6 +367,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A5743689291B81F500E901A4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A5743690291B81F500E901A4 /* PolarBleSdk.framework in Frameworks */,
+				6A3A15A2CFB16518D832804B /* Pods_PolarBleSdkTests.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -303,6 +390,8 @@
 				3D1EFF67BC3B83F370479087 /* Pods-iOSCommunications.release.xcconfig */,
 				FEE0BC7670744DC53B583745 /* Pods-iOSCommunicationsTests.debug.xcconfig */,
 				0589FCFBA59BE6EAC026B618 /* Pods-iOSCommunicationsTests.release.xcconfig */,
+				E5EEC2FB74FCE3D16A4804D2 /* Pods-PolarBleSdkTests.debug.xcconfig */,
+				9252CA4DD4A74A0CD806CB5A /* Pods-PolarBleSdkTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -310,6 +399,15 @@
 		6C1079211D6D6EA000931948 /* iOSCommunicationsTests */ = {
 			isa = PBXGroup;
 			children = (
+				A57D054C2934B745002824D9 /* PmdSettingTest.swift */,
+				A57D054A2930C84B002824D9 /* PpgDataTest.swift */,
+				A57D05442930B01D002824D9 /* EcgDataTest.swift */,
+				A57D053E29309FB4002824D9 /* PpiDataTest.swift */,
+				A57D0538293098C1002824D9 /* MagDataTest.swift */,
+				A57D053229308BDF002824D9 /* TypeUtilsTest.swift */,
+				A57D052C292F72A5002824D9 /* AccDataTest.swift */,
+				A57D0526292F360F002824D9 /* PmdTimeStampUtilsTest.swift */,
+				A57D0524292F316B002824D9 /* GyrDataTest.swift */,
 				A543BC182825236000852672 /* BleAdvertisementContentTest.swift */,
 				A543BC16282261E900852672 /* BlePolarHrAdvertisementTest.swift */,
 				A599EA9C2689AFE300414E26 /* PolarAdvDataUtilityTest.swift */,
@@ -319,7 +417,6 @@
 				A5346A4025F21866006752CA /* BlePsFtpClientTest.swift */,
 				A5346A3625F21858006752CA /* MockGattServiceTransmitterImpl.swift */,
 				A5AD08B625E67064002DA200 /* BleBasClientTest.swift */,
-				6C1079221D6D6EA000931948 /* iOSCommunicationsTests.swift */,
 			);
 			path = iOSCommunicationsTests;
 			sourceTree = "<group>";
@@ -342,6 +439,7 @@
 				6C1079201D6D6EA000931948 /* iOSCommunicationsTests.xctest */,
 				6C770B6C206B779900F3D51D /* PolarBleSdk.framework */,
 				6C39E8C3209B0754001F7E44 /* PolarBleSdkWatchOs.framework */,
+				A574368C291B81F500E901A4 /* PolarBleSdkTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -376,6 +474,7 @@
 				6C7709F72036D15F00F3D51D /* RxObserver.swift */,
 				6CB9DB982087188E00505269 /* RxUtils.swift */,
 				6C98103F2158A943002820A2 /* RecursiveCondition.swift */,
+				A57D052E29308AE6002824D9 /* TypeUtils.swift */,
 			);
 			name = common;
 			sourceTree = "<group>";
@@ -424,6 +523,7 @@
 		6C5A449A1CB291530006220D /* client */ = {
 			isa = PBXGroup;
 			children = (
+				A57D0508292254E2002824D9 /* pmd */,
 				6C8BCD351CE5BC8100A4C6A8 /* psftp */,
 				6C67C7FC1E169CCE00411498 /* BleBasClient.swift */,
 				6C67C7FD1E169CCE00411498 /* BleDisClient.swift */,
@@ -432,7 +532,6 @@
 				6CB902761D9B7F65001F1C9C /* BleH7SettingsClient.swift */,
 				6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */,
 				6C57A5B31F987B40002E50DB /* BleRscClient.swift */,
-				6C98104421622D52002820A2 /* BlePmdClient.swift */,
 			);
 			name = client;
 			sourceTree = "<group>";
@@ -502,6 +601,22 @@
 			name = exceptions;
 			sourceTree = "<group>";
 		};
+		A5743681291A7D7C00E901A4 /* utils */ = {
+			isa = PBXGroup;
+			children = (
+				A5743682291A7DB400E901A4 /* PolarTimeUtils.swift */,
+			);
+			path = utils;
+			sourceTree = "<group>";
+		};
+		A574368D291B81F500E901A4 /* PolarBleSdkTests */ = {
+			isa = PBXGroup;
+			children = (
+				A5743686291A825F00E901A4 /* PolarTimeUtilsTests.swift */,
+			);
+			path = PolarBleSdkTests;
+			sourceTree = "<group>";
+		};
 		A577288B27CE860600855884 /* sdk */ = {
 			isa = PBXGroup;
 			children = (
@@ -551,6 +666,7 @@
 		A577289B27CE860600855884 /* model */ = {
 			isa = PBXGroup;
 			children = (
+				A5743681291A7D7C00E901A4 /* utils */,
 				A577289C27CE860600855884 /* PolarSensorSetting.swift */,
 			);
 			path = model;
@@ -562,6 +678,33 @@
 				A577289F27CE860600855884 /* PolarErrors.swift */,
 			);
 			path = errors;
+			sourceTree = "<group>";
+		};
+		A57D0508292254E2002824D9 /* pmd */ = {
+			isa = PBXGroup;
+			children = (
+				A57D051B29226577002824D9 /* model */,
+				A57D0509292254E2002824D9 /* BlePmdClient.swift */,
+				A57D050D29225779002824D9 /* PmdSetting.swift */,
+				A57D0511292258D5002824D9 /* PmdMeasurementType.swift */,
+				A57D051529225991002824D9 /* PmdDataFrame.swift */,
+			);
+			name = pmd;
+			path = ble/api/model/gatt/client/pmd;
+			sourceTree = "<group>";
+		};
+		A57D051B29226577002824D9 /* model */ = {
+			isa = PBXGroup;
+			children = (
+				A57D051C2922658F002824D9 /* GyrData.swift */,
+				A57D05202924C800002824D9 /* PmdTimeStampUtils.swift */,
+				A57D0528292F60E3002824D9 /* AccData.swift */,
+				A57D053429309329002824D9 /* MagData.swift */,
+				A57D053A29309B71002824D9 /* PpiData.swift */,
+				A57D05402930A8CA002824D9 /* EcgData.swift */,
+				A57D05462930B217002824D9 /* PpgData.swift */,
+			);
+			path = model;
 			sourceTree = "<group>";
 		};
 		A5E46E7C27A7C33900F33C80 /* Sources */ = {
@@ -576,6 +719,7 @@
 		A5E46E7D27A7C34300F33C80 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				A574368D291B81F500E901A4 /* PolarBleSdkTests */,
 				6C1079211D6D6EA000931948 /* iOSCommunicationsTests */,
 			);
 			path = Tests;
@@ -588,6 +732,7 @@
 				55E3AB18FEB8DCE1A28CC905 /* Pods_PolarBleSdkWatchOs.framework */,
 				22D143190B2E87D1B9513370 /* Pods_iOSCommunications.framework */,
 				ED3B778C8226252A704091D8 /* Pods_iOSCommunicationsTests.framework */,
+				04A6C932098F2F3060E95109 /* Pods_PolarBleSdkTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -697,13 +842,33 @@
 			productReference = 6C770B6C206B779900F3D51D /* PolarBleSdk.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		A574368B291B81F500E901A4 /* PolarBleSdkTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A5743693291B81F500E901A4 /* Build configuration list for PBXNativeTarget "PolarBleSdkTests" */;
+			buildPhases = (
+				B9AD4D89F04868476FF56CE5 /* [CP] Check Pods Manifest.lock */,
+				A5743688291B81F500E901A4 /* Sources */,
+				A5743689291B81F500E901A4 /* Frameworks */,
+				A574368A291B81F500E901A4 /* Resources */,
+				FBF4A4BE90D4B78D954454CD /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A5743692291B81F500E901A4 /* PBXTargetDependency */,
+			);
+			name = PolarBleSdkTests;
+			productName = PolarBleSdkTests;
+			productReference = A574368C291B81F500E901A4 /* PolarBleSdkTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		6C34DE7F1CAA3F240083EB1F /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0730;
+				LastSwiftUpdateCheck = 1410;
 				LastUpgradeCheck = 1230;
 				ORGANIZATIONNAME = Polar;
 				TargetAttributes = {
@@ -724,6 +889,9 @@
 						LastSwiftMigration = 1000;
 						ProvisioningStyle = Automatic;
 					};
+					A574368B291B81F500E901A4 = {
+						CreatedOnToolsVersion = 14.1;
+					};
 				};
 			};
 			buildConfigurationList = 6C34DE821CAA3F240083EB1F /* Build configuration list for PBXProject "iOSCommunications" */;
@@ -743,6 +911,7 @@
 				6C10791F1D6D6EA000931948 /* iOSCommunicationsTests */,
 				6C770B6B206B779900F3D51D /* PolarBleSdk */,
 				6C39E8C2209B0754001F7E44 /* PolarBleSdkWatchOs */,
+				A574368B291B81F500E901A4 /* PolarBleSdkTests */,
 			);
 		};
 /* End PBXProject section */
@@ -770,6 +939,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		6C770B6A206B779900F3D51D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A574368A291B81F500E901A4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -867,6 +1043,28 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		B9AD4D89F04868476FF56CE5 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PolarBleSdkTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
 		E2B116CDADC5C23E037A7BCC /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -889,6 +1087,30 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		FBF4A4BE90D4B78D954454CD /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/RxSwift-iOS/RxSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/RxBlocking/RxBlocking.framework",
+				"${BUILT_PRODUCTS_DIR}/RxTest/RxTest.framework",
+				"${BUILT_PRODUCTS_DIR}/SwiftProtobuf-iOS/SwiftProtobuf.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxBlocking.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxTest.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftProtobuf.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -896,15 +1118,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6C1079231D6D6EA000931948 /* iOSCommunicationsTests.swift in Sources */,
+				A57D053329308BDF002824D9 /* TypeUtilsTest.swift in Sources */,
+				A57D0525292F316B002824D9 /* GyrDataTest.swift in Sources */,
+				A57D054B2930C84B002824D9 /* PpgDataTest.swift in Sources */,
+				A57D05452930B01D002824D9 /* EcgDataTest.swift in Sources */,
 				A543BC17282261E900852672 /* BlePolarHrAdvertisementTest.swift in Sources */,
 				A5488C4C264939A000B2DB5C /* BleHrClientTest.swift in Sources */,
 				A5346A3725F21858006752CA /* MockGattServiceTransmitterImpl.swift in Sources */,
+				A57D052D292F72A5002824D9 /* AccDataTest.swift in Sources */,
 				A5346A4B25F21877006752CA /* BlePsFtpUtilityTest.swift in Sources */,
+				A57D053F29309FB4002824D9 /* PpiDataTest.swift in Sources */,
 				A5346A4125F21866006752CA /* BlePsFtpClientTest.swift in Sources */,
 				A5AD08B725E67064002DA200 /* BleBasClientTest.swift in Sources */,
 				A543BC192825236000852672 /* BleAdvertisementContentTest.swift in Sources */,
+				A57D0539293098C1002824D9 /* MagDataTest.swift in Sources */,
 				A5E75E95263BC9F700BEA32A /* BleGattClientBaseTest.swift in Sources */,
+				A57D0527292F360F002824D9 /* PmdTimeStampUtilsTest.swift in Sources */,
+				A57D054D2934B745002824D9 /* PmdSettingTest.swift in Sources */,
 				A599EA9D2689AFE300414E26 /* PolarAdvDataUtilityTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -913,10 +1143,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A57D050A292254E2002824D9 /* BlePmdClient.swift in Sources */,
 				6C8BCD3C1CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift in Sources */,
 				6C57A5B41F987B44002E50DB /* BleRscClient.swift in Sources */,
+				A57D053B29309B71002824D9 /* PpiData.swift in Sources */,
 				6C5A44A31CB291790006220D /* AtomicInteger.swift in Sources */,
+				A57D05412930A8CA002824D9 /* EcgData.swift in Sources */,
 				6C5A44AC1CB291A40006220D /* CBDeviceListenerImpl.swift in Sources */,
+				A57D051629225991002824D9 /* PmdDataFrame.swift in Sources */,
 				6CB902771D9B7F65001F1C9C /* BleH7SettingsClient.swift in Sources */,
 				A5A127E0273689E0007874B8 /* PolarAdvDataUtility.swift in Sources */,
 				6C0C54FE1CFEB3C900FF23E9 /* TimeUtility.swift in Sources */,
@@ -926,9 +1160,10 @@
 				6C4A6A2B1CC0BA0400E3AD73 /* BleRssiFilter.swift in Sources */,
 				6C67C8011E169CCE00411498 /* BleHrClient.swift in Sources */,
 				A580139725B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */,
+				A57D05212924C800002824D9 /* PmdTimeStampUtils.swift in Sources */,
 				6C5A44991CB291500006220D /* BleAttributeTransportProtocol.swift in Sources */,
 				6CD12ACA201F126500F3A417 /* BleGattException.swift in Sources */,
-				6C98104521622D52002820A2 /* BlePmdClient.swift in Sources */,
+				A57D051D2922658F002824D9 /* GyrData.swift in Sources */,
 				6C5A44A21CB291790006220D /* AtomicBoolean.swift in Sources */,
 				6C9810402158A943002820A2 /* RecursiveCondition.swift in Sources */,
 				6C5A448F1CB291260006220D /* BleDeviceListener.swift in Sources */,
@@ -937,16 +1172,22 @@
 				6C5A44BB1CB37F060006220D /* BleDeviceSession.swift in Sources */,
 				6C4A6A381CC0BA4E00E3AD73 /* BleLogger.swift in Sources */,
 				6CB9DB992087188E00505269 /* RxUtils.swift in Sources */,
+				A57D05472930B217002824D9 /* PpgData.swift in Sources */,
 				6C9209071D93B2DC0035B928 /* CBScanner.swift in Sources */,
 				6C8BCD431CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift in Sources */,
+				A57D050E29225779002824D9 /* PmdSetting.swift in Sources */,
 				6C67C7FF1E169CCE00411498 /* BleBasClient.swift in Sources */,
 				6CCFE4001E5D76C100FAA131 /* BlePsdClient.swift in Sources */,
+				A57D053529309329002824D9 /* MagData.swift in Sources */,
 				6C5A44A41CB291790006220D /* AtomicList.swift in Sources */,
+				A57D052F29308AE6002824D9 /* TypeUtils.swift in Sources */,
 				6C67C8001E169CCE00411498 /* BleDisClient.swift in Sources */,
 				6C32C6D7220AD3CA006615C3 /* CBScanningProtocol.swift in Sources */,
 				6C4A6A311CC0BA2400E3AD73 /* BlePfcClient.swift in Sources */,
+				A57D0529292F60E3002824D9 /* AccData.swift in Sources */,
 				6C4A6A291CC0BA0400E3AD73 /* BleAdvertisementContent.swift in Sources */,
 				6C98103A2154AEDE002820A2 /* AtomicType.swift in Sources */,
+				A57D0512292258D5002824D9 /* PmdMeasurementType.swift in Sources */,
 				6C4A6A2A1CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -958,13 +1199,17 @@
 				A57728A727CE860600855884 /* pftp_response.pb.swift in Sources */,
 				6C2409462216A6F3001C1A84 /* AtomicType.swift in Sources */,
 				A580139925B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */,
+				A57D05232924C800002824D9 /* PmdTimeStampUtils.swift in Sources */,
 				6C2409422216A6E3001C1A84 /* CBScanningProtocol.swift in Sources */,
 				A5A127E2273689E0007874B8 /* PolarAdvDataUtility.swift in Sources */,
+				A57D052B292F60E3002824D9 /* AccData.swift in Sources */,
+				A57D050C292254E2002824D9 /* BlePmdClient.swift in Sources */,
 				6C2409432216A6E3001C1A84 /* BlePsFtpUtility.swift in Sources */,
 				6C2409442216A6E3001C1A84 /* BlePsFtpClient.swift in Sources */,
-				6C2409452216A6E3001C1A84 /* BlePmdClient.swift in Sources */,
 				6C39E8DA209B07BC001F7E44 /* CBDeviceListenerImpl.swift in Sources */,
+				A57D053D29309B71002824D9 /* PpiData.swift in Sources */,
 				A57728A327CE860600855884 /* pftp_error.pb.swift in Sources */,
+				A57D05492930B217002824D9 /* PpgData.swift in Sources */,
 				6C39E8DB209B07BC001F7E44 /* CBDeviceSessionImpl.swift in Sources */,
 				A57728B727CE860600855884 /* PolarBleApi.swift in Sources */,
 				6C39E8DC209B07BC001F7E44 /* CBScanner.swift in Sources */,
@@ -972,7 +1217,10 @@
 				A57728BB27CE860600855884 /* PolarBleApiDefaultImpl.swift in Sources */,
 				6C39E8DE209B07BC001F7E44 /* BlePolarDeviceIdUtility.swift in Sources */,
 				A57728AB27CE860600855884 /* exercise_samples.pb.swift in Sources */,
+				A57D051F29226590002824D9 /* GyrData.swift in Sources */,
 				A57728B527CE860600855884 /* PolarBleApiObservers.swift in Sources */,
+				A57D05372930932A002824D9 /* MagData.swift in Sources */,
+				A57D05432930A8CA002824D9 /* EcgData.swift in Sources */,
 				6C39E8DF209B07BC001F7E44 /* BleAdvertisementContent.swift in Sources */,
 				A57728A127CE860600855884 /* PolarBleApiImpl.swift in Sources */,
 				6C39E8E0209B07BC001F7E44 /* BlePolarHrAdvertisement.swift in Sources */,
@@ -981,6 +1229,8 @@
 				6C39E8E2209B07BC001F7E44 /* BleGattException.swift in Sources */,
 				6C39E8E5209B07BC001F7E44 /* BleBasClient.swift in Sources */,
 				6C39E8E6209B07BC001F7E44 /* BleDisClient.swift in Sources */,
+				A57D051029225779002824D9 /* PmdSetting.swift in Sources */,
+				A57D0514292258D5002824D9 /* PmdMeasurementType.swift in Sources */,
 				6C39E8E7209B07BC001F7E44 /* BleHrClient.swift in Sources */,
 				6C39E8EA209B07BC001F7E44 /* BlePsdClient.swift in Sources */,
 				6C39E8EC209B07BC001F7E44 /* BleGattClientBase.swift in Sources */,
@@ -989,12 +1239,15 @@
 				6C39E8EE209B07BC001F7E44 /* BleAttributeTransportProtocol.swift in Sources */,
 				6C39E8EF209B07BC001F7E44 /* BleLogger.swift in Sources */,
 				6C39E8F0209B07BC001F7E44 /* BleDeviceListener.swift in Sources */,
+				A57D053129308AE6002824D9 /* TypeUtils.swift in Sources */,
 				A57728A527CE860600855884 /* pftp_notification.pb.swift in Sources */,
 				6C39E8F5209B07BC001F7E44 /* AtomicBoolean.swift in Sources */,
+				A5743684291A7DB400E901A4 /* PolarTimeUtils.swift in Sources */,
 				A57728A927CE860600855884 /* structures.pb.swift in Sources */,
 				A57728BD27CE860600855884 /* PolarErrors.swift in Sources */,
 				6C39E8F6209B07BC001F7E44 /* AtomicInteger.swift in Sources */,
 				6C39E8F7209B07BC001F7E44 /* AtomicList.swift in Sources */,
+				A57D051829225991002824D9 /* PmdDataFrame.swift in Sources */,
 				A57728AD27CE860600855884 /* pftp_request.pb.swift in Sources */,
 				A57728AF27CE860600855884 /* types.pb.swift in Sources */,
 				6C39E8F8209B07BC001F7E44 /* TimeUtility.swift in Sources */,
@@ -1010,14 +1263,18 @@
 			files = (
 				A57728A627CE860600855884 /* pftp_response.pb.swift in Sources */,
 				6C2408F8220D9581001C1A84 /* CBScanningProtocol.swift in Sources */,
-				6C48395D21C79C1C00747D78 /* BlePmdClient.swift in Sources */,
 				6CEA10DF2175AA5B00E16FBF /* BlePsFtpUtility.swift in Sources */,
+				A57D05222924C800002824D9 /* PmdTimeStampUtils.swift in Sources */,
 				6CEA10E02175AA5B00E16FBF /* BlePsFtpClient.swift in Sources */,
 				6C981041215B7136002820A2 /* AtomicType.swift in Sources */,
+				A57D052A292F60E3002824D9 /* AccData.swift in Sources */,
+				A57D050B292254E2002824D9 /* BlePmdClient.swift in Sources */,
 				6C707D2920D7F138002FE7FF /* RxUtils.swift in Sources */,
 				6C770B86206B77F300F3D51D /* CBDeviceListenerImpl.swift in Sources */,
 				6C770B87206B77F300F3D51D /* CBDeviceSessionImpl.swift in Sources */,
+				A57D053C29309B71002824D9 /* PpiData.swift in Sources */,
 				A57728A227CE860600855884 /* pftp_error.pb.swift in Sources */,
+				A57D05482930B217002824D9 /* PpgData.swift in Sources */,
 				6C770B88206B77F300F3D51D /* CBScanner.swift in Sources */,
 				A57728B627CE860600855884 /* PolarBleApi.swift in Sources */,
 				6C770B8A206B77F300F3D51D /* BleDeviceSession.swift in Sources */,
@@ -1025,7 +1282,10 @@
 				A57728BA27CE860600855884 /* PolarBleApiDefaultImpl.swift in Sources */,
 				A580139825B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */,
 				A57728AA27CE860600855884 /* exercise_samples.pb.swift in Sources */,
+				A57D051E2922658F002824D9 /* GyrData.swift in Sources */,
 				A57728B427CE860600855884 /* PolarBleApiObservers.swift in Sources */,
+				A57D05362930932A002824D9 /* MagData.swift in Sources */,
+				A57D05422930A8CA002824D9 /* EcgData.swift in Sources */,
 				6C770B8C206B77F300F3D51D /* BleAdvertisementContent.swift in Sources */,
 				A57728A027CE860600855884 /* PolarBleApiImpl.swift in Sources */,
 				A5A127E1273689E0007874B8 /* PolarAdvDataUtility.swift in Sources */,
@@ -1034,6 +1294,8 @@
 				6C770B8E206B77F300F3D51D /* BleRssiFilter.swift in Sources */,
 				6C770B8F206B77F300F3D51D /* BleGattException.swift in Sources */,
 				6C770B92206B77F300F3D51D /* BleBasClient.swift in Sources */,
+				A57D050F29225779002824D9 /* PmdSetting.swift in Sources */,
+				A57D0513292258D5002824D9 /* PmdMeasurementType.swift in Sources */,
 				6C770B93206B77F300F3D51D /* BleDisClient.swift in Sources */,
 				6C770B94206B77F300F3D51D /* BleHrClient.swift in Sources */,
 				6C770B95206B77F300F3D51D /* BlePsdClient.swift in Sources */,
@@ -1042,18 +1304,29 @@
 				6C770B97206B77F300F3D51D /* BleGattClientFactory.swift in Sources */,
 				6C770B98206B77F300F3D51D /* BleAttributeTransportProtocol.swift in Sources */,
 				6C770B9A206B77F300F3D51D /* BleLogger.swift in Sources */,
+				A57D053029308AE6002824D9 /* TypeUtils.swift in Sources */,
 				A57728A427CE860600855884 /* pftp_notification.pb.swift in Sources */,
 				6C770B9B206B77F300F3D51D /* BleDeviceListener.swift in Sources */,
+				A5743683291A7DB400E901A4 /* PolarTimeUtils.swift in Sources */,
 				A57728A827CE860600855884 /* structures.pb.swift in Sources */,
 				A57728BC27CE860600855884 /* PolarErrors.swift in Sources */,
 				6C770BA1206B77F300F3D51D /* AtomicBoolean.swift in Sources */,
 				6C770BA2206B77F300F3D51D /* AtomicInteger.swift in Sources */,
+				A57D051729225991002824D9 /* PmdDataFrame.swift in Sources */,
 				A57728AC27CE860600855884 /* pftp_request.pb.swift in Sources */,
 				A57728AE27CE860600855884 /* types.pb.swift in Sources */,
 				6C770BA3206B77F300F3D51D /* AtomicList.swift in Sources */,
 				6C770BA4206B77F300F3D51D /* TimeUtility.swift in Sources */,
 				A57728B027CE860600855884 /* exercise_rr_samples.pb.swift in Sources */,
 				6C770BA6206B77F300F3D51D /* RxObserver.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A5743688291B81F500E901A4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A5743696291B824300E901A4 /* PolarTimeUtilsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1065,6 +1338,12 @@
 			target = 6C34DE871CAA3F240083EB1F /* iOSCommunications */;
 			targetProxy = 6C1079261D6D6EA000931948 /* PBXContainerItemProxy */;
 		};
+		A5743692291B81F500E901A4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilter = ios;
+			target = 6C770B6B206B779900F3D51D /* PolarBleSdk */;
+			targetProxy = A5743691291B81F500E901A4 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -1075,7 +1354,11 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = Tests/iOSCommunicationsTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iOSCommunicationsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -1089,7 +1372,11 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = Tests/iOSCommunicationsTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iOSCommunicationsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -1218,7 +1505,8 @@
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "";
 				SDKROOT = iphoneos;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -1246,7 +1534,11 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 14.2;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MARKETING_VERSION = 14.1.9;
 				MODULEMAP_FILE = "";
 				MODULEMAP_PRIVATE_FILE = "";
@@ -1282,7 +1574,11 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 14.2;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MARKETING_VERSION = 14.1.9;
 				MODULEMAP_FILE = "";
 				MODULEMAP_PRIVATE_FILE = "";
@@ -1335,7 +1631,11 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Sources/PolarBleSdk/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MARKETING_VERSION = 3.3.0;
 				OTHER_SWIFT_FLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdkWatchOs;
@@ -1384,7 +1684,11 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/Sources/PolarBleSdk/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MARKETING_VERSION = 3.3.0;
 				OTHER_SWIFT_FLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdkWatchOs;
@@ -1434,7 +1738,11 @@
 				INFOPLIST_FILE = "$(SRCROOT)/Sources/PolarBleSdk/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MACH_O_TYPE = mh_dylib;
 				MARKETING_VERSION = 3.3.0;
 				"OTHER_CFLAGS[arch=*]" = "-fembed-bitcode";
@@ -1488,7 +1796,11 @@
 				INFOPLIST_FILE = "$(SRCROOT)/Sources/PolarBleSdk/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MACH_O_TYPE = mh_dylib;
 				MARKETING_VERSION = 3.3.0;
 				"OTHER_CFLAGS[arch=*]" = "-fembed-bitcode";
@@ -1503,6 +1815,83 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_WORKSPACE = YES;
+			};
+			name = Release;
+		};
+		A5743694291B81F500E901A4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = E5EEC2FB74FCE3D16A4804D2 /* Pods-PolarBleSdkTests.debug.xcconfig */;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdkTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A5743695291B81F500E901A4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9252CA4DD4A74A0CD806CB5A /* Pods-PolarBleSdkTests.release.xcconfig */;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdkTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -1550,6 +1939,15 @@
 			buildConfigurations = (
 				6C770B71206B779A00F3D51D /* Debug */,
 				6C770B72206B779A00F3D51D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A5743693291B81F500E901A4 /* Build configuration list for PBXNativeTarget "PolarBleSdkTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A5743694291B81F500E901A4 /* Debug */,
+				A5743695291B81F500E901A4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
