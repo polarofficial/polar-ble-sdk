@@ -29,6 +29,7 @@
     <string name="stop_h10_recording">Stop H10 recording</string>
     <string name="h10_recording_status">H10 recording status</string>
     <string name="set_time">Set time</string>
+    <string name="get_time">Get time</string>
     <string name="sampling_rate">Sampling rate</string>
     <string name="resolution">Resolution</string>
     <string name="range">Range</string>
