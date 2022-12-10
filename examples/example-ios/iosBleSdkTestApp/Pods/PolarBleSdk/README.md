@@ -68,12 +68,11 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 * List, read and remove stored exercise. Recording of exercise requires that sensor is registered to Polar Flow account. Stored sample data contains HR with one second sampletime. 
 
 ### Project structure
-* [polar-sdk-ios](polar-sdk-ios/) contains compiled iOS sdk, dependencies and documentation
-* [polar-sdk-android](polar-sdk-android/) contains compiled Android sdk and documentation
+* [polar-sdk-ios](polar-sdk-ios/) contains documentation for the iOS SDK source
+* [polar-sdk-android](polar-sdk-android/) contains  documentation for the Android SDK source
 * [demos](demos/) contains Android ecg demo application 
-* [examples](examples/) contains both android and ios example app utilizing all features from sdk 
-* [gatt specification](technical_documentation/Polar_Measurement_Data_Specification.pdf) contains gatt specification for polar measurement data streaming
-* [H10 ecg technical document](technical_documentation/H10_ECG_Explained.docx)
+* [examples](examples/) contains both android and ios example app utilizing most of the features from sdk 
+* [technical_documentation](technical_documentation/) contains documentation related to SDK
 
 # Android: Getting started
 Detailed documentation  [Full Documentation](polar-sdk-android/docs/html/). 
@@ -233,16 +232,15 @@ api.setApiCallback(new PolarBleApiCallback() {
 ```
 2.  Request permissions
 ```java
-if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT), 1)
-        } else {
-            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
-        }
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT), PERMISSION_REQUEST_CODE)
+    } else {
+        requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_REQUEST_CODE)
     }
-    requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), 1)
-}   
+} else {
+    requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), PERMISSION_REQUEST_CODE)
+}  
 
 // callback is invoked after granted or denied permissions
 @Override
@@ -250,13 +248,8 @@ public void onRequestPermissionsResult(int requestCode, @NonNull String permissi
 }
 ```
 
-3. Add background, foreground and cleanup functionality on desired callbacks e.g.
+3. Add foreground and cleanup functionality on desired callbacks e.g.
 ```java
-@Override
-public void onPause() {
-    super.onPause();
-    api.backgroundEntered();
-}
 
 @Override
 public void onResume() {
@@ -292,7 +285,7 @@ If you use [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) 
 use_frameworks!
 
 target 'YOUR_TARGET_NAME' do
-    pod 'PolarBleSdk', '~> 3.2'
+    pod 'PolarBleSdk', '~> 3.3'
 
 end
 ```
@@ -302,7 +295,7 @@ Add PolarBleSdk as a dependency to your `Package.swift` manifest
 
 ```swift
 dependencies: [
-    .package(name: "PolarBleSdk", url: "https://github.com/polarofficial/polar-ble-sdk.git", .upToNextMajor(from: "3.2.0"))
+    .package(name: "PolarBleSdk", url: "https://github.com/polarofficial/polar-ble-sdk.git", .upToNextMajor(from: "3.3.0"))
 ]
 ```
 or alternatively use [XCode package manager](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) to add Swift package to your project. 
@@ -311,7 +304,7 @@ or alternatively use [XCode package manager](https://developer.apple.com/documen
 If you use [Cathage](https://github.com/Carthage/Carthage) to manage your dependencies, add PolarBleSdk to your `Cartfile`
 
 ```
-github "polarofficial/polar-ble-sdk" ~> 3.2
+github "polarofficial/polar-ble-sdk" ~> 3.3
 ```
 
 ```bash

@@ -61,27 +61,41 @@ public typealias PolarHrBroadcastData = (deviceInfo: PolarDeviceInfo, hr: UInt8,
 
 /// Polar Ecg data
 ///
-///     - timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
-///     - samples: ecg sample in µVolts
-public typealias PolarEcgData = (timeStamp: UInt64,samples: [Int32])
+///     - Deprecated: Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
+///     - samples: Acceleration samples
+///         - timeStamp: moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000
+///         - voltage value in µVolts
+public typealias PolarEcgData = (timeStamp: UInt64, samples: [(timeStamp: UInt64, voltage: Int32)])
 
 /// Polar acc data
 ///
-///     - Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
-///     - samples: Acceleration samples (including gravity) list x,y,z in millig signed value 
-public typealias PolarAccData = (timeStamp: UInt64,samples: [(x: Int32,y: Int32,z: Int32)])
+///     - Deprecated: Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
+///     - samples: Acceleration samples
+///         - timeStamp: moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000
+///         - x axis value in millig (including gravity)
+///         - y axis value in millig (including gravity)
+///         - z axis value in millig (including gravity)
+public typealias PolarAccData = (timeStamp: UInt64, samples: [(timeStamp: UInt64, x: Int32, y: Int32, z: Int32)])
 
 /// Polar gyro data
 ///
-///     - Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
-///     - samples: gyro samples list x,y,z in °/s signed value
-public typealias PolarGyroData = (timeStamp: UInt64,samples: [(x: Float,y: Float,z: Float)])
+///     - Deprecated: Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
+///     - samples: Gyroscope samples
+///         - timeStamp: moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000
+///         - x axis value in deg/sec
+///         - y axis value in deg/sec
+///         - z axis value in deg/sec
+public typealias PolarGyroData = (timeStamp: UInt64, samples: [(timeStamp: UInt64, x: Float, y: Float, z: Float)])
 
 /// Polar magnetometer data
 ///
-///     - Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
-///     - samples: in Gauss
-public typealias PolarMagnetometerData = (timeStamp: UInt64,samples: [(x: Float,y: Float,z: Float)])
+///     - Deprecated: Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
+///     - samples: Magnetometer samples
+///         - timeStamp: moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000
+///         - x axis value in Gauss
+///         - y axis value in Gauss
+///         - z axis value in Gauss
+public typealias PolarMagnetometerData = (timeStamp: UInt64, samples: [(timeStamp: UInt64, x: Float, y: Float, z: Float)])
 
 /// OHR data source enum
 public enum OhrDataType: Int, CaseIterable {
@@ -92,21 +106,25 @@ public enum OhrDataType: Int, CaseIterable {
 
 /// Polar Ohr data
 ///
-///     - Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
-///     - channels: amount of channels
-///     - source: source of OHR data
-///     - samples: ppg(s) and ambient(s) samples list
-public typealias PolarOhrData = (timeStamp: UInt64, type: OhrDataType, samples: [[Int32]])
+///     - Deprecated: Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
+///     - type: type of data, which varies based on what is type of optical sensor used in the device
+///     - samples: Photoplethysmography samples
+///         - timeStamp: moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000
+///         - channelSamples is the PPG (Photoplethysmography) raw value received from the optical sensor. Based on [OhrDataType] the amount of channels varies. Typically ppg(n) channel + n ambient(s).
+///
+public typealias PolarOhrData = (timeStamp: UInt64, type: OhrDataType, samples: [(timeStamp:UInt64, channelSamples: [Int32])])
 
 /// Polar ppi data
-///           - timestamp N/A always 0
-///           - hr in BPM
-///           - ppInMs Pulse to Pulse interval in milliseconds. The value indicates the quality of PP-intervals. When error estimate is below 10ms the PP-intervals are probably very accurate. Error estimate values over 30ms may be caused by movement artefact or too loose sensor-skin contact.
-///           - ppErrorEstimate estimate of the expected absolute error in PP-interval in milliseconds
-///           - blockerBit = 1 if PP measurement was invalid due to acceleration or other reason
-///           - skinContactStatus = 0 if the device detects poor or no contact with the skin
-///           - skinContactSupported = 1 if the Sensor Contact feature is supported.
-public typealias PolarPpiData = (timeStamp: UInt64,samples: [(hr: Int, ppInMs: UInt16, ppErrorEstimate: UInt16, blockerBit: Int, skinContactStatus: Int, skinContactSupported: Int)])
+///
+///     - Deprecated: timestamp always 0
+///     - samples: PPI samples
+///         - hr in BPM
+///         - ppInMs Pulse to Pulse interval in milliseconds. The value indicates the quality of PP-intervals. When error estimate is below 10ms the PP-intervals are probably very accurate. Error estimate values over 30ms may be caused by movement artefact or too loose sensor-skin contact.
+///         - ppErrorEstimate estimate of the expected absolute error in PP-interval in milliseconds
+///         - blockerBit = 1 if PP measurement was invalid due to acceleration or other reason
+///         - skinContactStatus = 0 if the device detects poor or no contact with the skin
+///         - skinContactSupported = 1 if the Sensor Contact feature is supported.
+public typealias PolarPpiData = (timeStamp: UInt64, samples: [(hr: Int, ppInMs: UInt16, ppErrorEstimate: UInt16, blockerBit: Int, skinContactStatus: Int, skinContactSupported: Int)])
 
 /// Polar exercise entry
 ///
@@ -131,7 +149,7 @@ public protocol PolarBleApi {
     /// remove all known devices, which are not in use
     func cleanup()
     
-    /// Enable or disable polar filter. 
+    /// Enable or disable polar filter.
     ///
     /// - Parameter enable: false disable polar filter
     func polarFilter(_ enable: Bool)
@@ -170,7 +188,7 @@ public protocol PolarBleApi {
     /// - Returns: true if requested feature is ready for use
     func isFeatureReady(_ identifier: String, feature: Features) -> Bool
     
-    /// set local time to device. Requires `polarFileTransfer` feature.
+    /// Set local time to device. Requires `polarFileTransfer` feature.
     ///
     /// - Parameters:
     ///   - identifier: polar device id or UUID
@@ -180,6 +198,17 @@ public protocol PolarBleApi {
     ///   - success: when time has been set to device
     ///   - onError: see `PolarErrors` for possible errors invoked
     func setLocalTime(_ identifier: String, time: Date, zone: TimeZone) -> Completable
+    
+    ///  Get current time in device. Requires `polarFileTransfer` feature.  Not supported by Polar H10. 
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id or UUID
+    ///   - time: time to set
+    ///   - zone: time zone to set
+    /// - Returns: Single stream
+    ///   - success: once after settings received from device
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func getLocalTime(_ identifier: String) -> Single<Date>
     
     /// Request start recording. Supported only by Polar H10. Requires `polarFileTransfer` feature.
     ///
@@ -291,7 +320,6 @@ public protocol PolarBleApi {
     ///   - onNext: for every air packet received. see `PolarAccData`
     ///   - onError: see `PolarErrors` for possible errors invoked
     func startAccStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarAccData>
-    
     
     /// Start Gyro stream. Gyro stream is stopped if the connection is closed, error occurs during start or stream is disposed.
     /// Requires `polarSensorStreaming` feature. Before starting the stream it is recommended to query the available settings using `requestStreamSettings`
