@@ -8,7 +8,7 @@ This SDK uses ReactiveX. You can read more about ReactiveX from their website [r
 
 By exploiting the SDK, you indicate your acceptance of [License](Polar_SDK_License.txt).
 
-If you wish to collaborate with Polar commercially, [click here](https://polar.com/developers)
+If you wish to collaborate with Polar commercially, [click here](https://www.polar.com/en/developers)
 
 ### Quick License Summary / Your rights to use the SDK
 You may use, copy and modify the SDK as long as you
@@ -20,7 +20,7 @@ in compliance with the license terms.
 
 ### H10 Heart rate sensor
 Most accurate Heart rate sensor in the markets. The H10 is used in the Getting started section of this page. 
-[Store page](https://www.polar.com/en/products/accessories/H10_heart_rate_sensor)
+[Store page](https://www.polar.com/en/sensors/h10-heart-rate-sensor)
 
 #### H10 heart rate sensor available data types
 * From version 3.0.35 onwards. 
@@ -33,7 +33,7 @@ Most accurate Heart rate sensor in the markets. The H10 is used in the Getting s
 
 ### H9 Heart rate sensor 
 Reliable high quality heart rate chest strap.
-[Store page](https://www.polar.com/en/products/accessories/H9_heart_rate_sensor)
+[Store page](https://www.polar.com/en/sensors/h9-heart-rate-sensor)
 
 #### H9 heart rate sensor available data types
 * Heart rate as beats per minute. RR Interval in ms and 1/1024 format.
