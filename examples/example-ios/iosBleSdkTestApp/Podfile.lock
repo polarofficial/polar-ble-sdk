@@ -1,33 +1,24 @@
 PODS:
-  - PolarBleSdk (3.3.6):
+  - PolarBleSdk (4.0.0-beta0):
     - RxSwift (~> 6.5.0)
     - SwiftProtobuf (~> 1.0)
   - RxSwift (6.5.0)
   - SwiftProtobuf (1.20.3)
 
 DEPENDENCIES:
-  - PolarBleSdk (from `https://github.com/polarofficial/polar-ble-sdk.git`, branch `time-stamps-calculated-by-the-sdk`)
+  - PolarBleSdk (= 4.0.0-beta0)
 
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
+    - PolarBleSdk
     - RxSwift
     - SwiftProtobuf
 
-EXTERNAL SOURCES:
-  PolarBleSdk:
-    :branch: time-stamps-calculated-by-the-sdk
-    :git: https://github.com/polarofficial/polar-ble-sdk.git
-
-CHECKOUT OPTIONS:
-  PolarBleSdk:
-    :commit: 12e23bd7ef3d9dc01a2f313ca2c342c0137f4ede
-    :git: https://github.com/polarofficial/polar-ble-sdk.git
-
 SPEC CHECKSUMS:
-  PolarBleSdk: 9a7ff25ce80d2fae014e013977a14424df20c4bd
+  PolarBleSdk: d53a1f21d98d005332f9c65ff71db632b9e39c54
   RxSwift: 5710a9e6b17f3c3d6e40d6e559b9fa1e813b2ef8
   SwiftProtobuf: b02b5075dcf60c9f5f403000b3b0c202a11b6ae1
 
-PODFILE CHECKSUM: 01d9f2179f014fd0c100218111db8675e1e3d48d
+PODFILE CHECKSUM: 8db8ebdaadf390199a40f7b8b1ece85df22a9db8
 
 COCOAPODS: 1.11.3
