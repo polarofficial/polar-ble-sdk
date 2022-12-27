@@ -3,10 +3,11 @@
 import SwiftUI
 import PolarBleSdk
 
-struct StreamSettingsView: View {
-    @ObservedObject var bleSdkManager: PolarBleSdkManager
-    var streamedFeature: DeviceStreamingFeature
-    var streamSettings: StreamSettings
+struct SettingsView: View {
+    @EnvironmentObject private var bleSdkManager: PolarBleSdkManager
+    let streamedFeature: PolarDeviceDataType
+    let streamSettings: RecordingSettings
+    var isOfflineSettings: Bool = false
     
     @Environment(\.presentationMode) var presentationMode
     
@@ -55,15 +56,18 @@ struct StreamSettingsView: View {
                         }
                     }
                     
-                    Button("Start \(getStreamingFeatureString(streamedFeature)) stream", action: {
+                    Button( isOfflineSettings ?
+                            "Start \(getShortNameForDataType(streamedFeature)) offline recording" :
+                                "Start \(getShortNameForDataType(streamedFeature)) online stream",
+                            action: {
                         startStream()
                         presentationMode.wrappedValue.dismiss()
                         
                     })
-                        .buttonStyle(PrimaryButtonStyle(buttonState: ButtonState.released))
-                        .padding(15)
+                    .buttonStyle(PrimaryButtonStyle(buttonState: ButtonState.released))
+                    .padding(15)
                 }
-            }.navigationTitle("\(getStreamingFeatureString(streamedFeature)) settings")
+            }.navigationTitle("\(getShortNameForDataType(streamedFeature)) settings")
                 .toolbar(content: {
                     ToolbarItem(placement: .cancellationAction) {
                         Button {
@@ -77,44 +81,50 @@ struct StreamSettingsView: View {
     }
     
     func startStream() {
-        var settingValues:[StreamSetting] = []
+        var settingValues:[TypeSetting] = []
         
         if let sampleRate = streamSettings.sortedSettings.first(where: {$0.type ==  PolarSensorSetting.SettingType.sampleRate})?.sortedValues[selectedSampleRate] {
-            settingValues.append(StreamSetting(type: PolarSensorSetting.SettingType.sampleRate, values: [sampleRate]))
+            settingValues.append(TypeSetting(type: PolarSensorSetting.SettingType.sampleRate, values: [sampleRate]))
         }
         
         if let range = streamSettings.sortedSettings.first(where: {$0.type ==  PolarSensorSetting.SettingType.range})?.sortedValues[selectedRange] {
-            settingValues.append(StreamSetting(type: PolarSensorSetting.SettingType.range, values: [range]))
+            settingValues.append(TypeSetting(type: PolarSensorSetting.SettingType.range, values: [range]))
         }
         
         if let resolution = streamSettings.sortedSettings.first(where: {$0.type ==  PolarSensorSetting.SettingType.resolution})?.sortedValues[selectedResolution] {
-            settingValues.append(StreamSetting(type: PolarSensorSetting.SettingType.resolution, values: [resolution]))
+            settingValues.append(TypeSetting(type: PolarSensorSetting.SettingType.resolution, values: [resolution]))
         }
         
         if let channel = streamSettings.sortedSettings.first(where: {$0.type ==  PolarSensorSetting.SettingType.channels})?.sortedValues[selectedChannels] {
-            settingValues.append(StreamSetting(type: PolarSensorSetting.SettingType.channels, values: [channel]))
+            settingValues.append(TypeSetting(type: PolarSensorSetting.SettingType.channels, values: [channel]))
         }
         
-        let selectedSettings = StreamSettings(feature: streamedFeature,settings: settingValues)
-        bleSdkManager.streamStart(settings: selectedSettings)
+        let selectedSettings = RecordingSettings(feature: streamedFeature,settings: settingValues)
+        
+        if(isOfflineSettings) {
+            bleSdkManager.offlineRecordingStart(feature: streamedFeature, settings: selectedSettings)
+        } else {
+            bleSdkManager.onlineStreamStart(feature: streamedFeature, settings: selectedSettings)
+        }
     }
 }
 
-let tempStreamSettings: StreamSettings =
-StreamSettings( feature: DeviceStreamingFeature.ecg,
-                settings:[ StreamSetting(type: PolarSensorSetting.SettingType.sampleRate, values:[150,160]),
-                           StreamSetting(type: PolarSensorSetting.SettingType.range, values: [3,4]),
-                           StreamSetting(type: PolarSensorSetting.SettingType.resolution, values: [3,4]),
-                           StreamSetting(type: PolarSensorSetting.SettingType.channels, values: [3,4])
-                         ])
+let tempStreamSettings: RecordingSettings =
+RecordingSettings( feature: PolarDeviceDataType.ecg,
+                   settings:[ TypeSetting(type: PolarSensorSetting.SettingType.sampleRate, values:[150,160]),
+                              TypeSetting(type: PolarSensorSetting.SettingType.range, values: [3,4]),
+                              TypeSetting(type: PolarSensorSetting.SettingType.resolution, values: [3,4]),
+                              TypeSetting(type: PolarSensorSetting.SettingType.channels, values: [3,4])
+                            ])
 
 
-struct SheetView_Previews: PreviewProvider {
+struct SettingsView_Previews: PreviewProvider {
     static var previews: some View {
         ForEach(["iPhone 8", "iPAD Pro (12.9-inch)"], id: \.self) { deviceName in
-            StreamSettingsView(bleSdkManager: PolarBleSdkManager(), streamedFeature:DeviceStreamingFeature.ecg, streamSettings: tempStreamSettings)
+            SettingsView( streamedFeature:PolarDeviceDataType.ecg, streamSettings: tempStreamSettings)
                 .previewDevice(PreviewDevice(rawValue: deviceName))
                 .previewDisplayName(deviceName)
+                .environmentObject(PolarBleSdkManager())
         }
     }
 }

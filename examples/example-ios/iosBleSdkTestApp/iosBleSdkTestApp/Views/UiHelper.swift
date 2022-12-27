@@ -3,7 +3,7 @@
 import Foundation
 import PolarBleSdk
 
-func getStreamingFeatureString(_ feature: DeviceStreamingFeature) -> String {
+func getShortNameForDataType(_ feature: PolarDeviceDataType) -> String {
     switch feature {
     case .ecg:
         return "ECG"
@@ -17,5 +17,26 @@ func getStreamingFeatureString(_ feature: DeviceStreamingFeature) -> String {
         return "GYR"
     case .magnetometer:
         return "MAG"
+    case .hr:
+        return "HR"
+    }
+}
+
+func getLongNameForDataType(_ feature: PolarDeviceDataType) -> String {
+    switch feature {
+    case .ecg:
+        return "Electrocardiogram (ECG)"
+    case .acc:
+        return "Accelerometer"
+    case .ppg:
+        return "Photoplethysmography (PPG)"
+    case .ppi:
+        return "Peak Interval (PPI)"
+    case .gyro:
+        return "Gyroscope"
+    case .magnetometer:
+        return "Magnetometer"
+    case .hr:
+        return "Heart rate"
     }
 }
