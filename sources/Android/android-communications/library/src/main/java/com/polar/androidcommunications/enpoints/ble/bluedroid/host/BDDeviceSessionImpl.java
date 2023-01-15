@@ -114,7 +114,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                     //gatt.disconnect();
                     gatt.close();
                 } catch (Exception e) {
-                    BleLogger.e(TAG, "gatt error: " + e.toString());
+                    BleLogger.e(TAG, "gatt error: " + e);
                 }
                 gatt = null;
             }

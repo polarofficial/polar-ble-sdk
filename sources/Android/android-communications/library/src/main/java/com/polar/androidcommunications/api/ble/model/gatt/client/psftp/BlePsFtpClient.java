@@ -37,7 +37,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
  */
 public class BlePsFtpClient extends BleGattBase {
 
-    private static final String TAG = BlePsFtpClient.class.getSimpleName();
+    private static final String TAG = "BlePsFtpClient";
     private final AtomicInteger pftpMtuEnabled;
     private final AtomicInteger pftpD2HNotificationEnabled;
     private final LinkedBlockingQueue<Pair<byte[], Integer>> mtuInputQueue = new LinkedBlockingQueue<>();
@@ -156,7 +156,6 @@ public class BlePsFtpClient extends BleGattBase {
                     packetsWritten.notifyAll();
                 }
             } else if (characteristic.equals(BlePsFtpUtils.RFC77_PFTP_H2D_CHARACTERISTIC)) {
-                //BleLogger.d(TAG, "NOTIFICATION characteristic air packet written");
                 synchronized (notificationPacketsWritten) {
                     notificationPacketsWritten.incrementAndGet();
                     notificationPacketsWritten.notifyAll();
@@ -224,13 +223,13 @@ public class BlePsFtpClient extends BleGattBase {
                     try {
                         synchronized (pftpOperationMutex) {
                             if (pftpMtuEnabled.get() == ATT_SUCCESS) {
+                                BleLogger.d(TAG, "Start request");
                                 resetMtuPipe();
                                 // transmit header first
                                 ByteArrayInputStream totalStream = BlePsFtpUtils.makeCompleteMessageStream(new ByteArrayInputStream(header), null, BlePsFtpUtils.MessageType.REQUEST, 0);
                                 BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();
                                 List<byte[]> requestData = BlePsFtpUtils.buildRfc76MessageFrameAll(totalStream, mtuSize.get(), sequenceNumber);
                                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                                //
                                 try {
                                     txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, requestData, false);
                                     waitPacketsWritten(packetsWritten, mtuWaiting, requestData.size());
@@ -239,14 +238,17 @@ public class BlePsFtpClient extends BleGattBase {
                                     readResponse(outputStream);
                                     emitter.onSuccess(outputStream);
                                 } catch (InterruptedException ex) {
+                                    BleLogger.e(TAG, "Request interrupted. Exception: " + ex.getMessage());
                                     // canceled, note make improvement, only wait amount of packets transmitted
                                     handleMtuInterrupted(true, requestData.size());
                                 }
                             } else {
+                                BleLogger.e(TAG, "Request failed. PS-FTP MTU not enabled");
                                 throw new BleCharacteristicNotificationNotEnabled("PS-FTP MTU not enabled");
                             }
                         }
                     } catch (Exception ex) {
+                        BleLogger.e(TAG, "Request failed. Exception: " + ex.getMessage());
                         if (!emitter.isDisposed()) {
                             emitter.tryOnError(ex);
                         }
@@ -304,6 +306,8 @@ public class BlePsFtpClient extends BleGattBase {
                     // block until previous operation has completed
                     synchronized (pftpOperationMutex) {
                         if (pftpMtuEnabled.get() == ATT_SUCCESS) {
+                            BleLogger.d(TAG, "Start write");
+
                             currentOperationWrite.set(true);
                             long pCounter = 0;
                             resetMtuPipe();
@@ -352,7 +356,6 @@ public class BlePsFtpClient extends BleGattBase {
                                         }
                                     }
                                     long transferred = totalPayload - totalStream.available() - headerSize - 2;
-                                    //BleLogger.d(TAG, "Transferred: " + transferred);
                                     subscriber.onNext(transferred);
                                 } catch (InterruptedException ex) {
                                     // Note RX throws InterruptedException when the stream is not completed, and it is unsubscribed
@@ -375,7 +378,7 @@ public class BlePsFtpClient extends BleGattBase {
                                 readResponse(response);
                             } catch (InterruptedException ex) {
                                 // catch interrupted as it cannot be rethrown onwards
-                                BleLogger.e(TAG, "interrupted while reading response");
+                                BleLogger.e(TAG, "write interrupted while reading response");
                                 return;
                             } catch (Throwable throwable) {
                                 if (!subscriber.isCancelled()) {
@@ -435,6 +438,7 @@ public class BlePsFtpClient extends BleGattBase {
             try {
                 synchronized (pftpOperationMutex) {
                     if (pftpMtuEnabled.get() == ATT_SUCCESS) {
+                        BleLogger.d(TAG, "Send query id: " + id);
                         resetMtuPipe();
                         ByteArrayInputStream totalStream = BlePsFtpUtils.makeCompleteMessageStream(parameters != null ? new ByteArrayInputStream(parameters) : null, null, BlePsFtpUtils.MessageType.QUERY, id);
                         BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();
@@ -449,8 +453,8 @@ public class BlePsFtpClient extends BleGattBase {
                         } catch (InterruptedException ex) {
                             // Note RX throws InterruptedException when the stream is not completed, and it is unsubscribed
                             // canceled
-                            BleLogger.e(TAG, "Query interrupted");
-                            if (requs.size() == 0) {
+                            BleLogger.e(TAG, "Query " + id + " interrupted");
+                            if (requs.isEmpty()) {
                                 handleMtuInterrupted(true, requs.size());
                             }
                             if (!emitter.isDisposed()) {
@@ -458,10 +462,12 @@ public class BlePsFtpClient extends BleGattBase {
                             }
                         }
                     } else {
+                        BleLogger.e(TAG, "Query " + id + " failed. PS-FTP MTU not enabled");
                         throw new BleCharacteristicNotificationNotEnabled("PS-FTP MTU not enabled");
                     }
                 }
             } catch (Exception ex) {
+                BleLogger.e(TAG, "Query " + id + " failed. Exception: " + ex.getMessage());
                 if (!emitter.isDisposed()) {
                     emitter.tryOnError(ex);
                 }
@@ -488,6 +494,7 @@ public class BlePsFtpClient extends BleGattBase {
                 synchronized (pftpNotificationMutex) {
                     if (txInterface.isConnected()) {
                         if (pftpD2HNotificationEnabled.get() == ATT_SUCCESS) {
+                            BleLogger.d(TAG, "Send notification id: " + id);
                             resetNotificationPipe();
                             ByteArrayInputStream totalStream = BlePsFtpUtils.makeCompleteMessageStream(parameters != null ? new ByteArrayInputStream(parameters) : null, null, BlePsFtpUtils.MessageType.NOTIFICATION, id);
                             BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();
@@ -496,13 +503,16 @@ public class BlePsFtpClient extends BleGattBase {
                             waitPacketsWritten(notificationPacketsWritten, notificationWaiting, requs.size());
                             emitter.onComplete();
                         } else {
+                            BleLogger.e(TAG, "Send notification id: " + id + " failed. PS-FTP notification not enabled");
                             throw new BleCharacteristicNotificationNotEnabled("PS-FTP notification not enabled");
                         }
                     } else {
+                        BleLogger.e(TAG, "Send notification id: " + id + " failed. BLE disconnected");
                         throw new BleDisconnected();
                     }
                 }
             } catch (Exception ex) {
+                BleLogger.e(TAG, "Send notification id: " + id + " failed. Exception: " + ex.getMessage());
                 if (!emitter.isDisposed()) {
                     emitter.tryOnError(ex);
                 }
@@ -528,7 +538,7 @@ public class BlePsFtpClient extends BleGattBase {
                             if (pftpD2HNotificationEnabled.get() == ATT_SUCCESS) {
                                 try {
                                     synchronized (notificationInputQueue) {
-                                        if (notificationInputQueue.size() == 0) {
+                                        if (notificationInputQueue.isEmpty()) {
                                             notificationInputQueue.wait();
                                         }
                                     }

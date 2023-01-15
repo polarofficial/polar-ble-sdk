@@ -8,7 +8,7 @@ This SDK uses ReactiveX. You can read more about ReactiveX from their website [r
 
 By exploiting the SDK, you indicate your acceptance of [License](Polar_SDK_License.txt).
 
-If you wish to collaborate with Polar commercially, [click here](https://polar.com/developers)
+If you wish to collaborate with Polar commercially, [click here](https://www.polar.com/en/developers)
 
 ### Quick License Summary / Your rights to use the SDK
 You may use, copy and modify the SDK as long as you
@@ -20,7 +20,7 @@ in compliance with the license terms.
 
 ### H10 Heart rate sensor
 Most accurate Heart rate sensor in the markets. The H10 is used in the Getting started section of this page. 
-[Store page](https://www.polar.com/en/products/accessories/H10_heart_rate_sensor)
+[Store page](https://www.polar.com/en/sensors/h10-heart-rate-sensor)
 
 #### H10 heart rate sensor available data types
 * From version 3.0.35 onwards. 
@@ -33,7 +33,7 @@ Most accurate Heart rate sensor in the markets. The H10 is used in the Getting s
 
 ### H9 Heart rate sensor 
 Reliable high quality heart rate chest strap.
-[Store page](https://www.polar.com/en/products/accessories/H9_heart_rate_sensor)
+[Store page](https://www.polar.com/en/sensors/h9-heart-rate-sensor)
 
 #### H9 heart rate sensor available data types
 * Heart rate as beats per minute. RR Interval in ms and 1/1024 format.
@@ -68,15 +68,14 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 * List, read and remove stored exercise. Recording of exercise requires that sensor is registered to Polar Flow account. Stored sample data contains HR with one second sampletime. 
 
 ### Project structure
-* [polar-sdk-ios](polar-sdk-ios/) contains compiled iOS sdk, dependencies and documentation
-* [polar-sdk-android](polar-sdk-android/) contains compiled Android sdk and documentation
+* [polar-sdk-ios](polar-sdk-ios/) contains documentation for the iOS SDK source
+* [polar-sdk-android](polar-sdk-android/) contains  documentation for the Android SDK source
 * [demos](demos/) contains Android ecg demo application 
-* [examples](examples/) contains both android and ios example app utilizing all features from sdk 
-* [gatt specification](technical_documentation/Polar_Measurement_Data_Specification.pdf) contains gatt specification for polar measurement data streaming
-* [H10 ecg technical document](technical_documentation/H10_ECG_Explained.docx)
+* [examples](examples/) contains both android and ios example app utilizing most of the features from sdk 
+* [technical_documentation](technical_documentation/) contains documentation related to SDK
 
 # Android: Getting started
-Detailed documentation  [Full Documentation](polar-sdk-android/docs/html/). 
+Detailed documentation: [Documentation]((polar-sdk-android/docs/html/)
 ## Installation
 
 1.  In `build.gradle` make sure the __minSdk__ is set to __24__ or higher.
@@ -172,102 +171,86 @@ See the [example](examples/example-android) folder for the full project.
 #### Key things
 
 1. Load the default api implementation and add callback.
-```java
-// NOTICE all features are enabled, if only interested on particular feature(s) like info Heart rate and Battery info then
-// e.g. PolarBleApiDefaultImpl.defaultImplementation(this, PolarBleApi.FEATURE_HR |
-// PolarBleApi.FEATURE_BATTERY_INFO); 
+```kt
+// NOTICE in this code snippet all the features are enabled, if only interested on particular feature(s) like Heart rate and Battery info then
+// PolarBleApiDefaultImpl.defaultImplementation(this, PolarBleApi.FEATURE_HR or PolarBleApi.FEATURE_BATTERY_INFO) 
 // batteryLevelReceived callback is invoked after connection
-PolarBleApi api = PolarBleApiDefaultImpl.defaultImplementation(getApplicationContext(),  PolarBleApi.ALL_FEATURES);
 
-api.setApiCallback(new PolarBleApiCallback() {
-    @Override
-    public void blePowerStateChanged(boolean powered) {
-        Log.d("MyApp","BLE power: " + powered);
+val api: PolarBleApi = PolarBleApiDefaultImpl.defaultImplementation(applicationContext, PolarBleApi.ALL_FEATURES)
+
+api.setApiCallback(object : PolarBleApiCallback() {
+   
+    override fun blePowerStateChanged(powered: Boolean) {
+        Log.d("MyApp", "BLE power: $powered")
+    }
+    
+    override fun deviceConnected(polarDeviceInfo: PolarDeviceInfo) {
+        Log.d("MyApp", "CONNECTED: ${polarDeviceInfo.deviceId}")
+    }
+    
+    override fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo) {
+        Log.d("MyApp", "CONNECTING: ${polarDeviceInfo.deviceId}")
+    }
+    
+    override fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {
+        Log.d("MyApp", "DISCONNECTED: ${polarDeviceInfo.deviceId}")
     }
 
-    @Override
-    public void deviceConnected(@NonNull PolarDeviceInfo polarDeviceInfo) {
-        Log.d("MyApp","CONNECTED: " + polarDeviceInfo.deviceId);
-    }
-
-    @Override
-    public void deviceConnecting(@NonNull PolarDeviceInfo polarDeviceInfo) {
-        Log.d("MyApp","CONNECTING: " + polarDeviceInfo.deviceId);
-    }
-
-    @Override
-    public void deviceDisconnected(@NonNull PolarDeviceInfo polarDeviceInfo) {
-        Log.d("MyApp","DISCONNECTED: " + polarDeviceInfo.deviceId);
-    }
-
-    @Override
-    public void streamingFeaturesReady(@NonNull final String identifier,
-                                       @NonNull final Set<PolarBleApi.DeviceStreamingFeature> features) {
-            for(PolarBleApi.DeviceStreamingFeature feature : features) {
-                Log.d("MyApp", "Streaming feature " + feature.toString() + " is ready");
-            }
+    override fun streamingFeaturesReady(identifier: String, features: Set<PolarBleApi.DeviceStreamingFeature>) {
+        for (feature in features) {
+            Log.d("MyApp", "Streaming feature $feature is ready")
         }
-
-    @Override
-    public void hrFeatureReady(@NonNull String identifier) {
-        Log.d("MyApp","HR READY: " + identifier);
+    }
+    
+    override fun hrFeatureReady(identifier: String) {
+        Log.d("MyApp", "HR READY: $identifier")
+    }
+    
+    override fun disInformationReceived(identifier: String, uuid: UUID, value: String) {
+        Log.d("MyApp", "DIS INFO uuid: $uuid value: $value")
     }
 
-    @Override
-    public void disInformationReceived(@NonNull String identifier, @NonNull UUID uuid, @NonNull String value) {
+    override fun batteryLevelReceived(identifier: String, level: Int) {
+        Log.d("MyApp", "BATTERY LEVEL: $level")
     }
 
-    @Override
-    public void batteryLevelReceived(@NonNull String identifier, int level) {
+    override fun hrNotificationReceived(identifier: String, data: PolarHrData) {
+        Log.d("MyApp", "HR value: ${data.hr} rrsMs: ${data.rrsMs} rr: ${data.rrs} contact: ${data.contactStatus} , ${data.contactStatusSupported}")
     }
 
-    @Override
-    public void hrNotificationReceived(@NonNull String identifier, @NonNull PolarHrData data) {
-        Log.d("MyApp","HR: " + data.hr);
+    override fun polarFtpFeatureReady(s: String) {
+        Log.d("MyApp", "FTP ready")
     }
-
-    @Override
-    public void polarFtpFeatureReady(@NonNull String s) {
-    }
-});
+})
 ```
 2.  Request permissions
-```java
-if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT), 1)
-        } else {
-            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
-        }
+```kt
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT), PERMISSION_REQUEST_CODE)
+    } else {
+        requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_REQUEST_CODE)
     }
-    requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), 1)
-}   
+} else {
+    requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), PERMISSION_REQUEST_CODE)
+}
+  
 
 // callback is invoked after granted or denied permissions
-@Override
-public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
 }
 ```
 
-3. Add background, foreground and cleanup functionality on desired callbacks e.g.
-```java
-@Override
-public void onPause() {
-    super.onPause();
-    api.backgroundEntered();
+3. Add foreground and cleanup functionality on desired callbacks e.g.
+```kt
+public override fun onResume() {
+    super.onResume()
+    api.foregroundEntered()
 }
 
-@Override
-public void onResume() {
-    super.onResume();
-    api.foregroundEntered();
-}
-
-@Override
-public void onDestroy() {
-    super.onDestroy();
-    api.shutDown();
+public override fun onDestroy() {
+    super.onDestroy()
+    api.shutDown()
 }
 ```
 
@@ -292,7 +275,7 @@ If you use [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) 
 use_frameworks!
 
 target 'YOUR_TARGET_NAME' do
-    pod 'PolarBleSdk', '~> 3.2'
+    pod 'PolarBleSdk', '~> 3.3'
 
 end
 ```
@@ -302,7 +285,7 @@ Add PolarBleSdk as a dependency to your `Package.swift` manifest
 
 ```swift
 dependencies: [
-    .package(name: "PolarBleSdk", url: "https://github.com/polarofficial/polar-ble-sdk.git", .upToNextMajor(from: "3.2.0"))
+    .package(name: "PolarBleSdk", url: "https://github.com/polarofficial/polar-ble-sdk.git", .upToNextMajor(from: "3.3.0"))
 ]
 ```
 or alternatively use [XCode package manager](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) to add Swift package to your project. 
@@ -311,7 +294,7 @@ or alternatively use [XCode package manager](https://developer.apple.com/documen
 If you use [Cathage](https://github.com/Carthage/Carthage) to manage your dependencies, add PolarBleSdk to your `Cartfile`
 
 ```
-github "polarofficial/polar-ble-sdk" ~> 3.2
+github "polarofficial/polar-ble-sdk" ~> 3.3
 ```
 
 ```bash
@@ -341,6 +324,7 @@ import RxSwift
 class MyController: UIViewController,
                     PolarBleApiObserver,
                     PolarBleApiPowerStateObserver,
+                    PolarBleApiDeviceInfoObserver,
                     PolarBleApiDeviceFeaturesObserver,
                     PolarBleApiDeviceHrObserver {
     // NOTICE only FEATURE_HR is enabled, to enable more features like battery info
@@ -356,18 +340,18 @@ class MyController: UIViewController,
         api.deviceHrObserver = self
         api.powerStateObserver = self
         api.deviceFeaturesObserver = self
+        api.deviceInfoObserver = self
     }
 
-    func polarDeviceConnecting(_ polarDeviceInfo: PolarDeviceInfo) {
+    func deviceConnecting(_ polarDeviceInfo: PolarDeviceInfo) {
         print("DEVICE CONNECTING: \(polarDeviceInfo)")
     }
     
-    func polarDeviceConnected(_ polarDeviceInfo: PolarDeviceInfo) {
+    func deviceConnected(_ polarDeviceInfo: PolarDeviceInfo) {
         print("DEVICE CONNECTED: \(polarDeviceInfo)")
-        deviceId = polarDeviceInfo.deviceId
     }
     
-    func polarDeviceDisconnected(_ polarDeviceInfo: PolarDeviceInfo) {
+    func deviceDisconnected(_ polarDeviceInfo: PolarDeviceInfo) {
         print("DISCONNECTED: \(polarDeviceInfo)")
     }
     
@@ -375,12 +359,20 @@ class MyController: UIViewController,
         print("battery level updated: \(batteryLevel)")
     }
     
+    func disInformationReceived(_ identifier: String, uuid: CBUUID, value: String) {
+        print("dis info: \(uuid.uuidString) value: \(value)")
+    }
+    
     func hrValueReceived(_ identifier: String, data: PolarHrData) {
         print("HR notification: \(data.hr) rrs: \(data.rrs)")
     }
-    
+        
     func hrFeatureReady(_ identifier: String) {
         print("HR READY")
+    }
+    
+    func ftpFeatureReady(_ identifier: String) {
+        print("FTP ready")
     }
     
     func streamingFeaturesReady(_ identifier: String, streamingFeatures: Set<DeviceStreamingFeature>) {
@@ -397,8 +389,6 @@ class MyController: UIViewController,
         print("BLE OFF")
     }
         
-    func ftpFeatureReady(_ identifier: String) {
-    }
 }
 ```
 

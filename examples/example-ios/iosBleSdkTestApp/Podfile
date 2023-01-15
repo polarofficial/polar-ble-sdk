@@ -4,5 +4,5 @@ platform :ios, '13.0'
 use_frameworks!
 
 target 'iosBleSdkTestApp' do
-    pod 'PolarBleSdk', '~> 3.2'
+    pod 'PolarBleSdk', '4.0.0-beta0'
 end

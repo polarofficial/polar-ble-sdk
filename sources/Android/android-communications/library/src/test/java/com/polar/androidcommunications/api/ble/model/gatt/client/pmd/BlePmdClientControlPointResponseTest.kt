@@ -53,8 +53,8 @@ class BlePmdClientControlPointResponseTest {
         assertEquals(expectedMeasurementType, response.measurementType)
         assertEquals(expectedStatus, response.status)
         assertEquals(expectedMore, response.more)
-        assertEquals(expectedParamsSize, response.parameters.size())
-        assertTrue(expectedParamsContent.contentEquals(response.parameters.toByteArray()))
+        assertEquals(expectedParamsSize, response.parameters.size)
+        assertTrue(expectedParamsContent.contentEquals(response.parameters))
     }
 
     @Test
@@ -89,7 +89,7 @@ class BlePmdClientControlPointResponseTest {
         assertEquals(expectedMeasurementType, response.measurementType)
         assertEquals(expectedStatus, response.status)
         assertEquals(expectedMore, response.more)
-        assertEquals(expectedParamsSize, response.parameters.size())
-        assertTrue(expectedParamsContent.contentEquals(response.parameters.toByteArray()))
+        assertEquals(expectedParamsSize, response.parameters.size)
+        assertTrue(expectedParamsContent.contentEquals(response.parameters))
     }
 }

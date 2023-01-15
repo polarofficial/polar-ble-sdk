@@ -26,7 +26,7 @@ public enum PolarErrors: Error {
     case messageDecodeFailed
     
     /// String to date time formatting failed
-    case dateTimeFormatFailed
+    case dateTimeFormatFailed(description: String = "")
     
     /// Failed to start streaming
     case unableToStartStreaming

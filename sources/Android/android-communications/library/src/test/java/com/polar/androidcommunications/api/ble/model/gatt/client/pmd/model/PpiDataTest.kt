@@ -1,13 +1,25 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class PpiDataTest {
+
     @Test
-    fun test_PPI_DataSample() {
+    fun `process ppi raw data type 0`() {
         // Arrange
+        // HEX: 03 00 94 35 77 00 00 00 00 00
+        // index                                                   data:
+        // 0        type                                           03 (PPI)
+        // 1..9     timestamp                                      00 00 00 00 00 00 00 00
+        // 10       frame type                                     00 (raw, type 0)
+        val ppiDataFrameHeader = byteArrayOf(
+            0x01.toByte(),
+            0x00.toByte(), 0x94.toByte(), 0x35.toByte(), 0x77.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x00.toByte(),
+        )
+        val previousTimeStamp = 100uL
         // HEX:  80 80 80 80 80 FF 00 01 00 01 00 00
         // index    type                                            data:
         // 0        HR                                              0x80 (128)
@@ -34,40 +46,38 @@ class PpiDataTest {
         val skinContactStatus2 = if (ppFlags2 and 0x02 != 0) 0x01 else 0x00
         val skinContactSupported2 = if (ppFlags2 and 0x04 != 0) 0x01 else 0x00
 
-        val measurementFrame = byteArrayOf(
-            0x80.toByte(),
-            0x80.toByte(),
-            0x80.toByte(),
-            0x80.toByte(),
-            0x80.toByte(),
-            0xFF.toByte(),
-            0x00.toByte(),
-            0x01.toByte(),
-            0x00.toByte(),
-            0x01.toByte(),
-            0x00.toByte(),
-            0x00.toByte()
+        val ppiDataFrameContent = byteArrayOf(
+            0x80.toByte(), 0x80.toByte(), 0x80.toByte(), 0x80.toByte(),
+            0x80.toByte(), 0xFF.toByte(), 0x00.toByte(), 0x01.toByte(),
+            0x00.toByte(), 0x01.toByte(), 0x00.toByte(), 0x00.toByte()
         )
         val timeStamp: Long = Long.MAX_VALUE
 
+        val dataFrame = PmdDataFrame(
+            data = ppiDataFrameHeader + ppiDataFrameContent,
+            getPreviousTimeStamp = { previousTimeStamp },
+            getFactor = { 1.0f },
+            getSampleRate = { 0 })
+
         // Act
-        val ppiData = PpiData.parseDataFromDataFrame(isCompressed = false, BlePMDClient.PmdDataFrameType.TYPE_0, measurementFrame, 1.0f, timeStamp)
+        val ppiData = PpiData.parseDataFromDataFrame(dataFrame)
 
         // Assert
-        assertEquals(heartRate.toLong(), ppiData.ppSamples[0].hr.toLong())
-        assertEquals(intervalInMs.toLong(), ppiData.ppSamples[0].ppInMs.toLong())
-        assertEquals(errorEstimate.toLong(), ppiData.ppSamples[0].ppErrorEstimate.toLong())
-        assertEquals(blockerBit.toLong(), ppiData.ppSamples[0].blockerBit.toLong())
-        assertEquals(skinContactStatus.toLong(), ppiData.ppSamples[0].skinContactStatus.toLong())
-        assertEquals(skinContactSupported.toLong(), ppiData.ppSamples[0].skinContactSupported.toLong())
+        assertEquals(heartRate.toLong(), ppiData.ppiSamples[0].hr.toLong())
+        assertEquals(intervalInMs.toLong(), ppiData.ppiSamples[0].ppInMs.toLong())
+        assertEquals(errorEstimate.toLong(), ppiData.ppiSamples[0].ppErrorEstimate.toLong())
+        assertEquals(blockerBit.toLong(), ppiData.ppiSamples[0].blockerBit.toLong())
+        assertEquals(skinContactStatus.toLong(), ppiData.ppiSamples[0].skinContactStatus.toLong())
+        assertEquals(skinContactSupported.toLong(), ppiData.ppiSamples[0].skinContactSupported.toLong())
 
-        assertEquals(heartRate2.toLong(), ppiData.ppSamples[1].hr.toLong())
-        assertEquals(intervalInMs2.toLong(), ppiData.ppSamples[1].ppInMs.toLong())
-        assertEquals(errorEstimate2.toLong(), ppiData.ppSamples[1].ppErrorEstimate.toLong())
-        assertEquals(blockerBit2.toLong(), ppiData.ppSamples[1].blockerBit.toLong())
-        assertEquals(skinContactStatus2.toLong(), ppiData.ppSamples[1].skinContactStatus.toLong())
-        assertEquals(skinContactSupported2.toLong(), ppiData.ppSamples[1].skinContactSupported.toLong())
+        assertEquals(heartRate2.toLong(), ppiData.ppiSamples[1].hr.toLong())
+        assertEquals(intervalInMs2.toLong(), ppiData.ppiSamples[1].ppInMs.toLong())
+        assertEquals(errorEstimate2.toLong(), ppiData.ppiSamples[1].ppErrorEstimate.toLong())
+        assertEquals(blockerBit2.toLong(), ppiData.ppiSamples[1].blockerBit.toLong())
+        assertEquals(skinContactStatus2.toLong(), ppiData.ppiSamples[1].skinContactStatus.toLong())
+        assertEquals(skinContactSupported2.toLong(), ppiData.ppiSamples[1].skinContactSupported.toLong())
 
-        assertEquals(2, ppiData.ppSamples.size)
+        assertEquals(2, ppiData.ppiSamples.size)
     }
+
 }

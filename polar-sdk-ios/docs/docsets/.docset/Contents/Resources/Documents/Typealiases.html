@@ -230,8 +230,10 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Polar Ecg data</p>
-<pre class="highlight swift"><code><span class="o">-</span> <span class="nv">timestamp</span><span class="p">:</span> <span class="kt">Last</span> <span class="n">sample</span> <span class="n">timestamp</span> <span class="k">in</span> <span class="n">nanoseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">epoch</span> <span class="n">of</span> <span class="n">timestamp</span> <span class="k">is</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">2000</span>
-<span class="o">-</span> <span class="nv">samples</span><span class="p">:</span> <span class="n">ecg</span> <span class="n">sample</span> <span class="k">in</span> <span class="n">µVolts</span>
+<pre class="highlight swift"><code><span class="o">-</span> <span class="kt">Deprecated</span><span class="p">:</span> <span class="kt">Timestamp</span><span class="p">:</span> <span class="kt">Last</span> <span class="n">sample</span> <span class="n">timestamp</span> <span class="k">in</span> <span class="n">nanoseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">epoch</span> <span class="n">of</span> <span class="n">timestamp</span> <span class="k">is</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">2000</span>
+<span class="o">-</span> <span class="nv">samples</span><span class="p">:</span> <span class="kt">Acceleration</span> <span class="n">samples</span>
+    <span class="o">-</span> <span class="nv">timeStamp</span><span class="p">:</span> <span class="n">moment</span> <span class="n">sample</span> <span class="k">is</span> <span class="n">taken</span> <span class="k">in</span> <span class="n">nanoseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">epoch</span> <span class="n">of</span> <span class="n">timestamp</span> <span class="k">is</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">2000</span>
+    <span class="o">-</span> <span class="n">voltage</span> <span class="n">value</span> <span class="k">in</span> <span class="n">µVolts</span>
 </code></pre>
 
                       </div>
@@ -252,8 +254,12 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Polar acc data</p>
-<pre class="highlight swift"><code><span class="o">-</span> <span class="kt">Timestamp</span><span class="p">:</span> <span class="kt">Last</span> <span class="n">sample</span> <span class="n">timestamp</span> <span class="k">in</span> <span class="n">nanoseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">epoch</span> <span class="n">of</span> <span class="n">timestamp</span> <span class="k">is</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">2000</span>
-<span class="o">-</span> <span class="nv">samples</span><span class="p">:</span> <span class="kt">Acceleration</span> <span class="nf">samples</span> <span class="p">(</span><span class="n">including</span> <span class="n">gravity</span><span class="p">)</span> <span class="n">list</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span> <span class="k">in</span> <span class="n">millig</span> <span class="n">signed</span> <span class="n">value</span>
+<pre class="highlight swift"><code><span class="o">-</span> <span class="kt">Deprecated</span><span class="p">:</span> <span class="kt">Timestamp</span><span class="p">:</span> <span class="kt">Last</span> <span class="n">sample</span> <span class="n">timestamp</span> <span class="k">in</span> <span class="n">nanoseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">epoch</span> <span class="n">of</span> <span class="n">timestamp</span> <span class="k">is</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">2000</span>
+<span class="o">-</span> <span class="nv">samples</span><span class="p">:</span> <span class="kt">Acceleration</span> <span class="n">samples</span>
+    <span class="o">-</span> <span class="nv">timeStamp</span><span class="p">:</span> <span class="n">moment</span> <span class="n">sample</span> <span class="k">is</span> <span class="n">taken</span> <span class="k">in</span> <span class="n">nanoseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">epoch</span> <span class="n">of</span> <span class="n">timestamp</span> <span class="k">is</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">2000</span>
+    <span class="o">-</span> <span class="n">x</span> <span class="n">axis</span> <span class="n">value</span> <span class="k">in</span> <span class="nf">millig</span> <span class="p">(</span><span class="n">including</span> <span class="n">gravity</span><span class="p">)</span>
+    <span class="o">-</span> <span class="n">y</span> <span class="n">axis</span> <span class="n">value</span> <span class="k">in</span> <span class="nf">millig</span> <span class="p">(</span><span class="n">including</span> <span class="n">gravity</span><span class="p">)</span>
+    <span class="o">-</span> <span class="n">z</span> <span class="n">axis</span> <span class="n">value</span> <span class="k">in</span> <span class="nf">millig</span> <span class="p">(</span><span class="n">including</span> <span class="n">gravity</span><span class="p">)</span>
 </code></pre>
 
                       </div>
@@ -274,8 +280,12 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Polar gyro data</p>
-<pre class="highlight swift"><code><span class="o">-</span> <span class="kt">Timestamp</span><span class="p">:</span> <span class="kt">Last</span> <span class="n">sample</span> <span class="n">timestamp</span> <span class="k">in</span> <span class="n">nanoseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">epoch</span> <span class="n">of</span> <span class="n">timestamp</span> <span class="k">is</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">2000</span>
-<span class="o">-</span> <span class="nv">samples</span><span class="p">:</span> <span class="n">gyro</span> <span class="n">samples</span> <span class="n">list</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span> <span class="k">in</span> <span class="err">°</span><span class="o">/</span><span class="n">s</span> <span class="n">signed</span> <span class="n">value</span>
+<pre class="highlight swift"><code><span class="o">-</span> <span class="kt">Deprecated</span><span class="p">:</span> <span class="kt">Timestamp</span><span class="p">:</span> <span class="kt">Last</span> <span class="n">sample</span> <span class="n">timestamp</span> <span class="k">in</span> <span class="n">nanoseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">epoch</span> <span class="n">of</span> <span class="n">timestamp</span> <span class="k">is</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">2000</span>
+<span class="o">-</span> <span class="nv">samples</span><span class="p">:</span> <span class="kt">Gyroscope</span> <span class="n">samples</span>
+    <span class="o">-</span> <span class="nv">timeStamp</span><span class="p">:</span> <span class="n">moment</span> <span class="n">sample</span> <span class="k">is</span> <span class="n">taken</span> <span class="k">in</span> <span class="n">nanoseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">epoch</span> <span class="n">of</span> <span class="n">timestamp</span> <span class="k">is</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">2000</span>
+    <span class="o">-</span> <span class="n">x</span> <span class="n">axis</span> <span class="n">value</span> <span class="k">in</span> <span class="n">deg</span><span class="o">/</span><span class="n">sec</span>
+    <span class="o">-</span> <span class="n">y</span> <span class="n">axis</span> <span class="n">value</span> <span class="k">in</span> <span class="n">deg</span><span class="o">/</span><span class="n">sec</span>
+    <span class="o">-</span> <span class="n">z</span> <span class="n">axis</span> <span class="n">value</span> <span class="k">in</span> <span class="n">deg</span><span class="o">/</span><span class="n">sec</span>
 </code></pre>
 
                       </div>
@@ -296,8 +306,12 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Polar magnetometer data</p>
-<pre class="highlight swift"><code><span class="o">-</span> <span class="kt">Timestamp</span><span class="p">:</span> <span class="kt">Last</span> <span class="n">sample</span> <span class="n">timestamp</span> <span class="k">in</span> <span class="n">nanoseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">epoch</span> <span class="n">of</span> <span class="n">timestamp</span> <span class="k">is</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">2000</span>
-<span class="o">-</span> <span class="nv">samples</span><span class="p">:</span> <span class="k">in</span> <span class="kt">Gauss</span>
+<pre class="highlight swift"><code><span class="o">-</span> <span class="kt">Deprecated</span><span class="p">:</span> <span class="kt">Timestamp</span><span class="p">:</span> <span class="kt">Last</span> <span class="n">sample</span> <span class="n">timestamp</span> <span class="k">in</span> <span class="n">nanoseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">epoch</span> <span class="n">of</span> <span class="n">timestamp</span> <span class="k">is</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">2000</span>
+<span class="o">-</span> <span class="nv">samples</span><span class="p">:</span> <span class="kt">Magnetometer</span> <span class="n">samples</span>
+    <span class="o">-</span> <span class="nv">timeStamp</span><span class="p">:</span> <span class="n">moment</span> <span class="n">sample</span> <span class="k">is</span> <span class="n">taken</span> <span class="k">in</span> <span class="n">nanoseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">epoch</span> <span class="n">of</span> <span class="n">timestamp</span> <span class="k">is</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">2000</span>
+    <span class="o">-</span> <span class="n">x</span> <span class="n">axis</span> <span class="n">value</span> <span class="k">in</span> <span class="kt">Gauss</span>
+    <span class="o">-</span> <span class="n">y</span> <span class="n">axis</span> <span class="n">value</span> <span class="k">in</span> <span class="kt">Gauss</span>
+    <span class="o">-</span> <span class="n">z</span> <span class="n">axis</span> <span class="n">value</span> <span class="k">in</span> <span class="kt">Gauss</span>
 </code></pre>
 
                       </div>
@@ -318,10 +332,11 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Polar Ohr data</p>
-<pre class="highlight swift"><code><span class="o">-</span> <span class="kt">Timestamp</span><span class="p">:</span> <span class="kt">Last</span> <span class="n">sample</span> <span class="n">timestamp</span> <span class="k">in</span> <span class="n">nanoseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">epoch</span> <span class="n">of</span> <span class="n">timestamp</span> <span class="k">is</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">2000</span>
-<span class="o">-</span> <span class="nv">channels</span><span class="p">:</span> <span class="n">amount</span> <span class="n">of</span> <span class="n">channels</span>
-<span class="o">-</span> <span class="nv">source</span><span class="p">:</span> <span class="n">source</span> <span class="n">of</span> <span class="kt">OHR</span> <span class="n">data</span>
-<span class="o">-</span> <span class="nv">samples</span><span class="p">:</span> <span class="nf">ppg</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="n">and</span> <span class="nf">ambient</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="n">samples</span> <span class="n">list</span>
+<pre class="highlight swift"><code><span class="o">-</span> <span class="kt">Deprecated</span><span class="p">:</span> <span class="kt">Timestamp</span><span class="p">:</span> <span class="kt">Last</span> <span class="n">sample</span> <span class="n">timestamp</span> <span class="k">in</span> <span class="n">nanoseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">epoch</span> <span class="n">of</span> <span class="n">timestamp</span> <span class="k">is</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">2000</span>
+<span class="o">-</span> <span class="nv">type</span><span class="p">:</span> <span class="n">type</span> <span class="n">of</span> <span class="n">data</span><span class="p">,</span> <span class="n">which</span> <span class="n">varies</span> <span class="n">based</span> <span class="n">on</span> <span class="n">what</span> <span class="k">is</span> <span class="n">type</span> <span class="n">of</span> <span class="n">optical</span> <span class="n">sensor</span> <span class="n">used</span> <span class="k">in</span> <span class="n">the</span> <span class="n">device</span>
+<span class="o">-</span> <span class="nv">samples</span><span class="p">:</span> <span class="kt">Photoplethysmography</span> <span class="n">samples</span>
+    <span class="o">-</span> <span class="nv">timeStamp</span><span class="p">:</span> <span class="n">moment</span> <span class="n">sample</span> <span class="k">is</span> <span class="n">taken</span> <span class="k">in</span> <span class="n">nanoseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">epoch</span> <span class="n">of</span> <span class="n">timestamp</span> <span class="k">is</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">2000</span>
+    <span class="o">-</span> <span class="n">channelSamples</span> <span class="k">is</span> <span class="n">the</span> <span class="kt">PPG</span> <span class="p">(</span><span class="kt">Photoplethysmography</span><span class="p">)</span> <span class="n">raw</span> <span class="n">value</span> <span class="n">received</span> <span class="n">from</span> <span class="n">the</span> <span class="n">optical</span> <span class="n">sensor</span><span class="o">.</span> <span class="kt">Based</span> <span class="n">on</span> <span class="p">[</span><span class="kt">OhrDataType</span><span class="p">]</span> <span class="n">the</span> <span class="n">amount</span> <span class="n">of</span> <span class="n">channels</span> <span class="n">varies</span><span class="o">.</span> <span class="kt">Typically</span> <span class="nf">ppg</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="n">channel</span> <span class="o">+</span> <span class="n">n</span> <span class="nf">ambient</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span>
 </code></pre>
 
                       </div>
@@ -341,14 +356,16 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Polar ppi data
-          - timestamp N/A always 0
-          - hr in BPM
-          - ppInMs Pulse to Pulse interval in milliseconds. The value indicates the quality of PP-intervals. When error estimate is below 10ms the PP-intervals are probably very accurate. Error estimate values over 30ms may be caused by movement artefact or too loose sensor-skin contact.
-          - ppErrorEstimate estimate of the expected absolute error in PP-interval in milliseconds
-          - blockerBit = 1 if PP measurement was invalid due to acceleration or other reason
-          - skinContactStatus = 0 if the device detects poor or no contact with the skin
-          - skinContactSupported = 1 if the Sensor Contact feature is supported.</p>
+                        <p>Polar ppi data</p>
+<pre class="highlight swift"><code><span class="o">-</span> <span class="kt">Deprecated</span><span class="p">:</span> <span class="n">timestamp</span> <span class="n">always</span> <span class="mi">0</span>
+<span class="o">-</span> <span class="nv">samples</span><span class="p">:</span> <span class="kt">PPI</span> <span class="n">samples</span>
+    <span class="o">-</span> <span class="n">hr</span> <span class="k">in</span> <span class="kt">BPM</span>
+    <span class="o">-</span> <span class="n">ppInMs</span> <span class="kt">Pulse</span> <span class="n">to</span> <span class="kt">Pulse</span> <span class="n">interval</span> <span class="k">in</span> <span class="n">milliseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">value</span> <span class="n">indicates</span> <span class="n">the</span> <span class="n">quality</span> <span class="n">of</span> <span class="kt">PP</span><span class="o">-</span><span class="n">intervals</span><span class="o">.</span> <span class="kt">When</span> <span class="n">error</span> <span class="n">estimate</span> <span class="k">is</span> <span class="n">below</span> <span class="mi">10</span><span class="n">ms</span> <span class="n">the</span> <span class="kt">PP</span><span class="o">-</span><span class="n">intervals</span> <span class="n">are</span> <span class="n">probably</span> <span class="n">very</span> <span class="n">accurate</span><span class="o">.</span> <span class="kt">Error</span> <span class="n">estimate</span> <span class="n">values</span> <span class="n">over</span> <span class="mi">30</span><span class="n">ms</span> <span class="n">may</span> <span class="n">be</span> <span class="n">caused</span> <span class="n">by</span> <span class="n">movement</span> <span class="n">artefact</span> <span class="n">or</span> <span class="n">too</span> <span class="n">loose</span> <span class="n">sensor</span><span class="o">-</span><span class="n">skin</span> <span class="n">contact</span><span class="o">.</span>
+    <span class="o">-</span> <span class="n">ppErrorEstimate</span> <span class="n">estimate</span> <span class="n">of</span> <span class="n">the</span> <span class="n">expected</span> <span class="n">absolute</span> <span class="n">error</span> <span class="k">in</span> <span class="kt">PP</span><span class="o">-</span><span class="n">interval</span> <span class="k">in</span> <span class="n">milliseconds</span>
+    <span class="o">-</span> <span class="n">blockerBit</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="kt">PP</span> <span class="n">measurement</span> <span class="n">was</span> <span class="n">invalid</span> <span class="n">due</span> <span class="n">to</span> <span class="n">acceleration</span> <span class="n">or</span> <span class="n">other</span> <span class="n">reason</span>
+    <span class="o">-</span> <span class="n">skinContactStatus</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">the</span> <span class="n">device</span> <span class="n">detects</span> <span class="n">poor</span> <span class="n">or</span> <span class="n">no</span> <span class="n">contact</span> <span class="n">with</span> <span class="n">the</span> <span class="n">skin</span>
+    <span class="o">-</span> <span class="n">skinContactSupported</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">the</span> <span class="kt">Sensor</span> <span class="kt">Contact</span> <span class="n">feature</span> <span class="k">is</span> <span class="n">supported</span><span class="o">.</span>
+</code></pre>
 
                       </div>
                     </section>
@@ -426,7 +443,7 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2022 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2022-10-06)</p>
+          <p>&copy; 2022 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2022-12-12)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.14.2</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

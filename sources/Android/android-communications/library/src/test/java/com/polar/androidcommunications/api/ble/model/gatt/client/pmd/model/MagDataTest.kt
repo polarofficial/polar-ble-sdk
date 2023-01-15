@@ -1,6 +1,6 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
 import org.junit.Assert
 import org.junit.Test
 
@@ -9,6 +9,20 @@ class MagDataTest {
     @Test
     fun `process magnetometer compressed data type 0`() {
         // Arrange
+        // HEX: 06 00 94 35 77 00 00 00 00 01
+        // index                                                   data:
+        // 0        type                                           06 (MAG)
+        // 1..9     timestamp                                      00 94 35 77 00 00 00 00
+        val timeStamp = 2000000000uL
+        // 10       frame type                                     80 (compressed, type 0)
+
+        val magDataFrameHeader = byteArrayOf(
+            0x06.toByte(),
+            0x00.toByte(), 0x94.toByte(), 0x35.toByte(), 0x77.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x80.toByte(),
+        )
+        val previousTimeStamp = 100uL
+
         // HEX: E2 E6 FA 15 49 0A 06 01 7F 20 FC
         // index    type                                data
         // 0..1     Sample 0 - channel 0 (ref. sample)  E2 E6 (0xE6E2 = -6430)
@@ -21,8 +35,7 @@ class MagDataTest {
         // Delta channel 1                              000001b
         // Delta channel 2                              000010b
         val expectedSamplesSize = 1 + 1 // reference sample + delta samples
-        val expectedTimeStamp = 4294967295L
-        val measurementFrame = byteArrayOf(
+        val magDataFrameContent = byteArrayOf(
             0xE2.toByte(), 0xE6.toByte(), 0xFA.toByte(), 0x15.toByte(), 0x49.toByte(), 0x0A.toByte(),
             0x06.toByte(), 0x01.toByte(), 0x7F.toByte(), 0x20.toByte(), 0xFC.toByte()
         )
@@ -37,14 +50,18 @@ class MagDataTest {
         val sample1channel2 = sample0channel2 + 0x02
         val sample1status = MagData.CalibrationStatus.NOT_AVAILABLE
 
-        val frameType = BlePMDClient.PmdDataFrameType.TYPE_0
         val factor = 1.0f
 
+        val dataFrame = PmdDataFrame(
+            data = magDataFrameHeader + magDataFrameContent,
+            getPreviousTimeStamp = { previousTimeStamp },
+            getFactor = { factor },
+            getSampleRate = { 0 })
+
         // Act
-        val magData = MagData.parseDataFromDataFrame(isCompressed = true, frameType = frameType, frame = measurementFrame, factor = factor, timeStamp = expectedTimeStamp)
+        val magData = MagData.parseDataFromDataFrame(dataFrame)
 
         // Assert
-        Assert.assertEquals(expectedTimeStamp, magData.timeStamp)
         Assert.assertEquals(expectedSamplesSize, magData.magSamples.size)
 
         Assert.assertEquals(sample0channel0, magData.magSamples[0].x)
@@ -56,11 +73,28 @@ class MagDataTest {
         Assert.assertEquals(sample1channel1, magData.magSamples[1].y)
         Assert.assertEquals(sample1channel2, magData.magSamples[1].z)
         Assert.assertEquals(sample1status, magData.magSamples[1].calibrationStatus)
+
+        Assert.assertEquals(timeStamp, magData.timeStamp)
+        Assert.assertEquals(timeStamp, magData.magSamples[1].timeStamp)
     }
 
     @Test
-    fun `process magnetometer data type 1`() {
+    fun `process magnetometer compressed data type 1`() {
         // Arrange
+        // HEX: 06 00 94 35 77 00 00 00 00 01
+        // index                                                   data:
+        // 0        type                                           06 (MAG)
+        // 1..9     timestamp                                      00 94 35 77 00 00 00 00
+        val timeStamp = 2000000000uL
+        // 10       frame type                                     81 (compressed, type 1)
+
+        val magDataFrameHeader = byteArrayOf(
+            0x06.toByte(),
+            0x00.toByte(), 0x94.toByte(), 0x35.toByte(), 0x77.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x81.toByte(),
+        )
+        val previousTimeStamp = 100uL
+
         // HEX: 37 FF 51 FD 6C F6 00 00 03 01 F8 02
         // index    type                                data
         // 0..1     Sample 0 - channel 0 (ref. sample)  37 FF (0xFF37 = -201)
@@ -75,8 +109,7 @@ class MagDataTest {
         // Delta channel 2                              011b
         // Delta status                                 001b
         val expectedSamplesSize = 1 + 1 // reference sample + delta samples
-        val expectedTimeStamp = 1632803681L
-        val measurementFrame = byteArrayOf(
+        val magDataFrameContent = byteArrayOf(
             0x37.toByte(), 0xFF.toByte(), 0x51.toByte(), 0xFD.toByte(), 0x6C.toByte(), 0xF6.toByte(),
             0x00.toByte(), 0x00.toByte(), 0x03.toByte(), 0x01.toByte(), 0xF8.toByte(), 0x02.toByte()
         )
@@ -91,15 +124,17 @@ class MagDataTest {
         val sample1channel2 = (-2452.0f + 0x3) / 1000
         val sample1status = MagData.CalibrationStatus.getById(0x00 + 0x01)
 
-        val frameType = BlePMDClient.PmdDataFrameType.TYPE_1
         val factor = 1.0f
+        val dataFrame = PmdDataFrame(
+            data = magDataFrameHeader + magDataFrameContent,
+            getPreviousTimeStamp = { previousTimeStamp },
+            getFactor = { factor },
+            getSampleRate = { 0 })
 
         // Act
-        val magData = MagData.parseDataFromDataFrame(isCompressed = true, frameType = frameType, frame = measurementFrame, factor = factor, timeStamp = expectedTimeStamp)
+        val magData = MagData.parseDataFromDataFrame(dataFrame)
 
         // Assert
-
-        Assert.assertEquals(expectedTimeStamp, magData.timeStamp)
         Assert.assertEquals(expectedSamplesSize, magData.magSamples.size)
 
         Assert.assertEquals(sample0channel0, magData.magSamples[0].x, 0.00001f)
@@ -111,11 +146,28 @@ class MagDataTest {
         Assert.assertEquals(sample1channel1, magData.magSamples[1].y, 0.00001f)
         Assert.assertEquals(sample1channel2, magData.magSamples[1].z, 0.00001f)
         Assert.assertEquals(sample1status, magData.magSamples[1].calibrationStatus)
+
+        Assert.assertEquals(timeStamp, magData.timeStamp)
+        Assert.assertEquals(timeStamp, magData.magSamples[1].timeStamp)
     }
 
     @Test
-    fun `process magnetometer data type 1 with factor`() {
+    fun `process magnetometer compressed data type 1 with factor`() {
         // Arrange
+        // HEX: 06 00 94 35 77 00 00 00 00 01
+        // index                                                   data:
+        // 0        type                                           06 (MAG)
+        // 1..9     timestamp                                      00 94 35 77 00 00 00 00
+        val timeStamp = 2000000000uL
+        // 10       frame type                                     81 (compressed, type 1)
+
+        val magDataFrameHeader = byteArrayOf(
+            0x06.toByte(),
+            0x00.toByte(), 0x94.toByte(), 0x35.toByte(), 0x77.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x81.toByte(),
+        )
+        val previousTimeStamp = 100uL
+
         // HEX: 37 FF 51 FD 6C F6 00 00 03 01 F8 02
         // index    type                                data
         // 0..1     Sample 0 - channel 0 (ref. sample)  37 FF (0xFF37 = -201)
@@ -130,8 +182,7 @@ class MagDataTest {
         // Delta channel 2                              011b
         // Delta status                                 001b
         val expectedSamplesSize = 1 + 1 // reference sample + delta samples
-        val expectedTimeStamp = 1632803681L
-        val measurementFrame = byteArrayOf(
+        val magDataFrameContent = byteArrayOf(
             0x37.toByte(), 0xFF.toByte(), 0x51.toByte(), 0xFD.toByte(), 0x6C.toByte(), 0xF6.toByte(),
             0x00.toByte(), 0x00.toByte(), 0x03.toByte(), 0x01.toByte(), 0xF8.toByte(), 0x02.toByte()
         )
@@ -146,15 +197,18 @@ class MagDataTest {
         val sample1channel2 = (-2452.0f + 0x3) / 1000
         val sample1status = MagData.CalibrationStatus.getById(0x00 + 0x01)
 
-        val frameType = BlePMDClient.PmdDataFrameType.TYPE_1
         val factor = 1.1f
 
+        val dataFrame = PmdDataFrame(
+            data = magDataFrameHeader + magDataFrameContent,
+            getPreviousTimeStamp = { previousTimeStamp },
+            getFactor = { factor },
+            getSampleRate = { 0 })
+
         // Act
-        val magData = MagData.parseDataFromDataFrame(isCompressed = true, frameType = frameType, frame = measurementFrame, factor = factor, timeStamp = expectedTimeStamp)
+        val magData = MagData.parseDataFromDataFrame(dataFrame)
 
         // Assert
-
-        Assert.assertEquals(expectedTimeStamp, magData.timeStamp)
         Assert.assertEquals(expectedSamplesSize, magData.magSamples.size)
 
         Assert.assertEquals(factor * sample0channel0, magData.magSamples[0].x, 0.00001f)
@@ -166,5 +220,8 @@ class MagDataTest {
         Assert.assertEquals(factor * sample1channel1, magData.magSamples[1].y, 0.00001f)
         Assert.assertEquals(factor * sample1channel2, magData.magSamples[1].z, 0.00001f)
         Assert.assertEquals(sample1status, magData.magSamples[1].calibrationStatus)
+
+        Assert.assertEquals(timeStamp, magData.timeStamp)
+        Assert.assertEquals(timeStamp, magData.magSamples[1].timeStamp)
     }
 }

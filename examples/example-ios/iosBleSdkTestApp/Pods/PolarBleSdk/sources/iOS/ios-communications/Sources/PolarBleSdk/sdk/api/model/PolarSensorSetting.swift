@@ -36,17 +36,17 @@ public struct PolarSensorSetting {
         })
     }
     
-    init(_ settings: [Pmd.PmdSetting.PmdSettingType : Set<UInt32>]) {
+    init(_ settings: [PmdSetting.PmdSettingType : Set<UInt32>]) {
         self.settings = settings.reduce(into: [:]) { (result, arg1) in
             let (key, value) = arg1
             result[SettingType(rawValue: Int(key.rawValue)) ?? SettingType.unknown]=value
         }
     }
     
-    func map2PmdSetting() -> Pmd.PmdSetting {
-        return Pmd.PmdSetting(settings.reduce(into: [:]) { (result, arg1) in
+    func map2PmdSetting() -> PmdSetting {
+        return PmdSetting(settings.reduce(into: [:]) { (result, arg1) in
             let (key, value) = arg1
-            result[Pmd.PmdSetting.PmdSettingType(rawValue: UInt8(key.rawValue)) ?? Pmd.PmdSetting.PmdSettingType.unknown]=value.first!
+            result[PmdSetting.PmdSettingType(rawValue: UInt8(key.rawValue)) ?? PmdSetting.PmdSettingType.unknown]=value.first!
         })
     }
     

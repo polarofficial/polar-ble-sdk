@@ -146,7 +146,7 @@ import UIKit
         let session = try sessionServiceReady(identifier, service: BlePmdClient.PMD_SERVICE)
         let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
         if client.isCharacteristicNotificationEnabled(BlePmdClient.PMD_CP) &&
-            client.isCharacteristicNotificationEnabled(BlePmdClient.PMD_MTU) {
+            client.isCharacteristicNotificationEnabled(BlePmdClient.PMD_DATA) {
             // client ready
             return session
         }
@@ -238,29 +238,29 @@ import UIKit
                         return pmdClient.clientReady(true)
                             .andThen(pmdClient.readFeature(true)
                                 .observe(on: self.scheduler)
-                                .do(onSuccess: { (value: Pmd.PmdFeature) in
+                                .do(onSuccess: { (value: Set<PmdMeasurementType>) in
                                     var featureSet = Set<DeviceStreamingFeature>()
-                                    if value.ecgSupported {
+                                    if value.contains(PmdMeasurementType.ecg) {
                                         featureSet.insert(.ecg)
                                     }
-                                    if value.accSupported {
+                                    if value.contains(PmdMeasurementType.acc) {
                                         featureSet.insert(.acc)
                                     }
-                                    if value.ppgSupported {
+                                    if value.contains(PmdMeasurementType.ppg) {
                                         featureSet.insert(.ppg)
                                     }
-                                    if value.ppiSupported {
+                                    if value.contains(PmdMeasurementType.ppi) {
                                         featureSet.insert(.ppi)
                                     }
-                                    if value.gyroSupported {
+                                    if value.contains(PmdMeasurementType.gyro) {
                                         featureSet.insert(.gyro)
                                     }
-                                    if value.magnetometerSupported {
+                                    if value.contains(PmdMeasurementType.mgn) {
                                         featureSet.insert(.magnetometer)
                                     }
                                     self.deviceFeaturesObserver?.streamingFeaturesReady(deviceId, streamingFeatures: featureSet)
                                     
-                                    if value.sdkModeSupported {
+                                    if value.contains(PmdMeasurementType.sdkMode) {
                                         self.sdkModeFeatureObserver?.sdkModeFeatureAvailable(deviceId)
                                     }
                                 }))
@@ -436,29 +436,65 @@ extension PolarBleApiImpl: PolarBleApi {
     func setLocalTime(_ identifier: String, time: Date, zone: TimeZone) -> Completable {
         do {
             let session = try sessionFtpClientReady(identifier)
-            let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
-            let cal = Calendar.current
-            var d = PbDate()
-            d.year = UInt32(cal.component(Calendar.Component.year, from: time))
-            d.month = UInt32(cal.component(Calendar.Component.month, from: time))
-            d.day = UInt32(cal.component(Calendar.Component.day, from: time))
-            var t = PbTime()
-            t.hour = UInt32(cal.component(Calendar.Component.hour, from: time))
-            t.minute = UInt32(cal.component(Calendar.Component.minute, from: time))
-            t.seconds = UInt32(cal.component(Calendar.Component.second, from: time))
-            t.millis = 0
-            var params = Protocol_PbPFtpSetLocalTimeParams()
-            params.date = d
-            params.time = t
-            params.tzOffset = Int32(zone.secondsFromGMT()/60)
-            let queryParams = try params.serializedData()
-            return client.query(Protocol_PbPFtpQuery.setLocalTime.rawValue, parameters: queryParams as NSData)
-                .catch { (err) -> Single<NSData> in
-                    return Single.error(PolarErrors.deviceError(description: "\(err)"))
+            
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Completable.error(PolarErrors.serviceNotFound)
+            }
+            
+            guard let pbLocalDateTime = PolarTimeUtils.dateToPbPftpSetLocalTime(time: time, zone: zone),
+                  let pbSystemDateTime = PolarTimeUtils.dateToPbPftpSetSystemTime(time: time) else {
+                return Completable.error(PolarErrors.dateTimeFormatFailed())
+            }
+            
+            self.logMessage("set local time to \(time) and timeZone \(zone) in device \(identifier)")
+            
+            let paramsSetLocalTime = try pbLocalDateTime.serializedData()
+            let paramsSetSystemTime = try pbSystemDateTime.serializedData()
+            
+            switch BlePolarDeviceCapabilitiesUtility.fileSystemType( session.advertisementContent.polarDeviceType) {
+            case .unknownFileSystem:
+                return Completable.empty()
+            case .h10FileSystem:
+                return client.query(Protocol_PbPFtpQuery.setLocalTime.rawValue, parameters: paramsSetLocalTime as NSData).catch { error in
+                    return Single.error(PolarErrors.deviceError(description: "\(error)"))
                 }
                 .asCompletable()
+            case .sagRfc2FileSystem:
+                return  Single.zip(
+                    client.query(Protocol_PbPFtpQuery.setLocalTime.rawValue, parameters: paramsSetLocalTime as NSData),
+                    client.query(Protocol_PbPFtpQuery.setSystemTime.rawValue, parameters: paramsSetSystemTime as NSData))
+                .catch { error in
+                    return Single.error(PolarErrors.deviceError(description: "\(error)"))
+                }
+                .asCompletable()
+            }
         } catch let err {
             return Completable.error(err)
+        }
+    }
+    
+    func getLocalTime(_ identifier: String) -> RxSwift.Single<Date> {
+        do {
+            let session = try sessionFtpClientReady(identifier)
+            
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Single.error(PolarErrors.serviceNotFound)
+            }
+            self.logMessage("get local time from device \(identifier)")
+            switch BlePolarDeviceCapabilitiesUtility.fileSystemType( session.advertisementContent.polarDeviceType) {
+            case .h10FileSystem ,
+                    .unknownFileSystem:
+                return Single.error(PolarErrors.operationNotSupported)
+            case .sagRfc2FileSystem:
+                return client.query(Protocol_PbPFtpQuery.getLocalTime.rawValue, parameters: nil)
+                    .map { data in
+                        let result = try Protocol_PbPFtpSetLocalTimeParams(serializedData: data as Data)
+                        let date = try PolarTimeUtils.dateFromPbPftpLocalDateTime(result)
+                        return date
+                    }
+            }
+        } catch let err {
+            return Single.error(err)
         }
     }
     
@@ -631,7 +667,7 @@ extension PolarBleApiImpl: PolarBleApi {
     }
     
     fileprivate func startStreaming<T>(_ identifier: String,
-                                       type: Pmd.PmdMeasurementType,
+                                       type: PmdMeasurementType,
                                        settings: PolarSensorSetting,
                                        observer: @escaping (_ client: BlePmdClient) -> Observable<T>) -> Observable<T> {
         do {
@@ -654,41 +690,52 @@ extension PolarBleApiImpl: PolarBleApi {
     func startEcgStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarEcgData> {
         return startStreaming(identifier, type: .ecg, settings: settings) { (client) -> Observable<PolarEcgData> in
             return client.observeEcg()
+                .map{
+                    $0.mapToPolarData()
+                }
         }
     }
     
     func startAccStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarAccData> {
         return startStreaming(identifier, type: .acc, settings: settings) { (client) -> Observable<PolarAccData> in
             return client.observeAcc()
+                .map{
+                    $0.mapToPolarData()
+                }
         }
     }
     
     func startGyroStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarGyroData> {
         return startStreaming(identifier, type: .gyro, settings: settings) { (client) -> Observable<PolarGyroData> in
             return client.observeGyro()
+                .map {
+                    $0.mapToPolarData()
+                }
         }
     }
     
     func startMagnetometerStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarMagnetometerData> {
         return startStreaming(identifier, type: .mgn, settings: settings) { (client) -> Observable<PolarMagnetometerData> in
-            return client.observeMagnetometer()
+            return client.observeMagnetometer().map {
+                $0.mapToPolarData()
+            }
         }
     }
     
     func startOhrStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarOhrData> {
         return startStreaming(identifier, type: .ppg, settings: settings) { (client) -> Observable<PolarOhrData> in
             return client.observePpg()
-                .map { (arg0) -> (PolarOhrData) in
-                    let (timeStamp, channels, samples) = arg0
-                    let type = OhrDataType(rawValue: Int(channels)) ?? OhrDataType.unknown
-                    return (timeStamp, type, samples)
+                .map {
+                    $0.mapToPolarData()
                 }
         }
     }
     
     func startOhrPPIStreaming(_ identifier: String) -> Observable<PolarPpiData> {
         return startStreaming(identifier, type: .ppi, settings: PolarSensorSetting()) { (client) -> Observable<PolarPpiData> in
-            return client.observePpi()
+            return client.observePpi().map {
+                $0.mapToPolarData()
+            }
         }
     }
     
@@ -767,7 +814,7 @@ extension PolarBleApiImpl: PolarBleApi {
                     if let date = dateFormatter.date(from: String(components[2] + components[4])) {
                         return (path,date: date, entryId: String(components[2] + components[4]))
                     }
-                    throw PolarErrors.dateTimeFormatFailed
+                    throw PolarErrors.dateTimeFormatFailed()
                 })
                 .catch({ (err) -> Observable<PolarExerciseEntry> in
                     return Observable.error(PolarErrors.deviceError(description: "\(err)"))
@@ -790,7 +837,7 @@ extension PolarBleApiImpl: PolarBleApi {
         }
     }
     
-    private func querySettings(_ identifier: String, type: Pmd.PmdMeasurementType) -> Single<PolarSensorSetting> {
+    private func querySettings(_ identifier: String, type: PmdMeasurementType) -> Single<PolarSensorSetting> {
         do {
             let session = try sessionPmdClientReady(identifier)
             let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
@@ -806,7 +853,7 @@ extension PolarBleApiImpl: PolarBleApi {
         }
     }
     
-    private func queryFullSettings(_ identifier: String, type: Pmd.PmdMeasurementType) -> Single<PolarSensorSetting> {
+    private func queryFullSettings(_ identifier: String, type: PmdMeasurementType) -> Single<PolarSensorSetting> {
         do {
             let session = try sessionPmdClientReady(identifier)
             let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
@@ -910,5 +957,65 @@ extension PrimitiveSequence where Trait == SingleTrait {
         return self.asObservable()
             .flatMap { _ in Observable<Never>.empty() }
             .asCompletable()
+    }
+}
+
+private extension GyrData {
+    func mapToPolarData() -> PolarGyroData {
+        var polarSamples: [(timeStamp: UInt64, x: Float, y: Float, z: Float)] = []
+        for sample in self.samples {
+            polarSamples.append((timeStamp: sample.timeStamp, x: sample.x, y: sample.y, z: sample.z))
+        }
+        return PolarGyroData(timeStamp: self.timeStamp, samples: polarSamples)
+    }
+}
+
+private extension AccData {
+    func mapToPolarData() -> PolarAccData {
+        var polarSamples: [(timeStamp: UInt64, x: Int32, y: Int32, z: Int32)] = []
+        for sample in self.samples {
+            polarSamples.append((timeStamp: sample.timeStamp, x: sample.x, y: sample.y, z: sample.z))
+        }
+        return PolarAccData(timeStamp: self.timeStamp, samples: polarSamples)
+    }
+}
+
+private extension MagData {
+    func mapToPolarData() -> PolarMagnetometerData {
+        var polarSamples: [(timeStamp: UInt64, x: Float, y: Float, z: Float)] = []
+        for sample in self.samples {
+            polarSamples.append((timeStamp: sample.timeStamp, x: sample.x, y: sample.y, z: sample.z))
+        }
+        return PolarMagnetometerData(timeStamp: self.timeStamp, samples: polarSamples)
+    }
+}
+
+private extension PpiData {
+    func mapToPolarData() -> PolarPpiData {
+        var polarSamples: [(hr: Int, ppInMs: UInt16, ppErrorEstimate: UInt16, blockerBit: Int, skinContactStatus: Int, skinContactSupported: Int)] = []
+        for sample in self.samples {
+            polarSamples.append((hr: sample.hr, ppInMs: sample.ppInMs, ppErrorEstimate: sample.ppErrorEstimate, blockerBit: sample.blockerBit, skinContactStatus: sample.skinContactStatus, skinContactSupported: sample.skinContactSupported))
+        }
+        return PolarPpiData(timeStamp: 0, samples: polarSamples)
+    }
+}
+
+private extension EcgData {
+    func mapToPolarData() -> PolarEcgData {
+        var polarSamples: [(timeStamp: UInt64, voltage: Int32)] = []
+        for sample in self.samples {
+            polarSamples.append((timeStamp: sample.timeStamp, voltage: sample.microVolts ))
+        }
+        return PolarEcgData(timeStamp: self.timeStamp, samples: polarSamples)
+    }
+}
+
+private extension PpgData {
+    func mapToPolarData() -> PolarOhrData {
+        var polarSamples: [(timeStamp:UInt64, channelSamples: [Int32])] = []
+        for sample in self.samples {
+            polarSamples.append((timeStamp: sample.timeStamp, channelSamples: [sample.ppgDataSamples[0], sample.ppgDataSamples[1], sample.ppgDataSamples[2], sample.ambientSample ] ))
+        }
+        return PolarOhrData(timeStamp: self.timeStamp, type: OhrDataType.ppg3_ambient1, samples: polarSamples)
     }
 }

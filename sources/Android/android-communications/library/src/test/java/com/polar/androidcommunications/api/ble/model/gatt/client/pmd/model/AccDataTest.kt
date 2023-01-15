@@ -1,24 +1,37 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
 import com.polar.androidcommunications.testrules.BleLoggerTestRule
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import kotlin.math.abs
+import kotlin.math.round
 
-class AccDataTest {
+internal class AccDataTest {
     @Rule
     @JvmField
     val bleLoggerTestRule = BleLoggerTestRule()
 
     @Test
-    fun `process acc raw data type 1`() {
+    fun `process acc raw data frame type 1`() {
         // Arrange
+        // HEX: 02 00 94 35 77 00 00 00 00 01
+        // index                                                   data:
+        // 0        type                                           02 (ACC)
+        // 1..9     timestamp                                      00 94 35 77 00 00 00 00
+        val timeStamp = 2000000000uL
+        // 10       frame type                                     01
+
+        val accDataFrameHeader = byteArrayOf(
+            0x02.toByte(),
+            0x00.toByte(), 0x94.toByte(), 0x35.toByte(), 0x77.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x01.toByte(),
+        )
+
         // HEX: 01 F7 FF FF FF E7 03 F8 FF FE FF E5 03 F9 FF FF FF E5 03 FA FF FF FF E6 03 FA FF FE FF E6 03 F9 FF FF FF E5 03 F8 FF FF FF E6 03 F8 FF FE FF E6 03 FA FF FF FF E5 03 FA FF FF FF E7 03 FA FF FF FF E5 03 F8 FF FF FF E6 03 F7 FF FF FF E6 03 F8 FF FE FF E6 03 F9 FF FE FF E7 03 F9 FF 00 00 E6 03 F9 FF FF FF E6 03 F7 FF FE FF E5 03 F9 FF FF FF E5 03 F9 FF FF FF E5 03 FA FF 00 00 E6 03 F9 FF FE FF E6 03 F8 FF FF FF E6 03 F8 FF FF FF E5 03 F9 FF FF FF E6 03 F9 FF FF FF E5 03 FA FF FF FF E6 03 F9 FF FF FF E5 03 F9 FF FF FF E5 03 F8 FF FE FF E6 03 F9 FF FF FF E6 03 F9 FF FF FF E6 03 F9 FF 00 00 E5 03 F9 FF FE FF E6 03 F8 FF FE FF E6 03 F7 FF FE FF E6 03
         // index                                                   data:
-        // 0        type                                           01
-        val frameType = BlePMDClient.PmdDataFrameType.TYPE_1
+        // 0        frame type                                     01
         // 1..2     x value                                        F7 FF (-9)
         val xValue1 = -9
         // 3..4     y value                                        FF FF (-1)
@@ -31,7 +44,7 @@ class AccDataTest {
         val yValue2 = -2
         // 11..12   z value                                        E5 03 (997)
         val zValue2 = 997
-        val measurementFrame = byteArrayOf(
+        val accDataFrameContent = byteArrayOf(
             0xF7.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0xE7.toByte(), 0x03.toByte(), 0xF8.toByte(), 0xFF.toByte(), 0xFE.toByte(), 0xFF.toByte(),
             0xE5.toByte(), 0x03.toByte(), 0xF9.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0xE5.toByte(), 0x03.toByte(), 0xFA.toByte(), 0xFF.toByte(),
             0xFF.toByte(), 0xFF.toByte(), 0xE6.toByte(), 0x03.toByte(), 0xFA.toByte(), 0xFF.toByte(), 0xFE.toByte(), 0xFF.toByte(), 0xE6.toByte(), 0x03.toByte(),
@@ -55,12 +68,17 @@ class AccDataTest {
             0xFE.toByte(), 0xFF.toByte(), 0xE6.toByte(), 0x03.toByte(), 0xF8.toByte(), 0xFF.toByte(), 0xFE.toByte(), 0xFF.toByte(), 0xE6.toByte(), 0x03.toByte(),
             0xF7.toByte(), 0xFF.toByte(), 0xFE.toByte(), 0xFF.toByte(), 0xE6.toByte(), 0x03.toByte()
         )
-        val isCompressed = false
-        val timeStamp: Long = 0
-        val amountOfSamples = measurementFrame.size / 2 / 3 // measurement frame size / resolution in bytes / channels
+
+        val amountOfSamples = accDataFrameContent.size / 2 / 3 // measurement frame size / resolution in bytes / channels
+        val sampleRate = 52
+        val dataFrame = PmdDataFrame(
+            data = accDataFrameHeader + accDataFrameContent,
+            getPreviousTimeStamp = { 0uL },
+            getFactor = { 1.0F },
+            getSampleRate = { sampleRate })
 
         // Act
-        val accData = AccData.parseDataFromDataFrame(isCompressed, frameType, measurementFrame, 1.0f, timeStamp)
+        val accData = AccData.parseDataFromDataFrame(dataFrame)
 
         // Assert
         Assert.assertEquals(xValue1, accData.accSamples[0].x)
@@ -69,6 +87,7 @@ class AccDataTest {
         Assert.assertEquals(xValue2, accData.accSamples[1].x)
         Assert.assertEquals(yValue2, accData.accSamples[1].y)
         Assert.assertEquals(zValue2, accData.accSamples[1].z)
+        Assert.assertEquals(timeStamp, accData.accSamples.last().timeStamp)
 
         // validate data size
         Assert.assertEquals(amountOfSamples, accData.accSamples.size)
@@ -77,6 +96,20 @@ class AccDataTest {
     @Test
     fun `process acc compressed data type 0`() {
         // Arrange
+        // HEX: 02 00 94 35 77 00 00 00 00 01
+        // index                                                   data:
+        // 0        type                                           02 (ACC)
+        // 1..9     timestamp                                      00 94 35 77 00 00 00 00
+        val timeStamp = 2000000000uL
+        // 10       frame type                                     80 (compressed, type 0)
+
+        val accDataFrameHeader = byteArrayOf(
+            0x02.toByte(),
+            0x00.toByte(), 0x94.toByte(), 0x35.toByte(), 0x77.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x80.toByte(),
+        )
+        val previousTimeStamp = 100uL
+
         // HEX: 71 07 F0 6A 9E 8D 0A 38 BE 5C BE BA 2F 96 B3 EE 4B E5 AD FB 42 B9 EB BE 4C FE BA 2F 92 BF EE 4B E4 B1 FB 12 B9 EC BD 3C 3E BB 2F 8F D3 DE 4B E3 B5 F7 D2 B8 ED BD 30 7E 7B 2F 8B E3 CE 8B E2 BA F7 A2 B8 EE BC 20 BE 7B 2F 88 F3 CE CB E1 BD EF 52 F8 EF BC 18 FE 3B 2F 84 03 BF CB E0 C2 EF 32 B8 F0 BB 04 4E BC 2E 81 13 AF 0B E0 C6 EF F2 F7 F1 B9 FC 7D BC 2E 7D 27 9F 4B DF CA EB C2 F7 F2 B8 EC CD 7C 2E 7B 37 8F 4B DE CE E3 92 F7 F3 B8 E0 0D FD 2D 77 4B 7F CB DD D2 DF 62 37 F5 B7 D4 4D BD 2D 74 5B 6F CB DC D7 D7 32 37 F6 B5 C8 8D 7D 2D 71 6B 4F 4B DC DC D3 F2 36 F7 B4 BC DD FD 2C 6F 7B 3F 4B DB E0 CF D2 36 F8 B2 B0 2D BE 2C 6C 8F 1F CB DA E3 C7 A2 76 F9
         // index    type                                            data:
         // 0-5:    Reference sample                                 0x71 0x07 0xF0 0x6A 0x9E 0x8D
@@ -101,7 +134,8 @@ class AccDataTest {
         val sample1Channel1 = sample0Channel1 - 105
         val sample1Channel2 = sample0Channel2 - 85
         val amountOfSamples = 1 + 56 // reference sample + delta samples
-        val measurementFrame = byteArrayOf(
+
+        val accDataFrameContent = byteArrayOf(
             0x71.toByte(), 0x07.toByte(), 0xF0.toByte(), 0x6A.toByte(), 0x9E.toByte(), 0x8D.toByte(), 0x0A.toByte(), 0x38.toByte(),
             0xBE.toByte(), 0x5C.toByte(), 0xBE.toByte(), 0xBA.toByte(), 0x2F.toByte(), 0x96.toByte(), 0xB3.toByte(), 0xEE.toByte(),
             0x4B.toByte(), 0xE5.toByte(), 0xAD.toByte(), 0xFB.toByte(), 0x42.toByte(), 0xB9.toByte(), 0xEB.toByte(), 0xBE.toByte(),
@@ -131,14 +165,19 @@ class AccDataTest {
             0x6C.toByte(), 0x8F.toByte(), 0x1F.toByte(), 0xCB.toByte(), 0xDA.toByte(), 0xE3.toByte(), 0xC7.toByte(), 0xA2.toByte(),
             0x76.toByte(), 0xF9.toByte()
         )
+        val delta = PmdTimeStampUtils.deltaFromTimeStamps(previousTimeStamp, timeStamp, amountOfSamples)
+        val expectedFirstSampleTimeStamp = round(previousTimeStamp.toDouble() + delta).toULong()
+
         val range = 8
         val factor = 2.44E-4f
-        val timeStamp: Long = 0
-        val isCompressed = true
-        val frameType = BlePMDClient.PmdDataFrameType.TYPE_0
+        val dataFrame = PmdDataFrame(
+            data = accDataFrameHeader + accDataFrameContent,
+            getPreviousTimeStamp = { previousTimeStamp },
+            getFactor = { factor },
+            getSampleRate = { 0 })
 
         // Act
-        val accData = AccData.parseDataFromDataFrame(isCompressed, frameType, measurementFrame, factor, timeStamp)
+        val accData = AccData.parseDataFromDataFrame(dataFrame)
 
         // Assert
         Assert.assertEquals((factor * sample0Channel0 * 1000f).toInt(), accData.accSamples[0].x)
@@ -155,8 +194,12 @@ class AccDataTest {
             Assert.assertTrue(abs(sample.z) <= range * 1000)
         }
 
+        // validate time stamps
+        Assert.assertEquals(expectedFirstSampleTimeStamp, accData.accSamples.first().timeStamp)
+        Assert.assertEquals(timeStamp, accData.accSamples.last().timeStamp)
+
         // validate data size
-        Assert.assertEquals(amountOfSamples.toLong(), accData.accSamples.size.toLong())
+        Assert.assertEquals(amountOfSamples, accData.accSamples.size)
     }
 
     @Test
@@ -177,18 +220,28 @@ class AccDataTest {
         val sample0channel1 = 20
         val sample0channel2 = 1008
         val sample1channel0 = sample0channel0 - 5
-        val sample1channel1 = sample0channel1 -3
+        val sample1channel1 = sample0channel1 - 3
         val sample1channel2 = sample0channel2 + 0
 
-        val isCompressed = true
-        val frameType = BlePMDClient.PmdDataFrameType.TYPE_1
-        val timeStamp: Long = 0
-        val measurementFrame = byteArrayOf(
+        val accDataFrameHeader = byteArrayOf(
+            0x02.toByte(),
+            0x65.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x81.toByte(),
+        )
+
+        val accDataFrameContent = byteArrayOf(
             0xF1.toByte(), 0xFF.toByte(), 0x14.toByte(), 0x00.toByte(), 0xF0.toByte(), 0x03.toByte(), 0x06.toByte(),
             0x01.toByte(), 0x7B.toByte(), 0x0F.toByte(), 0x08.toByte()
         )
+
+        val dataFrame = PmdDataFrame(
+            data = accDataFrameHeader + accDataFrameContent,
+            getPreviousTimeStamp = { 100uL },
+            getFactor = { 1.0f },
+            getSampleRate = { 0 })
+
         // Act
-        val accData = AccData.parseDataFromDataFrame(isCompressed, frameType, measurementFrame, 1.0f, timeStamp)
+        val accData = AccData.parseDataFromDataFrame(dataFrame)
 
         // Assert
         Assert.assertEquals(expectedSamplesSize, accData.accSamples.size)
@@ -200,5 +253,8 @@ class AccDataTest {
         Assert.assertEquals(sample1channel0, accData.accSamples[1].x)
         Assert.assertEquals(sample1channel1, accData.accSamples[1].y)
         Assert.assertEquals(sample1channel2, accData.accSamples[1].z)
+
+        Assert.assertEquals(100uL, accData.accSamples[0].timeStamp)
+        Assert.assertEquals(101uL, accData.accSamples[1].timeStamp)
     }
 }

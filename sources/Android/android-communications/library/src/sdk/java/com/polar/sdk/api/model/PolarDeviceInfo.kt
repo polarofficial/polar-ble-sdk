@@ -9,18 +9,22 @@ class PolarDeviceInfo(
      * Polar device id
      */
     val deviceId: String,
+
     /**
      * Bt mac address
      */
     val address: String,
+
     /**
      * Received signal strength indication value in dBm.
      */
     val rssi: Int,
+
     /**
      * Device name.
      */
     val name: String,
+
     /**
      * true adv type is connectable
      */

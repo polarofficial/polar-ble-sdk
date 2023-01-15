@@ -1,25 +1,21 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient.PmdDataFieldEncoding
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClientUtils.parseFrameDataField
-import java.util.*
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrameUtils.parseFrameDataField
 
 /**
  * Sealed class to represent Location data sample
  */
-sealed class GnssLocationDataSample
+internal sealed class GnssLocationDataSample
 
-/**
- * Location data
- * @property timeStamp ns in epoch time. The [timeStamp] represent time of last sample in location data [gnssLocationDataSamples] list
- */
-class GnssLocationData internal constructor(val timeStamp: Long) {
+internal class GnssLocationData {
 
     /**
      * GPS Coordinates, Speed, and Distance Data
      */
     data class GnssCoordinateSample internal constructor(
+        val timeStamp: ULong,
         val latitude: Double,
         val longitude: Double,
         // time in format "yyyy-MM-dd'T'HH:mm:ss.SSS"
@@ -44,6 +40,7 @@ class GnssLocationData internal constructor(val timeStamp: Long) {
      * GPS Satellite Dilution, and Altitude Data
      */
     data class GnssSatelliteDilutionSample internal constructor(
+        val timeStamp: ULong,
         // dilution distance in 0.01 precision
         val dilution: Float,
         // altitude in meters
@@ -69,55 +66,66 @@ class GnssLocationData internal constructor(val timeStamp: Long) {
      * GPS Satellite Summary Data
      */
     data class GnssSatelliteSummarySample internal constructor(
+        val timeStamp: ULong,
         val seenGnssSatelliteSummaryBand1: GnssSatelliteSummary,
         val usedGnssSatelliteSummaryBand1: GnssSatelliteSummary,
         val seenGnssSatelliteSummaryBand2: GnssSatelliteSummary,
         val usedGnssSatelliteSummaryBand2: GnssSatelliteSummary,
-        val max_snr: UInt
+        val maxSnr: UInt
     ) : GnssLocationDataSample()
 
     /**
      *  GPS NMEA Data
      */
     data class GnssGpsNMEASample internal constructor(
+        val timeStamp: ULong,
         val measurementPeriod: UInt,
         val messageLength: UInt,
         val statusFlags: UByte,
         val nmeaMessage: String
     ) : GnssLocationDataSample()
 
-    val gnssLocationDataSamples: MutableList<GnssLocationDataSample> = ArrayList()
+    val gnssLocationDataSamples: MutableList<GnssLocationDataSample> = mutableListOf()
 
     companion object {
-        fun parseDataFromDataFrame(isCompressed: Boolean, frameType: BlePMDClient.PmdDataFrameType, frame: ByteArray, factor: Float, timeStamp: Long): GnssLocationData {
-            return if (isCompressed) {
-                throw Exception("Compressed FrameType: $frameType is not supported by Location data parser")
+
+        private const val TYPE_0_SAMPLE_IN_BYTES = 51
+        private const val TYPE_1_SAMPLE_IN_BYTES = 6
+        private const val TYPE_2_SAMPLE_IN_BYTES = 41
+
+        fun parseDataFromDataFrame(frame: PmdDataFrame): GnssLocationData {
+            return if (frame.isCompressedFrame) {
+                throw Exception("Compressed FrameType: ${frame.frameType} is not supported by Location data parser")
             } else {
-                when (frameType) {
-                    BlePMDClient.PmdDataFrameType.TYPE_0 -> dataFromType0(frame, timeStamp)
-                    BlePMDClient.PmdDataFrameType.TYPE_1 -> dataFromType1(frame, timeStamp)
-                    BlePMDClient.PmdDataFrameType.TYPE_2 -> dataFromType2(frame, timeStamp)
-                    BlePMDClient.PmdDataFrameType.TYPE_3 -> dataFromType3(frame, timeStamp)
-                    else -> throw Exception("Raw FrameType: $frameType is not supported by Location data parser")
+                when (frame.frameType) {
+                    PmdDataFrame.PmdDataFrameType.TYPE_0 -> dataFromRawType0(frame)
+                    PmdDataFrame.PmdDataFrameType.TYPE_1 -> dataFromRawType1(frame)
+                    PmdDataFrame.PmdDataFrameType.TYPE_2 -> dataFromRawType2(frame)
+                    PmdDataFrame.PmdDataFrameType.TYPE_3 -> dataFromRawType3(frame)
+                    else -> throw Exception("Raw FrameType: ${frame.frameType} is not supported by Location data parser")
                 }
             }
         }
 
-        private fun dataFromType0(frame: ByteArray, timeStamp: Long): GnssLocationData {
-            val locationData = GnssLocationData(timeStamp)
+        private fun dataFromRawType0(frame: PmdDataFrame): GnssLocationData {
+            val locationData = GnssLocationData()
             var offset = 0
-            while (offset < frame.size) {
-                val latitude = parseFrameDataField(frame.sliceArray(offset..(offset + 7)), PmdDataFieldEncoding.DOUBLE_IEEE754) as Double
+
+            val samplesSize = frame.dataContent.size / TYPE_0_SAMPLE_IN_BYTES
+            val timeStamps = PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp = frame.previousTimeStamp, frameTimeStamp = frame.timeStamp, samplesSize = samplesSize, frame.sampleRate)
+            var timeStampIndex = 0
+            while (offset < frame.dataContent.size) {
+                val latitude = parseFrameDataField(frame.dataContent.sliceArray(offset..(offset + 7)), PmdDataFieldEncoding.DOUBLE_IEEE754) as Double
                 offset += 8
-                val longitude = parseFrameDataField(frame.sliceArray(offset..(offset + 7)), PmdDataFieldEncoding.DOUBLE_IEEE754) as Double
+                val longitude = parseFrameDataField(frame.dataContent.sliceArray(offset..(offset + 7)), PmdDataFieldEncoding.DOUBLE_IEEE754) as Double
                 offset += 8
-                val year = parseFrameDataField(frame.sliceArray(offset..(offset + 1)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
+                val year = parseFrameDataField(frame.dataContent.sliceArray(offset..(offset + 1)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
                 offset += 2
-                val month = parseFrameDataField(frame.sliceArray(offset..offset), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
+                val month = parseFrameDataField(frame.dataContent.sliceArray(offset..offset), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
                 offset += 1
-                val day = parseFrameDataField(frame.sliceArray(offset..offset), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
+                val day = parseFrameDataField(frame.dataContent.sliceArray(offset..offset), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
                 offset += 1
-                val time = parseFrameDataField(frame.sliceArray(offset..(offset + 3)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
+                val time = parseFrameDataField(frame.dataContent.sliceArray(offset..(offset + 3)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
                 offset += 4
 
                 val milliseconds = time and 0x3FFu
@@ -134,144 +142,160 @@ class GnssLocationData internal constructor(val timeStamp: Long) {
                         "%02d".format(seconds.toInt()) + "." +
                         "%03d".format(milliseconds.toInt())
 
-                val cumulativeDistanceUInt = parseFrameDataField(frame.sliceArray(offset..(offset + 3)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
+                val cumulativeDistanceUInt = parseFrameDataField(frame.dataContent.sliceArray(offset..(offset + 3)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
                 val cumulativeDistance = (cumulativeDistanceUInt.toDouble() / 10)
                 offset += 4
-                val speed: Float = parseFrameDataField(frame.sliceArray(offset..(offset + 3)), PmdDataFieldEncoding.FLOAT_IEEE754) as Float
+                val speed: Float = parseFrameDataField(frame.dataContent.sliceArray(offset..(offset + 3)), PmdDataFieldEncoding.FLOAT_IEEE754) as Float
                 offset += 4
-                val usedAccelerationSpeed = parseFrameDataField(frame.sliceArray(offset..(offset + 3)), PmdDataFieldEncoding.FLOAT_IEEE754) as Float
+                val usedAccelerationSpeed = parseFrameDataField(frame.dataContent.sliceArray(offset..(offset + 3)), PmdDataFieldEncoding.FLOAT_IEEE754) as Float
                 offset += 4
-                val coordinateSpeed = parseFrameDataField(frame.sliceArray(offset..(offset + 3)), PmdDataFieldEncoding.FLOAT_IEEE754) as Float
+                val coordinateSpeed = parseFrameDataField(frame.dataContent.sliceArray(offset..(offset + 3)), PmdDataFieldEncoding.FLOAT_IEEE754) as Float
                 offset += 4
-                val accelerationSpeedFactory = parseFrameDataField(frame.sliceArray(offset..(offset + 3)), PmdDataFieldEncoding.FLOAT_IEEE754) as Float
+                val accelerationSpeedFactory = parseFrameDataField(frame.dataContent.sliceArray(offset..(offset + 3)), PmdDataFieldEncoding.FLOAT_IEEE754) as Float
                 offset += 4
-                val courseUInt = parseFrameDataField(frame.sliceArray(offset..(offset + 1)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
+                val courseUInt = parseFrameDataField(frame.dataContent.sliceArray(offset..(offset + 1)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
                 val course = (courseUInt.toFloat() / 100)
                 offset += 2
-                val knotsSpeedUInt = parseFrameDataField(frame.sliceArray(offset..(offset + 1)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
+                val knotsSpeedUInt = parseFrameDataField(frame.dataContent.sliceArray(offset..(offset + 1)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
                 val gpsChipSpeed = (knotsSpeedUInt.toFloat() / 100)
                 offset += 2
-                val fix: Boolean = parseFrameDataField(frame.sliceArray(offset..offset), PmdDataFieldEncoding.BOOLEAN) as Boolean
+                val fix: Boolean = parseFrameDataField(frame.dataContent.sliceArray(offset..offset), PmdDataFieldEncoding.BOOLEAN) as Boolean
                 offset += 1
-                val speedFlag = parseFrameDataField(frame.sliceArray(offset..offset), PmdDataFieldEncoding.SIGNED_INT) as Int
+                val speedFlag = parseFrameDataField(frame.dataContent.sliceArray(offset..offset), PmdDataFieldEncoding.SIGNED_INT) as Int
                 offset += 1
-                val fusionState = parseFrameDataField(frame.sliceArray(offset..offset), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
+                val fusionState = parseFrameDataField(frame.dataContent.sliceArray(offset..offset), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
                 offset += 1
 
                 val sample = GnssCoordinateSample(
+                    timeStamp = timeStamps[timeStampIndex],
                     latitude = latitude, longitude = longitude, date = date, cumulativeDistance = cumulativeDistance,
                     speed = speed, usedAccelerationSpeed = usedAccelerationSpeed, coordinateSpeed = coordinateSpeed, accelerationSpeedFactor = accelerationSpeedFactory,
                     course = course, gpsChipSpeed = gpsChipSpeed, fix = fix, speedFlag = speedFlag, fusionState = fusionState
                 )
                 locationData.gnssLocationDataSamples.add(sample)
+                timeStampIndex++
             }
             return locationData
         }
 
-        private fun dataFromType1(frame: ByteArray, timeStamp: Long): GnssLocationData {
-            val locationData = GnssLocationData(timeStamp)
+        private fun dataFromRawType1(frame: PmdDataFrame): GnssLocationData {
+            val locationData = GnssLocationData()
             var offset = 0
-            while (offset < frame.size) {
-                val dilutionInt = parseFrameDataField(frame.sliceArray(offset..(offset + 1)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
+
+            val samplesSize = frame.dataContent.size / TYPE_1_SAMPLE_IN_BYTES
+            val timeStamps = PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp = frame.previousTimeStamp, frameTimeStamp = frame.timeStamp, samplesSize = samplesSize, frame.sampleRate)
+            var timeStampIndex = 0
+
+            while (offset < frame.dataContent.size) {
+                val dilutionInt = parseFrameDataField(frame.dataContent.sliceArray(offset..(offset + 1)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
                 val dilution = (dilutionInt.toFloat() / 100)
                 offset += 2
-                val altitude = parseFrameDataField(frame.sliceArray(offset..(offset + 1)), PmdDataFieldEncoding.SIGNED_INT) as Int
+                val altitude = parseFrameDataField(frame.dataContent.sliceArray(offset..(offset + 1)), PmdDataFieldEncoding.SIGNED_INT) as Int
                 offset += 2
-                val numberOfSatellites = parseFrameDataField(frame.sliceArray(offset..offset), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
+                val numberOfSatellites = parseFrameDataField(frame.dataContent.sliceArray(offset..offset), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
                 offset += 1
-                val fix: Boolean = parseFrameDataField(frame.sliceArray(offset..offset), PmdDataFieldEncoding.BOOLEAN) as Boolean
+                val fix: Boolean = parseFrameDataField(frame.dataContent.sliceArray(offset..offset), PmdDataFieldEncoding.BOOLEAN) as Boolean
                 offset += 1
 
-                val sample = GnssSatelliteDilutionSample(dilution = dilution, altitude = altitude, numberOfSatellites = numberOfSatellites, fix = fix)
+                val sample = GnssSatelliteDilutionSample(timeStamp = timeStamps[timeStampIndex], dilution = dilution, altitude = altitude, numberOfSatellites = numberOfSatellites, fix = fix)
                 locationData.gnssLocationDataSamples.add(sample)
+                timeStampIndex++
             }
             return locationData
         }
 
-        private fun dataFromType2(frame: ByteArray, timeStamp: Long): GnssLocationData {
-            val locationData = GnssLocationData(timeStamp)
+        private fun dataFromRawType2(frame: PmdDataFrame): GnssLocationData {
+            val locationData = GnssLocationData()
             var offset = 0
-            while (offset < frame.size) {
+
+            val samplesSize = frame.dataContent.size / TYPE_2_SAMPLE_IN_BYTES
+            val timeStamps = PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp = frame.previousTimeStamp, frameTimeStamp = frame.timeStamp, samplesSize = samplesSize, frame.sampleRate)
+            var timeStampIndex = 0
+
+            while (offset < frame.dataContent.size) {
                 val seenBand1 = GnssSatelliteSummary(
-                    gpsNbrOfSat = frame[0].toUByte(),
-                    gpsMaxSnr = frame[1].toUByte(),
-                    glonassNbrOfSat = frame[2].toUByte(),
-                    glonassMaxSnr = frame[3].toUByte(),
-                    galileoNbrOfSat = frame[4].toUByte(),
-                    galileoMaxSnr = frame[5].toUByte(),
-                    beidouNbrOfSat = frame[6].toUByte(),
-                    beidouMaxSnr = frame[7].toUByte(),
-                    nbrOfSat = frame[8].toUByte(),
-                    snrTop5Avg = frame[9].toUByte()
+                    gpsNbrOfSat = frame.dataContent[0].toUByte(),
+                    gpsMaxSnr = frame.dataContent[1].toUByte(),
+                    glonassNbrOfSat = frame.dataContent[2].toUByte(),
+                    glonassMaxSnr = frame.dataContent[3].toUByte(),
+                    galileoNbrOfSat = frame.dataContent[4].toUByte(),
+                    galileoMaxSnr = frame.dataContent[5].toUByte(),
+                    beidouNbrOfSat = frame.dataContent[6].toUByte(),
+                    beidouMaxSnr = frame.dataContent[7].toUByte(),
+                    nbrOfSat = frame.dataContent[8].toUByte(),
+                    snrTop5Avg = frame.dataContent[9].toUByte()
                 )
                 offset += 10
                 val usedBand1 = GnssSatelliteSummary(
-                    gpsNbrOfSat = frame[10].toUByte(),
-                    gpsMaxSnr = frame[11].toUByte(),
-                    glonassNbrOfSat = frame[12].toUByte(),
-                    glonassMaxSnr = frame[13].toUByte(),
-                    galileoNbrOfSat = frame[14].toUByte(),
-                    galileoMaxSnr = frame[15].toUByte(),
-                    beidouNbrOfSat = frame[16].toUByte(),
-                    beidouMaxSnr = frame[17].toUByte(),
-                    nbrOfSat = frame[18].toUByte(),
-                    snrTop5Avg = frame[19].toUByte()
+                    gpsNbrOfSat = frame.dataContent[10].toUByte(),
+                    gpsMaxSnr = frame.dataContent[11].toUByte(),
+                    glonassNbrOfSat = frame.dataContent[12].toUByte(),
+                    glonassMaxSnr = frame.dataContent[13].toUByte(),
+                    galileoNbrOfSat = frame.dataContent[14].toUByte(),
+                    galileoMaxSnr = frame.dataContent[15].toUByte(),
+                    beidouNbrOfSat = frame.dataContent[16].toUByte(),
+                    beidouMaxSnr = frame.dataContent[17].toUByte(),
+                    nbrOfSat = frame.dataContent[18].toUByte(),
+                    snrTop5Avg = frame.dataContent[19].toUByte()
                 )
                 offset += 10
                 val seenBand2 = GnssSatelliteSummary(
-                    gpsNbrOfSat = frame[20].toUByte(),
-                    gpsMaxSnr = frame[21].toUByte(),
-                    glonassNbrOfSat = frame[22].toUByte(),
-                    glonassMaxSnr = frame[23].toUByte(),
-                    galileoNbrOfSat = frame[24].toUByte(),
-                    galileoMaxSnr = frame[25].toUByte(),
-                    beidouNbrOfSat = frame[26].toUByte(),
-                    beidouMaxSnr = frame[27].toUByte(),
-                    nbrOfSat = frame[28].toUByte(),
-                    snrTop5Avg = frame[29].toUByte()
+                    gpsNbrOfSat = frame.dataContent[20].toUByte(),
+                    gpsMaxSnr = frame.dataContent[21].toUByte(),
+                    glonassNbrOfSat = frame.dataContent[22].toUByte(),
+                    glonassMaxSnr = frame.dataContent[23].toUByte(),
+                    galileoNbrOfSat = frame.dataContent[24].toUByte(),
+                    galileoMaxSnr = frame.dataContent[25].toUByte(),
+                    beidouNbrOfSat = frame.dataContent[26].toUByte(),
+                    beidouMaxSnr = frame.dataContent[27].toUByte(),
+                    nbrOfSat = frame.dataContent[28].toUByte(),
+                    snrTop5Avg = frame.dataContent[29].toUByte()
                 )
                 offset += 10
                 val usedBand2 = GnssSatelliteSummary(
-                    gpsNbrOfSat = frame[30].toUByte(),
-                    gpsMaxSnr = frame[31].toUByte(),
-                    glonassNbrOfSat = frame[32].toUByte(),
-                    glonassMaxSnr = frame[33].toUByte(),
-                    galileoNbrOfSat = frame[34].toUByte(),
-                    galileoMaxSnr = frame[35].toUByte(),
-                    beidouNbrOfSat = frame[36].toUByte(),
-                    beidouMaxSnr = frame[37].toUByte(),
-                    nbrOfSat = frame[38].toUByte(),
-                    snrTop5Avg = frame[39].toUByte()
+                    gpsNbrOfSat = frame.dataContent[30].toUByte(),
+                    gpsMaxSnr = frame.dataContent[31].toUByte(),
+                    glonassNbrOfSat = frame.dataContent[32].toUByte(),
+                    glonassMaxSnr = frame.dataContent[33].toUByte(),
+                    galileoNbrOfSat = frame.dataContent[34].toUByte(),
+                    galileoMaxSnr = frame.dataContent[35].toUByte(),
+                    beidouNbrOfSat = frame.dataContent[36].toUByte(),
+                    beidouMaxSnr = frame.dataContent[37].toUByte(),
+                    nbrOfSat = frame.dataContent[38].toUByte(),
+                    snrTop5Avg = frame.dataContent[39].toUByte()
                 )
                 offset += 10
-                val maxSnr = parseFrameDataField(frame.sliceArray(offset..offset), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
+                val maxSnr = parseFrameDataField(frame.dataContent.sliceArray(offset..offset), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
                 offset += 1
 
                 val sample = GnssSatelliteSummarySample(
+                    timeStamp = timeStamps[timeStampIndex],
                     seenGnssSatelliteSummaryBand1 = seenBand1,
                     usedGnssSatelliteSummaryBand1 = usedBand1,
                     seenGnssSatelliteSummaryBand2 = seenBand2,
                     usedGnssSatelliteSummaryBand2 = usedBand2,
-                    max_snr = maxSnr
+                    maxSnr = maxSnr
                 )
                 locationData.gnssLocationDataSamples.add(sample)
+                timeStampIndex++
             }
             return locationData
         }
 
-        private fun dataFromType3(frame: ByteArray, timeStamp: Long): GnssLocationData {
-            val locationData = GnssLocationData(timeStamp)
+        private fun dataFromRawType3(frame: PmdDataFrame): GnssLocationData {
+            val locationData = GnssLocationData()
             var offset = 0
-            while (offset < frame.size) {
-                val measurementPeriod = parseFrameDataField(frame.sliceArray(offset..(offset + 3)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
+
+            while (offset < frame.dataContent.size) {
+                val measurementPeriod = parseFrameDataField(frame.dataContent.sliceArray(offset..(offset + 3)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
                 offset += 4
-                val messageLength = parseFrameDataField(frame.sliceArray(offset..(offset + 1)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
+                val messageLength = parseFrameDataField(frame.dataContent.sliceArray(offset..(offset + 1)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
                 offset += 2
-                val statusFlags = parseFrameDataField(frame.sliceArray(offset..offset), PmdDataFieldEncoding.UNSIGNED_BYTE) as UByte
+                val statusFlags = parseFrameDataField(frame.dataContent.sliceArray(offset..offset), PmdDataFieldEncoding.UNSIGNED_BYTE) as UByte
                 offset += 1
-                val nmeaMessage = String(frame.sliceArray(offset until (offset + messageLength.toInt())))
+                val nmeaMessage = String(frame.dataContent.sliceArray(offset until (offset + messageLength.toInt())))
                 offset += messageLength.toInt()
-                val sample = GnssGpsNMEASample(measurementPeriod = measurementPeriod, messageLength = messageLength, statusFlags = statusFlags, nmeaMessage = nmeaMessage)
+                val sample = GnssGpsNMEASample(timeStamp = frame.timeStamp, measurementPeriod = measurementPeriod, messageLength = messageLength, statusFlags = statusFlags, nmeaMessage = nmeaMessage)
                 locationData.gnssLocationDataSamples.add(sample)
             }
             return locationData

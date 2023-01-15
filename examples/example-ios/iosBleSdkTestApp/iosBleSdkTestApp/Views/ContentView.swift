@@ -125,19 +125,18 @@ struct ContentView: View {
                             
                             Button("Set time", action: { bleSdkManager.setTime()})
                                 .buttonStyle(SecondaryButtonStyle(buttonState: getFtpButtonState()))
+                            
+                            Button("Get time", action: { bleSdkManager.getTime()})
+                                .buttonStyle(SecondaryButtonStyle(buttonState: getFtpButtonState()))
+                            
                         }
                     }.disabled(!bleSdkManager.isDeviceConnected)
                 }.frame(maxWidth: .infinity)
             }
-        }.alert(item: $bleSdkManager.generalError) { message in
+        }
+        .alert(item: $bleSdkManager.generalMessage) { message in
             Alert(
-                title: Text(message.text),
-                dismissButton: .cancel()
-            )
-        }.alert(item: $bleSdkManager.generalMessage) { message in
-            Alert(
-                title: Text(message.text),
-                dismissButton: .cancel()
+                title: Text(message.text)
             )
         }
     }

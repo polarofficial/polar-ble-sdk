@@ -16,4 +16,5 @@ public enum BleGattException: Error {
     case gattOperationNotSupported
     case gattTransportNotAvailable
     case gattOperationModeChange(description: String = "")
+    case gattDataError(description: String = "")
 }

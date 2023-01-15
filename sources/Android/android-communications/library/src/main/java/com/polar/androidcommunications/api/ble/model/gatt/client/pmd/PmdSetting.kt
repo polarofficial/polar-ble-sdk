@@ -1,6 +1,6 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd
 
-import com.polar.androidcommunications.common.ble.BleUtils
+import com.polar.androidcommunications.common.ble.TypeUtils
 import java.io.ByteArrayOutputStream
 import java.util.*
 
@@ -15,12 +15,11 @@ class PmdSetting {
     }
 
     // available settings
-    @JvmField
-    var settings: Map<PmdSettingType, Set<Int>> = emptyMap()
+    var settings: EnumMap<PmdSettingType, Set<Int>> = EnumMap(PmdSettingType.values().associateWith { emptySet() })
 
-    // selected by client
-    @JvmField
+    // selected by user
     var selected: MutableMap<PmdSettingType, Int> = mutableMapOf()
+        private set
 
     constructor(data: ByteArray) {
         val parsedSettings = parsePmdSettingsData(data)
@@ -28,9 +27,9 @@ class PmdSetting {
         settings = parsedSettings
     }
 
-    constructor(selected: MutableMap<PmdSettingType, Int>) {
+    constructor(selected: Map<PmdSettingType, Int>) {
         validateSelected(selected)
-        this.selected = selected
+        this.selected = selected.toMutableMap()
     }
 
     private fun parsePmdSettingsData(data: ByteArray): EnumMap<PmdSettingType, Set<Int>> {
@@ -45,7 +44,7 @@ class PmdSetting {
             val items: MutableSet<Int> = HashSet()
             while (count-- > 0) {
                 val fieldSize = typeToFieldSize(type)
-                val item = BleUtils.convertArrayToUnsignedInt(data, offset, fieldSize)
+                val item = TypeUtils.convertArrayToSignedInt(data, offset, fieldSize)
                 offset += fieldSize
                 items.add(item)
             }
@@ -84,6 +83,19 @@ class PmdSetting {
             set[key] = Collections.max(value)
         }
         return PmdSetting(set)
+    }
+
+    override fun toString(): String {
+        val stringBuilder: StringBuilder = StringBuilder("\navailable settings: ")
+        for (setting in settings) {
+            stringBuilder.append("${setting.key} : ${setting.value} , ")
+        }
+        stringBuilder.append("\nselected settings: ")
+        for (setting in selected) {
+            stringBuilder.append("${setting.key} : ${setting.value} , ")
+        }
+        return stringBuilder.toString()
+
     }
 
     companion object {

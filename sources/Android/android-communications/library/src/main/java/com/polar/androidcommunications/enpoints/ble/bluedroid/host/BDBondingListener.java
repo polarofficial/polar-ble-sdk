@@ -66,7 +66,7 @@ class BDBondingListener {
             if (device != null && action != null) {
                 if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
                     final int state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
-                    BleLogger.d(TAG, "Bond manager state:" + state + " action: " + intent.toString());
+                    BleLogger.d(TAG, "Bond manager state:" + state + " action: " + intent);
                     switch (state) {
                         case BluetoothDevice.BOND_BONDING:
                             authenticationObservers.accessAll(object -> {
