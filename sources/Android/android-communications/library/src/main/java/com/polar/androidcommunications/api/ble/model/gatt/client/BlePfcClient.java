@@ -27,7 +27,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class BlePfcClient extends BleGattBase {
 
-    public final static String TAG = BlePfcClient.class.getSimpleName();
+    private static final String TAG = BlePfcClient.class.getSimpleName();
 
     public static final byte SUCCESS = 0x01;
     public static final byte ERROR_NOT_SUPPORTED = 0x02;

@@ -1,15 +1,20 @@
 package com.polar.androidcommunications.enpoints.ble.bluedroid.host;
 
+import static com.polar.androidcommunications.common.ble.AndroidBuildUtils.getBuildVersion;
+
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothStatusCodes;
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.polar.androidcommunications.BuildConfig;
 import com.polar.androidcommunications.api.ble.BleLogger;
@@ -82,12 +87,12 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
     }
 
     void setBluetoothDevice(BluetoothDevice bluetoothDevice) {
-        this.bluetoothDevice = null;
         this.bluetoothDevice = bluetoothDevice;
         // clear all
         resetGatt();
     }
 
+    @Nullable
     BluetoothGatt getGatt() {
         return gatt;
     }
@@ -243,7 +248,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                 }).doFinally(() -> rssiObservers.remove(observer[0]));
     }
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint({"NewApi", "MissingPermission"})
     private boolean sendNextAttributeOperation(AttributeOperation operation) throws Throwable {
         BluetoothGattCharacteristic characteristic = operation.getCharacteristic();
         synchronized (getGattMutex()) {
@@ -253,28 +258,53 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                         return getGatt().readCharacteristic(characteristic);
                     }
                     case CHARACTERISTIC_WRITE: {
+                        int writeType;
                         if (operation.isWithResponse() && (characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0) {
-                            characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+                            writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT;
                         } else if ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0) {
-                            characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
+                            writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE;
+                        } else {
+                            BleLogger.e(TAG, "Undefined state. BluetoothGattCharacteristic write type cannot be defined.");
+                            return false;
                         }
-                        characteristic.setValue(operation.getData());
-                        return getGatt().writeCharacteristic(characteristic);
+
+                        if (getBuildVersion() >= Build.VERSION_CODES.TIRAMISU) {
+                            int status = gatt.writeCharacteristic(characteristic, operation.getData(), writeType);
+                            if (status == BluetoothStatusCodes.SUCCESS) {
+                                return true;
+                            } else {
+                                BleLogger.e(TAG, "Error: characteristic write failed. Reason: " + status);
+                                return false;
+                            }
+                        } else {
+                            characteristic.setWriteType(writeType);
+                            characteristic.setValue(operation.getData());
+                            return gatt.writeCharacteristic(characteristic);
+                        }
                     }
                     case DESCRIPTOR_WRITE: {
                         BluetoothGattDescriptor descriptor = operation.getCharacteristic().getDescriptor(DESCRIPTOR_CCC);
+                        byte[] value;
                         if ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
-                            byte[] value = operation.isEnable() ? BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE : BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
-                            getGatt().setCharacteristicNotification(characteristic, operation.isEnable());
-                            descriptor.setValue(value);
-                            return getGatt().writeDescriptor(descriptor);
+                            value = operation.isEnable() ? BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE : BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
                         } else if ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0) {
-                            byte[] value = operation.isEnable() ? BluetoothGattDescriptor.ENABLE_INDICATION_VALUE : BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
-                            getGatt().setCharacteristicNotification(characteristic, operation.isEnable());
-                            descriptor.setValue(value);
-                            return getGatt().writeDescriptor(descriptor);
+                            value = operation.isEnable() ? BluetoothGattDescriptor.ENABLE_INDICATION_VALUE : BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
+                        } else {
+                            return false;
                         }
-                        break;
+                        gatt.setCharacteristicNotification(characteristic, operation.isEnable());
+                        if (getBuildVersion() >= Build.VERSION_CODES.TIRAMISU) {
+                            int status = gatt.writeDescriptor(descriptor, value);
+                            if (status == BluetoothStatusCodes.SUCCESS) {
+                                return true;
+                            } else {
+                                BleLogger.e(TAG, "Error: descriptor write failed. Reason: " + status);
+                                return false;
+                            }
+                        } else {
+                            descriptor.setValue(value);
+                            return gatt.writeDescriptor(descriptor);
+                        }
                     }
                     default: {
                         throw new BleNotSupported("not supported");
@@ -284,7 +314,6 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                 throw new BleGattNotInitialized("Attribute operation tried while gatt is uninitialized");
             }
         }
-        return false;
     }
 
     @Override
@@ -570,7 +599,6 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
 
     void handleDescriptorWrite(final BluetoothGattService service,
                                final BluetoothGattCharacteristic characteristic,
-                               final BluetoothGattDescriptor descriptor,
                                byte[] value,
                                int status) {
         BleLogger.d(TAG, "onDescriptorWrite uuid: " + characteristic.getUuid().toString() + " status: " + status);
@@ -627,7 +655,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
         }
     }
 
-    void processNextAttributeOperation(boolean remove) {
+    public void processNextAttributeOperation(boolean remove) {
         if (!attOperations.isEmpty()) {
             try {
                 if (remove) {

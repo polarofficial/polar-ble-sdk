@@ -36,6 +36,7 @@ class ConnectionHandler(
         const val GUARD_TIME_MS = 2000L
         const val POLAR_PREFERRED_MTU = 512
         const val MTU_SKIP_NEGOTIATION = 0
+        private const val FIRST_ATTRIBUTE_OPERATION_TIMEOUT = 500L
     }
 
     /**
@@ -71,6 +72,7 @@ class ConnectionHandler(
 
     private var phySafeGuardDisposable: Disposable? = null
     private var mtuSafeGuardDisposable: Disposable? = null
+    private var firstAttributeOperationDisposable: Disposable? = null
 
     fun setAutomaticReconnection(automaticReconnection: Boolean) {
         this.automaticReconnection = automaticReconnection
@@ -182,7 +184,8 @@ class ConnectionHandler(
             }
             ConnectionHandlerAction.CONNECT_DEVICE -> {
                 when (session.sessionState) {
-                    DeviceSessionState.SESSION_OPEN_PARK, DeviceSessionState.SESSION_CLOSED -> {
+                    DeviceSessionState.SESSION_OPEN_PARK,
+                    DeviceSessionState.SESSION_CLOSED -> {
                         if (session.isConnectableAdvertisement && containsRequiredUuids(session)) {
                             changeState(session, ConnectionHandlerState.CONNECTING)
                         } else {
@@ -242,11 +245,7 @@ class ConnectionHandler(
                 scannerInterface.connectionHandlerResumeScanning()
             }
             ConnectionHandlerAction.DEVICE_CONNECTION_INITIALIZED -> {
-                connectionInterface.setPhy(session)
-                phySafeGuardDisposable = Completable.timer(GUARD_TIME_MS, TimeUnit.MILLISECONDS, guardTimerScheduler)
-                    .observeOn(Schedulers.io())
-                    .subscribe { phyUpdated(session) }
-
+                connectionInterface.startServiceDiscovery(session)
             }
             ConnectionHandlerAction.PHY_UPDATED -> {
                 connectionInterface.setMtu(session)
@@ -256,13 +255,26 @@ class ConnectionHandler(
             }
 
             ConnectionHandlerAction.MTU_UPDATED -> {
-                connectionInterface.startServiceDiscovery(session)
+                BleUtils.validate(current === session, "incorrect session object")
+
+                // There are devices needing a delay after connection parameters are negotiated and first attribute operation is done
+                firstAttributeOperationDisposable?.dispose()
+                firstAttributeOperationDisposable = Completable.timer(FIRST_ATTRIBUTE_OPERATION_TIMEOUT, TimeUnit.MILLISECONDS)
+                    .observeOn(Schedulers.io())
+                    .subscribe {
+                        // First attribute operation
+                        session.processNextAttributeOperation(false)
+                    }
+
+                updateSessionState(session, DeviceSessionState.SESSION_OPEN)
+                changeState(session, ConnectionHandlerState.FREE)
             }
 
             ConnectionHandlerAction.SERVICES_DISCOVERED -> {
-                BleUtils.validate(current === session, "incorrect session object")
-                updateSessionState(session, DeviceSessionState.SESSION_OPEN)
-                changeState(session, ConnectionHandlerState.FREE)
+                connectionInterface.setPhy(session)
+                phySafeGuardDisposable = Completable.timer(GUARD_TIME_MS, TimeUnit.MILLISECONDS, guardTimerScheduler)
+                    .observeOn(Schedulers.io())
+                    .subscribe { phyUpdated(session) }
             }
 
             ConnectionHandlerAction.CONNECT_DEVICE -> {

@@ -1,6 +1,7 @@
 package com.polar.androidcommunications.enpoints.ble.bluedroid.host;
 
 
+import static android.bluetooth.BluetoothGatt.GATT_FAILURE;
 import static com.polar.androidcommunications.api.ble.model.gatt.BleGattBase.DEFAULT_ATT_MTU_SIZE;
 import static com.polar.androidcommunications.common.ble.AndroidBuildUtils.getBrand;
 import static com.polar.androidcommunications.common.ble.AndroidBuildUtils.getBuildVersion;
@@ -279,11 +280,13 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
         @SuppressLint({"MissingPermission", "NewApi"})
         @Override
         public void readPhy(BDDeviceSessionImpl session) {
-            if (getBuildVersion() >= Build.VERSION_CODES.O) {
-                session.getGatt().readPhy();
-            } else {
-                // PHY is not supported below Android 8.0, call the callback straight
-                gattCallback.onPhyUpdate(session.getGatt(), BluetoothDevice.PHY_LE_1M_MASK, BluetoothDevice.PHY_LE_1M_MASK, 0);
+            if (session.getGatt() != null) {
+                if (getBuildVersion() >= Build.VERSION_CODES.O) {
+                    session.getGatt().readPhy();
+                } else {
+                    // PHY is not supported below Android 8.0, call the callback straight
+                    gattCallback.onPhyUpdate(session.getGatt(), BluetoothDevice.PHY_LE_1M_MASK, BluetoothDevice.PHY_LE_1M_MASK, 0);
+                }
             }
         }
 
@@ -313,7 +316,9 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
             boolean result = false;
             if (preferredMTU == MTU_SKIP_NEGOTIATION || PhoneUtils.isMtuNegotiationBroken(getBrand(), getModel())) {
                 // Do not start MTU request, fall back to default MTU
-                gattCallback.onMtuChanged(session.getGatt(), DEFAULT_ATT_MTU_SIZE, 0);
+                if (session.getGatt() != null) {
+                    gattCallback.onMtuChanged(session.getGatt(), DEFAULT_ATT_MTU_SIZE, 0);
+                }
                 result = true;
             } else {
                 synchronized (session.getGattMutex()) {
@@ -342,8 +347,18 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
             session.serviceDiscovery = Completable.timer(10, TimeUnit.SECONDS, Schedulers.newThread())
                     .observeOn(Schedulers.io())
                     .subscribe(
-                            () -> gattCallback.onServicesDiscovered(session.getGatt(), 0),
-                            throwable -> BleLogger.e(BDDeviceListenerImpl.TAG, "service discovery timer failed: " + throwable.getLocalizedMessage())
+                            () -> {
+                                BleLogger.e(BDDeviceListenerImpl.TAG, "service discovery timed out");
+                                if (session.getGatt() != null) {
+                                    gattCallback.onServicesDiscovered(session.getGatt(), GATT_FAILURE);
+                                }
+                            },
+                            throwable -> {
+                                BleLogger.e(BDDeviceListenerImpl.TAG, "service discovery timer failed: " + throwable.getLocalizedMessage());
+                                if (session.getGatt() != null) {
+                                    gattCallback.onServicesDiscovered(session.getGatt(), GATT_FAILURE);
+                                }
+                            }
                     );
             return result;
         }
@@ -485,7 +500,9 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
                     case SESSION_OPEN:
                     case SESSION_OPENING:
                     case SESSION_CLOSING:
-                        gattCallback.onConnectionStateChange(deviceSession.getGatt(), 0, BluetoothProfile.STATE_DISCONNECTED);
+                        if (deviceSession.getGatt() != null) {
+                            gattCallback.onConnectionStateChange(deviceSession.getGatt(), 0, BluetoothProfile.STATE_DISCONNECTED);
+                        }
                         break;
                     default:
                         connectionHandler.deviceDisconnected(deviceSession);

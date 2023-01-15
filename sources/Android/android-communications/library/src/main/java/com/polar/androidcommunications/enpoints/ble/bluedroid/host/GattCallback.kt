@@ -54,31 +54,45 @@ internal class GattCallback(
     }
 
     override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
-        val deviceSession = sessions.getSession(gatt)
-        if (deviceSession != null) {
-            if (deviceSession.serviceDiscovery != null) {
-                deviceSession.serviceDiscovery.dispose()
-                deviceSession.serviceDiscovery = null
-            }
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                deviceSession.handleServicesDiscovered()
-                deviceSession.processNextAttributeOperation(false)
-            } else {
-                BleLogger.e(TAG, "service discovery failed: $status")
-            }
+        val deviceSession = sessions.getSession(gatt) ?: kotlin.run {
+            BleLogger.e(TAG, "services discovered on non known gatt")
+            return
+        }
+
+        if (deviceSession.serviceDiscovery != null) {
+            deviceSession.serviceDiscovery.dispose()
+            deviceSession.serviceDiscovery = null
+        }
+        if (status == BluetoothGatt.GATT_SUCCESS) {
+            deviceSession.handleServicesDiscovered()
             Completable.fromAction { connectionHandler.servicesDiscovered(deviceSession) }
                 .subscribeOn(Schedulers.io())
                 .subscribe()
         } else {
-            BleLogger.e(TAG, "services discovered on non known gatt")
+            BleLogger.e(TAG, "service discovery failed: $status")
+            Completable.fromAction { connectionHandler.disconnectDevice(deviceSession) }
+                .subscribeOn(Schedulers.io())
+                .subscribe()
         }
     }
 
+    @Deprecated("Deprecated in Java")
     @SuppressLint("MissingPermission")
     override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
         val deviceSession = sessions.getSession(gatt)
         if (deviceSession != null) {
             deviceSession.handleCharacteristicRead(characteristic.service, characteristic, characteristic.value, status)
+        } else {
+            BleLogger.e(TAG, "Dead gatt event?")
+            gatt.close()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray, status: Int) {
+        val deviceSession = sessions.getSession(gatt)
+        if (deviceSession != null) {
+            deviceSession.handleCharacteristicRead(characteristic.service, characteristic, value, status)
         } else {
             BleLogger.e(TAG, "Dead gatt event?")
             gatt.close()
@@ -96,6 +110,7 @@ internal class GattCallback(
         }
     }
 
+    @Deprecated("Deprecated in Java")
     @SuppressLint("MissingPermission")
     override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
         val deviceSession = sessions.getSession(gatt)
@@ -108,6 +123,18 @@ internal class GattCallback(
     }
 
     @SuppressLint("MissingPermission")
+    override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray) {
+        val deviceSession = sessions.getSession(gatt)
+        if (deviceSession != null) {
+            deviceSession.handleCharacteristicValueUpdated(characteristic.service, characteristic, value)
+        } else {
+            BleLogger.e(TAG, "Dead gatt event?")
+            gatt.close()
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    @SuppressLint("MissingPermission")
     override fun onDescriptorRead(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) {
         val deviceSession = sessions.getSession(gatt)
         if (deviceSession != null) {
@@ -119,10 +146,21 @@ internal class GattCallback(
     }
 
     @SuppressLint("MissingPermission")
+    override fun onDescriptorRead(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int, value: ByteArray) {
+        val deviceSession = sessions.getSession(gatt)
+        if (deviceSession != null) {
+            deviceSession.handleDescriptorRead(descriptor, value, status)
+        } else {
+            BleLogger.e(TAG, "Dead gatt event?")
+            gatt.close()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
     override fun onDescriptorWrite(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) {
         val deviceSession = sessions.getSession(gatt)
         if (deviceSession != null) {
-            deviceSession.handleDescriptorWrite(descriptor.characteristic.service, descriptor.characteristic, descriptor, descriptor.value, status)
+            deviceSession.handleDescriptorWrite(descriptor.characteristic.service, descriptor.characteristic, descriptor.value, status)
         } else {
             BleLogger.e(TAG, "Dead gatt event?")
             gatt.close()
