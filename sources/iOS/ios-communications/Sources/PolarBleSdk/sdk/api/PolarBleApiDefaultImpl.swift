@@ -18,6 +18,6 @@ public class PolarBleApiDefaultImpl {
     ///
     /// - Returns: version in format major.minor.patch
     public static func versionInfo() -> String {
-        return "4.0.0-beta"
+        return "4.0.0"
     }
 }
