@@ -27,15 +27,15 @@ android {
 }
 
 dependencies {
-    implementation 'com.github.polarofficial:polar-ble-sdk:3.3.4'
-    implementation 'com.androidplot:androidplot-core:1.5.9'
+    implementation 'com.github.polarofficial:polar-ble-sdk:4.0.0'
+    implementation 'com.androidplot:androidplot-core:1.5.10'
     implementation 'io.reactivex.rxjava3:rxjava:3.1.5'
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
-    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'androidx.appcompat:appcompat:1.6.0'
     implementation "androidx.core:core-ktx:1.9.0"
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.7.20"
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }

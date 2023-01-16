@@ -52,8 +52,8 @@ class HRActivity : AppCompatActivity(), PlotterListener {
         )
         api.setApiLogger { str: String -> Log.d("SDK", str) }
         api.setApiCallback(object : PolarBleApiCallback() {
-            override fun blePowerStateChanged(blePowerState: Boolean) {
-                Log.d(TAG, "BluetoothStateChanged $blePowerState")
+            override fun blePowerStateChanged(powered: Boolean) {
+                Log.d(TAG, "BluetoothStateChanged $powered")
             }
 
             override fun deviceConnected(polarDeviceInfo: PolarDeviceInfo) {
@@ -87,21 +87,21 @@ class HRActivity : AppCompatActivity(), PlotterListener {
                 }
             }
 
-            override fun batteryLevelReceived(identifier: String, batteryLevel: Int) {
-                Log.d(TAG, "Battery level $identifier $batteryLevel%")
-                val batteryLevelText = "Battery level: $batteryLevel%"
+            override fun batteryLevelReceived(identifier: String, level: Int) {
+                Log.d(TAG, "Battery level $identifier $level%")
+                val batteryLevelText = "Battery level: $level%"
                 textViewBattery.append(batteryLevelText)
             }
 
-            override fun hrNotificationReceived(s: String, polarHrData: PolarHrData) {
-                Log.d(TAG, "HR ${polarHrData.hr} RR ${polarHrData.rrsMs}")
+            override fun hrNotificationReceived(identifier: String, data: PolarHrData) {
+                Log.d(TAG, "HR ${data.hr} RR ${data.rrsMs}")
 
-                if (polarHrData.rrsMs.isNotEmpty()) {
-                    val rrText = "(${polarHrData.rrsMs.joinToString(separator = "ms, ")}ms)"
+                if (data.rrsMs.isNotEmpty()) {
+                    val rrText = "(${data.rrsMs.joinToString(separator = "ms, ")}ms)"
                     textViewRR.text = rrText
                 }
-                textViewHR.text = polarHrData.hr.toString()
-                plotter.addValues(polarHrData)
+                textViewHR.text = data.hr.toString()
+                plotter.addValues(data)
             }
 
             override fun polarFtpFeatureReady(identifier: String) {

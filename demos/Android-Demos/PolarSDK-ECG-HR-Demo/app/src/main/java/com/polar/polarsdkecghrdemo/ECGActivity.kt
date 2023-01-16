@@ -56,8 +56,8 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
                     PolarBleApi.FEATURE_HR
         )
         api.setApiCallback(object : PolarBleApiCallback() {
-            override fun blePowerStateChanged(blePowerState: Boolean) {
-                Log.d(TAG, "BluetoothStateChanged $blePowerState")
+            override fun blePowerStateChanged(powered: Boolean) {
+                Log.d(TAG, "BluetoothStateChanged $powered")
             }
 
             override fun deviceConnected(polarDeviceInfo: PolarDeviceInfo) {
@@ -95,20 +95,20 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
                 }
             }
 
-            override fun batteryLevelReceived(identifier: String, batteryLevel: Int) {
-                Log.d(TAG, "Battery level $identifier $batteryLevel%")
-                val batteryLevelText = "Battery level: $batteryLevel%"
+            override fun batteryLevelReceived(identifier: String, level: Int) {
+                Log.d(TAG, "Battery level $identifier $level%")
+                val batteryLevelText = "Battery level: $level%"
                 textViewBattery.append(batteryLevelText)
             }
 
-            override fun hrNotificationReceived(identifier: String, polarHrData: PolarHrData) {
-                Log.d(TAG, "HR " + polarHrData.hr)
-                if (polarHrData.rrsMs.isNotEmpty()) {
-                    val rrText = "(${polarHrData.rrsMs.joinToString(separator = "ms, ")}ms)"
+            override fun hrNotificationReceived(identifier: String, data: PolarHrData) {
+                Log.d(TAG, "HR " + data.hr)
+                if (data.rrsMs.isNotEmpty()) {
+                    val rrText = "(${data.rrsMs.joinToString(separator = "ms, ")}ms)"
                     textViewRR.text = rrText
                 }
 
-                textViewHR.text = polarHrData.hr.toString()
+                textViewHR.text = data.hr.toString()
             }
 
             override fun polarFtpFeatureReady(identifier: String) {
@@ -126,7 +126,6 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
         ecgPlotter = EcgPlotter("ECG", 130)
         ecgPlotter.setListener(this)
 
-        //plot.setMarkupEnabled(true);
         plot.addSeries(ecgPlotter.getSeries(), ecgPlotter.formatter)
         plot.setRangeBoundaries(-1.5, 1.5, BoundaryMode.FIXED)
         plot.setRangeStep(StepMode.INCREMENT_BY_FIT, 0.25)
@@ -153,7 +152,7 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
                     { polarEcgData: PolarEcgData ->
                         Log.d(TAG, "ecg update")
                         for (data in polarEcgData.samples) {
-                            ecgPlotter.sendSingleSample((data.toFloat() / 1000.0).toFloat())
+                            ecgPlotter.sendSingleSample((data.voltage.toFloat() / 1000.0).toFloat())
                         }
                     },
                     { error: Throwable ->
