@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
     s.cocoapods_version = '>= 1.10'
     s.source            = { :git => 'https://github.com/polarofficial/polar-ble-sdk.git', :tag => s.version.to_s }
 
-    s.ios.deployment_target = '13.0'
+    s.ios.deployment_target = '14.0'
     
     s.source_files = 'sources/iOS/ios-communications/Sources/**/*.swift'
 
