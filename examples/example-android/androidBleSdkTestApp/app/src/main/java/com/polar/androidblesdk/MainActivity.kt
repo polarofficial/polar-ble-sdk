@@ -163,7 +163,7 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "HR value: ${data.hr} rrsMs: ${data.rrsMs} rr: ${data.rrs} contact: ${data.contactStatus} , ${data.contactStatusSupported}")
             }
 
-            override fun polarFtpFeatureReady(s: String) {
+            override fun polarFtpFeatureReady(identifier: String) {
                 Log.d(TAG, "FTP ready")
             }
         })
