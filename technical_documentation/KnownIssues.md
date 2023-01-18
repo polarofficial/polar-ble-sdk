@@ -1,9 +1,9 @@
 # Known issues
 ## Polar Verity Sense
 #### Issue 1
-- **Firmware:** 1.1.5
+- **Firmware:** Starting from firmware 1.1.5
 - **Feature:** PPG Stream 
-- **Problem:** PPG stream settings returns incorrect sampling rate when read with `requestStreamSettings()` function in normal operation mode. The returned value for sampling rate is 135Hz, the returned sampling rate should be 55Hz. The problem is only in Polar Verity Sense firmware v.1.1.5
+- **Problem:** PPG stream settings returns incorrect sampling rate when read with `requestStreamSettings()` function in normal operation mode. The returned value for sampling rate is 135Hz, the returned sampling rate should be 55Hz. 
 - **Workaround:** 
     - The PPG stream is working  even the `startOhrStreaming` request is made using the 135Hz as sampleRate parameter in `PolarSensorSetting`. However, the received PPG stream is sampled with 55Hz.
     - If [SDK mode](SdkModeExplained.md) is enabled then PPG settings is read correctly.
