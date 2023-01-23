@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application' version '7.4.0' apply false
     id 'org.jetbrains.kotlin.android' version '1.7.21' apply false
+    //id 'com.google.protobuf' version '0.8.18' apply false
 }
 
 task clean(type: Delete) {

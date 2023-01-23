@@ -17,6 +17,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.PolarBleApiCallback
 import com.polar.sdk.api.PolarBleApiDefaultImpl
+import com.polar.sdk.api.PolarH10OfflineExerciseApi
 import com.polar.sdk.api.errors.PolarInvalidArgument
 import com.polar.sdk.api.model.*
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -25,6 +26,7 @@ import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.Function
 import java.util.*
+import kotlin.time.measureTimedValue
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -37,8 +39,17 @@ class MainActivity : AppCompatActivity() {
     private var deviceId = "ACF7222C"
 
     private val api: PolarBleApi by lazy {
-        // Notice PolarBleApi.ALL_FEATURES are enabled
-        PolarBleApiDefaultImpl.defaultImplementation(applicationContext, PolarBleApi.ALL_FEATURES)
+        // Notice all features are enabled
+        PolarBleApiDefaultImpl.defaultImplementation(applicationContext,
+            setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_HR,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_BATTERY_INFO,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO)
+        )
     }
     private lateinit var broadcastDisposable: Disposable
     private var scanDisposable: Disposable? = null
@@ -81,6 +92,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var getTimeButton: Button
     private lateinit var toggleSdkModeButton: Button
 
+    //Verity Sense offline recroding use
+    private lateinit var listRecordingsButton: Button
+    private lateinit var startRecordingButton: Button
+    private lateinit var stopRecordingButton: Button
+    private lateinit var downloadRecordingButton: Button
+    private lateinit var deleteRecordingButton: Button
+    private val entryCache: MutableMap<String, MutableList<PolarOfflineRecordingEntry>> = mutableMapOf()
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -104,6 +124,12 @@ class MainActivity : AppCompatActivity() {
         setTimeButton = findViewById(R.id.set_time)
         getTimeButton = findViewById(R.id.get_time)
         toggleSdkModeButton = findViewById(R.id.toggle_SDK_mode)
+        //Verity Sense recording buttons
+        listRecordingsButton = findViewById(R.id.list_recordings)
+        startRecordingButton = findViewById(R.id.start_recording)
+        stopRecordingButton = findViewById(R.id.stop_recording)
+        downloadRecordingButton = findViewById(R.id.download_recording)
+        deleteRecordingButton = findViewById(R.id.delete_recording)
 
         api.setPolarFilter(false)
         api.setApiLogger { s: String -> Log.d(API_LOGGER_TAG, s) }
@@ -140,17 +166,6 @@ class MainActivity : AppCompatActivity() {
                 toggleButtonUp(toggleSdkModeButton, R.string.enable_sdk_mode)
             }
 
-            override fun streamingFeaturesReady(identifier: String, features: Set<PolarBleApi.DeviceStreamingFeature>) {
-                for (feature in features) {
-                    Log.d(TAG, "Streaming feature $feature is ready")
-                }
-            }
-
-            override fun hrFeatureReady(identifier: String) {
-                Log.d(TAG, "HR READY: $identifier")
-                // hr notifications are about to start
-            }
-
             override fun disInformationReceived(identifier: String, uuid: UUID, value: String) {
                 Log.d(TAG, "DIS INFO uuid: $uuid value: $value")
             }
@@ -159,12 +174,8 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "BATTERY LEVEL: $level")
             }
 
-            override fun hrNotificationReceived(identifier: String, data: PolarHrData) {
-                Log.d(TAG, "HR value: ${data.hr} rrsMs: ${data.rrsMs} rr: ${data.rrs} contact: ${data.contactStatus} , ${data.contactStatusSupported}")
-            }
-
-            override fun polarFtpFeatureReady(identifier: String) {
-                Log.d(TAG, "FTP ready")
+            override fun hrNotificationReceived(identifier: String, data: PolarHrData.PolarHrSample) {
+                Log.d(TAG, "HR value: ${data.hr} rrsMs: ${data.rrsMs} contact: ${data.contactStatus} , ${data.contactStatusSupported}")
             }
         })
 
@@ -246,7 +257,7 @@ class MainActivity : AppCompatActivity() {
             val isDisposed = ecgDisposable?.isDisposed ?: true
             if (isDisposed) {
                 toggleButtonDown(ecgButton, R.string.stop_ecg_stream)
-                ecgDisposable = requestStreamSettings(deviceId, PolarBleApi.DeviceStreamingFeature.ECG)
+                ecgDisposable = requestStreamSettings(deviceId, PolarBleApi.PolarDeviceDataType.ECG)
                     .flatMap { settings: PolarSensorSetting ->
                         api.startEcgStreaming(deviceId, settings)
                     }
@@ -273,7 +284,7 @@ class MainActivity : AppCompatActivity() {
             val isDisposed = accDisposable?.isDisposed ?: true
             if (isDisposed) {
                 toggleButtonDown(accButton, R.string.stop_acc_stream)
-                accDisposable = requestStreamSettings(deviceId, PolarBleApi.DeviceStreamingFeature.ACC)
+                accDisposable = requestStreamSettings(deviceId, PolarBleApi.PolarDeviceDataType.ACC)
                     .flatMap { settings: PolarSensorSetting ->
                         api.startAccStreaming(deviceId, settings)
                     }
@@ -305,7 +316,7 @@ class MainActivity : AppCompatActivity() {
             if (isDisposed) {
                 toggleButtonDown(gyrButton, R.string.stop_gyro_stream)
                 gyrDisposable =
-                    requestStreamSettings(deviceId, PolarBleApi.DeviceStreamingFeature.GYRO)
+                    requestStreamSettings(deviceId, PolarBleApi.PolarDeviceDataType.GYRO)
                         .flatMap { settings: PolarSensorSetting ->
                             api.startGyroStreaming(deviceId, settings)
                         }
@@ -334,7 +345,7 @@ class MainActivity : AppCompatActivity() {
             if (isDisposed) {
                 toggleButtonDown(magButton, R.string.stop_mag_stream)
                 magDisposable =
-                    requestStreamSettings(deviceId, PolarBleApi.DeviceStreamingFeature.MAGNETOMETER)
+                    requestStreamSettings(deviceId, PolarBleApi.PolarDeviceDataType.MAGNETOMETER)
                         .flatMap { settings: PolarSensorSetting ->
                             api.startMagnetometerStreaming(deviceId, settings)
                         }
@@ -363,7 +374,7 @@ class MainActivity : AppCompatActivity() {
             if (isDisposed) {
                 toggleButtonDown(ppgButton, R.string.stop_ppg_stream)
                 ppgDisposable =
-                    requestStreamSettings(deviceId, PolarBleApi.DeviceStreamingFeature.PPG)
+                    requestStreamSettings(deviceId, PolarBleApi.PolarDeviceDataType.PPG)
                         .flatMap { settings: PolarSensorSetting ->
                             api.startOhrStreaming(deviceId, settings)
                         }
@@ -511,7 +522,7 @@ class MainActivity : AppCompatActivity() {
             val isDisposed = recordingStartStopDisposable?.isDisposed ?: true
             if (isDisposed) {
                 val recordIdentifier = "TEST_APP_ID"
-                recordingStartStopDisposable = api.startRecording(deviceId, recordIdentifier, PolarBleApi.RecordingInterval.INTERVAL_1S, PolarBleApi.SampleType.HR)
+                recordingStartStopDisposable = api.startRecording(deviceId, recordIdentifier, PolarH10OfflineExerciseApi.RecordingInterval.INTERVAL_1S, PolarH10OfflineExerciseApi.SampleType.HR)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                         {
@@ -621,6 +632,130 @@ class MainActivity : AppCompatActivity() {
                     },
                     { error: Throwable -> Log.e(TAG, "get time failed: $error") }
                 )
+        }
+
+
+        listRecordingsButton.setOnClickListener {
+            api.listOfflineRecordings(deviceId)
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe {
+                    entryCache[deviceId] = mutableListOf()
+                }
+                .map {
+                    entryCache[deviceId]?.add(it)
+                    it
+                }
+                .subscribe(
+                    { polarOfflineRecordingEntry: PolarOfflineRecordingEntry ->
+                        Log.d(
+                            TAG,
+                            "next: ${polarOfflineRecordingEntry.date} path: ${polarOfflineRecordingEntry.path} size: ${polarOfflineRecordingEntry.size}"
+                        )
+                    },
+                    { error: Throwable -> Log.e(TAG, "Failed to list recordings: $error") },
+                    { Log.d(TAG, "list recordings complete") }
+                )
+        }
+
+        startRecordingButton.setOnClickListener {
+            //Example of starting ACC offline recording
+            Log.d(TAG, "Starts ACC recording")
+            val settings: MutableMap<PolarSensorSetting.SettingType, Int> = mutableMapOf()
+            settings[PolarSensorSetting.SettingType.SAMPLE_RATE] = 52
+            settings[PolarSensorSetting.SettingType.RESOLUTION] = 16
+            settings[PolarSensorSetting.SettingType.RANGE] = 8
+            settings[PolarSensorSetting.SettingType.CHANNELS] = 3
+            //Using a secret key managed by your own.
+            //  You can use a different key to each start recording calls.
+            //  When using key at start recording, it is also needed for the recording download, otherwise could not be decrypted
+            val yourSecret = PolarRecordingSecret(byteArrayOf(0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+                0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07))
+            api.startOfflineRecording(deviceId, PolarBleApi.PolarDeviceDataType.ACC, PolarSensorSetting(settings.toMap()), yourSecret)
+            //Without a secret key
+            //api.startOfflineRecording(deviceId, PolarBleApi.PolarDeviceDataType.ACC, PolarSensorSetting(settings.toMap()))
+                .subscribe(
+                    { Log.d(TAG, "start offline recording completed") },
+                    { throwable: Throwable -> Log.e(TAG, "" + throwable.toString()) }
+                )
+        }
+
+        stopRecordingButton.setOnClickListener {
+            //Example of stopping ACC offline recording
+            Log.d(TAG, "Stops ACC recording")
+            api.stopOfflineRecording(deviceId, PolarBleApi.PolarDeviceDataType.ACC)
+                .subscribe(
+                    { Log.d(TAG, "stop offline recording completed") },
+                    { throwable: Throwable -> Log.e(TAG, "" + throwable.toString()) }
+                )
+        }
+
+        downloadRecordingButton.setOnClickListener {
+            //Example of one offline recording download
+            //NOTE: For this example you need to click on listRecordingsButton to have files entry (entryCache) up to date
+            Log.d(TAG, "Searching to recording to download... ")
+            //Get first entry for testing download
+            val offlineRecEntry = entryCache[deviceId]?.firstOrNull();
+            offlineRecEntry?.let { offlineEntry ->
+                try {
+                    //Using a secret key managed by your own.
+                    //  You can use a different key to each start recording calls.
+                    //  When using key at start recording, it is also needed for the recording download, otherwise could not be decrypted
+                    val yourSecret = PolarRecordingSecret(byteArrayOf(0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+                        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07))
+                    api.getOfflineRecord(deviceId, offlineEntry, yourSecret)
+                    //Not using a secret key
+                    //api.getOfflineRecord(deviceId, offlineEntry)
+                        .subscribe(
+                            {
+                                Log.d(TAG, "Recording ${offlineEntry.path} downloaded. Size: ${offlineEntry.size}")
+                                when (it) {
+                                    is PolarOfflineRecordingData.AccOfflineRecording -> {
+                                        Log.d(TAG, "ACC Recording started at ${it.startTime}")
+                                        for (sample in it.data.samples) {
+                                            Log.d(TAG,"ACC data: time: ${sample.timeStamp} X: ${sample.x} Y: ${sample.y} Z: ${sample.z}")
+                                        }
+                                    }
+//                      is PolarOfflineRecordingData.GyroOfflineRecording -> { }
+//                      is PolarOfflineRecordingData.MagOfflineRecording -> { }
+//                      ...
+                                    else -> {
+                                        Log.d(TAG, "Recording type is not yet implemented")
+                                    }
+                                }
+                            },
+                            { throwable: Throwable -> Log.e(TAG, "" + throwable.toString()) }
+                        )
+                } catch (e: Exception) {
+                    Log.e(TAG, "Get offline recording fetch failed on entry ...", e)
+                }
+            }
+        }
+
+        deleteRecordingButton.setOnClickListener {
+            //Example of one offline recording deletion
+            //NOTE: For this example you need to click on listRecordingsButton to have files entry (entryCache) up to date
+            Log.d(TAG, "Searching to recording to delete... ")
+            //Get first entry for testing deletion
+            val offlineRecEntry = entryCache[deviceId]?.firstOrNull();
+            offlineRecEntry?.let { offlineEntry ->
+                try {
+                    api.removeOfflineRecord(deviceId, offlineEntry)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                            {
+                                Log.d(TAG, "Recording file deleted")
+                            },
+                            { error ->
+                                val errorString = "Recording file deletion failed: $error"
+                                showToast(errorString)
+                                Log.e(TAG, errorString)
+                            }
+                        )
+
+                } catch (e: Exception) {
+                    Log.e(TAG, "Delete offline recording failed on entry ...", e)
+                }
+            }
         }
 
         toggleSdkModeButton.setOnClickListener {
@@ -736,7 +871,7 @@ class MainActivity : AppCompatActivity() {
         button.background = buttonDrawable
     }
 
-    private fun requestStreamSettings(identifier: String, feature: PolarBleApi.DeviceStreamingFeature): Flowable<PolarSensorSetting> {
+    private fun requestStreamSettings(identifier: String, feature: PolarBleApi.PolarDeviceDataType): Flowable<PolarSensorSetting> {
         val availableSettings = api.requestStreamSettings(identifier, feature)
         val allSettings = api.requestFullStreamSettings(identifier, feature)
             .onErrorReturn { error: Throwable ->
@@ -806,6 +941,12 @@ class MainActivity : AppCompatActivity() {
         setTimeButton.isEnabled = false
         getTimeButton.isEnabled = false
         toggleSdkModeButton.isEnabled = false
+        //Verity Sense recording buttons
+        listRecordingsButton.isEnabled = false
+        startRecordingButton.isEnabled = false
+        stopRecordingButton.isEnabled = false
+        downloadRecordingButton.isEnabled = false
+        deleteRecordingButton.isEnabled = false
     }
 
     private fun enableAllButtons() {
@@ -828,6 +969,12 @@ class MainActivity : AppCompatActivity() {
         setTimeButton.isEnabled = true
         getTimeButton.isEnabled = true
         toggleSdkModeButton.isEnabled = true
+        //Verity Sense recording buttons
+        listRecordingsButton.isEnabled = true
+        startRecordingButton.isEnabled = true
+        stopRecordingButton.isEnabled = true
+        downloadRecordingButton.isEnabled = true
+        deleteRecordingButton.isEnabled = true
     }
 
     private fun disposeAllStreams() {
