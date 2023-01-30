@@ -241,21 +241,21 @@ internal class BlePmdClientTest {
     @Test
     fun `process ppi data`() {
         // Arrange
-        // HEX: 03 00 00 00 00 00 00 00 00 03 00
+        // HEX: 03 00 00 00 00 00 00 00 00 00 00
         // index    type                                data
         // 0:      Measurement type                     03 (ppi data)
         // 1..8:   64-bit Timestamp                     00 00 00 00 00 00 00 00 (0x0000000000000000 = 0)
-        // 9:      Frame type                           03 (raw, frame type 3)
+        // 9:      Frame type                           00 (raw, frame type 0)
         // 10:     Data                                 00
         val expectedTimeStamp = 0uL
         val expectedIsCompressed = false
-        val expectedFrameType = PmdDataFrame.PmdDataFrameType.TYPE_3
+        val expectedFrameType = PmdDataFrame.PmdDataFrameType.TYPE_0
         val expectedFactor = 1.0f
 
         val ppiDataHeaderFromService = byteArrayOf(
             0x03.toByte(),
             0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
-            0x03.toByte(),
+            0x00.toByte(),
         )
         val ppiDataPartFromService = byteArrayOf(
             0x00.toByte()

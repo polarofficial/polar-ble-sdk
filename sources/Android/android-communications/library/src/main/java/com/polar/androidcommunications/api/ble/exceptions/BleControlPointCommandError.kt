@@ -8,5 +8,4 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdControlP
 class BleControlPointCommandError(
     message: String,
     val error: PmdControlPointResponse.PmdControlPointResponseCode
-) :
-    Exception("$message failed with error: $error")
+) : Exception("$message $error")

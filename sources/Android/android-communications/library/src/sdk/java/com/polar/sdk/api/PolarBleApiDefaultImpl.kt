@@ -16,7 +16,7 @@ object PolarBleApiDefaultImpl {
      * @return default Polar API implementation
      */
     @JvmStatic
-    fun defaultImplementation(context: Context, features: Int): PolarBleApi {
+    fun defaultImplementation(context: Context, features: Set<PolarBleApi.PolarBleSdkFeature>): BDBleApiImpl {
         return BDBleApiImpl.getInstance(context, features)
     }
 
@@ -25,6 +25,6 @@ object PolarBleApiDefaultImpl {
      */
     @JvmStatic
     fun versionInfo(): String {
-        return "4.0.0"
+        return "5.0.0-beta3"
     }
 }

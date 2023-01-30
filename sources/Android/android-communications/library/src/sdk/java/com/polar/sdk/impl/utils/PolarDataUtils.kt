@@ -1,8 +1,7 @@
-package com.polar.sdk.api.model.utils
+package com.polar.sdk.impl.utils
 
 import com.polar.androidcommunications.api.ble.BleLogger
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSetting
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.*
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.*
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.errors.PolarBleSdkInternalException
@@ -40,6 +39,22 @@ internal object PolarDataUtils {
             )
         }
         return PolarOhrPPIData(0L, samples)
+    }
+
+    fun mapPMDClientOfflineHrDataToPolarHrData(offlineHrData: OfflineHrData): PolarHrData {
+        val samples: MutableList<PolarHrData.PolarHrSample> = mutableListOf()
+        for (sample in offlineHrData.hrSamples) {
+            samples.add(
+                PolarHrData.PolarHrSample(
+                    hr = sample.hr,
+                    rrs = emptyList(),
+                    contactStatus = false,
+                    contactStatusSupported = false,
+                    rrAvailable = false
+                )
+            )
+        }
+        return PolarHrData(samples)
     }
 
     fun mapPmdClientEcgDataToPolarEcg(ecgData: EcgData): PolarEcgData {
@@ -81,34 +96,47 @@ internal object PolarDataUtils {
         return PolarMagnetometerData(samples, magData.timeStamp.toLong())
     }
 
-    fun mapPolarFeatureToPmdClientMeasurementType(polarFeature: PolarBleApi.DeviceStreamingFeature): PmdMeasurementType {
+    fun mapPolarFeatureToPmdClientMeasurementType(polarFeature: PolarBleApi.PolarDeviceDataType): PmdMeasurementType {
         return when (polarFeature) {
-            PolarBleApi.DeviceStreamingFeature.ECG -> PmdMeasurementType.ECG
-            PolarBleApi.DeviceStreamingFeature.ACC -> PmdMeasurementType.ACC
-            PolarBleApi.DeviceStreamingFeature.PPG -> PmdMeasurementType.PPG
-            PolarBleApi.DeviceStreamingFeature.PPI -> PmdMeasurementType.PPI
-            PolarBleApi.DeviceStreamingFeature.GYRO -> PmdMeasurementType.GYRO
-            PolarBleApi.DeviceStreamingFeature.MAGNETOMETER -> PmdMeasurementType.MAGNETOMETER
+            PolarBleApi.PolarDeviceDataType.ECG -> PmdMeasurementType.ECG
+            PolarBleApi.PolarDeviceDataType.ACC -> PmdMeasurementType.ACC
+            PolarBleApi.PolarDeviceDataType.PPG -> PmdMeasurementType.PPG
+            PolarBleApi.PolarDeviceDataType.PPI -> PmdMeasurementType.PPI
+            PolarBleApi.PolarDeviceDataType.GYRO -> PmdMeasurementType.GYRO
+            PolarBleApi.PolarDeviceDataType.MAGNETOMETER -> PmdMeasurementType.MAGNETOMETER
+            PolarBleApi.PolarDeviceDataType.HR -> PmdMeasurementType.OFFLINE_HR
+            else -> {
+                throw PolarBleSdkInternalException("Error when map $polarFeature to PMD measurement type")
+            }
         }
     }
 
-    fun mapPmdClientFeaturesToPolarFeatures(pmdMeasurementType: Set<PmdMeasurementType>): List<PolarBleApi.DeviceStreamingFeature> {
-        val polarFeatures: MutableList<PolarBleApi.DeviceStreamingFeature> = mutableListOf()
-        for (feature in pmdMeasurementType) {
-            polarFeatures.add(mapPmdClientFeatureToPolarFeature(feature))
-        }
-        return polarFeatures.toList()
-    }
-
-    fun mapPmdClientFeatureToPolarFeature(pmdMeasurementType: PmdMeasurementType): PolarBleApi.DeviceStreamingFeature {
+    fun mapPmdClientFeatureToPolarFeature(pmdMeasurementType: PmdMeasurementType): PolarBleApi.PolarDeviceDataType {
         return when (pmdMeasurementType) {
-            PmdMeasurementType.ECG -> PolarBleApi.DeviceStreamingFeature.ECG
-            PmdMeasurementType.PPG -> PolarBleApi.DeviceStreamingFeature.PPG
-            PmdMeasurementType.ACC -> PolarBleApi.DeviceStreamingFeature.ACC
-            PmdMeasurementType.PPI -> PolarBleApi.DeviceStreamingFeature.PPI
-            PmdMeasurementType.GYRO -> PolarBleApi.DeviceStreamingFeature.GYRO
-            PmdMeasurementType.MAGNETOMETER -> PolarBleApi.DeviceStreamingFeature.MAGNETOMETER
-            else -> throw PolarBleSdkInternalException("Error when map measurement type  $pmdMeasurementType to Polar feature")
+            PmdMeasurementType.ECG -> PolarBleApi.PolarDeviceDataType.ECG
+            PmdMeasurementType.PPG -> PolarBleApi.PolarDeviceDataType.PPG
+            PmdMeasurementType.ACC -> PolarBleApi.PolarDeviceDataType.ACC
+            PmdMeasurementType.PPI -> PolarBleApi.PolarDeviceDataType.PPI
+            PmdMeasurementType.GYRO -> PolarBleApi.PolarDeviceDataType.GYRO
+            PmdMeasurementType.MAGNETOMETER -> PolarBleApi.PolarDeviceDataType.MAGNETOMETER
+            PmdMeasurementType.OFFLINE_HR -> PolarBleApi.PolarDeviceDataType.HR
+            else -> throw PolarBleSdkInternalException("Error when map measurement type $pmdMeasurementType to Polar feature")
+        }
+    }
+
+    private fun mapPolarOfflineModeTriggerToPmdOfflineTriggerMode(offlineTrigger: PolarOfflineRecordingTriggerMode): PmdOfflineRecTriggerMode {
+        return when (offlineTrigger) {
+            PolarOfflineRecordingTriggerMode.TRIGGER_SYSTEM_START -> PmdOfflineRecTriggerMode.TRIGGER_SYSTEM_START
+            PolarOfflineRecordingTriggerMode.TRIGGER_EXERCISE_START -> PmdOfflineRecTriggerMode.TRIGGER_EXERCISE_START
+            PolarOfflineRecordingTriggerMode.TRIGGER_DISABLED -> PmdOfflineRecTriggerMode.TRIGGER_DISABLE
+        }
+    }
+
+    private fun mapPmdOfflineTriggerModeToPolarOfflineTriggerMode(pmdTriggerType: PmdOfflineRecTriggerMode): PolarOfflineRecordingTriggerMode {
+        return when (pmdTriggerType) {
+            PmdOfflineRecTriggerMode.TRIGGER_DISABLE -> PolarOfflineRecordingTriggerMode.TRIGGER_DISABLED
+            PmdOfflineRecTriggerMode.TRIGGER_SYSTEM_START -> PolarOfflineRecordingTriggerMode.TRIGGER_SYSTEM_START
+            PmdOfflineRecTriggerMode.TRIGGER_EXERCISE_START -> PolarOfflineRecordingTriggerMode.TRIGGER_EXERCISE_START
         }
     }
 
@@ -117,10 +145,12 @@ internal object PolarDataUtils {
      *
      * @return PmdSetting
      */
-    fun mapPolarSettingsToPmdSettings(polarSensorSetting: PolarSensorSetting): PmdSetting {
+    fun mapPolarSettingsToPmdSettings(polarSensorSetting: PolarSensorSetting?): PmdSetting {
         val selected: MutableMap<PmdSetting.PmdSettingType, Int> = mutableMapOf()
-        for ((key, value) in polarSensorSetting.settings) {
-            selected[PmdSetting.PmdSettingType.values()[key.numVal]] = Collections.max(value)
+        if(polarSensorSetting != null) {
+            for ((key, value) in polarSensorSetting.settings) {
+                selected[PmdSetting.PmdSettingType.values()[key.numVal]] = Collections.max(value)
+            }
         }
         return PmdSetting(selected)
     }
@@ -162,5 +192,47 @@ internal object PolarDataUtils {
             }
             PolarSensorSetting(settings.toList())
         }
+    }
+
+    fun mapPmdTriggerToPolarTrigger(pmdTriggerStatus: PmdOfflineTrigger): PolarOfflineRecordingTrigger {
+        val triggerMode = mapPmdOfflineTriggerModeToPolarOfflineTriggerMode(pmdTriggerStatus.triggerMode)
+        val polarTriggerSettings: MutableMap<PolarBleApi.PolarDeviceDataType, PolarSensorSetting?> = mutableMapOf()
+
+        for (setting in pmdTriggerStatus.triggers) {
+            val polarFeature = mapPmdClientFeatureToPolarFeature(setting.key)
+            val triggerStatus = setting.value.first
+
+            if (triggerStatus == PmdOfflineRecTriggerStatus.TRIGGER_ENABLED) {
+                // Map only the enabled
+                val polarSettings = setting.value.second?.let {
+                    mapPmdSettingsToPolarSettings(it, false)
+                }
+                polarTriggerSettings[polarFeature] = polarSettings
+            }
+        }
+        return PolarOfflineRecordingTrigger(
+            triggerMode = triggerMode,
+            triggerFeatures = polarTriggerSettings
+        )
+    }
+
+    fun mapPolarOfflineTriggerToPmdOfflineTrigger(polarTrigger: PolarOfflineRecordingTrigger): PmdOfflineTrigger {
+        val pmdTriggerMode = mapPolarOfflineModeTriggerToPmdOfflineTriggerMode(polarTrigger.triggerMode)
+        val pmdTriggers: MutableMap<PmdMeasurementType, Pair<PmdOfflineRecTriggerStatus, PmdSetting?>> = mutableMapOf()
+
+        for (trigger in polarTrigger.triggerFeatures) {
+            val pmdMeasurementType = mapPolarFeatureToPmdClientMeasurementType(trigger.key)
+            val pmdSettings = trigger.value?.let { mapPolarSettingsToPmdSettings(it) }
+            pmdTriggers[pmdMeasurementType] = Pair(PmdOfflineRecTriggerStatus.TRIGGER_ENABLED, pmdSettings)
+        }
+
+        return PmdOfflineTrigger(triggerMode = pmdTriggerMode, triggers = pmdTriggers)
+    }
+
+    fun mapPolarSecretToPmdSecret(polarSecret: PolarRecordingSecret): PmdSecret {
+        return PmdSecret(
+            strategy = PmdSecret.SecurityStrategy.AES128,
+            key = polarSecret.secret
+        )
     }
 }

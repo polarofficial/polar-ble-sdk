@@ -4,6 +4,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClien
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient.PmdDataFieldEncoding
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
 import java.lang.Float.intBitsToFloat
+import java.util.*
 
 internal class GyrData constructor(@Deprecated("each sample has timestamp") val timeStamp: ULong = 0uL) {
 

@@ -39,6 +39,7 @@ internal class MagData(@Deprecated("each sample has timestamp") val timeStamp: U
         private const val TYPE_1_SAMPLE_SIZE_IN_BITS = TYPE_1_SAMPLE_SIZE_IN_BYTES * 8
         private const val TYPE_1_CHANNELS_IN_SAMPLE = 4
 
+
         fun parseDataFromDataFrame(frame: PmdDataFrame): MagData {
             return if (frame.isCompressedFrame) {
                 when (frame.frameType) {

@@ -1,6 +1,7 @@
 package com.polar.sdk.api.model.utils
 
 import com.polar.androidcommunications.testrules.BleLoggerTestRule
+import com.polar.sdk.impl.utils.PolarTimeUtils
 import fi.polar.remote.representation.protobuf.Types
 import org.junit.Assert
 import org.junit.Rule

@@ -255,8 +255,10 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
                 int mask = BluetoothDevice.PHY_LE_1M_MASK;
                 if (bluetoothAdapter.isLe2MPhySupported())
                     mask |= BluetoothDevice.PHY_LE_2M_MASK;
+                BleLogger.d(TAG, "Attempt connect to device " + session.getName() + " with the mask " + mask);
                 gatt = session.getBluetoothDevice().connectGatt(context, false, gattCallback, BluetoothDevice.TRANSPORT_LE, mask);
             } else {
+                BleLogger.d(TAG, "Attempt connect to device " + session.getName());
                 gatt = session.getBluetoothDevice().connectGatt(context, false, gattCallback, BluetoothDevice.TRANSPORT_LE);
             }
             session.setGatt(gatt);

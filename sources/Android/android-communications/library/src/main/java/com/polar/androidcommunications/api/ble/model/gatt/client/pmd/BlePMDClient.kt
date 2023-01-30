@@ -6,6 +6,7 @@ import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.exceptions.*
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType.Companion.fromId
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSetting.PmdSettingType
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.*
 import com.polar.androidcommunications.common.ble.AtomicSet
@@ -221,8 +222,11 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
                         val bb = ByteBuffer.allocate(1 + params.size)
                         bb.put(byteArrayOf(command.numVal.toByte()))
                         if (params.isNotEmpty()) bb.put(params)
+                        BleLogger.d(TAG, "Send control point command $command")
                         val response = sendPmdCommand(bb.array())
-                        if (response.status === PmdControlPointResponse.PmdControlPointResponseCode.SUCCESS) {
+                        BleLogger.d(TAG, "Response of control point command $command with status ${response.status} ")
+
+                        if (response.status == PmdControlPointResponse.PmdControlPointResponseCode.SUCCESS) {
                             subscriber.onSuccess(response)
                             return@SingleOnSubscribe
                         }
@@ -246,8 +250,10 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
      * - onSuccess settings query success, the queried settings emitted
      * - onError settings query failed
      */
-    fun querySettings(type: PmdMeasurementType): Single<PmdSetting> {
-        return sendControlPointCommand(PmdControlPointCommand.GET_MEASUREMENT_SETTINGS, type.numVal.toByte())
+    fun querySettings(type: PmdMeasurementType, recordingType: PmdRecordingType = PmdRecordingType.ONLINE): Single<PmdSetting> {
+        val measurementType = type.numVal
+        val requestByte = recordingType.asBitField() or measurementType
+        return sendControlPointCommand(PmdControlPointCommand.GET_MEASUREMENT_SETTINGS, requestByte.toByte())
             .map { pmdControlPointResponse: PmdControlPointResponse -> PmdSetting(pmdControlPointResponse.parameters) }
     }
 
@@ -258,8 +264,11 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
      * - onSuccess full settings query success, the queried settings emitted
      * - onError full settings query failed
      */
-    fun queryFullSettings(type: PmdMeasurementType): Single<PmdSetting> {
-        return sendControlPointCommand(PmdControlPointCommand.GET_SDK_MODE_MEASUREMENT_SETTINGS, type.numVal.toByte())
+    fun queryFullSettings(type: PmdMeasurementType, recordingType: PmdRecordingType = PmdRecordingType.ONLINE): Single<PmdSetting> {
+        val measurementType = type.numVal
+        val requestByte = recordingType.asBitField() or measurementType
+
+        return sendControlPointCommand(PmdControlPointCommand.GET_SDK_MODE_MEASUREMENT_SETTINGS, requestByte.toByte())
             .map { pmdControlPointResponse: PmdControlPointResponse -> PmdSetting(pmdControlPointResponse.parameters) }
     }
 
@@ -294,24 +303,120 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
         }).subscribeOn(Schedulers.io())
     }
 
-    /**
-     * request to start a specific measurement
-     *
-     * @param type    measurement to start
-     * @param setting desired settings
-     * @return Completable stream
-     */
-    fun startMeasurement(type: PmdMeasurementType, setting: PmdSetting): Completable {
-        val set = setting.serializeSelected()
-        val bb = ByteBuffer.allocate(1 + set.size)
-        bb.put(type.numVal.toByte())
-        bb.put(set)
+    fun startMeasurement(type: PmdMeasurementType, setting: PmdSetting, recordingType: PmdRecordingType = PmdRecordingType.ONLINE, secret: PmdSecret? = null): Completable {
+        val measurementType = type.numVal
+        val firstByte = recordingType.asBitField() or measurementType
+        var settingsBytes = setting.serializeSelected()
+        settingsBytes += secret?.serializeToPmdSettings() ?: byteArrayOf()
+
+        val bb = ByteBuffer.allocate(1 + settingsBytes.size)
+        bb.put(firstByte.toByte())
+        bb.put(settingsBytes)
         currentSettings[type] = setting
 
         return sendControlPointCommand(PmdControlPointCommand.REQUEST_MEASUREMENT_START, bb.array())
             .doOnSuccess { pmdControlPointResponse: PmdControlPointResponse -> currentSettings[type]!!.updateSelectedFromStartResponse(pmdControlPointResponse.parameters) }
             .toObservable()
             .ignoreElements()
+    }
+
+    fun readMeasurementStatus(): Single<Map<PmdMeasurementType, PmdActiveMeasurement>> {
+        return sendControlPointCommand(PmdControlPointCommand.GET_MEASUREMENT_STATUS)
+            .map { pmdControlPointResponse: PmdControlPointResponse ->
+                val measurementStatus: MutableMap<PmdMeasurementType, PmdActiveMeasurement> = mutableMapOf()
+                for (parameter in pmdControlPointResponse.parameters) {
+                    when (fromId(parameter)) {
+                        PmdMeasurementType.ECG -> measurementStatus[PmdMeasurementType.ECG] = PmdActiveMeasurement.fromStatusResponse(parameter)
+                        PmdMeasurementType.PPG -> measurementStatus[PmdMeasurementType.PPG] = PmdActiveMeasurement.fromStatusResponse(parameter)
+                        PmdMeasurementType.ACC -> measurementStatus[PmdMeasurementType.ACC] = PmdActiveMeasurement.fromStatusResponse(parameter)
+                        PmdMeasurementType.PPI -> measurementStatus[PmdMeasurementType.PPI] = PmdActiveMeasurement.fromStatusResponse(parameter)
+                        PmdMeasurementType.GYRO -> measurementStatus[PmdMeasurementType.GYRO] = PmdActiveMeasurement.fromStatusResponse(parameter)
+                        PmdMeasurementType.MAGNETOMETER -> measurementStatus[PmdMeasurementType.MAGNETOMETER] = PmdActiveMeasurement.fromStatusResponse(parameter)
+                        PmdMeasurementType.LOCATION -> measurementStatus[PmdMeasurementType.LOCATION] = PmdActiveMeasurement.fromStatusResponse(parameter)
+                        PmdMeasurementType.PRESSURE -> measurementStatus[PmdMeasurementType.PRESSURE] = PmdActiveMeasurement.fromStatusResponse(parameter)
+                        PmdMeasurementType.TEMPERATURE -> measurementStatus[PmdMeasurementType.TEMPERATURE] = PmdActiveMeasurement.fromStatusResponse(parameter)
+                        PmdMeasurementType.OFFLINE_HR -> measurementStatus[PmdMeasurementType.OFFLINE_HR] = PmdActiveMeasurement.fromStatusResponse(parameter)
+                        else -> {}
+                    }
+                }
+                measurementStatus
+            }
+    }
+
+    internal fun setOfflineRecordingTrigger(offlineRecordingTrigger: PmdOfflineTrigger, secret: PmdSecret?): Completable {
+        val setOfflineTriggerModeCompletable = setOfflineRecordingTriggerMode(triggerMode = offlineRecordingTrigger.triggerMode)
+        val setOfflineTriggerSettingsCompletable = if (offlineRecordingTrigger.triggerMode != PmdOfflineRecTriggerMode.TRIGGER_DISABLE) {
+            getOfflineRecordingTriggerStatus()
+                .flatMapCompletable { pmdOfflineTriggers ->
+                    val allSettingCommands = pmdOfflineTriggers.triggers
+                        .map { it.key }
+                        .map { availableMeasurementType ->
+                            if (offlineRecordingTrigger.triggers.keys.contains(availableMeasurementType)) {
+                                val settings = offlineRecordingTrigger.triggers[availableMeasurementType]?.second
+                                BleLogger.d(TAG, "Enable trigger $availableMeasurementType")
+                                setOfflineRecordingTriggerSetting(PmdOfflineRecTriggerStatus.TRIGGER_ENABLED, availableMeasurementType, settings, secret)
+                            } else {
+                                BleLogger.d(TAG, "Disable trigger $availableMeasurementType")
+                                setOfflineRecordingTriggerSetting(PmdOfflineRecTriggerStatus.TRIGGER_DISABLED, availableMeasurementType)
+                            }
+                        }
+                    Completable.concat(allSettingCommands)
+                }
+        } else {
+            Completable.complete()
+        }
+
+        val commands = mutableListOf(setOfflineTriggerModeCompletable, setOfflineTriggerSettingsCompletable)
+        return Completable.concat(commands)
+    }
+
+    private fun setOfflineRecordingTriggerMode(triggerMode: PmdOfflineRecTriggerMode): Completable {
+        val parameter = byteArrayOf(triggerMode.value.toByte())
+        return sendControlPointCommand(PmdControlPointCommand.SET_OFFLINE_RECORDING_TRIGGER_MODE, parameter)
+            .toObservable()
+            .ignoreElements()
+    }
+
+    private fun setOfflineRecordingTriggerSetting(triggerStatus: PmdOfflineRecTriggerStatus, type: PmdMeasurementType, setting: PmdSetting? = null, secret: PmdSecret? = null): Completable {
+        //guard
+        if (!type.isDataType()) {
+            return Completable.error(Exception("Invalid PmdMeasurementType: $type"))
+        }
+        val triggerStatusByte: UByte = triggerStatus.value
+        val measurementTypeByte: UByte = type.numVal
+
+        val settingsBytes = if (triggerStatus == PmdOfflineRecTriggerStatus.TRIGGER_ENABLED) {
+            val settingBytes = setting?.serializeSelected() ?: byteArrayOf()
+            val securityBytes = secret?.serializeToPmdSettings() ?: byteArrayOf()
+            byteArrayOf((settingBytes + securityBytes).size.toByte()) + settingBytes + securityBytes
+        } else {
+            byteArrayOf()
+        }
+
+        val parameters = byteArrayOf(triggerStatusByte.toByte(), measurementTypeByte.toByte()) + settingsBytes
+        return sendControlPointCommand(PmdControlPointCommand.SET_OFFLINE_RECORDING_TRIGGER_SETTINGS, parameters)
+            .onErrorResumeNext {
+                if (it is BleControlPointCommandError) {
+                    val errorMessage = "$type $triggerStatus Trigger Setting failed"
+                    Single.error(
+                        BleControlPointCommandError(
+                            message = errorMessage,
+                            error = it.error
+                        )
+                    )
+                } else {
+                    Single.error(it)
+                }
+            }
+            .toObservable()
+            .ignoreElements()
+    }
+
+    internal fun getOfflineRecordingTriggerStatus(): Single<PmdOfflineTrigger> {
+        return sendControlPointCommand(PmdControlPointCommand.GET_OFFLINE_RECORDING_TRIGGER_STATUS)
+            .map { pmdControlPointResponse: PmdControlPointResponse ->
+                PmdOfflineTrigger.parseFromResponse(pmdControlPointResponse.parameters)
+            }
     }
 
     /**
@@ -340,6 +445,20 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
             .toObservable()
             .doOnComplete { clearStreamObservers(BleOperationModeChange("SDK mode disabled")) }
             .ignoreElements()
+    }
+
+    /**
+     * Is SDK mode enabled
+     *
+     * @return Single
+     * - onSuccess the value is true if SDK mode is enabled
+     * - onError SDK status request failed
+     */
+    internal fun isSdkModeEnabled(): Single<PmdSdkMode> {
+        return sendControlPointCommand(PmdControlPointCommand.GET_SDK_MODE_STATUS)
+            .map { pmdControlPointResponse: PmdControlPointResponse ->
+                PmdSdkMode.fromResponse(pmdControlPointResponse.parameters.first())
+            }
     }
 
     /**

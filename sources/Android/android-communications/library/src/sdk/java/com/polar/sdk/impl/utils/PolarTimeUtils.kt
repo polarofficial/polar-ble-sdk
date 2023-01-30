@@ -1,4 +1,4 @@
-package com.polar.sdk.api.model.utils
+package com.polar.sdk.impl.utils
 
 import fi.polar.remote.representation.protobuf.Types
 import org.joda.time.DateTime

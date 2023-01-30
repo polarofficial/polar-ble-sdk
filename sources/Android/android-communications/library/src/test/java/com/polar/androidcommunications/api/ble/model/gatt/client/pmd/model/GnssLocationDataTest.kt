@@ -133,6 +133,7 @@ internal class GnssLocationDataTest {
             getFactor = { factor },
             getSampleRate = { 0 })
 
+
         // Act
         val gnssData = GnssLocationData.parseDataFromDataFrame(dataFrame)
 

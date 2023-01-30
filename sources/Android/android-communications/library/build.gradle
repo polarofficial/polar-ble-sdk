@@ -80,7 +80,7 @@ android {
 }
 
 tasks.dokkaJavadoc.configure {
-    outputDirectory.set(file("docs/html"))
+    outputDirectory.set(file("docs/"))
     dokkaSourceSets {
         named("main") {
             perPackageOption {

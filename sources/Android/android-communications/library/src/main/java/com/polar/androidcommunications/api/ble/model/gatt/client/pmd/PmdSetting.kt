@@ -11,7 +11,8 @@ class PmdSetting {
         RANGE(2),
         RANGE_MILLIUNIT(3),
         CHANNELS(4),
-        FACTOR(5);
+        FACTOR(5),
+        SECURITY(6);
     }
 
     // available settings
@@ -66,8 +67,10 @@ class PmdSetting {
             if (key == PmdSettingType.FACTOR) {
                 continue
             }
+
             outputStream.write(key.numVal)
             outputStream.write(1)
+
             val fieldSize = Objects.requireNonNull(typeToFieldSize(key))
             for (i in 0 until fieldSize) {
                 outputStream.write((value shr i * 8))
@@ -107,6 +110,7 @@ class PmdSetting {
                 PmdSettingType.RANGE_MILLIUNIT -> 4
                 PmdSettingType.CHANNELS -> 1
                 PmdSettingType.FACTOR -> 4
+                PmdSettingType.SECURITY -> 16
             }
         }
 
