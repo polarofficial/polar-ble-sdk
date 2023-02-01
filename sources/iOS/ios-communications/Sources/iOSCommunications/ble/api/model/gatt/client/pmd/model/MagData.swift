@@ -2,7 +2,7 @@
 
 import Foundation
 
-public struct MagData {
+public class MagData {
     let timeStamp: UInt64
     
     struct MagSample {
@@ -12,7 +12,12 @@ public struct MagData {
         let z: Float
     }
     
-    let samples: [MagSample]
+    var samples: [MagSample]
+    
+    init(timeStamp: UInt64 = 0, samples: [MagSample] = []) {
+        self.timeStamp = timeStamp
+        self.samples = samples
+    }
     
     private static let TYPE_0_SAMPLE_SIZE_IN_BYTES: UInt8 = 2
     private static let TYPE_0_SAMPLE_SIZE_IN_BITS: UInt8 = TYPE_0_SAMPLE_SIZE_IN_BYTES * 8

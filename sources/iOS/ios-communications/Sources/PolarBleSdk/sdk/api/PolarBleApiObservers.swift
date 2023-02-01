@@ -51,14 +51,6 @@ public protocol PolarBleApiDeviceInfoObserver: AnyObject {
 
 /// Heart rate observer
 public protocol PolarBleApiDeviceHrObserver: AnyObject {
-    /// Polar hr data
-    ///
-    ///     - hr in BPM
-    ///     - rrs RR interval in 1/1024. R is a the top highest peak in the QRS complex of the ECG wave and RR is the interval between successive Rs. 
-    ///     - rrs RR interval in ms.
-    ///     - contact status between the device and the users skin
-    ///     - contactSupported if contact is supported
-    typealias PolarHrData = (hr: UInt8, rrs: [Int], rrsMs: [Int], contact: Bool, contactSupported: Bool)
     /// HR notification received. Notice when using OH1 and PPI stream is started this callback will produce 0 hr.
     ///
     /// - Parameters:
@@ -82,6 +74,9 @@ public protocol PolarBleApiDeviceFeaturesObserver: AnyObject {
     
     /// feature ready callback
     func streamingFeaturesReady(_ identifier: String, streamingFeatures: Set<DeviceStreamingFeature>)
+    
+    /// The feature is available in this device and it is ready.  Called only for the features which are specified in [PolarBleApi] construction.
+    func bleSdkFeatureReady(_ identifier: String, feature: PolarBleSdkFeature)
 }
 
 /// SDK Mode observer

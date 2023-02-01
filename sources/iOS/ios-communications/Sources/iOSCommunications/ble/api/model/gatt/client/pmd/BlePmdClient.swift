@@ -79,35 +79,38 @@ public struct Pmd {
     static func parseDeltaFrame(_ data: Data, channels: UInt32, bitWidth: UInt32, totalBitLength: UInt32) -> [[Int32]]{
         // convert array to bits
         let dataInBits = data.flatMap { (byte) -> [Bool] in
-            return Array(stride(from: 0, to: 8, by: 1).map { (index) -> Bool in
-                return (byte & (0x01 << index)) != 0
-            })
+            return Array(stride(from: 0, to: 8, by: 1)
+                .map { (index) -> Bool in
+                    return (byte & (0x01 << index)) != 0
+                }
+            )
         }
         
         let mask = Int32.max << Int32(bitWidth-1)
         let channelBitsLength = bitWidth*channels
         return Array(stride(from: 0, to: totalBitLength, by: UInt32.Stride(channelBitsLength)).map { (start) -> [Int32] in
-            return Array(stride(from: start, to: UInt32(start+UInt32(channelBitsLength)), by: UInt32.Stride(bitWidth)).map { (subStart) -> Int32 in
-                let deltaSampleList: ArraySlice<Bool> = dataInBits[Int(subStart)..<Int(subStart+UInt32(bitWidth))]
-                var deltaSample: Int32 = 0
-                var i=0
-                deltaSampleList.forEach { (bitValue) in
-                    let bit = Int32(bitValue ? 1 : 0)
-                    deltaSample |= (bit << i)
-                    i += 1
-                }
-                
-                if((deltaSample & mask) != 0) {
-                    deltaSample |= mask;
-                }
-                return deltaSample
-            })
+            return Array(stride(from: start, to: UInt32(start+UInt32(channelBitsLength)), by: UInt32.Stride(bitWidth))
+                .map { (subStart) -> Int32 in
+                    let deltaSampleList: ArraySlice<Bool> = dataInBits[Int(subStart)..<Int(subStart+UInt32(bitWidth))]
+                    var deltaSample: Int32 = 0
+                    var i=0
+                    deltaSampleList.forEach { (bitValue) in
+                        let bit = Int32(bitValue ? 1 : 0)
+                        deltaSample |= (bit << i)
+                        i += 1
+                    }
+                    
+                    if((deltaSample & mask) != 0) {
+                        deltaSample |= mask;
+                    }
+                    return deltaSample
+                })
         })
     }
     
     static func parseDeltaFramesToSamples(_ data: Data, channels: UInt8, resolution: UInt8) -> [[Int32]] {
         let refSamples = parseDeltaFrameRefSamples(data, channels: channels, resolution: resolution)
-        var offset = Int(channels*UInt8(ceil(Double(resolution)/8.0)))
+        var offset = Int(channels * UInt8(ceil(Double(resolution)/8.0)))
         var samples = [[Int32]]()
         samples.append(contentsOf: [refSamples])
         while offset < data.count {
@@ -115,8 +118,8 @@ public struct Pmd {
             offset += 1
             let sampleCount = UInt32(data[offset])
             offset += 1
-            let bitLength = (sampleCount*deltaSize*UInt32(channels))
-            let length = Int(ceil(Double(bitLength)/8.0))
+            let bitLength = (sampleCount * deltaSize * UInt32(channels))
+            let length = Int(ceil(Double(bitLength) / 8.0))
             let frame = data.subdata(in: offset..<(offset+length))
             let deltas = parseDeltaFrame(frame, channels: UInt32(channels), bitWidth: deltaSize, totalBitLength: bitLength)
             offset += length
@@ -140,13 +143,6 @@ public class BlePmdClient: BleGattClientBase {
     public static let PMD_SERVICE = CBUUID(string: "FB005C80-02E7-F387-1CAD-8ACD2D8DF0C8")
     public static let PMD_CP = CBUUID(string: "FB005C81-02E7-F387-1CAD-8ACD2D8DF0C8")
     public static let PMD_DATA = CBUUID(string: "FB005C82-02E7-F387-1CAD-8ACD2D8DF0C8")
-    
-    private struct PmdControlPointCommands {
-        static let GET_MEASUREMENT_SETTINGS: UInt8 = 0x01
-        static let REQUEST_MEASUREMENT_START: UInt8 = 0x02
-        static let STOP_MEASUREMENT: UInt8 = 0x03
-        static let GET_SDK_MODE_SETTINGS: UInt8 = 0x04
-    }
     
     let pmdCpInputQueue = AtomicList<Data>()
     var features: Data?
@@ -352,14 +348,17 @@ public class BlePmdClient: BleGattClientBase {
         return RxUtils.monitor(observersPpi, transport: gattServiceTransmitter, checkConnection: true)
     }
     
-    func startMeasurement(_ type: PmdMeasurementType, settings: PmdSetting) -> Completable {
+    public func startMeasurement(_ type: PmdMeasurementType, settings: PmdSetting, _ recordingType: PmdRecordingType = PmdRecordingType.online) -> Completable {
+        
         storedSettings.accessItem { (settingsStored) in
             settingsStored[type] = settings
         }
         return Completable.create { observer in
             do {
+                let measurementType = type.rawValue
+                let requestByte = recordingType.asBitField() | measurementType
+                var packet = Data([PmdControlPointCommand.REQUEST_MEASUREMENT_START, requestByte])
                 let serialized = settings.serialize()
-                var packet = Data([PmdControlPointCommands.REQUEST_MEASUREMENT_START, type.rawValue])
                 packet.append(serialized)
                 let cpResponse = try self.sendControlPointCommand(packet as Data)
                 if cpResponse.errorCode == .success {
@@ -381,7 +380,7 @@ public class BlePmdClient: BleGattClientBase {
     func stopMeasurement(_ type: PmdMeasurementType) -> Completable {
         return Completable.create{ observer in
             do {
-                let packet = Data([PmdControlPointCommands.STOP_MEASUREMENT ,type.rawValue])
+                let packet = Data([PmdControlPointCommand.STOP_MEASUREMENT ,type.rawValue])
                 let cpResponse = try self.sendControlPointCommand(packet)
                 if cpResponse.errorCode == .success {
                     observer(.completed)
@@ -420,19 +419,50 @@ public class BlePmdClient: BleGattClientBase {
         }
     }
     
-    public override func clientReady(_ checkConnection: Bool) -> Completable {
-        return waitNotificationEnabled(BlePmdClient.PMD_CP, checkConnection: checkConnection)
-            .andThen(waitNotificationEnabled(BlePmdClient.PMD_DATA, checkConnection: checkConnection))
-    }
-    
-    func querySettings(_ setting: PmdMeasurementType) -> Single<PmdSetting> {
+    func readMeasurementStatus() -> Single<[(PmdMeasurementType, PmdActiveMeasurement)]> {
         return Single.create{ [unowned self] observer in
             do {
-                let packet = Data([PmdControlPointCommands.GET_MEASUREMENT_SETTINGS, setting.rawValue])
-                let cpResponse = try self.sendControlPointCommand(packet)
+                let cpResponse = try self.sendControlPointCommand(Data([PmdControlPointCommand.GET_MEASUREMENT_STATUS]))
                 if cpResponse.errorCode == .success {
-                    let query = PmdSetting(cpResponse.parameters as Data)
-                    observer(.success(query))
+                    var measurementStatus = [(PmdMeasurementType, PmdActiveMeasurement)]()
+                    for parameter in cpResponse.parameters as Data {
+                        switch(PmdMeasurementType.fromId(id: parameter)) {
+                        case .ecg:
+                            measurementStatus.append((PmdMeasurementType.ecg, PmdActiveMeasurement.fromStatusResponse(responseByte: parameter)))
+                            break
+                        case .ppg:
+                            measurementStatus.append((PmdMeasurementType.ppg, PmdActiveMeasurement.fromStatusResponse(responseByte: parameter)))
+                            break
+                        case .acc:
+                            measurementStatus.append((PmdMeasurementType.acc, PmdActiveMeasurement.fromStatusResponse(responseByte: parameter)))
+                            break
+                        case .ppi:
+                            measurementStatus.append((PmdMeasurementType.ppi, PmdActiveMeasurement.fromStatusResponse(responseByte: parameter)))
+                            break
+                        case .gyro:
+                            measurementStatus.append((PmdMeasurementType.gyro, PmdActiveMeasurement.fromStatusResponse(responseByte: parameter)))
+                            break
+                        case .mgn:
+                            measurementStatus.append((PmdMeasurementType.mgn, PmdActiveMeasurement.fromStatusResponse(responseByte: parameter)))
+                            break
+                        case .location:
+                            measurementStatus.append((PmdMeasurementType.location, PmdActiveMeasurement.fromStatusResponse(responseByte: parameter)))
+                            break
+                        case .pressure:
+                            measurementStatus.append((PmdMeasurementType.pressure, PmdActiveMeasurement.fromStatusResponse(responseByte: parameter)))
+                            break
+                        case .temperature:
+                            measurementStatus.append((PmdMeasurementType.temperature, PmdActiveMeasurement.fromStatusResponse(responseByte: parameter)))
+                            break
+                        case .offline_hr:
+                            measurementStatus.append((PmdMeasurementType.offline_hr, PmdActiveMeasurement.fromStatusResponse(responseByte: parameter)))
+                            break
+                        default:
+                            break
+                        }
+                    }
+                    observer(.success(measurementStatus))
+                    
                 } else {
                     observer(.failure(BleGattException.gattAttributeError(errorCode: cpResponse.errorCode.rawValue, errorDescription: cpResponse.errorCode.description)))
                 }
@@ -445,14 +475,44 @@ public class BlePmdClient: BleGattClientBase {
         }.subscribe(on: baseSerialDispatchQueue)
     }
     
-    func queryFullSettings(_ setting: PmdMeasurementType) -> Single<PmdSetting> {
+    public override func clientReady(_ checkConnection: Bool) -> Completable {
+        return waitNotificationEnabled(BlePmdClient.PMD_CP, checkConnection: checkConnection)
+            .andThen(waitNotificationEnabled(BlePmdClient.PMD_DATA, checkConnection: checkConnection))
+    }
+    
+    func querySettings(_ type: PmdMeasurementType, _ recordingType: PmdRecordingType) -> Single<PmdSetting> {
         return Single.create{ [unowned self] observer in
             do {
-                let packet = Data([PmdControlPointCommands.GET_SDK_MODE_SETTINGS, setting.rawValue])
+                let measurementType = type.rawValue
+                let requestByte = recordingType.asBitField() | measurementType
+                let packet = Data([PmdControlPointCommand.GET_MEASUREMENT_SETTINGS, requestByte])
+                
                 let cpResponse = try self.sendControlPointCommand(packet)
                 if cpResponse.errorCode == .success {
-                    let query = PmdSetting(cpResponse.parameters as Data)
-                    observer(.success(query))
+                    let settings = PmdSetting(cpResponse.parameters as Data)
+                    observer(.success(settings))
+                } else {
+                    observer(.failure(BleGattException.gattAttributeError(errorCode: cpResponse.errorCode.rawValue, errorDescription: cpResponse.errorCode.description)))
+                }
+            } catch let err {
+                observer(.failure(err))
+            }
+            return Disposables.create{
+                // do nothing
+            }
+        }.subscribe(on: baseSerialDispatchQueue)
+    }
+    
+    func queryFullSettings(_ type: PmdMeasurementType,_ recordingType: PmdRecordingType ) -> Single<PmdSetting> {
+        return Single.create{ [unowned self] observer in
+            do {
+                let measurementType = type.rawValue
+                let requestByte = recordingType.asBitField() | measurementType
+                let packet = Data([PmdControlPointCommand.GET_SDK_MODE_SETTINGS, requestByte])
+                let cpResponse = try self.sendControlPointCommand(packet)
+                if cpResponse.errorCode == .success {
+                    let settings = PmdSetting(cpResponse.parameters as Data)
+                    observer(.success(settings))
                 } else {
                     observer(.failure(BleGattException.gattAttributeError(errorCode: cpResponse.errorCode.rawValue, errorDescription: cpResponse.errorCode.description)))
                 }
@@ -468,7 +528,7 @@ public class BlePmdClient: BleGattClientBase {
     public func startSdkMode() -> Completable {
         return Completable.create{ observer in
             do {
-                let packet = Data([PmdControlPointCommands.REQUEST_MEASUREMENT_START, PmdMeasurementType.sdkMode.rawValue])
+                let packet = Data([PmdControlPointCommand.REQUEST_MEASUREMENT_START, PmdMeasurementType.sdkMode.rawValue])
                 let cpResponse = try self.sendControlPointCommand(packet)
                 if cpResponse.errorCode == .success || cpResponse.errorCode == .errorAlreadyInState {
                     observer(.completed)
@@ -493,7 +553,7 @@ public class BlePmdClient: BleGattClientBase {
     public func stopSdkMode() -> Completable {
         return Completable.create{ observer in
             do {
-                let packet = Data([PmdControlPointCommands.STOP_MEASUREMENT, PmdMeasurementType.sdkMode.rawValue])
+                let packet = Data([PmdControlPointCommand.STOP_MEASUREMENT, PmdMeasurementType.sdkMode.rawValue])
                 let cpResponse = try self.sendControlPointCommand(packet)
                 if cpResponse.errorCode == .success || cpResponse.errorCode == .errorAlreadyInState{
                     observer(.completed)

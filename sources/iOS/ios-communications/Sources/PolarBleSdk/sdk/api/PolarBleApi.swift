@@ -5,13 +5,14 @@ import CoreBluetooth
 import RxSwift
 
 /// device streaming features
-public enum DeviceStreamingFeature: Int, CaseIterable {
+public enum DeviceStreamingFeature: CaseIterable {
     case ecg
     case acc
     case ppg
     case ppi
     case gyro
     case magnetometer
+    case hr
 }
 
 ///  Recoding intervals for H10 recording start
@@ -45,6 +46,34 @@ public enum Features: Int, CaseIterable {
     case allFeatures = 0xff
 }
 
+
+/// Features available in Polar BLE SDK library
+public enum PolarBleSdkFeature: CaseIterable {
+    /// Hr feature to receive hr and rr data from Polar or any other BLE device via standard HR BLE service
+    case feature_hr
+    
+    /// Device information feature to receive sw information from Polar or any other BLE device
+    case feature_device_info
+    
+    /// Feature to receive battery level info from Polar or any other BLE device
+    case feature_battery_info
+    
+    ///  Polar sensor streaming feature to stream live online data. For example hr, ecg, acc, ppg, ppi, etc...
+    case feature_polar_online_streaming
+    
+    /// Polar offline recording feature to record offline data to Polar device without continuous BLE connection.
+    case feature_polar_offline_recording
+    
+    ///  H10 exercise recording feature to record exercise data to Polar H10 device without continuous BLE connection.
+    case feature_polar_h10_exercise_recording
+    
+    /// Feature to read and set device time in Polar device
+    case feature_polar_device_time_setup
+    
+    ///  In SDK mode the wider range of capabilities are available for the online stream or offline recoding than in normal operation mode.
+    case feature_polar_sdk_mode
+}
+
 /// Polar device info
 ///
 ///     - deviceId = polar device id or UUID for 3rd party sensors
@@ -58,6 +87,15 @@ public typealias PolarDeviceInfo = (deviceId: String, address: UUID, rssi: Int, 
 ///     - hr: in BPM
 ///     - batteryStatus: true battery ok
 public typealias PolarHrBroadcastData = (deviceInfo: PolarDeviceInfo, hr: UInt8, batteryStatus: Bool)
+
+/// Polar hr data
+///
+///     - hr in BPM
+///     - rrs RR interval in 1/1024. R is a the top highest peak in the QRS complex of the ECG wave and RR is the interval between successive Rs.
+///     - rrs RR interval in ms.
+///     - contact status between the device and the users skin
+///     - contactSupported if contact is supported
+public typealias PolarHrData = (hr: UInt8, rrs: [Int], rrsMs: [Int], contact: Bool, contactSupported: Bool)
 
 /// Polar Ecg data
 ///
@@ -141,10 +179,10 @@ public typealias PolarExerciseData = (interval: UInt32, samples: [UInt32])
 ///
 ///     - ongoing: true recording running
 ///     - entryId: unique identifier
-public typealias PolarRecordingStatus = (ongoing: Bool,entryId: String)
+public typealias PolarRecordingStatus = (ongoing: Bool, entryId: String)
 
 /// API.
-public protocol PolarBleApi {
+public protocol PolarBleApi: PolarOfflineRecordingApi  {
     
     /// remove all known devices, which are not in use
     func cleanup()
@@ -199,7 +237,7 @@ public protocol PolarBleApi {
     ///   - onError: see `PolarErrors` for possible errors invoked
     func setLocalTime(_ identifier: String, time: Date, zone: TimeZone) -> Completable
     
-    ///  Get current time in device. Requires `polarFileTransfer` feature.  Not supported by Polar H10. 
+    ///  Get current time in device. Requires `polarFileTransfer` feature.  Not supported by Polar H10.
     ///
     /// - Parameters:
     ///   - identifier: polar device id or UUID

@@ -84,18 +84,28 @@ public protocol BleCCCWriteProtocol: AnyObject {
         fatalError("not implemented")
     }
     
+    /// Helper observable to asynchronously wait all services discovered
+    ///
+    /// - Parameter checkConnection: check current connection
+    /// - Returns: Observable<CBUUID>
+    /*public func monitorServicesDiscovered(_ checkConnection: Bool) -> Single<[CBUUID]> {
+        return monitorServicesDiscovered(true)
+            .toArray()
+    }*/
+    
     /// Helper observable to asynchronously wait all available/desired clients to be ready for use
     ///
     /// - Returns: Observable
     public func clientsReady() -> Observable<Never> {
         // improvement change to completable
-        return monitorServicesDiscovered(true).concatMap { (uid) -> Observable<Never> in
-            if let client = self.fetchGattClient(uid) {
-                return client.clientReady(true).asObservable()
-            } else {
-                // if client not found produce empty
-                return Observable.empty()
+        return monitorServicesDiscovered(true)
+            .concatMap { (uid) -> Observable<Never> in
+                if let client = self.fetchGattClient(uid) {
+                    return client.clientReady(true).asObservable()
+                } else {
+                    // if client not found produce empty
+                    return Observable.empty()
+                }
             }
-        }
     }
 }

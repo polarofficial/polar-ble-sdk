@@ -10,7 +10,7 @@ public class PolarBleApiDefaultImpl {
     /// - Parameter queue: context of where the API is used
     /// - Parameter features: bit mask with one or more items from enum `Features`
     /// - Returns: api instance
-    public static func polarImplementation(_ queue: DispatchQueue, features: Int) -> PolarBleApi {
+    public static func polarImplementation(_ queue: DispatchQueue, features: Set<PolarBleSdkFeature>) -> PolarBleApi {
         return PolarBleApiImpl(queue, features: features)
     }
     
@@ -18,6 +18,6 @@ public class PolarBleApiDefaultImpl {
     ///
     /// - Returns: version in format major.minor.patch
     public static func versionInfo() -> String {
-        return "4.0.0"
+        return "5.0.0-beta"
     }
 }
