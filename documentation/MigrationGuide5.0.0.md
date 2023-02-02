@@ -25,6 +25,7 @@ This guide is provided in order to ease the transition of existing applications 
 
 - `hrNotificationReceived` is deprecated in `PolarBleApiCallback`. The recommended way to receive heart rate is the `startHrStreaming` API, similar to streaming of other data types.
 
+- `startOhrStreaming` renamed as `startPpgStreaming` to better describe data about to be streamed
 
 ## Breaking API Changes iOS
 - TODO
