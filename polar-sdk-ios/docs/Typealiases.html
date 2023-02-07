@@ -47,16 +47,22 @@
             <a href="Enums.html">Enumerations</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="Enums/DeviceStreamingFeature.html">DeviceStreamingFeature</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="Enums/Features.html">Features</a>
               </li>
               <li class="nav-group-task">
                 <a href="Enums/OhrDataType.html">OhrDataType</a>
               </li>
               <li class="nav-group-task">
+                <a href="Enums/PolarBleSdkFeature.html">PolarBleSdkFeature</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/PolarDeviceDataType.html">PolarDeviceDataType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Enums/PolarErrors.html">PolarErrors</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a>
               </li>
               <li class="nav-group-task">
                 <a href="Enums/RecordingInterval.html">RecordingInterval</a>
@@ -84,13 +90,10 @@
                 <a href="Protocols/PolarBleApi.html">PolarBleApi</a>
               </li>
               <li class="nav-group-task">
-                <a href="Protocols/PolarBleApiCCCWriteObserver.html">PolarBleApiCCCWriteObserver</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="Protocols/PolarBleApiDeviceFeaturesObserver.html">PolarBleApiDeviceFeaturesObserver</a>
               </li>
               <li class="nav-group-task">
-                <a href="Protocols/PolarBleApiDeviceHrObserver.html">PolarBleApiDeviceHrObserver</a>
+                <a href="Protocols.html#/PolarBleApiDeviceHrObserver">PolarBleApiDeviceHrObserver</a>
               </li>
               <li class="nav-group-task">
                 <a href="Protocols/PolarBleApiDeviceInfoObserver.html">PolarBleApiDeviceInfoObserver</a>
@@ -105,13 +108,31 @@
                 <a href="Protocols/PolarBleApiPowerStateObserver.html">PolarBleApiPowerStateObserver</a>
               </li>
               <li class="nav-group-task">
-                <a href="Protocols/PolarBleApiSdkModeFeatureObserver.html">PolarBleApiSdkModeFeatureObserver</a>
+                <a href="Protocols.html#/PolarBleApiSdkModeFeatureObserver">PolarBleApiSdkModeFeatureObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Protocols/PolarOnlineStreamingApi.html">PolarOnlineStreamingApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Protocols/PolarSdkModeApi.html">PolarSdkModeApi</a>
               </li>
             </ul>
           </li>
           <li class="nav-group-name">
             <a href="Structs.html">Structures</a>
             <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/PolarRecordingSecret.html">PolarRecordingSecret</a>
+              </li>
               <li class="nav-group-task">
                 <a href="Structs/PolarSensorSetting.html">PolarSensorSetting</a>
               </li>
@@ -143,6 +164,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="Typealiases.html#/PolarHrBroadcastData">PolarHrBroadcastData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Typealiases.html#/PolarHrData">PolarHrData</a>
               </li>
               <li class="nav-group-task">
                 <a href="Typealiases.html#/PolarMagnetometerData">PolarMagnetometerData</a>
@@ -210,6 +234,31 @@
                         <p>deviceInfo: see #PolarDeviceInfo ,</p>
 <pre class="highlight swift"><code><span class="o">-</span> <span class="nv">hr</span><span class="p">:</span> <span class="k">in</span> <span class="kt">BPM</span>
 <span class="o">-</span> <span class="nv">batteryStatus</span><span class="p">:</span> <span class="kc">true</span> <span class="n">battery</span> <span class="n">ok</span>
+</code></pre>
+
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/"></a>
+                    <a name="//apple_ref/swift/Alias/PolarHrData" class="dashAnchor"></a>
+                    <a class="token" href="#/">PolarHrData</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Polar hr data</p>
+<pre class="highlight swift"><code><span class="o">-</span> <span class="n">hr</span> <span class="k">in</span> <span class="kt">BPM</span>
+<span class="o">-</span> <span class="n">rrs</span> <span class="kt">RR</span> <span class="n">interval</span> <span class="k">in</span> <span class="mi">1</span><span class="o">/</span><span class="mi">1024</span><span class="o">.</span> <span class="kt">R</span> <span class="k">is</span> <span class="n">a</span> <span class="n">the</span> <span class="n">top</span> <span class="n">highest</span> <span class="n">peak</span> <span class="k">in</span> <span class="n">the</span> <span class="kt">QRS</span> <span class="n">complex</span> <span class="n">of</span> <span class="n">the</span> <span class="kt">ECG</span> <span class="n">wave</span> <span class="n">and</span> <span class="kt">RR</span> <span class="k">is</span> <span class="n">the</span> <span class="n">interval</span> <span class="n">between</span> <span class="n">successive</span> <span class="kt">Rs</span><span class="o">.</span>
+<span class="o">-</span> <span class="n">rrs</span> <span class="kt">RR</span> <span class="n">interval</span> <span class="k">in</span> <span class="n">ms</span><span class="o">.</span>
+<span class="o">-</span> <span class="n">contact</span> <span class="n">status</span> <span class="n">between</span> <span class="n">the</span> <span class="n">device</span> <span class="n">and</span> <span class="n">the</span> <span class="n">users</span> <span class="n">skin</span>
+<span class="o">-</span> <span class="n">contactSupported</span> <span class="k">if</span> <span class="n">contact</span> <span class="k">is</span> <span class="n">supported</span>
 </code></pre>
 
                       </div>
@@ -443,7 +492,7 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2023 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2023-01-15)</p>
+          <p>&copy; 2023 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2023-02-07)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.14.2</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

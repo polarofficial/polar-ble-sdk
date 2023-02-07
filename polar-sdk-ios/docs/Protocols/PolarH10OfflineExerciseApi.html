@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>DeviceStreamingFeature Enumeration Reference</title>
+    <title>PolarH10OfflineExerciseApi Protocol Reference</title>
     <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
     <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
     <meta charset='utf-8'>
@@ -13,8 +13,8 @@
     <script src="../js/jazzy.search.js" defer></script>
   </head>
   <body>
-    <a name="//apple_ref/swift/Enum/DeviceStreamingFeature" class="dashAnchor"></a>
-    <a title="DeviceStreamingFeature Enumeration Reference"></a>
+    <a name="//apple_ref/swift/Protocol/PolarH10OfflineExerciseApi" class="dashAnchor"></a>
+    <a title="PolarH10OfflineExerciseApi Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
         <p><a href="../index.html"> Docs</a> (0% documented)</p>
@@ -29,7 +29,7 @@
       <p id="breadcrumbs">
         <a href="../index.html"> Reference</a>
         <img id="carat" src="../img/carat.png" alt=""/>
-        DeviceStreamingFeature Enumeration Reference
+        PolarH10OfflineExerciseApi Protocol Reference
       </p>
     </div>
     <div class="content-wrapper">
@@ -47,16 +47,22 @@
             <a href="../Enums.html">Enumerations</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Enums/DeviceStreamingFeature.html">DeviceStreamingFeature</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Enums/Features.html">Features</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/OhrDataType.html">OhrDataType</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/PolarBleSdkFeature.html">PolarBleSdkFeature</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/PolarErrors.html">PolarErrors</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/RecordingInterval.html">RecordingInterval</a>
@@ -84,13 +90,10 @@
                 <a href="../Protocols/PolarBleApi.html">PolarBleApi</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Protocols/PolarBleApiCCCWriteObserver.html">PolarBleApiCCCWriteObserver</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Protocols/PolarBleApiDeviceFeaturesObserver.html">PolarBleApiDeviceFeaturesObserver</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Protocols/PolarBleApiDeviceHrObserver.html">PolarBleApiDeviceHrObserver</a>
+                <a href="../Protocols.html#/PolarBleApiDeviceHrObserver">PolarBleApiDeviceHrObserver</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Protocols/PolarBleApiDeviceInfoObserver.html">PolarBleApiDeviceInfoObserver</a>
@@ -105,13 +108,31 @@
                 <a href="../Protocols/PolarBleApiPowerStateObserver.html">PolarBleApiPowerStateObserver</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Protocols/PolarBleApiSdkModeFeatureObserver.html">PolarBleApiSdkModeFeatureObserver</a>
+                <a href="../Protocols.html#/PolarBleApiSdkModeFeatureObserver">PolarBleApiSdkModeFeatureObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarOnlineStreamingApi.html">PolarOnlineStreamingApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarSdkModeApi.html">PolarSdkModeApi</a>
               </li>
             </ul>
           </li>
           <li class="nav-group-name">
             <a href="../Structs.html">Structures</a>
             <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a>
+              </li>
               <li class="nav-group-task">
                 <a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a>
               </li>
@@ -145,6 +166,9 @@
                 <a href="../Typealiases.html#/PolarHrBroadcastData">PolarHrBroadcastData</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Typealiases.html#/PolarHrData">PolarHrData</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Typealiases.html#/PolarMagnetometerData">PolarMagnetometerData</a>
               </li>
               <li class="nav-group-task">
@@ -163,8 +187,16 @@
       <article class="main-content">
         <section>
           <section class="section">
-            <h1>DeviceStreamingFeature</h1>
-            <p>device streaming features</p>
+            <h1>PolarH10OfflineExerciseApi</h1>
+            <p>H10 Exercise recording API.</p>
+
+<p>H10 Exercise recording makes it possible to record Hr or Rr data to H10 device memory.
+With H10 Exercise recording the H10 and phone don&rsquo;t need to be connected all the time, as H10 exercise recording
+continues in Polar device even the BLE disconnects.</p>
+
+<p>Requires features <code><a href="../Enums/PolarBleSdkFeature.html#/feature_polar_h10_exercise_recording">PolarBleSdkFeature.feature_polar_h10_exercise_recording</a></code></p>
+
+<p>Note, API is working only with Polar H10 device</p>
 
           </section>
           <section class="section task-group-section">
@@ -174,8 +206,8 @@
                   <div>
                     <code>
                     <a name="/"></a>
-                    <a name="//apple_ref/swift/Element/ecg" class="dashAnchor"></a>
-                    <a class="token" href="#/">ecg</a>
+                    <a name="//apple_ref/swift/Method/startRecording(_:exerciseId:interval:sampleType:)" class="dashAnchor"></a>
+                    <a class="token" href="#/">startRecording(_:<wbr>exerciseId:<wbr>interval:<wbr>sampleType:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -183,7 +215,8 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        
+                        <p>Request start recording. Supported only by Polar H10. Requires <code>polarFileTransfer</code> feature.</p>
+
                       </div>
                     </section>
                   </div>
@@ -192,8 +225,8 @@
                   <div>
                     <code>
                     <a name="/"></a>
-                    <a name="//apple_ref/swift/Element/acc" class="dashAnchor"></a>
-                    <a class="token" href="#/">acc</a>
+                    <a name="//apple_ref/swift/Method/stopRecording(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/">stopRecording(_:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -201,7 +234,8 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        
+                        <p>Request stop for current recording. Supported only by Polar H10. Requires <code>polarFileTransfer</code> feature.</p>
+
                       </div>
                     </section>
                   </div>
@@ -210,8 +244,8 @@
                   <div>
                     <code>
                     <a name="/"></a>
-                    <a name="//apple_ref/swift/Element/ppg" class="dashAnchor"></a>
-                    <a class="token" href="#/">ppg</a>
+                    <a name="//apple_ref/swift/Method/requestRecordingStatus(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/">requestRecordingStatus(_:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -219,7 +253,8 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        
+                        <p>Request current recording status. Supported only by Polar H10. Requires <code>polarFileTransfer</code> feature.</p>
+
                       </div>
                     </section>
                   </div>
@@ -228,8 +263,8 @@
                   <div>
                     <code>
                     <a name="/"></a>
-                    <a name="//apple_ref/swift/Element/ppi" class="dashAnchor"></a>
-                    <a class="token" href="#/">ppi</a>
+                    <a name="//apple_ref/swift/Method/fetchStoredExerciseList(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/">fetchStoredExerciseList(_:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -237,7 +272,8 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        
+                        <p>Api for fetching stored exercises list from Polar H10 device. Requires <code>polarFileTransfer</code> feature. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.</p>
+
                       </div>
                     </section>
                   </div>
@@ -246,8 +282,8 @@
                   <div>
                     <code>
                     <a name="/"></a>
-                    <a name="//apple_ref/swift/Element/gyro" class="dashAnchor"></a>
-                    <a class="token" href="#/">gyro</a>
+                    <a name="//apple_ref/swift/Method/fetchExercise(_:entry:)" class="dashAnchor"></a>
+                    <a class="token" href="#/">fetchExercise(_:<wbr>entry:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -255,7 +291,8 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        
+                        <p>Api for fetching a single exercise from Polar H10 device. Requires <code>polarFileTransfer</code> feature. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.</p>
+
                       </div>
                     </section>
                   </div>
@@ -264,8 +301,8 @@
                   <div>
                     <code>
                     <a name="/"></a>
-                    <a name="//apple_ref/swift/Element/magnetometer" class="dashAnchor"></a>
-                    <a class="token" href="#/">magnetometer</a>
+                    <a name="//apple_ref/swift/Method/removeExercise(_:entry:)" class="dashAnchor"></a>
+                    <a class="token" href="#/">removeExercise(_:<wbr>entry:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -273,7 +310,8 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        
+                        <p>Api for removing single exercise from Polar H10 device. Requires <code>polarFileTransfer</code> feature. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.</p>
+
                       </div>
                     </section>
                   </div>
@@ -283,7 +321,7 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2023 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2023-01-15)</p>
+          <p>&copy; 2023 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2023-02-07)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.14.2</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

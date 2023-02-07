@@ -47,16 +47,22 @@
             <a href="Enums.html">Enumerations</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="Enums/DeviceStreamingFeature.html">DeviceStreamingFeature</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="Enums/Features.html">Features</a>
               </li>
               <li class="nav-group-task">
                 <a href="Enums/OhrDataType.html">OhrDataType</a>
               </li>
               <li class="nav-group-task">
+                <a href="Enums/PolarBleSdkFeature.html">PolarBleSdkFeature</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/PolarDeviceDataType.html">PolarDeviceDataType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Enums/PolarErrors.html">PolarErrors</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a>
               </li>
               <li class="nav-group-task">
                 <a href="Enums/RecordingInterval.html">RecordingInterval</a>
@@ -84,13 +90,10 @@
                 <a href="Protocols/PolarBleApi.html">PolarBleApi</a>
               </li>
               <li class="nav-group-task">
-                <a href="Protocols/PolarBleApiCCCWriteObserver.html">PolarBleApiCCCWriteObserver</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="Protocols/PolarBleApiDeviceFeaturesObserver.html">PolarBleApiDeviceFeaturesObserver</a>
               </li>
               <li class="nav-group-task">
-                <a href="Protocols/PolarBleApiDeviceHrObserver.html">PolarBleApiDeviceHrObserver</a>
+                <a href="Protocols.html#/PolarBleApiDeviceHrObserver">PolarBleApiDeviceHrObserver</a>
               </li>
               <li class="nav-group-task">
                 <a href="Protocols/PolarBleApiDeviceInfoObserver.html">PolarBleApiDeviceInfoObserver</a>
@@ -105,13 +108,31 @@
                 <a href="Protocols/PolarBleApiPowerStateObserver.html">PolarBleApiPowerStateObserver</a>
               </li>
               <li class="nav-group-task">
-                <a href="Protocols/PolarBleApiSdkModeFeatureObserver.html">PolarBleApiSdkModeFeatureObserver</a>
+                <a href="Protocols.html#/PolarBleApiSdkModeFeatureObserver">PolarBleApiSdkModeFeatureObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Protocols/PolarOnlineStreamingApi.html">PolarOnlineStreamingApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Protocols/PolarSdkModeApi.html">PolarSdkModeApi</a>
               </li>
             </ul>
           </li>
           <li class="nav-group-name">
             <a href="Structs.html">Structures</a>
             <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/PolarRecordingSecret.html">PolarRecordingSecret</a>
+              </li>
               <li class="nav-group-task">
                 <a href="Structs/PolarSensorSetting.html">PolarSensorSetting</a>
               </li>
@@ -143,6 +164,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="Typealiases.html#/PolarHrBroadcastData">PolarHrBroadcastData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Typealiases.html#/PolarHrData">PolarHrData</a>
               </li>
               <li class="nav-group-task">
                 <a href="Typealiases.html#/PolarMagnetometerData">PolarMagnetometerData</a>
@@ -265,7 +289,6 @@
                       <div class="abstract">
                         <p>Heart rate observer</p>
 
-                        <a href="Protocols/PolarBleApiDeviceHrObserver.html" class="slightly-smaller">See more</a>
                       </div>
                     </section>
                   </div>
@@ -305,7 +328,6 @@
                       <div class="abstract">
                         <p>SDK Mode observer</p>
 
-                        <a href="Protocols/PolarBleApiSdkModeFeatureObserver.html" class="slightly-smaller">See more</a>
                       </div>
                     </section>
                   </div>
@@ -334,8 +356,8 @@
                   <div>
                     <code>
                     <a name="/"></a>
-                    <a name="//apple_ref/swift/Protocol/PolarBleApiCCCWriteObserver" class="dashAnchor"></a>
-                    <a class="token" href="#/">PolarBleApiCCCWriteObserver</a>
+                    <a name="//apple_ref/swift/Protocol/PolarH10OfflineExerciseApi" class="dashAnchor"></a>
+                    <a class="token" href="#/">PolarH10OfflineExerciseApi</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -343,9 +365,104 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>observer for ccc write enable</p>
+                        <p>H10 Exercise recording API.</p>
 
-                        <a href="Protocols/PolarBleApiCCCWriteObserver.html" class="slightly-smaller">See more</a>
+<p>H10 Exercise recording makes it possible to record Hr or Rr data to H10 device memory.
+With H10 Exercise recording the H10 and phone don&rsquo;t need to be connected all the time, as H10 exercise recording
+continues in Polar device even the BLE disconnects.</p>
+
+<p>Requires features <code><a href="Enums/PolarBleSdkFeature.html#/feature_polar_h10_exercise_recording">PolarBleSdkFeature.feature_polar_h10_exercise_recording</a></code></p>
+
+<p>Note, API is working only with Polar H10 device</p>
+
+                        <a href="Protocols/PolarH10OfflineExerciseApi.html" class="slightly-smaller">See more</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/"></a>
+                    <a name="//apple_ref/swift/Protocol/PolarOfflineRecordingApi" class="dashAnchor"></a>
+                    <a class="token" href="#/">PolarOfflineRecordingApi</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Offline recording API.</p>
+
+<p>Offline recording makes it possible to record <code>PolarBleApi.PolarDeviceDataType</code> data to device memory.
+With Offline recording the Polar device and phone don&rsquo;t need to be connected all the time, as offline recording continues in Polar device even the BLE disconnects.</p>
+
+<p>Offline records saved into the device can be encrypted. The  <code><a href="Structs/PolarRecordingSecret.html">PolarRecordingSecret</a></code> is provided for
+ <code>startOfflineRecording</code> and <code>setOfflineRecordingTrigger</code> when encryption is wanted.
+ The <code><a href="Structs/PolarRecordingSecret.html">PolarRecordingSecret</a></code> with same key must be provided in <code>getOfflineRecord</code> to correctly
+ decrypt the data in the device.</p>
+
+<p>Requires features <code><a href="Enums/PolarBleSdkFeature.html#/feature_polar_offline_recording">PolarBleSdkFeature.feature_polar_offline_recording</a></code></p>
+
+<p>Note, offline recording is supported in Polar Verity Sense device (starting from firmware version 2.1.0)</p>
+
+                        <a href="Protocols/PolarOfflineRecordingApi.html" class="slightly-smaller">See more</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/"></a>
+                    <a name="//apple_ref/swift/Protocol/PolarOnlineStreamingApi" class="dashAnchor"></a>
+                    <a class="token" href="#/">PolarOnlineStreamingApi</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Online steaming API.</p>
+
+<p>Online streaming makes it possible to stream live online data from Polar device.</p>
+
+<p>Requires features <code><a href="Enums/PolarBleSdkFeature.html#/feature_polar_online_streaming">PolarBleSdkFeature.feature_polar_online_streaming</a></code></p>
+
+<p>Note, online streaming is supported by VeritySense, H10 and OH1 devices</p>
+
+                        <a href="Protocols/PolarOnlineStreamingApi.html" class="slightly-smaller">See more</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/"></a>
+                    <a name="//apple_ref/swift/Protocol/PolarSdkModeApi" class="dashAnchor"></a>
+                    <a class="token" href="#/">PolarSdkModeApi</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Polar SDK mode API</p>
+
+<p>In SDK mode the wider range of capabilities is available for the online streaming or
+for the offline recording than in normal operation mode. The available capabilities can be
+asked from device using <code>PolarOnlineStreamingApi.requestFullStreamSettings</code> or
+ <code>PolarOfflineRecordingApi.requestFullOfflineRecordingSettings</code></p>
+
+<p>Requires features <code><a href="Enums/PolarBleSdkFeature.html#/feature_polar_sdk_mode">PolarBleSdkFeature.feature_polar_sdk_mode</a></code></p>
+
+<p>Note, SDK mode supported by VeritySense starting from firmware 1.1.5</p>
+
+                        <a href="Protocols/PolarSdkModeApi.html" class="slightly-smaller">See more</a>
                       </div>
                     </section>
                   </div>
@@ -355,7 +472,7 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2023 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2023-01-15)</p>
+          <p>&copy; 2023 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2023-02-07)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.14.2</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

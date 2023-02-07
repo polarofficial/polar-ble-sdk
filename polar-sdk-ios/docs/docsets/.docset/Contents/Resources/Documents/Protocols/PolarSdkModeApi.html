@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>PolarBleApiCCCWriteObserver Protocol Reference</title>
+    <title>PolarSdkModeApi Protocol Reference</title>
     <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
     <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
     <meta charset='utf-8'>
@@ -13,8 +13,8 @@
     <script src="../js/jazzy.search.js" defer></script>
   </head>
   <body>
-    <a name="//apple_ref/swift/Protocol/PolarBleApiCCCWriteObserver" class="dashAnchor"></a>
-    <a title="PolarBleApiCCCWriteObserver Protocol Reference"></a>
+    <a name="//apple_ref/swift/Protocol/PolarSdkModeApi" class="dashAnchor"></a>
+    <a title="PolarSdkModeApi Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
         <p><a href="../index.html"> Docs</a> (0% documented)</p>
@@ -29,7 +29,7 @@
       <p id="breadcrumbs">
         <a href="../index.html"> Reference</a>
         <img id="carat" src="../img/carat.png" alt=""/>
-        PolarBleApiCCCWriteObserver Protocol Reference
+        PolarSdkModeApi Protocol Reference
       </p>
     </div>
     <div class="content-wrapper">
@@ -47,16 +47,22 @@
             <a href="../Enums.html">Enumerations</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Enums/DeviceStreamingFeature.html">DeviceStreamingFeature</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Enums/Features.html">Features</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/OhrDataType.html">OhrDataType</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/PolarBleSdkFeature.html">PolarBleSdkFeature</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/PolarErrors.html">PolarErrors</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/RecordingInterval.html">RecordingInterval</a>
@@ -84,13 +90,10 @@
                 <a href="../Protocols/PolarBleApi.html">PolarBleApi</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Protocols/PolarBleApiCCCWriteObserver.html">PolarBleApiCCCWriteObserver</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Protocols/PolarBleApiDeviceFeaturesObserver.html">PolarBleApiDeviceFeaturesObserver</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Protocols/PolarBleApiDeviceHrObserver.html">PolarBleApiDeviceHrObserver</a>
+                <a href="../Protocols.html#/PolarBleApiDeviceHrObserver">PolarBleApiDeviceHrObserver</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Protocols/PolarBleApiDeviceInfoObserver.html">PolarBleApiDeviceInfoObserver</a>
@@ -105,13 +108,31 @@
                 <a href="../Protocols/PolarBleApiPowerStateObserver.html">PolarBleApiPowerStateObserver</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Protocols/PolarBleApiSdkModeFeatureObserver.html">PolarBleApiSdkModeFeatureObserver</a>
+                <a href="../Protocols.html#/PolarBleApiSdkModeFeatureObserver">PolarBleApiSdkModeFeatureObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarOnlineStreamingApi.html">PolarOnlineStreamingApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarSdkModeApi.html">PolarSdkModeApi</a>
               </li>
             </ul>
           </li>
           <li class="nav-group-name">
             <a href="../Structs.html">Structures</a>
             <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a>
+              </li>
               <li class="nav-group-task">
                 <a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a>
               </li>
@@ -145,6 +166,9 @@
                 <a href="../Typealiases.html#/PolarHrBroadcastData">PolarHrBroadcastData</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Typealiases.html#/PolarHrData">PolarHrData</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Typealiases.html#/PolarMagnetometerData">PolarMagnetometerData</a>
               </li>
               <li class="nav-group-task">
@@ -163,8 +187,17 @@
       <article class="main-content">
         <section>
           <section class="section">
-            <h1>PolarBleApiCCCWriteObserver</h1>
-            <p>observer for ccc write enable</p>
+            <h1>PolarSdkModeApi</h1>
+            <p>Polar SDK mode API</p>
+
+<p>In SDK mode the wider range of capabilities is available for the online streaming or
+for the offline recording than in normal operation mode. The available capabilities can be
+asked from device using <code>PolarOnlineStreamingApi.requestFullStreamSettings</code> or
+ <code>PolarOfflineRecordingApi.requestFullOfflineRecordingSettings</code></p>
+
+<p>Requires features <code><a href="../Enums/PolarBleSdkFeature.html#/feature_polar_sdk_mode">PolarBleSdkFeature.feature_polar_sdk_mode</a></code></p>
+
+<p>Note, SDK mode supported by VeritySense starting from firmware 1.1.5</p>
 
           </section>
           <section class="section task-group-section">
@@ -174,8 +207,8 @@
                   <div>
                     <code>
                     <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/cccWrite(_:characteristic:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">cccWrite(_:<wbr>characteristic:<wbr>)</a>
+                    <a name="//apple_ref/swift/Method/enableSDKMode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/">enableSDKMode(_:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -183,7 +216,48 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        
+                        <p>Enables SDK mode.</p>
+
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/"></a>
+                    <a name="//apple_ref/swift/Method/disableSDKMode(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/">disableSDKMode(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Disables SDK mode.</p>
+
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/"></a>
+                    <a name="//apple_ref/swift/Method/isSDKModeEnabled(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/">isSDKModeEnabled(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Check if SDK mode currently enabled.</p>
+
+<p>Note, SDK status check is supported by VeritySense starting from firmware 2.1.0</p>
+
                       </div>
                     </section>
                   </div>
@@ -193,7 +267,7 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2023 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2023-01-15)</p>
+          <p>&copy; 2023 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2023-02-07)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.14.2</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

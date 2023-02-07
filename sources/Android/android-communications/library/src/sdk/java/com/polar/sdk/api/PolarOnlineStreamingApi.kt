@@ -116,7 +116,7 @@ interface PolarOnlineStreamingApi {
      * <BR></BR> - onError error for possible errors invoked
      * <BR></BR> - onComplete non produced unless the stream is further configured
      */
-    @Deprecated("API is renamed, please use startPpgStreaming()", replaceWith = ReplaceWith("startPpgStreaming()"))
+    @Deprecated("API is renamed, please use startPpgStreaming()", replaceWith = ReplaceWith("startPpgStreaming"))
     fun startOhrStreaming(
         identifier: String,
         sensorSetting: PolarSensorSetting

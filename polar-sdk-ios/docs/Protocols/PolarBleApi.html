@@ -47,16 +47,22 @@
             <a href="../Enums.html">Enumerations</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Enums/DeviceStreamingFeature.html">DeviceStreamingFeature</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Enums/Features.html">Features</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/OhrDataType.html">OhrDataType</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/PolarBleSdkFeature.html">PolarBleSdkFeature</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/PolarErrors.html">PolarErrors</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/RecordingInterval.html">RecordingInterval</a>
@@ -84,13 +90,10 @@
                 <a href="../Protocols/PolarBleApi.html">PolarBleApi</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Protocols/PolarBleApiCCCWriteObserver.html">PolarBleApiCCCWriteObserver</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Protocols/PolarBleApiDeviceFeaturesObserver.html">PolarBleApiDeviceFeaturesObserver</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Protocols/PolarBleApiDeviceHrObserver.html">PolarBleApiDeviceHrObserver</a>
+                <a href="../Protocols.html#/PolarBleApiDeviceHrObserver">PolarBleApiDeviceHrObserver</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Protocols/PolarBleApiDeviceInfoObserver.html">PolarBleApiDeviceInfoObserver</a>
@@ -105,13 +108,31 @@
                 <a href="../Protocols/PolarBleApiPowerStateObserver.html">PolarBleApiPowerStateObserver</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Protocols/PolarBleApiSdkModeFeatureObserver.html">PolarBleApiSdkModeFeatureObserver</a>
+                <a href="../Protocols.html#/PolarBleApiSdkModeFeatureObserver">PolarBleApiSdkModeFeatureObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarOnlineStreamingApi.html">PolarOnlineStreamingApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarSdkModeApi.html">PolarSdkModeApi</a>
               </li>
             </ul>
           </li>
           <li class="nav-group-name">
             <a href="../Structs.html">Structures</a>
             <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a>
+              </li>
               <li class="nav-group-task">
                 <a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a>
               </li>
@@ -143,6 +164,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Typealiases.html#/PolarHrBroadcastData">PolarHrBroadcastData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Typealiases.html#/PolarHrData">PolarHrData</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Typealiases.html#/PolarMagnetometerData">PolarMagnetometerData</a>
@@ -299,6 +323,25 @@ invoked when a connection is established.</p>
                   <div>
                     <code>
                     <a name="/"></a>
+                    <a name="//apple_ref/swift/Method/startListenForPolarHrBroadcasts(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/">startListenForPolarHrBroadcasts(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Start listening to heart rate broadcasts from one or more Polar devices</p>
+
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/"></a>
                     <a name="//apple_ref/swift/Method/isFeatureReady(_:feature:)" class="dashAnchor"></a>
                     <a class="token" href="#/">isFeatureReady(_:<wbr>feature:<wbr>)</a>
                     </code>
@@ -346,344 +389,7 @@ invoked when a connection is established.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Get current time in device. Requires <code>polarFileTransfer</code> feature.  Not supported by Polar H10. </p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/startRecording(_:exerciseId:interval:sampleType:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">startRecording(_:<wbr>exerciseId:<wbr>interval:<wbr>sampleType:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Request start recording. Supported only by Polar H10. Requires <code>polarFileTransfer</code> feature.</p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/stopRecording(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">stopRecording(_:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Request stop for current recording. Supported only by Polar H10. Requires <code>polarFileTransfer</code> feature.</p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/requestRecordingStatus(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">requestRecordingStatus(_:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Request current recording status. Supported only by Polar H10. Requires <code>polarFileTransfer</code> feature.</p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/fetchStoredExerciseList(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">fetchStoredExerciseList(_:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Api for fetching stored exercises list from Polar H10 device. Requires <code>polarFileTransfer</code> feature. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.</p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/fetchExercise(_:entry:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">fetchExercise(_:<wbr>entry:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Api for fetching a single exercise from Polar H10 device. Requires <code>polarFileTransfer</code> feature. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.</p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/removeExercise(_:entry:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">removeExercise(_:<wbr>entry:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Api for removing single exercise from Polar H10 device. Requires <code>polarFileTransfer</code> feature. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.</p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/startListenForPolarHrBroadcasts(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">startListenForPolarHrBroadcasts(_:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Start listening to heart rate broadcasts from one or more Polar devices</p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/requestStreamSettings(_:feature:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">requestStreamSettings(_:<wbr>feature:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Request the stream settings available in current operation mode. This request shall be used before the stream is started
- to decide currently available settings. The available settings depend on the state of the device. For example, if any stream(s)
- or optical heart rate measurement is already enabled, then the device may limit the offer of possible settings for other stream feature.
- Requires <code>polarSensorStreaming</code> feature.</p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/requestFullStreamSettings(_:feature:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">requestFullStreamSettings(_:<wbr>feature:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Request full steam settings capabilities. The request returns the all capabilities of the requested streaming feature not limited by the current operation mode.
-Requires <code>polarSensorStreaming</code> feature. This request is supported only by Polar Verity Sense firmware 1.1.5</p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/startEcgStreaming(_:settings:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">startEcgStreaming(_:<wbr>settings:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Start the ECG (Electrocardiography) stream. ECG stream is stopped if the connection is closed, error occurs or stream is disposed.
-Requires <code>polarSensorStreaming</code> feature. Before starting the stream it is recommended to query the available settings using <code>requestStreamSettings</code></p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/startAccStreaming(_:settings:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">startAccStreaming(_:<wbr>settings:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Start ACC (Accelerometer) stream. ACC stream is stopped if the connection is closed, error occurs or stream is disposed.
- Requires <code>polarSensorStreaming</code> feature. Before starting the stream it is recommended to query the available settings using <code>requestStreamSettings</code></p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/startGyroStreaming(_:settings:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">startGyroStreaming(_:<wbr>settings:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Start Gyro stream. Gyro stream is stopped if the connection is closed, error occurs during start or stream is disposed.
-Requires <code>polarSensorStreaming</code> feature. Before starting the stream it is recommended to query the available settings using <code>requestStreamSettings</code></p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/startMagnetometerStreaming(_:settings:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">startMagnetometerStreaming(_:<wbr>settings:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Start magnetometer stream. Magnetometer stream is stopped if the connection is closed, error occurs or stream is disposed.
-Requires <code>polarSensorStreaming</code> feature. Before starting the stream it is recommended to query the available settings using <code>requestStreamSettings</code></p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/startOhrStreaming(_:settings:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">startOhrStreaming(_:<wbr>settings:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Start OHR (Optical heart rate) PPG (Photoplethysmography) stream. PPG stream is stopped if the connection is closed, error occurs or stream is disposed.
-Requires <code>polarSensorStreaming</code> feature. Before starting the stream it is recommended to query the available settings using <code>requestStreamSettings</code></p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/startOhrPPIStreaming(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">startOhrPPIStreaming(_:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Start OHR (Optical heart rate) PPI (Pulse to Pulse interval) stream.
-PPI stream is stopped if the connection is closed, error occurs or stream is disposed.
-Notice that there is a delay before PPI data stream starts. Requires <code>polarSensorStreaming</code> feature.</p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/enableSDKMode(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">enableSDKMode(_:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Enables SDK mode. In SDK mode the wider range of capabilities is available for the stream
- than in normal operation mode. SDK mode is only supported by Polar Verity Sense (starting from firmware 1.1.5).
- Requires <code>polarSensorStreaming</code> feature.</p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Method/disableSDKMode(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/">disableSDKMode(_:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Disables SDK mode. SDK mode is only supported by Polar Verity Sense (starting from firmware 1.1.5).
-Requires <code>polarSensorStreaming</code> feature.</p>
+                        <p>Get current time in device. Requires <code>polarFileTransfer</code> feature.  Not supported by Polar H10.</p>
 
                       </div>
                     </section>
@@ -731,25 +437,6 @@ Requires <code>polarSensorStreaming</code> feature.</p>
                   <div>
                     <code>
                     <a name="/"></a>
-                    <a name="//apple_ref/swift/Property/deviceHrObserver" class="dashAnchor"></a>
-                    <a class="token" href="#/">deviceHrObserver</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Device observer for HR GATT client</p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
                     <a name="//apple_ref/swift/Property/powerStateObserver" class="dashAnchor"></a>
                     <a class="token" href="#/">powerStateObserver</a>
                     </code>
@@ -779,25 +466,6 @@ Requires <code>polarSensorStreaming</code> feature.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Device features ready observer</p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Property/sdkModeFeatureObserver" class="dashAnchor"></a>
-                    <a class="token" href="#/">sdkModeFeatureObserver</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>SDK mode feature available in the device and ready observer</p>
 
                       </div>
                     </section>
@@ -860,31 +528,12 @@ Requires <code>polarSensorStreaming</code> feature.</p>
                     </section>
                   </div>
                 </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Property/cccWriteObserver" class="dashAnchor"></a>
-                    <a class="token" href="#/">cccWriteObserver</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>optional ccc write callback</p>
-
-                      </div>
-                    </section>
-                  </div>
-                </li>
               </ul>
             </div>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2023 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2023-01-15)</p>
+          <p>&copy; 2023 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2023-02-07)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.14.2</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>
