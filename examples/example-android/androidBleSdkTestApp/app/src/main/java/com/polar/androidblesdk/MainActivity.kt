@@ -26,7 +26,6 @@ import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.Function
 import java.util.*
-import kotlin.time.measureTimedValue
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -40,15 +39,18 @@ class MainActivity : AppCompatActivity() {
 
     private val api: PolarBleApi by lazy {
         // Notice all features are enabled
-        PolarBleApiDefaultImpl.defaultImplementation(applicationContext,
-            setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_HR,
+        PolarBleApiDefaultImpl.defaultImplementation(
+            applicationContext,
+            setOf(
+                PolarBleApi.PolarBleSdkFeature.FEATURE_HR,
                 PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE,
                 PolarBleApi.PolarBleSdkFeature.FEATURE_BATTERY_INFO,
                 PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING,
                 PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING,
                 PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING,
                 PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP,
-                PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO)
+                PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO
+            )
         )
     }
     private lateinit var broadcastDisposable: Disposable
@@ -376,12 +378,12 @@ class MainActivity : AppCompatActivity() {
                 ppgDisposable =
                     requestStreamSettings(deviceId, PolarBleApi.PolarDeviceDataType.PPG)
                         .flatMap { settings: PolarSensorSetting ->
-                            api.startOhrStreaming(deviceId, settings)
+                            api.startPpgStreaming(deviceId, settings)
                         }
                         .subscribe(
-                            { polarOhrPPGData: PolarOhrData ->
-                                if (polarOhrPPGData.type == PolarOhrData.OhrDataType.PPG3_AMBIENT1) {
-                                    for (data in polarOhrPPGData.samples) {
+                            { polarPpgData: PolarPpgData ->
+                                if (polarPpgData.type == PolarPpgData.PpgDataType.PPG3_AMBIENT1) {
+                                    for (data in polarPpgData.samples) {
                                         Log.d(TAG, "PPG    ppg0: ${data.channelSamples[0]} ppg1: ${data.channelSamples[1]} ppg2: ${data.channelSamples[2]} ambient: ${data.channelSamples[3]} timeStamp: ${data.timeStamp}")
                                     }
                                 }
@@ -668,11 +670,15 @@ class MainActivity : AppCompatActivity() {
             //Using a secret key managed by your own.
             //  You can use a different key to each start recording calls.
             //  When using key at start recording, it is also needed for the recording download, otherwise could not be decrypted
-            val yourSecret = PolarRecordingSecret(byteArrayOf(0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
-                0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07))
+            val yourSecret = PolarRecordingSecret(
+                byteArrayOf(
+                    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+                    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07
+                )
+            )
             api.startOfflineRecording(deviceId, PolarBleApi.PolarDeviceDataType.ACC, PolarSensorSetting(settings.toMap()), yourSecret)
-            //Without a secret key
-            //api.startOfflineRecording(deviceId, PolarBleApi.PolarDeviceDataType.ACC, PolarSensorSetting(settings.toMap()))
+                //Without a secret key
+                //api.startOfflineRecording(deviceId, PolarBleApi.PolarDeviceDataType.ACC, PolarSensorSetting(settings.toMap()))
                 .subscribe(
                     { Log.d(TAG, "start offline recording completed") },
                     { throwable: Throwable -> Log.e(TAG, "" + throwable.toString()) }
@@ -700,11 +706,15 @@ class MainActivity : AppCompatActivity() {
                     //Using a secret key managed by your own.
                     //  You can use a different key to each start recording calls.
                     //  When using key at start recording, it is also needed for the recording download, otherwise could not be decrypted
-                    val yourSecret = PolarRecordingSecret(byteArrayOf(0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
-                        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07))
+                    val yourSecret = PolarRecordingSecret(
+                        byteArrayOf(
+                            0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+                            0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07
+                        )
+                    )
                     api.getOfflineRecord(deviceId, offlineEntry, yourSecret)
-                    //Not using a secret key
-                    //api.getOfflineRecord(deviceId, offlineEntry)
+                        //Not using a secret key
+                        //api.getOfflineRecord(deviceId, offlineEntry)
                         .subscribe(
                             {
                                 Log.d(TAG, "Recording ${offlineEntry.path} downloaded. Size: ${offlineEntry.size}")
@@ -712,7 +722,7 @@ class MainActivity : AppCompatActivity() {
                                     is PolarOfflineRecordingData.AccOfflineRecording -> {
                                         Log.d(TAG, "ACC Recording started at ${it.startTime}")
                                         for (sample in it.data.samples) {
-                                            Log.d(TAG,"ACC data: time: ${sample.timeStamp} X: ${sample.x} Y: ${sample.y} Z: ${sample.z}")
+                                            Log.d(TAG, "ACC data: time: ${sample.timeStamp} X: ${sample.x} Y: ${sample.y} Z: ${sample.z}")
                                         }
                                     }
 //                      is PolarOfflineRecordingData.GyroOfflineRecording -> { }
