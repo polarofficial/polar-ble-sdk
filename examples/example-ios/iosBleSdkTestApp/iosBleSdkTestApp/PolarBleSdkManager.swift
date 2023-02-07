@@ -546,7 +546,7 @@ class PolarBleSdkManager : ObservableObject {
                 .subscribe{ e in
                     switch e {
                     case .next(let data):
-                        if(data.type == OhrDataType.ppg3_ambient1) {
+                        if(data.type == PpgDataType.ppg3_ambient1) {
                             for item in data.samples {
                                 NSLog("PPG  ppg0: \(item.channelSamples[0]) ppg1: \(item.channelSamples[1]) ppg2: \(item.channelSamples[2]) ambient: \(item.channelSamples[3]) timeStamp: \(item.timeStamp)")
                             }
@@ -868,8 +868,8 @@ class PolarBleSdkManager : ObservableObject {
         case let polarMagnetometerData as PolarMagnetometerData:
             result +=  "TIMESTAMP X(Gauss) Y(Gauss) Z(Gauss)\n"
             result +=  polarMagnetometerData.samples.map{ "\($0.timeStamp) \($0.x) \($0.y) \($0.z)" }.joined(separator: "\n")
-        case let polarPpgData as PolarOhrData:
-            if polarPpgData.type == OhrDataType.ppg3_ambient1 {
+        case let polarPpgData as PolarPpgData:
+            if polarPpgData.type == PpgDataType.ppg3_ambient1 {
                 result +=  "TIMESTAMP PPG0 PPG1 PPG2 AMBIENT\n"
                 result += polarPpgData.samples.map{ "\($0.timeStamp) \($0.channelSamples[0]) \($0.channelSamples[1]) \($0.channelSamples[2]) \($0.channelSamples[3])" }.joined(separator: "\n")
                 
