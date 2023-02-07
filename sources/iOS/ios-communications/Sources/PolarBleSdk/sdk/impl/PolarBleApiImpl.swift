@@ -555,7 +555,7 @@ extension PolarBleApiImpl: BleLoggerProtocol {
 }
 
 extension PolarBleApiImpl: PolarBleApi  {
-       
+    
     func cleanup() {
         _ = listener.removeAllSessions(
             Set(CollectionOfOne(BleDeviceSession.DeviceSessionState.sessionClosed)))
@@ -1182,7 +1182,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Completable.error(err)
         }
     }
-         
+    
     func getAvailableOnlineStreamDataTypes(_ identifier: String) -> Single<Set<PolarDeviceDataType>> {
         do {
             let session = try sessionPmdClientReady(identifier)
@@ -1264,11 +1264,16 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
     
     func startOhrStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarOhrData> {
-        return startPpgStreaming(identifier, settings: settings)
+        return startStreaming(identifier, type: .ppg, settings: settings) { (client) -> Observable<PolarOhrData> in
+            return client.observePpg()
+                .map {
+                    $0.mapToPolarOhrData()
+                }
+        }
     }
     
-    func startPpgStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarOhrData> {
-        return startStreaming(identifier, type: .ppg, settings: settings) { (client) -> Observable<PolarOhrData> in
+    func startPpgStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarPpgData> {
+        return startStreaming(identifier, type: .ppg, settings: settings) { (client) -> Observable<PolarPpgData> in
             return client.observePpg()
                 .map {
                     $0.mapToPolarData()
@@ -1280,8 +1285,8 @@ extension PolarBleApiImpl: PolarBleApi  {
         return startStreaming(identifier, type: .ppi, settings: PolarSensorSetting()) { (client) -> Observable<PolarPpiData> in
             return client.observePpi()
                 .map {
-                $0.mapToPolarData()
-            }
+                    $0.mapToPolarData()
+                }
         }
     }
     
@@ -1456,7 +1461,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Observable.error(err)
         }
     }
-        
+    
     private func fetchRecursive(_ path: String, client: BlePsFtpClient, condition: @escaping (_ p: String) -> Bool) -> Observable<(name: String, size:UInt64)> {
         do {
             var operation = Protocol_PbPFtpOperation()
@@ -1500,7 +1505,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         do {
             let session = try sessionPmdClientReady(identifier)
             guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Completable.error(PolarErrors.serviceNotFound) }
-     
+            
             return client.startSdkMode()
         } catch let err {
             return Completable.error(err)
@@ -1516,7 +1521,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Completable.error(err)
         }
     }
-   
+    
     func isSDKModeEnabled(_ identifier: String) -> Single<Bool> {
         do {
             let session = try sessionPmdClientReady(identifier)
@@ -1607,12 +1612,20 @@ private extension EcgData {
 }
 
 private extension PpgData {
-    func mapToPolarData() -> PolarOhrData {
+    func mapToPolarOhrData() -> PolarOhrData {
         var polarSamples: [(timeStamp:UInt64, channelSamples: [Int32])] = []
         for sample in self.samples {
             polarSamples.append((timeStamp: sample.timeStamp, channelSamples: [sample.ppgDataSamples[0], sample.ppgDataSamples[1], sample.ppgDataSamples[2], sample.ambientSample ] ))
         }
         return PolarOhrData(timeStamp: self.timeStamp, type: OhrDataType.ppg3_ambient1, samples: polarSamples)
+    }
+    
+    func mapToPolarData() -> PolarPpgData {
+        var polarSamples: [(timeStamp:UInt64, channelSamples: [Int32])] = []
+        for sample in self.samples {
+            polarSamples.append((timeStamp: sample.timeStamp, channelSamples: [sample.ppgDataSamples[0], sample.ppgDataSamples[1], sample.ppgDataSamples[2], sample.ambientSample ] ))
+        }
+        return PolarPpgData(type: PpgDataType.ppg3_ambient1, samples: polarSamples)
     }
 }
 

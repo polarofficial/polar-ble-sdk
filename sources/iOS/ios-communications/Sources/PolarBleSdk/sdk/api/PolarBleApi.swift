@@ -121,6 +121,7 @@ public typealias PolarGyroData = (timeStamp: UInt64, samples: [(timeStamp: UInt6
 public typealias PolarMagnetometerData = (timeStamp: UInt64, samples: [(timeStamp: UInt64, x: Float, y: Float, z: Float)])
 
 /// OHR data source enum
+@available(*, deprecated, renamed: "PpgDataType")
 public enum OhrDataType: Int, CaseIterable {
     /// 3 ppg + 1 ambient
     case ppg3_ambient1 = 4
@@ -135,7 +136,26 @@ public enum OhrDataType: Int, CaseIterable {
 ///         - timeStamp: moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000
 ///         - channelSamples is the PPG (Photoplethysmography) raw value received from the optical sensor. Based on [OhrDataType] the amount of channels varies. Typically ppg(n) channel + n ambient(s).
 ///
+@available(*, deprecated, renamed: "PolarPpgData")
 public typealias PolarOhrData = (timeStamp: UInt64, type: OhrDataType, samples: [(timeStamp:UInt64, channelSamples: [Int32])])
+
+
+/// PPG data source enum
+public enum PpgDataType: Int, CaseIterable {
+    /// 3 ppg + 1 ambient
+    case ppg3_ambient1 = 4
+    case unknown = 18
+}
+
+/// Polar PPG data
+///
+///     - type: type of data, which varies based on what is type of optical sensor used in the device
+///     - samples: Photoplethysmography samples
+///         - timeStamp: moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000
+///         - channelSamples is the PPG (Photoplethysmography) raw value received from the optical sensor. Based on [OhrDataType] the amount of channels varies. Typically ppg(n) channel + n ambient(s).
+///
+public typealias PolarPpgData = (type: PpgDataType, samples: [(timeStamp:UInt64, channelSamples: [Int32])])
+
 
 /// Polar ppi data
 ///
