@@ -3,37 +3,50 @@
 import Foundation
 import RxSwift
 
-/// API.
+/// Offline recording API.
+///
+/// Offline recording makes it possible to record `PolarBleApi.PolarDeviceDataType` data to device memory.
+/// With Offline recording the Polar device and phone don't need to be connected all the time, as offline recording continues in Polar device even the BLE disconnects.
+///
+///  Offline records saved into the device can be encrypted. The  `PolarRecordingSecret` is provided for
+///  `startOfflineRecording` and `setOfflineRecordingTrigger` when encryption is wanted.
+///  The `PolarRecordingSecret` with same key must be provided in `getOfflineRecord` to correctly
+///  decrypt the data in the device.
+///
+/// Requires features `PolarBleSdkFeature.feature_polar_offline_recording`
+///
+/// Note, offline recording is supported in Polar Verity Sense device (starting from firmware version 2.1.0)
+///
 public protocol PolarOfflineRecordingApi {
     ///  Get the data types available in this device for offline recording
     ///
     /// - Parameters:
     ///   - identifier: polar device id
     /// - Returns: Single stream
-    ///   - success: he set of available offline recording data types in this device
+    ///   - success:  set of available offline recording data types in this device
     ///   - onError: see `PolarErrors` for possible errors invoked
-    func getAvailableOfflineRecordingDataTypes(_ identifier: String) -> Single<Set<DeviceStreamingFeature>>
+    func getAvailableOfflineRecordingDataTypes(_ identifier: String) -> Single<Set<PolarDeviceDataType>>
     
     ///  Request the offline recording settings available in current operation mode. This request shall be used before the offline recording is started
     ///  to decide currently available settings. The available settings depend on the state of the device.
     ///
     /// - Parameters:
     ///   - identifier: polar device id
-    ///   - feature: selected feature from`DeviceStreamingFeature`
+    ///   - feature: selected feature from`PolarDeviceDataType`
     /// - Returns: Single stream
     ///   - success: once after settings received from device
     ///   - onError: see `PolarErrors` for possible errors invoked
-    func requestOfflineRecordingSettings(_ identifier: String, feature: DeviceStreamingFeature) -> Single<PolarSensorSetting>
+    func requestOfflineRecordingSettings(_ identifier: String, feature: PolarDeviceDataType) -> Single<PolarSensorSetting>
     
     ///  Request all the settings available in the device. The request returns the all capabilities of the requested streaming feature not limited by the current operation mode.
     ///
     /// - Parameters:
     ///   - identifier: polar device id
-    ///   - feature: selected feature from`DeviceStreamingFeature`
+    ///   - feature: selected feature from`PolarDeviceDataType`
     /// - Returns: Single stream
     ///   - success: once after settings received from device
     ///   - onError: see `PolarErrors` for possible errors invoked
-    func requestFullOfflineRecordingSettings(_ identifier: String, feature: DeviceStreamingFeature) -> Single<PolarSensorSetting>
+    func requestFullOfflineRecordingSettings(_ identifier: String, feature: PolarDeviceDataType) -> Single<PolarSensorSetting>
     
     /// Get status of offline recordings.
     ///
@@ -42,7 +55,7 @@ public protocol PolarOfflineRecordingApi {
     /// - Returns: Single stream
     ///   - success: the dictionary indicating the offline recording status, if the value in dictionary is true the offline recording is currently recording
     ///   - error: see `PolarErrors` for possible errors invoked
-    func getOfflineRecordingStatus(_ identifier: String)-> Single<[DeviceStreamingFeature:Bool]>
+    func getOfflineRecordingStatus(_ identifier: String)-> Single<[PolarDeviceDataType:Bool]>
     
     /// List offline recordings stored in the device.
     ///
@@ -82,11 +95,11 @@ public protocol PolarOfflineRecordingApi {
     /// - Parameters:
     ///   - identifier: polar device id
     ///   - feature: the feature to be started
-    ///   - settings: optional settings used for offline recording. `DeviceStreamingFeature.hr` and `DeviceStreamingFeature.ppi` do not require settings
+    ///   - settings: optional settings used for offline recording. `PolarDeviceDataType.hr` and `PolarDeviceDataType.ppi` do not require settings
     /// - Returns: Completable
     ///   - completed :  offline recording is started successfully
     ///   - error: see `PolarErrors` for possible errors invoked
-    func startOfflineRecording(_ identifier: String, feature: DeviceStreamingFeature, settings: PolarSensorSetting?) -> Completable
+    func startOfflineRecording(_ identifier: String, feature: PolarDeviceDataType, settings: PolarSensorSetting?) -> Completable
     
     /// Request to stop offline recording.
     ///
@@ -96,5 +109,5 @@ public protocol PolarOfflineRecordingApi {
     /// - Returns: Completable
     ///   - completed :  offline recording is stop successfully
     ///   - error: offline recording stop failed. see `PolarErrors` for possible errors invoked
-    func stopOfflineRecording(_ identifier: String, feature: DeviceStreamingFeature) -> Completable
+    func stopOfflineRecording(_ identifier: String, feature: PolarDeviceDataType) -> Completable
 }

@@ -3,10 +3,6 @@ import Foundation
 import RxSwift
 import CoreBluetooth
 
-public protocol BleCCCWriteProtocol: AnyObject {
-    func cccWrite(_ address: UUID, characteristic: CBUUID)
-}
-
 @objc open class BleDeviceSession: NSObject {
     
     public enum DeviceSessionState{
@@ -50,7 +46,7 @@ public protocol BleCCCWriteProtocol: AnyObject {
     public let advertisementContent = BleAdvertisementContent()
     public var state = DeviceSessionState.sessionClosed
     public var previousState = DeviceSessionState.sessionClosed
-    public weak var cccWriteCallback: BleCCCWriteProtocol?
+
     /// by default connect only from adv head
     public var connectionType = ConnectionType.connectFromAdvertisementHead
     var gattClients=[BleGattClientBase]()

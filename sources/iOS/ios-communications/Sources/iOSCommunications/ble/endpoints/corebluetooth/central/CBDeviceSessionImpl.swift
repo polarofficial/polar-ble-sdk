@@ -235,7 +235,6 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
         }
         if let chr = attNotifyQueue.first {
             BleLogger.trace("send next att notify: \(chr.description)")
-            cccWriteCallback?.cccWrite(address, characteristic: chr.uuid)
             peripheral.setNotifyValue(enabled, for: chr)
         }
     }

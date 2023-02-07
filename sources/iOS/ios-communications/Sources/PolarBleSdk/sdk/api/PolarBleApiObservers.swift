@@ -55,6 +55,7 @@ public protocol PolarBleApiDeviceHrObserver: AnyObject {
     ///
     /// - Parameters:
     ///   - identifier: Polar device id
+    @available(*, deprecated, message: "The functionality has changed. Please use the startHrStreaming API to get the heart rate data ")
     func hrValueReceived(_ identifier: String, data: PolarHrData)
 }
 
@@ -64,16 +65,19 @@ public protocol PolarBleApiDeviceFeaturesObserver: AnyObject {
     /// Device HR feature is ready. HR transmission is starting in a short while.
     ///
     /// - Parameter identifier: Polar device id
+    @available(*, deprecated, message: "Please use the startHrStreaming API to get the heart rate data")
     func hrFeatureReady(_ identifier: String)
     
     /// Device file transfer protocol is ready.
     /// Notice all file transfer operations are preferred to be done at beginning of the connection
     ///
     /// - Parameter identifier: polar device id
+    @available(*, deprecated, message: "Not supported anymore, won't be ever called. Use the bleSdkFeatureReady")
     func ftpFeatureReady(_ identifier: String)
     
     /// feature ready callback
-    func streamingFeaturesReady(_ identifier: String, streamingFeatures: Set<DeviceStreamingFeature>)
+    @available(*, deprecated, message: "The functionality has changed. Please use the bleSdkFeatureReady to know if onlineStreaming is available and the getAvailableOnlineStreamDataTypes function know which data types are supported")
+    func streamingFeaturesReady(_ identifier: String, streamingFeatures: Set<PolarDeviceDataType>)
     
     /// The feature is available in this device and it is ready.  Called only for the features which are specified in [PolarBleApi] construction.
     func bleSdkFeatureReady(_ identifier: String, feature: PolarBleSdkFeature)
@@ -82,6 +86,7 @@ public protocol PolarBleApiDeviceFeaturesObserver: AnyObject {
 /// SDK Mode observer
 public protocol PolarBleApiSdkModeFeatureObserver: AnyObject {
     /// sdk mode feature available in this device and ready for usage callback
+    @available(*, deprecated, message: "The functionality has changed. Please use the bleSdkFeatureReady to know if sdkModeFeature is available")
     func sdkModeFeatureAvailable(_ identifier: String)
 }
 
@@ -92,9 +97,4 @@ public protocol PolarBleApiLogger: AnyObject {
     ///
     /// - Parameter str: message
     func message(_ str: String)
-}
-
-/// observer for ccc write enable
-public protocol PolarBleApiCCCWriteObserver: AnyObject {
-    func cccWrite(_ address: UUID, characteristic: CBUUID)
 }

@@ -109,7 +109,6 @@ public struct PmdSecret {
         case aes256 = 3
         
         static func fromByte(strategyByte: UInt8) throws -> SecurityStrategy {
-            
             switch(strategyByte) {
             case SecurityStrategy.none.rawValue:
                 return SecurityStrategy.none

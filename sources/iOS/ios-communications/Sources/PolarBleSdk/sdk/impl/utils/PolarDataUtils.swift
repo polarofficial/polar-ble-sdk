@@ -5,7 +5,7 @@ import Foundation
 
 internal class PolarDataUtils {
     
-    static func mapToPmdClientMeasurementType(from polarDataType : DeviceStreamingFeature) -> PmdMeasurementType {
+    static func mapToPmdClientMeasurementType(from polarDataType : PolarDeviceDataType) -> PmdMeasurementType {
         switch(polarDataType) {
         case .ecg:
             return PmdMeasurementType.ecg
@@ -24,22 +24,22 @@ internal class PolarDataUtils {
         }
     }
     
-    static func mapToPolarFeature(from pmdMeasurementType : PmdMeasurementType) throws -> DeviceStreamingFeature {
+    static func mapToPolarFeature(from pmdMeasurementType : PmdMeasurementType) throws -> PolarDeviceDataType {
         switch(pmdMeasurementType) {
         case .ecg:
-            return DeviceStreamingFeature.ecg
+            return PolarDeviceDataType.ecg
         case .ppg:
-            return DeviceStreamingFeature.ppg
+            return PolarDeviceDataType.ppg
         case .acc:
-            return DeviceStreamingFeature.acc
+            return PolarDeviceDataType.acc
         case .ppi:
-            return DeviceStreamingFeature.ppi
+            return PolarDeviceDataType.ppi
         case .gyro:
-            return DeviceStreamingFeature.gyro
+            return PolarDeviceDataType.gyro
         case .mgn:
-            return DeviceStreamingFeature.magnetometer
+            return PolarDeviceDataType.magnetometer
         case .offline_hr:
-            return DeviceStreamingFeature.hr
+            return PolarDeviceDataType.hr
         default:
             throw PolarErrors.polarBleSdkInternalException(description: "Error when map measurement type \(pmdMeasurementType) to Polar feature" )
         }

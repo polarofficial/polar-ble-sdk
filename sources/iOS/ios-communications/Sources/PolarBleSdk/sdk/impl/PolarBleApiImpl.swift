@@ -26,7 +26,7 @@ import UIKit
             }
         }
     }
-    weak var cccWriteObserver: PolarBleApiCCCWriteObserver?
+    
     weak var observer: PolarBleApiObserver?
     
     var isBlePowered: Bool {
@@ -423,7 +423,6 @@ import UIKit
     
     // hook clients based on services available
     fileprivate func setupDevice(_ session: BleDeviceSession) {
-        session.cccWriteCallback = self
         let deviceId = session.advertisementContent.polarDeviceIdUntouched.count != 0 ?
         session.advertisementContent.polarDeviceIdUntouched :
         session.address.uuidString
@@ -483,7 +482,7 @@ import UIKit
                             .andThen(pmdClient.readFeature(true)
                                 .observe(on: self.scheduler)
                                 .do(onSuccess: { (value: Set<PmdMeasurementType>) in
-                                    var featureSet = Set<DeviceStreamingFeature>()
+                                    var featureSet = Set<PolarDeviceDataType>()
                                     if value.contains(PmdMeasurementType.ecg) {
                                         featureSet.insert(.ecg)
                                     }
@@ -508,23 +507,6 @@ import UIKit
                                         self.sdkModeFeatureObserver?.sdkModeFeatureAvailable(deviceId)
                                     }
                                 }))
-                            .asObservable()
-                            .map { (_) -> Any in
-                                return Any.self
-                            }
-                    case BlePsFtpClient.PSFTP_SERVICE:
-                        return (client as! BlePsFtpClient).waitPsFtpReady(true)
-                            .observe(on: self.scheduler)
-                            .do(onCompleted: {
-                                switch (BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType)) {
-                                case .h10FileSystem,
-                                        .sagRfc2FileSystem:
-                                    self.deviceFeaturesObserver?.ftpFeatureReady(deviceId)
-                                    break
-                                default:
-                                    break
-                                }
-                            })
                             .asObservable()
                             .map { (_) -> Any in
                                 return Any.self
@@ -566,12 +548,6 @@ import UIKit
     }
 }
 
-extension PolarBleApiImpl: BleCCCWriteProtocol {
-    func cccWrite(_ address: UUID, characteristic: CBUUID) {
-        cccWriteObserver?.cccWrite(address, characteristic: characteristic)
-    }
-}
-
 extension PolarBleApiImpl: BleLoggerProtocol {
     func logMessage(_ message: String) {
         logger?.message(message)
@@ -579,8 +555,7 @@ extension PolarBleApiImpl: BleLoggerProtocol {
 }
 
 extension PolarBleApiImpl: PolarBleApi  {
-    
-    
+       
     func cleanup() {
         _ = listener.removeAllSessions(
             Set(CollectionOfOne(BleDeviceSession.DeviceSessionState.sessionClosed)))
@@ -588,6 +563,18 @@ extension PolarBleApiImpl: PolarBleApi  {
     
     func polarFilter(_ enable: Bool) {
         listener.scanPreFilter = enable ? deviceFilter : nil
+    }
+    
+    func searchForDevice() -> Observable<PolarDeviceInfo> {
+        return listener.search(nil, identifiers: nil)
+            .distinct()
+            .map({ value -> PolarDeviceInfo in
+                return (value.advertisementContent.polarDeviceIdUntouched,
+                        address: value.address,
+                        rssi: Int(value.advertisementContent.medianRssi),
+                        name: value.advertisementContent.name,
+                        connectable: value.advertisementContent.isConnectable)
+            })
     }
     
     func startAutoConnectToDevice(_ rssi: Int, service: CBUUID?, polarDeviceType: String?) -> Completable {
@@ -877,7 +864,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             })
     }
     
-    func requestStreamSettings(_ identifier: String, feature: DeviceStreamingFeature) -> Single<PolarSensorSetting> {
+    func requestStreamSettings(_ identifier: String, feature: PolarDeviceDataType) -> Single<PolarSensorSetting> {
         switch feature {
         case .ecg:
             return querySettings(identifier, type: .ecg, recordingType: PmdRecordingType.online)
@@ -894,7 +881,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
-    func requestFullStreamSettings(_ identifier: String, feature: DeviceStreamingFeature) -> Single<PolarSensorSetting> {
+    func requestFullStreamSettings(_ identifier: String, feature: PolarDeviceDataType) -> Single<PolarSensorSetting> {
         switch feature {
         case .ecg:
             return queryFullSettings(identifier, type: .ecg, recordingType: PmdRecordingType.online)
@@ -911,7 +898,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
-    func requestOfflineRecordingSettings(_ identifier: String, feature: DeviceStreamingFeature) -> RxSwift.Single<PolarSensorSetting> {
+    func requestOfflineRecordingSettings(_ identifier: String, feature: PolarDeviceDataType) -> RxSwift.Single<PolarSensorSetting> {
         switch feature {
         case .ecg:
             return querySettings(identifier, type: .ecg, recordingType: PmdRecordingType.offline)
@@ -928,7 +915,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
-    func requestFullOfflineRecordingSettings(_ identifier: String, feature: DeviceStreamingFeature) -> RxSwift.Single<PolarSensorSetting> {
+    func requestFullOfflineRecordingSettings(_ identifier: String, feature: PolarDeviceDataType) -> RxSwift.Single<PolarSensorSetting> {
         switch feature {
         case .ecg:
             return queryFullSettings(identifier, type: .ecg, recordingType: PmdRecordingType.offline)
@@ -945,51 +932,50 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
-    func getAvailableOfflineRecordingDataTypes(_ identifier: String) -> Single<Set<DeviceStreamingFeature>> {
+    func getAvailableOfflineRecordingDataTypes(_ identifier: String) -> Single<Set<PolarDeviceDataType>> {
         do {
             let session = try sessionPmdClientReady(identifier)
             guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Single.error(PolarErrors.serviceNotFound) }
             return client.readFeature(true)
-                .map { pmdFeature -> Set<DeviceStreamingFeature> in
-                    var deviceData: Set<DeviceStreamingFeature> = Set()
+                .map { pmdFeature -> Set<PolarDeviceDataType> in
+                    var deviceData: Set<PolarDeviceDataType> = Set()
                     if (pmdFeature.contains(PmdMeasurementType.ecg)) {
-                        deviceData.insert(DeviceStreamingFeature.ecg)
+                        deviceData.insert(PolarDeviceDataType.ecg)
                     }
                     if (pmdFeature.contains(PmdMeasurementType.acc)) {
-                        deviceData.insert(DeviceStreamingFeature.acc)
+                        deviceData.insert(PolarDeviceDataType.acc)
                     }
                     if (pmdFeature.contains(PmdMeasurementType.ppg)) {
-                        deviceData.insert(DeviceStreamingFeature.ppg)
+                        deviceData.insert(PolarDeviceDataType.ppg)
                     }
                     if (pmdFeature.contains(PmdMeasurementType.ppi)) {
-                        deviceData.insert(DeviceStreamingFeature.ppi)
+                        deviceData.insert(PolarDeviceDataType.ppi)
                     }
                     if (pmdFeature.contains(PmdMeasurementType.gyro)) {
-                        deviceData.insert(DeviceStreamingFeature.gyro)
+                        deviceData.insert(PolarDeviceDataType.gyro)
                     }
                     if (pmdFeature.contains(PmdMeasurementType.mgn)) {
-                        deviceData.insert(DeviceStreamingFeature.magnetometer)
+                        deviceData.insert(PolarDeviceDataType.magnetometer)
                     }
                     if (pmdFeature.contains(PmdMeasurementType.offline_hr)) {
-                        deviceData.insert(DeviceStreamingFeature.hr)
+                        deviceData.insert(PolarDeviceDataType.hr)
                     }
                     return deviceData
-                    
                 }
         } catch let err {
             return Single.error(err)
         }
     }
     
-    func getOfflineRecordingStatus(_ identifier: String) -> Single<[DeviceStreamingFeature:Bool]> {
+    func getOfflineRecordingStatus(_ identifier: String) -> Single<[PolarDeviceDataType:Bool]> {
         do {
             let session = try sessionPmdClientReady(identifier)
             guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Single.error(PolarErrors.serviceNotFound) }
             
             return client.readMeasurementStatus()
-                .map { status -> [DeviceStreamingFeature:Bool] in
+                .map { status -> [PolarDeviceDataType:Bool] in
                     
-                    var activeOfflineRecordings = [DeviceStreamingFeature:Bool]()
+                    var activeOfflineRecordings = [PolarDeviceDataType:Bool]()
                     try status.forEach {  element in
                         
                         let polarFeature = try PolarDataUtils.mapToPolarFeature(from: element.0)
@@ -1176,7 +1162,7 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
     
     
-    func startOfflineRecording(_ identifier: String, feature: DeviceStreamingFeature, settings: PolarSensorSetting?) -> RxSwift.Completable {
+    func startOfflineRecording(_ identifier: String, feature: PolarDeviceDataType, settings: PolarSensorSetting?) -> RxSwift.Completable {
         do {
             let session = try sessionPmdClientReady(identifier)
             guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Completable.error(PolarErrors.serviceNotFound) }
@@ -1187,7 +1173,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
-    func stopOfflineRecording(_ identifier: String, feature: DeviceStreamingFeature) -> Completable {
+    func stopOfflineRecording(_ identifier: String, feature: PolarDeviceDataType) -> Completable {
         do {
             let session = try sessionPmdClientReady(identifier)
             guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Completable.error(PolarErrors.serviceNotFound) }
@@ -1196,25 +1182,49 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Completable.error(err)
         }
     }
-    
-    fileprivate func startStreaming<T>(_ identifier: String,
-                                       type: PmdMeasurementType,
-                                       settings: PolarSensorSetting,
-                                       observer: @escaping (_ client: BlePmdClient) -> Observable<T>) -> Observable<T> {
+         
+    func getAvailableOnlineStreamDataTypes(_ identifier: String) -> Single<Set<PolarDeviceDataType>> {
         do {
             let session = try sessionPmdClientReady(identifier)
-            let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
-            return client.startMeasurement(type, settings: settings.map2PmdSetting())
-                .andThen(observer(client)
-                    .do(onDispose: {
-                        _ = client.stopMeasurement(type)
-                            .subscribe()
-                    }))
-                .catch { (err) -> Observable<T> in
-                    return Observable.error(PolarErrors.deviceError(description: "\(err)"))
+            
+            // TODO, properly check the situation pmd client is not available but hr client is
+            guard let pmdClient = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Single.error(PolarErrors.serviceNotFound) }
+            
+            let bleHrClient = session.fetchGattClient(BleHrClient.HR_SERVICE) as? BleHrClient
+            
+            return pmdClient.readFeature(true)
+                .map { pmdFeature -> Set<PolarDeviceDataType> in
+                    var deviceData: Set<PolarDeviceDataType> = Set()
+                    
+                    if (bleHrClient != nil ) {
+                        deviceData.insert(PolarDeviceDataType.hr)
+                    }
+                    
+                    if (pmdFeature.contains(PmdMeasurementType.ecg)) {
+                        deviceData.insert(PolarDeviceDataType.ecg)
+                    }
+                    if (pmdFeature.contains(PmdMeasurementType.acc)) {
+                        deviceData.insert(PolarDeviceDataType.acc)
+                    }
+                    if (pmdFeature.contains(PmdMeasurementType.ppg)) {
+                        deviceData.insert(PolarDeviceDataType.ppg)
+                    }
+                    if (pmdFeature.contains(PmdMeasurementType.ppi)) {
+                        deviceData.insert(PolarDeviceDataType.ppi)
+                    }
+                    if (pmdFeature.contains(PmdMeasurementType.gyro)) {
+                        deviceData.insert(PolarDeviceDataType.gyro)
+                    }
+                    if (pmdFeature.contains(PmdMeasurementType.mgn)) {
+                        deviceData.insert(PolarDeviceDataType.magnetometer)
+                    }
+                    if (pmdFeature.contains(PmdMeasurementType.offline_hr)) {
+                        deviceData.insert(PolarDeviceDataType.hr)
+                    }
+                    return deviceData
                 }
         } catch let err {
-            return Observable.error(err)
+            return Single.error(err)
         }
     }
     
@@ -1254,6 +1264,10 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
     
     func startOhrStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarOhrData> {
+        return startPpgStreaming(identifier, settings: settings)
+    }
+    
+    func startPpgStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarOhrData> {
         return startStreaming(identifier, type: .ppg, settings: settings) { (client) -> Observable<PolarOhrData> in
             return client.observePpg()
                 .map {
@@ -1264,9 +1278,29 @@ extension PolarBleApiImpl: PolarBleApi  {
     
     func startOhrPPIStreaming(_ identifier: String) -> Observable<PolarPpiData> {
         return startStreaming(identifier, type: .ppi, settings: PolarSensorSetting()) { (client) -> Observable<PolarPpiData> in
-            return client.observePpi().map {
+            return client.observePpi()
+                .map {
                 $0.mapToPolarData()
             }
+        }
+    }
+    
+    func startHrStreaming(_ identifier: String) -> Observable<PolarHrData> {
+        do {
+            let session = try sessionServiceReady(identifier, service: BleHrClient.HR_SERVICE)
+            guard let bleHrClient = session.fetchGattClient(BleHrClient.HR_SERVICE) as? BleHrClient else {
+                return Observable.error(PolarErrors.serviceNotFound)
+            }
+            return bleHrClient.observeHrNotifications(true)
+                .map{
+                    let rrsMs =  $0.rrs.map({ (rr) -> Int in
+                        return Int(round((Float(rr) / 1024.0) * 1000.0))
+                    })
+                    
+                    return (hr: UInt8($0.hr), rrs: $0.rrs, rrsMs: rrsMs, contact: $0.sensorContact, contactSupported: $0.sensorContactSupported)
+                }
+        } catch let err {
+            return Observable.error(err)
         }
     }
     
@@ -1402,18 +1436,27 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
-    func searchForDevice() -> Observable<PolarDeviceInfo> {
-        return listener.search(nil, identifiers: nil)
-            .distinct()
-            .map({ value -> PolarDeviceInfo in
-                return (value.advertisementContent.polarDeviceIdUntouched,
-                        address: value.address,
-                        rssi: Int(value.advertisementContent.medianRssi),
-                        name: value.advertisementContent.name,
-                        connectable: value.advertisementContent.isConnectable)
-            })
+    fileprivate func startStreaming<T>(_ identifier: String,
+                                       type: PmdMeasurementType,
+                                       settings: PolarSensorSetting,
+                                       observer: @escaping (_ client: BlePmdClient) -> Observable<T>) -> Observable<T> {
+        do {
+            let session = try sessionPmdClientReady(identifier)
+            let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
+            return client.startMeasurement(type, settings: settings.map2PmdSetting())
+                .andThen(observer(client)
+                    .do(onDispose: {
+                        _ = client.stopMeasurement(type)
+                            .subscribe()
+                    }))
+                .catch { (err) -> Observable<T> in
+                    return Observable.error(PolarErrors.deviceError(description: "\(err)"))
+                }
+        } catch let err {
+            return Observable.error(err)
+        }
     }
-    
+        
     private func fetchRecursive(_ path: String, client: BlePsFtpClient, condition: @escaping (_ p: String) -> Bool) -> Observable<(name: String, size:UInt64)> {
         do {
             var operation = Protocol_PbPFtpOperation()
@@ -1456,7 +1499,8 @@ extension PolarBleApiImpl: PolarBleApi  {
     func enableSDKMode(_ identifier: String) -> Completable {
         do {
             let session = try sessionPmdClientReady(identifier)
-            let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
+            guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Completable.error(PolarErrors.serviceNotFound) }
+     
             return client.startSdkMode()
         } catch let err {
             return Completable.error(err)
@@ -1466,10 +1510,21 @@ extension PolarBleApiImpl: PolarBleApi  {
     func disableSDKMode(_ identifier: String) -> Completable {
         do {
             let session = try sessionPmdClientReady(identifier)
-            let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
+            guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Completable.error(PolarErrors.serviceNotFound) }
             return client.stopSdkMode()
         } catch let err {
             return Completable.error(err)
+        }
+    }
+   
+    func isSDKModeEnabled(_ identifier: String) -> Single<Bool> {
+        do {
+            let session = try sessionPmdClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Single.error(PolarErrors.serviceNotFound) }
+            return client.isSdkModeEnabled()
+                .map { $0 != PmdSdkMode.disabled }
+        } catch let err {
+            return Single.error(err)
         }
     }
 }

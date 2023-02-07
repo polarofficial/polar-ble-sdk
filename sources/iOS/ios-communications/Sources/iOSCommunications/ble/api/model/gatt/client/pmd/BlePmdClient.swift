@@ -575,6 +575,32 @@ public class BlePmdClient: BleGattClientBase {
         .subscribe(on: baseSerialDispatchQueue)
     }
     
+    func isSdkModeEnabled() -> Single<PmdSdkMode> {
+        return Single.create{ [unowned self] observer in
+            do {
+                let packet = Data([PmdControlPointCommand.GET_SDK_MODE_STATUS])
+                let cpResponse = try self.sendControlPointCommand(packet)
+                if cpResponse.errorCode == .success {
+                    let byteArray = [UInt8](cpResponse.parameters as Data)
+                    if let responseParameter = byteArray.first {
+                        let sdkMode = PmdSdkMode.fromResponse(sdkModeByte: responseParameter)
+                        observer(.success(sdkMode))
+                    } else {
+                        observer(.failure(BleGattException.gattDataError(description: "Couldn't get the SDK mode status. Response parameter is missing")))
+                    }
+                } else {
+                    observer(.failure(BleGattException.gattAttributeError(errorCode: cpResponse.errorCode.rawValue, errorDescription: cpResponse.errorCode.description)))
+                }
+            } catch let err {
+                observer(.failure(err))
+            }
+            return Disposables.create{
+                // do nothing
+            }
+        }
+        .subscribe(on: baseSerialDispatchQueue)
+    }
+    
     private func sendControlPointCommand(_ data: Data) throws -> Pmd.PmdControlPointResponse {
         guard let transport = self.gattServiceTransmitter else {
             throw BleGattException.gattTransportNotAvailable

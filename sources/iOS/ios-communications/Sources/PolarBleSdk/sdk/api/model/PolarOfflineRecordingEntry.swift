@@ -11,9 +11,9 @@ public struct PolarOfflineRecordingEntry : Equatable {
     /// The date and time of the recording entry i.e. the moment recording is started
     public let date: Date
     ///  data type of the recording
-    public let type: DeviceStreamingFeature
+    public let type: PolarDeviceDataType
     
-    public init(path: String, size: UInt, date: Date, type: DeviceStreamingFeature) {
+    public init(path: String, size: UInt, date: Date, type: PolarDeviceDataType) {
         self.path = path
         self.size = size
         self.date = date
