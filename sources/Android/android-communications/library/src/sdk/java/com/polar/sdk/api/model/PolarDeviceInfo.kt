@@ -4,7 +4,7 @@ package com.polar.sdk.api.model
 /**
  * Contains information about the current Device.
  */
-class PolarDeviceInfo(
+data class PolarDeviceInfo(
     /**
      * Polar device id
      */

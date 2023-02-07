@@ -43,7 +43,7 @@ sealed class PolarOfflineRecordingData(val startTime: Calendar, val settings: Po
      * @property startTime the time recording was started in UTC time
      * @property settings the settings used while recording
      */
-    class PpgOfflineRecording(val data: PolarOhrData, startTime: Calendar, settings: PolarSensorSetting) : PolarOfflineRecordingData(startTime, settings)
+    class PpgOfflineRecording(val data: PolarPpgData, startTime: Calendar, settings: PolarSensorSetting) : PolarOfflineRecordingData(startTime, settings)
 
     /**
      * PPI (Peak-to-peak interval) offline recording data

@@ -1,3 +1,4 @@
+// Copyright © 2023 Polar Electro Oy. All rights reserved.
 package com.polar.sdk.api
 
 import com.polar.sdk.api.PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE

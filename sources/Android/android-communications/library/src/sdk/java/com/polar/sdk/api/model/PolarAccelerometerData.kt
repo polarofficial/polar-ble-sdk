@@ -5,7 +5,7 @@ package com.polar.sdk.api.model
  * Polar accelerometer data.
  * @property samples from acceleration sensor. Each sample contains signed x,y,z axis value in millig
  */
-class PolarAccelerometerData(
+data class PolarAccelerometerData(
     val samples: List<PolarAccelerometerDataSample>,
     @Deprecated("Use the timestamp found in each sample")
     val timeStamp: Long

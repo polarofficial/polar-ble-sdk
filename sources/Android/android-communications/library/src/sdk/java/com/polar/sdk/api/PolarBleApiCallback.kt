@@ -54,7 +54,10 @@ abstract class PolarBleApiCallback : PolarBleApiCallbackProvider {
      * @param identifier Polar device id
      * @param features   set of features available and ready
      */
-    @Deprecated("The function is renamed. Please use the getAvailableOnlineStreamDataTypes function")
+    @Deprecated(
+        "The functionality has changed. Please use the bleSdkFeatureReady to know if onlineStreaming is available and" +
+                " the getAvailableOnlineStreamDataTypes function know which data types are supported"
+    )
     override fun streamingFeaturesReady(identifier: String, features: Set<PolarDeviceDataType>) {
     }
 

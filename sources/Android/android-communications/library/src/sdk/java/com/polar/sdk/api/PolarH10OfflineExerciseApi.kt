@@ -1,3 +1,4 @@
+// Copyright © 2023 Polar Electro Oy. All rights reserved.
 package com.polar.sdk.api
 
 import androidx.annotation.Size

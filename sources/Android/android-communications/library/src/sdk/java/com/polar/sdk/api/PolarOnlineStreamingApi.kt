@@ -1,3 +1,4 @@
+// Copyright © 2023 Polar Electro Oy. All rights reserved.
 package com.polar.sdk.api
 
 import com.polar.sdk.api.PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING
@@ -58,9 +59,7 @@ interface PolarOnlineStreamingApi {
 
     /**
      * Start heart rate stream. Heart rate stream is stopped if
-     * the connection is closed, error occurs or stream is disposed. Requires feature
-     * [.FEATURE_POLAR_ONLINE_STREAMING]. Before starting the stream it is recommended to
-     * query the available settings using [.requestStreamSettings]
+     * the connection is closed, error occurs or stream is disposed.
      *
      * @param identifier    Polar device id found printed on the sensor/device or bt address
      * @return Flowable stream of heart rate data.
@@ -73,8 +72,7 @@ interface PolarOnlineStreamingApi {
 
     /**
      * Start the ECG (Electrocardiography) stream. ECG stream is stopped if the connection is closed,
-     * error occurs or stream is disposed. Requires feature [.FEATURE_POLAR_ONLINE_STREAMING].
-     * Before starting the stream it is recommended to query the available settings using [.requestStreamSettings]
+     * error occurs or stream is disposed.
      *
      * @param identifier    Polar device id found printed on the sensor/device or bt address
      * @param sensorSetting settings to be used to start streaming
@@ -91,8 +89,7 @@ interface PolarOnlineStreamingApi {
 
     /**
      * Start ACC (Accelerometer) stream. ACC stream is stopped if the connection is closed, error
-     * occurs or stream is disposed. Requires feature [.FEATURE_POLAR_ONLINE_STREAMING].
-     * Before starting the stream it is recommended to query the available settings using [.requestStreamSettings]
+     * occurs or stream is disposed.
      *
      * @param identifier    Polar device id found printed on the sensor/device or bt address
      * @param sensorSetting settings to be used to start streaming
@@ -109,9 +106,7 @@ interface PolarOnlineStreamingApi {
 
     /**
      * Start OHR (Optical heart rate) PPG (Photoplethysmography) stream. PPG stream is stopped if
-     * the connection is closed, error occurs or stream is disposed. Requires feature
-     * [.FEATURE_POLAR_ONLINE_STREAMING]. Before starting the stream it is recommended to
-     * query the available settings using [.requestStreamSettings]
+     * the connection is closed, error occurs or stream is disposed.
      *
      * @param identifier    Polar device id found printed on the sensor/device or bt address
      * @param sensorSetting settings to be used to start streaming
@@ -121,7 +116,7 @@ interface PolarOnlineStreamingApi {
      * <BR></BR> - onError error for possible errors invoked
      * <BR></BR> - onComplete non produced unless the stream is further configured
      */
-    @Deprecated("API is renamed, please use startPpgStreaming()")
+    @Deprecated("API is renamed, please use startPpgStreaming()", replaceWith = ReplaceWith("startPpgStreaming()"))
     fun startOhrStreaming(
         identifier: String,
         sensorSetting: PolarSensorSetting
@@ -129,27 +124,25 @@ interface PolarOnlineStreamingApi {
 
     /**
      * Start optical sensor PPG (Photoplethysmography) stream. PPG stream is stopped if
-     * the connection is closed, error occurs or stream is disposed. Requires feature
-     * [.FEATURE_POLAR_ONLINE_STREAMING]. Before starting the stream it is recommended to
-     * query the available settings using [.requestStreamSettings]
+     * the connection is closed, error occurs or stream is disposed.
      *
      * @param identifier    Polar device id found printed on the sensor/device or bt address
      * @param sensorSetting settings to be used to start streaming
      * @return Flowable stream of OHR PPG data.
      * Produces:
-     * <BR></BR> - onNext [PolarOhrData]
+     * <BR></BR> - onNext [PolarPpgData]
      * <BR></BR> - onError error for possible errors invoked
      * <BR></BR> - onComplete non produced unless the stream is further configured
      */
     fun startPpgStreaming(
         identifier: String,
         sensorSetting: PolarSensorSetting
-    ): Flowable<PolarOhrData>
+    ): Flowable<PolarPpgData>
 
     /**
      * Start OHR (Optical heart rate) PPI (Pulse to Pulse interval) stream. PPI stream is stopped if
      * the connection is closed, error occurs or stream is disposed. Notice that there is a
-     * delay before PPI data stream starts. Requires feature [.FEATURE_POLAR_ONLINE_STREAMING].
+     * delay before PPI data stream starts.
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
      * @return Flowable stream of OHR PPI data.
@@ -162,8 +155,7 @@ interface PolarOnlineStreamingApi {
 
     /**
      * Start magnetometer stream. Magnetometer stream is stopped if the connection is closed, error
-     * occurs or stream is disposed. Requires feature [.FEATURE_POLAR_ONLINE_STREAMING].
-     * Before starting the stream it is recommended to query the available settings using [.requestStreamSettings]
+     * occurs or stream is disposed.
      *
      * @param identifier    Polar device id found printed on the sensor/device or bt address
      * @param sensorSetting settings to be used to start streaming
@@ -180,8 +172,7 @@ interface PolarOnlineStreamingApi {
 
     /**
      * Start Gyro stream. Gyro stream is stopped if the connection is closed, error occurs during
-     * start or stream is disposed. Requires feature [.FEATURE_POLAR_ONLINE_STREAMING].
-     * Before starting the stream it is recommended to query the available settings using [.requestStreamSettings]
+     * start or stream is disposed.
      *
      * @param identifier    Polar device id found printed on the sensor/device or bt address
      * @param sensorSetting settings to be used to start streaming

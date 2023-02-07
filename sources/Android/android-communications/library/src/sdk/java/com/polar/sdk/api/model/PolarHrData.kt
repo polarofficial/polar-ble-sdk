@@ -14,7 +14,7 @@ data class PolarHrData(
      * @property contactStatusSupported  true if the sensor supports contact status
      * @property rrAvailable true if RR data is available.
      */
-    class PolarHrSample(
+    data class PolarHrSample(
         val hr: Int,
         private val rrs: List<Int>,
         val contactStatus: Boolean,

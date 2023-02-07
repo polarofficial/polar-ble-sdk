@@ -36,6 +36,7 @@ import com.polar.sdk.api.model.*
 import com.polar.sdk.impl.utils.PolarDataUtils
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientOfflineHrDataToPolarHrData
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientOhrDataToPolarOhr
+import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientPpgDataToPolarPpg
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientPpiDataToPolarOhrPpiData
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientAccDataToPolarAcc
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientFeatureToPolarFeature
@@ -675,7 +676,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         }
                         is PpgData -> {
                             polarSettings ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Ppg data is missing settings")
-                            PolarOfflineRecordingData.PpgOfflineRecording(mapPMDClientOhrDataToPolarOhr(offlineData), startTime, polarSettings)
+                            PolarOfflineRecordingData.PpgOfflineRecording(mapPMDClientPpgDataToPolarPpg(offlineData), startTime, polarSettings)
                         }
                         is PpiData -> PolarOfflineRecordingData.PpiOfflineRecording(mapPMDClientPpiDataToPolarOhrPpiData(offlineData), startTime)
                         is OfflineHrData -> PolarOfflineRecordingData.HrOfflineRecording(mapPMDClientOfflineHrDataToPolarHrData(offlineData), startTime)
@@ -947,15 +948,18 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         })
     }
 
-    override fun startPpgStreaming(identifier: String, sensorSetting: PolarSensorSetting): Flowable<PolarOhrData> {
+    override fun startPpgStreaming(identifier: String, sensorSetting: PolarSensorSetting): Flowable<PolarPpgData> {
         return startStreaming(identifier, PmdMeasurementType.PPG, sensorSetting, observer = { client: BlePMDClient ->
             client.monitorPpgNotifications(true)
-                .map { ppgData: PpgData -> mapPMDClientOhrDataToPolarOhr(ppgData) }
+                .map { ppgData: PpgData -> mapPMDClientPpgDataToPolarPpg(ppgData) }
         })
     }
 
     override fun startOhrStreaming(identifier: String, sensorSetting: PolarSensorSetting): Flowable<PolarOhrData> {
-        return startPpgStreaming(identifier, sensorSetting)
+        return startStreaming(identifier, PmdMeasurementType.PPG, sensorSetting, observer = { client: BlePMDClient ->
+            client.monitorPpgNotifications(true)
+                .map { ppgData: PpgData -> mapPMDClientOhrDataToPolarOhr(ppgData) }
+        })
     }
 
     override fun startOhrPPIStreaming(identifier: String): Flowable<PolarOhrPPIData> {

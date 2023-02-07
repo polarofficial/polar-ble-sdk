@@ -31,6 +31,26 @@ internal object PolarDataUtils {
         return PolarOhrData(listOfSamples, type, ohrData.timeStamp.toLong())
     }
 
+    fun mapPMDClientPpgDataToPolarPpg(ppgData: PpgData): PolarPpgData {
+        var type: PolarPpgData.PpgDataType = PolarPpgData.PpgDataType.UNKNOWN
+        val listOfSamples = mutableListOf<PolarPpgData.PolarPpgSample>()
+        for (sample in ppgData.ppgSamples) {
+            when (sample) {
+                is PpgData.PpgDataFrameType0 -> {
+                    type = PolarPpgData.PpgDataType.PPG3_AMBIENT1
+                    val channelsData = mutableListOf<Int>()
+                    channelsData.addAll(sample.ppgDataSamples)
+                    channelsData.add(sample.ambientSample)
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), channelsData))
+                }
+                else -> {
+                    BleLogger.w(TAG, "Not supported PPG sample type: $sample")
+                }
+            }
+        }
+        return PolarPpgData(listOfSamples, type)
+    }
+
     fun mapPMDClientPpiDataToPolarOhrPpiData(ppiData: PpiData): PolarOhrPPIData {
         val samples: MutableList<PolarOhrPPIData.PolarOhrPPISample> = mutableListOf()
         for ((hr, ppInMs, ppErrorEstimate, blockerBit, skinContactStatus, skinContactSupported) in ppiData.ppiSamples) {
@@ -147,7 +167,7 @@ internal object PolarDataUtils {
      */
     fun mapPolarSettingsToPmdSettings(polarSensorSetting: PolarSensorSetting?): PmdSetting {
         val selected: MutableMap<PmdSetting.PmdSettingType, Int> = mutableMapOf()
-        if(polarSensorSetting != null) {
+        if (polarSensorSetting != null) {
             for ((key, value) in polarSensorSetting.settings) {
                 selected[PmdSetting.PmdSettingType.values()[key.numVal]] = Collections.max(value)
             }
