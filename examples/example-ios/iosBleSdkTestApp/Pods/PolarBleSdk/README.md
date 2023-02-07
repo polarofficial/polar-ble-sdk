@@ -1,33 +1,28 @@
 # SDK for Polar sensors
 
-This is the official repository of Polar's software development kit. With this SDK you are able to develop your own applications for sensors made by Polar.
+This is the official repository of Polar's software development kit. With this SDK you are able to develop your own Android and iOS applications for sensors made by Polar.
 
-This SDK uses ReactiveX. You can read more about ReactiveX from their website [reactivex](http://reactivex.io)
+The SDK API uses ReactiveX. You can read more about ReactiveX from their website [reactivex](http://reactivex.io)
 
-3rd party software license listing [ThirdPartySoftwareListing](ThirdPartySoftwareListing.txt)
+- [Features](#features)
+- [Project structure](#project-structure)
+- [Android getting started](#android-getting-started)
+- [iOS getting started](#ios-getting-started)
+- [Migration Guides](#migration-guides)
+- [Collaboration](#collaboration)
+- [License](#license)
+- [Third-party code and licenses](#third-party-code-and-licenses)
 
-By exploiting the SDK, you indicate your acceptance of [License](Polar_SDK_License.txt).
-
-If you wish to collaborate with Polar commercially, [click here](https://www.polar.com/en/developers)
-
-### Quick License Summary / Your rights to use the SDK
-You may use, copy and modify the SDK as long as you
-include the original copyright and license notice in any copy of the
-software/source and you comply with the license terms. You are
-allowed to use the SDK for the development of software for your
-private as well as for commercial use for as long as you use the SDK
-in compliance with the license terms.
-
+## Features 
 ### H10 Heart rate sensor
 Most accurate Heart rate sensor in the markets. The H10 is used in the Getting started section of this page. 
 [Store page](https://www.polar.com/en/sensors/h10-heart-rate-sensor)
 
-#### H10 heart rate sensor available data types
-* From version 3.0.35 onwards. 
-* Heart rate as beats per minute. RR Interval in ms and 1/1024 format.
+#### H10 features available by the SDK
+* Heart rate as beats per minute and RR Interval in ms.
 * Heart rate broadcast.
-* Electrocardiography (ECG) data in µV with sample rate 130Hz. Default epoch for timestamp is 1.1.2000
-* Accelerometer data with sample rates of 25Hz, 50Hz, 100Hz and 200Hz and range of 2G, 4G and 8G. Axis specific acceleration data in mG. Default epoch for timestamp is 1.1.2000
+* Electrocardiography (ECG) data in µV with sample rate 130Hz.
+* Accelerometer data with sample rates of 25Hz, 50Hz, 100Hz and 200Hz and range of 2G, 4G and 8G. Axis specific acceleration data in mG.
 * Start and stop of internal recording and request for internal recording status. Recording supports RR, HR with one second sampletime or HR with five second sampletime.
 * List, read and remove for stored internal recording (sensor supports only one recording at the time).
 
@@ -35,15 +30,15 @@ Most accurate Heart rate sensor in the markets. The H10 is used in the Getting s
 Reliable high quality heart rate chest strap.
 [Store page](https://www.polar.com/en/sensors/h9-heart-rate-sensor)
 
-#### H9 heart rate sensor available data types
-* Heart rate as beats per minute. RR Interval in ms and 1/1024 format.
+#### H9 features available by the SDK
+* Heart rate as beats per minute and RR Interval in ms.
 * Heart rate broadcast.
 
 ### Polar Verity Sense Optical heart rate sensor
 Optical heart rate sensor is a rechargeable device that measures user’s heart rate with LED technology.
 [Store page](https://www.polar.com/en/products/accessories/polar-verity-sense)
 
-#### Polar Verity Sense Optical heart rate sensor available data types
+#### Polar Verity Sense features available by the SDK
 * Heart rate as beats per minute. 
 * Heart rate broadcast.
 * Photoplethysmograpy (PPG) values.
@@ -51,32 +46,30 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 * Accelerometer data with sample rate of 52Hz and range of 8G. Axis specific acceleration data in mG.
 * Gyroscope data with sample rate of 52Hz and ranges of 250dps, 500dps, 1000dps and 2000dps. Axis specific gyroscope data in dps.
 * Magnetometer data with sample rates of 10Hz, 20Hz, 50HZ and 100Hz and range of +/-50 Gauss. Axis specific magnetometer data in Gauss.
-* List, read and remove stored exercise. Recording of exercise requires that sensor is registered to Polar Flow account. Stored sample data contains HR with one second sampletime.
-* [SDK mode](technical_documentation/SdkModeExplained.md) (from version 1.1.5 onwards)
+* [SDK mode](documentation/SdkModeExplained.md) (from version 1.1.5 onwards)
+* [Offline recording](documentation/OfflineRecordingExplained.md) (from version 2.1.0 onwards)
 
 ### OH1 Optical heart rate sensor
 Optical heart rate sensor is a rechargeable device that measures user’s heart rate with LED technology.
 [Store page](https://www.polar.com/us-en/products/accessories/oh1-optical-heart-rate-sensor)
 
-#### OH1 Optical heart rate sensor available data types
-* From version 2.0.8 onwards.
+#### OH1 features available by the SDK
 * Heart rate as beats per minute.
 * Heart rate broadcast.
 * Photoplethysmograpy (PPG) values.
 * PP interval (milliseconds) representing cardiac pulse-to-pulse interval extracted from PPG signal.
 * Accelerometer data with samplerate of 50Hz and range of 8G. Axis specific acceleration data in mG.
-* List, read and remove stored exercise. Recording of exercise requires that sensor is registered to Polar Flow account. Stored sample data contains HR with one second sampletime. 
 
-### Project structure
-* [polar-sdk-ios](polar-sdk-ios/) contains documentation for the iOS SDK source
-* [polar-sdk-android](polar-sdk-android/) contains  documentation for the Android SDK source
+## Project structure
+* [polar-sdk-ios](polar-sdk-ios/) contains source documentation for the iOS SDK source
+* [polar-sdk-android](polar-sdk-android/) contains source documentation for the Android SDK source
 * [demos](demos/) contains Android ecg demo application 
 * [examples](examples/) contains both android and ios example app utilizing most of the features from sdk 
-* [technical_documentation](technical_documentation/) contains documentation related to SDK
+* [documentation](documentation/) contains documentation related to SDK
 
-# Android: Getting started
-Detailed documentation: [Documentation]((polar-sdk-android/docs/html/)
-## Installation
+## Android getting started
+Detailed documentation: [Documentation](polar-sdk-android/docs/)
+### Installation
 
 1.  In `build.gradle` make sure the __minSdk__ is set to __24__ or higher.
 ```gradle
@@ -101,12 +94,12 @@ android {
 }
 ```
 
-3. Add the dependency Polar BLE SDK library. Also you will need the dependencies to [RxJava](https://github.com/ReactiveX/RxJava) to use the Polar BLE SDK Library
+3. Add the dependency to Polar BLE SDK library. Also you will need the dependencies to [RxJava](https://github.com/ReactiveX/RxJava) to use the Polar BLE SDK Library
 ```gradle
 dependencies {
     implementation 'com.github.polarofficial:polar-ble-sdk:${sdk_version}'
-    implementation 'io.reactivex.rxjava3:rxjava:3.1.3'
-    implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
+    implementation 'io.reactivex.rxjava3:rxjava:3.1.6'
+    implementation 'io.reactivex.rxjava3:rxandroid:3.0.2'
 }
 ```
 
@@ -117,7 +110,8 @@ dependencies {
     to decide the location so "neverForLocation" permission flag can be used.-->
     <uses-permission
         android:name="android.permission.BLUETOOTH_SCAN"
-        android:usesPermissionFlags="neverForLocation" />
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="s" />
 
     <!-- Polar SDK needs Bluetooth connect permission to connect for found BLE devices.-->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
@@ -165,19 +159,27 @@ On your application you must request for the [permissions](https://developer.and
 ```
 
 
-## Code example: Heart rate
+### Code example: Heart rate
 See the [example](examples/example-android) folder for the full project. 
 
 #### Key things
 
 1. Load the default api implementation and add callback.
 ```kt
-// NOTICE in this code snippet all the features are enabled, if only interested on particular feature(s) like Heart rate and Battery info then
-// PolarBleApiDefaultImpl.defaultImplementation(this, PolarBleApi.FEATURE_HR or PolarBleApi.FEATURE_BATTERY_INFO) 
-// batteryLevelReceived callback is invoked after connection
-
-val api: PolarBleApi = PolarBleApiDefaultImpl.defaultImplementation(applicationContext, PolarBleApi.ALL_FEATURES)
-
+// NOTICE in this code snippet all the features are enabled. 
+// You may enable only the features you are interested
+val api: PolarBleApi = PolarBleApiDefaultImpl.defaultImplementation(applicationContext, 
+        setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_HR,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_BATTERY_INFO,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO)
+        )
+    )
+    
 api.setApiCallback(object : PolarBleApiCallback() {
    
     override fun blePowerStateChanged(powered: Boolean) {
@@ -196,30 +198,16 @@ api.setApiCallback(object : PolarBleApiCallback() {
         Log.d("MyApp", "DISCONNECTED: ${polarDeviceInfo.deviceId}")
     }
 
-    override fun streamingFeaturesReady(identifier: String, features: Set<PolarBleApi.DeviceStreamingFeature>) {
-        for (feature in features) {
-            Log.d("MyApp", "Streaming feature $feature is ready")
-        }
+    override fun bleSdkFeatureReady(identifier: String, feature: PolarBleApi.PolarBleSdkFeature) {
+        Log.d(TAG, "Polar BLE SDK feature $feature is ready")
     }
-    
-    override fun hrFeatureReady(identifier: String) {
-        Log.d("MyApp", "HR READY: $identifier")
-    }
-    
+           
     override fun disInformationReceived(identifier: String, uuid: UUID, value: String) {
         Log.d("MyApp", "DIS INFO uuid: $uuid value: $value")
     }
 
     override fun batteryLevelReceived(identifier: String, level: Int) {
         Log.d("MyApp", "BATTERY LEVEL: $level")
-    }
-
-    override fun hrNotificationReceived(identifier: String, data: PolarHrData) {
-        Log.d("MyApp", "HR value: ${data.hr} rrsMs: ${data.rrsMs} rr: ${data.rrs} contact: ${data.contactStatus} , ${data.contactStatusSupported}")
-    }
-
-    override fun polarFtpFeatureReady(s: String) {
-        Log.d("MyApp", "FTP ready")
     }
 })
 ```
@@ -241,13 +229,8 @@ override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<Str
 }
 ```
 
-3. Add foreground and cleanup functionality on desired callbacks e.g.
+3. Cleanup functionality when desired, e.g.
 ```kt
-public override fun onResume() {
-    super.onResume()
-    api.foregroundEntered()
-}
-
 public override fun onDestroy() {
     super.onDestroy()
     api.shutDown()
@@ -256,15 +239,15 @@ public override fun onDestroy() {
 
 4.  Connect to a Polar device using  `api.connectToDevice(<DEVICE_ID>)` where <DEVICE_ID> is the deviceID printed to your sensor,  using  `api.autoConnectToDevice(-50, null, null).subscribe()`  to connect nearby device or  `api.searchForDevice()` to scan and then select the device
 
-# iOS: Getting started
-Detailed documentation: [Documentation](polar-sdk-ios/docs/). Minimum iOS version is 13.
-## Requirements
+## iOS getting started
+Detailed documentation: [Documentation](polar-sdk-ios/docs/). Minimum iOS version is 14.
+### Requirements
 * Xcode 12.x
 * Swift 5.x
-## Dependencies
+### Dependencies
 *  [RxSwift 6.0](https://github.com/ReactiveX/RxSwift) or above
 *  [Swift Protobuf 1.18.0](https://github.com/apple/swift-protobuf) or above
-## Installation
+### Installation
 #### CocoaPods
 
 If you use [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) to manage your dependencies, add PolarBleSdk to your `Podfile`:
@@ -275,7 +258,7 @@ If you use [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) 
 use_frameworks!
 
 target 'YOUR_TARGET_NAME' do
-    pod 'PolarBleSdk', '~> 3.3'
+    pod 'PolarBleSdk', '~> 5.0'
 
 end
 ```
@@ -285,7 +268,7 @@ Add PolarBleSdk as a dependency to your `Package.swift` manifest
 
 ```swift
 dependencies: [
-    .package(name: "PolarBleSdk", url: "https://github.com/polarofficial/polar-ble-sdk.git", .upToNextMajor(from: "3.3.0"))
+    .package(name: "PolarBleSdk", url: "https://github.com/polarofficial/polar-ble-sdk.git", .upToNextMajor(from: "5.0.0"))
 ]
 ```
 or alternatively use [XCode package manager](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) to add Swift package to your project. 
@@ -294,21 +277,21 @@ or alternatively use [XCode package manager](https://developer.apple.com/documen
 If you use [Cathage](https://github.com/Carthage/Carthage) to manage your dependencies, add PolarBleSdk to your `Cartfile`
 
 ```
-github "polarofficial/polar-ble-sdk" ~> 3.3
+github "polarofficial/polar-ble-sdk" ~> 5.0
 ```
 
 ```bash
 $ carthage update --use-xcframeworks
 ```
 
-## Setup your application
+### Setup your application
 * In your project target settings enable __Background Modes__, add  __Uses Bluetooth LE accessories__
 * In your project target property list add the key  [NSBluetoothAlwaysUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/nsbluetoothalwaysusagedescription)
 
-## Code example: Heart rate
+### Code example: Heart rate
 See the [example](examples/example-ios) folder for the full project
 
-### Key things
+#### Key things
 `deviceId` is your Polar device's id.
 This is not required if you are using automatic connection.
 
@@ -393,3 +376,24 @@ class MyController: UIViewController,
 ```
 
 3. Connect to a Polar device using  `api.connectToDevice(id)` ,  `api.startAutoConnectToDevice(_ rssi: Int, service: CBUUID?, polarDeviceType: String?)` to connect nearby device or  `api.searchForDevice()` to scan and select the device
+
+## Migration guides
+- [Polar BLE SDK 5.0.0 Migration Guide](documentation/MigrationGuide5.0.0.md)
+
+## Collaboration
+If you wish to collaborate with Polar commercially, [click here](https://www.polar.com/en/business/developers)
+
+## License
+
+### Quick License Summary / Your rights to use the SDK
+You may use, copy and modify the SDK as long as you
+include the original copyright and license notice in any copy of the
+software/source and you comply with the license terms. You are
+allowed to use the SDK for the development of software for your
+private as well as for commercial use for as long as you use the SDK
+in compliance with the license terms.
+
+By exploiting the SDK, you indicate your acceptance of [License](Polar_SDK_License.txt).
+
+## Third-party code and licenses
+Third-party code and licenses used in Polar BLE SDK see license listing [ThirdPartySoftwareListing](ThirdPartySoftwareListing.txt)

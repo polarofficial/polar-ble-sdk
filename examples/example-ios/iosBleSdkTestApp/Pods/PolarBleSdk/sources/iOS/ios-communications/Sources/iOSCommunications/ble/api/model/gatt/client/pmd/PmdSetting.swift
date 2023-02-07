@@ -8,6 +8,7 @@ public struct PmdSetting {
         case rangeMilliUnit
         case channels
         case factor
+        case security
         case unknown = 0xff
     }
     

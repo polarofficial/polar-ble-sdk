@@ -2,7 +2,7 @@
 
 import Foundation
 
-public struct GyrData {
+public class GyrData {
     let timeStamp: UInt64
     
     struct GyrSample {
@@ -12,7 +12,12 @@ public struct GyrData {
         let z: Float
     }
     
-    let samples: [GyrSample]
+    var samples: [GyrSample]
+    
+    init(timeStamp: UInt64 = 0, samples: [GyrSample] = []) {
+        self.timeStamp = timeStamp
+        self.samples = samples
+    }
     
     private static let TYPE_0_SAMPLE_SIZE_IN_BYTES : UInt8 = 2
     private static let TYPE_0_SAMPLE_SIZE_IN_BITS: UInt8 = TYPE_0_SAMPLE_SIZE_IN_BYTES * 8

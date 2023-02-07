@@ -4,28 +4,15 @@ import Foundation
 import CoreBluetooth
 import RxSwift
 
-/// device streaming features
-public enum DeviceStreamingFeature: Int, CaseIterable {
+/// Data types available in Polar devices for online streaming or offline recording.
+public enum PolarDeviceDataType: CaseIterable {
     case ecg
     case acc
     case ppg
     case ppi
     case gyro
     case magnetometer
-}
-
-///  Recoding intervals for H10 recording start
-public enum RecordingInterval: Int {
-    case interval_1s = 1
-    case interval_5s = 5
-}
-
-/// Sample types for H10 recording start
-public enum SampleType: Int {
-    /// recording type to use is hr in BPM
     case hr
-    /// recording type to use is rr interval
-    case rr
 }
 
 /// features available
@@ -45,6 +32,33 @@ public enum Features: Int, CaseIterable {
     case allFeatures = 0xff
 }
 
+/// Features available in Polar BLE SDK library
+public enum PolarBleSdkFeature: CaseIterable {
+    /// Hr feature to receive hr and rr data from Polar or any other BLE device via standard HR BLE service
+    case feature_hr
+    
+    /// Device information feature to receive sw information from Polar or any other BLE device
+    case feature_device_info
+    
+    /// Feature to receive battery level info from Polar or any other BLE device
+    case feature_battery_info
+    
+    ///  Polar sensor streaming feature to stream live online data. For example hr, ecg, acc, ppg, ppi, etc...
+    case feature_polar_online_streaming
+    
+    /// Polar offline recording feature to record offline data to Polar device without continuous BLE connection.
+    case feature_polar_offline_recording
+    
+    ///  H10 exercise recording feature to record exercise data to Polar H10 device without continuous BLE connection.
+    case feature_polar_h10_exercise_recording
+    
+    /// Feature to read and set device time in Polar device
+    case feature_polar_device_time_setup
+    
+    ///  In SDK mode the wider range of capabilities are available for the online stream or offline recoding than in normal operation mode.
+    case feature_polar_sdk_mode
+}
+
 /// Polar device info
 ///
 ///     - deviceId = polar device id or UUID for 3rd party sensors
@@ -58,6 +72,15 @@ public typealias PolarDeviceInfo = (deviceId: String, address: UUID, rssi: Int, 
 ///     - hr: in BPM
 ///     - batteryStatus: true battery ok
 public typealias PolarHrBroadcastData = (deviceInfo: PolarDeviceInfo, hr: UInt8, batteryStatus: Bool)
+
+/// Polar hr data
+///
+///     - hr in BPM
+///     - rrs RR interval in 1/1024. R is a the top highest peak in the QRS complex of the ECG wave and RR is the interval between successive Rs.
+///     - rrs RR interval in ms.
+///     - contact status between the device and the users skin
+///     - contactSupported if contact is supported
+public typealias PolarHrData = (hr: UInt8, rrs: [Int], rrsMs: [Int], contact: Bool, contactSupported: Bool)
 
 /// Polar Ecg data
 ///
@@ -141,10 +164,10 @@ public typealias PolarExerciseData = (interval: UInt32, samples: [UInt32])
 ///
 ///     - ongoing: true recording running
 ///     - entryId: unique identifier
-public typealias PolarRecordingStatus = (ongoing: Bool,entryId: String)
+public typealias PolarRecordingStatus = (ongoing: Bool, entryId: String)
 
 /// API.
-public protocol PolarBleApi {
+public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi {
     
     /// remove all known devices, which are not in use
     func cleanup()
@@ -180,6 +203,12 @@ public protocol PolarBleApi {
     ///  - onNext: for every new polar device found
     func searchForDevice() -> Observable<PolarDeviceInfo>
     
+    /// Start listening to heart rate broadcasts from one or more Polar devices
+    ///
+    /// - Parameter identifiers: set of Polar device ids to filter or null for a any Polar device
+    /// - Returns: Observable stream
+    func startListenForPolarHrBroadcasts(_ identifiers: Set<String>?) -> Observable<PolarHrBroadcastData>
+    
     /// helper to check is feature ready
     ///
     /// - Parameters:
@@ -199,7 +228,7 @@ public protocol PolarBleApi {
     ///   - onError: see `PolarErrors` for possible errors invoked
     func setLocalTime(_ identifier: String, time: Date, zone: TimeZone) -> Completable
     
-    ///  Get current time in device. Requires `polarFileTransfer` feature.  Not supported by Polar H10. 
+    ///  Get current time in device. Requires `polarFileTransfer` feature.  Not supported by Polar H10.
     ///
     /// - Parameters:
     ///   - identifier: polar device id or UUID
@@ -210,174 +239,6 @@ public protocol PolarBleApi {
     ///   - onError: see `PolarErrors` for possible errors invoked
     func getLocalTime(_ identifier: String) -> Single<Date>
     
-    /// Request start recording. Supported only by Polar H10. Requires `polarFileTransfer` feature.
-    ///
-    /// - Parameters:
-    ///   - identifier: Polar device id or UUID
-    ///   - exerciseId: unique identifier for for exercise entry length from 1-64 bytes
-    ///   - interval: recording interval to be used. Has no effect if `sampleType` is `SampleType.rr`
-    ///   - sampleType: sample type to be used.
-    /// - Returns: Completable stream
-    ///   - success: recording started
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func startRecording(_ identifier: String, exerciseId: String, interval: RecordingInterval, sampleType: SampleType) -> Completable
-    
-    /// Request stop for current recording. Supported only by Polar H10. Requires `polarFileTransfer` feature.
-    ///
-    /// - Parameters:
-    ///   - identifier: Polar device id or UUID
-    /// - Returns: Completable stream
-    ///   - success: recording stopped
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func stopRecording(_ identifier: String) -> Completable
-    
-    /// Request current recording status. Supported only by Polar H10. Requires `polarFileTransfer` feature.
-    ///
-    /// - Parameters:
-    ///   - identifier: Polar device id
-    /// - Returns: Single stream
-    ///   - success: see `PolarRecordingStatus`
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func requestRecordingStatus(_ identifier: String) -> Single<PolarRecordingStatus>
-    
-    /// Api for fetching stored exercises list from Polar H10 device. Requires `polarFileTransfer` feature. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.
-    ///
-    /// - Parameters:
-    ///   - identifier: Polar device id or device address
-    /// - Returns: Observable stream
-    ///   - onNext: see `PolarExerciseEntry`
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func fetchStoredExerciseList(_ identifier: String) -> Observable<PolarExerciseEntry>
-    
-    /// Api for fetching a single exercise from Polar H10 device. Requires `polarFileTransfer` feature. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.
-    ///
-    /// - Parameters:
-    ///   - identifier: Polar device id or device address
-    ///   - entry: single exercise entry to be fetched
-    /// - Returns: Single stream
-    ///   - success: invoked after exercise data has been fetched from the device. see `PolarExerciseEntry`
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func fetchExercise(_ identifier: String, entry: PolarExerciseEntry) -> Single<PolarExerciseData>
-    
-    /// Api for removing single exercise from Polar H10 device. Requires `polarFileTransfer` feature. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.
-    ///
-    /// - Parameters:
-    ///   - identifier: Polar device id or device address
-    ///   - entry: single exercise entry to be removed
-    /// - Returns: Completable stream
-    ///   - complete: entry successfully removed
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func removeExercise(_ identifier: String, entry: PolarExerciseEntry) ->Completable
-    
-    /// Start listening to heart rate broadcasts from one or more Polar devices
-    ///
-    /// - Parameter identifiers: set of Polar device ids to filter or null for a any Polar device
-    /// - Returns: Observable stream
-    func startListenForPolarHrBroadcasts(_ identifiers: Set<String>?) -> Observable<PolarHrBroadcastData>
-    
-    ///  Request the stream settings available in current operation mode. This request shall be used before the stream is started
-    ///  to decide currently available settings. The available settings depend on the state of the device. For example, if any stream(s)
-    ///  or optical heart rate measurement is already enabled, then the device may limit the offer of possible settings for other stream feature.
-    ///  Requires `polarSensorStreaming` feature.
-    ///
-    /// - Parameters:
-    ///   - identifier: polar device id
-    ///   - feature: selected feature from`DeviceStreamingFeature`
-    /// - Returns: Single stream
-    ///   - success: once after settings received from device
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func requestStreamSettings(_ identifier: String, feature: DeviceStreamingFeature) -> Single<PolarSensorSetting>
-    
-    /// Request full steam settings capabilities. The request returns the all capabilities of the requested streaming feature not limited by the current operation mode.
-    /// Requires `polarSensorStreaming` feature. This request is supported only by Polar Verity Sense firmware 1.1.5
-    ///
-    /// - Parameters:
-    ///   - identifier: polar device id
-    ///   - feature: selected feature from`DeviceStreamingFeature`
-    /// - Returns: Single stream
-    ///   - success: once after full settings received from device
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func requestFullStreamSettings(_ identifier: String, feature: DeviceStreamingFeature) -> Single<PolarSensorSetting>
-    
-    /// Start the ECG (Electrocardiography) stream. ECG stream is stopped if the connection is closed, error occurs or stream is disposed.
-    /// Requires `polarSensorStreaming` feature. Before starting the stream it is recommended to query the available settings using `requestStreamSettings`
-    ///
-    /// - Parameters:
-    ///   - identifier: Polar device id or device address
-    ///   - settings: selected settings to start the stream
-    /// - Returns: Observable stream
-    ///   - onNext: for every air packet received. see `PolarEcgData`
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func startEcgStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarEcgData>
-    
-    ///  Start ACC (Accelerometer) stream. ACC stream is stopped if the connection is closed, error occurs or stream is disposed.
-    ///  Requires `polarSensorStreaming` feature. Before starting the stream it is recommended to query the available settings using `requestStreamSettings`
-    ///
-    /// - Parameters:
-    ///   - identifier: Polar device id or device address
-    ///   - settings: selected settings to start the stream
-    /// - Returns: Observable stream
-    ///   - onNext: for every air packet received. see `PolarAccData`
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func startAccStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarAccData>
-    
-    /// Start Gyro stream. Gyro stream is stopped if the connection is closed, error occurs during start or stream is disposed.
-    /// Requires `polarSensorStreaming` feature. Before starting the stream it is recommended to query the available settings using `requestStreamSettings`
-    ///
-    /// - Parameters:
-    ///   - identifier: Polar device id or device address
-    ///   - settings: selected settings to start the stream
-    func startGyroStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarGyroData>
-    
-    /// Start magnetometer stream. Magnetometer stream is stopped if the connection is closed, error occurs or stream is disposed.
-    /// Requires `polarSensorStreaming` feature. Before starting the stream it is recommended to query the available settings using `requestStreamSettings`
-    ///
-    /// - Parameters:
-    ///   - identifier: Polar device id or device address
-    ///   - settings: selected settings to start the stream
-    func startMagnetometerStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarMagnetometerData>
-    
-    /// Start OHR (Optical heart rate) PPG (Photoplethysmography) stream. PPG stream is stopped if the connection is closed, error occurs or stream is disposed.
-    /// Requires `polarSensorStreaming` feature. Before starting the stream it is recommended to query the available settings using `requestStreamSettings`
-    ///
-    /// - Parameters:
-    ///   - identifier: Polar device id or device address
-    ///   - settings: selected settings to start the stream
-    /// - Returns: Observable stream
-    ///   - onNext: for every air packet received. see `PolarOhrData`
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func startOhrStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarOhrData>
-    
-    /// Start OHR (Optical heart rate) PPI (Pulse to Pulse interval) stream.
-    /// PPI stream is stopped if the connection is closed, error occurs or stream is disposed.
-    /// Notice that there is a delay before PPI data stream starts. Requires `polarSensorStreaming` feature.
-    ///
-    /// - Parameters:
-    ///   - identifier: Polar device id or device address
-    /// - Returns: Observable stream
-    ///   - onNext: for every air packet received. see `PolarPpiData`
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func startOhrPPIStreaming(_ identifier: String) -> Observable<PolarPpiData>
-    
-    ///  Enables SDK mode. In SDK mode the wider range of capabilities is available for the stream
-    ///  than in normal operation mode. SDK mode is only supported by Polar Verity Sense (starting from firmware 1.1.5).
-    ///  Requires `polarSensorStreaming` feature.
-    ///
-    /// - Parameter identifier: Polar device id or device address
-    /// - Returns: Completable stream
-    ///   - success: if SDK mode is enabled or device is already in SDK mode
-    ///   - onError: if SDK mode enable failed
-    func enableSDKMode(_ identifier: String) -> Completable
-    
-    /// Disables SDK mode. SDK mode is only supported by Polar Verity Sense (starting from firmware 1.1.5).
-    /// Requires `polarSensorStreaming` feature.
-    ///
-    /// - Parameter identifier: Polar device id or device address
-    /// - Returns: Completable stream
-    ///   - success: if SDK mode is disabled or SDK mode was already disabled
-    ///   - onError: if SDK mode disable failed
-    func disableSDKMode(_ identifier: String) -> Completable
-    
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }
     
@@ -385,6 +246,7 @@ public protocol PolarBleApi {
     var deviceInfoObserver: PolarBleApiDeviceInfoObserver? { get set }
     
     /// Device observer for HR GATT client
+    @available(*, deprecated, message: "The functionality has changed. Please use the startHrStreaming API to get the heart rate data ")
     var deviceHrObserver: PolarBleApiDeviceHrObserver? { get set }
     
     /// Bluetooth power state observer
@@ -394,6 +256,7 @@ public protocol PolarBleApi {
     var deviceFeaturesObserver: PolarBleApiDeviceFeaturesObserver? { get set }
     
     /// SDK mode feature available in the device and ready observer
+    @available(*, deprecated, message: "The functionality has changed. Please use the bleSdkFeatureReady to know if sdkModeFeature is available")
     var sdkModeFeatureObserver: PolarBleApiSdkModeFeatureObserver? { get set }
     
     /// Helper to check if Ble is currently powered
@@ -405,7 +268,4 @@ public protocol PolarBleApi {
     
     /// optional disable or enable automatic reconnection, by default it is enabled
     var automaticReconnection: Bool { get set }
-    
-    /// optional ccc write callback
-    var cccWriteObserver: PolarBleApiCCCWriteObserver? { get set }
 }
