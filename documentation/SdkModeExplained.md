@@ -27,4 +27,4 @@ The SDK mode is the mode of the sensor in which the wider range of stream capabi
 | Magnetometer| Offline recording | 10Hz, 20Hz, 50Hz                | 50 Gauss                                             |16          |
 | PPG         | Online streaming  | 28Hz, 44Hz, 55Hz,  135Hz, 176Hz | -                                                    |22          |
 | PPG         | Offline recording | 28Hz, 44Hz, 55Hz                | -                                                    |22          |
-| PPI         | PPI stream is not supported in SDK MODE             |
+| PPI         | PPI online stream or offline recording is not supported in SDK MODE             |
