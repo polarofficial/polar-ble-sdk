@@ -250,16 +250,16 @@ class PolarBleSdkManager : ObservableObject {
                     onDispose: {
                         self.offlineRecordingEntries.isFetching = false
                     })
-                    .subscribe{ e in
-                        switch e {
-                        case .next(let entry):
-                            self.offlineRecordingEntries.entries.append(entry)
-                        case .error(let err):
-                            NSLog("Offline recording listing error: \(err)")
-                        case .completed:
-                            NSLog("Offline recording listing completed")
-                        }
-                    }.disposed(by: disposeBag)
+                .subscribe{ e in
+                    switch e {
+                    case .next(let entry):
+                        self.offlineRecordingEntries.entries.append(entry)
+                    case .error(let err):
+                        NSLog("Offline recording listing error: \(err)")
+                    case .completed:
+                        NSLog("Offline recording listing completed")
+                    }
+                }.disposed(by: disposeBag)
         }
     }
     
@@ -298,7 +298,7 @@ class PolarBleSdkManager : ObservableObject {
     func getOfflineRecording(offlineRecordingEntry: PolarOfflineRecordingEntry) async {
         if case .connected(let deviceId) = deviceConnectionState {
             Task { @MainActor in
-                self.offlineRecordingData.isFetching = true
+                self.offlineRecordingData.loadState = OfflineRecordingDataLoadingState.inProgress
             }
             
             do {
@@ -363,12 +363,15 @@ class PolarBleSdkManager : ObservableObject {
                         self.offlineRecordingData.downLoadTime = elapsedTime
                     }
                 }
+                Task { @MainActor in
+                    self.offlineRecordingData.loadState = OfflineRecordingDataLoadingState.success
+                }
+                
             } catch let err {
                 NSLog("offline recording read failed: \(err)")
-            }
-            
-            Task { @MainActor in
-                self.offlineRecordingData.isFetching = false
+                Task { @MainActor in
+                    self.offlineRecordingData.loadState = OfflineRecordingDataLoadingState.failed(error: "offline recording read failed: \(err)")
+                }
             }
         }
     }
@@ -384,7 +387,7 @@ class PolarBleSdkManager : ObservableObject {
             }
             NSLog(logString)
             
-            api.startOfflineRecording(deviceId, feature: feature, settings: PolarSensorSetting(polarSensorSettings))
+            api.startOfflineRecording(deviceId, feature: feature, settings: PolarSensorSetting(polarSensorSettings), secret: nil)
                 .observe(on: MainScheduler.instance)
                 .subscribe{ e in
                     switch e {
@@ -433,18 +436,18 @@ class PolarBleSdkManager : ObservableObject {
             onlineStreamingDisposables[.ecg] = api.startEcgStreaming(deviceId, settings: settings)
                 .observe(on: MainScheduler.instance)
                 .do(onDispose: { self.onlineStreamingFeature.isStreaming[.ecg] = false})
-                .subscribe { e in
-                    switch e {
-                    case .next(let data):
-                        for item in data.samples {
-                            NSLog("ECG    µV: \(item.voltage) timeStamp: \(item.timeStamp)")
+                    .subscribe { e in
+                        switch e {
+                        case .next(let data):
+                            for item in data.samples {
+                                NSLog("ECG    µV: \(item.voltage) timeStamp: \(item.timeStamp)")
+                            }
+                        case .error(let err):
+                            NSLog("ECG stream failed: \(err)")
+                        case .completed:
+                            NSLog("ECG stream completed")
                         }
-                    case .error(let err):
-                        NSLog("ECG stream failed: \(err)")
-                    case .completed:
-                        NSLog("ECG stream completed")
                     }
-                }
         } else {
             NSLog("Device is not connected \(deviceConnectionState)")
         }
@@ -461,19 +464,19 @@ class PolarBleSdkManager : ObservableObject {
             onlineStreamingDisposables[.acc] = api.startAccStreaming(deviceId, settings: settings)
                 .observe(on: MainScheduler.instance)
                 .do(onDispose: { self.onlineStreamingFeature.isStreaming[.acc] = false})
-                .subscribe{ e in
-                    switch e {
-                    case .next(let data):
-                        for item in data.samples {
-                            NSLog("ACC    x: \(item.x) y: \(item.y) z: \(item.z) timeStamp: \(item.timeStamp)")
+                    .subscribe{ e in
+                        switch e {
+                        case .next(let data):
+                            for item in data.samples {
+                                NSLog("ACC    x: \(item.x) y: \(item.y) z: \(item.z) timeStamp: \(item.timeStamp)")
+                            }
+                        case .error(let err):
+                            NSLog("ACC stream failed: \(err)")
+                        case .completed:
+                            NSLog("ACC stream completed")
+                            break
                         }
-                    case .error(let err):
-                        NSLog("ACC stream failed: \(err)")
-                    case .completed:
-                        NSLog("ACC stream completed")
-                        break
                     }
-                }
         } else {
             somethingFailed(text: "Device is not connected \(deviceConnectionState)")
         }
@@ -489,18 +492,18 @@ class PolarBleSdkManager : ObservableObject {
             onlineStreamingDisposables[.magnetometer] = api.startMagnetometerStreaming(deviceId, settings: settings)
                 .observe(on: MainScheduler.instance)
                 .do(onDispose: { self.onlineStreamingFeature.isStreaming[.magnetometer] = false })
-                .subscribe{ e in
-                    switch e {
-                    case .next(let data):
-                        for item in data.samples {
-                            NSLog("MAG    x: \(item.x) y: \(item.y) z: \(item.z) timeStamp: \(item.timeStamp)")
+                    .subscribe{ e in
+                        switch e {
+                        case .next(let data):
+                            for item in data.samples {
+                                NSLog("MAG    x: \(item.x) y: \(item.y) z: \(item.z) timeStamp: \(item.timeStamp)")
+                            }
+                        case .error(let err):
+                            NSLog("MAG stream failed: \(err)")
+                        case .completed:
+                            NSLog("MAG stream completed")
                         }
-                    case .error(let err):
-                        NSLog("MAG stream failed: \(err)")
-                    case .completed:
-                        NSLog("MAG stream completed")
                     }
-                }
         } else {
             NSLog("Device is not connected \(deviceConnectionState)")
         }
@@ -516,18 +519,18 @@ class PolarBleSdkManager : ObservableObject {
             onlineStreamingDisposables[.gyro] = api.startGyroStreaming(deviceId, settings: settings)
                 .observe(on: MainScheduler.instance)
                 .do(onDispose: { self.onlineStreamingFeature.isStreaming[.gyro] = false })
-                .subscribe{ e in
-                    switch e {
-                    case .next(let data):
-                        for item in data.samples {
-                            NSLog("GYR    x: \(item.x) y: \(item.y) z: \(item.z) timeStamp: \(item.timeStamp)")
+                    .subscribe{ e in
+                        switch e {
+                        case .next(let data):
+                            for item in data.samples {
+                                NSLog("GYR    x: \(item.x) y: \(item.y) z: \(item.z) timeStamp: \(item.timeStamp)")
+                            }
+                        case .error(let err):
+                            NSLog("GYR stream failed: \(err)")
+                        case .completed:
+                            NSLog("GYR stream completed")
                         }
-                    case .error(let err):
-                        NSLog("GYR stream failed: \(err)")
-                    case .completed:
-                        NSLog("GYR stream completed")
                     }
-                }
         } else {
             NSLog("Device is not connected \(deviceConnectionState)")
         }
@@ -543,20 +546,20 @@ class PolarBleSdkManager : ObservableObject {
             onlineStreamingDisposables[.ppg] = api.startPpgStreaming(deviceId, settings: settings)
                 .observe(on: MainScheduler.instance)
                 .do(onDispose: { self.onlineStreamingFeature.isStreaming[.ppg] = false })
-                .subscribe{ e in
-                    switch e {
-                    case .next(let data):
-                        if(data.type == PpgDataType.ppg3_ambient1) {
-                            for item in data.samples {
-                                NSLog("PPG  ppg0: \(item.channelSamples[0]) ppg1: \(item.channelSamples[1]) ppg2: \(item.channelSamples[2]) ambient: \(item.channelSamples[3]) timeStamp: \(item.timeStamp)")
+                    .subscribe{ e in
+                        switch e {
+                        case .next(let data):
+                            if(data.type == PpgDataType.ppg3_ambient1) {
+                                for item in data.samples {
+                                    NSLog("PPG  ppg0: \(item.channelSamples[0]) ppg1: \(item.channelSamples[1]) ppg2: \(item.channelSamples[2]) ambient: \(item.channelSamples[3]) timeStamp: \(item.timeStamp)")
+                                }
                             }
+                        case .error(let err):
+                            NSLog("PPG stream failed: \(err)")
+                        case .completed:
+                            NSLog("PPG stream completed")
                         }
-                    case .error(let err):
-                        NSLog("PPG stream failed: \(err)")
-                    case .completed:
-                        NSLog("PPG stream completed")
                     }
-                }
         } else {
             NSLog("Device is not connected \(deviceConnectionState)")
         }
@@ -572,18 +575,18 @@ class PolarBleSdkManager : ObservableObject {
             onlineStreamingDisposables[.ppi] = api.startOhrPPIStreaming(deviceId)
                 .observe(on: MainScheduler.instance)
                 .do(onDispose: { self.onlineStreamingFeature.isStreaming[.ppi] = false })
-                .subscribe{ e in
-                    switch e {
-                    case .next(let data):
-                        for item in data.samples {
-                            NSLog("PPI    PeakToPeak(ms): \(item.ppInMs) sample.blockerBit: \(item.blockerBit)  errorEstimate: \(item.ppErrorEstimate)")
+                    .subscribe{ e in
+                        switch e {
+                        case .next(let data):
+                            for item in data.samples {
+                                NSLog("PPI    PeakToPeak(ms): \(item.ppInMs) sample.blockerBit: \(item.blockerBit)  errorEstimate: \(item.ppErrorEstimate)")
+                            }
+                        case .error(let err):
+                            NSLog("PPI stream failed: \(err)")
+                        case .completed:
+                            NSLog("PPI stream completed")
                         }
-                    case .error(let err):
-                        NSLog("PPI stream failed: \(err)")
-                    case .completed:
-                        NSLog("PPI stream completed")
                     }
-                }
         } else {
             NSLog("Device is not connected \(deviceConnectionState)")
         }
@@ -599,16 +602,16 @@ class PolarBleSdkManager : ObservableObject {
             onlineStreamingDisposables[.hr] = api.startHrStreaming(deviceId)
                 .observe(on: MainScheduler.instance)
                 .do(onDispose: { self.onlineStreamingFeature.isStreaming[.hr] = false })
-                .subscribe{ e in
-                    switch e {
-                    case .next(let data):
-                        NSLog("HR    BPM: \(data.hr) rrsMs: \(data.rrsMs) rrs: \(data.rrs) contact: \(data.contact) contact supported: \(data.contactSupported)")
-                    case .error(let err):
-                        NSLog("Hr stream failed: \(err)")
-                    case .completed:
-                        NSLog("Hr stream completed")
+                    .subscribe{ e in
+                        switch e {
+                        case .next(let data):
+                            NSLog("HR    BPM: \(data.hr) rrsMs: \(data.rrsMs) rrs: \(data.rrs) contact: \(data.contact) contact supported: \(data.contactSupported)")
+                        case .error(let err):
+                            NSLog("Hr stream failed: \(err)")
+                        case .completed:
+                            NSLog("Hr stream completed")
+                        }
                     }
-                }
         } else {
             NSLog("Device is not connected \(deviceConnectionState)")
         }
@@ -881,7 +884,7 @@ class PolarBleSdkManager : ObservableObject {
         case let polarHrData as [PolarHrData]:
             result += "HR CONTACT_SUPPORTED CONTACT_STATUS RR(ms)\n"
             result += polarHrData.map{ "\($0.hr) \($0.contactSupported) \($0.contact) \($0.rrsMs.map { String($0) }.joined(separator: " "))" }.joined(separator: "\n")
-
+            
         default:
             result = "Data type not supported"
         }

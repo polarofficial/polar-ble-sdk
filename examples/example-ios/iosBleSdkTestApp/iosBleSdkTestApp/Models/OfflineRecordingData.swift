@@ -3,9 +3,15 @@
 import Foundation
 import PolarBleSdk
 
+enum OfflineRecordingDataLoadingState {
+    case inProgress
+    case success
+    case failed(error: String)
+}
+
 struct OfflineRecordingData: Identifiable {
     let id = UUID()
-    var isFetching: Bool = false
+    var loadState: OfflineRecordingDataLoadingState = OfflineRecordingDataLoadingState.inProgress
     var startTime: Date = Date()
     var usedSettings: PolarSensorSetting? = nil
     var downLoadTime: TimeInterval? = nil
