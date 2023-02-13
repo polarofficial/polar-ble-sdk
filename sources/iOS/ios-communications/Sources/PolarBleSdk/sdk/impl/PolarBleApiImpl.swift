@@ -850,6 +850,7 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
     
     func startListenForPolarHrBroadcasts(_ identifiers: Set<String>?) -> Observable<PolarHrBroadcastData> {
+        BleLogger.trace( "Start Hr broadcast listener. Filtering: \(identifiers != nil)")
         return listener.search(serviceList, identifiers: nil)
             .filter({ (session) -> Bool in
                 return (identifiers == nil || identifiers!.contains(session.advertisementContent.polarDeviceIdUntouched)) &&
@@ -865,6 +866,8 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
     
     func requestStreamSettings(_ identifier: String, feature: PolarDeviceDataType) -> Single<PolarSensorSetting> {
+        BleLogger.trace("Request online stream settings. Feature: \(feature) Device: \(identifier)")
+        
         switch feature {
         case .ecg:
             return querySettings(identifier, type: .ecg, recordingType: PmdRecordingType.online)
@@ -882,6 +885,8 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
     
     func requestFullStreamSettings(_ identifier: String, feature: PolarDeviceDataType) -> Single<PolarSensorSetting> {
+        BleLogger.trace("Request full online stream settings. Feature: \(feature) Device: \(identifier)")
+        
         switch feature {
         case .ecg:
             return queryFullSettings(identifier, type: .ecg, recordingType: PmdRecordingType.online)
@@ -899,6 +904,8 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
     
     func requestOfflineRecordingSettings(_ identifier: String, feature: PolarDeviceDataType) -> RxSwift.Single<PolarSensorSetting> {
+        
+        BleLogger.trace("Request offline stream settings. Feature: \(feature) Device: \(identifier)")
         switch feature {
         case .ecg:
             return querySettings(identifier, type: .ecg, recordingType: PmdRecordingType.offline)
@@ -916,6 +923,8 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
     
     func requestFullOfflineRecordingSettings(_ identifier: String, feature: PolarDeviceDataType) -> RxSwift.Single<PolarSensorSetting> {
+        BleLogger.trace("Request full offline stream settings. Feature: \(feature) Device: \(identifier)")
+        
         switch feature {
         case .ecg:
             return queryFullSettings(identifier, type: .ecg, recordingType: PmdRecordingType.offline)
@@ -972,6 +981,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             let session = try sessionPmdClientReady(identifier)
             guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Single.error(PolarErrors.serviceNotFound) }
             
+            BleLogger.trace( "Get offline recording status. Device: \(identifier)")
             return client.readMeasurementStatus()
                 .map { status -> [PolarDeviceDataType:Bool] in
                     
@@ -1005,7 +1015,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             guard .sagRfc2FileSystem == BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType) else {
                 return Observable.error(PolarErrors.operationNotSupported)
             }
-            
+            BleLogger.trace("Start offline recording listing in device: \(identifier)")
             return fetchRecursive("/U/0/", client: client, condition: { (entry) -> Bool in
                 return entry.matches("^([0-9]{8})(\\/)") ||
                 entry.matches("^([0-9]{6})(\\/)") ||
@@ -1057,8 +1067,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             operation.path = entry.path
             let request = try operation.serializedData()
             
-            // we get data
-            // convert to Offline recording data by knowing the type it will be converted to
+            BleLogger.trace("Offline record get. Device: $identifier Path: \(entry.path) Secret used: \(secret != nil)")
             return client.request(request)
                 .map { data -> OfflineRecordingData<Any> in
                     var pmdSecret: PmdSecret? = nil
@@ -1100,14 +1109,8 @@ extension PolarBleApiImpl: PolarBleApi  {
                         return PolarOfflineRecordingData.hrOfflineRecordingData(
                             (offlineRecData.data as! OfflineHrData).mapToPolarData(),
                             startTime: offlineRecData.startTime)
-                        
-                        
                     default:
-                        return PolarOfflineRecordingData.accOfflineRecordingData(
-                            (offlineRecData.data as! AccData).mapToPolarData(),
-                            startTime: offlineRecData.startTime,
-                            settings: settings)
-                        //throw PolarErrors.polarOfflineRecordingError(description: "GetOfflineRecording failed. Data type is not supported.")
+                        throw PolarErrors.polarOfflineRecordingError(description: "GetOfflineRecording failed. Data type is not supported.")
                     }
                 }
         } catch let err {
@@ -1116,6 +1119,7 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
     
     func removeOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry) -> Completable {
+        BleLogger.trace("Remove offline record. Device: \(identifier) Path: \(entry.path)")
         do {
             let session = try sessionFtpClientReady(identifier)
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -1125,49 +1129,81 @@ extension PolarBleApiImpl: PolarBleApi  {
                 return Completable.error(PolarErrors.operationNotSupported)
             }
             
-            guard let index = (entry.path.lastIndex(of: "/")) else
-            {
-                return Completable.error(PolarErrors.invalidArgument(description: "Offline recording entry path is not valid \(entry.path)"))
-            }
+            return removeOfflineFilesRecursively(client, entry.path, deleteIfMatchesRegex: "/\\d{8}/")
             
-            let recordingFolder = String(entry.path[...index])
-            var operation = Protocol_PbPFtpOperation()
-            operation.command = .get
-            operation.path = recordingFolder
-            let request = try operation.serializedData()
-            return client.request(request)
-                .flatMap { (content) -> Single<NSData> in
-                    do {
-                        let dir = try Protocol_PbPFtpDirectory(serializedData: content as Data)
-                        var removeOperation = Protocol_PbPFtpOperation()
-                        removeOperation.command = .remove
-                        if dir.entries.count <= 1 {
-                            removeOperation.path = recordingFolder
-                            
-                            NSLog("Remove offline record: remove entire directory \(removeOperation.path)")
-                        } else {
-                            removeOperation.path = entry.path
-                            NSLog("Remove offline record: remove only recording \(removeOperation.path)")
-                        }
-                        
-                        let request = try removeOperation.serializedData()
-                        return client.request(request)
-                    } catch {
-                        return Single.error(PolarErrors.messageDecodeFailed)
-                    }
-                }.asCompletable()
         } catch let err {
             return Completable.error(err)
         }
     }
     
+    private func removeOfflineFilesRecursively(_ client: BlePsFtpClient, _ deletePath: String, deleteIfMatchesRegex: String? = nil) -> Completable {
+        do {
+            if(deleteIfMatchesRegex != nil) {
+                guard deletePath.contains(deleteIfMatchesRegex!) else {
+                    return Completable.error(PolarErrors.polarOfflineRecordingError(description:  "Not valid offline recording path to delete \(deletePath)"))
+                }
+            }
+            
+            var parentDir: String = ""
+            
+            if (deletePath.last == "/") {
+                if let lastSlashIndex = deletePath.dropLast().lastIndex(of: "/") {
+                    parentDir = String(deletePath[...lastSlashIndex])
+                }
+            } else {
+                if let lastSlashIndex = deletePath.lastIndex(of: "/") {
+                    parentDir = String(deletePath[...lastSlashIndex])
+                }
+            }
+            
+            var operation = Protocol_PbPFtpOperation()
+            operation.command = .get
+            operation.path = parentDir
+            let request = try operation.serializedData()
+            
+            return client.request(request)
+                .flatMapCompletable { content -> Completable in
+                    do {
+                        let parentDirEntries = try Protocol_PbPFtpDirectory(serializedData: content as Data)
+                        let isParentDirValid: Bool
+                        if let regex = deleteIfMatchesRegex {
+                            isParentDirValid = parentDir.contains(regex)
+                        } else {
+                            isParentDirValid = true
+                        }
+                        if parentDirEntries.entries.count <= 1 && isParentDirValid {
+                            return self.removeOfflineFilesRecursively(client, parentDir, deleteIfMatchesRegex: deleteIfMatchesRegex)
+                        } else {
+                            BleLogger.trace(" Remove offline recording from the path \(deletePath)")
+                            var removeOperation = Protocol_PbPFtpOperation()
+                            removeOperation.command = .remove
+                            removeOperation.path = deletePath
+                            let request = try removeOperation.serializedData()
+                            return client.request(request).asCompletable()
+                        }
+                        
+                        
+                    } catch {
+                        return Completable.error(PolarErrors.messageDecodeFailed)
+                    }
+                }
+        } catch let err {
+            return Completable.error(err)
+        }
+    }
     
-    func startOfflineRecording(_ identifier: String, feature: PolarDeviceDataType, settings: PolarSensorSetting?) -> RxSwift.Completable {
+    func startOfflineRecording(_ identifier: String, feature: PolarDeviceDataType, settings: PolarSensorSetting?, secret: PolarRecordingSecret?) -> RxSwift.Completable {
         do {
             let session = try sessionPmdClientReady(identifier)
             guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Completable.error(PolarErrors.serviceNotFound) }
+                        
+            var pmdSecret: PmdSecret? = nil
+            if let s = secret {
+                pmdSecret = try PolarDataUtils.mapToPmdSecret(from: s)
+            }
+            
             return client.startMeasurement(
-                PolarDataUtils.mapToPmdClientMeasurementType(from:feature), settings: (settings ?? PolarSensorSetting()) .map2PmdSetting(), PmdRecordingType.offline)
+                PolarDataUtils.mapToPmdClientMeasurementType(from:feature), settings: (settings ?? PolarSensorSetting()) .map2PmdSetting(), PmdRecordingType.offline, pmdSecret)
         } catch let err {
             return Completable.error(err)
         }
@@ -1177,6 +1213,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         do {
             let session = try sessionPmdClientReady(identifier)
             guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Completable.error(PolarErrors.serviceNotFound) }
+            BleLogger.trace("Stop offline recording. Feature: \(feature) Device \(identifier)")
             return client.stopMeasurement( PolarDataUtils.mapToPmdClientMeasurementType(from:feature))
         } catch let err {
             return Completable.error(err)
@@ -1538,6 +1575,13 @@ extension String {
     func matches(_ regex: String) -> Bool {
         if let regex = try? NSRegularExpression(pattern: regex, options: .caseInsensitive) {
             return regex.matches(in: self, options: [], range: NSRange(location: 0, length: self.count)).count == 1
+        }
+        return false
+    }
+    
+    func contains(_ regex: String) -> Bool {
+        if let regex = try? NSRegularExpression(pattern: regex, options: []) {
+            return (regex.firstMatch(in: self, options: [], range: NSRange(location: 0, length: self.utf16.count)) != nil)
         }
         return false
     }

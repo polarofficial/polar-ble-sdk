@@ -348,8 +348,7 @@ public class BlePmdClient: BleGattClientBase {
         return RxUtils.monitor(observersPpi, transport: gattServiceTransmitter, checkConnection: true)
     }
     
-    public func startMeasurement(_ type: PmdMeasurementType, settings: PmdSetting, _ recordingType: PmdRecordingType = PmdRecordingType.online) -> Completable {
-        
+    public func startMeasurement(_ type: PmdMeasurementType, settings: PmdSetting, _ recordingType: PmdRecordingType = PmdRecordingType.online, _ secret: PmdSecret? = nil) -> Completable {
         storedSettings.accessItem { (settingsStored) in
             settingsStored[type] = settings
         }
@@ -357,9 +356,13 @@ public class BlePmdClient: BleGattClientBase {
             do {
                 let measurementType = type.rawValue
                 let requestByte = recordingType.asBitField() | measurementType
+                let settingsBytes = settings.serialize()
+                let secretBytes = secret?.serializeToPmdSettings() ?? Data()
                 var packet = Data([PmdControlPointCommand.REQUEST_MEASUREMENT_START, requestByte])
-                let serialized = settings.serialize()
-                packet.append(serialized)
+                packet.append(settingsBytes)
+                packet.append(secretBytes)
+                BleLogger.trace( "start measurement. Measurement type: \(type) Recording type: \(recordingType) Secret provided: \(secret != nil) ")
+       
                 let cpResponse = try self.sendControlPointCommand(packet as Data)
                 if cpResponse.errorCode == .success {
                     self.storedSettings.accessItem { (settingsStored) in

@@ -223,7 +223,10 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///  - onNext: for every new polar device found
     func searchForDevice() -> Observable<PolarDeviceInfo>
     
-    /// Start listening to heart rate broadcasts from one or more Polar devices
+    /// Start listening the heart rate from Polar devices when subscribed.
+    /// This observable listens BLE broadcast and parses heart rate from BLE broadcast. The
+    /// BLE device don't need to be connected when using this function, the heart rate is parsed
+    /// from the BLE advertisement
     ///
     /// - Parameter identifiers: set of Polar device ids to filter or null for a any Polar device
     /// - Returns: Observable stream
