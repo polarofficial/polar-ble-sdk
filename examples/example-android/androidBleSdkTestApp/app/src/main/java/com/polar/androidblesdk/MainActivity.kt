@@ -700,7 +700,7 @@ class MainActivity : AppCompatActivity() {
             //NOTE: For this example you need to click on listRecordingsButton to have files entry (entryCache) up to date
             Log.d(TAG, "Searching to recording to download... ")
             //Get first entry for testing download
-            val offlineRecEntry = entryCache[deviceId]?.firstOrNull();
+            val offlineRecEntry = entryCache[deviceId]?.firstOrNull()
             offlineRecEntry?.let { offlineEntry ->
                 try {
                     //Using a secret key managed by your own.
