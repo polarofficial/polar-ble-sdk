@@ -20,7 +20,6 @@ import io.reactivex.rxjava3.core.Single
  *
  * Note, API is working only with Polar H10 device
  */
-
 interface PolarH10OfflineExerciseApi {
 
     /**

@@ -879,7 +879,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                     <li class="blockList">
                                         <h4>startListenForPolarHrBroadcasts</h4>
                                         <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarHrBroadcastData.html>PolarHrBroadcastData</a>&gt; <a href=PolarBleApi.html#startListenForPolarHrBroadcasts(Set)>startListenForPolarHrBroadcasts</a>(<a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; deviceIds)</pre>
-                                        <div class="block"><p>Start listening the heart rate from Polar devices when subscribed. This observable listens BLE broadcast and parses heart rate from BLE broadcast. The BLE device is not connected when using this function.</p></div>
+                                        <div class="block"><p>Start listening the heart rate from Polar devices when subscribed. This observable listens BLE broadcast and parses heart rate from BLE broadcast. The BLE device don't need to be connected when using this function, the heart rate is parsed from the BLE advertisement</p></div>
                                         
                                         <dl>
                                             <dt><span class="paramLabel">Parameters:</span></dt>

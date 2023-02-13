@@ -219,8 +219,8 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
 
     /**
      * Start listening the heart rate from Polar devices when subscribed. This observable listens BLE
-     * broadcast and parses heart rate from BLE broadcast. The BLE device is not connected when
-     * using this function.
+     * broadcast and parses heart rate from BLE broadcast. The BLE device don't need to be connected when
+     * using this function, the heart rate is parsed from the BLE advertisement
      *
      * @param deviceIds set of Polar device ids to filter or null for a any Polar device
      * @return Flowable stream of [PolarHrBroadcastData]

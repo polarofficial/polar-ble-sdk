@@ -50,9 +50,6 @@
                 <a href="Enums/Features.html">Features</a>
               </li>
               <li class="nav-group-task">
-                <a href="Enums/OhrDataType.html">OhrDataType</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="Enums/PolarBleSdkFeature.html">PolarBleSdkFeature</a>
               </li>
               <li class="nav-group-task">
@@ -63,6 +60,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/PpgDataType.html">PpgDataType</a>
               </li>
               <li class="nav-group-task">
                 <a href="Enums/RecordingInterval.html">RecordingInterval</a>
@@ -172,7 +172,7 @@
                 <a href="Typealiases.html#/PolarMagnetometerData">PolarMagnetometerData</a>
               </li>
               <li class="nav-group-task">
-                <a href="Typealiases.html#/PolarOhrData">PolarOhrData</a>
+                <a href="Typealiases.html#/PolarPpgData">PolarPpgData</a>
               </li>
               <li class="nav-group-task">
                 <a href="Typealiases.html#/PolarPpiData">PolarPpiData</a>
@@ -371,8 +371,8 @@
                   <div>
                     <code>
                     <a name="/"></a>
-                    <a name="//apple_ref/swift/Alias/PolarOhrData" class="dashAnchor"></a>
-                    <a class="token" href="#/">PolarOhrData</a>
+                    <a name="//apple_ref/swift/Alias/PolarPpgData" class="dashAnchor"></a>
+                    <a class="token" href="#/">PolarPpgData</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -380,9 +380,8 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Polar Ohr data</p>
-<pre class="highlight swift"><code><span class="o">-</span> <span class="kt">Deprecated</span><span class="p">:</span> <span class="kt">Timestamp</span><span class="p">:</span> <span class="kt">Last</span> <span class="n">sample</span> <span class="n">timestamp</span> <span class="k">in</span> <span class="n">nanoseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">epoch</span> <span class="n">of</span> <span class="n">timestamp</span> <span class="k">is</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">2000</span>
-<span class="o">-</span> <span class="nv">type</span><span class="p">:</span> <span class="n">type</span> <span class="n">of</span> <span class="n">data</span><span class="p">,</span> <span class="n">which</span> <span class="n">varies</span> <span class="n">based</span> <span class="n">on</span> <span class="n">what</span> <span class="k">is</span> <span class="n">type</span> <span class="n">of</span> <span class="n">optical</span> <span class="n">sensor</span> <span class="n">used</span> <span class="k">in</span> <span class="n">the</span> <span class="n">device</span>
+                        <p>Polar PPG data</p>
+<pre class="highlight swift"><code><span class="o">-</span> <span class="nv">type</span><span class="p">:</span> <span class="n">type</span> <span class="n">of</span> <span class="n">data</span><span class="p">,</span> <span class="n">which</span> <span class="n">varies</span> <span class="n">based</span> <span class="n">on</span> <span class="n">what</span> <span class="k">is</span> <span class="n">type</span> <span class="n">of</span> <span class="n">optical</span> <span class="n">sensor</span> <span class="n">used</span> <span class="k">in</span> <span class="n">the</span> <span class="n">device</span>
 <span class="o">-</span> <span class="nv">samples</span><span class="p">:</span> <span class="kt">Photoplethysmography</span> <span class="n">samples</span>
     <span class="o">-</span> <span class="nv">timeStamp</span><span class="p">:</span> <span class="n">moment</span> <span class="n">sample</span> <span class="k">is</span> <span class="n">taken</span> <span class="k">in</span> <span class="n">nanoseconds</span><span class="o">.</span> <span class="kt">The</span> <span class="n">epoch</span> <span class="n">of</span> <span class="n">timestamp</span> <span class="k">is</span> <span class="mf">1.1</span><span class="o">.</span><span class="mi">2000</span>
     <span class="o">-</span> <span class="n">channelSamples</span> <span class="k">is</span> <span class="n">the</span> <span class="kt">PPG</span> <span class="p">(</span><span class="kt">Photoplethysmography</span><span class="p">)</span> <span class="n">raw</span> <span class="n">value</span> <span class="n">received</span> <span class="n">from</span> <span class="n">the</span> <span class="n">optical</span> <span class="n">sensor</span><span class="o">.</span> <span class="kt">Based</span> <span class="n">on</span> <span class="p">[</span><span class="kt">OhrDataType</span><span class="p">]</span> <span class="n">the</span> <span class="n">amount</span> <span class="n">of</span> <span class="n">channels</span> <span class="n">varies</span><span class="o">.</span> <span class="kt">Typically</span> <span class="nf">ppg</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="n">channel</span> <span class="o">+</span> <span class="n">n</span> <span class="nf">ambient</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span>
@@ -492,7 +491,7 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2023 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2023-02-07)</p>
+          <p>&copy; 2023 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2023-02-13)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.14.2</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>
