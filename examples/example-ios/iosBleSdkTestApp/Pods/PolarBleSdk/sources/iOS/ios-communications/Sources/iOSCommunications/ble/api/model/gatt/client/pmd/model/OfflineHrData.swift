@@ -26,7 +26,7 @@ public class OfflineHrData {
     }
     
     private static func dataFromRawType0(frame: PmdDataFrame) throws -> OfflineHrData {
-        var offlineHrData = OfflineHrData()
+        let offlineHrData = OfflineHrData()
         var offset = 0
         while (offset < frame.dataContent.count) {
             offlineHrData.samples.append(OfflineHrSample(hr: UInt8(frame.dataContent[offset])))

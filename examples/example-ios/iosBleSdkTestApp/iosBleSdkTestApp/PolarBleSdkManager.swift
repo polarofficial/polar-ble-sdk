@@ -264,7 +264,6 @@ class PolarBleSdkManager : ObservableObject {
     }
     
     func getOfflineRecordingStatus() async {
-        
         if case .connected(let deviceId) = deviceConnectionState {
             NSLog("getOfflineRecordingStatus")
             api.getOfflineRecordingStatus(deviceId)
@@ -283,15 +282,17 @@ class PolarBleSdkManager : ObservableObject {
     }
     
     func removeOfflineRecording(offlineRecordingEntry: PolarOfflineRecordingEntry) async {
-        do {
-            NSLog("start offline recording removal")
-            let _: Void = try await api.removeOfflineRecord(deviceId, entry: offlineRecordingEntry).value
-            NSLog("offline recording removal completed")
-            Task { @MainActor in
-                self.offlineRecordingEntries.entries.removeAll{$0 == offlineRecordingEntry}
+        if case .connected(let deviceId) = deviceConnectionState {
+            do {
+                NSLog("start offline recording removal")
+                let _: Void = try await api.removeOfflineRecord(deviceId, entry: offlineRecordingEntry).value
+                NSLog("offline recording removal completed")
+                Task { @MainActor in
+                    self.offlineRecordingEntries.entries.removeAll{$0 == offlineRecordingEntry}
+                }
+            } catch let err {
+                NSLog("offline recording remove failed: \(err)")
             }
-        } catch let err {
-            NSLog("offline recording remove failed: \(err)")
         }
     }
     

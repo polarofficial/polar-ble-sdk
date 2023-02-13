@@ -96,10 +96,11 @@ public protocol PolarOfflineRecordingApi {
     ///   - identifier: polar device id
     ///   - feature: the feature to be started
     ///   - settings: optional settings used for offline recording. `PolarDeviceDataType.hr` and `PolarDeviceDataType.ppi` do not require settings
+    ///  - secret if the secret is provided the offline recordings are encrypted in device
     /// - Returns: Completable
     ///   - completed :  offline recording is started successfully
     ///   - error: see `PolarErrors` for possible errors invoked
-    func startOfflineRecording(_ identifier: String, feature: PolarDeviceDataType, settings: PolarSensorSetting?) -> Completable
+    func startOfflineRecording(_ identifier: String, feature: PolarDeviceDataType, settings: PolarSensorSetting?, secret: PolarRecordingSecret?) -> Completable
     
     /// Request to stop offline recording.
     ///
