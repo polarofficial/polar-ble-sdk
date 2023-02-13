@@ -289,6 +289,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     override fun requestStreamSettings(identifier: String, feature: PolarDeviceDataType): Single<PolarSensorSetting> {
+        BleLogger.d(TAG, "Request online stream settings. Feature: $feature Device: $identifier")
         return when (feature) {
             PolarDeviceDataType.ECG -> querySettings(identifier, PmdMeasurementType.ECG, PmdRecordingType.ONLINE)
             PolarDeviceDataType.ACC -> querySettings(identifier, PmdMeasurementType.ACC, PmdRecordingType.ONLINE)
@@ -303,6 +304,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     override fun requestFullStreamSettings(identifier: String, feature: PolarDeviceDataType): Single<PolarSensorSetting> {
+        BleLogger.d(TAG, "Request full online stream settings. Feature: $feature Device: $identifier")
         return when (feature) {
             PolarDeviceDataType.ECG -> queryFullSettings(identifier, PmdMeasurementType.ECG, PmdRecordingType.ONLINE)
             PolarDeviceDataType.ACC -> queryFullSettings(identifier, PmdMeasurementType.ACC, PmdRecordingType.ONLINE)
@@ -316,6 +318,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     override fun requestOfflineRecordingSettings(identifier: String, feature: PolarDeviceDataType): Single<PolarSensorSetting> {
+        BleLogger.d(TAG, "Request offline recording settings. Feature: $feature Device: $identifier")
         return when (feature) {
             PolarDeviceDataType.ECG -> querySettings(identifier, PmdMeasurementType.ECG, PmdRecordingType.OFFLINE)
             PolarDeviceDataType.ACC -> querySettings(identifier, PmdMeasurementType.ACC, PmdRecordingType.OFFLINE)
@@ -329,6 +332,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     override fun requestFullOfflineRecordingSettings(identifier: String, feature: PolarDeviceDataType): Single<PolarSensorSetting> {
+        BleLogger.d(TAG, "Request full offline recording settings. Feature: $feature Device: $identifier")
         return when (feature) {
             PolarDeviceDataType.ECG -> queryFullSettings(identifier, PmdMeasurementType.ECG, PmdRecordingType.OFFLINE)
             PolarDeviceDataType.ACC -> queryFullSettings(identifier, PmdMeasurementType.ACC, PmdRecordingType.OFFLINE)
@@ -527,13 +531,14 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
         when (getFileSystemType(session.polarDeviceType)) {
             FileSystemType.SAGRFC2_FILE_SYSTEM -> {
+                BleLogger.d(TAG, "Start offline recording listing in device: $identifier")
                 return fetchRecursively(
                     client = client,
                     path = "/U/0/",
                     condition = { entry ->
-                        entry.matches(Regex("^([0-9]{8})(/)")) ||
+                        entry.matches(Regex("^(\\d{8})(/)")) ||
                                 entry == "R/" ||
-                                entry.matches(Regex("^([0-9]{6})(/)")) ||
+                                entry.matches(Regex("^(\\d{6})(/)")) ||
                                 entry.contains(".REC")
                     }
                 ).map { entry: Pair<String, Long> ->
@@ -652,6 +657,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
             //TODO add back the INITIALIZE_SESSION_VALUE
             //client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE, null)
+
+            BleLogger.d(TAG, "Offline record get. Device: $identifier Path: ${entry.path} Secret used: ${secret != null}")
             Completable.complete()
                 .andThen(client.request(builder.build().toByteArray()))
                 .map { byteArrayOutputStream: ByteArrayOutputStream ->
@@ -727,6 +734,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     .ignoreElements()
                     .onErrorResumeNext { throwable: Throwable -> Completable.error(handleError(throwable)) }
             }
+
             FileSystemType.H10_FILE_SYSTEM -> {
                 val builder = PftpRequest.PbPFtpOperation.newBuilder()
                 builder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
@@ -752,34 +760,45 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Completable.error(PolarServiceNotAvailable())
         val fsType = getFileSystemType(session.polarDeviceType)
-        if (fsType == FileSystemType.SAGRFC2_FILE_SYSTEM) {
-            val builder = PftpRequest.PbPFtpOperation.newBuilder()
-            builder.command = PftpRequest.PbPFtpOperation.Command.GET
-            val recordingFolder = entry.path.dropLastWhile { it != '/' }
-            builder.path = recordingFolder
-            return client.request(builder.build().toByteArray())
-                .flatMap { byteArrayOutputStream: ByteArrayOutputStream ->
-                    val directory = PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray())
+        return if (fsType == FileSystemType.SAGRFC2_FILE_SYSTEM) {
+            removeOfflineFilesRecursively(client, entry.path, whileContaining = Regex("/\\d{8}/"))
+        } else {
+            Completable.error(PolarOperationNotSupported())
+        }
+    }
+
+    private fun removeOfflineFilesRecursively(client: BlePsFtpClient, deletePath: String, whileContaining: Regex? = null): Completable {
+        require(whileContaining?.let { deletePath.contains(it) } ?: true) {
+            Completable.error(PolarOfflineRecordingError(detailMessage = "Not valid offline recording path to delete $deletePath"))
+        }
+
+        val parentDir = if (deletePath.last() == '/') {
+            deletePath.substringBeforeLast("/").dropLastWhile { it != '/' }
+        } else {
+            deletePath.dropLastWhile { it != '/' }
+        }
+
+        val builder = PftpRequest.PbPFtpOperation.newBuilder()
+        builder.command = PftpRequest.PbPFtpOperation.Command.GET
+        builder.path = parentDir
+
+        return client.request(builder.build().toByteArray())
+            .toFlowable()
+            .flatMapCompletable { byteArrayOutputStream: ByteArrayOutputStream ->
+                val parentDirEntries = PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray())
+                val isParentDirValid = whileContaining?.let { parentDir.contains(it) } ?: true
+
+                if (parentDirEntries.entriesCount <= 1 && isParentDirValid) {
+                    // the parent directory is valid to be deleted
+                    return@flatMapCompletable removeOfflineFilesRecursively(client, parentDir, whileContaining)
+                } else {
                     val removeBuilder = PftpRequest.PbPFtpOperation.newBuilder()
                     removeBuilder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
-                    if (directory.entriesCount <= 1) {
-                        // remove entire directory
-                        removeBuilder.path = recordingFolder
-                        BleLogger.d(TAG, "Remove entire directory ${removeBuilder.path}")
-                    } else {
-                        // remove only recording
-                        removeBuilder.path = entry.path
-                        BleLogger.d(TAG, "Remove only recording ${removeBuilder.path}")
-
-                    }
-                    client.request(removeBuilder.build().toByteArray())
+                    removeBuilder.path = deletePath
+                    BleLogger.d(TAG, "Remove offline recording from the path $deletePath")
+                    return@flatMapCompletable client.request(removeBuilder.build().toByteArray()).toObservable().ignoreElements()
                 }
-                .toObservable()
-                .ignoreElements()
-                .onErrorResumeNext { throwable: Throwable -> Completable.error(handleError(throwable)) }
-        } else {
-            return Completable.error(PolarOperationNotSupported())
-        }
+            }
     }
 
     override fun searchForDevice(): Flowable<PolarDeviceInfo> {
@@ -801,6 +820,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
     override fun startListenForPolarHrBroadcasts(deviceIds: Set<String>?): Flowable<PolarHrBroadcastData> {
         listener?.let {
+            BleLogger.d(TAG, "Start Hr broadcast listener. Filtering: ${deviceIds != null}")
             return it.search(false)
                 .filter { bleDeviceSession: BleDeviceSession ->
                     (deviceIds == null || deviceIds.contains(bleDeviceSession.polarDeviceId)) &&
@@ -865,6 +885,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             return Completable.error(t)
         }
         val client = session.fetchClient(BlePMDClient.PMD_SERVICE) as BlePMDClient? ?: return Completable.error(PolarServiceNotAvailable())
+
+        BleLogger.d(TAG, "Stop offline recording. Feature: ${feature.name} Device $identifier")
         return client.stopMeasurement(mapPolarFeatureToPmdClientMeasurementType(feature))
     }
 
@@ -875,6 +897,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             return Single.error(t)
         }
         val client = session.fetchClient(BlePMDClient.PMD_SERVICE) as BlePMDClient? ?: return Single.error(PolarServiceNotAvailable())
+
+        BleLogger.d(TAG, "Get offline recording status. Device: $identifier")
         return client.readMeasurementStatus()
             .map { pmdMeasurementStatus ->
                 val offlineRecs: MutableList<PolarDeviceDataType> = mutableListOf()
@@ -899,6 +923,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
         val pmdOfflineTrigger = mapPolarOfflineTriggerToPmdOfflineTrigger(trigger)
         val pmdSecret = secret?.let { mapPolarSecretToPmdSecret(it) }
+        BleLogger.d(TAG, "Setup offline recording trigger. Trigger mode: ${trigger.triggerMode} Trigger features: ${trigger.triggerFeatures.keys.joinToString { "," }} Device: $identifier Secret used: ${secret != null}")
         return client.setOfflineRecordingTrigger(pmdOfflineTrigger, pmdSecret)
     }
 
@@ -909,6 +934,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             return Single.error(t)
         }
         val client = session.fetchClient(BlePMDClient.PMD_SERVICE) as BlePMDClient? ?: return Single.error(PolarServiceNotAvailable())
+
+        BleLogger.d(TAG, "Get offline recording trigger setup. Device: $identifier")
         return client.getOfflineRecordingTriggerStatus()
             .map { mapPmdTriggerToPolarTrigger(it) }
     }
@@ -920,7 +947,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             return Flowable.error(e)
         }
         val bleHrClient = session.fetchClient(HR_SERVICE) as BleHrClient? ?: return Flowable.error(PolarServiceNotAvailable())
-
+        BleLogger.d(TAG, "start Hr online streaming. Device: $identifier")
         return bleHrClient.observeHrNotifications(true)
             .map { hrNotificationData: HrNotificationData ->
                 val sample = PolarHrData.PolarHrSample(

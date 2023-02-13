@@ -314,6 +314,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
         bb.put(settingsBytes)
         currentSettings[type] = setting
 
+        BleLogger.d(TAG, "start measurement. Measurement type: $type Recording type: $recordingType Secret provided: ${secret != null}")
         return sendControlPointCommand(PmdControlPointCommand.REQUEST_MEASUREMENT_START, bb.array())
             .doOnSuccess { pmdControlPointResponse: PmdControlPointResponse -> currentSettings[type]!!.updateSelectedFromStartResponse(pmdControlPointResponse.parameters) }
             .toObservable()

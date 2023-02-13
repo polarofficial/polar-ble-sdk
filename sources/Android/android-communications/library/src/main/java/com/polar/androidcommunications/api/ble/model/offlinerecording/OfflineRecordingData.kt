@@ -115,8 +115,7 @@ internal class OfflineRecordingData<out T>(
             val offlineRecordingHeader = parseHeader(metaDataBytes.slice(0 until OFFLINE_HEADER_LENGTH))
             var metaDataOffset = OFFLINE_HEADER_LENGTH
 
-            // guard
-            if (offlineRecordingHeader.magic != OFFLINE_HEADER_MAGIC) {
+            require(offlineRecordingHeader.magic == OFFLINE_HEADER_MAGIC) {
                 throw OfflineRecordingError.OfflineRecordingHasWrongSignature
             }
 
@@ -133,7 +132,15 @@ internal class OfflineRecordingData<out T>(
             val paddingBytes1Length = parsePaddingBytes(metaDataOffset, offlineRecordingSecurityStrategy)
             metaDataOffset += paddingBytes1Length
 
-            val dataPayloadSize = parsePacketSize(metaDataBytes.slice(metaDataOffset until metaDataOffset + PACKET_SIZE_LENGTH)).toInt()
+            val dataPayloadSize = try {
+                parsePacketSize(metaDataBytes.slice(metaDataOffset until metaDataOffset + PACKET_SIZE_LENGTH)).toInt()
+            } catch (e: Exception) {
+                0
+            }
+            require(dataPayloadSize > 0) {
+                throw OfflineRecordingError.OfflineRecordingErrorMetaDataParseFailed(detailMessage = "Data payload size parse failed. The size of the file is ${fileBytes.size}, accessing the index ${metaDataOffset + PACKET_SIZE_LENGTH}  ")
+            }
+
             metaDataOffset += PACKET_SIZE_LENGTH
 
             val paddingBytes2Length = parsePaddingBytes(metaDataOffset, offlineRecordingSecurityStrategy)
