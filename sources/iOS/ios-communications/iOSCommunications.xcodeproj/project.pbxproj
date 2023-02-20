@@ -208,6 +208,12 @@
 		A5A127E0273689E0007874B8 /* PolarAdvDataUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A127DF273689E0007874B8 /* PolarAdvDataUtility.swift */; };
 		A5A127E1273689E0007874B8 /* PolarAdvDataUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A127DF273689E0007874B8 /* PolarAdvDataUtility.swift */; };
 		A5A127E2273689E0007874B8 /* PolarAdvDataUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A127DF273689E0007874B8 /* PolarAdvDataUtility.swift */; };
+		A5A88BFC299A5CEA007B9C28 /* PolarOfflineRecordingTriggerMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A88BFB299A5CEA007B9C28 /* PolarOfflineRecordingTriggerMode.swift */; };
+		A5A88BFD299A5CEA007B9C28 /* PolarOfflineRecordingTriggerMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A88BFB299A5CEA007B9C28 /* PolarOfflineRecordingTriggerMode.swift */; };
+		A5A88BFF299A64C8007B9C28 /* PmdOfflineTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A88BFE299A64C8007B9C28 /* PmdOfflineTrigger.swift */; };
+		A5A88C00299A64C8007B9C28 /* PmdOfflineTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A88BFE299A64C8007B9C28 /* PmdOfflineTrigger.swift */; };
+		A5A88C01299A64C8007B9C28 /* PmdOfflineTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A88BFE299A64C8007B9C28 /* PmdOfflineTrigger.swift */; };
+		A5A88C03299A6FA0007B9C28 /* PmdOfflineTriggerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A88C02299A6FA0007B9C28 /* PmdOfflineTriggerTest.swift */; };
 		A5AD08B725E67064002DA200 /* BleBasClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5AD08B625E67064002DA200 /* BleBasClientTest.swift */; };
 		A5BE73652949E20D00CD55BB /* OfflineRecordingDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BE73642949E20D00CD55BB /* OfflineRecordingDataTest.swift */; };
 		A5CD172D297BFC8400C62BC7 /* PolarRecordingSecret.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CD172C297BFC8400C62BC7 /* PolarRecordingSecret.swift */; };
@@ -375,6 +381,9 @@
 		A599EA9C2689AFE300414E26 /* PolarAdvDataUtilityTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarAdvDataUtilityTest.swift; sourceTree = "<group>"; };
 		A59A0D2E2990D68E007D30A3 /* PmdSdkMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdSdkMode.swift; sourceTree = "<group>"; };
 		A5A127DF273689E0007874B8 /* PolarAdvDataUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PolarAdvDataUtility.swift; path = ble/api/model/polar/PolarAdvDataUtility.swift; sourceTree = "<group>"; };
+		A5A88BFB299A5CEA007B9C28 /* PolarOfflineRecordingTriggerMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarOfflineRecordingTriggerMode.swift; sourceTree = "<group>"; };
+		A5A88BFE299A64C8007B9C28 /* PmdOfflineTrigger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdOfflineTrigger.swift; sourceTree = "<group>"; };
+		A5A88C02299A6FA0007B9C28 /* PmdOfflineTriggerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdOfflineTriggerTest.swift; sourceTree = "<group>"; };
 		A5AD08B625E67064002DA200 /* BleBasClientTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleBasClientTest.swift; sourceTree = "<group>"; };
 		A5B1BAFE27CF41A0001FBB04 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A5B1BB0127CF41B5001FBB04 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -465,6 +474,7 @@
 		6C1079211D6D6EA000931948 /* iOSCommunicationsTests */ = {
 			isa = PBXGroup;
 			children = (
+				A5A88C02299A6FA0007B9C28 /* PmdOfflineTriggerTest.swift */,
 				A58F0CAF2983EFE000B5615C /* OfflineHrDataTest.swift */,
 				A5CD1733297C229D00C62BC7 /* PmdSecretTest.swift */,
 				A5BE73642949E20D00CD55BB /* OfflineRecordingDataTest.swift */,
@@ -746,6 +756,7 @@
 				A5D04F332948A9F000CE93E1 /* PolarOfflineRecordingEntry.swift */,
 				A5D04F372948AB9800CE93E1 /* PolarOfflineRecordingData.swift */,
 				A5CD172C297BFC8400C62BC7 /* PolarRecordingSecret.swift */,
+				A5A88BFB299A5CEA007B9C28 /* PolarOfflineRecordingTriggerMode.swift */,
 			);
 			path = model;
 			sourceTree = "<group>";
@@ -771,6 +782,7 @@
 				A5DE0956295B092700BC2E0B /* PmdRecordingType.swift */,
 				A5DE095A295C10E300BC2E0B /* PmdActiveMeasurement.swift */,
 				A5DE095E295C131A00BC2E0B /* PmdControlPointCommand.swift */,
+				A5A88BFE299A64C8007B9C28 /* PmdOfflineTrigger.swift */,
 			);
 			name = pmd;
 			path = ble/api/model/gatt/client/pmd;
@@ -1207,6 +1219,7 @@
 				A57D054B2930C84B002824D9 /* PpgDataTest.swift in Sources */,
 				A57D05452930B01D002824D9 /* EcgDataTest.swift in Sources */,
 				A543BC17282261E900852672 /* BlePolarHrAdvertisementTest.swift in Sources */,
+				A5A88C03299A6FA0007B9C28 /* PmdOfflineTriggerTest.swift in Sources */,
 				A5488C4C264939A000B2DB5C /* BleHrClientTest.swift in Sources */,
 				A5346A3725F21858006752CA /* MockGattServiceTransmitterImpl.swift in Sources */,
 				A57D052D292F72A5002824D9 /* AccDataTest.swift in Sources */,
@@ -1271,6 +1284,7 @@
 				A57D050E29225779002824D9 /* PmdSetting.swift in Sources */,
 				6C67C7FF1E169CCE00411498 /* BleBasClient.swift in Sources */,
 				6CCFE4001E5D76C100FAA131 /* BlePsdClient.swift in Sources */,
+				A5A88BFF299A64C8007B9C28 /* PmdOfflineTrigger.swift in Sources */,
 				A57D053529309329002824D9 /* MagData.swift in Sources */,
 				6C5A44A41CB291790006220D /* AtomicList.swift in Sources */,
 				A57D052F29308AE6002824D9 /* TypeUtils.swift in Sources */,
@@ -1326,6 +1340,7 @@
 				A58F0CAE2983EE2700B5615C /* OfflineHrData.swift in Sources */,
 				A57728A127CE860600855884 /* PolarBleApiImpl.swift in Sources */,
 				6C39E8E0209B07BC001F7E44 /* BlePolarHrAdvertisement.swift in Sources */,
+				A5A88C01299A64C8007B9C28 /* PmdOfflineTrigger.swift in Sources */,
 				6C39E8E1209B07BC001F7E44 /* BleRssiFilter.swift in Sources */,
 				A57728B327CE860600855884 /* nanopb.pb.swift in Sources */,
 				6C39E8E2209B07BC001F7E44 /* BleGattException.swift in Sources */,
@@ -1359,6 +1374,7 @@
 				A57728BD27CE860600855884 /* PolarErrors.swift in Sources */,
 				6C39E8F6209B07BC001F7E44 /* AtomicInteger.swift in Sources */,
 				6C39E8F7209B07BC001F7E44 /* AtomicList.swift in Sources */,
+				A5A88BFD299A5CEA007B9C28 /* PolarOfflineRecordingTriggerMode.swift in Sources */,
 				A57D051829225991002824D9 /* PmdDataFrame.swift in Sources */,
 				A57728AD27CE860600855884 /* pftp_request.pb.swift in Sources */,
 				A57728AF27CE860600855884 /* types.pb.swift in Sources */,
@@ -1408,6 +1424,7 @@
 				A58F0CAD2983EE2700B5615C /* OfflineHrData.swift in Sources */,
 				A57728A027CE860600855884 /* PolarBleApiImpl.swift in Sources */,
 				A5A127E1273689E0007874B8 /* PolarAdvDataUtility.swift in Sources */,
+				A5A88C00299A64C8007B9C28 /* PmdOfflineTrigger.swift in Sources */,
 				6C770B8D206B77F300F3D51D /* BlePolarHrAdvertisement.swift in Sources */,
 				A57728B227CE860600855884 /* nanopb.pb.swift in Sources */,
 				6C770B8E206B77F300F3D51D /* BleRssiFilter.swift in Sources */,
@@ -1441,6 +1458,7 @@
 				A57728BC27CE860600855884 /* PolarErrors.swift in Sources */,
 				6C770BA1206B77F300F3D51D /* AtomicBoolean.swift in Sources */,
 				6C770BA2206B77F300F3D51D /* AtomicInteger.swift in Sources */,
+				A5A88BFC299A5CEA007B9C28 /* PolarOfflineRecordingTriggerMode.swift in Sources */,
 				A57D051729225991002824D9 /* PmdDataFrame.swift in Sources */,
 				A57728AC27CE860600855884 /* pftp_request.pb.swift in Sources */,
 				A57728AE27CE860600855884 /* types.pb.swift in Sources */,

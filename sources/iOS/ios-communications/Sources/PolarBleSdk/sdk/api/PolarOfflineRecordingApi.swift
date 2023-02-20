@@ -13,7 +13,7 @@ import RxSwift
 ///  The `PolarRecordingSecret` with same key must be provided in `getOfflineRecord` to correctly
 ///  decrypt the data in the device.
 ///
-/// Requires features `PolarBleSdkFeature.feature_polar_offline_recording`
+/// Requires feature `PolarBleSdkFeature.feature_polar_offline_recording`
 ///
 /// Note, offline recording is supported in Polar Verity Sense device (starting from firmware version 2.1.0)
 ///
@@ -111,4 +111,35 @@ public protocol PolarOfflineRecordingApi {
     ///   - completed :  offline recording is stop successfully
     ///   - error: offline recording stop failed. see `PolarErrors` for possible errors invoked
     func stopOfflineRecording(_ identifier: String, feature: PolarDeviceDataType) -> Completable
+    
+    /// Sets the offline recording triggers for a given Polar device. The offline recording can be started automatically in the device by setting the triggers.
+    /// The changes to the trigger settings will take effect on the next device startup.
+    ///
+    /// Automatically started offline recording can be stopped by `stopOfflineRecording()`. Also if user switches off the device power,
+    /// the offline recording is stopped but starts again once power is switched on and the trigger event happens.
+    ///
+    /// Trigger functionality can be disabled by setting `PolarOfflineRecordingTriggerMode.TRIGGER_DISABLED`, the already running offline
+    /// recording is not stopped by disable.
+    ///
+    /// - Parameters:
+    ///   - identifier: Polar device ID
+    ///   - trigger: type of trigger to set
+    ///   - secret: optional secret; if provided, the offline recordings are encrypted in the device
+    /// - Returns: Completable
+    ///   - completed :  the offline recording trigger was set successfully
+    ///   - error: the offline recording trigger was not set successfully; see PolarErrors for possible errors that may be invoked.
+    func setOfflineRecordingTrigger(
+        _ identifier: String,
+        trigger: PolarOfflineRecordingTrigger,
+        secret: PolarRecordingSecret?
+    ) -> Completable
+    
+    /// Retrieves the current offline recording trigger setup in the device.
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id
+    /// - Returns: Completable
+    ///   - success : the offline recording trigger setup in the device
+    ///   - error: fetching recording trigger setup failed, see `PolarErrors` for possible errors invoked
+    func getOfflineRecordingTriggerSetup(_ identifier: String) -> Single<PolarOfflineRecordingTrigger>
 }

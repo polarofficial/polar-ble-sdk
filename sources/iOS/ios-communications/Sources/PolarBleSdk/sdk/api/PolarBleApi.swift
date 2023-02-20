@@ -16,6 +16,7 @@ public enum PolarDeviceDataType: CaseIterable {
 }
 
 /// features available
+@available(*, deprecated, message: "The functionality has changed. Please use the PolarBleSdkFeature enum when initialising the SDK")
 public enum Features: Int, CaseIterable {
     /// hr feature enables hr client to receive hr and rr data from device
     case hr = 1
@@ -240,7 +241,9 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Returns: true if requested feature is ready for use
     func isFeatureReady(_ identifier: String, feature: Features) -> Bool
     
-    /// Set local time to device. Requires `polarFileTransfer` feature.
+    /// Set local time to device.
+    ///
+    /// Requires feature `PolarBleSdkFeature.feature_polar_device_time_setup`.
     ///
     /// - Parameters:
     ///   - identifier: polar device id or UUID
@@ -251,7 +254,9 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - onError: see `PolarErrors` for possible errors invoked
     func setLocalTime(_ identifier: String, time: Date, zone: TimeZone) -> Completable
     
-    ///  Get current time in device. Requires `polarFileTransfer` feature.  Not supported by Polar H10.
+    /// Get current time in device. Note, the H10 is not supporting time read.
+    ///
+    /// Requires feature `PolarBleSdkFeature.feature_polar_device_time_setup`
     ///
     /// - Parameters:
     ///   - identifier: polar device id or UUID

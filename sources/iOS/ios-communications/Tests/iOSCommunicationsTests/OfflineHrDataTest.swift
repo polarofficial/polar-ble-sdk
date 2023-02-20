@@ -17,15 +17,15 @@ final class OfflineHrDataTest: XCTestCase {
             0x00, 0x94, 0x35, 0x77, 0x00, 0x00, 0x00, 0x00,
             0x00,
         ])
-        let previousTimeStamp:UInt64 = 0
+        let previousTimeStamp: UInt64 = 0
         
         // index                                                   data:
         // 0             sample0                                   00
-        let expectedSample0 = 0
+        let expectedSample0: UInt8 = 0
         // 1             sample0                                   FF
-        let expectedSample1 = 255
+        let expectedSample1: UInt8 = 255
         // last index    sampleN                                   7F
-        let expectedSampleLast = 127
+        let expectedSampleLast: UInt8 = 127
         let expectedSampleSize = 9
         let offlineHrDataFrameContent = Data([
             0x00, 0xFF, 0x32, 0x32, 0x33, 0x33, 0x34, 0x35, 0x7F,

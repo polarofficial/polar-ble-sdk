@@ -76,10 +76,12 @@ public protocol PolarBleApiDeviceFeaturesObserver: AnyObject {
     func ftpFeatureReady(_ identifier: String)
     
     /// feature ready callback
-    @available(*, deprecated, message: "The functionality has changed. Please use the bleSdkFeatureReady to know if onlineStreaming is available and the getAvailableOnlineStreamDataTypes function know which data types are supported")
+    @available(*, deprecated, message: "The functionality has changed. Please listen the bleSdkFeatureReady callback to know if onlineStreaming is available and the getAvailableOnlineStreamDataTypes function know which data types are supported")
     func streamingFeaturesReady(_ identifier: String, streamingFeatures: Set<PolarDeviceDataType>)
     
     /// The feature is available in this device and it is ready.  Called only for the features which are specified in [PolarBleApi] construction.
+    /// feature ready callback
+    @available(*, deprecated, message: "The functionality has changed. Please listen the bleSdkFeatureReady callback to know if sdk feature is available")
     func bleSdkFeatureReady(_ identifier: String, feature: PolarBleSdkFeature)
 }
 

@@ -804,16 +804,16 @@ final class OfflineRecordingDataTest: XCTestCase {
         
         // index
         // 39                                                      0x00,
-        static let hrSample0 = 0
+        static let hrSample0: UInt8 = 0
         
         // 40                                                      0xFF,
-        static let hrSample1 = 255
+        static let hrSample1: UInt8 = 255
         
         // 41                                                      0x32,
-        static let hrSample2 = 50
+        static let hrSample2: UInt8 = 50
         
         // last index                                              0x55,
-        static let hrSampleLast = 85
+        static let hrSampleLast: UInt8 = 85
         
         static let hrOfflineFrame = Data([
             0x00,

@@ -35,7 +35,7 @@ final class PmdTimeStampUtilsTest: XCTestCase {
         // 1/52Hz = 0.019230769230769s = 19230769ns
         // timeStamp - 19230769ns => Exception
         
-        // Act &  Assert
+        // Act & Assert
         XCTAssertThrowsError(try PmdTimeStampUtils.getTimeStamps(
             previousFrameTimeStamp: previousTimeStamp,
             frameTimeStamp: timeStamp,

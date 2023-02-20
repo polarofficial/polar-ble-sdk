@@ -7,7 +7,7 @@ import CommonCrypto
 public struct PmdSecret {
     let strategy: SecurityStrategy
     let key: Data
-    private let keySymmetric:SymmetricKey?
+    private let keySymmetric: SymmetricKey?
     
     init(strategy: SecurityStrategy, key: Data) throws {
         switch(strategy) {
@@ -102,7 +102,7 @@ public struct PmdSecret {
         return cryptoData
     }
     
-    enum SecurityStrategy:UInt8 {
+    enum SecurityStrategy: UInt8 {
         case none = 0
         case xor = 1
         case aes128 = 2
