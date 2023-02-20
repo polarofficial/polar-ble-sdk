@@ -555,7 +555,7 @@ extension PolarBleApiImpl: BleLoggerProtocol {
 }
 
 extension PolarBleApiImpl: PolarBleApi  {
-    
+
     func cleanup() {
         _ = listener.removeAllSessions(
             Set(CollectionOfOne(BleDeviceSession.DeviceSessionState.sessionClosed)))
@@ -1220,6 +1220,37 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
+    func setOfflineRecordingTrigger(_ identifier: String, trigger: PolarOfflineRecordingTrigger, secret: PolarRecordingSecret?) -> Completable {
+        do {
+            let session = try sessionPmdClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Completable.error(PolarErrors.serviceNotFound) }
+   
+            BleLogger.trace("Setup offline recording trigger. Trigger mode: \(trigger.triggerMode) Trigger features: \(trigger.triggerFeatures.map{ "\($0)" }.joined(separator: ",")) Device: \(identifier) Secret used: \(secret != nil)")
+           
+            let pmdOfflineTrigger = try PolarDataUtils.mapToPmdOfflineTrigger(from: trigger)
+            var pmdSecret: PmdSecret? = nil
+            if let s = secret {
+                pmdSecret = try PolarDataUtils.mapToPmdSecret(from: s)
+            }
+          
+            return client.setOfflineRecordingTrigger(offlineRecordingTrigger: pmdOfflineTrigger, secret: pmdSecret)
+        } catch let err {
+            return Completable.error(err)
+        }
+    }
+    
+    func getOfflineRecordingTriggerSetup(_ identifier: String) -> Single<PolarOfflineRecordingTrigger> {
+        do {
+            let session = try sessionPmdClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Single.error(PolarErrors.serviceNotFound) }
+            BleLogger.trace("Get offline recording trigger setup. Device: \(identifier)")
+            return client.getOfflineRecordingTriggerStatus()
+                .map { try PolarDataUtils.mapToPolarOfflineTrigger(from: $0) }
+        } catch let err {
+            return Single.error(err)
+        }
+    }
+    
     func getAvailableOnlineStreamDataTypes(_ identifier: String) -> Single<Set<PolarDeviceDataType>> {
         do {
             let session = try sessionPmdClientReady(identifier)
@@ -1670,29 +1701,5 @@ private extension PpgData {
             polarSamples.append((timeStamp: sample.timeStamp, channelSamples: [sample.ppgDataSamples[0], sample.ppgDataSamples[1], sample.ppgDataSamples[2], sample.ambientSample ] ))
         }
         return PolarPpgData(type: PpgDataType.ppg3_ambient1, samples: polarSamples)
-    }
-}
-
-private extension PmdSetting {
-    func mapToPolarSettings() -> PolarSensorSetting {
-        var settings: [PolarSensorSetting.SettingType : Set<UInt32>] = [:]
-        for (key, value) in self.settings {
-            switch(key) {
-            case .sampleRate:
-                settings[PolarSensorSetting.SettingType.sampleRate] = value
-            case .resolution:
-                settings[PolarSensorSetting.SettingType.resolution] = value
-            case .range:
-                settings[PolarSensorSetting.SettingType.range] = value
-            case .rangeMilliUnit:
-                settings[PolarSensorSetting.SettingType.rangeMilliunit] = value
-            case .channels:
-                settings[PolarSensorSetting.SettingType.channels] = value
-            default:
-                //nop
-                break
-            }
-        }
-        return PolarSensorSetting(settings)
     }
 }

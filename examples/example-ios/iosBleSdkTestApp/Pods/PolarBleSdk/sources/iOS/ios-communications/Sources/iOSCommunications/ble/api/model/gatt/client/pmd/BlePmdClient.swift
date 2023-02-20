@@ -238,7 +238,7 @@ public class BlePmdClient: BleGattClientBase {
                     return
                 }
                 setPreviousFrameTimeStamp(frame.measurementType, frame.timeStamp)
-
+                
                 switch (frame.measurementType ) {
                 case PmdMeasurementType.ecg:
                     RxUtils.emitNext(observersEcg) { (emitter) in
@@ -362,7 +362,7 @@ public class BlePmdClient: BleGattClientBase {
                 packet.append(settingsBytes)
                 packet.append(secretBytes)
                 BleLogger.trace( "start measurement. Measurement type: \(type) Recording type: \(recordingType) Secret provided: \(secret != nil) ")
-       
+                
                 let cpResponse = try self.sendControlPointCommand(packet as Data)
                 if cpResponse.errorCode == .success {
                     self.storedSettings.accessItem { (settingsStored) in
@@ -602,6 +602,116 @@ public class BlePmdClient: BleGattClientBase {
             }
         }
         .subscribe(on: baseSerialDispatchQueue)
+    }
+    
+    func setOfflineRecordingTrigger(offlineRecordingTrigger: PmdOfflineTrigger, secret: PmdSecret?) -> Completable {
+        let setOfflineTriggerModeCompletable = setOfflineRecordingTriggerMode(triggerMode: offlineRecordingTrigger.triggerMode)
+        let setOfflineTriggerSettingsCompletable: Completable
+        if (offlineRecordingTrigger.triggerMode != PmdOfflineRecTriggerMode.disabled) {
+            
+            setOfflineTriggerSettingsCompletable = getOfflineRecordingTriggerStatus()
+                .flatMapCompletable { pmdOfflineTriggers -> Completable in
+                    let allSettingCommands = pmdOfflineTriggers.triggers
+                        .map { availableMeasurementType in
+                            if let trigger = offlineRecordingTrigger.triggers[availableMeasurementType.key] {
+                                let settings = trigger.setting
+                                BleLogger.trace("Enable trigger \(availableMeasurementType.key)")
+                                return self.setOfflineRecordingTriggerSetting(triggerStatus: PmdOfflineRecTriggerStatus.enabled, type: availableMeasurementType.key, setting: trigger.setting, secret: secret)
+                                
+                            } else {
+                                BleLogger.trace("Disable trigger \(availableMeasurementType.key)")
+                                return self.setOfflineRecordingTriggerSetting(triggerStatus: PmdOfflineRecTriggerStatus.disabled, type: availableMeasurementType.key)
+                            }
+                        }
+                    return Completable.concat(allSettingCommands)
+                }
+        } else {
+            setOfflineTriggerSettingsCompletable = Completable.empty()
+        }
+        
+        return setOfflineTriggerModeCompletable.concat(setOfflineTriggerSettingsCompletable)
+    }
+    
+    private func setOfflineRecordingTriggerMode(triggerMode: PmdOfflineRecTriggerMode) -> Completable {
+        return Completable.create{ observer in
+            do {
+                let packet = Data([PmdControlPointCommand.SET_OFFLINE_RECORDING_TRIGGER_MODE, triggerMode.rawValue])
+                let cpResponse = try self.sendControlPointCommand(packet)
+                if cpResponse.errorCode == .success {
+                    observer(.completed)
+                } else {
+                    observer(.error(Pmd.BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
+                }
+            } catch let err {
+                observer(.error(err))
+            }
+            return Disposables.create{}
+        }.subscribe(on: baseSerialDispatchQueue)
+    }
+    
+    func getOfflineRecordingTriggerStatus() -> Single<PmdOfflineTrigger> {
+        return Single.create{ [unowned self] observer in
+            do {
+                let packet = Data([PmdControlPointCommand.GET_OFFLINE_RECORDING_TRIGGER_STATUS])
+                let cpResponse = try self.sendControlPointCommand(packet)
+                if cpResponse.errorCode == .success {
+                    let data = (cpResponse.parameters as Data)
+                    if !data.isEmpty {
+                        let triggerStatus = try PmdOfflineTrigger.fromResponse(data: data)
+                        observer(.success(triggerStatus))
+                    } else {
+                        observer(.failure(BleGattException.gattDataError(description: "Couldn't get the Offline recording trigger status. Response parameter is missing")))
+                    }
+                } else {
+                    observer(.failure(BleGattException.gattAttributeError(errorCode: cpResponse.errorCode.rawValue, errorDescription: cpResponse.errorCode.description)))
+                }
+            } catch let err {
+                observer(.failure(err))
+            }
+            return Disposables.create{
+                // do nothing
+            }
+        }
+        .subscribe(on: baseSerialDispatchQueue)
+    }
+    
+    private func setOfflineRecordingTriggerSetting(triggerStatus: PmdOfflineRecTriggerStatus, type: PmdMeasurementType, setting: PmdSetting? = nil, secret: PmdSecret? = nil) -> Completable {
+        
+        return Completable.create{ observer in
+            do {
+                if type.isDataType(){
+                    let triggerStatusByte: UInt8 = triggerStatus.rawValue
+                    let measurementTypeByte: UInt8 = type.rawValue
+                    
+                    let settingsBytes: Data
+                    
+                    if (triggerStatus == PmdOfflineRecTriggerStatus.enabled) {
+                        let settingBytes = setting?.serialize() ?? Data()
+                        let securityBytes = secret?.serializeToPmdSettings() ?? Data()
+                        let length:UInt8 = UInt8((settingBytes + securityBytes).count)
+                        settingsBytes = Data([length]) + settingBytes + securityBytes
+                    } else {
+                        settingsBytes = Data()
+                    }
+                    
+                    let parameters = Data([triggerStatusByte, measurementTypeByte]) + settingsBytes
+                    let packet = Data([PmdControlPointCommand.SET_OFFLINE_RECORDING_TRIGGER_SETTINGS]) + parameters
+                    let cpResponse = try self.sendControlPointCommand(packet)
+                    if cpResponse.errorCode == .success {
+                        observer(.completed)
+                    } else {
+                        observer(.error(Pmd.BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
+                    }
+                    
+                } else {
+                    observer(.error(Pmd.BlePmdError.controlPointRequestFailed(errorCode: Pmd.PmdResponseCode.errorInvalidMeasurementType.rawValue, description: "Invalid PmdMeasurementType: \(type)")))
+                    
+                }
+            } catch let err {
+                observer(.error(err))
+            }
+            return Disposables.create{}
+        }.subscribe(on: baseSerialDispatchQueue)
     }
     
     private func sendControlPointCommand(_ data: Data) throws -> Pmd.PmdControlPointResponse {
