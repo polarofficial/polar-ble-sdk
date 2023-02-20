@@ -210,7 +210,8 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
     abstract fun setLocalTime(identifier: String, calendar: Calendar): Completable
 
     /**
-     * Get current time in device.  Requires feature [PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP]
+     * Get current time in device. Requires feature [PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP].
+     * Note, the H10 is not supporting time read.
      *
      * @param identifier polar device id or bt address
      * @return Single observable which emits device time in Calendar instance when observable is subscribed

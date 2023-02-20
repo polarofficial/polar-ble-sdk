@@ -150,14 +150,13 @@ interface PolarOfflineRecordingApi {
     ): Completable
 
     /**
-     * Set the offline recording triggers. The offline recording can be started automatically by the device if the
-     * [PolarOfflineRecordingTriggerMode] is set enabled. If offline recordings is already recoding the
-     * [PolarOfflineRecordingTriggerMode] won't have affect on running recordings. Change of trigger settings will take effect
-     * on next device start up.
+     * Sets the offline recording triggers for a given Polar device. The offline recording can be started automatically in the device by setting the triggers.
+     * The changes to the trigger settings will take effect on the next device startup.
      *
-     * Automatically started offline recording can be stopped by [stopOfflineRecording]. If user switches off the device power
-     * the offline recording is stopped, but starts again once power in device is switched on and the trigger event happens. Trigger
-     * functionality can be disabled by [PolarOfflineRecordingTriggerMode.TRIGGER_DISABLED], however the already running offline
+     * Automatically started offline recording can be stopped by [stopOfflineRecording]. Also if user switches off the device power,
+     * the offline recording is stopped but starts again once power is switched on and the trigger event happens.
+     *
+     * Trigger functionality can be disabled by setting [PolarOfflineRecordingTriggerMode.TRIGGER_DISABLED], the already running offline
      * recording is not stopped by disable.
      *
      * @param identifier  Polar device id found printed on the sensor/device or bt address
@@ -175,9 +174,7 @@ interface PolarOfflineRecordingApi {
     ): Completable
 
     /**
-     * Get the setup of offline recording triggers in the device.
-     *
-     * The setup is the current offline recording trigger setup in the device. To know which offline recordings are currently recording use the [getOfflineRecordingStatus]
+     * Retrieves the current offline recording trigger setup in the device.
      *
      * @param identifier  Polar device id found printed on the sensor/device or bt address
      *

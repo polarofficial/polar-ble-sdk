@@ -214,12 +214,12 @@ internal object PolarDataUtils {
         }
     }
 
-    fun mapPmdTriggerToPolarTrigger(pmdTriggerStatus: PmdOfflineTrigger): PolarOfflineRecordingTrigger {
-        val triggerMode = mapPmdOfflineTriggerModeToPolarOfflineTriggerMode(pmdTriggerStatus.triggerMode)
+    fun mapPmdTriggerToPolarTrigger(pmdOfflineTrigger: PmdOfflineTrigger): PolarOfflineRecordingTrigger {
+        val triggerMode = mapPmdOfflineTriggerModeToPolarOfflineTriggerMode(pmdOfflineTrigger.triggerMode)
         val polarTriggerSettings: MutableMap<PolarBleApi.PolarDeviceDataType, PolarSensorSetting?> = mutableMapOf()
 
-        for (setting in pmdTriggerStatus.triggers) {
-            val polarFeature = mapPmdClientFeatureToPolarFeature(setting.key)
+        for (setting in pmdOfflineTrigger.triggers) {
+            val dataType = mapPmdClientFeatureToPolarFeature(setting.key)
             val triggerStatus = setting.value.first
 
             if (triggerStatus == PmdOfflineRecTriggerStatus.TRIGGER_ENABLED) {
@@ -227,7 +227,7 @@ internal object PolarDataUtils {
                 val polarSettings = setting.value.second?.let {
                     mapPmdSettingsToPolarSettings(it, false)
                 }
-                polarTriggerSettings[polarFeature] = polarSettings
+                polarTriggerSettings[dataType] = polarSettings
             }
         }
         return PolarOfflineRecordingTrigger(
