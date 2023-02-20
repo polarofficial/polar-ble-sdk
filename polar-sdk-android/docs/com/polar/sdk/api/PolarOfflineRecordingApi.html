@@ -314,7 +314,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#setOfflineRecordingTrigger(String,PolarOfflineRecordingTrigger,PolarRecordingSecret)>setOfflineRecordingTrigger</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingTrigger.html>PolarOfflineRecordingTrigger</a> trigger, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret) </code>
                                             </th>
-                                            <td class="colLast">Set the offline recording triggers.</td>
+                                            <td class="colLast">Sets the offline recording triggers for a given Polar device.</td>
                                         </tr>
                                         
                                         <tr id="i10" class="altColor">
@@ -322,7 +322,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#getOfflineRecordingTriggerSetup(String)>getOfflineRecordingTriggerSetup</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
-                                            <td class="colLast">Get the setup of offline recording triggers in the device.</td>
+                                            <td class="colLast">Retrieves the current offline recording trigger setup in the device.</td>
                                         </tr>
                                         
                                         </tbody>
@@ -630,7 +630,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                     <li class="blockList">
                                         <h4>setOfflineRecordingTrigger</h4>
                                         <pre class="methodSignature"> abstract Completable <a href=PolarOfflineRecordingApi.html#setOfflineRecordingTrigger(String,PolarOfflineRecordingTrigger,PolarRecordingSecret)>setOfflineRecordingTrigger</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingTrigger.html>PolarOfflineRecordingTrigger</a> trigger, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret)</pre>
-                                        <div class="block"><p>Set the offline recording triggers. The offline recording can be started automatically by the device if the <a href=model/PolarOfflineRecordingTriggerMode.html>PolarOfflineRecordingTriggerMode</a> is set enabled. If offline recordings is already recoding the <a href=model/PolarOfflineRecordingTriggerMode.html>PolarOfflineRecordingTriggerMode</a> won't have affect on running recordings. Change of trigger settings will take effect on next device start up.</p><p>Automatically started offline recording can be stopped by <a href=PolarOfflineRecordingApi.html#stopOfflineRecording(String,PolarBleApi.PolarDeviceDataType)>stopOfflineRecording</a>. If user switches off the device power the offline recording is stopped, but starts again once power in device is switched on and the trigger event happens. Trigger functionality can be disabled by <a href=model/PolarOfflineRecordingTriggerMode.html#TRIGGER_DISABLED>PolarOfflineRecordingTriggerMode.TRIGGER_DISABLED</a>, however the already running offline recording is not stopped by disable.</p></div>
+                                        <div class="block"><p>Sets the offline recording triggers for a given Polar device. The offline recording can be started automatically in the device by setting the triggers. The changes to the trigger settings will take effect on the next device startup.</p><p>Automatically started offline recording can be stopped by <a href=PolarOfflineRecordingApi.html#stopOfflineRecording(String,PolarBleApi.PolarDeviceDataType)>stopOfflineRecording</a>. Also if user switches off the device power, the offline recording is stopped but starts again once power is switched on and the trigger event happens.</p><p>Trigger functionality can be disabled by setting <a href=model/PolarOfflineRecordingTriggerMode.html#TRIGGER_DISABLED>PolarOfflineRecordingTriggerMode.TRIGGER_DISABLED</a>, the already running offline recording is not stopped by disable.</p></div>
                                         
                                         <dl>
                                             <dt><span class="paramLabel">Parameters:</span></dt>
@@ -662,7 +662,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                     <li class="blockList">
                                         <h4>getOfflineRecordingTriggerSetup</h4>
                                         <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarOfflineRecordingTrigger.html>PolarOfflineRecordingTrigger</a>&gt; <a href=PolarOfflineRecordingApi.html#getOfflineRecordingTriggerSetup(String)>getOfflineRecordingTriggerSetup</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Get the setup of offline recording triggers in the device.</p><p>The setup is the current offline recording trigger setup in the device. To know which offline recordings are currently recording use the <a href=PolarOfflineRecordingApi.html#getOfflineRecordingStatus(String)>getOfflineRecordingStatus</a></p></div>
+                                        <div class="block"><p>Retrieves the current offline recording trigger setup in the device.</p></div>
                                         
                                         <dl>
                                             <dt><span class="paramLabel">Parameters:</span></dt>

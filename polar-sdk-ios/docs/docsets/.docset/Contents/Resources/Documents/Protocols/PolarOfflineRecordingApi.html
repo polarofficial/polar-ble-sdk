@@ -47,9 +47,6 @@
             <a href="../Enums.html">Enumerations</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Enums/Features.html">Features</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Enums/PolarBleSdkFeature.html">PolarBleSdkFeature</a>
               </li>
               <li class="nav-group-task">
@@ -60,6 +57,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarOfflineRecordingTriggerMode.html">PolarOfflineRecordingTriggerMode</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/PpgDataType.html">PpgDataType</a>
@@ -90,7 +90,7 @@
                 <a href="../Protocols/PolarBleApi.html">PolarBleApi</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Protocols/PolarBleApiDeviceFeaturesObserver.html">PolarBleApiDeviceFeaturesObserver</a>
+                <a href="../Protocols.html#/PolarBleApiDeviceFeaturesObserver">PolarBleApiDeviceFeaturesObserver</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Protocols.html#/PolarBleApiDeviceHrObserver">PolarBleApiDeviceHrObserver</a>
@@ -129,6 +129,9 @@
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
                 <a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarOfflineRecordingTrigger.html">PolarOfflineRecordingTrigger</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a>
@@ -198,7 +201,7 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
  The <code><a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a></code> with same key must be provided in <code>getOfflineRecord</code> to correctly
  decrypt the data in the device.</p>
 
-<p>Requires features <code><a href="../Enums/PolarBleSdkFeature.html#/feature_polar_offline_recording">PolarBleSdkFeature.feature_polar_offline_recording</a></code></p>
+<p>Requires feature <code><a href="../Enums/PolarBleSdkFeature.html#/feature_polar_offline_recording">PolarBleSdkFeature.feature_polar_offline_recording</a></code></p>
 
 <p>Note, offline recording is supported in Polar Verity Sense device (starting from firmware version 2.1.0)</p>
 
@@ -380,12 +383,57 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                     </section>
                   </div>
                 </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/"></a>
+                    <a name="//apple_ref/swift/Method/setOfflineRecordingTrigger(_:trigger:secret:)" class="dashAnchor"></a>
+                    <a class="token" href="#/">setOfflineRecordingTrigger(_:<wbr>trigger:<wbr>secret:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Sets the offline recording triggers for a given Polar device. The offline recording can be started automatically in the device by setting the triggers.
+The changes to the trigger settings will take effect on the next device startup.</p>
+
+<p>Automatically started offline recording can be stopped by <code>stopOfflineRecording()</code>. Also if user switches off the device power,
+the offline recording is stopped but starts again once power is switched on and the trigger event happens.</p>
+
+<p>Trigger functionality can be disabled by setting <code>PolarOfflineRecordingTriggerMode.TRIGGER_DISABLED</code>, the already running offline
+recording is not stopped by disable.</p>
+
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/"></a>
+                    <a name="//apple_ref/swift/Method/getOfflineRecordingTriggerSetup(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/">getOfflineRecordingTriggerSetup(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Retrieves the current offline recording trigger setup in the device.</p>
+
+                      </div>
+                    </section>
+                  </div>
+                </li>
               </ul>
             </div>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2023 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2023-02-13)</p>
+          <p>&copy; 2023 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2023-02-20)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.14.2</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>
