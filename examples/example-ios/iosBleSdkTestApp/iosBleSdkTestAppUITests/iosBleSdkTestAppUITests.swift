@@ -1,10 +1,3 @@
-//
-//  iosBleSdkTestAppUITests.swift
-//  iosBleSdkTestAppUITests
-//
-//  Created by Jukka Oikarinen on 30.5.2021.
-//
-
 import XCTest
 
 class iosBleSdkTestAppUITests: XCTestCase {
