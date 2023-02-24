@@ -15,24 +15,6 @@ public enum PolarDeviceDataType: CaseIterable {
     case hr
 }
 
-/// features available
-@available(*, deprecated, message: "The functionality has changed. Please use the PolarBleSdkFeature enum when initialising the SDK")
-public enum Features: Int, CaseIterable {
-    /// hr feature enables hr client to receive hr and rr data from device
-    case hr = 1
-    /// deviceInfo enables dis client to receive fw information from device
-    case deviceInfo = 2
-    /// batteryStatus enables bas client to receive battery level info from device
-    case batteryStatus = 4
-    /// polarSensorStreaming enables stream client to start acc, ppg, ecg, ppi streams
-    case polarSensorStreaming = 8
-    /// polarFileTransfer enables the listing, read stored exercises and setup of  local time to device.
-    /// Additionally enables the recording start, recoding stop and recording status request for Polar H10 .
-    case polarFileTransfer = 16
-    /// allFeatures enables all features available
-    case allFeatures = 0xff
-}
-
 /// Features available in Polar BLE SDK library
 public enum PolarBleSdkFeature: CaseIterable {
     /// Hr feature to receive hr and rr data from Polar or any other BLE device via standard HR BLE service
@@ -233,13 +215,13 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Returns: Observable stream
     func startListenForPolarHrBroadcasts(_ identifiers: Set<String>?) -> Observable<PolarHrBroadcastData>
     
-    /// helper to check is feature ready
+    /// Check if the feature is ready.
     ///
     /// - Parameters:
-    ///   - identifier: polar device id or UUID
-    ///   - feature: see `Features` only supported is polarSensorStreaming and polarFileTransfer
-    /// - Returns: true if requested feature is ready for use
-    func isFeatureReady(_ identifier: String, feature: Features) -> Bool
+    ///   - identifier: the identifier of the device to check.
+    ///   - feature: the feature to check for readiness.
+    /// - Returns: a boolean indicating whether a specific feature is ready for use on a given device.
+    func isFeatureReady(_ identifier: String, feature: PolarBleSdkFeature) -> Bool
     
     /// Set local time to device.
     ///
