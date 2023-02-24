@@ -1,37 +1,43 @@
 # PolarBleSDK 5.0.0 Migration Guide
-PolarBleSDK 5.0.0 is the major release of PolarBleSDK. As a major release, following Semantic Versioning conventions, 5.0.0 introduces API-breaking changes.
 
-This guide is provided in order to ease the transition of existing applications using PolarBleSDK 4.x.x to the latest APIs.
+PolarBleSDK 5.0.0 is a major release that includes API-breaking changes. This guide aims to make the transition easier for developers who are updating their existing applications from PolarBleSDK 4.x.x to the latest APIs
 
 ## New Features
-- offline recording API to enable offline recording functionalities in VeritySense. More about offline recording in [documentation](OfflineRecordingExplained.md)  
+PolarBleSDK 5.0.0 introduces a new feature that enables offline recording functionality in VeritySense. To learn more about offline recording, please see the [documentation](OfflineRecordingExplained.md)  
 
 ## Terminology update
-- earlier the core functionality of the SDK provided online data streams over the BLE connection. Usually referred as "streaming" in PolarBleSdk vocabulary and APIs. As the PolarBleSDK 5.0.0 now brings the new feature to record data to device storage, the wording used for the "streaming" is now referred as "online streaming" and "offline recording" refers to functionality when the data is saved into the device storage. 
+In previous versions of the Polar BLE SDK, the core functionality provided online data streams over the BLE connection. This functionality was typically referred to as "streaming" in the PolarBleSdk vocabulary and APIs. With the introduction of new features for recording data to device storage in PolarBleSDK 5.0.0, the terminology has been updated.
+
+The updated terminology now distinguishes between "online streaming" and "offline recording". "Online streaming" refers to the functionality for streaming data in real time over the BLE connection. "Offline recording" refers to the new feature that allows data to be saved directly to the device storage. This change in terminology reflects the new capabilities of the Polar BLE SDK, and helps to clarify the distinction between the two modes of data handling.
 
 ## Breaking API Changes Android
-- Earlier the feature names `FEATURE_HR`, `FEATURE_DEVICE_INFO`, `FEATURE_BATTERY_INFO`, `FEATURE_POLAR_SENSOR_STREAMING`, `FEATURE_POLAR_FILE_TRANSFER` and `ALL_FEATURES` were defined as constant. Now the features are defined in enum class `PolarBleSdkFeature`. Furthermore, the feature names are changed to better describe what the each feature offers. The benefit of this change is that Polar BLE SDK can better save resources in case some feature is not needed by the API user. Also the old feature names were tightly coupled with the BLE service names providing the feature functionality, that information is not relevant or not always understandable by API user.
+- The Polar BLE SDK previously defined feature names such as `FEATURE_HR`, `FEATURE_DEVICE_INFO`, `FEATURE_BATTERY_INFO`, `FEATURE_POLAR_SENSOR_STREAMING`, `FEATURE_POLAR_FILE_TRANSFER`, and `ALL_FEATURES` as constants. In the new version of the SDK, the features are defined in an enum class called `PolarBleSdkFeature`, with feature names that better describe their functionality. This change allows the Polar BLE SDK to optimize resource usage by only enabling features that are needed by the API user. Additionally, the new feature names are not tied to the BLE service names that provide the feature functionality, making them more understandable to the API user. Overall, this change simplifies the use of the Polar BLE SDK for developers who may not have a deep understanding of BLE service names and the related features they provide.
 
-- Earlier the data types available by online streaming were defined in `DeviceStreamingFeature` enum class. Now the enum is renamed as `PolarDeviceDataType` because the enumeration is not only related to online streaming but also to offline recording. 
+- In the previous version of the Polar BLE SDK, the available data types for online streaming were defined in an enum class called `DeviceStreamingFeature`.  In the new version of the SDK this enum is renamed to `PolarDeviceDataType`, as it now includes data types for both online streaming and offline recording. This change simplifies the naming convention for developers, and makes it easier to understand the different types of data available from the Polar device, both when streaming live data and when recording data for later analysis.
 
-- `backgroundEntered` was deprecated in SDK release 3.2.8. Now it is removed from the API. 
+- In the previous version of the Polar BLE SDK, the `backgroundEntered` function was deprecated, and it has now been removed from the API. This function was previously used to detect when the app was sent to the background, but the information is not needed by SDK anymore. 
 
-- `hrNotificationReceived` callback parameter `data: PolarHrData` is replaced with `data: PolarHrData.PolarHrSample` 
+- In previous versions of the Polar BLE SDK, the callbacks `polarFtpFeatureReady`, `hrFeatureReady`, and `sdkModeFeatureAvailable` were used to determine when certain features were ready for use. In the latest version of the SDK, these callbacks have been deprecated and replaced with a new callback called `bleSdkFeatureReady`. The `bleSdkFeatureReady` callback is now used to indicate when any feature of the Polar BLE SDK is ready for use. When a feature becomes ready, the `bleSdkFeatureReady` callback is called with the `PolarBleSdkFeature` parameter, which indicates the specific feature that is ready for use. nThis change allows for a more efficient and consistent way of handling feature readiness, as all features can now be managed through a single callback. Developers who are updating their apps to the latest version of the Polar BLE SDK should ensure that they are using the new `bleSdkFeatureReady` callback to manage feature readiness.
+
+- In the latest version of the Polar BLE SDK, the `streamingFeaturesReady` callback in `PolarBleApiCallback` has been deprecated. Instead, the new `bleSdkFeatureReady` callback can be used to determine whether a Polar device supports online streaming and if the online streaming feature is ready for use. When the `bleSdkFeatureReady` callback is called with the feature parameter set to `FEATURE_POLAR_ONLINE_STREAMING`, it indicates that the device is ready to stream online data, and the `PolarOnlineStreamingApi` can be used to access the data. The `getAvailableOnlineStreamDataTypes` function in `PolarOnlineStreamingApi` can be used to retrieve a list of available data types that can be streamed from the connected device.
 
 ## Deprecated APIs on Android
-- `streamingFeaturesReady` is deprecated in `PolarBleApiCallback`. Instead the `bleSdkFeatureReady` callback will indicate whether the Polar device is supporting online streaming and online streaming feature is ready. When `bleSdkFeatureReady` callback is called with `feature` parameter  being `FEATURE_POLAR_ONLINE_STREAMING` the `PolarOnlineStreamingApi` can be used. In `PolarOnlineStreamingApi` the `getAvailableOnlineStreamDataTypes` returns data types available in connected device.
-
-- `polarFtpFeatureReady`, `hrFeatureReady`, and `sdkModeFeatureAvailable` are all deprecated, instead use the `bleSdkFeatureReady`. The `bleSdkFeatureReady` is called with the parameter `PolarBleSdkFeature` when the feature is ready. 
 
 - `hrNotificationReceived` is deprecated in `PolarBleApiCallback`. The recommended way to receive heart rate is the `startHrStreaming` API, similar to streaming of other data types.
 
-- `startOhrStreaming` renamed as `startPpgStreaming` to better describe data about to be streamed
+- the `startOhrStreaming` API has been renamed to `startPpgStreaming`. This change was made to better describe the type of data that will be streamed using the API.
 
 ## Breaking API Changes iOS
-- TODO
+- The SDK features in the Polar BLE SDK were previously defined in an enum class called `Features`. The new version of the SDK defines the features in an enum class called `PolarBleSdkFeature`, with feature names that better describe their functionality. This change allows the Polar BLE SDK to optimize resource usage by only enabling features that are needed by the API user. Additionally, the new feature names are not tied to the BLE service names that provide the feature functionality, making them more understandable to the API user. Overall, this change simplifies the use of the Polar BLE SDK for developers who may not have a deep understanding of BLE service names and the related features they provide.
+
+- In the previous version of the Polar BLE SDK, the available data types for online streaming were defined in an enum class called `DeviceStreamingFeature`. In the new version of the SDK this enum is renamed to `PolarDeviceDataType`, as it now includes data types for both online streaming and offline recording. This change simplifies the naming convention for developers, and makes it easier to understand the different types of data available from the Polar device, both when streaming live data and when recording data for later analysis.
+
+- In previous versions of the Polar BLE SDK, the callbacks `polarFtpFeatureReady`, `hrFeatureReady`, and `sdkModeFeatureAvailable` were used to determine when certain features were ready for use. In the latest version of the SDK, these callbacks have been deprecated and replaced with a new callback called `bleSdkFeatureReady`. The `bleSdkFeatureReady` callback is now used to indicate when any feature of the Polar BLE SDK is ready for use. When a feature becomes ready, the `bleSdkFeatureReady` callback is called with the `PolarBleSdkFeature` parameter, which indicates the specific feature that is ready for use. nThis change allows for a more efficient and consistent way of handling feature readiness, as all features can now be managed through a single callback. Developers who are updating their apps to the latest version of the Polar BLE SDK should ensure that they are using the new `bleSdkFeatureReady` callback to manage feature readiness.
+
+- In the latest version of the Polar BLE SDK, the `streamingFeaturesReady` callback in `PolarBleApiCallback` has been deprecated. Instead, the new `bleSdkFeatureReady` callback can be used to determine whether a Polar device supports online streaming and if the online streaming feature is ready for use. When the `bleSdkFeatureReady` callback is called with the feature parameter set to `FEATURE_POLAR_ONLINE_STREAMING`, it indicates that the device is ready to stream online data, and the `PolarOnlineStreamingApi` can be used to access the data. The `getAvailableOnlineStreamDataTypes` function in `PolarOnlineStreamingApi` can be used to retrieve a list of available data types that can be streamed from the connected device.
 
 ## Deprecated APIs on iOS
-- TODO
 
+- `hrValueReceived` is deprecated in `PolarBleApiDeviceHrObserver`. The recommended way to receive heart rate is the `startHrStreaming` API, similar to streaming of other data types.
 
-
+- the `startOhrStreaming` API has been renamed to `startPpgStreaming`. This change was made to better describe the type of data that will be streamed using the API.
