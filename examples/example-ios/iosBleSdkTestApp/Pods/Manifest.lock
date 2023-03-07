@@ -1,12 +1,12 @@
 PODS:
-  - PolarBleSdk (5.0.0-beta3):
+  - PolarBleSdk (5.0.0-beta4):
     - RxSwift (~> 6.5.0)
     - SwiftProtobuf (~> 1.0)
   - RxSwift (6.5.0)
-  - SwiftProtobuf (1.20.3)
+  - SwiftProtobuf (1.21.0)
 
 DEPENDENCIES:
-  - PolarBleSdk (= 5.0.0-beta3)
+  - PolarBleSdk (= 5.0.0-beta4)
 
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
@@ -15,10 +15,10 @@ SPEC REPOS:
     - SwiftProtobuf
 
 SPEC CHECKSUMS:
-  PolarBleSdk: b26bbc35a60343193b97bbdc11982bd2d6f9a52f
+  PolarBleSdk: 8fd348f4d70a8a9d162a3e39dce866c29b8b3444
   RxSwift: 5710a9e6b17f3c3d6e40d6e559b9fa1e813b2ef8
-  SwiftProtobuf: b02b5075dcf60c9f5f403000b3b0c202a11b6ae1
+  SwiftProtobuf: afced68785854575756db965e9da52bbf3dc45e7
 
-PODFILE CHECKSUM: e55dbc0575176adb4dfba7e79c069025541e8556
+PODFILE CHECKSUM: f4fc318e1fe3081230adf4b78258968041a93209
 
 COCOAPODS: 1.11.3

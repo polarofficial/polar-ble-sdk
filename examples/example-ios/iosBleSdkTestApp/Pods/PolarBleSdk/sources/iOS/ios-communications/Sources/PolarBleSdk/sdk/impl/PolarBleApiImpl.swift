@@ -161,21 +161,29 @@ import UIKit
         return content.polarDeviceId.count != 0 && content.polarDeviceType != "mobile"
     }
     
-    fileprivate func sessionPmdClientReady(_ identifier: String) throws -> BleDeviceSession {
+    private func sessionPmdClientReady(_ identifier: String) throws -> BleDeviceSession {
         let session = try sessionServiceReady(identifier, service: BlePmdClient.PMD_SERVICE)
         let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
         if client.isCharacteristicNotificationEnabled(BlePmdClient.PMD_CP) &&
             client.isCharacteristicNotificationEnabled(BlePmdClient.PMD_DATA) {
-            // client ready
             return session
         }
         throw PolarErrors.notificationNotEnabled
     }
     
-    fileprivate func sessionFtpClientReady(_ identifier: String) throws -> BleDeviceSession {
+    private func sessionFtpClientReady(_ identifier: String) throws -> BleDeviceSession {
         let session = try sessionServiceReady(identifier, service: BlePsFtpClient.PSFTP_SERVICE)
         let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
         if client.isCharacteristicNotificationEnabled(BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC) {
+            return session
+        }
+        throw PolarErrors.notificationNotEnabled
+    }
+    
+    private func sessionHrClientReady(_ identifier: String) throws -> BleDeviceSession {
+        let session = try sessionServiceReady(identifier, service: BleHrClient.HR_SERVICE)
+        if let client = session.fetchGattClient(BleHrClient.HR_SERVICE) as? BleHrClient,
+           client.isCharacteristicNotificationEnabled(BleHrClient.HR_MEASUREMENT) {
             return session
         }
         throw PolarErrors.notificationNotEnabled
@@ -555,7 +563,7 @@ extension PolarBleApiImpl: BleLoggerProtocol {
 }
 
 extension PolarBleApiImpl: PolarBleApi  {
-
+    
     func cleanup() {
         _ = listener.removeAllSessions(
             Set(CollectionOfOne(BleDeviceSession.DeviceSessionState.sessionClosed)))
@@ -593,7 +601,7 @@ extension PolarBleApiImpl: PolarBleApi  {
 #endif
                 self.listener.openSessionDirect(session)
             })
-                .asSingle()
+            .asSingle()
                 .asCompletable()
                 }
     
@@ -643,24 +651,74 @@ extension PolarBleApiImpl: PolarBleApi  {
         connectSubscriptions.removeValue(forKey: identifier)?.dispose()
     }
     
-    func isFeatureReady(_ identifier: String, feature: Features) -> Bool {
+    func isFeatureReady(_ identifier: String, feature: PolarBleSdkFeature) -> Bool {
         switch feature {
-        case .polarFileTransfer:
+            
+        case .feature_hr:
             do {
-                _ = try sessionFtpClientReady(identifier)
-                return true;
+                _ = try sessionHrClientReady(identifier)
+                return true
             } catch _ {
                 // do nothing
             }
-        case .polarSensorStreaming:
+        case .feature_device_info:
+            do {
+                _ = try sessionServiceReady(identifier, service: BleDisClient.DIS_SERVICE)
+                return true
+            } catch _ {
+                // do nothing
+            }
+        case .feature_battery_info:
+            do {
+                _ = try sessionServiceReady(identifier, service: BleBasClient.BATTERY_SERVICE)
+                return true
+            } catch _ {
+                // do nothing
+            }
+        case .feature_polar_online_streaming:
+            do {
+                _ = try sessionHrClientReady(identifier)
+                _ = try sessionPmdClientReady(identifier)
+                return true
+            } catch _ {
+                // do nothing
+            }
+        case .feature_polar_offline_recording:
+            do {
+                _ = try sessionFtpClientReady(identifier)
+                _ = try sessionPmdClientReady(identifier)
+                return true
+            } catch _ {
+                // do nothing
+            }
+        case .feature_polar_device_time_setup:
+            do {
+                _ = try sessionFtpClientReady(identifier)
+                return true
+            } catch _ {
+                // do nothing
+            }
+        case .feature_polar_h10_exercise_recording:
+            do {
+                let session = try sessionFtpClientReady(identifier)
+                guard session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) is BlePsFtpClient else {
+                    return false
+                }
+                if .h10FileSystem == BlePolarDeviceCapabilitiesUtility.fileSystemType( session.advertisementContent.polarDeviceType) {
+                    return true
+                } else {
+                    return false
+                }
+            } catch _ {
+                // do nothing
+            }
+        case .feature_polar_sdk_mode:
             do {
                 _ = try sessionPmdClientReady(identifier)
                 return true
             } catch _ {
                 // do nothing
             }
-        default:
-            break
         }
         return false
     }
@@ -1196,7 +1254,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         do {
             let session = try sessionPmdClientReady(identifier)
             guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Completable.error(PolarErrors.serviceNotFound) }
-                        
+            
             var pmdSecret: PmdSecret? = nil
             if let s = secret {
                 pmdSecret = try PolarDataUtils.mapToPmdSecret(from: s)
@@ -1224,15 +1282,15 @@ extension PolarBleApiImpl: PolarBleApi  {
         do {
             let session = try sessionPmdClientReady(identifier)
             guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Completable.error(PolarErrors.serviceNotFound) }
-   
+            
             BleLogger.trace("Setup offline recording trigger. Trigger mode: \(trigger.triggerMode) Trigger features: \(trigger.triggerFeatures.map{ "\($0)" }.joined(separator: ",")) Device: \(identifier) Secret used: \(secret != nil)")
-           
+            
             let pmdOfflineTrigger = try PolarDataUtils.mapToPmdOfflineTrigger(from: trigger)
             var pmdSecret: PmdSecret? = nil
             if let s = secret {
                 pmdSecret = try PolarDataUtils.mapToPmdSecret(from: s)
             }
-          
+            
             return client.setOfflineRecordingTrigger(offlineRecordingTrigger: pmdOfflineTrigger, secret: pmdSecret)
         } catch let err {
             return Completable.error(err)

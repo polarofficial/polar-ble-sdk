@@ -85,12 +85,12 @@ public struct OfflineRecordingData<DataType> {
     
     private static func parseMetaData(_ fileBytes: Data,_  secret: PmdSecret?) throws -> (OfflineRecordingMetaData, Int) {
         var securityOffset = 0
-        let offlineRecordingSecurityStrategy = try parseSecurityStrategy(strategyBytes: fileBytes.subdata(in: SECURITY_STRATEGY_INDEX..<SECURITY_STRATEGY_LENGTH))
+        let offlineRecordingSecurityStrategy = try parseSecurityStrategy(strategyBytes: fileBytes.subdataSafe(in: SECURITY_STRATEGY_INDEX..<SECURITY_STRATEGY_LENGTH))
         securityOffset += SECURITY_STRATEGY_LENGTH
         
-        let metaDataBytes = try decryptMetaData(offlineRecordingSecurityStrategy: offlineRecordingSecurityStrategy, metaData: fileBytes.subdata(in: securityOffset..<fileBytes.count), secret: secret)
+        let metaDataBytes = try decryptMetaData(offlineRecordingSecurityStrategy: offlineRecordingSecurityStrategy, metaData: fileBytes.subdataSafe(in: securityOffset..<fileBytes.count), secret: secret)
         
-        let offlineRecordingHeader = parseHeader(headerBytes: metaDataBytes.subdata(in: 0..<OFFLINE_HEADER_LENGTH))
+        let offlineRecordingHeader = try parseHeader(headerBytes: metaDataBytes.subdataSafe(in: 0..<OFFLINE_HEADER_LENGTH))
         var metaDataOffset = OFFLINE_HEADER_LENGTH
         
         // guard
@@ -98,20 +98,20 @@ public struct OfflineRecordingData<DataType> {
             throw OfflineRecordingError.offlineRecordingHasWrongSignature
         }
         
-        let offlineRecordingStartTime = try parseStartTime(startTimeBytes: metaDataBytes.subdata(in: metaDataOffset..<metaDataOffset + DATE_TIME_LENGTH))
+        let offlineRecordingStartTime = try parseStartTime(startTimeBytes: metaDataBytes.subdataSafe(in: metaDataOffset..<metaDataOffset + DATE_TIME_LENGTH))
         metaDataOffset += DATE_TIME_LENGTH
         
-        let (pmdSetting, settingsLength) = parseSettings(metaDataBytes: metaDataBytes.subdata(in: metaDataOffset..<metaDataBytes.count))
+        let (pmdSetting, settingsLength) = try parseSettings(metaDataBytes: metaDataBytes.subdataSafe(in: metaDataOffset..<metaDataBytes.count))
         metaDataOffset += settingsLength
         
-        let (payloadSecurity, securityInfoLength) = try parseSecurityInfo(securityInfoBytes: metaDataBytes.subdata(in: metaDataOffset ..< metaDataBytes.count), secret: secret)
+        let (payloadSecurity, securityInfoLength) = try parseSecurityInfo(securityInfoBytes: metaDataBytes.subdataSafe(in: metaDataOffset ..< metaDataBytes.count), secret: secret)
         metaDataOffset += securityInfoLength
         
         // padding bytes
         let paddingBytes1Length = parsePaddingBytes(metaDataOffset: metaDataOffset, offlineRecordingSecurityStrategy: offlineRecordingSecurityStrategy)
         metaDataOffset += paddingBytes1Length
         
-        let dataPayloadSize = parsePacketSize(packetSize: metaDataBytes.subdata(in: metaDataOffset..<(metaDataOffset + PACKET_SIZE_LENGTH)))
+        let dataPayloadSize = try parsePacketSize(packetSize: metaDataBytes.subdataSafe(in: metaDataOffset..<(metaDataOffset + PACKET_SIZE_LENGTH)))
         metaDataOffset += PACKET_SIZE_LENGTH
         
         let paddingBytes2Length = parsePaddingBytes(metaDataOffset: metaDataOffset, offlineRecordingSecurityStrategy: offlineRecordingSecurityStrategy)
@@ -155,7 +155,7 @@ public struct OfflineRecordingData<DataType> {
             }
             
             let endOffset = (metaData.count / 16 * 16)
-            let metaDataChunk =  metaData.subdata(in: 0..<endOffset)
+            let metaDataChunk = try metaData.subdataSafe(in: 0..<endOffset)
             return try s.decryptArray(cipherArray: metaDataChunk)
         }
     }
@@ -188,11 +188,11 @@ public struct OfflineRecordingData<DataType> {
         return result
     }
     
-    private static func parseSettings(metaDataBytes: Data) -> (PmdSetting?, Int) {
+    private static func parseSettings(metaDataBytes: Data) throws -> (PmdSetting?, Int) {
         var offset = 0
         let settingsLength = Int(metaDataBytes[offset])
         offset += OFFLINE_SETTINGS_SIZE_FIELD_LENGTH
-        let settingBytes = metaDataBytes.subdata(in:offset..<(offset + settingsLength))
+        let settingBytes = try metaDataBytes.subdataSafe(in:offset..<(offset + settingsLength))
         var pmdSetting: PmdSetting? = nil
         
         if (!settingBytes.isEmpty) {
@@ -270,7 +270,7 @@ public struct OfflineRecordingData<DataType> {
         let decryptedData = try metaData.securityInfo.decryptArray(cipherArray: dataBytes)
         
         repeat {
-            let data = decryptedData.subdata(in:offset..<(packetSize + offset))
+            let data = try decryptedData.subdataSafe(in:offset..<(packetSize + offset))
             offset += packetSize
             let dataFrame = try PmdDataFrame(data:data,
                                              { _ in previousTimeStamp }  ,
@@ -306,10 +306,21 @@ public struct OfflineRecordingData<DataType> {
             }
             
             if (offset < decryptedData.count) {
-                packetSize = parsePacketSize(packetSize: decryptedData.subdata(in:offset..<(offset + PACKET_SIZE_LENGTH)))
+                packetSize = try parsePacketSize(packetSize: decryptedData.subdataSafe(in:offset..<(offset + PACKET_SIZE_LENGTH)))
                 offset += PACKET_SIZE_LENGTH
             }
         } while (offset < decryptedData.count)
         return builder
+    }
+}
+
+
+private extension Data {
+    func subdataSafe(in range: Range<Data.Index>) throws -> Data {
+        if range.upperBound <= self.count {
+            return self.subdata(in: range)
+        } else {
+             throw OfflineRecordingError.offlineRecordingErrorMetaDataParseFailed(description: "Invalid range")
+        }
     }
 }

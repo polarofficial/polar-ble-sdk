@@ -81,7 +81,6 @@ public protocol PolarBleApiDeviceFeaturesObserver: AnyObject {
     
     /// The feature is available in this device and it is ready.  Called only for the features which are specified in [PolarBleApi] construction.
     /// feature ready callback
-    @available(*, deprecated, message: "The functionality has changed. Please listen the bleSdkFeatureReady callback to know if sdk feature is available")
     func bleSdkFeatureReady(_ identifier: String, feature: PolarBleSdkFeature)
 }
 
