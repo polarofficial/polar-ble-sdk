@@ -24,6 +24,7 @@ public struct Pmd {
         case errorInvalidNumberOfChannels = 11
         case errorInvalidState = 12
         case errorDeviceInCharger = 13
+        case errorDiskFull = 14
         case unknown_error = 0xffff
         
         var description : String {
@@ -42,6 +43,7 @@ public struct Pmd {
             case .errorInvalidNumberOfChannels: return "Invalid Number of channels"
             case .errorInvalidState: return "Invalid state"
             case .errorDeviceInCharger: return "Device in charger"
+            case .errorDiskFull: return "Disk full"
             case .unknown_error: return "unknown error"
             }
         }

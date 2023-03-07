@@ -185,7 +185,6 @@ final class OfflineRecordingDataTest: XCTestCase {
         }
     }
     
-    
     private static let offlineFrameWithoutData = Data([
         // index       type                                       data:
         // 0           security strategy
