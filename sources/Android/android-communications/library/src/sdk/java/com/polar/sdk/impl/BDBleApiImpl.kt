@@ -212,10 +212,13 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     sessionPsFtpClientReady(deviceId)
                     true
                 }
-                PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING,
                 PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP -> {
                     sessionPsFtpClientReady(deviceId)
                     true
+                }
+                PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING -> {
+                    val session = sessionPsFtpClientReady(deviceId)
+                    FileSystemType.H10_FILE_SYSTEM == getFileSystemType(session.polarDeviceType)
                 }
                 PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE -> {
                     sessionPmdClientReady(deviceId)
@@ -923,7 +926,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
         val pmdOfflineTrigger = mapPolarOfflineTriggerToPmdOfflineTrigger(trigger)
         val pmdSecret = secret?.let { mapPolarSecretToPmdSecret(it) }
-        BleLogger.d(TAG, "Setup offline recording trigger. Trigger mode: ${trigger.triggerMode} Trigger features: ${trigger.triggerFeatures.keys.joinToString { "," }} Device: $identifier Secret used: ${secret != null}")
+        BleLogger.d(TAG, "Setup offline recording trigger. Trigger mode: ${trigger.triggerMode} Trigger features: ${trigger.triggerFeatures.keys.joinToString(", ")} Device: $identifier Secret used: ${secret != null}")
         return client.setOfflineRecordingTrigger(pmdOfflineTrigger, pmdSecret)
     }
 
