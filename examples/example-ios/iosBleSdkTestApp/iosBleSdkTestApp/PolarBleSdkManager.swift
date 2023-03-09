@@ -20,7 +20,7 @@ class PolarBleSdkManager : ObservableObject {
     )
     
     // TODO replace the device id with your device ID or use the auto connect to when connecting to device
-    private var deviceId = "B5232722"
+    private var deviceId = "C015D22B"
     
     @Published var isBluetoothOn: Bool
     @Published var isBroadcastListenOn: Bool = false
@@ -573,7 +573,7 @@ class PolarBleSdkManager : ObservableObject {
                 self.onlineStreamingFeature.isStreaming[.ppi] = true
             }
             
-            onlineStreamingDisposables[.ppi] = api.startOhrPPIStreaming(deviceId)
+            onlineStreamingDisposables[.ppi] = api.startPpiStreaming(deviceId)
                 .observe(on: MainScheduler.instance)
                 .do(onDispose: { self.onlineStreamingFeature.isStreaming[.ppi] = false })
                     .subscribe{ e in
@@ -606,7 +606,7 @@ class PolarBleSdkManager : ObservableObject {
                     .subscribe{ e in
                         switch e {
                         case .next(let data):
-                            NSLog("HR    BPM: \(data.hr) rrsMs: \(data.rrsMs) rrs: \(data.rrs) contact: \(data.contact) contact supported: \(data.contactSupported)")
+                            NSLog("HR    BPM: \(data[0].hr) rrs: \(data[0].rrs) rrAvailable: \(data[0].rrAvailable) contact status: \(data[0].contactStatus) contact supported: \(data[0].contactStatusSupported)")
                         case .error(let err):
                             NSLog("Hr stream failed: \(err)")
                         case .completed:
@@ -882,9 +882,9 @@ class PolarBleSdkManager : ObservableObject {
             result += "PPI(ms) HR ERROR_ESTIMATE BLOCKER_BIT SKIN_CONTACT_SUPPORT SKIN_CONTACT_STATUS\n"
             result += polarPpiData.samples.map{ "\($0.ppInMs) \($0.hr) \($0.ppErrorEstimate) \($0.blockerBit) \($0.skinContactSupported) \($0.skinContactStatus)" }.joined(separator: "\n")
             
-        case let polarHrData as [PolarHrData]:
-            result += "HR CONTACT_SUPPORTED CONTACT_STATUS RR(ms)\n"
-            result += polarHrData.map{ "\($0.hr) \($0.contactSupported) \($0.contact) \($0.rrsMs.map { String($0) }.joined(separator: " "))" }.joined(separator: "\n")
+        case let polarHrData as PolarHrData:
+            result += "HR CONTACT_SUPPORTED CONTACT_STATUS RR_AVAILABLE RR(ms)\n"
+            result += polarHrData.map{ "\($0.hr) \($0.contactStatusSupported) \($0.contactStatus) \($0.rrAvailable) \($0.rrs.map { String($0) }.joined(separator: " "))" }.joined(separator: "\n")
             
         default:
             result = "Data type not supported"

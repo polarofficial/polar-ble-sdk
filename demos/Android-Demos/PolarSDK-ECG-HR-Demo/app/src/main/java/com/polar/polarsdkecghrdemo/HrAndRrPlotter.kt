@@ -54,7 +54,7 @@ class HrAndRrPlotter {
      *
      * @param polarHrData The HR data that came in.
      */
-    fun addValues(polarHrData: PolarHrData) {
+    fun addValues(polarHrData: PolarHrData.PolarHrSample) {
         val now = Date()
         val time = now.time
         for (i in 0 until NVALS - 1) {
@@ -75,7 +75,7 @@ class HrAndRrPlotter {
 
         // Scale the RR values by this to use the same axis. (Could implement
         // NormedXYSeries and use two axes)
-        val rrsMs = polarHrData.rrsMs
+        val rrsMs = polarHrData.rrs
         val nRrVals = rrsMs.size
         if (nRrVals > 0) {
             for (i in 0 until NVALS - nRrVals) {
@@ -103,6 +103,4 @@ class HrAndRrPlotter {
     fun setListener(listener: PlotterListener?) {
         this.listener = listener
     }
-
-
 }
