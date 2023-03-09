@@ -51,7 +51,7 @@ sealed class PolarOfflineRecordingData(val startTime: Calendar, val settings: Po
      * @property data ppi data
      * @property startTime the time recording was started in UTC time
      */
-    class PpiOfflineRecording(val data: PolarOhrPPIData, startTime: Calendar) : PolarOfflineRecordingData(startTime, null)
+    class PpiOfflineRecording(val data: PolarPpiData, startTime: Calendar) : PolarOfflineRecordingData(startTime, null)
 
     /**
      * Heart rate offline recording data

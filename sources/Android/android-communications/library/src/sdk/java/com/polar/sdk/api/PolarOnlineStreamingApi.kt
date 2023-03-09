@@ -140,17 +140,20 @@ interface PolarOnlineStreamingApi {
     ): Flowable<PolarPpgData>
 
     /**
-     * Start OHR (Optical heart rate) PPI (Pulse to Pulse interval) stream. PPI stream is stopped if
+     * Start PPI (Pulse to Pulse interval) stream. PPI stream is stopped if
      * the connection is closed, error occurs or stream is disposed. Notice that there is a
      * delay before PPI data stream starts.
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
      * @return Flowable stream of OHR PPI data.
      * Produces:
-     * <BR></BR> - onNext [PolarOhrPPIData]
+     * <BR></BR> - onNext [PolarPpiData]
      * <BR></BR> - onError error for possible errors invoked
      * <BR></BR> - onComplete non produced unless the stream is further configured
      */
+    fun startPpiStreaming(identifier: String): Flowable<PolarPpiData>
+
+    @Deprecated("API is renamed, please use startPpiStreaming()", replaceWith = ReplaceWith("startPpiStreaming"))
     fun startOhrPPIStreaming(identifier: String): Flowable<PolarOhrPPIData>
 
     /**

@@ -8,7 +8,7 @@ public class BleHrClient: BleGattClientBase {
     private static let BODY_SENSOR_LOCATION = CBUUID(string: "2a38")
     static let HR_MEASUREMENT = CBUUID(string: "2a37")
     
-    public typealias BleHrNotification = (hr: Int, sensorContact: Bool, sensorContactSupported: Bool, energy: Int, rrs: [Int])
+    public typealias BleHrNotification = (hr: Int, sensorContact: Bool, sensorContactSupported: Bool, energy: Int, rrs: [Int], rrPresent: Bool)
     
     private(set) var observers = AtomicList<RxObserver<BleHrNotification>>()
     private let disposeBag = DisposeBag()
@@ -31,7 +31,7 @@ public class BleHrClient: BleGattClientBase {
             var offset=0
             let hrFormat = data[0] & 0x01
             let sensorContact = ((data[0] & 0x06) >> 1) == 0x03
-            let contactSupported = (data[0] & 0x04) != 0           
+            let contactSupported = (data[0] & 0x04) != 0
             let energyExpended = (data[0] & 0x08) >> 3
             let rrPresent = (data[0] & 0x10) >> 4
             
@@ -52,7 +52,7 @@ public class BleHrClient: BleGattClientBase {
                 }
             }
             RxUtils.emitNext(observers) { (observer) in
-                observer.obs.onNext((hr: hrValue, sensorContact: sensorContact, sensorContactSupported: contactSupported,energy: energy,rrs: rrs))
+                observer.obs.onNext((hr: hrValue, sensorContact: sensorContact, sensorContactSupported: contactSupported, energy: energy, rrs: rrs, rrPresent: rrPresent == 1 ))
             }
         }
     }

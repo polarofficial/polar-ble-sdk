@@ -56,7 +56,7 @@ public protocol PolarBleApiDeviceHrObserver: AnyObject {
     /// - Parameters:
     ///   - identifier: Polar device id
     @available(*, deprecated, message: "The functionality has changed. Please use the startHrStreaming API to get the heart rate data ")
-    func hrValueReceived(_ identifier: String, data: PolarHrData)
+    func hrValueReceived(_ identifier: String, data: (hr: UInt8, rrs: [Int], rrsMs: [Int], contact: Bool, contactSupported: Bool))
 }
 
 /// Data client observer

@@ -109,7 +109,7 @@ public protocol PolarOnlineStreamingApi {
     ///   - onError: see `PolarErrors` for possible errors invoked
     func startPpgStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarPpgData>
     
-    /// Start OHR (Optical heart rate) PPI (Pulse to Pulse interval) stream.
+    /// Start PPI (Pulse to Pulse interval) stream.
     /// PPI stream is stopped if the connection is closed, error occurs or stream is disposed.
     /// Notice that there is a delay before PPI data stream starts.
     ///
@@ -118,5 +118,8 @@ public protocol PolarOnlineStreamingApi {
     /// - Returns: Observable stream
     ///   - onNext: for every air packet received. see `PolarPpiData`
     ///   - onError: see `PolarErrors` for possible errors invoked
+    func startPpiStreaming(_ identifier: String) -> Observable<PolarPpiData>
+    
+    @available(*, deprecated, renamed: "startPpiStreaming")
     func startOhrPPIStreaming(_ identifier: String) -> Observable<PolarPpiData>
 }
