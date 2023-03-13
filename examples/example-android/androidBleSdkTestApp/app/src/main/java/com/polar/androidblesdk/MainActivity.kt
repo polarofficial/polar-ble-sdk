@@ -24,7 +24,6 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.functions.Function
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -35,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ATTENTION! Replace with the device ID from your device.
-    private var deviceId = "ACF7222C"
+    private var deviceId = "968BEA2E"
 
     private val api: PolarBleApi by lazy {
         // Notice all features are enabled
@@ -56,6 +55,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var broadcastDisposable: Disposable
     private var scanDisposable: Disposable? = null
     private var autoConnectDisposable: Disposable? = null
+    private var hrDisposable: Disposable? = null
     private var ecgDisposable: Disposable? = null
     private var accDisposable: Disposable? = null
     private var gyrDisposable: Disposable? = null
@@ -78,6 +78,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var connectButton: Button
     private lateinit var autoConnectButton: Button
     private lateinit var scanButton: Button
+    private lateinit var hrButton: Button
     private lateinit var ecgButton: Button
     private lateinit var accButton: Button
     private lateinit var gyrButton: Button
@@ -94,7 +95,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var getTimeButton: Button
     private lateinit var toggleSdkModeButton: Button
 
-    //Verity Sense offline recroding use
+    //Verity Sense offline recording use
     private lateinit var listRecordingsButton: Button
     private lateinit var startRecordingButton: Button
     private lateinit var stopRecordingButton: Button
@@ -111,6 +112,7 @@ class MainActivity : AppCompatActivity() {
         connectButton = findViewById(R.id.connect_button)
         autoConnectButton = findViewById(R.id.auto_connect_button)
         scanButton = findViewById(R.id.scan_button)
+        hrButton = findViewById(R.id.hr_button)
         ecgButton = findViewById(R.id.ecg_button)
         accButton = findViewById(R.id.acc_button)
         gyrButton = findViewById(R.id.gyr_button)
@@ -134,7 +136,13 @@ class MainActivity : AppCompatActivity() {
         deleteRecordingButton = findViewById(R.id.delete_recording)
 
         api.setPolarFilter(false)
-        api.setApiLogger { s: String -> Log.d(API_LOGGER_TAG, s) }
+
+        // If there is need to log what is happening inside the SDK, it can be enabled like this:
+        val enableSdkLogs = false
+        if(enableSdkLogs) {
+            api.setApiLogger { s: String -> Log.d(API_LOGGER_TAG, s) }
+        }
+
         api.setApiCallback(object : PolarBleApiCallback() {
             override fun blePowerStateChanged(powered: Boolean) {
                 Log.d(TAG, "BLE power: $powered")
@@ -177,7 +185,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun hrNotificationReceived(identifier: String, data: PolarHrData.PolarHrSample) {
-                Log.d(TAG, "HR value: ${data.hr} rrsMs: ${data.rrsMs} contact: ${data.contactStatus} , ${data.contactStatusSupported}")
+                // deprecated
             }
         })
 
@@ -252,6 +260,31 @@ class MainActivity : AppCompatActivity() {
             } else {
                 toggleButtonUp(scanButton, "Scan devices")
                 scanDisposable?.dispose()
+            }
+        }
+
+        hrButton.setOnClickListener {
+            val isDisposed = hrDisposable?.isDisposed ?: true
+            if (isDisposed) {
+                toggleButtonDown(hrButton, R.string.stop_hr_stream)
+                hrDisposable = api.startHrStreaming(deviceId)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        { hrData: PolarHrData ->
+                            for (sample in hrData.samples) {
+                                Log.d(TAG, "HR     bpm: ${sample.hr} rrs: ${sample.rrs} rrAvailable: ${sample.rrAvailable} contactStatus: ${sample.contactStatus} contactStatusSupported: ${sample.contactStatusSupported}")
+                            }
+                        },
+                        { error: Throwable ->
+                            toggleButtonUp(hrButton, R.string.start_hr_stream)
+                            Log.e(TAG, "HR stream failed. Reason $error")
+                        },
+                        { Log.d(TAG, "HR stream complete") }
+                    )
+            } else {
+                toggleButtonUp(hrButton, R.string.start_hr_stream)
+                // NOTE dispose will stop streaming if it is "running"
+                hrDisposable?.dispose()
             }
         }
 
@@ -405,10 +438,10 @@ class MainActivity : AppCompatActivity() {
             val isDisposed = ppiDisposable?.isDisposed ?: true
             if (isDisposed) {
                 toggleButtonDown(ppiButton, R.string.stop_ppi_stream)
-                ppiDisposable = api.startOhrPPIStreaming(deviceId)
+                ppiDisposable = api.startPpiStreaming(deviceId)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                        { ppiData: PolarOhrPPIData ->
+                        { ppiData: PolarPpiData ->
                             for (sample in ppiData.samples) {
                                 Log.d(TAG, "PPI    ppi: ${sample.ppi} blocker: ${sample.blockerBit} errorEstimate: ${sample.errorEstimate}")
                             }
@@ -746,7 +779,7 @@ class MainActivity : AppCompatActivity() {
             //NOTE: For this example you need to click on listRecordingsButton to have files entry (entryCache) up to date
             Log.d(TAG, "Searching to recording to delete... ")
             //Get first entry for testing deletion
-            val offlineRecEntry = entryCache[deviceId]?.firstOrNull();
+            val offlineRecEntry = entryCache[deviceId]?.firstOrNull()
             offlineRecEntry?.let { offlineEntry ->
                 try {
                     api.removeOfflineRecord(deviceId, offlineEntry)
@@ -899,15 +932,13 @@ class MainActivity : AppCompatActivity() {
         }
             .observeOn(AndroidSchedulers.mainThread())
             .toFlowable()
-            .flatMap(
-                Function { sensorSettings: android.util.Pair<PolarSensorSetting, PolarSensorSetting> ->
-                    DialogUtility.showAllSettingsDialog(
-                        this@MainActivity,
-                        sensorSettings.first.settings,
-                        sensorSettings.second.settings
-                    ).toFlowable()
-                } as Function<android.util.Pair<PolarSensorSetting, PolarSensorSetting>, Flowable<PolarSensorSetting>>
-            )
+            .flatMap { sensorSettings: android.util.Pair<PolarSensorSetting, PolarSensorSetting> ->
+                DialogUtility.showAllSettingsDialog(
+                    this@MainActivity,
+                    sensorSettings.first.settings,
+                    sensorSettings.second.settings
+                ).toFlowable()
+            }
     }
 
     private fun showToast(message: String) {

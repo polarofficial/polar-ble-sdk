@@ -7,6 +7,7 @@ import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.errors.PolarBleSdkInternalException
 import com.polar.sdk.api.model.*
 import java.util.*
+import kotlin.math.roundToInt
 
 internal object PolarDataUtils {
     private const val TAG = "PolarDataUtils"
@@ -61,6 +62,16 @@ internal object PolarDataUtils {
         return PolarOhrPPIData(0L, samples)
     }
 
+    fun mapPMDClientPpiDataToPolarPpiData(ppiData: PpiData): PolarPpiData {
+        val samples: MutableList<PolarPpiData.PolarPpiSample> = mutableListOf()
+        for ((hr, ppInMs, ppErrorEstimate, blockerBit, skinContactStatus, skinContactSupported) in ppiData.ppiSamples) {
+            samples.add(
+                PolarPpiData.PolarPpiSample(ppInMs, ppErrorEstimate, hr, blockerBit != 0, skinContactStatus != 0, skinContactSupported != 0)
+            )
+        }
+        return PolarPpiData(samples)
+    }
+
     fun mapPMDClientOfflineHrDataToPolarHrData(offlineHrData: OfflineHrData): PolarHrData {
         val samples: MutableList<PolarHrData.PolarHrSample> = mutableListOf()
         for (sample in offlineHrData.hrSamples) {
@@ -68,9 +79,9 @@ internal object PolarDataUtils {
                 PolarHrData.PolarHrSample(
                     hr = sample.hr,
                     rrs = emptyList(),
+                    rrAvailable = false,
                     contactStatus = false,
-                    contactStatusSupported = false,
-                    rrAvailable = false
+                    contactStatusSupported = false
                 )
             )
         }
@@ -255,4 +266,13 @@ internal object PolarDataUtils {
             key = polarSecret.secret
         )
     }
+
+    fun mapRr1024ToRrMs(rrsRaw: List<Int>): List<Int> {
+        val rrsMs = mutableListOf<Int>()
+        for (rrRaw in rrsRaw) {
+            rrsMs.add((rrRaw.toFloat() / 1024.0 * 1000.0).roundToInt())
+        }
+        return rrsMs
+    }
 }
+

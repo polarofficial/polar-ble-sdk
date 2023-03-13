@@ -54,6 +54,12 @@
             android:background="@android:color/white" />
 
         <Button
+            android:id="@+id/hr_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/start_hr_stream" />
+
+        <Button
             android:id="@+id/ecg_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

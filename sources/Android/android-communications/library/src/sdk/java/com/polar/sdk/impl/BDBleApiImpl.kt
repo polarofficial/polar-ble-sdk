@@ -38,6 +38,7 @@ import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientOfflineHrDataToPolarH
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientOhrDataToPolarOhr
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientPpgDataToPolarPpg
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientPpiDataToPolarOhrPpiData
+import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientPpiDataToPolarPpiData
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientAccDataToPolarAcc
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientFeatureToPolarFeature
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientGyroDataToPolarGyro
@@ -48,6 +49,7 @@ import com.polar.sdk.impl.utils.PolarDataUtils.mapPolarFeatureToPmdClientMeasure
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPolarOfflineTriggerToPmdOfflineTrigger
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPolarSecretToPmdSecret
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPolarSettingsToPmdSettings
+import com.polar.sdk.impl.utils.PolarDataUtils.mapRr1024ToRrMs
 import com.polar.sdk.impl.utils.PolarTimeUtils.javaCalendarToPbPftpSetLocalTime
 import com.polar.sdk.impl.utils.PolarTimeUtils.javaCalendarToPbPftpSetSystemTime
 import com.polar.sdk.impl.utils.PolarTimeUtils.pbLocalTimeToJavaCalendar
@@ -688,7 +690,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                             polarSettings ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Ppg data is missing settings")
                             PolarOfflineRecordingData.PpgOfflineRecording(mapPMDClientPpgDataToPolarPpg(offlineData), startTime, polarSettings)
                         }
-                        is PpiData -> PolarOfflineRecordingData.PpiOfflineRecording(mapPMDClientPpiDataToPolarOhrPpiData(offlineData), startTime)
+                        is PpiData -> PolarOfflineRecordingData.PpiOfflineRecording(mapPMDClientPpiDataToPolarPpiData(offlineData), startTime)
                         is OfflineHrData -> PolarOfflineRecordingData.HrOfflineRecording(mapPMDClientOfflineHrDataToPolarHrData(offlineData), startTime)
                         else -> throw PolarOfflineRecordingError("Data type is not supported.")
                     }
@@ -955,10 +957,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             .map { hrNotificationData: HrNotificationData ->
                 val sample = PolarHrData.PolarHrSample(
                     hrNotificationData.hrValue,
-                    hrNotificationData.rrs,
+                    mapRr1024ToRrMs(hrNotificationData.rrs),
+                    hrNotificationData.rrPresent,
                     hrNotificationData.sensorContact,
-                    hrNotificationData.sensorContactSupported,
-                    hrNotificationData.rrPresent
+                    hrNotificationData.sensorContactSupported
                 )
                 PolarHrData(listOf(sample))
             }
@@ -990,6 +992,15 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             client.monitorPpgNotifications(true)
                 .map { ppgData: PpgData -> mapPMDClientOhrDataToPolarOhr(ppgData) }
         })
+    }
+
+    override fun startPpiStreaming(identifier: String): Flowable<PolarPpiData> {
+        return startStreaming(identifier, PmdMeasurementType.PPI, PolarSensorSetting(emptyMap())) { client: BlePMDClient ->
+            client.monitorPpiNotifications(true)
+                .map { ppiData: PpiData ->
+                    mapPMDClientPpiDataToPolarPpiData(ppiData)
+                }
+        }
     }
 
     override fun startOhrPPIStreaming(identifier: String): Flowable<PolarOhrPPIData> {
@@ -1318,10 +1329,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                             deviceId,
                                             PolarHrData.PolarHrSample(
                                                 hrNotificationData.hrValue,
-                                                hrNotificationData.rrs,
+                                                mapRr1024ToRrMs(hrNotificationData.rrs),
+                                                hrNotificationData.rrPresent,
                                                 hrNotificationData.sensorContact,
-                                                hrNotificationData.sensorContactSupported,
-                                                hrNotificationData.rrPresent
+                                                hrNotificationData.sensorContactSupported
                                             )
                                         )
                                     },
