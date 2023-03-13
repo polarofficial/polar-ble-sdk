@@ -4,6 +4,7 @@ The offline recording makes it possible to record data into Polar device interna
 
 - [Basic usage](#features)
 - [Advanced usage](#advanced-usage)
+- [Memory management](#memory-management)
 - [Security](#security)
 - [Availability](#availability)
 - [Considerations](#considerations)
@@ -31,6 +32,13 @@ The offline recording can be used in [SDK mode](SdkModeExplained.md). The SDK mo
 Triggers are the way to automatically start the offline recording. The options are `TRIGGER_SYSTEM_START` and `TRIGGER_EXERCISE_START`. In case the trigger is set to `TRIGGER_SYSTEM_START` the offline recording is started every time the Polar device is switched on, e.g. when VeritySense device power button is pressed by the user to turn device on. In case the trigger is set to `TRIGER_EXERCISE_START` the offline recording is started every time exercise is started in Polar device. With the VeritySense `TRIGER_EXERCISE_START` will trigger offline recording if either the [exercise](https://support.polar.com/en/how-to-use-polar-verity-sense-in-recording-mode) or [swimming](https://support.polar.com/en/how-to-use-polar-verity-sense-in-swimming-mode) mode is started by the user of VeritySense.
 
 The API `setOfflineRecordingTrigger` is used to setup the trigger. When the offline recording is automatically started by the trigger the recording will end in two conditions, either recording is stopped by `stopOfflineRecording` or user switch off the device. To disable the trigger the `setOfflineRecordingTrigger` function is called with the option `TRIGGER_DISABLED`
+
+## Memory management
+
+The device does not automatically erase offline recordings to make space for new ones. If there is less than 2 MB of memory left when a new recording is started, the device will respond with the `DISK_FULL` error when `startOfflineRecording` is subscribed. Similarly, the same 2 MB memory limit prevents the setting of new triggers with `setOfflineRecordingTrigger`.
+
+In addition, please note that the device will automatically stop the offline recording when there is less than 300 kB of free space remaining. At this point, all offline recording triggers will also be disabled.
+
 
 ## Security
 
