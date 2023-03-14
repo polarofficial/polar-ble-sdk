@@ -12,7 +12,7 @@ The SDK mode is the mode of the sensor in which the wider range of stream capabi
 ***Good to know about SDK Mode in Polar Verity Sense***
 - you may read the capabilities available in SDK from the device with the `requestFullStreamSettings` or `requestFullOfflineRecordingSettings` function in any operation mode. 
 - if starting many online streams on high frequency at the same time, it cannot be guaranteed that all the data is sent over the Bluetooth as traffic may get too high
-- when SDK mode is enabled then any existing offline recording or online stream is closed. In SDK mode the optical sensor is shut down and it is turned on again if the requested stream needs the optical signal. 
+- if the online stream or offline recording is currently running on the device, the SDK Mode cannot be changed. Attempting to change the SDK Mode in will result in an "INVALID STATE" error.
 - sample code on how to use SDK mode can seen from [Android](../examples/example-android)  and [iOS](../examples/example-ios) examples
 
 ***SDK Mode capabilities in Polar Verity Sense***
