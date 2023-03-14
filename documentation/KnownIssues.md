@@ -7,6 +7,7 @@
 - **Workaround:** 
     - The PPG stream is working  even the `startOhrStreaming` request is made using the 135Hz as sampleRate parameter in `PolarSensorSetting`. However, the received PPG stream is sampled with 55Hz.
     - If [SDK mode](SdkModeExplained.md) is enabled then PPG settings is read correctly.
+- **FIX:** FIXED IN VERITY SENSE FIRMWARE 2.1.0      
 
 #### Issue 2
 - **Firmware:** all firmwares
