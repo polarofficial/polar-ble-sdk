@@ -78,7 +78,7 @@ internal object PolarDataUtils {
             samples.add(
                 PolarHrData.PolarHrSample(
                     hr = sample.hr,
-                    rrs = emptyList(),
+                    rrsMs = emptyList(),
                     rrAvailable = false,
                     contactStatus = false,
                     contactStatusSupported = false

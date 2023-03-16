@@ -21,7 +21,7 @@ The updated terminology now distinguishes between "online streaming" and "offlin
 
 - In the latest version of the Polar BLE SDK, the `streamingFeaturesReady` callback in `PolarBleApiCallback` has been deprecated. Instead, the new `bleSdkFeatureReady` callback can be used to determine whether a Polar device supports online streaming and if the online streaming feature is ready for use. When the `bleSdkFeatureReady` callback is called with the feature parameter set to `FEATURE_POLAR_ONLINE_STREAMING`, it indicates that the device is ready to stream online data, and the `PolarOnlineStreamingApi` can be used to access the data. The `getAvailableOnlineStreamDataTypes` function in `PolarOnlineStreamingApi` can be used to retrieve a list of available data types that can be streamed from the connected device.
 
-- `PolarHrSample` no longer has a `rrsMs` property. Instead, it has a `rrs` property that represents the R-wave to R-wave intervals in milliseconds. Update any code that uses `rrsMs` to use `rrs` instead. `PolarHrSample` also has a new `rrAvailable` property that indicates whether RR data is available for the sample.
+- `PolarHrSample` no longer has a `rrs` property. Instead, it has a `rrsMs` property that represents the R-wave to R-wave intervals in milliseconds. Update any code that uses `rrs` to use `rrsMs` instead. `PolarHrSample` also has a new `rrAvailable` property that indicates whether RR data is available for the sample.
 
 ## Deprecated APIs on Android
 
@@ -43,7 +43,7 @@ The updated terminology now distinguishes between "online streaming" and "offlin
 
 - In the latest version of the Polar BLE SDK, the `streamingFeaturesReady` callback in `PolarBleApiCallback` has been deprecated. Instead, the new `bleSdkFeatureReady` callback can be used to determine whether a Polar device supports online streaming and if the online streaming feature is ready for use. When the `bleSdkFeatureReady` callback is called with the feature parameter set to `FEATURE_POLAR_ONLINE_STREAMING`, it indicates that the device is ready to stream online data, and the `PolarOnlineStreamingApi` can be used to access the data. The `getAvailableOnlineStreamDataTypes` function in `PolarOnlineStreamingApi` can be used to retrieve a list of available data types that can be streamed from the connected device.
 
-- The `PolarHrData` type has been changed from a tuple to an array of tuples. Update any code that uses this type to reflect this change. `PolarHrData` no longer has a `rrsMs` property. Instead, it has a `rrs` property that represents the R-wave to R-wave intervals in milliseconds. The `rrAvailable` property have been added. 
+- The `PolarHrData` type has been changed from a tuple to an array of tuples. Update any code that uses this type to reflect this change. `PolarHrData` no longer has a `rrs` property. Instead, it has a `rrsMs` property that represents the R-wave to R-wave intervals in milliseconds. The `rrAvailable` property have been added. 
 
 ## Deprecated APIs on iOS
 

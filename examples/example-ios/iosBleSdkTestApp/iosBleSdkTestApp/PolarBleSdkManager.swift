@@ -606,7 +606,7 @@ class PolarBleSdkManager : ObservableObject {
                     .subscribe{ e in
                         switch e {
                         case .next(let data):
-                            NSLog("HR    BPM: \(data[0].hr) rrs: \(data[0].rrs) rrAvailable: \(data[0].rrAvailable) contact status: \(data[0].contactStatus) contact supported: \(data[0].contactStatusSupported)")
+                            NSLog("HR    BPM: \(data[0].hr) rrs: \(data[0].rrsMs) rrAvailable: \(data[0].rrAvailable) contact status: \(data[0].contactStatus) contact supported: \(data[0].contactStatusSupported)")
                         case .error(let err):
                             NSLog("Hr stream failed: \(err)")
                         case .completed:
@@ -884,7 +884,7 @@ class PolarBleSdkManager : ObservableObject {
             
         case let polarHrData as PolarHrData:
             result += "HR CONTACT_SUPPORTED CONTACT_STATUS RR_AVAILABLE RR(ms)\n"
-            result += polarHrData.map{ "\($0.hr) \($0.contactStatusSupported) \($0.contactStatus) \($0.rrAvailable) \($0.rrs.map { String($0) }.joined(separator: " "))" }.joined(separator: "\n")
+            result += polarHrData.map{ "\($0.hr) \($0.contactStatusSupported) \($0.contactStatus) \($0.rrAvailable) \($0.rrsMs.map { String($0) }.joined(separator: " "))" }.joined(separator: "\n")
             
         default:
             result = "Data type not supported"

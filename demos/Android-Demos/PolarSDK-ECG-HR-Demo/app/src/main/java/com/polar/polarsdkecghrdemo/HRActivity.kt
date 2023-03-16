@@ -158,10 +158,10 @@ class HRActivity : AppCompatActivity(), PlotterListener {
                 .subscribe(
                     { hrData: PolarHrData ->
                         for (sample in hrData.samples) {
-                            Log.d(TAG, "HR ${sample.hr} RR ${sample.rrs}")
+                            Log.d(TAG, "HR ${sample.hr} RR ${sample.rrsMs}")
 
-                            if (sample.rrs.isNotEmpty()) {
-                                val rrText = "(${sample.rrs.joinToString(separator = "ms, ")}ms)"
+                            if (sample.rrsMs.isNotEmpty()) {
+                                val rrText = "(${sample.rrsMs.joinToString(separator = "ms, ")}ms)"
                                 textViewRR.text = rrText
                             }
                             textViewHR.text = sample.hr.toString()

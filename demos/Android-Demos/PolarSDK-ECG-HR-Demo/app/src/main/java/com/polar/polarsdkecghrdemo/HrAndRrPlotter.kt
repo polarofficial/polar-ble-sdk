@@ -75,7 +75,7 @@ class HrAndRrPlotter {
 
         // Scale the RR values by this to use the same axis. (Could implement
         // NormedXYSeries and use two axes)
-        val rrsMs = polarHrData.rrs
+        val rrsMs = polarHrData.rrsMs
         val nRrVals = rrsMs.size
         if (nRrVals > 0) {
             for (i in 0 until NVALS - nRrVals) {

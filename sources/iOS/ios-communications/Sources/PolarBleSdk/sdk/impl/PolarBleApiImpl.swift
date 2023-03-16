@@ -1437,7 +1437,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                         return Int(round((Float(rr) / 1024.0) * 1000.0))
                     })
                     
-                    return [(hr: UInt8($0.hr), rrs: rrsMs, rrAvailable: $0.rrPresent, contactStatus: $0.sensorContact, contactStatusSupported: $0.sensorContactSupported)]
+                    return [(hr: UInt8($0.hr), rrsMs: rrsMs, rrAvailable: $0.rrPresent, contactStatus: $0.sensorContact, contactStatusSupported: $0.sensorContactSupported)]
                 }
         } catch let err {
             return Observable.error(err)
@@ -1735,9 +1735,9 @@ private extension PpiData {
 
 private extension OfflineHrData {
     func mapToPolarData() -> PolarHrData {
-        var polarSamples: [(hr: UInt8, rrs: [Int], rrAvailable: Bool, contactStatus: Bool, contactStatusSupported: Bool)] = []
+        var polarSamples: [(hr: UInt8, rrsMs: [Int], rrAvailable: Bool, contactStatus: Bool, contactStatusSupported: Bool)] = []
         for sample in self.samples {
-            polarSamples.append((hr: sample.hr, rrs:[], rrAvailable: false, contactStatus: false, contactStatusSupported: false))
+            polarSamples.append((hr: sample.hr, rrsMs:[], rrAvailable: false, contactStatus: false, contactStatusSupported: false))
         }
         return polarSamples
     }

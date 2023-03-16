@@ -183,8 +183,8 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
                     { hrData: PolarHrData ->
                         for (sample in hrData.samples) {
                             Log.d(TAG, "HR " + sample.hr)
-                            if (sample.rrs.isNotEmpty()) {
-                                val rrText = "(${sample.rrs.joinToString(separator = "ms, ")}ms)"
+                            if (sample.rrsMs.isNotEmpty()) {
+                                val rrText = "(${sample.rrsMs.joinToString(separator = "ms, ")}ms)"
                                 textViewRR.text = rrText
                             }
 
