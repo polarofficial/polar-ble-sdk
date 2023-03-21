@@ -22,6 +22,7 @@ enum SelectedAction: String, CaseIterable {
 struct ContentView: View {
     @EnvironmentObject private var bleSdkManager: PolarBleSdkManager
     @State private var selectedTab: SelectedAction = .online
+    @State private var isSearchingDevices = false
     
     var body: some View {
         VStack {
@@ -39,8 +40,8 @@ struct ContentView: View {
                         .buttonStyle(PrimaryButtonStyle(buttonState: getBroadcastButtonState()))
                     
                     switch bleSdkManager.deviceConnectionState {
-                    case .disconnected:
-                        Button("Connect", action: {bleSdkManager.connectToDevice()})
+                    case .disconnected(let deviceId):
+                        Button("Connect \(deviceId)", action: {bleSdkManager.connectToDevice()})
                             .buttonStyle(PrimaryButtonStyle(buttonState: getConnectButtonState()))
                     case .connecting(let deviceId):
                         Button("Connecting \(deviceId)", action: {})
@@ -54,11 +55,18 @@ struct ContentView: View {
                     Button("Auto Connect", action: { bleSdkManager.autoConnect()})
                         .buttonStyle(PrimaryButtonStyle(buttonState: getAutoConnectButtonState()))
                     
-                    Button( bleSdkManager.isSearchOn ? "Stop device scan" : "Scan devices", action: {bleSdkManager.searchToggle()})
-                        .buttonStyle(PrimaryButtonStyle(buttonState: getSearchButtonState()))
-                    
+                    VStack {
+                        Button("Search devices", action: { self.isSearchingDevices = true})
+                            .buttonStyle(PrimaryButtonStyle(buttonState: getSearchButtonState()))
+                    }
+                    .sheet(
+                        isPresented: $isSearchingDevices,
+                        onDismiss: { bleSdkManager.stopDevicesSearch()}
+                    ) {
+                        DeviceSearchView(isPresented: self.$isSearchingDevices)
+                    }
                 }.disabled(!bleSdkManager.isBluetoothOn)
-    
+                
                 Picker("Choose operation", selection: $selectedTab) {
                     ForEach(SelectedAction.allCases, id: \.self) {
                         Text($0.rawValue)
@@ -113,9 +121,12 @@ struct ContentView: View {
     
     func getSearchButtonState() -> ButtonState {
         if bleSdkManager.isBluetoothOn {
-            if bleSdkManager.isSearchOn {
+            switch (bleSdkManager.deviceSearch.isSearching) {
+            case .inProgress:
                 return ButtonState.pressedDown
-            } else {
+            case .success:
+                return ButtonState.released
+            case .failed(error: _):
                 return ButtonState.released
             }
         }
@@ -170,7 +181,7 @@ struct ContentView_Previews: PreviewProvider {
             ContentView()
                 .previewDevice(PreviewDevice(rawValue: deviceName))
                 .previewDisplayName(deviceName)
-           .environmentObject(polarBleSdkManager)
+                .environmentObject(polarBleSdkManager)
         }
     }
 }

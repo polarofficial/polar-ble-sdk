@@ -3,7 +3,7 @@
 import Foundation
 
 enum DeviceConnectionState {
-    case disconnected
+    case disconnected(String)
     case connecting(String)
     case connected(String)
 }

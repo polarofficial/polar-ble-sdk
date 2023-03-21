@@ -20,13 +20,14 @@ class PolarBleSdkManager : ObservableObject {
     )
     
     // TODO replace the device id with your device ID or use the auto connect to when connecting to device
-    private var deviceId = "C015D22B"
+    private static let deviceId = "C015D22B"
     
     @Published var isBluetoothOn: Bool
     @Published var isBroadcastListenOn: Bool = false
-    @Published var isSearchOn: Bool = false
+     
+    @Published var deviceConnectionState: DeviceConnectionState = DeviceConnectionState.disconnected(deviceId)
     
-    @Published var deviceConnectionState: DeviceConnectionState = DeviceConnectionState.disconnected
+    @Published var deviceSearch: DeviceSearch = DeviceSearch()
     
     @Published var onlineStreamingFeature: OnlineStreamingFeature = OnlineStreamingFeature()
     @Published var onlineStreamSettings: RecordingSettings? = nil
@@ -50,11 +51,12 @@ class PolarBleSdkManager : ObservableObject {
     
     private var broadcastDisposable: Disposable?
     private var autoConnectDisposable: Disposable?
-    private var searchDisposable: Disposable?
     private var onlineStreamingDisposables: [PolarDeviceDataType: Disposable?] = [:]
     
     private let disposeBag = DisposeBag()
     private var h10ExerciseEntry: PolarExerciseEntry?
+    
+    private var searchDevicesTask: Task<Void, Never>? = nil
     
     init() {
         self.isBluetoothOn = api.isBlePowered
@@ -90,11 +92,21 @@ class PolarBleSdkManager : ObservableObject {
         }
     }
     
+    func updateSelectedDevice( deviceId : String) {
+        if case .disconnected = deviceConnectionState {
+            Task { @MainActor in
+                self.deviceConnectionState = DeviceConnectionState.disconnected(deviceId)
+            }
+        }
+    }
+    
     func connectToDevice() {
-        do {
-            try api.connectToDevice(deviceId)
-        } catch let err {
-            NSLog("Failed to connect to \(deviceId). Reason \(err)")
+        if case .disconnected(let deviceId) = deviceConnectionState {
+            do {
+                try api.connectToDevice(deviceId)
+            } catch let err {
+                NSLog("Failed to connect to \(deviceId). Reason \(err)")
+            }
         }
     }
     
@@ -120,27 +132,42 @@ class PolarBleSdkManager : ObservableObject {
                 }
             }
     }
+       
+    func startDevicesSearch() {
+        searchDevicesTask = Task {
+            await searchDevicesAsync()
+        }
+    }
     
-    func searchToggle() {
-        if !isSearchOn {
-            isSearchOn = true
-            searchDisposable = api.searchForDevice()
-                .observe(on: MainScheduler.instance)
-                .subscribe{ e in
-                    switch e {
-                    case .completed:
-                        NSLog("search complete")
-                        self.isSearchOn = false
-                    case .error(let err):
-                        NSLog("search error: \(err)")
-                        self.isSearchOn = false
-                    case .next(let item):
-                        NSLog("polar device found: \(item.name) connectable: \(item.connectable) address: \(item.address.uuidString)")
-                    }
+    func stopDevicesSearch() {
+        searchDevicesTask?.cancel()
+        searchDevicesTask = nil
+        Task { @MainActor in
+            self.deviceSearch.isSearching = DeviceSearchState.success
+        }
+    }
+        
+    private func searchDevicesAsync() async {
+        Task { @MainActor in
+            self.deviceSearch.foundDevices.removeAll()
+            self.deviceSearch.isSearching = DeviceSearchState.inProgress
+        }
+        
+        do {
+            for try await value in api.searchForDevice().values {
+                Task { @MainActor in
+                    self.deviceSearch.foundDevices.append(value)
                 }
-        } else {
-            isSearchOn = false
-            searchDisposable?.dispose()
+            }
+            Task { @MainActor in
+                self.deviceSearch.isSearching = DeviceSearchState.success
+            }
+        } catch let err {
+            let deviceSearchFailed = "device search failed: \(err)"
+            NSLog(deviceSearchFailed)
+            Task { @MainActor in
+                self.deviceSearch.isSearching = DeviceSearchState.failed(error: deviceSearchFailed)
+            }
         }
     }
     
@@ -929,7 +956,7 @@ extension PolarBleSdkManager : PolarBleApiObserver {
     func deviceDisconnected(_ polarDeviceInfo: PolarDeviceInfo) {
         NSLog("DISCONNECTED: \(polarDeviceInfo)")
         Task { @MainActor in
-            self.deviceConnectionState = DeviceConnectionState.disconnected
+            self.deviceConnectionState = DeviceConnectionState.disconnected(polarDeviceInfo.deviceId)
             self.offlineRecordingFeature = OfflineRecordingFeature()
             self.onlineStreamingFeature = OnlineStreamingFeature()
             self.deviceTimeSetupFeature = DeviceTimeSetupFeature()
