@@ -26,7 +26,6 @@ struct OfflineRecordingView: View {
                 ChosenOfflineRecordingView(offlineRecOptions: selectedTab)
                 Spacer()
             }
-            
         } else if case .connected = bleSdkManager.deviceConnectionState, !bleSdkManager.offlineRecordingFeature.isSupported {
             Text("Offline recording is not supported by this device")
         }
@@ -64,7 +63,6 @@ struct OfflineRecordingView_Previews: PreviewProvider {
     
     private static let polarBleSdkManager: PolarBleSdkManager = {
         let polarBleSdkManager = PolarBleSdkManager()
-        
         polarBleSdkManager.offlineRecordingFeature = offlineRecordingFeature
         polarBleSdkManager.offlineRecordingEntries = offlineRecordingEntries
         return polarBleSdkManager

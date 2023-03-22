@@ -11,7 +11,7 @@ struct OfflineRecordingStartView: View {
         if(bleSdkManager.offlineRecordingFeature.isSupported) {
             Group {
                 Group {
-                    VStack{
+                    VStack {
                         OfflineRecStartButton(dataType: .ecg)
                         OfflineRecStartButton(dataType: .acc)
                         OfflineRecStartButton(dataType: .gyro)
