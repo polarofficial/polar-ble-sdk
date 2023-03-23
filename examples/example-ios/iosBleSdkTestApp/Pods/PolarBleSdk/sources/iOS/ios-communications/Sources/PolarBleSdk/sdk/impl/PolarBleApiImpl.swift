@@ -544,11 +544,8 @@ import UIKit
                 case .completed:
                     break
                 case .next(let value):
-                    let rrsMs = value.rrs.map({ (rr) -> Int in
-                        return Int(round((Float(rr) / 1024.0) * 1000.0))
-                    })
                     self.deviceHrObserver?.hrValueReceived(
-                        deviceId, data: (hr: UInt8(value.hr), rrs: value.rrs, rrsMs: rrsMs, contact: value.sensorContact, contactSupported: value.sensorContactSupported))
+                        deviceId, data: (hr: UInt8(value.hr), rrs: value.rrs, rrsMs: value.rrsMs, contact: value.sensorContact, contactSupported: value.sensorContactSupported))
                 case .error(let error):
                     self.logMessage("\(error)")
                 }
@@ -601,7 +598,7 @@ extension PolarBleApiImpl: PolarBleApi  {
 #endif
                 self.listener.openSessionDirect(session)
             })
-            .asSingle()
+                .asSingle()
                 .asCompletable()
                 }
     
@@ -1407,6 +1404,15 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
+    func startPpiStreaming(_ identifier: String) -> Observable<PolarPpiData> {
+        return startStreaming(identifier, type: .ppi, settings: PolarSensorSetting()) { (client) -> Observable<PolarPpiData> in
+            return client.observePpi()
+                .map {
+                    $0.mapToPolarData()
+                }
+        }
+    }
+    
     func startOhrPPIStreaming(_ identifier: String) -> Observable<PolarPpiData> {
         return startStreaming(identifier, type: .ppi, settings: PolarSensorSetting()) { (client) -> Observable<PolarPpiData> in
             return client.observePpi()
@@ -1423,12 +1429,8 @@ extension PolarBleApiImpl: PolarBleApi  {
                 return Observable.error(PolarErrors.serviceNotFound)
             }
             return bleHrClient.observeHrNotifications(true)
-                .map{
-                    let rrsMs =  $0.rrs.map({ (rr) -> Int in
-                        return Int(round((Float(rr) / 1024.0) * 1000.0))
-                    })
-                    
-                    return (hr: UInt8($0.hr), rrs: $0.rrs, rrsMs: rrsMs, contact: $0.sensorContact, contactSupported: $0.sensorContactSupported)
+                .map {
+                    return [(hr: UInt8($0.hr), rrsMs: $0.rrsMs, rrAvailable: $0.rrPresent, contactStatus: $0.sensorContact, contactStatusSupported: $0.sensorContactSupported)]
                 }
         } catch let err {
             return Observable.error(err)
@@ -1725,10 +1727,10 @@ private extension PpiData {
 }
 
 private extension OfflineHrData {
-    func mapToPolarData() -> [PolarHrData] {
-        var polarSamples: [(hr: UInt8, rrs: [Int], rrsMs: [Int], contact: Bool, contactSupported: Bool)] = []
+    func mapToPolarData() -> PolarHrData {
+        var polarSamples: [(hr: UInt8, rrsMs: [Int], rrAvailable: Bool, contactStatus: Bool, contactStatusSupported: Bool)] = []
         for sample in self.samples {
-            polarSamples.append((hr: sample.hr, rrs:[], rrsMs: [], contact: false, contactSupported: false))
+            polarSamples.append((hr: sample.hr, rrsMs:[], rrAvailable: false, contactStatus: false, contactStatusSupported: false))
         }
         return polarSamples
     }

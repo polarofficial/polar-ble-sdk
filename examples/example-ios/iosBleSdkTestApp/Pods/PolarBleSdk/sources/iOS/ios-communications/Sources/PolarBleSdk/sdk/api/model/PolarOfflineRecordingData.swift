@@ -8,5 +8,5 @@ public enum PolarOfflineRecordingData  {
     case magOfflineRecordingData(PolarMagnetometerData, startTime:Date, settings:PolarSensorSetting)
     case ppgOfflineRecordingData(PolarPpgData, startTime:Date, settings:PolarSensorSetting)
     case ppiOfflineRecordingData(PolarPpiData, startTime:Date)
-    case hrOfflineRecordingData([PolarHrData], startTime:Date)
+    case hrOfflineRecordingData(PolarHrData, startTime:Date)
 }

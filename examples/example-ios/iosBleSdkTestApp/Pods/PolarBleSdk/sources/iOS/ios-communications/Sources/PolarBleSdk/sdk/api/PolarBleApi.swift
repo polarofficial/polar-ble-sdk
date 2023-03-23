@@ -59,11 +59,11 @@ public typealias PolarHrBroadcastData = (deviceInfo: PolarDeviceInfo, hr: UInt8,
 /// Polar hr data
 ///
 ///     - hr in BPM
-///     - rrs RR interval in 1/1024. R is a the top highest peak in the QRS complex of the ECG wave and RR is the interval between successive Rs.
-///     - rrs RR interval in ms.
-///     - contact status between the device and the users skin
-///     - contactSupported if contact is supported
-public typealias PolarHrData = (hr: UInt8, rrs: [Int], rrsMs: [Int], contact: Bool, contactSupported: Bool)
+///     - rrsMs RR interval in ms. R is a the top highest peak in the QRS complex of the ECG wave and RR is the interval between successive Rs.
+///     - contactStatus true if the sensor has contact (with a measurable surface e.g. skin)
+///     - contactStatusSupported true if the sensor supports contact status
+///     - rrAvailable true if RR data is available.
+public typealias PolarHrData = [(hr: UInt8, rrsMs: [Int], rrAvailable: Bool, contactStatus: Bool, contactStatusSupported: Bool)]
 
 /// Polar Ecg data
 ///
