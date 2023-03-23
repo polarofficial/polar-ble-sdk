@@ -544,11 +544,8 @@ import UIKit
                 case .completed:
                     break
                 case .next(let value):
-                    let rrsMs = value.rrs.map({ (rr) -> Int in
-                        return Int(round((Float(rr) / 1024.0) * 1000.0))
-                    })
                     self.deviceHrObserver?.hrValueReceived(
-                        deviceId, data: (hr: UInt8(value.hr), rrs: value.rrs, rrsMs: rrsMs, contact: value.sensorContact, contactSupported: value.sensorContactSupported))
+                        deviceId, data: (hr: UInt8(value.hr), rrs: value.rrs, rrsMs: value.rrsMs, contact: value.sensorContact, contactSupported: value.sensorContactSupported))
                 case .error(let error):
                     self.logMessage("\(error)")
                 }
@@ -1433,11 +1430,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             }
             return bleHrClient.observeHrNotifications(true)
                 .map {
-                    let rrsMs =  $0.rrs.map({ (rr) -> Int in
-                        return Int(round((Float(rr) / 1024.0) * 1000.0))
-                    })
-                    
-                    return [(hr: UInt8($0.hr), rrsMs: rrsMs, rrAvailable: $0.rrPresent, contactStatus: $0.sensorContact, contactStatusSupported: $0.sensorContactSupported)]
+                    return [(hr: UInt8($0.hr), rrsMs: $0.rrsMs, rrAvailable: $0.rrPresent, contactStatus: $0.sensorContact, contactStatusSupported: $0.sensorContactSupported)]
                 }
         } catch let err {
             return Observable.error(err)

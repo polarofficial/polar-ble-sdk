@@ -43,7 +43,7 @@ class BleHrClientTest: XCTestCase {
         XCTAssertEqual(1, observer.events.count)
         for event in observer.events {
             switch event.value {
-            case .next((_, _, _, _, _)):
+            case .next((_, _, _, _, _, _, _)):
                 XCTFail()
             case .error(let error):
                 guard case BleGattException.gattDisconnected = error else {
@@ -81,7 +81,7 @@ class BleHrClientTest: XCTestCase {
         XCTAssertEqual(4, observer.events.count)
         for event in observer.events {
             switch event.value {
-            case .next((let hr, _, _, _, _)):
+            case .next((let hr, _, _, _, _, _, _)):
                 XCTAssertTrue((1...3).contains(hr))
             case .error(let error):
                 guard case BleGattException.gattDisconnected = error else {
@@ -118,7 +118,7 @@ class BleHrClientTest: XCTestCase {
         
         XCTAssertEqual(102, event1.value.element!.hr)
     }
-      
+    
     // GIVEN that BLE HR Service client receives heart rate value in uint8 data format
     // WHEN heart rate observable is subscribed
     // THEN the value is emitted
@@ -360,7 +360,9 @@ class BleHrClientTest: XCTestCase {
         // RR-interval bit                  1 (RR-Interval values are present)
         // 1:       Heart Rate Measurement Value field      size 1:     0x00
         // 2..3:    RR-Interval Field                       size 2:     0xFF 0xFF
-        let expectedRR1 = 65535
+        let expectedHeartRate1 = 0
+        let sample1ExpectedRRin1024Unit = 65535
+        let sample1ExpectedRRinMsUnit = 63999
         let deviceNotifyingHrData1 = Data([0x10, 0x00, 0xFF, 0xFF])
         // HEX: 11 00 00 FF FF 7F 80
         // index    type                                                data:
@@ -370,9 +372,23 @@ class BleHrClientTest: XCTestCase {
         // 1..2:    Heart Rate Measurement Value field      size 1:     0x00 0x00
         // 3..4:    RR-Interval Field                       size 2:     0xFF 0xFF
         // 5..6:    RR-Interval Field                       size 2:     0x7F 0x80
-        let expectedRR2_0 = 65535
-        let expectedRR2_1 = 32895
+        let expectedHeartRate2 = 0
+        let sample2ExpectedRRin1024Unit = 65535
+        let sample2ExpectedRRinMsUnit = 63999
+        let sample3ExpectedRRin1024Unit = 32895
+        let sample3ExpectedRRinMsUnit = 32124
         let deviceNotifyingHrData2 = Data([0x11, 0x00, 0x00, 0xFF, 0xFF, 0x7F, 0x80])
+        // HEX: 10 00 00 00
+        // index    type                                                data:
+        // 0:       Flags field                             size 1:     0x10
+        // Heart rate value format bit      0 (uint8)
+        // RR-interval bit                  1 (RR-Interval values are present)
+        // 1:       Heart Rate Measurement Value field      size 1:     0x00
+        // 2..3:    RR-Interval Field                       size 2:     0x00 0x00
+        let expectedHeartRate3 = 0
+        let sample4ExpectedRRin1024Unit = 0
+        let sample4ExpectedRRinMsUnit = 0
+        let deviceNotifyingHrData3 = Data([0x10, 0x00, 0x00, 0x00])
         
         let characteristic: CBUUID = CBUUID(string: "2a37")
         let error = 0
@@ -385,12 +401,36 @@ class BleHrClientTest: XCTestCase {
         
         bleHrClient.processServiceData(characteristic, data: deviceNotifyingHrData1, err: error)
         bleHrClient.processServiceData(characteristic, data: deviceNotifyingHrData2, err: error)
+        bleHrClient.processServiceData(characteristic, data: deviceNotifyingHrData3, err: error)
         
         //Assert
-        let event1 = observer.events[0]
-        let event2 = observer.events[1]
-        XCTAssertEqual(expectedRR1, event1.value.element!.rrs[0])
-        XCTAssertEqual(expectedRR2_0, event2.value.element!.rrs[0])
-        XCTAssertEqual(expectedRR2_1, event2.value.element!.rrs[1])
+        XCTAssertEqual(3, observer.events.count)
+        
+        let hrData1 = observer.events[0]
+        let hrData2 = observer.events[1]
+        let hrData3 = observer.events[2]
+        
+        XCTAssertEqual(expectedHeartRate1, hrData1.value.element?.hr)
+        XCTAssertEqual(1, hrData1.value.element?.rrs.count)
+        XCTAssertEqual(1, hrData1.value.element?.rrsMs.count)
+        XCTAssertTrue(hrData1.value.element!.rrPresent)
+        XCTAssertEqual(sample1ExpectedRRin1024Unit, hrData1.value.element?.rrs[0])
+        XCTAssertEqual(sample1ExpectedRRinMsUnit, hrData1.value.element?.rrsMs[0])
+        
+        XCTAssertEqual(expectedHeartRate2, hrData2.value.element?.hr)
+        XCTAssertEqual(2, hrData2.value.element?.rrs.count)
+        XCTAssertEqual(2, hrData2.value.element?.rrsMs.count)
+        XCTAssertTrue(hrData2.value.element!.rrPresent)
+        XCTAssertEqual(sample2ExpectedRRin1024Unit, hrData2.value.element?.rrs[0])
+        XCTAssertEqual(sample2ExpectedRRinMsUnit, hrData2.value.element?.rrsMs[0])
+        XCTAssertEqual(sample3ExpectedRRin1024Unit, hrData2.value.element?.rrs[1])
+        XCTAssertEqual(sample3ExpectedRRinMsUnit, hrData2.value.element?.rrsMs[1])
+        
+        XCTAssertEqual(expectedHeartRate3, hrData3.value.element?.hr)
+        XCTAssertEqual(1, hrData3.value.element?.rrs.count)
+        XCTAssertEqual(1, hrData3.value.element?.rrsMs.count)
+        XCTAssertTrue(hrData3.value.element!.rrPresent)
+        XCTAssertEqual(sample4ExpectedRRin1024Unit, hrData3.value.element?.rrs[0])
+        XCTAssertEqual(sample4ExpectedRRinMsUnit, hrData3.value.element?.rrsMs[0])
     }
 }
