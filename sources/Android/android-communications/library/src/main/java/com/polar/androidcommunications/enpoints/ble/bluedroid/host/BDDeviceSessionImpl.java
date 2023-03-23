@@ -104,6 +104,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
         }
     }
 
+    @NonNull
     Object getGattMutex() {
         return gattMutex;
     }

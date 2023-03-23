@@ -16,6 +16,8 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.BleBattClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleDisClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.*
+import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Companion.HR_MEASUREMENT
+import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Companion.HR_SERVICE
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.*
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdControlPointResponse.PmdControlPointResponseCode
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.*
@@ -49,7 +51,6 @@ import com.polar.sdk.impl.utils.PolarDataUtils.mapPolarFeatureToPmdClientMeasure
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPolarOfflineTriggerToPmdOfflineTrigger
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPolarSecretToPmdSecret
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPolarSettingsToPmdSettings
-import com.polar.sdk.impl.utils.PolarDataUtils.mapRr1024ToRrMs
 import com.polar.sdk.impl.utils.PolarTimeUtils.javaCalendarToPbPftpSetLocalTime
 import com.polar.sdk.impl.utils.PolarTimeUtils.javaCalendarToPbPftpSetSystemTime
 import com.polar.sdk.impl.utils.PolarTimeUtils.pbLocalTimeToJavaCalendar
@@ -957,7 +958,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             .map { hrNotificationData: HrNotificationData ->
                 val sample = PolarHrData.PolarHrSample(
                     hrNotificationData.hrValue,
-                    mapRr1024ToRrMs(hrNotificationData.rrs),
+                    hrNotificationData.rrsMs,
                     hrNotificationData.rrPresent,
                     hrNotificationData.sensorContact,
                     hrNotificationData.sensorContactSupported
@@ -1329,7 +1330,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                             deviceId,
                                             PolarHrData.PolarHrSample(
                                                 hrNotificationData.hrValue,
-                                                mapRr1024ToRrMs(hrNotificationData.rrs),
+                                                hrNotificationData.rrsMs,
                                                 hrNotificationData.rrPresent,
                                                 hrNotificationData.sensorContact,
                                                 hrNotificationData.sensorContactSupported

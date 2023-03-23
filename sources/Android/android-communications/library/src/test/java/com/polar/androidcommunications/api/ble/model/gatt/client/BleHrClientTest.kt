@@ -1,7 +1,7 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client
 
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
-import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.HR_MEASUREMENT
+import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Companion.HR_MEASUREMENT
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -27,7 +27,7 @@ class BleHrClientTest {
     }
 
     @Test
-    fun test_HrFormatUint8() {
+    fun `hr format uint8`() {
         //Arrange
         val characteristic: UUID = HR_MEASUREMENT
         val status = 0
@@ -65,7 +65,7 @@ class BleHrClientTest {
     }
 
     @Test
-    fun test_HrFormatUint16() {
+    fun `hr format uint16`() {
         //Arrange
         val characteristic: UUID = HR_MEASUREMENT
         val status = 0
@@ -102,7 +102,7 @@ class BleHrClientTest {
     }
 
     @Test
-    fun test_SensorContactSupported() {
+    fun `sensor contact supported`() {
         //Arrange
         val characteristic: UUID = HR_MEASUREMENT
         val status = 0
@@ -139,7 +139,7 @@ class BleHrClientTest {
     }
 
     @Test
-    fun test_SensorContactNotSupported() {
+    fun `sensor contact not supported`() {
         //Arrange
         val characteristic: UUID = HR_MEASUREMENT
         val status = 0
@@ -176,7 +176,7 @@ class BleHrClientTest {
     }
 
     @Test
-    fun test_EnergyExpended() {
+    fun `energy expended`() {
         //Arrange
         val characteristic: UUID = HR_MEASUREMENT
         val status = 0
@@ -224,7 +224,7 @@ class BleHrClientTest {
     }
 
     @Test
-    fun test_RRinterval() {
+    fun `rr interval`() {
         //Arrange
         val characteristic: UUID = HR_MEASUREMENT
         val status = 0
@@ -237,7 +237,8 @@ class BleHrClientTest {
         // 1:       Heart Rate Measurement Value field      size 1:     0x00
         // 2..3:    RR-Interval Field                       size 2:     0xFF 0xFF
         val expectedHeartRate1 = 0
-        val expectedRR1 = 65535
+        val sample1ExpectedRRin1024Unit = 65535
+        val sample1ExpectedRRinMsUnit = 63999
         val measurementFrame1 =
             byteArrayOf(0x10.toByte(), 0x00.toByte(), 0xFF.toByte(), 0xFF.toByte())
         // HEX: 11 00 00 FF FF 7F 80
@@ -249,8 +250,10 @@ class BleHrClientTest {
         // 3..4:    RR-Interval Field                       size 2:     0xFF 0xFF
         // 5..6:    RR-Interval Field                       size 2:     0x7F 0x80
         val expectedHeartRate2 = 0
-        val expectedRR2_0 = 65535
-        val expectedRR2_1 = 32895
+        val sample2ExpectedRRin1024Unit = 65535
+        val sample2ExpectedRRinMsUnit = 63999
+        val sample3ExpectedRRin1024Unit = 32895
+        val sample3ExpectedRRinMsUnit = 32124
         val measurementFrame2 = byteArrayOf(
             0x11.toByte(),
             0x00.toByte(),
@@ -261,25 +264,61 @@ class BleHrClientTest {
             0x80.toByte()
         )
 
+        // HEX: 10 00 00 00
+        // index    type                                                data:
+        // 0:       Flags field                             size 1:     0x10
+        // Heart rate value format bit      0 (uint8)
+        // RR-interval bit                  1 (RR-Interval values are present)
+        // 1:       Heart Rate Measurement Value field      size 1:     0x00
+        // 2..3:    RR-Interval Field                       size 2:     0x00 0x00
+        val expectedHeartRate3 = 0
+        val sample4ExpectedRRin1024Unit = 0
+        val sample4ExpectedRRinMsUnit = 0
+        val measurementFrame3 = byteArrayOf(
+            0x11.toByte(),
+            0x00.toByte(),
+            0x00.toByte(),
+            0x00.toByte(),
+            0x00.toByte()
+        )
+
         //Act
         val result = bleHrClient.observeHrNotifications(true)
         val testObserver = TestSubscriber<BleHrClient.HrNotificationData>()
         result.subscribe(testObserver)
         bleHrClient.processServiceData(characteristic, measurementFrame1, status, notifying)
         bleHrClient.processServiceData(characteristic, measurementFrame2, status, notifying)
+        bleHrClient.processServiceData(characteristic, measurementFrame3, status, notifying)
 
         //Assert
         testObserver.assertNoErrors()
-        testObserver.assertValueCount(2)
+        testObserver.assertValueCount(3)
+
         val hrData1 = testObserver.values()[0]
         assertEquals(expectedHeartRate1, hrData1.hrValue)
+        assertEquals(1, hrData1.rrs.size)
+        assertEquals(1, hrData1.rrsMs.size)
         assertTrue(hrData1.rrPresent)
-        assertEquals(expectedRR1, hrData1.rrs[0])
-        val hrData2 = testObserver.values()[1]
+        assertEquals(sample1ExpectedRRin1024Unit, hrData1.rrs[0])
+        assertEquals(sample1ExpectedRRinMsUnit, hrData1.rrsMs[0])
 
+        val hrData2 = testObserver.values()[1]
         assertEquals(expectedHeartRate2, hrData2.hrValue)
+        assertEquals(2, hrData2.rrs.size)
+        assertEquals(2, hrData2.rrsMs.size)
         assertTrue(hrData2.rrPresent)
-        assertEquals(expectedRR2_0, hrData2.rrs[0])
-        assertEquals(expectedRR2_1, hrData2.rrs[1])
+        assertEquals(sample2ExpectedRRin1024Unit, hrData2.rrs[0])
+        assertEquals(sample2ExpectedRRinMsUnit, hrData2.rrsMs[0])
+
+        assertEquals(sample3ExpectedRRin1024Unit, hrData2.rrs[1])
+        assertEquals(sample3ExpectedRRinMsUnit, hrData2.rrsMs[1])
+
+        val hrData3 = testObserver.values()[2]
+        assertEquals(expectedHeartRate3, hrData3.hrValue)
+        assertEquals(1, hrData3.rrs.size)
+        assertEquals(1, hrData3.rrsMs.size)
+        assertTrue(hrData3.rrPresent)
+        assertEquals(sample4ExpectedRRin1024Unit, hrData3.rrs[0])
+        assertEquals(sample4ExpectedRRinMsUnit, hrData3.rrsMs[0])
     }
 }

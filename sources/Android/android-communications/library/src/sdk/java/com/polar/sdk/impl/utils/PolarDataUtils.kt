@@ -266,13 +266,5 @@ internal object PolarDataUtils {
             key = polarSecret.secret
         )
     }
-
-    fun mapRr1024ToRrMs(rrsRaw: List<Int>): List<Int> {
-        val rrsMs = mutableListOf<Int>()
-        for (rrRaw in rrsRaw) {
-            rrsMs.add((rrRaw.toFloat() / 1024.0 * 1000.0).roundToInt())
-        }
-        return rrsMs
-    }
 }
 
