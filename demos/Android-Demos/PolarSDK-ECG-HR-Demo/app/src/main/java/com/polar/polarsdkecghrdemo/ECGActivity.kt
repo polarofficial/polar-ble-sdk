@@ -9,7 +9,6 @@ import com.androidplot.xy.BoundaryMode
 import com.androidplot.xy.StepMode
 import com.androidplot.xy.XYPlot
 import com.polar.sdk.api.PolarBleApi
-import com.polar.sdk.api.PolarBleApi.DeviceStreamingFeature
 import com.polar.sdk.api.PolarBleApiCallback
 import com.polar.sdk.api.PolarBleApiDefaultImpl.defaultImplementation
 import com.polar.sdk.api.errors.PolarInvalidArgument
@@ -35,6 +34,8 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
     private lateinit var plot: XYPlot
     private lateinit var ecgPlotter: EcgPlotter
     private var ecgDisposable: Disposable? = null
+    private var hrDisposable: Disposable? = null
+
     private lateinit var deviceId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,10 +51,11 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
 
         api = defaultImplementation(
             applicationContext,
-            PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING or
-                    PolarBleApi.FEATURE_BATTERY_INFO or
-                    PolarBleApi.FEATURE_DEVICE_INFO or
-                    PolarBleApi.FEATURE_HR
+            setOf(
+                PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_BATTERY_INFO,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO
+            )
         )
         api.setApiCallback(object : PolarBleApiCallback() {
             override fun blePowerStateChanged(powered: Boolean) {
@@ -73,18 +75,16 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
                 Log.d(TAG, "Device disconnected ${polarDeviceInfo.deviceId}")
             }
 
-            override fun streamingFeaturesReady(identifier: String, features: Set<DeviceStreamingFeature>) {
-                for (feature in features) {
-                    Log.d(TAG, "Streaming feature is ready: $feature")
-                    when (feature) {
-                        DeviceStreamingFeature.ECG -> streamECG()
-                        else -> {}
-                    }
-                }
-            }
+            override fun bleSdkFeatureReady(identifier: String, feature: PolarBleApi.PolarBleSdkFeature) {
+                Log.d(TAG, "feature ready $feature")
 
-            override fun hrFeatureReady(identifier: String) {
-                Log.d(TAG, "HR Feature ready $identifier")
+                when (feature) {
+                    PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING -> {
+                        streamECG()
+                        streamHR()
+                    }
+                    else -> {}
+                }
             }
 
             override fun disInformationReceived(identifier: String, uuid: UUID, value: String) {
@@ -101,19 +101,22 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
                 textViewBattery.append(batteryLevelText)
             }
 
-            override fun hrNotificationReceived(identifier: String, data: PolarHrData) {
-                Log.d(TAG, "HR " + data.hr)
-                if (data.rrsMs.isNotEmpty()) {
-                    val rrText = "(${data.rrsMs.joinToString(separator = "ms, ")}ms)"
-                    textViewRR.text = rrText
-                }
-
-                textViewHR.text = data.hr.toString()
+            override fun hrNotificationReceived(identifier: String, data: PolarHrData.PolarHrSample) {
+                // deprecated
             }
 
             override fun polarFtpFeatureReady(identifier: String) {
-                Log.d(TAG, "Polar FTP ready $identifier")
+                // deprecated
             }
+
+            override fun streamingFeaturesReady(identifier: String, features: Set<PolarBleApi.PolarDeviceDataType>) {
+                // deprecated
+            }
+
+            override fun hrFeatureReady(identifier: String) {
+                // deprecated
+            }
+
         })
         try {
             api.connectToDevice(deviceId)
@@ -143,8 +146,9 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
     }
 
     fun streamECG() {
-        if (ecgDisposable == null) {
-            ecgDisposable = api.requestStreamSettings(deviceId, DeviceStreamingFeature.ECG)
+        val isDisposed = ecgDisposable?.isDisposed ?: true
+        if (isDisposed) {
+            ecgDisposable = api.requestStreamSettings(deviceId, PolarBleApi.PolarDeviceDataType.ECG)
                 .toFlowable()
                 .flatMap { sensorSetting: PolarSensorSetting -> api.startEcgStreaming(deviceId, sensorSetting.maxSettings()) }
                 .observeOn(AndroidSchedulers.mainThread())
@@ -167,6 +171,37 @@ class ECGActivity : AppCompatActivity(), PlotterListener {
             // NOTE stops streaming if it is "running"
             ecgDisposable?.dispose()
             ecgDisposable = null
+        }
+    }
+
+    fun streamHR() {
+        val isDisposed = hrDisposable?.isDisposed ?: true
+        if (isDisposed) {
+            hrDisposable = api.startHrStreaming(deviceId)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    { hrData: PolarHrData ->
+                        for (sample in hrData.samples) {
+                            Log.d(TAG, "HR " + sample.hr)
+                            if (sample.rrsMs.isNotEmpty()) {
+                                val rrText = "(${sample.rrsMs.joinToString(separator = "ms, ")}ms)"
+                                textViewRR.text = rrText
+                            }
+
+                            textViewHR.text = sample.hr.toString()
+
+                        }
+                    },
+                    { error: Throwable ->
+                        Log.e(TAG, "HR stream failed. Reason $error")
+                        hrDisposable = null
+                    },
+                    { Log.d(TAG, "HR stream complete") }
+                )
+        } else {
+            // NOTE stops streaming if it is "running"
+            hrDisposable?.dispose()
+            hrDisposable = null
         }
     }
 

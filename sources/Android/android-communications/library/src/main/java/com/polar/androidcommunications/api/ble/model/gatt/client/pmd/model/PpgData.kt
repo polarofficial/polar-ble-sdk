@@ -64,7 +64,7 @@ internal class PpgData internal constructor(@Deprecated("each sample has timesta
     val ppgSamples: MutableList<PpgDataSample> = ArrayList()
 
     companion object {
-        const val TAG = "PpgData"
+        private const val TAG = "PpgData"
 
         private const val TYPE_0_SAMPLE_SIZE_IN_BYTES = 3
         private const val TYPE_0_SAMPLE_SIZE_IN_BITS = TYPE_0_SAMPLE_SIZE_IN_BYTES * 8

@@ -6,7 +6,7 @@ import RxSwift
 public class BleHrClient: BleGattClientBase {
     public static let HR_SERVICE = CBUUID(string: "180D")
     private static let BODY_SENSOR_LOCATION = CBUUID(string: "2a38")
-    private static let HR_MEASUREMENT = CBUUID(string: "2a37")
+    static let HR_MEASUREMENT = CBUUID(string: "2a37")
     
     public typealias BleHrNotification = (hr: Int, sensorContact: Bool, sensorContactSupported: Bool, energy: Int, rrs: [Int])
     

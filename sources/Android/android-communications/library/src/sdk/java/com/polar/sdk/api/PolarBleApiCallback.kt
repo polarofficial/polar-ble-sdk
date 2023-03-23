@@ -1,7 +1,7 @@
 // Copyright © 2019 Polar Electro Oy. All rights reserved.
 package com.polar.sdk.api
 
-import com.polar.sdk.api.PolarBleApi.DeviceStreamingFeature
+import com.polar.sdk.api.PolarBleApi.PolarDeviceDataType
 import com.polar.sdk.api.model.PolarDeviceInfo
 import com.polar.sdk.api.model.PolarHrData
 import java.util.*
@@ -11,6 +11,8 @@ import java.util.*
  */
 abstract class PolarBleApiCallback : PolarBleApiCallbackProvider {
     /**
+     * Bluetooth power state of the device where this SDK is running
+     *
      * @param powered true = Bluetooth power on, false = Bluetooth power off
      */
     override fun blePowerStateChanged(powered: Boolean) {}
@@ -30,41 +32,56 @@ abstract class PolarBleApiCallback : PolarBleApiCallbackProvider {
     override fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo) {}
 
     /**
-     * Device is now disconnected, no further action is needed from the application
-     * if polar.com.sdk.api.PolarBleApi#disconnectFromPolarDevice is not called. Device will be automatically reconnected
+     * Device is now disconnected
      *
      * @param polarDeviceInfo Polar device information
      */
     override fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {}
 
     /**
+     * Called when the feature in connected device is available and it is ready. Called only for the features which are specified by [PolarBleApi] instantiation.
+     *
+     * @param identifier Polar device id
+     * @param feature   feature is ready
+     */
+    override fun bleSdkFeatureReady(identifier: String, feature: PolarBleApi.PolarBleSdkFeature) {}
+
+    /**
      * Polar device's streaming features ready. Application may start any stream now if desired.
-     * Requires feature [PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING] to be enabled for the
+     * Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING] to be enabled for the
      * Polar SDK instance.
      *
      * @param identifier Polar device id
      * @param features   set of features available and ready
      */
-    override fun streamingFeaturesReady(identifier: String, features: Set<DeviceStreamingFeature>) {}
+    @Deprecated(
+        "The functionality has changed. Please use the bleSdkFeatureReady to know if onlineStreaming is available and" +
+                " the getAvailableOnlineStreamDataTypes function know which data types are supported"
+    )
+    override fun streamingFeaturesReady(identifier: String, features: Set<PolarDeviceDataType>) {
+    }
 
     /**
      * Polar SDK Mode feature is available in the device. Application may now enter to SDK mode.
-     * Requires feature PolarBleApi#FEATURE_POLAR_SENSOR_STREAMING
+     * Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE]
      *
      * @param identifier Polar device id
      */
-    override fun sdkModeFeatureAvailable(identifier: String) {}
+    @Deprecated("Information whether SDK Mode is available is provided by bleSdkFeatureReady")
+    override fun sdkModeFeatureAvailable(identifier: String) {
+    }
 
     /**
      * Polar device HR client is now ready and HR transmission is starting in a moment.
      *
      * @param identifier Polar device id or bt address
      */
-    override fun hrFeatureReady(identifier: String) {}
+    @Deprecated("Information whether HR feature is available is provided by bleSdkFeatureReady")
+    override fun hrFeatureReady(identifier: String) {
+    }
 
     /**
-     * DIS information received
-     * requires feature PolarBleApi#FEATURE_DEVICE_INFO
+     * DIS information received. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO]
      *
      * @param identifier Polar device id or bt address
      * @param uuid       uuid of dis value
@@ -73,8 +90,7 @@ abstract class PolarBleApiCallback : PolarBleApiCallbackProvider {
     override fun disInformationReceived(identifier: String, uuid: UUID, value: String) {}
 
     /**
-     * Battery level received
-     * requires feature PolarBleApi#FEATURE_BATTERY_INFO
+     * Battery level received. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_BATTERY_INFO]
      *
      * @param identifier Polar device id or bt address
      * @param level      battery level (value between 0-100%)
@@ -88,7 +104,9 @@ abstract class PolarBleApiCallback : PolarBleApiCallbackProvider {
      * @param identifier Polar device id or bt address
      * @param data       @see polar.com.sdk.api.model.PolarHrData.java
      */
-    override fun hrNotificationReceived(identifier: String, data: PolarHrData) {}
+    @Deprecated("Please use the startHrStreaming API to get the heart rate data ")
+    override fun hrNotificationReceived(identifier: String, data: PolarHrData.PolarHrSample) {
+    }
 
     /**
      * File transfer ready
@@ -96,5 +114,7 @@ abstract class PolarBleApiCallback : PolarBleApiCallbackProvider {
      *
      * @param identifier Polar device id
      */
-    override fun polarFtpFeatureReady(identifier: String) {}
+    @Deprecated("Not supported anymore, won't be ever called. Use the bleSdkFeatureReady")
+    override fun polarFtpFeatureReady(identifier: String) {
+    }
 }

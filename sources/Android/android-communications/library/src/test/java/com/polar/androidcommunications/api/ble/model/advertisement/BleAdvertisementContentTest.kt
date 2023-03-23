@@ -1,6 +1,6 @@
 package com.polar.androidcommunications.api.ble.model.advertisement
 
-import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.HR_SERVICE_16BIT_UUID
+import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Companion.HR_SERVICE_16BIT_UUID
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils.PFTP_SERVICE_16BIT_UUID
 import com.polar.androidcommunications.common.ble.BleUtils
 import com.polar.androidcommunications.testrules.BleLoggerTestRule

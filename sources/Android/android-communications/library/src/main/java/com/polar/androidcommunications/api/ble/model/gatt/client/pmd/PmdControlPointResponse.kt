@@ -22,7 +22,8 @@ class PmdControlPointResponse(data: ByteArray) {
         ERROR_INVALID_MTU(10),
         ERROR_INVALID_NUMBER_OF_CHANNELS(11),
         ERROR_INVALID_STATE(12),
-        ERROR_DEVICE_IN_CHARGER(13);
+        ERROR_DEVICE_IN_CHARGER(13),
+        ERROR_DISK_FULL(14);
     }
 
     init {

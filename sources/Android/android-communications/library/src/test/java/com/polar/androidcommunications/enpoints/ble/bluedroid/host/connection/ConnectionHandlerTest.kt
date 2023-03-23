@@ -36,7 +36,7 @@ internal class ConnectionHandlerTest {
 
     @Before
     fun setUp() {
-        MockKAnnotations.init(this)
+        MockKAnnotations.init(this, relaxUnitFun = true)
         testScheduler = TestScheduler()
         connectionHandler = ConnectionHandler(mockConnectionInterface, mockScannerInterface, mockConnectionHandlerObserver, guardTimerScheduler = testScheduler)
 
@@ -56,20 +56,9 @@ internal class ConnectionHandlerTest {
         }
         every { mockConnectionInterface.isPowered } returns true
 
-        every { mockConnectionHandlerObserver.deviceSessionStateChanged(any()) } returns Unit
-        every { mockConnectionHandlerObserver.deviceDisconnected(any()) } returns Unit
-
-        every { mockScannerInterface.connectionHandlerRequestStopScanning() } returns Unit
-        every { mockScannerInterface.connectionHandlerResumeScanning() } returns Unit
-
         every { mockDeviceSession.sessionState } returns BleDeviceSession.DeviceSessionState.SESSION_CLOSED
         every { mockDeviceSession.isConnectableAdvertisement } returns true
         every { mockDeviceSession.connectionUuids } returns ArrayList()
-    }
-
-    @After
-    fun afterTests() {
-        unmockkAll()
     }
 
     @Test
@@ -104,7 +93,7 @@ internal class ConnectionHandlerTest {
 
         // Act
         connectionHandler.connectDevice(mockDeviceSession, true)
-        testScheduler.advanceTimeBy(GUARD_TIME_MS + 10, TimeUnit.SECONDS)
+        testScheduler.advanceTimeBy(GUARD_TIME_MS + 10, TimeUnit.MILLISECONDS)
 
         // Assert
         verify(exactly = 1) { mockScannerInterface.connectionHandlerRequestStopScanning() }
@@ -127,7 +116,7 @@ internal class ConnectionHandlerTest {
 
         // Act
         connectionHandler.connectDevice(mockDeviceSession, true)
-        testScheduler.advanceTimeBy(GUARD_TIME_MS + 10, TimeUnit.SECONDS)
+        testScheduler.advanceTimeBy(GUARD_TIME_MS + 10, TimeUnit.MILLISECONDS)
 
         // Assert
         verify(exactly = 1) { mockScannerInterface.connectionHandlerRequestStopScanning() }

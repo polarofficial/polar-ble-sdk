@@ -1,10 +1,3 @@
-//
-//  iosBleSdkTestAppTests.swift
-//  iosBleSdkTestAppTests
-//
-//  Created by Jukka Oikarinen on 30.5.2021.
-//
-
 import XCTest
 @testable import iosBleSdkTestApp
 

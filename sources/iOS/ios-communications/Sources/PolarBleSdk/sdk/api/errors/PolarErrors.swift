@@ -32,8 +32,14 @@ public enum PolarErrors: Error {
     case unableToStartStreaming
     
     /// invalid argument
-    case invalidArgument
+    case invalidArgument(description: String = "")
+    
+    /// Polar BLE SDK internal exception indicating something went wrong in SDK internal logic
+    case polarBleSdkInternalException(description: String)
     
     /// Error on device operation
     case deviceError(description: String)
+    
+    /// Error related to offline recording
+    case polarOfflineRecordingError(description: String)
 }

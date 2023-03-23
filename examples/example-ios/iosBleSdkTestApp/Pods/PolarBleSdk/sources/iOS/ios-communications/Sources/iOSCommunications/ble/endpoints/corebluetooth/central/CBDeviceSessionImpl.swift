@@ -108,9 +108,8 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
             if self.isConnected() {
                 if self.peripheral.services != nil &&
                     self.peripheral.services?.count != 0 &&
-                    self.serviceCount.get() >= (self.peripheral.services?.count)!
                     
-                {
+                    self.serviceCount.get() >= (self.peripheral.services?.count)! {
                     for service in (self.peripheral.services)! {
                         observer.onNext(service.uuid)
                     }
@@ -235,7 +234,6 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
         }
         if let chr = attNotifyQueue.first {
             BleLogger.trace("send next att notify: \(chr.description)")
-            cccWriteCallback?.cccWrite(address, characteristic: chr.uuid)
             peripheral.setNotifyValue(enabled, for: chr)
         }
     }
@@ -274,37 +272,27 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         BleLogger.trace_if_error("didDiscoverServices: ", error: error)
-        
-        guard error == nil else {
-            RxUtils.postErrorAndClearList(serviceMonitors, error: error!)
-            return
-        }
-        
-        guard let services = peripheral.services else {
-            BleLogger.error("No services present")
-            RxUtils.postErrorAndClearList(serviceMonitors, error: BleGattException.gattServicesNotFound)
-            return
-        }
-        
-        // BIG NOTE peripheral.maximumWriteValueLengthForType(CBCharacteristicWriteType.WithResponse) returns incorrect mtu!
-        let mtu = peripheral.maximumWriteValueLength(for: CBCharacteristicWriteType.withoutResponse)
-        BleLogger.trace("MTU SIZE(WithoutResponse): \(mtu)")
-        if mtu > 0 {
-            for client in gattClients {
-                client.setMtu(mtu)
+        if error == nil {
+            // BIG NOTE peripheral.maximumWriteValueLengthForType(CBCharacteristicWriteType.WithResponse) returns incorrect mtu!
+            let mtu = peripheral.maximumWriteValueLength(for: CBCharacteristicWriteType.withoutResponse)
+            BleLogger.trace("MTU SIZE(WithoutResponse): \(mtu)")
+            if mtu > 0 {
+                for client in gattClients {
+                    client.setMtu(mtu)
+                }
             }
-        }
-        
-        for service in services {
-            BleLogger.trace("service discovered: ",service.uuid.description)
-            fetchGattClient(service.uuid)?.setServiceDiscovered(true)
-            
-            if(service.characteristics == nil || service.characteristics?.count == 0 ) {
-                peripheral.discoverCharacteristics(nil, for: service)
+            if let services = peripheral.services {
+                for service in services {
+                    BleLogger.trace("service discovered: ",service.uuid.description)
+                    fetchGattClient(service.uuid)?.setServiceDiscovered(true)
+                    peripheral.discoverCharacteristics(nil, for: service)
+                }
             } else {
-                BleLogger.trace("Using cached characteristics")
-                self.peripheral(peripheral, didDiscoverCharacteristicsFor: service, error: nil)
+                BleLogger.error("No services present")
+                RxUtils.postErrorAndClearList(serviceMonitors, error: BleGattException.gattServicesNotFound)
             }
+        } else {
+            RxUtils.postErrorAndClearList(serviceMonitors, error: error!)
         }
     }
     
@@ -315,49 +303,36 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         BleLogger.trace_if_error("didDiscoverCharacteristicsForService: ", error: error)
-        
-        guard error == nil else {
-            RxUtils.postErrorAndClearList(serviceMonitors, error: error!)
-            return
-        }
-        
-        ++serviceCount
-        
-        if let client = fetchGattClient(service.uuid) {
-            if let chrs = service.characteristics {
-                for chr in chrs {
-                    if client.containsCharacteristic(chr.uuid) {
-                        client.processCharacteristicDiscovered(chr.uuid, properties: chr.properties.rawValue)
-                        
-                        if client.containsNotifyCharacteristic(chr.uuid) {
-                            if(chr.isNotifying) {
-                                // Characteristics is already in notifying state, fake the "notifyDescriptorWritten"
-                                BleLogger.trace("Notify chr: \(chr.uuid) already enabled")
-                                client.notifyDescriptorWritten(chr.uuid, enabled: true, err: 0)
-                            } else {
+        if error == nil {
+            ++serviceCount
+            if let client = fetchGattClient(service.uuid) {
+                if let chrs = service.characteristics {
+                    for chr in chrs {
+                        if client.containsCharacteristic(chr.uuid) {
+                            client.processCharacteristicDiscovered(chr.uuid, properties: chr.properties.rawValue)
+                            if client.containsNotifyCharacteristic(chr.uuid) {
                                 attNotifyQueue.append(chr)
                                 if attNotifyQueue.count == 1 {
-                                    self.sendNextAttNotify(false, enableNotify: true)
+                                    self.sendNextAttNotify(false)
                                 }
                             }
-                        }
-                        
-                        if client.containsReadCharacteristic(chr.uuid) {
-                            BleLogger.trace("Read value for chr: \(chr.uuid)")
-                            peripheral.readValue(for: chr)
+                            if client.containsReadCharacteristic(chr.uuid) {
+                                peripheral.readValue(for: chr)
+                            }
                         }
                     }
+                } else {
+                    BleLogger.error("Service has no characteristics")
                 }
-            } else {
-                BleLogger.error("Service has no characteristics")
             }
-        }
-        
-        RxUtils.emitNext(serviceMonitors) { (observer) in
-            observer.obs.onNext(service.uuid)
-            if serviceCount.get() >= (peripheral.services?.count)! {
-                observer.obs.onCompleted()
+            RxUtils.emitNext(serviceMonitors) { (observer) in
+                observer.obs.onNext(service.uuid)
+                if serviceCount.get() >= (peripheral.services?.count)! {
+                    observer.obs.onCompleted()
+                }
             }
+        } else {
+            RxUtils.postErrorAndClearList(serviceMonitors, error: error!)
         }
     }
     

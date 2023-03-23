@@ -415,7 +415,7 @@ public class BlePsFtpClient extends BleGattBase {
                 }
                 txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, Collections.singletonList(cancelPacket), useAttributeLevelResponse.get());
                 waitPacketsWritten(packetsWritten, mtuWaiting, 1);
-                BleLogger.d(TAG, "Stream cancel has been successfully send");
+                BleLogger.d(TAG, "MTU interrupted. Stream cancel has been successfully send");
             } catch (Throwable throwable) {
                 BleLogger.e(TAG, "Exception while trying to cancel streaming");
             }
@@ -641,7 +641,7 @@ public class BlePsFtpClient extends BleGattBase {
                         byte[] cancelPacket = new byte[]{0x00, 0x00, 0x00};
                         txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, Collections.singletonList(cancelPacket), true);
                         waitPacketsWritten(packetsWritten, mtuWaiting, 1);
-                        BleLogger.d(TAG, "Stream cancel has been successfully send");
+                        BleLogger.d(TAG, "Sequence number mismatch. Stream cancel has been successfully send");
                     }
                     throw new BlePsFtpUtils.PftpResponseError("Air packet lost!", 303);
                 }

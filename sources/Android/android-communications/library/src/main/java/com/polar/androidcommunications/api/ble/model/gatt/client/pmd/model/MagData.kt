@@ -14,7 +14,11 @@ internal class MagData(@Deprecated("each sample has timestamp") val timeStamp: U
 
         companion object {
             fun getById(id: Int): CalibrationStatus {
-                return values().first { it.id == id }
+                return try {
+                    values().first { it.id == id }
+                } catch (e: NoSuchElementException) {
+                    NOT_AVAILABLE
+                }
             }
         }
     }

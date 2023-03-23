@@ -1,5 +1,6 @@
 package com.polar.androidcommunications.enpoints.ble.bluedroid.host;
 
+import static com.polar.androidcommunications.common.ble.AndroidBuildUtils.getBrand;
 import static com.polar.androidcommunications.common.ble.AndroidBuildUtils.getBuildVersion;
 
 import android.annotation.SuppressLint;
@@ -103,6 +104,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
         }
     }
 
+    @NonNull
     Object getGattMutex() {
         return gattMutex;
     }
@@ -293,7 +295,9 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                             return false;
                         }
                         gatt.setCharacteristicNotification(characteristic, operation.isEnable());
-                        if (getBuildVersion() >= Build.VERSION_CODES.TIRAMISU) {
+
+                        //Note, some manufacturers, e.g. OnePlus haven't properly implemented the new API.
+                        if (getBuildVersion() >= Build.VERSION_CODES.TIRAMISU && !getBrand().equals("OnePlus")) {
                             int status = gatt.writeDescriptor(descriptor, value);
                             if (status == BluetoothStatusCodes.SUCCESS) {
                                 return true;
@@ -302,6 +306,7 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                                 return false;
                             }
                         } else {
+                            BleLogger.d(TAG, "using deprecated descriptor write");
                             descriptor.setValue(value);
                             return gatt.writeDescriptor(descriptor);
                         }

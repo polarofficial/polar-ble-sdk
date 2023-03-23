@@ -2,7 +2,7 @@
 
 import Foundation
 
-public struct EcgData {
+public class EcgData {
     let timeStamp: UInt64
     
     struct EcgSample {
@@ -10,7 +10,12 @@ public struct EcgData {
         let microVolts: Int32
     }
     
-    let samples: [EcgSample]
+    var samples: [EcgSample]
+ 
+    init(timeStamp: UInt64 = 0, samples: [EcgSample] = [EcgSample]()) {
+        self.timeStamp = timeStamp
+        self.samples = samples
+    }
     
     private static let  TYPE_0_SAMPLE_SIZE_IN_BYTES = 3
     

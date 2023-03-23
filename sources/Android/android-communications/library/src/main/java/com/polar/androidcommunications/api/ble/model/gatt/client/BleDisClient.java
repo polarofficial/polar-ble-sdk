@@ -22,7 +22,7 @@ import io.reactivex.rxjava3.core.FlowableOnSubscribe;
 
 public class BleDisClient extends BleGattBase {
 
-    public static final String TAG = BleDisClient.class.getSimpleName();
+    private static final String TAG = BleDisClient.class.getSimpleName();
 
     public static final UUID DIS_SERVICE = UUID.fromString("0000180a-0000-1000-8000-00805f9b34fb");
     public static final UUID MODEL_NUMBER_STRING = UUID.fromString("00002a24-0000-1000-8000-00805f9b34fb");

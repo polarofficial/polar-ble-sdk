@@ -54,6 +54,7 @@ internal class GattCallback(
     }
 
     override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
+        BleLogger.d(TAG, "GATT onServicesDiscovered. Status: $status")
         val deviceSession = sessions.getSession(gatt) ?: kotlin.run {
             BleLogger.e(TAG, "services discovered on non known gatt")
             return
@@ -65,9 +66,10 @@ internal class GattCallback(
         }
         if (status == BluetoothGatt.GATT_SUCCESS) {
             deviceSession.handleServicesDiscovered()
-            Completable.fromAction { connectionHandler.servicesDiscovered(deviceSession) }
-                .subscribeOn(Schedulers.io())
-                .subscribe()
+            // There are devices needing a delay before connection parameters negotiation is continued, e.g. Nokia G11
+            Completable.timer(CONNECTION_PARAMETER_NEGOTIATION_WAIT_DELAY, TimeUnit.MILLISECONDS)
+                .observeOn(Schedulers.io())
+                .subscribe { connectionHandler.servicesDiscovered(deviceSession) }
         } else {
             BleLogger.e(TAG, "service discovery failed: $status")
             Completable.fromAction { connectionHandler.disconnectDevice(deviceSession) }
@@ -79,6 +81,7 @@ internal class GattCallback(
     @Deprecated("Deprecated in Java")
     @SuppressLint("MissingPermission")
     override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
+        BleLogger.d(TAG, "GATT onCharacteristicRead characteristic:${characteristic.uuid} status: $status")
         val deviceSession = sessions.getSession(gatt)
         if (deviceSession != null) {
             deviceSession.handleCharacteristicRead(characteristic.service, characteristic, characteristic.value, status)
@@ -90,6 +93,7 @@ internal class GattCallback(
 
     @SuppressLint("MissingPermission")
     override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray, status: Int) {
+        BleLogger.d(TAG, "GATT onCharacteristicRead characteristic:${characteristic.uuid} status: $status")
         val deviceSession = sessions.getSession(gatt)
         if (deviceSession != null) {
             deviceSession.handleCharacteristicRead(characteristic.service, characteristic, value, status)
@@ -101,6 +105,7 @@ internal class GattCallback(
 
     @SuppressLint("MissingPermission")
     override fun onCharacteristicWrite(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
+        BleLogger.d(TAG, "GATT onCharacteristicWrite characteristic:${characteristic.uuid} status: $status")
         val deviceSession = sessions.getSession(gatt)
         if (deviceSession != null) {
             deviceSession.handleCharacteristicWrite(characteristic.service, characteristic, status)
@@ -136,6 +141,7 @@ internal class GattCallback(
     @Deprecated("Deprecated in Java")
     @SuppressLint("MissingPermission")
     override fun onDescriptorRead(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) {
+        BleLogger.d(TAG, "GATT onDescriptorRead descriptor:${descriptor.uuid} status: $status")
         val deviceSession = sessions.getSession(gatt)
         if (deviceSession != null) {
             deviceSession.handleDescriptorRead(descriptor, descriptor.value, status)
@@ -147,6 +153,7 @@ internal class GattCallback(
 
     @SuppressLint("MissingPermission")
     override fun onDescriptorRead(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int, value: ByteArray) {
+        BleLogger.d(TAG, "GATT onDescriptorRead descriptor:${descriptor.uuid} status: $status")
         val deviceSession = sessions.getSession(gatt)
         if (deviceSession != null) {
             deviceSession.handleDescriptorRead(descriptor, value, status)
@@ -158,6 +165,7 @@ internal class GattCallback(
 
     @SuppressLint("MissingPermission")
     override fun onDescriptorWrite(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) {
+        BleLogger.d(TAG, "GATT onDescriptorWrite descriptor: ${descriptor.uuid} status: $status")
         val deviceSession = sessions.getSession(gatt)
         if (deviceSession != null) {
             deviceSession.handleDescriptorWrite(descriptor.characteristic.service, descriptor.characteristic, descriptor.value, status)
@@ -212,5 +220,10 @@ internal class GattCallback(
                 .subscribeOn(Schedulers.io())
                 .subscribe()
         }
+    }
+
+    override fun onServiceChanged(gatt: BluetoothGatt) {
+        super.onServiceChanged(gatt)
+        BleLogger.d(TAG, " onServiceChanged")
     }
 }

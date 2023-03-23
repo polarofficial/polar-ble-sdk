@@ -5,7 +5,8 @@ package com.polar.sdk.api.model
  * Polar Peak-to-Peak interval (PPI) data measured by the optical heart rate sensor
  * @property samples from optical sensor. Each sample contains PPI related data
  */
-class PolarOhrPPIData(
+@Deprecated("PolarOhrPPIData is renamed to better describe data content, use PolarPpiData", replaceWith = ReplaceWith("PolarPpiData"))
+data class PolarOhrPPIData(
     @Deprecated("This field is deprecated as it makes no sense. PPI is the interval between two approximated events thus timestamp cannot be provided")
     val timeStamp: Long,
     val samples: List<PolarOhrPPISample>

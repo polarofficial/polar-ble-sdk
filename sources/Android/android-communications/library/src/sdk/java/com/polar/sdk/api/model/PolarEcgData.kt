@@ -5,7 +5,7 @@ package com.polar.sdk.api.model
  * For electrocardiography data.
  * @property samples Ecg data samples
  */
-class PolarEcgData(
+data class PolarEcgData(
     val samples: List<PolarEcgDataSample>,
     @Deprecated("use the timestamp found in each sample")
     val timeStamp: Long

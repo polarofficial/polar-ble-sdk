@@ -4,12 +4,12 @@ import SwiftUI
 
 @main
 struct iosBleSdkTestApp: App {
-    
     @StateObject var bleSdkManager = PolarBleSdkManager()
     
     var body: some Scene {
         WindowGroup {
-            ContentView(bleSdkManager: bleSdkManager)
+            ContentView()
+                .environmentObject(bleSdkManager)
         }
     }
 }

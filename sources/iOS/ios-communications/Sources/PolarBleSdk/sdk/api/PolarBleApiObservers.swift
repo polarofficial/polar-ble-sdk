@@ -51,19 +51,12 @@ public protocol PolarBleApiDeviceInfoObserver: AnyObject {
 
 /// Heart rate observer
 public protocol PolarBleApiDeviceHrObserver: AnyObject {
-    /// Polar hr data
-    ///
-    ///     - hr in BPM
-    ///     - rrs RR interval in 1/1024. R is a the top highest peak in the QRS complex of the ECG wave and RR is the interval between successive Rs. 
-    ///     - rrs RR interval in ms.
-    ///     - contact status between the device and the users skin
-    ///     - contactSupported if contact is supported
-    typealias PolarHrData = (hr: UInt8, rrs: [Int], rrsMs: [Int], contact: Bool, contactSupported: Bool)
     /// HR notification received. Notice when using OH1 and PPI stream is started this callback will produce 0 hr.
     ///
     /// - Parameters:
     ///   - identifier: Polar device id
-    func hrValueReceived(_ identifier: String, data: PolarHrData)
+    @available(*, deprecated, message: "The functionality has changed. Please use the startHrStreaming API to get the heart rate data ")
+    func hrValueReceived(_ identifier: String, data: (hr: UInt8, rrs: [Int], rrsMs: [Int], contact: Bool, contactSupported: Bool))
 }
 
 /// Data client observer
@@ -72,21 +65,29 @@ public protocol PolarBleApiDeviceFeaturesObserver: AnyObject {
     /// Device HR feature is ready. HR transmission is starting in a short while.
     ///
     /// - Parameter identifier: Polar device id
+    @available(*, deprecated, message: "Please use the startHrStreaming API to get the heart rate data")
     func hrFeatureReady(_ identifier: String)
     
     /// Device file transfer protocol is ready.
     /// Notice all file transfer operations are preferred to be done at beginning of the connection
     ///
     /// - Parameter identifier: polar device id
+    @available(*, deprecated, message: "Not supported anymore, won't be ever called. Use the bleSdkFeatureReady")
     func ftpFeatureReady(_ identifier: String)
     
     /// feature ready callback
-    func streamingFeaturesReady(_ identifier: String, streamingFeatures: Set<DeviceStreamingFeature>)
+    @available(*, deprecated, message: "The functionality has changed. Please listen the bleSdkFeatureReady callback to know if onlineStreaming is available and the getAvailableOnlineStreamDataTypes function know which data types are supported")
+    func streamingFeaturesReady(_ identifier: String, streamingFeatures: Set<PolarDeviceDataType>)
+    
+    /// The feature is available in this device and it is ready.  Called only for the features which are specified in [PolarBleApi] construction.
+    /// feature ready callback
+    func bleSdkFeatureReady(_ identifier: String, feature: PolarBleSdkFeature)
 }
 
 /// SDK Mode observer
 public protocol PolarBleApiSdkModeFeatureObserver: AnyObject {
     /// sdk mode feature available in this device and ready for usage callback
+    @available(*, deprecated, message: "The functionality has changed. Please use the bleSdkFeatureReady to know if sdkModeFeature is available")
     func sdkModeFeatureAvailable(_ identifier: String)
 }
 
@@ -97,9 +98,4 @@ public protocol PolarBleApiLogger: AnyObject {
     ///
     /// - Parameter str: message
     func message(_ str: String)
-}
-
-/// observer for ccc write enable
-public protocol PolarBleApiCCCWriteObserver: AnyObject {
-    func cccWrite(_ address: UUID, characteristic: CBUUID)
 }

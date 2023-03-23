@@ -6,9 +6,7 @@ import RxSwift
 public class CBDeviceListenerImpl: NSObject, CBCentralManagerDelegate {
     private let SESSION_TEAR_DOWN_TIMEOUT_MS = 1000
     
-    fileprivate lazy var manager = CBCentralManager(delegate: self, queue: queueBle, options: [
-        CBCentralManagerOptionRestoreIdentifierKey: "PolarBleSDKCBCentralManagerOptionRestoreIdentifierKey"
-    ])
+    fileprivate lazy var manager = CBCentralManager(delegate: self, queue: queueBle, options: nil)
     
     fileprivate let sessions = AtomicList<CBDeviceSessionImpl>()
     fileprivate var queue: DispatchQueue
@@ -120,30 +118,6 @@ public class CBDeviceListenerImpl: NSObject, CBCentralManagerDelegate {
             })
             self.powerStateObserver?.powerStateChanged(BleState(rawValue: self.manager.state.rawValue) ?? BleState.unknown)
         })
-    }
-    
-    public func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
-        BleLogger.trace("CentralManager state restored")
-        
-        guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? Array<CBPeripheral> else {
-            BleLogger.trace("CentralManager state restored, but no connected peripherals")
-            return
-        }
-        
-        for peripheral in peripherals {
-            let session = self.session(peripheral)
-            if session == nil {
-                self.sessions.append(CBDeviceSessionImpl(peripheral: peripheral, central: central, scanner: self, factory: self.factory, queueBle: self.queueBle, queue: self.queue))
-            }
-            
-            if let device = self.session(peripheral) {
-                device.connected()
-                self.updateSessionState(device,state: BleDeviceSession.DeviceSessionState.sessionOpen)
-            } else {
-                BleLogger.error("out of memory")
-                return
-            }
-        }
     }
     
     public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {

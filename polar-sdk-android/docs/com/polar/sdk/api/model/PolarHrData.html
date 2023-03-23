@@ -117,7 +117,7 @@ var pathtoroot = "../../../../../";
 public final class <span class="typeNameLabel"><a href=PolarHrData.html>PolarHrData</a></span>
 
                     </pre>
-                    <div class="block"><p>Polar heart rate data</p></div>
+                    <div class="block"></div>
                 </li>
             </ul>
         </div>
@@ -139,6 +139,13 @@ public final class <span class="typeNameLabel"><a href=PolarHrData.html>PolarHrD
                                             <th class="colFirst" scope="col">Modifier and Type</th>
                                             <th class="colSecond" scope="col">Class</th>
                                             <th class="colLast" scope="col">Description</th>
+                                        </tr>
+                                        
+                                        <tr class="altColor">
+                                            <td class="colFirst"><code>public final class</code></td>
+                                            <th class="colSecond" scope="row"><code><a href="PolarHrData.PolarHrSample.html">PolarHrData.PolarHrSample</a></span></code>
+                                            </th>
+                                            <td class="colLast"><p>Polar heart rate sample</p></td>
                                         </tr>
                                         
                                     </table>
@@ -165,38 +172,8 @@ public final class <span class="typeNameLabel"><a href=PolarHrData.html>PolarHrD
                                         </tr>
                                         
                                         <tr class="altColor">
-                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt;</code></td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarHrData.html#rrsMs>rrsMs</a></code></th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr class="rowColor">
-                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarHrData.html#hr>hr</a></code></th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr class="altColor">
-                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt;</code></td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarHrData.html#rrs>rrs</a></code></th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr class="rowColor">
-                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarHrData.html#contactStatus>contactStatus</a></code></th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr class="altColor">
-                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarHrData.html#contactStatusSupported>contactStatusSupported</a></code></th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr class="rowColor">
-                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarHrData.html#rrAvailable>rrAvailable</a></code></th>
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarHrData.PolarHrSample.html>PolarHrData.PolarHrSample</a>&gt;</code></td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarHrData.html#samples>samples</a></code></th>
                                             <td class="colLast"></td>
                                         </tr>
                                         
@@ -226,7 +203,7 @@ public final class <span class="typeNameLabel"><a href=PolarHrData.html>PolarHrD
                                         
                                             <tr class="altColor">
                                                 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a
-                                                        href="#PolarHrData(Integer,List,Boolean,Boolean,Boolean)">PolarHrData</a></span>(<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> hr, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; rrs, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> contactStatus, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> contactStatusSupported, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> rrAvailable)</code></th>
+                                                        href="#PolarHrData(List)">PolarHrData</a></span>(<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarHrData.PolarHrSample.html>PolarHrData.PolarHrSample</a>&gt; samples)</code></th>
                                                 <td class="colLast"></td>
                                             </tr>
                                         
@@ -280,49 +257,9 @@ public final class <span class="typeNameLabel"><a href=PolarHrData.html>PolarHrD
                                         </tr>
                                         
                                         <tr id="i0" class="altColor">
-                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt;</code>
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarHrData.PolarHrSample.html>PolarHrData.PolarHrSample</a>&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarHrData.html#getRrsMs()>getRrsMs</a>() </code>
-                                            </th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr id="i1" class="rowColor">
-                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarHrData.html#getHr()>getHr</a>() </code>
-                                            </th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr id="i2" class="altColor">
-                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt;</code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarHrData.html#getRrs()>getRrs</a>() </code>
-                                            </th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr id="i3" class="rowColor">
-                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarHrData.html#getContactStatus()>getContactStatus</a>() </code>
-                                            </th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr id="i4" class="altColor">
-                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarHrData.html#getContactStatusSupported()>getContactStatusSupported</a>() </code>
-                                            </th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr id="i5" class="rowColor">
-                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarHrData.html#getRrAvailable()>getRrAvailable</a>() </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarHrData.html#getSamples()>getSamples</a>() </code>
                                             </th>
                                             <td class="colLast"></td>
                                         </tr>
@@ -358,11 +295,11 @@ public final class <span class="typeNameLabel"><a href=PolarHrData.html>PolarHrD
                             </a>
                                 <h3>Constructor Detail</h3>
                                 
-                                <a name="PolarHrData(Integer,List,Boolean,Boolean,Boolean)"></a>
+                                <a name="PolarHrData(List)"></a>
                                 <ul class="blockList">
                                     <li class="blockList">
                                         <h4>PolarHrData</h4>
-                                        <pre>PolarHrData(<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> hr, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; rrs, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> contactStatus, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> contactStatusSupported, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> rrAvailable)</pre>
+                                        <pre>PolarHrData(<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarHrData.PolarHrSample.html>PolarHrData.PolarHrSample</a>&gt; samples)</pre>
                                         <div class="block"></div>
                                         
                                     </li>
@@ -381,90 +318,15 @@ public final class <span class="typeNameLabel"><a href=PolarHrData.html>PolarHrD
                             </a>
                                 <h3>Method Detail</h3>
                                 
-                                <a id="getRrsMs()">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>getRrsMs</h4>
-                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; <a href=PolarHrData.html#getRrsMs()>getRrsMs</a>()</pre>
-                                        <div class="block"></div>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="getHr()">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>getHr</h4>
-                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> <a href=PolarHrData.html#getHr()>getHr</a>()</pre>
-                                        <div class="block"></div>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="getRrs()">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>getRrs</h4>
-                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; <a href=PolarHrData.html#getRrs()>getRrs</a>()</pre>
-                                        <div class="block"></div>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="getContactStatus()">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>getContactStatus</h4>
-                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarHrData.html#getContactStatus()>getContactStatus</a>()</pre>
-                                        <div class="block"></div>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="getContactStatusSupported()">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>getContactStatusSupported</h4>
-                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarHrData.html#getContactStatusSupported()>getContactStatusSupported</a>()</pre>
-                                        <div class="block"></div>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="getRrAvailable()">
+                                <a id="getSamples()">
                                     <!--   -->
                                 </a>
                                 <ul class=
                                               "blockListLast"
                                           >
                                     <li class="blockList">
-                                        <h4>getRrAvailable</h4>
-                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarHrData.html#getRrAvailable()>getRrAvailable</a>()</pre>
+                                        <h4>getSamples</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarHrData.PolarHrSample.html>PolarHrData.PolarHrSample</a>&gt; <a href=PolarHrData.html#getSamples()>getSamples</a>()</pre>
                                         <div class="block"></div>
                                         
                                         <!-- TODO missing return annotation -->

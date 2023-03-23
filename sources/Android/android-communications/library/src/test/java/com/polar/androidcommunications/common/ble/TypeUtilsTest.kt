@@ -1,6 +1,6 @@
 package com.polar.androidcommunications.common.ble
 
-import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
 
@@ -16,7 +16,7 @@ class TypeUtilsTest {
         val result = TypeUtils.convertArrayToUnsignedByte(byteArray)
 
         // Assert
-        Assert.assertEquals(expectedValue, result)
+        assertEquals(expectedValue, result)
     }
 
     @Test
@@ -29,7 +29,7 @@ class TypeUtilsTest {
         val result = TypeUtils.convertArrayToUnsignedInt(byteArray)
 
         // Assert
-        Assert.assertEquals(expectedValue, result)
+        assertEquals(expectedValue, result)
     }
 
     @Test
@@ -42,7 +42,7 @@ class TypeUtilsTest {
         val result = TypeUtils.convertArrayToUnsignedInt(byteArray)
 
         // Assert
-        Assert.assertEquals(expectedValue, result)
+        assertEquals(expectedValue, result)
     }
 
     @Test
@@ -55,7 +55,7 @@ class TypeUtilsTest {
         val result = TypeUtils.convertArrayToUnsignedInt(byteArray)
 
         // Assert
-        Assert.assertEquals(expectedValue, result)
+        assertEquals(expectedValue, result)
     }
 
     @Test
@@ -68,7 +68,7 @@ class TypeUtilsTest {
         val result = TypeUtils.convertArrayToUnsignedInt(byteArray)
 
         // Assert
-        Assert.assertEquals(expectedValue, result)
+        assertEquals(expectedValue, result)
     }
 
     @Test
@@ -92,7 +92,7 @@ class TypeUtilsTest {
         val result = TypeUtils.convertArrayToUnsignedLong(byteArray)
 
         // Assert
-        Assert.assertEquals(expectedValue, result)
+        assertEquals(expectedValue, result)
     }
 
     @Test
@@ -105,7 +105,7 @@ class TypeUtilsTest {
         val result = TypeUtils.convertArrayToUnsignedLong(byteArray)
 
         // Assert
-        Assert.assertEquals(expectedValue, result)
+        assertEquals(expectedValue, result)
     }
 
     @Test
@@ -118,7 +118,7 @@ class TypeUtilsTest {
         val result = TypeUtils.convertArrayToUnsignedLong(byteArray)
 
         // Assert
-        Assert.assertEquals(expectedValue, result)
+        assertEquals(expectedValue, result)
     }
 
     @Test
@@ -131,7 +131,7 @@ class TypeUtilsTest {
         val result = TypeUtils.convertArrayToUnsignedLong(byteArray)
 
         // Assert
-        Assert.assertEquals(expectedValue, result)
+        assertEquals(expectedValue, result)
     }
 
     @Test
@@ -155,7 +155,7 @@ class TypeUtilsTest {
         val result = TypeUtils.convertArrayToSignedInt(byteArray)
 
         // Assert
-        Assert.assertEquals(expectedValue, result)
+        assertEquals(expectedValue, result)
     }
 
     @Test
@@ -168,7 +168,7 @@ class TypeUtilsTest {
         val result = TypeUtils.convertArrayToSignedInt(byteArray)
 
         // Assert
-        Assert.assertEquals(expectedValue, result)
+        assertEquals(expectedValue, result)
     }
 
     @Test
@@ -181,7 +181,7 @@ class TypeUtilsTest {
         val result = TypeUtils.convertArrayToSignedInt(byteArray)
 
         // Assert
-        Assert.assertEquals(expectedValue, result)
+        assertEquals(expectedValue, result)
     }
 
     @Test
@@ -194,7 +194,7 @@ class TypeUtilsTest {
         val result = TypeUtils.convertArrayToSignedInt(byteArray)
 
         // Assert
-        Assert.assertEquals(expectedValue, result)
+        assertEquals(expectedValue, result)
     }
 
 
@@ -207,5 +207,21 @@ class TypeUtilsTest {
         assertThrows(AssertionError::class.java) {
             TypeUtils.convertArrayToSignedInt(byteArray)
         }
+    }
+
+    @Test
+    fun `test conversion unsigned byte to int`() {
+        // Arrange
+        val testByte1: Byte = 0x00.toByte()
+        val testByte2: Byte = 0x80.toByte()
+        val testByte3: Byte = 0xFF.toByte()
+        val testByte4: Byte = 0x55.toByte()
+
+        // Act & Assert
+        assertEquals(0, TypeUtils.convertUnsignedByteToInt(testByte1))
+        assertEquals(128, TypeUtils.convertUnsignedByteToInt(testByte2))
+        assertEquals(255, TypeUtils.convertUnsignedByteToInt(testByte3))
+        assertEquals(85, TypeUtils.convertUnsignedByteToInt(testByte4))
+
     }
 }

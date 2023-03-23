@@ -248,10 +248,10 @@ class ConnectionHandler(
                 connectionInterface.startServiceDiscovery(session)
             }
             ConnectionHandlerAction.PHY_UPDATED -> {
-                connectionInterface.setMtu(session)
                 mtuSafeGuardDisposable = Completable.timer(GUARD_TIME_MS, TimeUnit.MILLISECONDS, guardTimerScheduler)
-                    .observeOn(Schedulers.io())
                     .subscribe { mtuUpdated(session) }
+
+                connectionInterface.setMtu(session)
             }
 
             ConnectionHandlerAction.MTU_UPDATED -> {
@@ -260,7 +260,6 @@ class ConnectionHandler(
                 // There are devices needing a delay after connection parameters are negotiated and first attribute operation is done
                 firstAttributeOperationDisposable?.dispose()
                 firstAttributeOperationDisposable = Completable.timer(FIRST_ATTRIBUTE_OPERATION_TIMEOUT, TimeUnit.MILLISECONDS)
-                    .observeOn(Schedulers.io())
                     .subscribe {
                         // First attribute operation
                         session.processNextAttributeOperation(false)
@@ -271,10 +270,10 @@ class ConnectionHandler(
             }
 
             ConnectionHandlerAction.SERVICES_DISCOVERED -> {
-                connectionInterface.setPhy(session)
                 phySafeGuardDisposable = Completable.timer(GUARD_TIME_MS, TimeUnit.MILLISECONDS, guardTimerScheduler)
-                    .observeOn(Schedulers.io())
                     .subscribe { phyUpdated(session) }
+
+                connectionInterface.setPhy(session)
             }
 
             ConnectionHandlerAction.CONNECT_DEVICE -> {

@@ -6,7 +6,8 @@ package com.polar.sdk.api.model
  * @property samples from optical sensor. Each sample contains signed raw PPG (Photoplethysmography) data and ambient light value
  * @property type of data, which varies based on what is type of optical sensor used in the device
  */
-class PolarOhrData(
+@Deprecated("PolarOhrData is renamed to better describe data content, use PolarPpgData", replaceWith = ReplaceWith("PolarPpgData"))
+data class PolarOhrData(
     val samples: List<PolarOhrSample>,
     val type: OhrDataType,
     @Deprecated("This field is deprecated as each sample has now own timeStamp")
@@ -19,7 +20,7 @@ class PolarOhrData(
      *  @property channelSamples is the PPG (Photoplethysmography) raw value received from the optical sensor. Based on [type] the amount of
      *  channels varies. Typically ppg(n) channel + n ambient(s).
      */
-    class PolarOhrSample(
+    data class PolarOhrSample(
         val timeStamp: Long,
         val channelSamples: List<Int>,
         @Deprecated("status of the OHR data doesn't contain any relevant information. Will be removed in future releases.")

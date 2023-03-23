@@ -1,22 +1,27 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
+import com.polar.androidcommunications.testrules.BleLoggerTestRule
 import org.junit.Assert.assertEquals
+import org.junit.Rule
 import org.junit.Test
 
-class PpiDataTest {
+internal class PpiDataTest {
+    @Rule
+    @JvmField
+    val bleLoggerTestRule = BleLoggerTestRule()
 
     @Test
     fun `process ppi raw data type 0`() {
         // Arrange
-        // HEX: 03 00 94 35 77 00 00 00 00 00
+        // HEX: 03 00 00 00 00 00 00 00 00 00
         // index                                                   data:
         // 0        type                                           03 (PPI)
         // 1..9     timestamp                                      00 00 00 00 00 00 00 00
         // 10       frame type                                     00 (raw, type 0)
         val ppiDataFrameHeader = byteArrayOf(
-            0x01.toByte(),
-            0x00.toByte(), 0x94.toByte(), 0x35.toByte(), 0x77.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x03.toByte(),
+            0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
             0x00.toByte(),
         )
         val previousTimeStamp = 100uL
@@ -51,7 +56,6 @@ class PpiDataTest {
             0x80.toByte(), 0xFF.toByte(), 0x00.toByte(), 0x01.toByte(),
             0x00.toByte(), 0x01.toByte(), 0x00.toByte(), 0x00.toByte()
         )
-        val timeStamp: Long = Long.MAX_VALUE
 
         val dataFrame = PmdDataFrame(
             data = ppiDataFrameHeader + ppiDataFrameContent,
@@ -79,5 +83,4 @@ class PpiDataTest {
 
         assertEquals(2, ppiData.ppiSamples.size)
     }
-
 }

@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Polar BLE SDK Example</string>
+    <string name="start_hr_stream">Start Hr Stream</string>
+    <string name="stop_hr_stream">Stop Hr Stream</string>
     <string name="start_ecg_stream">Start ECG Stream</string>
     <string name="stop_ecg_stream">Stop ECG Stream</string>
     <string name="start_acc_stream">Start ACC Stream</string>
@@ -35,4 +37,9 @@
     <string name="range">Range</string>
     <string name="channels">Channels</string>
     <string name="ok">OK</string>
+    <string name="list_recordings">list verity sense recordings</string>
+    <string name="start_recording">start verity sense recording</string>
+    <string name="stop_recording">stop verity sense recording</string>
+    <string name="download_recording">download one verity sense recording</string>
+    <string name="delete_recording">delete one verity sense recording</string>
 </resources>

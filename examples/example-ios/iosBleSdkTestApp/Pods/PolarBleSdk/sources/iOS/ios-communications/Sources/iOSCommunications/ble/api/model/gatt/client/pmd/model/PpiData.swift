@@ -2,7 +2,7 @@
 
 import Foundation
 
-public struct PpiData {
+public class PpiData {
     
     struct PpiSample {
         let hr: Int
@@ -13,7 +13,11 @@ public struct PpiData {
         let skinContactSupported: Int
     }
     
-    let samples: [PpiSample]
+    var samples: [PpiSample]
+    
+    init(samples: [PpiSample] = []) {
+        self.samples = samples
+    }
     
     private static let PPI_SAMPLE_CHUNK = 6
     
@@ -33,7 +37,7 @@ public struct PpiData {
             .map { (start) -> Data in
                 return frame.dataContent.subdata(in: start..<start.advanced(by: PPI_SAMPLE_CHUNK))
             }
-            .map { (data) -> (PpiSample) in
+            .map { (data) -> PpiSample in
                 let hr = Int(data[0])
                 let ppInMs = UInt16(UInt16(data[2]) << 8 | UInt16(data[1]))
                 let ppErrorEstimate = UInt16(UInt16(data[4]) << 8 | UInt16(data[3]))

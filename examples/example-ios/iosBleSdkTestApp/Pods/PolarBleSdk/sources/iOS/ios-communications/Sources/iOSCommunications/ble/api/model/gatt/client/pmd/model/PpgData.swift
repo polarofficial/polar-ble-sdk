@@ -1,9 +1,8 @@
-
 //  Copyright © 2022 Polar. All rights reserved.
 
 import Foundation
 
-public struct PpgData {
+public class PpgData {
     let timeStamp: UInt64
     
     struct PpgSample {
@@ -12,12 +11,16 @@ public struct PpgData {
         let ambientSample: Int32
     }
     
-    let samples: [PpgSample]
+    var samples: [PpgSample]
+    
+    init(timeStamp: UInt64 = 0, samples: [PpgSample] = []) {
+        self.timeStamp = timeStamp
+        self.samples = samples
+    }
     
     private static let TYPE_0_SAMPLE_SIZE_IN_BYTES: UInt8 = 3
     private static let TYPE_0_SAMPLE_SIZE_IN_BITS: UInt8 = TYPE_0_SAMPLE_SIZE_IN_BYTES * 8
     private static let TYPE_0_CHANNELS_IN_SAMPLE: UInt8 = 4
-    
     
     static func parseDataFromDataFrame(frame: PmdDataFrame) throws -> PpgData {
         if (frame.isCompressedFrame) {

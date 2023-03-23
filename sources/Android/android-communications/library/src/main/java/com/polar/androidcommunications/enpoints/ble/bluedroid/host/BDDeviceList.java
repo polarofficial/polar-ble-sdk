@@ -3,6 +3,9 @@ package com.polar.androidcommunications.enpoints.ble.bluedroid.host;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.polar.androidcommunications.api.ble.BleLogger;
 import com.polar.androidcommunications.api.ble.model.BleDeviceSession;
 import com.polar.androidcommunications.common.ble.AtomicSet;
@@ -19,11 +22,12 @@ class BDDeviceList {
         return sessions;
     }
 
+    @Nullable
     BDDeviceSessionImpl getSession(final BluetoothDevice device) {
         return sessions.fetch(object -> object.getBluetoothDevice().getAddress().equals(device.getAddress()));
     }
 
-    void addSession(BDDeviceSessionImpl smartPolarDeviceSession) {
+    void addSession(@NonNull BDDeviceSessionImpl smartPolarDeviceSession) {
         BleLogger.d(TAG, "new session added: " + smartPolarDeviceSession.getAdvertisementContent().getName());
         sessions.add(smartPolarDeviceSession);
     }
@@ -32,7 +36,8 @@ class BDDeviceList {
         return new HashSet<>(sessions.objects());
     }
 
-    BDDeviceSessionImpl getSession(final BluetoothGatt gatt) {
+    @Nullable
+    BDDeviceSessionImpl getSession(@NonNull BluetoothGatt gatt) {
         return sessions.fetch(object -> {
             synchronized (object.getGattMutex()) {
                 return object.getGatt() != null && object.getGatt().equals(gatt);
@@ -40,6 +45,7 @@ class BDDeviceList {
         });
     }
 
+    @Nullable
     BDDeviceSessionImpl getSession(final String address) {
         return sessions.fetch(object -> object.getAddress().equals(address));
     }
@@ -48,6 +54,7 @@ class BDDeviceList {
         boolean compare(BDDeviceSessionImpl smartPolarDeviceSession1);
     }
 
+    @Nullable
     BDDeviceSessionImpl fetch(final CompareFunction function) {
         return sessions.fetch(function::compare);
     }

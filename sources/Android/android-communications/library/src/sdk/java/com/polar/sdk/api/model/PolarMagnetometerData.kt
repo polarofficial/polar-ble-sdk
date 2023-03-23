@@ -4,7 +4,7 @@ package com.polar.sdk.api.model
  * Polar magnetometer data
  * @property samples from magnetometer. Each sample contains signed x,y,z axis value in Gauss
  */
-class PolarMagnetometerData(
+data class PolarMagnetometerData(
     val samples: List<PolarMagnetometerDataSample>,
     @Deprecated("This field is deprecated as each sample has now own timeStamp")
     val timeStamp: Long
@@ -17,7 +17,7 @@ class PolarMagnetometerData(
      *  @property y axis value in Gauss
      *  @property z axis value in Gauss
      */
-    class PolarMagnetometerDataSample(
+    data class PolarMagnetometerDataSample(
         val timeStamp: Long,
         val x: Float,
         val y: Float,

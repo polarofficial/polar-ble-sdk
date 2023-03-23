@@ -1,8 +1,8 @@
 source 'https://github.com/CocoaPods/Specs.git'
 
-platform :ios, '13.0'
+platform :ios, '15.0'
 use_frameworks!
 
 target 'iosBleSdkTestApp' do
-    pod 'PolarBleSdk', '4.0.0'
+    pod 'PolarBleSdk', '5.0.0-beta4'
 end

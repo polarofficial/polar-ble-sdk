@@ -15,7 +15,7 @@ def getVersion = { ->
         commandLine 'git', 'describe', '--tags'
         standardOutput = stdout
     }
-    def pattern = Pattern.compile("^([0-9]*)(\\.)([0-9]*)(\\.)([0-9]*)")
+    def pattern = Pattern.compile("^(\\d*)(\\.)(\\d*)(\\.)(\\d*)")
     def matcher = pattern.matcher(stdout.toString().trim())
     if (matcher.matches()) {
         String MAJOR = matcher.group(1)
@@ -80,7 +80,7 @@ android {
 }
 
 tasks.dokkaJavadoc.configure {
-    outputDirectory.set(file("docs/html"))
+    outputDirectory.set(file("docs/"))
     dokkaSourceSets {
         named("main") {
             perPackageOption {
@@ -121,17 +121,17 @@ protobuf {
 }
 
 dependencies {
-    implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
-    implementation 'io.reactivex.rxjava3:rxjava:3.1.5'
+    implementation 'io.reactivex.rxjava3:rxandroid:3.0.2'
+    implementation 'io.reactivex.rxjava3:rxjava:3.1.6'
     implementation 'commons-io:commons-io:2.11.0'
-    implementation 'androidx.annotation:annotation:1.5.0'
+    implementation 'androidx.annotation:annotation:1.6.0'
     implementation "androidx.core:core-ktx:1.9.0"
-    implementation "joda-time:joda-time:2.11.2"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.7.21"
+    implementation "joda-time:joda-time:2.12.2"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.10"
     sdkImplementation 'com.google.protobuf:protobuf-javalite:3.20.0'
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:4.3.1'
-    testImplementation 'io.mockk:mockk:1.13.2'
+    testImplementation 'org.mockito:mockito-core:5.2.0'
+    testImplementation 'io.mockk:mockk:1.13.4'
     testImplementation 'androidx.test:runner:1.5.2'
     testImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     androidTestImplementation 'junit:junit:4.13.2'

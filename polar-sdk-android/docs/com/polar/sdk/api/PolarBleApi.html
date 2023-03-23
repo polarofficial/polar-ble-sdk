@@ -108,6 +108,24 @@ var pathtoroot = "../../../../";
                         <dt>All Implemented Interfaces:</dt>
                         <dd>
                             
+                            <code>com.polar.sdk.api.PolarH10OfflineExerciseApi</code>
+                            
+                            ,
+                            
+                            
+                            <code>com.polar.sdk.api.PolarOfflineRecordingApi</code>
+                            
+                            ,
+                            
+                            
+                            <code>com.polar.sdk.api.PolarOnlineStreamingApi</code>
+                            
+                            ,
+                            
+                            
+                            <code>com.polar.sdk.api.PolarSdkModeApi</code>
+                            
+                            
                         </dd>
                     </dl>
                     
@@ -115,7 +133,7 @@ var pathtoroot = "../../../../";
                     <pre class="wrap-overflow">
 
 public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>PolarBleApi</a></span>
-
+ implements <a href=PolarOnlineStreamingApi.html>PolarOnlineStreamingApi</a>, <a href=PolarOfflineRecordingApi.html>PolarOfflineRecordingApi</a>, <a href=PolarH10OfflineExerciseApi.html>PolarH10OfflineExerciseApi</a>, <a href=PolarSdkModeApi.html>PolarSdkModeApi</a>
                     </pre>
                     <div class="block"><p>Polar BLE API.</p></div>
                 </li>
@@ -142,38 +160,24 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         </tr>
                                         
                                         <tr class="altColor">
+                                            <td class="colFirst"><code>public enum</code></td>
+                                            <th class="colSecond" scope="row"><code><a href="PolarBleApi.PolarBleSdkFeature.html">PolarBleApi.PolarBleSdkFeature</a></span></code>
+                                            </th>
+                                            <td class="colLast"><p>Features available in Polar BLE SDK library</p></td>
+                                        </tr>
+                                        
+                                        <tr class="rowColor">
                                             <td class="colFirst"><code>public interface</code></td>
                                             <th class="colSecond" scope="row"><code><a href="PolarBleApi.PolarBleApiLogger.html">PolarBleApi.PolarBleApiLogger</a></span></code>
                                             </th>
                                             <td class="colLast"><p>Logger interface for logging events from SDK. Shall be used only for tracing and debugging purposes.</p></td>
                                         </tr>
                                         
-                                        <tr class="rowColor">
-                                            <td class="colFirst"><code>public enum</code></td>
-                                            <th class="colSecond" scope="row"><code><a href="PolarBleApi.DeviceStreamingFeature.html">PolarBleApi.DeviceStreamingFeature</a></span></code>
-                                            </th>
-                                            <td class="colLast"><p>Device stream features in Polar devices. The device streaming features requires the .FEATURE_POLAR_SENSOR_STREAMING</p></td>
-                                        </tr>
-                                        
                                         <tr class="altColor">
                                             <td class="colFirst"><code>public enum</code></td>
-                                            <th class="colSecond" scope="row"><code><a href="PolarBleApi.RecordingInterval.html">PolarBleApi.RecordingInterval</a></span></code>
+                                            <th class="colSecond" scope="row"><code><a href="PolarBleApi.PolarDeviceDataType.html">PolarBleApi.PolarDeviceDataType</a></span></code>
                                             </th>
-                                            <td class="colLast"><p>Recoding intervals for H10 recording start</p></td>
-                                        </tr>
-                                        
-                                        <tr class="rowColor">
-                                            <td class="colFirst"><code>public enum</code></td>
-                                            <th class="colSecond" scope="row"><code><a href="PolarBleApi.SampleType.html">PolarBleApi.SampleType</a></span></code>
-                                            </th>
-                                            <td class="colLast"><p>Sample types for H10 recording start</p></td>
-                                        </tr>
-                                        
-                                        <tr class="altColor">
-                                            <td class="colFirst"><code>public class</code></td>
-                                            <th class="colSecond" scope="row"><code><a href="PolarBleApi.Companion.html">PolarBleApi.Companion</a></span></code>
-                                            </th>
-                                            <td class="colLast"></td>
+                                            <td class="colLast"><p>The data types available in Polar devices for online streaming or offline recording.</p></td>
                                         </tr>
                                         
                                     </table>
@@ -200,8 +204,8 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         </tr>
                                         
                                         <tr class="altColor">
-                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=../impl/BDBleApiImpl.html#features>features</a></code></th>
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a>&gt;</code></td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#features>features</a></code></th>
                                             <td class="colLast"></td>
                                         </tr>
                                         
@@ -231,7 +235,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         
                                             <tr class="altColor">
                                                 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a
-                                                        href="#PolarBleApi(Integer)">PolarBleApi</a></span>(<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> features)</code></th>
+                                                        href="#PolarBleApi(Set)">PolarBleApi</a></span>(<a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a>&gt; features)</code></th>
                                                 <td class="colLast"></td>
                                             </tr>
                                         
@@ -285,7 +289,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         </tr>
                                         
                                         <tr id="i0" class="altColor">
-                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code>
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getFeatures()>getFeatures</a>() </code>
                                             </th>
@@ -297,7 +301,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setMtu(Integer)>setMtu</a>(@<a href=https://developer.android.com/reference/kotlin/androidx/annotation/IntRange.html>IntRange</a>(from = 70, to = 512) <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> mtu) </code>
                                             </th>
-                                            <td class="colLast">set mtu to lower than default(232 is the default for polar devices, minimum for H10 is 70 and for OH1 is 140) to minimize latency</td>
+                                            <td class="colLast">set mtu to lower than default (232 is the default for polar devices, minimum for H10 is 70 and for OH1 is 140) to minimize latency</td>
                                         </tr>
                                         
                                         <tr id="i2" class="altColor">
@@ -321,13 +325,13 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setPolarFilter(Boolean)>setPolarFilter</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> enable) </code>
                                             </th>
-                                            <td class="colLast">When enabled only Polar devices are found by the .</td>
+                                            <td class="colLast">When enabled only Polar devices are found by the <a href=PolarBleApi.html#searchForDevice()>searchForDevice</a>, if set to false any BLE devices with HR services are returned by the <a href=PolarBleApi.html#searchForDevice()>searchForDevice</a>.</td>
                                         </tr>
                                         
                                         <tr id="i5" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#isFeatureReady(String,Integer)>isFeatureReady</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> feature) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#isFeatureReady(String,PolarBleApi.PolarBleSdkFeature)>isFeatureReady</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a> feature) </code>
                                             </th>
                                             <td class="colLast">Check if the feature is ready.</td>
                                         </tr>
@@ -335,20 +339,12 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         <tr id="i6" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#backgroundEntered()>backgroundEntered</a>() </code>
-                                            </th>
-                                            <td class="colLast">enables scan filter while on background</td>
-                                        </tr>
-                                        
-                                        <tr id="i7" class="rowColor">
-                                            <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html>Unit</a></code>
-                                            </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#foregroundEntered()>foregroundEntered</a>() </code>
                                             </th>
                                             <td class="colLast">Optionally call when application enters to the foreground.</td>
                                         </tr>
                                         
-                                        <tr id="i8" class="altColor">
+                                        <tr id="i7" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setApiCallback(PolarBleApiCallbackProvider)>setApiCallback</a>(<a href=PolarBleApiCallbackProvider.html>PolarBleApiCallbackProvider</a> callback) </code>
@@ -356,12 +352,20 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Sets the API callback</td>
                                         </tr>
                                         
-                                        <tr id="i9" class="rowColor">
+                                        <tr id="i8" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setApiLogger(PolarBleApi.PolarBleApiLogger)>setApiLogger</a>(<a href=PolarBleApi.PolarBleApiLogger.html>PolarBleApi.PolarBleApiLogger</a> logger) </code>
                                             </th>
                                             <td class="colLast">Sets the API logger</td>
+                                        </tr>
+                                        
+                                        <tr id="i9" class="rowColor">
+                                            <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarDeviceInfo.html>PolarDeviceInfo</a>&gt;</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#searchForDevice()>searchForDevice</a>() </code>
+                                            </th>
+                                            <td class="colLast">Starts searching for BLE devices when subscribed.</td>
                                         </tr>
                                         
                                         <tr id="i10" class="altColor">
@@ -375,44 +379,12 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         <tr id="i11" class="rowColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setLocalTime(String,Calendar)>setLocalTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Calendar.html>Calendar</a> calendar) </code>
-                                            </th>
-                                            <td class="colLast">Set time to device affects on sensor data stream(s) timestamps requires feature .</td>
-                                        </tr>
-                                        
-                                        <tr id="i12" class="altColor">
-                                            <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/Calendar.html>Calendar</a>&gt;</code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getLocalTime(String)>getLocalTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
-                                            </th>
-                                            <td class="colLast">Get current time in device.</td>
-                                        </tr>
-                                        
-                                        <tr id="i13" class="rowColor">
-                                            <td class="colFirst"><code>abstract Single&lt;<a href=model/PolarSensorSetting.html>PolarSensorSetting</a>&gt;</code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#requestStreamSettings(String,PolarBleApi.DeviceStreamingFeature)>requestStreamSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.DeviceStreamingFeature.html>PolarBleApi.DeviceStreamingFeature</a> feature) </code>
-                                            </th>
-                                            <td class="colLast">Request the stream settings available in current operation mode.</td>
-                                        </tr>
-                                        
-                                        <tr id="i14" class="altColor">
-                                            <td class="colFirst"><code>abstract Single&lt;<a href=model/PolarSensorSetting.html>PolarSensorSetting</a>&gt;</code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#requestFullStreamSettings(String,PolarBleApi.DeviceStreamingFeature)>requestFullStreamSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.DeviceStreamingFeature.html>PolarBleApi.DeviceStreamingFeature</a> feature) </code>
-                                            </th>
-                                            <td class="colLast">Request full steam settings capabilities.</td>
-                                        </tr>
-                                        
-                                        <tr id="i15" class="rowColor">
-                                            <td class="colFirst"><code>abstract Completable</code>
-                                            </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#autoConnectToDevice(Integer,String,Integer,TimeUnit,String)>autoConnectToDevice</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> rssiLimit, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> service, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> timeout, <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/TimeUnit.html>TimeUnit</a> unit, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> polarDeviceType) </code>
                                             </th>
                                             <td class="colLast">Start connecting to a nearby Polar device.</td>
                                         </tr>
                                         
-                                        <tr id="i16" class="altColor">
+                                        <tr id="i12" class="altColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#autoConnectToDevice(Integer,String,String)>autoConnectToDevice</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> rssiLimit, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> service, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> polarDeviceType) </code>
@@ -420,7 +392,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i17" class="rowColor">
+                                        <tr id="i13" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#connectToDevice(String)>connectToDevice</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -428,7 +400,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Request a connection to a BLE device.</td>
                                         </tr>
                                         
-                                        <tr id="i18" class="altColor">
+                                        <tr id="i14" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#disconnectFromDevice(String)>disconnectFromDevice</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -436,63 +408,23 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Request disconnecting from a BLE device.</td>
                                         </tr>
                                         
-                                        <tr id="i19" class="rowColor">
+                                        <tr id="i15" class="rowColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#startRecording(String,String,PolarBleApi.RecordingInterval,PolarBleApi.SampleType)>startRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, @<a href=https://developer.android.com/reference/kotlin/androidx/annotation/Size.html>Size</a>(min = 1, max = 64) <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> exerciseId, <a href=PolarBleApi.RecordingInterval.html>PolarBleApi.RecordingInterval</a> interval, <a href=PolarBleApi.SampleType.html>PolarBleApi.SampleType</a> type) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setLocalTime(String,Calendar)>setLocalTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Calendar.html>Calendar</a> calendar) </code>
                                             </th>
-                                            <td class="colLast">Request start recording.</td>
+                                            <td class="colLast">Set the device time.</td>
                                         </tr>
                                         
-                                        <tr id="i20" class="altColor">
-                                            <td class="colFirst"><code>abstract Completable</code>
+                                        <tr id="i16" class="altColor">
+                                            <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/Calendar.html>Calendar</a>&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#stopRecording(String)>stopRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getLocalTime(String)>getLocalTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
-                                            <td class="colLast">Request to stop recording.</td>
+                                            <td class="colLast">Get current time in device.</td>
                                         </tr>
                                         
-                                        <tr id="i21" class="rowColor">
-                                            <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/androidx/core/util/Pair.html>Pair</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt;&gt;</code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#requestRecordingStatus(String)>requestRecordingStatus</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
-                                            </th>
-                                            <td class="colLast">Request current recording status.</td>
-                                        </tr>
-                                        
-                                        <tr id="i22" class="altColor">
-                                            <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarExerciseEntry.html>PolarExerciseEntry</a>&gt;</code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#listExercises(String)>listExercises</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
-                                            </th>
-                                            <td class="colLast">List exercises stored in the device Polar H10 device.</td>
-                                        </tr>
-                                        
-                                        <tr id="i23" class="rowColor">
-                                            <td class="colFirst"><code>abstract Single&lt;<a href=model/PolarExerciseData.html>PolarExerciseData</a>&gt;</code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#fetchExercise(String,PolarExerciseEntry)>fetchExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarExerciseEntry.html>PolarExerciseEntry</a> entry) </code>
-                                            </th>
-                                            <td class="colLast">Api for fetching a single exercise from Polar H10 device.</td>
-                                        </tr>
-                                        
-                                        <tr id="i24" class="altColor">
-                                            <td class="colFirst"><code>abstract Completable</code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#removeExercise(String,PolarExerciseEntry)>removeExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarExerciseEntry.html>PolarExerciseEntry</a> entry) </code>
-                                            </th>
-                                            <td class="colLast">Api for removing single exercise from Polar H10 device.</td>
-                                        </tr>
-                                        
-                                        <tr id="i25" class="rowColor">
-                                            <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarDeviceInfo.html>PolarDeviceInfo</a>&gt;</code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#searchForDevice()>searchForDevice</a>() </code>
-                                            </th>
-                                            <td class="colLast">Starts searching for BLE devices when subscribed.</td>
-                                        </tr>
-                                        
-                                        <tr id="i26" class="altColor">
+                                        <tr id="i17" class="rowColor">
                                             <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarHrBroadcastData.html>PolarHrBroadcastData</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#startListenForPolarHrBroadcasts(Set)>startListenForPolarHrBroadcasts</a>(<a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; deviceIds) </code>
@@ -500,75 +432,17 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Start listening the heart rate from Polar devices when subscribed.</td>
                                         </tr>
                                         
-                                        <tr id="i27" class="rowColor">
-                                            <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarEcgData.html>PolarEcgData</a>&gt;</code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#startEcgStreaming(String,PolarSensorSetting)>startEcgStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting) </code>
-                                            </th>
-                                            <td class="colLast">Start the ECG (Electrocardiography) stream.</td>
-                                        </tr>
-                                        
-                                        <tr id="i28" class="altColor">
-                                            <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarAccelerometerData.html>PolarAccelerometerData</a>&gt;</code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#startAccStreaming(String,PolarSensorSetting)>startAccStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting) </code>
-                                            </th>
-                                            <td class="colLast">Start ACC (Accelerometer) stream.</td>
-                                        </tr>
-                                        
-                                        <tr id="i29" class="rowColor">
-                                            <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarOhrData.html>PolarOhrData</a>&gt;</code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#startOhrStreaming(String,PolarSensorSetting)>startOhrStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting) </code>
-                                            </th>
-                                            <td class="colLast">Start OHR (Optical heart rate) PPG (Photoplethysmography) stream.</td>
-                                        </tr>
-                                        
-                                        <tr id="i30" class="altColor">
-                                            <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarOhrPPIData.html>PolarOhrPPIData</a>&gt;</code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#startOhrPPIStreaming(String)>startOhrPPIStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
-                                            </th>
-                                            <td class="colLast">Start OHR (Optical heart rate) PPI (Pulse to Pulse interval) stream.</td>
-                                        </tr>
-                                        
-                                        <tr id="i31" class="rowColor">
-                                            <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarMagnetometerData.html>PolarMagnetometerData</a>&gt;</code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#startMagnetometerStreaming(String,PolarSensorSetting)>startMagnetometerStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting) </code>
-                                            </th>
-                                            <td class="colLast">Start magnetometer stream.</td>
-                                        </tr>
-                                        
-                                        <tr id="i32" class="altColor">
-                                            <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarGyroData.html>PolarGyroData</a>&gt;</code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#startGyroStreaming(String,PolarSensorSetting)>startGyroStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting) </code>
-                                            </th>
-                                            <td class="colLast">Start Gyro stream.</td>
-                                        </tr>
-                                        
-                                        <tr id="i33" class="rowColor">
-                                            <td class="colFirst"><code>abstract Completable</code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#enableSDKMode(String)>enableSDKMode</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
-                                            </th>
-                                            <td class="colLast">Enables SDK mode.</td>
-                                        </tr>
-                                        
-                                        <tr id="i34" class="altColor">
-                                            <td class="colFirst"><code>abstract Completable</code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#disableSDKMode(String)>disableSDKMode</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
-                                            </th>
-                                            <td class="colLast">Disables SDK mode.</td>
-                                        </tr>
-                                        
                                         </tbody>
                                     </table>
                                 </div>
                                 <ul class="blockList">
                                 
+                                    <li class="blockList"><a id="methods.inherited.from.class.com.polar.sdk.api.PolarBleApi">
+                                            <!--   -->
+                                        </a>
+                                            <h3>Methods inherited from class&nbsp;com.polar.sdk.api.PolarBleApi</h3>
+                                            <code>disableSDKMode, enableSDKMode, fetchExercise, getAvailableOfflineRecordingDataTypes, getAvailableOnlineStreamDataTypes, getOfflineRecord, getOfflineRecordingStatus, getOfflineRecordingTriggerSetup, isSDKModeEnabled, listExercises, listOfflineRecordings, removeExercise, removeOfflineRecord, requestFullOfflineRecordingSettings, requestFullStreamSettings, requestOfflineRecordingSettings, requestRecordingStatus, requestStreamSettings, setOfflineRecordingTrigger, startAccStreaming, startEcgStreaming, startGyroStreaming, startHrStreaming, startMagnetometerStreaming, startOfflineRecording, startOhrPPIStreaming, startOhrStreaming, startPpgStreaming, startPpiStreaming, startRecording, stopOfflineRecording, stopRecording</code></li>
+                                 
                                     <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
                                         <!--   -->
                                     </a>
@@ -595,21 +469,12 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                             </a>
                                 <h3>Constructor Detail</h3>
                                 
-                                <a name="PolarBleApi(Integer)"></a>
+                                <a name="PolarBleApi(Set)"></a>
                                 <ul class="blockList">
                                     <li class="blockList">
                                         <h4>PolarBleApi</h4>
-                                        <pre>PolarBleApi(<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> features)</pre>
+                                        <pre>PolarBleApi(<a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a>&gt; features)</pre>
                                         <div class="block"></div>
-                                        
-                                        <dl>
-                                            <dt><span class="paramLabel">Parameters:</span></dt>
-                                            
-                                            
-                                            <dd><code>features</code> - bitmask of feature(s) or .</dd>
-                                            
-                                            
-                                        </dl>
                                         
                                     </li>
                                 </ul>
@@ -635,7 +500,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                           >
                                     <li class="blockList">
                                         <h4>getFeatures</h4>
-                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> <a href=PolarBleApi.html#getFeatures()>getFeatures</a>()</pre>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a>&gt; <a href=PolarBleApi.html#getFeatures()>getFeatures</a>()</pre>
                                         <div class="block"></div>
                                         
                                         <!-- TODO missing return annotation -->
@@ -651,7 +516,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                     <li class="blockList">
                                         <h4>setMtu</h4>
                                         <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBleApi.html#setMtu(Integer)>setMtu</a>(@<a href=https://developer.android.com/reference/kotlin/androidx/annotation/IntRange.html>IntRange</a>(from = 70, to = 512) <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> mtu)</pre>
-                                        <div class="block"><p>set mtu to lower than default(232 is the default for polar devices, minimum for H10 is 70 and for OH1 is 140) to minimize latency</p></div>
+                                        <div class="block"><p>set mtu to lower than default (232 is the default for polar devices, minimum for H10 is 70 and for OH1 is 140) to minimize latency</p></div>
                                         
                                         <dl>
                                             <dt><span class="paramLabel">Parameters:</span></dt>
@@ -705,7 +570,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                     <li class="blockList">
                                         <h4>setPolarFilter</h4>
                                         <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBleApi.html#setPolarFilter(Boolean)>setPolarFilter</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> enable)</pre>
-                                        <div class="block"><p>When enabled only Polar devices are found by the .searchForDevice, if set to false any BLE devices with HR services are returned by the .searchForDevice. The default setting for Polar filter is true.</p></div>
+                                        <div class="block"><p>When enabled only Polar devices are found by the <a href=PolarBleApi.html#searchForDevice()>searchForDevice</a>, if set to false any BLE devices with HR services are returned by the <a href=PolarBleApi.html#searchForDevice()>searchForDevice</a>. The default setting for Polar filter is true.</p></div>
                                         
                                         <dl>
                                             <dt><span class="paramLabel">Parameters:</span></dt>
@@ -720,7 +585,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                     </li>
                                 </ul>
                                 
-                                <a id="isFeatureReady(String,Integer)">
+                                <a id="isFeatureReady(String,PolarBleApi.PolarBleSdkFeature)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -728,8 +593,8 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                           >
                                     <li class="blockList">
                                         <h4>isFeatureReady</h4>
-                                        <pre class="methodSignature"> abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarBleApi.html#isFeatureReady(String,Integer)>isFeatureReady</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> feature)</pre>
-                                        <div class="block"><p>Check if the feature is ready. Only the check for the .FEATURE_POLAR_SENSOR_STREAMING and .FEATURE_POLAR_FILE_TRANSFER is supported by this api function</p></div>
+                                        <pre class="methodSignature"> abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarBleApi.html#isFeatureReady(String,PolarBleApi.PolarBleSdkFeature)>isFeatureReady</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a> feature)</pre>
+                                        <div class="block"><p>Check if the feature is ready.</p></div>
                                         
                                         <dl>
                                             <dt><span class="paramLabel">Parameters:</span></dt>
@@ -743,21 +608,6 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             
                                             
                                         </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="backgroundEntered()">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>backgroundEntered</h4>
-                                        <pre class="methodSignature">@<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-deprecated/index.html>Deprecated</a>(message = "in release 3.2.8. Move to the background is not relevant information for SDK starting from release 3.2.8") abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBleApi.html#backgroundEntered()>backgroundEntered</a>()</pre>
-                                        <div class="block"><p>enables scan filter while on background</p></div>
                                         
                                         <!-- TODO missing return annotation -->
                                     </li>
@@ -826,6 +676,21 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                     </li>
                                 </ul>
                                 
+                                <a id="searchForDevice()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>searchForDevice</h4>
+                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarDeviceInfo.html>PolarDeviceInfo</a>&gt; <a href=PolarBleApi.html#searchForDevice()>searchForDevice</a>()</pre>
+                                        <div class="block"><p>Starts searching for BLE devices when subscribed. Search continues as long as observable is subscribed or error. Each found device is emitted only once. By default searches only for Polar devices, but can be controlled by .setPolarFilter. If .setPolarFilter is false then searches for any BLE heart rate capable devices</p></div>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
                                 <a id="setAutomaticReconnection(Boolean)">
                                     <!--   -->
                                 </a>
@@ -842,114 +707,6 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             
                                             
                                             <dd><code>enable</code> - true = automatic reconnection is enabled, false = automatic reconnection is disabled</dd>
-                                            
-                                            
-                                        </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="setLocalTime(String,Calendar)">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>setLocalTime</h4>
-                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#setLocalTime(String,Calendar)>setLocalTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Calendar.html>Calendar</a> calendar)</pre>
-                                        <div class="block"><p>Set time to device affects on sensor data stream(s) timestamps requires feature .FEATURE_POLAR_FILE_TRANSFER</p></div>
-                                        
-                                        <dl>
-                                            <dt><span class="paramLabel">Parameters:</span></dt>
-                                            
-                                            
-                                            <dd><code>identifier</code> - polar device id or bt address</dd>
-                                            
-                                            
-                                            
-                                            <dd><code>calendar</code> - time to set</dd>
-                                            
-                                            
-                                        </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="getLocalTime(String)">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>getLocalTime</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/Calendar.html>Calendar</a>&gt; <a href=PolarBleApi.html#getLocalTime(String)>getLocalTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Get current time in device. To use this function feature .FEATURE_POLAR_FILE_TRANSFER is required</p></div>
-                                        
-                                        <dl>
-                                            <dt><span class="paramLabel">Parameters:</span></dt>
-                                            
-                                            
-                                            <dd><code>identifier</code> - polar device id or bt address</dd>
-                                            
-                                            
-                                        </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="requestStreamSettings(String,PolarBleApi.DeviceStreamingFeature)">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>requestStreamSettings</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarSensorSetting.html>PolarSensorSetting</a>&gt; <a href=PolarBleApi.html#requestStreamSettings(String,PolarBleApi.DeviceStreamingFeature)>requestStreamSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.DeviceStreamingFeature.html>PolarBleApi.DeviceStreamingFeature</a> feature)</pre>
-                                        <div class="block"><p>Request the stream settings available in current operation mode. This request shall be used before the stream is started to decide currently available. The available settings depend on the state of the device. For example, if any stream(s) or optical heart rate measurement is already enabled, then the device may limit the offer of possible settings for other stream feature. Requires feature .FEATURE_POLAR_SENSOR_STREAMING</p></div>
-                                        
-                                        <dl>
-                                            <dt><span class="paramLabel">Parameters:</span></dt>
-                                            
-                                            
-                                            <dd><code>identifier</code> - polar device id or bt address</dd>
-                                            
-                                            
-                                            
-                                            <dd><code>feature</code> - the stream feature of interest</dd>
-                                            
-                                            
-                                        </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="requestFullStreamSettings(String,PolarBleApi.DeviceStreamingFeature)">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>requestFullStreamSettings</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarSensorSetting.html>PolarSensorSetting</a>&gt; <a href=PolarBleApi.html#requestFullStreamSettings(String,PolarBleApi.DeviceStreamingFeature)>requestFullStreamSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.DeviceStreamingFeature.html>PolarBleApi.DeviceStreamingFeature</a> feature)</pre>
-                                        <div class="block"><p>Request full steam settings capabilities. The request returns the all capabilities of the requested streaming feature not limited by the current operation mode. Requires feature .FEATURE_POLAR_SENSOR_STREAMING. This request is supported only by Polar Verity Sense (starting from firmware 1.1.5)</p></div>
-                                        
-                                        <dl>
-                                            <dt><span class="paramLabel">Parameters:</span></dt>
-                                            
-                                            
-                                            <dd><code>identifier</code> - polar device id or bt address</dd>
-                                            
-                                            
-                                            
-                                            <dd><code>feature</code> - the stream feature of interest</dd>
                                             
                                             
                                         </dl>
@@ -1061,16 +818,16 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                     </li>
                                 </ul>
                                 
-                                <a id="startRecording(String,String,PolarBleApi.RecordingInterval,PolarBleApi.SampleType)">
+                                <a id="setLocalTime(String,Calendar)">
                                     <!--   -->
                                 </a>
                                 <ul class=
                                               "blockList"
                                           >
                                     <li class="blockList">
-                                        <h4>startRecording</h4>
-                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#startRecording(String,String,PolarBleApi.RecordingInterval,PolarBleApi.SampleType)>startRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, @<a href=https://developer.android.com/reference/kotlin/androidx/annotation/Size.html>Size</a>(min = 1, max = 64) <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> exerciseId, <a href=PolarBleApi.RecordingInterval.html>PolarBleApi.RecordingInterval</a> interval, <a href=PolarBleApi.SampleType.html>PolarBleApi.SampleType</a> type)</pre>
-                                        <div class="block"><p>Request start recording. Supported only by Polar H10. Requires feature .FEATURE_POLAR_FILE_TRANSFER</p></div>
+                                        <h4>setLocalTime</h4>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#setLocalTime(String,Calendar)>setLocalTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Calendar.html>Calendar</a> calendar)</pre>
+                                        <div class="block"><p>Set the device time. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_DEVICE_TIME_SETUP>PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP</a></p></div>
                                         
                                         <dl>
                                             <dt><span class="paramLabel">Parameters:</span></dt>
@@ -1080,15 +837,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             
                                             
                                             
-                                            <dd><code>exerciseId</code> - unique id for exercise entry</dd>
-                                            
-                                            
-                                            
-                                            <dd><code>interval</code> - recording interval to be used, parameter has no effect if the <code>type</code> parameter is SampleType.</dd>
-                                            
-                                            
-                                            
-                                            <dd><code>type</code> - sample type to be used</dd>
+                                            <dd><code>calendar</code> - time to set</dd>
                                             
                                             
                                         </dl>
@@ -1097,16 +846,16 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                     </li>
                                 </ul>
                                 
-                                <a id="stopRecording(String)">
+                                <a id="getLocalTime(String)">
                                     <!--   -->
                                 </a>
                                 <ul class=
                                               "blockList"
                                           >
                                     <li class="blockList">
-                                        <h4>stopRecording</h4>
-                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#stopRecording(String)>stopRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Request to stop recording. Supported only by Polar H10. Requires feature .FEATURE_POLAR_FILE_TRANSFER</p></div>
+                                        <h4>getLocalTime</h4>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/Calendar.html>Calendar</a>&gt; <a href=PolarBleApi.html#getLocalTime(String)>getLocalTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Get current time in device. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_DEVICE_TIME_SETUP>PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP</a>. Note, the H10 is not supporting time read.</p></div>
                                         
                                         <dl>
                                             <dt><span class="paramLabel">Parameters:</span></dt>
@@ -1116,125 +865,6 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             
                                             
                                         </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="requestRecordingStatus(String)">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>requestRecordingStatus</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/androidx/core/util/Pair.html>Pair</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt;&gt; <a href=PolarBleApi.html#requestRecordingStatus(String)>requestRecordingStatus</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Request current recording status. Supported only by Polar H10. Requires feature .FEATURE_POLAR_FILE_TRANSFER</p></div>
-                                        
-                                        <dl>
-                                            <dt><span class="paramLabel">Parameters:</span></dt>
-                                            
-                                            
-                                            <dd><code>identifier</code> - polar device id or bt address</dd>
-                                            
-                                            
-                                        </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="listExercises(String)">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>listExercises</h4>
-                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarExerciseEntry.html>PolarExerciseEntry</a>&gt; <a href=PolarBleApi.html#listExercises(String)>listExercises</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>List exercises stored in the device Polar H10 device. Requires feature .FEATURE_POLAR_FILE_TRANSFER. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.</p></div>
-                                        
-                                        <dl>
-                                            <dt><span class="paramLabel">Parameters:</span></dt>
-                                            
-                                            
-                                            <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address</dd>
-                                            
-                                            
-                                        </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="fetchExercise(String,PolarExerciseEntry)">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>fetchExercise</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarExerciseData.html>PolarExerciseData</a>&gt; <a href=PolarBleApi.html#fetchExercise(String,PolarExerciseEntry)>fetchExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarExerciseEntry.html>PolarExerciseEntry</a> entry)</pre>
-                                        <div class="block"><p>Api for fetching a single exercise from Polar H10 device. Requires feature .FEATURE_POLAR_FILE_TRANSFER. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.</p></div>
-                                        
-                                        <dl>
-                                            <dt><span class="paramLabel">Parameters:</span></dt>
-                                            
-                                            
-                                            <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address</dd>
-                                            
-                                            
-                                            
-                                            <dd><code>entry</code> - <a href=model/PolarExerciseEntry.html>PolarExerciseEntry</a> object</dd>
-                                            
-                                            
-                                        </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="removeExercise(String,PolarExerciseEntry)">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>removeExercise</h4>
-                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#removeExercise(String,PolarExerciseEntry)>removeExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarExerciseEntry.html>PolarExerciseEntry</a> entry)</pre>
-                                        <div class="block"><p>Api for removing single exercise from Polar H10 device. Requires feature .FEATURE_POLAR_FILE_TRANSFER. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.</p></div>
-                                        
-                                        <dl>
-                                            <dt><span class="paramLabel">Parameters:</span></dt>
-                                            
-                                            
-                                            <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address</dd>
-                                            
-                                            
-                                            
-                                            <dd><code>entry</code> - entry to be removed</dd>
-                                            
-                                            
-                                        </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="searchForDevice()">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>searchForDevice</h4>
-                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarDeviceInfo.html>PolarDeviceInfo</a>&gt; <a href=PolarBleApi.html#searchForDevice()>searchForDevice</a>()</pre>
-                                        <div class="block"><p>Starts searching for BLE devices when subscribed. Search continues as long as observable is subscribed or error. Each found device is emitted only once. By default searches only for Polar devices, but can be controlled by .setPolarFilter. If .setPolarFilter is false then searches for any BLE heart rate capable devices</p></div>
                                         
                                         <!-- TODO missing return annotation -->
                                     </li>
@@ -1244,230 +874,18 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                     <!--   -->
                                 </a>
                                 <ul class=
-                                              "blockList"
+                                              "blockListLast"
                                           >
                                     <li class="blockList">
                                         <h4>startListenForPolarHrBroadcasts</h4>
                                         <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarHrBroadcastData.html>PolarHrBroadcastData</a>&gt; <a href=PolarBleApi.html#startListenForPolarHrBroadcasts(Set)>startListenForPolarHrBroadcasts</a>(<a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; deviceIds)</pre>
-                                        <div class="block"><p>Start listening the heart rate from Polar devices when subscribed. This observable listens BLE broadcast and parses heart rate from BLE broadcast. The BLE device is not connected when using this function.</p></div>
+                                        <div class="block"><p>Start listening the heart rate from Polar devices when subscribed. This observable listens BLE broadcast and parses heart rate from BLE broadcast. The BLE device don't need to be connected when using this function, the heart rate is parsed from the BLE advertisement</p></div>
                                         
                                         <dl>
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
                                             <dd><code>deviceIds</code> - set of Polar device ids to filter or null for a any Polar device</dd>
-                                            
-                                            
-                                        </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="startEcgStreaming(String,PolarSensorSetting)">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>startEcgStreaming</h4>
-                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarEcgData.html>PolarEcgData</a>&gt; <a href=PolarBleApi.html#startEcgStreaming(String,PolarSensorSetting)>startEcgStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting)</pre>
-                                        <div class="block"><p>Start the ECG (Electrocardiography) stream. ECG stream is stopped if the connection is closed, error occurs or stream is disposed. Requires feature .FEATURE_POLAR_SENSOR_STREAMING. Before starting the stream it is recommended to query the available settings using .requestStreamSettings</p></div>
-                                        
-                                        <dl>
-                                            <dt><span class="paramLabel">Parameters:</span></dt>
-                                            
-                                            
-                                            <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address</dd>
-                                            
-                                            
-                                            
-                                            <dd><code>sensorSetting</code> - settings to be used to start streaming</dd>
-                                            
-                                            
-                                        </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="startAccStreaming(String,PolarSensorSetting)">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>startAccStreaming</h4>
-                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarAccelerometerData.html>PolarAccelerometerData</a>&gt; <a href=PolarBleApi.html#startAccStreaming(String,PolarSensorSetting)>startAccStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting)</pre>
-                                        <div class="block"><p>Start ACC (Accelerometer) stream. ACC stream is stopped if the connection is closed, error occurs or stream is disposed. Requires feature .FEATURE_POLAR_SENSOR_STREAMING. Before starting the stream it is recommended to query the available settings using .requestStreamSettings</p></div>
-                                        
-                                        <dl>
-                                            <dt><span class="paramLabel">Parameters:</span></dt>
-                                            
-                                            
-                                            <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address</dd>
-                                            
-                                            
-                                            
-                                            <dd><code>sensorSetting</code> - settings to be used to start streaming</dd>
-                                            
-                                            
-                                        </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="startOhrStreaming(String,PolarSensorSetting)">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>startOhrStreaming</h4>
-                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarOhrData.html>PolarOhrData</a>&gt; <a href=PolarBleApi.html#startOhrStreaming(String,PolarSensorSetting)>startOhrStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting)</pre>
-                                        <div class="block"><p>Start OHR (Optical heart rate) PPG (Photoplethysmography) stream. PPG stream is stopped if the connection is closed, error occurs or stream is disposed. Requires feature .FEATURE_POLAR_SENSOR_STREAMING. Before starting the stream it is recommended to query the available settings using .requestStreamSettings</p></div>
-                                        
-                                        <dl>
-                                            <dt><span class="paramLabel">Parameters:</span></dt>
-                                            
-                                            
-                                            <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address</dd>
-                                            
-                                            
-                                            
-                                            <dd><code>sensorSetting</code> - settings to be used to start streaming</dd>
-                                            
-                                            
-                                        </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="startOhrPPIStreaming(String)">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>startOhrPPIStreaming</h4>
-                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarOhrPPIData.html>PolarOhrPPIData</a>&gt; <a href=PolarBleApi.html#startOhrPPIStreaming(String)>startOhrPPIStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Start OHR (Optical heart rate) PPI (Pulse to Pulse interval) stream. PPI stream is stopped if the connection is closed, error occurs or stream is disposed. Notice that there is a delay before PPI data stream starts. Requires feature .FEATURE_POLAR_SENSOR_STREAMING.</p></div>
-                                        
-                                        <dl>
-                                            <dt><span class="paramLabel">Parameters:</span></dt>
-                                            
-                                            
-                                            <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address</dd>
-                                            
-                                            
-                                        </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="startMagnetometerStreaming(String,PolarSensorSetting)">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>startMagnetometerStreaming</h4>
-                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarMagnetometerData.html>PolarMagnetometerData</a>&gt; <a href=PolarBleApi.html#startMagnetometerStreaming(String,PolarSensorSetting)>startMagnetometerStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting)</pre>
-                                        <div class="block"><p>Start magnetometer stream. Magnetometer stream is stopped if the connection is closed, error occurs or stream is disposed. Requires feature .FEATURE_POLAR_SENSOR_STREAMING. Before starting the stream it is recommended to query the available settings using .requestStreamSettings</p></div>
-                                        
-                                        <dl>
-                                            <dt><span class="paramLabel">Parameters:</span></dt>
-                                            
-                                            
-                                            <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address</dd>
-                                            
-                                            
-                                            
-                                            <dd><code>sensorSetting</code> - settings to be used to start streaming</dd>
-                                            
-                                            
-                                        </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="startGyroStreaming(String,PolarSensorSetting)">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>startGyroStreaming</h4>
-                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarGyroData.html>PolarGyroData</a>&gt; <a href=PolarBleApi.html#startGyroStreaming(String,PolarSensorSetting)>startGyroStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting)</pre>
-                                        <div class="block"><p>Start Gyro stream. Gyro stream is stopped if the connection is closed, error occurs during start or stream is disposed. Requires feature .FEATURE_POLAR_SENSOR_STREAMING. Before starting the stream it is recommended to query the available settings using .requestStreamSettings</p></div>
-                                        
-                                        <dl>
-                                            <dt><span class="paramLabel">Parameters:</span></dt>
-                                            
-                                            
-                                            <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address</dd>
-                                            
-                                            
-                                            
-                                            <dd><code>sensorSetting</code> - settings to be used to start streaming</dd>
-                                            
-                                            
-                                        </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="enableSDKMode(String)">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>enableSDKMode</h4>
-                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#enableSDKMode(String)>enableSDKMode</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Enables SDK mode. In SDK mode the wider range of capabilities is available for the stream than in normal operation mode. SDK mode is only supported by Polar Verity Sense (starting from firmware 1.1.5). Requires feature .FEATURE_POLAR_SENSOR_STREAMING.</p></div>
-                                        
-                                        <dl>
-                                            <dt><span class="paramLabel">Parameters:</span></dt>
-                                            
-                                            
-                                            <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address</dd>
-                                            
-                                            
-                                        </dl>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="disableSDKMode(String)">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockListLast"
-                                          >
-                                    <li class="blockList">
-                                        <h4>disableSDKMode</h4>
-                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#disableSDKMode(String)>disableSDKMode</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Disables SDK mode. SDK mode is only supported by Polar Verity Sense (starting from firmware 1.1.5). Requires feature .FEATURE_POLAR_SENSOR_STREAMING.</p></div>
-                                        
-                                        <dl>
-                                            <dt><span class="paramLabel">Parameters:</span></dt>
-                                            
-                                            
-                                            <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address</dd>
                                             
                                             
                                         </dl>

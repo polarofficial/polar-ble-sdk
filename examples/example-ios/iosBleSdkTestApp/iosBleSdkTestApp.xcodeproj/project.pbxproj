@@ -9,8 +9,17 @@
 /* Begin PBXBuildFile section */
 		89012D34F8DB65EDCBFFA887 /* Pods_iosBleSdkTestApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21D7A4447CA1B886F5575E84 /* Pods_iosBleSdkTestApp.framework */; };
 		A50C368E267B162E00D9F150 /* ButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50C368D267B162E00D9F150 /* ButtonStyle.swift */; };
-		A50C3691267B271300D9F150 /* StreamSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50C3690267B271300D9F150 /* StreamSettings.swift */; };
+		A50C3691267B271300D9F150 /* RecordingSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50C3690267B271300D9F150 /* RecordingSettings.swift */; };
 		A5367D1726676CB100CDDEBE /* Messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5367D1626676CB100CDDEBE /* Messages.swift */; };
+		A54395D029C99D5600356E38 /* DeviceSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54395CF29C99D5600356E38 /* DeviceSearchView.swift */; };
+		A54395D229C99ECD00356E38 /* DeviceSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54395D129C99ECD00356E38 /* DeviceSearch.swift */; };
+		A54395D429C9D5FD00356E38 /* DeviceSearchRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54395D329C9D5FD00356E38 /* DeviceSearchRow.swift */; };
+		A54EC6E029643D8300E1B910 /* OfflineRecordingStartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54EC6DF29643D8300E1B910 /* OfflineRecordingStartView.swift */; };
+		A54EC6E229643D9700E1B910 /* OfflineRecordingListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54EC6E129643D9700E1B910 /* OfflineRecordingListView.swift */; };
+		A54EC6E6296456DB00E1B910 /* OfflineRecordingDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54EC6E5296456DB00E1B910 /* OfflineRecordingDetailsView.swift */; };
+		A54EC6E82964574000E1B910 /* OfflineRecordingEntries.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54EC6E72964574000E1B910 /* OfflineRecordingEntries.swift */; };
+		A54EC6EA2964590000E1B910 /* OfflineRecordingEntriesRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54EC6E92964590000E1B910 /* OfflineRecordingEntriesRow.swift */; };
+		A55604CC298BA3E900DB6EDB /* OnlineStreamingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55604CB298BA3E900DB6EDB /* OnlineStreamingFeature.swift */; };
 		A5776BA62663A28700A36BA5 /* iosBleSdkTestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5776BA52663A28700A36BA5 /* iosBleSdkTestApp.swift */; };
 		A5776BA82663A28700A36BA5 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5776BA72663A28700A36BA5 /* ContentView.swift */; };
 		A5776BAA2663A28800A36BA5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A5776BA92663A28800A36BA5 /* Assets.xcassets */; };
@@ -18,8 +27,20 @@
 		A5776BB82663A28800A36BA5 /* iosBleSdkTestAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5776BB72663A28800A36BA5 /* iosBleSdkTestAppTests.swift */; };
 		A5776BC32663A28800A36BA5 /* iosBleSdkTestAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5776BC22663A28800A36BA5 /* iosBleSdkTestAppUITests.swift */; };
 		A5776BD12663A58E00A36BA5 /* PolarBleSdkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5776BD02663A58E00A36BA5 /* PolarBleSdkManager.swift */; };
+		A5817DFB2962A5C00093A2EC /* OfflineRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5817DFA2962A5C00093A2EC /* OfflineRecordingFeature.swift */; };
 		A58C85DF2679E45800F88DE7 /* UiHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58C85DE2679E45800F88DE7 /* UiHelper.swift */; };
-		A5D8E1922678CDCD0013464E /* StreamSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D8E1912678CDCD0013464E /* StreamSettingsView.swift */; };
+		A58F0CAA2982A75A00B5615C /* OfflineRecordingData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58F0CA92982A75A00B5615C /* OfflineRecordingData.swift */; };
+		A59A0D2B2990C9C9007D30A3 /* DeviceTimeSetupFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59A0D2A2990C9C9007D30A3 /* DeviceTimeSetupFeature.swift */; };
+		A59A0D2D2990D2C6007D30A3 /* SdkModeFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59A0D2C2990D2C6007D30A3 /* SdkModeFeature.swift */; };
+		A59A0D332990EB09007D30A3 /* H10ExerciseRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59A0D322990EB09007D30A3 /* H10ExerciseRecordingFeature.swift */; };
+		A59A0D35299111A2007D30A3 /* DeviceInfoFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59A0D34299111A2007D30A3 /* DeviceInfoFeature.swift */; };
+		A59A0D3729911488007D30A3 /* BatteryStatusFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59A0D3629911488007D30A3 /* BatteryStatusFeature.swift */; };
+		A59A0D3929912C35007D30A3 /* DeviceConnectionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59A0D3829912C35007D30A3 /* DeviceConnectionState.swift */; };
+		A5D8E1922678CDCD0013464E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D8E1912678CDCD0013464E /* SettingsView.swift */; };
+		A5DE094C295AFEC600BC2E0B /* OnlineStreamsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DE094B295AFEC600BC2E0B /* OnlineStreamsView.swift */; };
+		A5DE094E295AFF4700BC2E0B /* OfflineRecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DE094D295AFF4700BC2E0B /* OfflineRecordingView.swift */; };
+		A5DE0950295AFF9300BC2E0B /* H10ExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DE094F295AFF9300BC2E0B /* H10ExerciseView.swift */; };
+		A5DE0952295AFFC500BC2E0B /* DeviceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DE0951295AFFC500BC2E0B /* DeviceSettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,8 +63,17 @@
 /* Begin PBXFileReference section */
 		21D7A4447CA1B886F5575E84 /* Pods_iosBleSdkTestApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iosBleSdkTestApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A50C368D267B162E00D9F150 /* ButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonStyle.swift; sourceTree = "<group>"; };
-		A50C3690267B271300D9F150 /* StreamSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamSettings.swift; sourceTree = "<group>"; };
+		A50C3690267B271300D9F150 /* RecordingSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingSettings.swift; sourceTree = "<group>"; };
 		A5367D1626676CB100CDDEBE /* Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Messages.swift; sourceTree = "<group>"; };
+		A54395CF29C99D5600356E38 /* DeviceSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSearchView.swift; sourceTree = "<group>"; };
+		A54395D129C99ECD00356E38 /* DeviceSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSearch.swift; sourceTree = "<group>"; };
+		A54395D329C9D5FD00356E38 /* DeviceSearchRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSearchRow.swift; sourceTree = "<group>"; };
+		A54EC6DF29643D8300E1B910 /* OfflineRecordingStartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingStartView.swift; sourceTree = "<group>"; };
+		A54EC6E129643D9700E1B910 /* OfflineRecordingListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingListView.swift; sourceTree = "<group>"; };
+		A54EC6E5296456DB00E1B910 /* OfflineRecordingDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingDetailsView.swift; sourceTree = "<group>"; };
+		A54EC6E72964574000E1B910 /* OfflineRecordingEntries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingEntries.swift; sourceTree = "<group>"; };
+		A54EC6E92964590000E1B910 /* OfflineRecordingEntriesRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingEntriesRow.swift; sourceTree = "<group>"; };
+		A55604CB298BA3E900DB6EDB /* OnlineStreamingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineStreamingFeature.swift; sourceTree = "<group>"; };
 		A5776BA22663A28700A36BA5 /* iosBleSdkTestApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iosBleSdkTestApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A5776BA52663A28700A36BA5 /* iosBleSdkTestApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iosBleSdkTestApp.swift; sourceTree = "<group>"; };
 		A5776BA72663A28700A36BA5 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -57,8 +87,20 @@
 		A5776BC22663A28800A36BA5 /* iosBleSdkTestAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iosBleSdkTestAppUITests.swift; sourceTree = "<group>"; };
 		A5776BC42663A28800A36BA5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A5776BD02663A58E00A36BA5 /* PolarBleSdkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarBleSdkManager.swift; sourceTree = "<group>"; };
+		A5817DFA2962A5C00093A2EC /* OfflineRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingFeature.swift; sourceTree = "<group>"; };
 		A58C85DE2679E45800F88DE7 /* UiHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UiHelper.swift; sourceTree = "<group>"; };
-		A5D8E1912678CDCD0013464E /* StreamSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamSettingsView.swift; sourceTree = "<group>"; };
+		A58F0CA92982A75A00B5615C /* OfflineRecordingData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingData.swift; sourceTree = "<group>"; };
+		A59A0D2A2990C9C9007D30A3 /* DeviceTimeSetupFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTimeSetupFeature.swift; sourceTree = "<group>"; };
+		A59A0D2C2990D2C6007D30A3 /* SdkModeFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SdkModeFeature.swift; sourceTree = "<group>"; };
+		A59A0D322990EB09007D30A3 /* H10ExerciseRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = H10ExerciseRecordingFeature.swift; sourceTree = "<group>"; };
+		A59A0D34299111A2007D30A3 /* DeviceInfoFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfoFeature.swift; sourceTree = "<group>"; };
+		A59A0D3629911488007D30A3 /* BatteryStatusFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryStatusFeature.swift; sourceTree = "<group>"; };
+		A59A0D3829912C35007D30A3 /* DeviceConnectionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionState.swift; sourceTree = "<group>"; };
+		A5D8E1912678CDCD0013464E /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A5DE094B295AFEC600BC2E0B /* OnlineStreamsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineStreamsView.swift; sourceTree = "<group>"; };
+		A5DE094D295AFF4700BC2E0B /* OfflineRecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingView.swift; sourceTree = "<group>"; };
+		A5DE094F295AFF9300BC2E0B /* H10ExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = H10ExerciseView.swift; sourceTree = "<group>"; };
+		A5DE0951295AFFC500BC2E0B /* DeviceSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSettingsView.swift; sourceTree = "<group>"; };
 		B6C4437D2F9CC9995BB9092A /* Pods-iosBleSdkTestApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iosBleSdkTestApp.release.xcconfig"; path = "Target Support Files/Pods-iosBleSdkTestApp/Pods-iosBleSdkTestApp.release.xcconfig"; sourceTree = "<group>"; };
 		E6C70C0483A0096D05356E6A /* Pods-iosBleSdkTestApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iosBleSdkTestApp.debug.xcconfig"; path = "Target Support Files/Pods-iosBleSdkTestApp/Pods-iosBleSdkTestApp.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -109,9 +151,14 @@
 		A5367D1426676C7100CDDEBE /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A54395CE29C99D3C00356E38 /* DeviceSearch */,
+				A5D2225D297A603D00972806 /* DeviceSettings */,
+				A5D2225C297A5FFF00972806 /* H10Exercise */,
+				A5D2225B297A5FCD00972806 /* OnlineStreaming */,
+				A54EC6DE29643D4400E1B910 /* OfflineRecording */,
 				A50C368C267B161400D9F150 /* Styles */,
 				A5776BA72663A28700A36BA5 /* ContentView.swift */,
-				A5D8E1912678CDCD0013464E /* StreamSettingsView.swift */,
+				A5D8E1912678CDCD0013464E /* SettingsView.swift */,
 				A58C85DE2679E45800F88DE7 /* UiHelper.swift */,
 			);
 			path = Views;
@@ -121,9 +168,41 @@
 			isa = PBXGroup;
 			children = (
 				A5367D1626676CB100CDDEBE /* Messages.swift */,
-				A50C3690267B271300D9F150 /* StreamSettings.swift */,
+				A50C3690267B271300D9F150 /* RecordingSettings.swift */,
+				A5817DFA2962A5C00093A2EC /* OfflineRecordingFeature.swift */,
+				A54EC6E72964574000E1B910 /* OfflineRecordingEntries.swift */,
+				A58F0CA92982A75A00B5615C /* OfflineRecordingData.swift */,
+				A55604CB298BA3E900DB6EDB /* OnlineStreamingFeature.swift */,
+				A59A0D2A2990C9C9007D30A3 /* DeviceTimeSetupFeature.swift */,
+				A59A0D2C2990D2C6007D30A3 /* SdkModeFeature.swift */,
+				A59A0D322990EB09007D30A3 /* H10ExerciseRecordingFeature.swift */,
+				A59A0D34299111A2007D30A3 /* DeviceInfoFeature.swift */,
+				A59A0D3629911488007D30A3 /* BatteryStatusFeature.swift */,
+				A59A0D3829912C35007D30A3 /* DeviceConnectionState.swift */,
+				A54395D129C99ECD00356E38 /* DeviceSearch.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		A54395CE29C99D3C00356E38 /* DeviceSearch */ = {
+			isa = PBXGroup;
+			children = (
+				A54395CF29C99D5600356E38 /* DeviceSearchView.swift */,
+				A54395D329C9D5FD00356E38 /* DeviceSearchRow.swift */,
+			);
+			path = DeviceSearch;
+			sourceTree = "<group>";
+		};
+		A54EC6DE29643D4400E1B910 /* OfflineRecording */ = {
+			isa = PBXGroup;
+			children = (
+				A5DE094D295AFF4700BC2E0B /* OfflineRecordingView.swift */,
+				A54EC6DF29643D8300E1B910 /* OfflineRecordingStartView.swift */,
+				A54EC6E129643D9700E1B910 /* OfflineRecordingListView.swift */,
+				A54EC6E5296456DB00E1B910 /* OfflineRecordingDetailsView.swift */,
+				A54EC6E92964590000E1B910 /* OfflineRecordingEntriesRow.swift */,
+			);
+			path = OfflineRecording;
 			sourceTree = "<group>";
 		};
 		A5776B992663A28700A36BA5 = {
@@ -151,13 +230,13 @@
 		A5776BA42663A28700A36BA5 /* iosBleSdkTestApp */ = {
 			isa = PBXGroup;
 			children = (
+				A5776BA52663A28700A36BA5 /* iosBleSdkTestApp.swift */,
+				A5776BD02663A58E00A36BA5 /* PolarBleSdkManager.swift */,
 				A5367D1526676C8F00CDDEBE /* Models */,
 				A5367D1426676C7100CDDEBE /* Views */,
-				A5776BA52663A28700A36BA5 /* iosBleSdkTestApp.swift */,
 				A5776BA92663A28800A36BA5 /* Assets.xcassets */,
 				A5776BAE2663A28800A36BA5 /* Info.plist */,
 				A5776BAB2663A28800A36BA5 /* Preview Content */,
-				A5776BD02663A58E00A36BA5 /* PolarBleSdkManager.swift */,
 			);
 			path = iosBleSdkTestApp;
 			sourceTree = "<group>";
@@ -186,6 +265,30 @@
 				A5776BC42663A28800A36BA5 /* Info.plist */,
 			);
 			path = iosBleSdkTestAppUITests;
+			sourceTree = "<group>";
+		};
+		A5D2225B297A5FCD00972806 /* OnlineStreaming */ = {
+			isa = PBXGroup;
+			children = (
+				A5DE094B295AFEC600BC2E0B /* OnlineStreamsView.swift */,
+			);
+			path = OnlineStreaming;
+			sourceTree = "<group>";
+		};
+		A5D2225C297A5FFF00972806 /* H10Exercise */ = {
+			isa = PBXGroup;
+			children = (
+				A5DE094F295AFF9300BC2E0B /* H10ExerciseView.swift */,
+			);
+			path = H10Exercise;
+			sourceTree = "<group>";
+		};
+		A5D2225D297A603D00972806 /* DeviceSettings */ = {
+			isa = PBXGroup;
+			children = (
+				A5DE0951295AFFC500BC2E0B /* DeviceSettingsView.swift */,
+			);
+			path = DeviceSettings;
 			sourceTree = "<group>";
 		};
 		ED48B5072E28122110ED577F /* Frameworks */ = {
@@ -369,14 +472,35 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A5D8E1922678CDCD0013464E /* StreamSettingsView.swift in Sources */,
+				A59A0D2B2990C9C9007D30A3 /* DeviceTimeSetupFeature.swift in Sources */,
+				A54395D429C9D5FD00356E38 /* DeviceSearchRow.swift in Sources */,
+				A59A0D3729911488007D30A3 /* BatteryStatusFeature.swift in Sources */,
+				A54EC6E6296456DB00E1B910 /* OfflineRecordingDetailsView.swift in Sources */,
+				A5D8E1922678CDCD0013464E /* SettingsView.swift in Sources */,
+				A54EC6EA2964590000E1B910 /* OfflineRecordingEntriesRow.swift in Sources */,
 				A5367D1726676CB100CDDEBE /* Messages.swift in Sources */,
+				A58F0CAA2982A75A00B5615C /* OfflineRecordingData.swift in Sources */,
+				A54395D029C99D5600356E38 /* DeviceSearchView.swift in Sources */,
+				A59A0D332990EB09007D30A3 /* H10ExerciseRecordingFeature.swift in Sources */,
+				A54EC6E029643D8300E1B910 /* OfflineRecordingStartView.swift in Sources */,
+				A54EC6E229643D9700E1B910 /* OfflineRecordingListView.swift in Sources */,
+				A5817DFB2962A5C00093A2EC /* OfflineRecordingFeature.swift in Sources */,
+				A5DE0950295AFF9300BC2E0B /* H10ExerciseView.swift in Sources */,
+				A59A0D35299111A2007D30A3 /* DeviceInfoFeature.swift in Sources */,
+				A54395D229C99ECD00356E38 /* DeviceSearch.swift in Sources */,
+				A59A0D2D2990D2C6007D30A3 /* SdkModeFeature.swift in Sources */,
+				A55604CC298BA3E900DB6EDB /* OnlineStreamingFeature.swift in Sources */,
 				A5776BA82663A28700A36BA5 /* ContentView.swift in Sources */,
+				A54EC6E82964574000E1B910 /* OfflineRecordingEntries.swift in Sources */,
 				A58C85DF2679E45800F88DE7 /* UiHelper.swift in Sources */,
-				A50C3691267B271300D9F150 /* StreamSettings.swift in Sources */,
+				A5DE094E295AFF4700BC2E0B /* OfflineRecordingView.swift in Sources */,
+				A50C3691267B271300D9F150 /* RecordingSettings.swift in Sources */,
+				A5DE0952295AFFC500BC2E0B /* DeviceSettingsView.swift in Sources */,
 				A50C368E267B162E00D9F150 /* ButtonStyle.swift in Sources */,
 				A5776BD12663A58E00A36BA5 /* PolarBleSdkManager.swift in Sources */,
+				A59A0D3929912C35007D30A3 /* DeviceConnectionState.swift in Sources */,
 				A5776BA62663A28700A36BA5 /* iosBleSdkTestApp.swift in Sources */,
+				A5DE094C295AFEC600BC2E0B /* OnlineStreamsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -463,7 +587,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -518,7 +642,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -539,12 +663,12 @@
 				DEVELOPMENT_TEAM = 48T8QNDCP9;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iosBleSdkTestApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iosBleSdkTestApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iosBleSdkExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -562,12 +686,12 @@
 				DEVELOPMENT_TEAM = 48T8QNDCP9;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iosBleSdkTestApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iosBleSdkTestApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iosBleSdkExample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -582,13 +706,13 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 48T8QNDCP9;
 				INFOPLIST_FILE = iosBleSdkTestAppTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iosBleSdkTestAppTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iosBleSdkExampleTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -604,13 +728,13 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 48T8QNDCP9;
 				INFOPLIST_FILE = iosBleSdkTestAppTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iosBleSdkTestAppTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iosBleSdkExampleTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -630,7 +754,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iosBleSdkTestAppUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iosBleSdkExampleUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -650,7 +774,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iosBleSdkTestAppUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iosBleSdkExampleUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

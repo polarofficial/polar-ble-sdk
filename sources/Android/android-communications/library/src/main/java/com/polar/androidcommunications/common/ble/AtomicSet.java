@@ -1,5 +1,7 @@
 package com.polar.androidcommunications.common.ble;
 
+import androidx.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -41,6 +43,7 @@ public class AtomicSet<E> {
         }
     }
 
+    @Nullable
     public synchronized E fetch(CompareFunction<E> compareFunction) {
         for (int i = items.size() - 1; i != -1; --i) {
             if (compareFunction.compare(items.get(i))) {

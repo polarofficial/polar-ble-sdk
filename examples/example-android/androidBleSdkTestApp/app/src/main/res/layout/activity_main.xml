@@ -54,6 +54,12 @@
             android:background="@android:color/white" />
 
         <Button
+            android:id="@+id/hr_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/start_hr_stream" />
+
+        <Button
             android:id="@+id/ecg_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -151,6 +157,45 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/get_time" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="2dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:background="@android:color/white" />
+
+        <Button
+            android:id="@+id/list_recordings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/list_recordings" />
+
+        <Button
+            android:id="@+id/start_recording"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/start_recording" />
+
+        <Button
+            android:id="@+id/stop_recording"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/stop_recording" />
+
+        <Button
+            android:id="@+id/download_recording"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/download_recording" />
+
+        <Button
+            android:id="@+id/delete_recording"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/delete_recording" />
 
     </LinearLayout>
 </ScrollView>

@@ -4,7 +4,7 @@ package com.polar.sdk.api.model
 /**
  * For broadcasting heart rate data with signal strength and device info. Useful when using multiple sensors.
  */
-class PolarHrBroadcastData(
+data class PolarHrBroadcastData(
     /**
      * Device information
      *

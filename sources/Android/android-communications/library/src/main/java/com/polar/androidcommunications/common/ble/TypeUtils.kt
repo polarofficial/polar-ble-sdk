@@ -47,4 +47,8 @@ object TypeUtils {
 
         return result.toInt()
     }
+
+    fun convertUnsignedByteToInt(byte: Byte): Int {
+        return byte.toUByte().toInt()
+    }
 }

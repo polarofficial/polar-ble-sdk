@@ -54,7 +54,7 @@ class HrAndRrPlotter {
      *
      * @param polarHrData The HR data that came in.
      */
-    fun addValues(polarHrData: PolarHrData) {
+    fun addValues(polarHrData: PolarHrData.PolarHrSample) {
         val now = Date()
         val time = now.time
         for (i in 0 until NVALS - 1) {
@@ -103,6 +103,4 @@ class HrAndRrPlotter {
     fun setListener(listener: PlotterListener?) {
         this.listener = listener
     }
-
-
 }

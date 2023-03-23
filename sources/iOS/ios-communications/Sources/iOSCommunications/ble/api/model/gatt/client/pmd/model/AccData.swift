@@ -2,17 +2,27 @@
 
 import Foundation
 
-public struct AccData {
-    let timeStamp: UInt64
+public class AccData {
+    var timeStamp: UInt64 = 0
     
-    struct AccSample {
+    public struct AccSample {
         let timeStamp: UInt64
         let x: Int32
         let y: Int32
         let z: Int32
     }
     
-    let samples: [AccSample]
+    var samples:[AccSample]
+    
+    init(timeStamp: UInt64 = 0, samples: [AccSample] = []) {
+        self.timeStamp = timeStamp
+        self.samples = samples
+    }
+    
+    func parseFromFrame(frame: PmdDataFrame) throws {
+        let data = try AccData.parseDataFromDataFrame(frame: frame)
+        samples.append(contentsOf: data.samples)
+    }
     
     private static let TYPE_0_SAMPLE_SIZE_IN_BYTES: UInt8 = 1
     private static let TYPE_0_SAMPLE_SIZE_IN_BITS: UInt8 = TYPE_0_SAMPLE_SIZE_IN_BYTES * 8

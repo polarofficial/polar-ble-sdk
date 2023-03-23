@@ -10,12 +10,13 @@ import com.androidplot.xy.StepMode
 import com.androidplot.xy.XYGraphWidget
 import com.androidplot.xy.XYPlot
 import com.polar.sdk.api.PolarBleApi
-import com.polar.sdk.api.PolarBleApi.DeviceStreamingFeature
 import com.polar.sdk.api.PolarBleApiCallback
 import com.polar.sdk.api.PolarBleApiDefaultImpl.defaultImplementation
 import com.polar.sdk.api.errors.PolarInvalidArgument
 import com.polar.sdk.api.model.PolarDeviceInfo
 import com.polar.sdk.api.model.PolarHrData
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.Disposable
 import java.text.DecimalFormat
 import java.util.*
 
@@ -32,11 +33,14 @@ class HRActivity : AppCompatActivity(), PlotterListener {
     private lateinit var textViewBattery: TextView
     private lateinit var textViewFwVersion: TextView
     private lateinit var plot: XYPlot
+    private var hrDisposable: Disposable? = null
+
+    private lateinit var deviceId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_hr)
-        val deviceId = intent.getStringExtra("id") ?: throw Exception("HRActivity couldn't be created, no deviceId given")
+        deviceId = intent.getStringExtra("id") ?: throw Exception("HRActivity couldn't be created, no deviceId given")
         textViewHR = findViewById(R.id.hr_view_hr)
         textViewRR = findViewById(R.id.hr_view_rr)
         textViewDeviceId = findViewById(R.id.hr_view_deviceId)
@@ -46,9 +50,11 @@ class HRActivity : AppCompatActivity(), PlotterListener {
 
         api = defaultImplementation(
             applicationContext,
-            PolarBleApi.FEATURE_BATTERY_INFO or
-                    PolarBleApi.FEATURE_DEVICE_INFO or
-                    PolarBleApi.FEATURE_HR
+            setOf(
+                PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_BATTERY_INFO,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO
+            )
         )
         api.setApiLogger { str: String -> Log.d("SDK", str) }
         api.setApiCallback(object : PolarBleApiCallback() {
@@ -69,14 +75,15 @@ class HRActivity : AppCompatActivity(), PlotterListener {
                 Log.d(TAG, "Device disconnected ${polarDeviceInfo.deviceId}")
             }
 
-            override fun streamingFeaturesReady(identifier: String, features: Set<DeviceStreamingFeature>) {
-                for (feature in features) {
-                    Log.d(TAG, "Streaming feature is ready: $feature")
-                }
-            }
+            override fun bleSdkFeatureReady(identifier: String, feature: PolarBleApi.PolarBleSdkFeature) {
+                Log.d(TAG, "feature ready $feature")
 
-            override fun hrFeatureReady(identifier: String) {
-                Log.d(TAG, "HR Feature ready $identifier")
+                when (feature) {
+                    PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING -> {
+                        streamHR()
+                    }
+                    else -> {}
+                }
             }
 
             override fun disInformationReceived(identifier: String, uuid: UUID, value: String) {
@@ -93,19 +100,20 @@ class HRActivity : AppCompatActivity(), PlotterListener {
                 textViewBattery.append(batteryLevelText)
             }
 
-            override fun hrNotificationReceived(identifier: String, data: PolarHrData) {
-                Log.d(TAG, "HR ${data.hr} RR ${data.rrsMs}")
-
-                if (data.rrsMs.isNotEmpty()) {
-                    val rrText = "(${data.rrsMs.joinToString(separator = "ms, ")}ms)"
-                    textViewRR.text = rrText
-                }
-                textViewHR.text = data.hr.toString()
-                plotter.addValues(data)
+            override fun hrNotificationReceived(identifier: String, data: PolarHrData.PolarHrSample) {
+                //deprecated
             }
 
             override fun polarFtpFeatureReady(identifier: String) {
-                Log.d(TAG, "Polar FTP ready $identifier")
+                //deprecated
+            }
+
+            override fun streamingFeaturesReady(identifier: String, features: Set<PolarBleApi.PolarDeviceDataType>) {
+                //deprecated
+            }
+
+            override fun hrFeatureReady(identifier: String) {
+                //deprecated
             }
         })
 
@@ -140,5 +148,37 @@ class HRActivity : AppCompatActivity(), PlotterListener {
 
     override fun update() {
         runOnUiThread { plot.redraw() }
+    }
+
+    fun streamHR() {
+        val isDisposed = hrDisposable?.isDisposed ?: true
+        if (isDisposed) {
+            hrDisposable = api.startHrStreaming(deviceId)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    { hrData: PolarHrData ->
+                        for (sample in hrData.samples) {
+                            Log.d(TAG, "HR ${sample.hr} RR ${sample.rrsMs}")
+
+                            if (sample.rrsMs.isNotEmpty()) {
+                                val rrText = "(${sample.rrsMs.joinToString(separator = "ms, ")}ms)"
+                                textViewRR.text = rrText
+                            }
+                            textViewHR.text = sample.hr.toString()
+                            plotter.addValues(sample)
+
+                        }
+                    },
+                    { error: Throwable ->
+                        Log.e(TAG, "HR stream failed. Reason $error")
+                        hrDisposable = null
+                    },
+                    { Log.d(TAG, "HR stream complete") }
+                )
+        } else {
+            // NOTE stops streaming if it is "running"
+            hrDisposable?.dispose()
+            hrDisposable = null
+        }
     }
 }

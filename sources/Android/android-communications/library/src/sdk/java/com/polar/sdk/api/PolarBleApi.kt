@@ -2,8 +2,6 @@
 package com.polar.sdk.api
 
 import androidx.annotation.IntRange
-import androidx.annotation.Size
-import androidx.core.util.Pair
 import com.polar.sdk.api.errors.PolarInvalidArgument
 import com.polar.sdk.api.model.*
 import io.reactivex.rxjava3.core.Completable
@@ -15,9 +13,56 @@ import java.util.concurrent.TimeUnit
 /**
  * Polar BLE API.
  *
- * @param features bitmask of feature(s) or [.ALL_FEATURES]
+ * @property features the set of the features API is used for. By giving only the needed features the SDK may reserve only the required resources
  */
-abstract class PolarBleApi(val features: Int) {
+abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineStreamingApi, PolarOfflineRecordingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi {
+
+    /**
+     * Features available in Polar BLE SDK library
+     */
+    enum class PolarBleSdkFeature {
+        /**
+         * Hr feature to receive hr and rr data from Polar or any other BLE device via standard HR BLE service
+         */
+        FEATURE_HR,
+
+        /**
+         * Device information feature to receive sw information from Polar or any other BLE device
+         */
+        FEATURE_DEVICE_INFO,
+
+        /**
+         * Feature to receive battery level info from Polar or any other BLE device
+         */
+        FEATURE_BATTERY_INFO,
+
+        /**
+         * Polar sensor streaming feature to stream live online data. For example hr, ecg, acc, ppg, ppi, etc...
+         */
+        FEATURE_POLAR_ONLINE_STREAMING,
+
+        /**
+         * Polar offline recording feature to record offline data to Polar device without continuous BLE connection.
+         */
+        FEATURE_POLAR_OFFLINE_RECORDING,
+
+        /**
+         * H10 exercise recording feature to record exercise data to Polar H10 device without continuous BLE connection.
+         */
+        FEATURE_POLAR_H10_EXERCISE_RECORDING,
+
+        /**
+         * Feature to read and set device time in Polar device
+         */
+        FEATURE_POLAR_DEVICE_TIME_SETUP,
+
+        /**
+         * In SDK mode the wider range of capabilities are available for the online stream or offline recoding
+         * than in normal operation mode.
+         */
+        FEATURE_POLAR_SDK_MODE,
+    }
+
     /**
      * Logger interface for logging events from SDK. Shall be used only for tracing and debugging purposes.
      */
@@ -31,33 +76,14 @@ abstract class PolarBleApi(val features: Int) {
     }
 
     /**
-     * Device stream features in Polar devices. The device streaming features requires the
-     * [.FEATURE_POLAR_SENSOR_STREAMING]
-     *
-     * @see PolarBleApiCallback.streamingFeaturesReady
+     * The data types available in Polar devices for online streaming or offline recording.
      */
-    enum class DeviceStreamingFeature {
-        ECG, ACC, PPG, PPI, GYRO, MAGNETOMETER
+    enum class PolarDeviceDataType {
+        HR, ECG, ACC, PPG, PPI, GYRO, MAGNETOMETER
     }
 
     /**
-     * Recoding intervals for H10 recording start
-     */
-    enum class RecordingInterval(val value: Int) {
-        INTERVAL_1S(1), /*!< 1 second interval */
-        INTERVAL_5S(5); /*!< 5 second interval */
-    }
-
-    /**
-     * Sample types for H10 recording start
-     */
-    enum class SampleType {
-        HR, /*!< HeartRate in BPM */
-        RR, /*!< RR interval in milliseconds */
-    }
-
-    /**
-     * set mtu to lower than default(232 is the default for polar devices, minimum for H10 is 70 and for OH1 is 140)
+     * set mtu to lower than default (232 is the default for polar devices, minimum for H10 is 70 and for OH1 is 140)
      * to minimize latency
      *
      * @param mtu value between 70-512 to be set
@@ -79,8 +105,8 @@ abstract class PolarBleApi(val features: Int) {
     abstract fun cleanup()
 
     /**
-     * When enabled only Polar devices are found by the [.searchForDevice], if set to false
-     * any BLE devices with HR services are returned by the [.searchForDevice]. The default setting for
+     * When enabled only Polar devices are found by the [searchForDevice], if set to false
+     * any BLE devices with HR services are returned by the [searchForDevice]. The default setting for
      * Polar filter is true.
      *
      * @param enable false disables polar filter
@@ -88,21 +114,13 @@ abstract class PolarBleApi(val features: Int) {
     abstract fun setPolarFilter(enable: Boolean)
 
     /**
-     * Check if the feature is ready. Only the check for the [.FEATURE_POLAR_SENSOR_STREAMING]
-     * and [.FEATURE_POLAR_FILE_TRANSFER] is supported by this api function
+     * Check if the feature is ready.
      *
      * @param deviceId polar device id or bt address
      * @param feature  feature to be requested
      * @return true if feature is ready for use,
      */
-    abstract fun isFeatureReady(deviceId: String, feature: Int): Boolean
-
-    /**
-     * enables scan filter while on background
-     *
-     */
-    @Deprecated("in release 3.2.8. Move to the background is not relevant information for SDK starting from release 3.2.8")
-    abstract fun backgroundEntered()
+    abstract fun isFeatureReady(deviceId: String, feature: PolarBleSdkFeature): Boolean
 
     /**
      * Optionally call when application enters to the foreground. By calling foregroundEntered() you make
@@ -128,62 +146,25 @@ abstract class PolarBleApi(val features: Int) {
     abstract fun setApiLogger(logger: PolarBleApiLogger)
 
     /**
+     * Starts searching for BLE devices when subscribed. Search continues as long as observable is
+     * subscribed or error. Each found device is emitted only once. By default searches only for Polar devices,
+     * but can be controlled by [.setPolarFilter]. If [.setPolarFilter] is false
+     * then searches for any BLE heart rate capable devices
+     *
+     * @return Flowable stream of [PolarDeviceInfo]
+     * Produces:
+     * <BR></BR> - onNext for any new Polar (or BLE) device detected
+     * <BR></BR> - onError if scan start fails
+     * <BR></BR> - onComplete non produced unless stream is further configured
+     */
+    abstract fun searchForDevice(): Flowable<PolarDeviceInfo>
+
+    /**
      * When enabled the reconnection is attempted if device connection is lost. By default automatic reconnection is enabled.
      *
      * @param enable true = automatic reconnection is enabled, false = automatic reconnection is disabled
      */
     abstract fun setAutomaticReconnection(enable: Boolean)
-
-    /**
-     * Set time to device affects on sensor data stream(s) timestamps
-     * requires feature [.FEATURE_POLAR_FILE_TRANSFER]
-     *
-     * @param identifier polar device id or bt address
-     * @param calendar   time to set
-     * @return Completable stream
-     */
-    abstract fun setLocalTime(identifier: String, calendar: Calendar): Completable
-
-    /**
-     * Get current time in device. To use this function feature [.FEATURE_POLAR_FILE_TRANSFER] is required
-     *
-     * @param identifier polar device id or bt address
-     * @return [Single]
-     * Produces:
-     * <BR></BR> - onSuccess the current local time in device
-     * <BR></BR> - onError status request failed
-     */
-    abstract fun getLocalTime(identifier: String): Single<Calendar>
-
-    /**
-     * Request the stream settings available in current operation mode. This request shall be used before the stream is started
-     * to decide currently available. The available settings depend on the state of the device. For
-     * example, if any stream(s) or optical heart rate measurement is already enabled, then
-     * the device may limit the offer of possible settings for other stream feature. Requires feature
-     * [.FEATURE_POLAR_SENSOR_STREAMING]
-     *
-     * @param identifier polar device id or bt address
-     * @param feature    the stream feature of interest
-     * @return Single stream
-     */
-    abstract fun requestStreamSettings(
-        identifier: String,
-        feature: DeviceStreamingFeature
-    ): Single<PolarSensorSetting>
-
-    /**
-     * Request full steam settings capabilities. The request returns the all capabilities of the
-     * requested streaming feature not limited by the current operation mode. Requires feature
-     * [.FEATURE_POLAR_SENSOR_STREAMING]. This request is supported only by Polar Verity Sense (starting from firmware 1.1.5)
-     *
-     * @param identifier polar device id or bt address
-     * @param feature    the stream feature of interest
-     * @return Single stream
-     */
-    abstract fun requestFullStreamSettings(
-        identifier: String,
-        feature: DeviceStreamingFeature
-    ): Single<PolarSensorSetting>
 
     /**
      * Start connecting to a nearby Polar device. [PolarBleApiCallback.deviceConnected] callback is
@@ -220,93 +201,27 @@ abstract class PolarBleApi(val features: Int) {
     abstract fun disconnectFromDevice(identifier: String)
 
     /**
-     * Request start recording. Supported only by Polar H10. Requires feature
-     * [.FEATURE_POLAR_FILE_TRANSFER]
+     * Set the device time. Requires feature [PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP]
      *
      * @param identifier polar device id or bt address
-     * @param exerciseId unique id for exercise entry
-     * @param interval   recording interval to be used, parameter has no effect if the `type` parameter is SampleType.RR
-     * @param type       sample type to be used
+     * @param calendar   time to set
      * @return Completable stream
      */
-    abstract fun startRecording(
-        identifier: String,
-        @Size(min = 1, max = 64) exerciseId: String,
-        interval: RecordingInterval?,
-        type: SampleType
-    ): Completable
+    abstract fun setLocalTime(identifier: String, calendar: Calendar): Completable
 
     /**
-     * Request to stop recording. Supported only by Polar H10. Requires feature
-     * [.FEATURE_POLAR_FILE_TRANSFER]
+     * Get current time in device. Requires feature [PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP].
+     * Note, the H10 is not supporting time read.
      *
      * @param identifier polar device id or bt address
-     * @return Completable stream
+     * @return Single observable which emits device time in Calendar instance when observable is subscribed
      */
-    abstract fun stopRecording(identifier: String): Completable
-
-    /**
-     * Request current recording status. Supported only by Polar H10. Requires feature
-     * [.FEATURE_POLAR_FILE_TRANSFER]
-     *
-     * @param identifier polar device id or bt address
-     * @return Single stream Pair first recording status, second entryId if available
-     */
-    abstract fun requestRecordingStatus(identifier: String): Single<Pair<Boolean, String>>
-
-    /**
-     * List exercises stored in the device Polar H10 device. Requires feature
-     * [.FEATURE_POLAR_FILE_TRANSFER]. This API is working for Polar OH1 and
-     * Polar Verity Sense devices too, however in those devices recording of exercise requires
-     * that sensor is registered to Polar Flow account.
-     *
-     * @param identifier Polar device id found printed on the sensor/device or bt address
-     * @return Flowable stream of [PolarExerciseEntry] entries
-     */
-    abstract fun listExercises(identifier: String): Flowable<PolarExerciseEntry>
-
-    /**
-     * Api for fetching a single exercise from Polar H10 device. Requires feature
-     * [.FEATURE_POLAR_FILE_TRANSFER]. This API is working for Polar OH1 and
-     * Polar Verity Sense devices too, however in those devices recording of exercise requires
-     * that sensor is registered to Polar Flow account.
-     *
-     * @param identifier Polar device id found printed on the sensor/device or bt address
-     * @param entry      [PolarExerciseEntry] object
-     * @return Single stream of [PolarExerciseData]
-     */
-    abstract fun fetchExercise(identifier: String, entry: PolarExerciseEntry): Single<PolarExerciseData>
-
-    /**
-     * Api for removing single exercise from Polar H10 device. Requires feature
-     * [.FEATURE_POLAR_FILE_TRANSFER]. This API is working for Polar OH1 and
-     * Polar Verity Sense devices too, however in those devices recording of exercise requires
-     * that sensor is registered to Polar Flow account.
-     *
-     * @param identifier Polar device id found printed on the sensor/device or bt address
-     * @param entry      entry to be removed
-     * @return Completable stream
-     */
-    abstract fun removeExercise(identifier: String, entry: PolarExerciseEntry): Completable
-
-    /**
-     * Starts searching for BLE devices when subscribed. Search continues as long as observable is
-     * subscribed or error. Each found device is emitted only once. By default searches only for Polar devices,
-     * but can be controlled by [.setPolarFilter]. If [.setPolarFilter] is false
-     * then searches for any BLE heart rate capable devices
-     *
-     * @return Flowable stream of [PolarDeviceInfo]
-     * Produces:
-     * <BR></BR> - onNext for any new Polar (or BLE) device detected
-     * <BR></BR> - onError if scan start fails
-     * <BR></BR> - onComplete non produced unless stream is further configured
-     */
-    abstract fun searchForDevice(): Flowable<PolarDeviceInfo>
+    abstract fun getLocalTime(identifier: String): Single<Calendar>
 
     /**
      * Start listening the heart rate from Polar devices when subscribed. This observable listens BLE
-     * broadcast and parses heart rate from BLE broadcast. The BLE device is not connected when
-     * using this function.
+     * broadcast and parses heart rate from BLE broadcast. The BLE device don't need to be connected when
+     * using this function, the heart rate is parsed from the BLE advertisement
      *
      * @param deviceIds set of Polar device ids to filter or null for a any Polar device
      * @return Flowable stream of [PolarHrBroadcastData]
@@ -316,164 +231,4 @@ abstract class PolarBleApi(val features: Int) {
      * <BR></BR> - onComplete non produced unless stream is further configured
      */
     abstract fun startListenForPolarHrBroadcasts(deviceIds: Set<String>?): Flowable<PolarHrBroadcastData>
-
-    /**
-     * Start the ECG (Electrocardiography) stream. ECG stream is stopped if the connection is closed,
-     * error occurs or stream is disposed. Requires feature [.FEATURE_POLAR_SENSOR_STREAMING].
-     * Before starting the stream it is recommended to query the available settings using [.requestStreamSettings]
-     *
-     * @param identifier    Polar device id found printed on the sensor/device or bt address
-     * @param sensorSetting settings to be used to start streaming
-     * @return Flowable stream of [PolarEcgData]
-     * Produces:
-     * <BR></BR> - onNext [PolarEcgData]
-     * <BR></BR> - onError error for possible errors invoked
-     * <BR></BR> - onComplete non produced unless stream is further configured
-     */
-    abstract fun startEcgStreaming(
-        identifier: String,
-        sensorSetting: PolarSensorSetting
-    ): Flowable<PolarEcgData>
-
-    /**
-     * Start ACC (Accelerometer) stream. ACC stream is stopped if the connection is closed, error
-     * occurs or stream is disposed. Requires feature [.FEATURE_POLAR_SENSOR_STREAMING].
-     * Before starting the stream it is recommended to query the available settings using [.requestStreamSettings]
-     *
-     * @param identifier    Polar device id found printed on the sensor/device or bt address
-     * @param sensorSetting settings to be used to start streaming
-     * @return Flowable stream of [PolarAccelerometerData]
-     * Produces:
-     * <BR></BR> - onNext [PolarAccelerometerData]
-     * <BR></BR> - onError error for possible errors invoked
-     * <BR></BR> - onComplete non produced unless stream is further configured
-     */
-    abstract fun startAccStreaming(
-        identifier: String,
-        sensorSetting: PolarSensorSetting
-    ): Flowable<PolarAccelerometerData>
-
-    /**
-     * Start OHR (Optical heart rate) PPG (Photoplethysmography) stream. PPG stream is stopped if
-     * the connection is closed, error occurs or stream is disposed. Requires feature
-     * [.FEATURE_POLAR_SENSOR_STREAMING]. Before starting the stream it is recommended to
-     * query the available settings using [.requestStreamSettings]
-     *
-     * @param identifier    Polar device id found printed on the sensor/device or bt address
-     * @param sensorSetting settings to be used to start streaming
-     * @return Flowable stream of OHR PPG data.
-     * Produces:
-     * <BR></BR> - onNext [PolarOhrData]
-     * <BR></BR> - onError error for possible errors invoked
-     * <BR></BR> - onComplete non produced unless the stream is further configured
-     */
-    abstract fun startOhrStreaming(
-        identifier: String,
-        sensorSetting: PolarSensorSetting
-    ): Flowable<PolarOhrData>
-
-    /**
-     * Start OHR (Optical heart rate) PPI (Pulse to Pulse interval) stream. PPI stream is stopped if
-     * the connection is closed, error occurs or stream is disposed. Notice that there is a
-     * delay before PPI data stream starts. Requires feature [.FEATURE_POLAR_SENSOR_STREAMING].
-     *
-     * @param identifier Polar device id found printed on the sensor/device or bt address
-     * @return Flowable stream of OHR PPI data.
-     * Produces:
-     * <BR></BR> - onNext [PolarOhrPPIData]
-     * <BR></BR> - onError error for possible errors invoked
-     * <BR></BR> - onComplete non produced unless the stream is further configured
-     */
-    abstract fun startOhrPPIStreaming(identifier: String): Flowable<PolarOhrPPIData>
-
-    /**
-     * Start magnetometer stream. Magnetometer stream is stopped if the connection is closed, error
-     * occurs or stream is disposed. Requires feature [.FEATURE_POLAR_SENSOR_STREAMING].
-     * Before starting the stream it is recommended to query the available settings using [.requestStreamSettings]
-     *
-     * @param identifier    Polar device id found printed on the sensor/device or bt address
-     * @param sensorSetting settings to be used to start streaming
-     * @return Flowable stream of magnetometer data.
-     * Produces:
-     * <BR></BR> - onNext [PolarMagnetometerData]
-     * <BR></BR> - onError error for possible errors invoked
-     * <BR></BR> - onComplete non produced unless the stream is further configured
-     */
-    abstract fun startMagnetometerStreaming(
-        identifier: String,
-        sensorSetting: PolarSensorSetting
-    ): Flowable<PolarMagnetometerData>
-
-    /**
-     * Start Gyro stream. Gyro stream is stopped if the connection is closed, error occurs during
-     * start or stream is disposed. Requires feature [.FEATURE_POLAR_SENSOR_STREAMING].
-     * Before starting the stream it is recommended to query the available settings using [.requestStreamSettings]
-     *
-     * @param identifier    Polar device id found printed on the sensor/device or bt address
-     * @param sensorSetting settings to be used to start streaming
-     * @return Flowable stream of gyroscope data.
-     * Produces:
-     * <BR></BR> - onNext [PolarGyroData]
-     * <BR></BR> - onError error for possible errors invoked
-     * <BR></BR> - onComplete non produced unless the stream is further configured
-     */
-    abstract fun startGyroStreaming(
-        identifier: String,
-        sensorSetting: PolarSensorSetting
-    ): Flowable<PolarGyroData>
-
-    /**
-     * Enables SDK mode. In SDK mode the wider range of capabilities is available for the stream
-     * than in normal operation mode. SDK mode is only supported by Polar Verity Sense (starting from firmware 1.1.5).
-     * Requires feature [.FEATURE_POLAR_SENSOR_STREAMING].
-     *
-     * @param identifier Polar device id found printed on the sensor/device or bt address
-     * @return Completable stream produces:
-     * success if SDK mode is enabled or device is already in SDK mode
-     * error if SDK mode enable failed
-     */
-    abstract fun enableSDKMode(identifier: String): Completable
-
-    /**
-     * Disables SDK mode. SDK mode is only supported by Polar Verity Sense (starting from firmware 1.1.5).
-     * Requires feature [.FEATURE_POLAR_SENSOR_STREAMING].
-     *
-     * @param identifier Polar device id found printed on the sensor/device or bt address
-     * @return Completable stream produces:
-     * success if SDK mode is disabled or SDK mode was already disabled
-     * error if SDK mode disable failed
-     */
-    abstract fun disableSDKMode(identifier: String): Completable
-
-    companion object {
-        /**
-         * hr feature to receive hr and rr data.
-         */
-        const val FEATURE_HR = 1
-
-        /**
-         * dis feature to receive sw information.
-         */
-        const val FEATURE_DEVICE_INFO = 2
-
-        /**
-         * bas feature to receive battery level info.
-         */
-        const val FEATURE_BATTERY_INFO = 4
-
-        /**
-         * polar sensor streaming feature for ecg, acc, ppg, ppi, etc...
-         */
-        const val FEATURE_POLAR_SENSOR_STREAMING = 8
-
-        /**
-         * polar file transfer feature to read exercises from device
-         */
-        const val FEATURE_POLAR_FILE_TRANSFER = 16
-
-        /**
-         * all features mask
-         */
-        const val ALL_FEATURES = 0xff
-    }
 }

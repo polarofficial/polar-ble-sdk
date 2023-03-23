@@ -4,15 +4,7 @@ import XCTest
 @testable import iOSCommunications
 
 final class PmdTimeStampUtilsTest: XCTestCase {
-    
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
-    
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-    
+       
     func testAssertInvalidInputSampleRateAndTimeStampZero() throws {
         // Arrange
         let previousTimeStamp:UInt64 = 0
@@ -43,7 +35,7 @@ final class PmdTimeStampUtilsTest: XCTestCase {
         // 1/52Hz = 0.019230769230769s = 19230769ns
         // timeStamp - 19230769ns => Exception
         
-        // Act &  Assert
+        // Act & Assert
         XCTAssertThrowsError(try PmdTimeStampUtils.getTimeStamps(
             previousFrameTimeStamp: previousTimeStamp,
             frameTimeStamp: timeStamp,
