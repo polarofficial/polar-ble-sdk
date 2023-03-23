@@ -16,6 +16,7 @@ $dokka.location:com.polar.sdk.api.model/PolarOhrData.PolarOhrSample///PointingTo
 $dokka.location:com.polar.sdk.api.model/PolarOhrPPIData.PolarOhrPPISample///PointingToDeclaration/com/polar/sdk/api/model/PolarOhrPPIData.PolarOhrPPISample.html
 $dokka.location:com.polar.sdk.api.model/PolarPpgData.PolarPpgSample///PointingToDeclaration/com/polar/sdk/api/model/PolarPpgData.PolarPpgSample.html
 $dokka.location:com.polar.sdk.api.model/PolarPpgData.PpgDataType///PointingToDeclaration/com/polar/sdk/api/model/PolarPpgData.PpgDataType.html
+$dokka.location:com.polar.sdk.api.model/PolarPpiData.PolarPpiSample///PointingToDeclaration/com/polar/sdk/api/model/PolarPpiData.PolarPpiSample.html
 $dokka.location:com.polar.sdk.api.model/PolarSensorSetting.SettingType///PointingToDeclaration/com/polar/sdk/api/model/PolarSensorSetting.SettingType.html
 $dokka.location:com.polar.sdk.api/PolarBleApi.PolarBleApiLogger///PointingToDeclaration/com/polar/sdk/api/PolarBleApi.PolarBleApiLogger.html
 $dokka.location:com.polar.sdk.api/PolarBleApi.PolarBleSdkFeature///PointingToDeclaration/com/polar/sdk/api/PolarBleApi.PolarBleSdkFeature.html

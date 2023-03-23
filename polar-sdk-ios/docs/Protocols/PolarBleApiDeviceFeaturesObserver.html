@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>RecordingInterval Enumeration Reference</title>
+    <title>PolarBleApiDeviceFeaturesObserver Protocol Reference</title>
     <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
     <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
     <meta charset='utf-8'>
@@ -13,8 +13,8 @@
     <script src="../js/jazzy.search.js" defer></script>
   </head>
   <body>
-    <a name="//apple_ref/swift/Enum/RecordingInterval" class="dashAnchor"></a>
-    <a title="RecordingInterval Enumeration Reference"></a>
+    <a name="//apple_ref/swift/Protocol/PolarBleApiDeviceFeaturesObserver" class="dashAnchor"></a>
+    <a title="PolarBleApiDeviceFeaturesObserver Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
         <p><a href="../index.html"> Docs</a> (0% documented)</p>
@@ -29,7 +29,7 @@
       <p id="breadcrumbs">
         <a href="../index.html"> Reference</a>
         <img id="carat" src="../img/carat.png" alt=""/>
-        RecordingInterval Enumeration Reference
+        PolarBleApiDeviceFeaturesObserver Protocol Reference
       </p>
     </div>
     <div class="content-wrapper">
@@ -190,8 +190,8 @@
       <article class="main-content">
         <section>
           <section class="section">
-            <h1>RecordingInterval</h1>
-            <p>Recoding intervals for H10 recording start</p>
+            <h1>PolarBleApiDeviceFeaturesObserver</h1>
+            <p>Data client observer</p>
 
           </section>
           <section class="section task-group-section">
@@ -201,8 +201,8 @@
                   <div>
                     <code>
                     <a name="/"></a>
-                    <a name="//apple_ref/swift/Element/interval_1s" class="dashAnchor"></a>
-                    <a class="token" href="#/">interval_1s</a>
+                    <a name="//apple_ref/swift/Method/bleSdkFeatureReady(_:feature:)" class="dashAnchor"></a>
+                    <a class="token" href="#/">bleSdkFeatureReady(_:<wbr>feature:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -210,25 +210,9 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/"></a>
-                    <a name="//apple_ref/swift/Element/interval_5s" class="dashAnchor"></a>
-                    <a class="token" href="#/">interval_5s</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        
+                        <p>The feature is available in this device and it is ready.  Called only for the features which are specified in [PolarBleApi] construction.
+feature ready callback</p>
+
                       </div>
                     </section>
                   </div>
