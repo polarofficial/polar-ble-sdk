@@ -103,6 +103,12 @@
 		A5346A3725F21858006752CA /* MockGattServiceTransmitterImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5346A3625F21858006752CA /* MockGattServiceTransmitterImpl.swift */; };
 		A5346A4125F21866006752CA /* BlePsFtpClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5346A4025F21866006752CA /* BlePsFtpClientTest.swift */; };
 		A5346A4B25F21877006752CA /* BlePsFtpUtilityTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5346A4A25F21877006752CA /* BlePsFtpUtilityTest.swift */; };
+		A5385ABB29CDBB0900A6DB6A /* PmdControlPointResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5385ABA29CDBB0900A6DB6A /* PmdControlPointResponse.swift */; };
+		A5385ABC29CDBB0900A6DB6A /* PmdControlPointResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5385ABA29CDBB0900A6DB6A /* PmdControlPointResponse.swift */; };
+		A5385ABD29CDBB0900A6DB6A /* PmdControlPointResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5385ABA29CDBB0900A6DB6A /* PmdControlPointResponse.swift */; };
+		A5385ABF29CDBBDF00A6DB6A /* PmdErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5385ABE29CDBBDF00A6DB6A /* PmdErrors.swift */; };
+		A5385AC029CDBBDF00A6DB6A /* PmdErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5385ABE29CDBBDF00A6DB6A /* PmdErrors.swift */; };
+		A5385AC129CDBBDF00A6DB6A /* PmdErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5385ABE29CDBBDF00A6DB6A /* PmdErrors.swift */; };
 		A543BC17282261E900852672 /* BlePolarHrAdvertisementTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A543BC16282261E900852672 /* BlePolarHrAdvertisementTest.swift */; };
 		A543BC192825236000852672 /* BleAdvertisementContentTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A543BC182825236000852672 /* BleAdvertisementContentTest.swift */; };
 		A5488C4C264939A000B2DB5C /* BleHrClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5488C4B264939A000B2DB5C /* BleHrClientTest.swift */; };
@@ -194,6 +200,7 @@
 		A57D05492930B217002824D9 /* PpgData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05462930B217002824D9 /* PpgData.swift */; };
 		A57D054B2930C84B002824D9 /* PpgDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D054A2930C84B002824D9 /* PpgDataTest.swift */; };
 		A57D054D2934B745002824D9 /* PmdSettingTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D054C2934B745002824D9 /* PmdSettingTest.swift */; };
+		A57D951429CD8F5100D771ED /* BlePmdClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D951329CD8F5100D771ED /* BlePmdClientTest.swift */; };
 		A580139725B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
 		A580139825B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
 		A580139925B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
@@ -329,6 +336,8 @@
 		A5346A3625F21858006752CA /* MockGattServiceTransmitterImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockGattServiceTransmitterImpl.swift; sourceTree = "<group>"; };
 		A5346A4025F21866006752CA /* BlePsFtpClientTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlePsFtpClientTest.swift; sourceTree = "<group>"; };
 		A5346A4A25F21877006752CA /* BlePsFtpUtilityTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlePsFtpUtilityTest.swift; sourceTree = "<group>"; };
+		A5385ABA29CDBB0900A6DB6A /* PmdControlPointResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdControlPointResponse.swift; sourceTree = "<group>"; };
+		A5385ABE29CDBBDF00A6DB6A /* PmdErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdErrors.swift; sourceTree = "<group>"; };
 		A543BC16282261E900852672 /* BlePolarHrAdvertisementTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlePolarHrAdvertisementTest.swift; sourceTree = "<group>"; };
 		A543BC182825236000852672 /* BleAdvertisementContentTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleAdvertisementContentTest.swift; sourceTree = "<group>"; };
 		A5488C4B264939A000B2DB5C /* BleHrClientTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleHrClientTest.swift; sourceTree = "<group>"; };
@@ -375,6 +384,7 @@
 		A57D05462930B217002824D9 /* PpgData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PpgData.swift; sourceTree = "<group>"; };
 		A57D054A2930C84B002824D9 /* PpgDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PpgDataTest.swift; sourceTree = "<group>"; };
 		A57D054C2934B745002824D9 /* PmdSettingTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdSettingTest.swift; sourceTree = "<group>"; };
+		A57D951329CD8F5100D771ED /* BlePmdClientTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlePmdClientTest.swift; sourceTree = "<group>"; };
 		A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePolarDeviceCapabilitiesUtility.swift; path = ble/api/model/polar/BlePolarDeviceCapabilitiesUtility.swift; sourceTree = "<group>"; };
 		A58F0CAB2983EE2700B5615C /* OfflineHrData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineHrData.swift; sourceTree = "<group>"; };
 		A58F0CAF2983EFE000B5615C /* OfflineHrDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineHrDataTest.swift; sourceTree = "<group>"; };
@@ -474,6 +484,7 @@
 		6C1079211D6D6EA000931948 /* iOSCommunicationsTests */ = {
 			isa = PBXGroup;
 			children = (
+				A57D951329CD8F5100D771ED /* BlePmdClientTest.swift */,
 				A5A88C02299A6FA0007B9C28 /* PmdOfflineTriggerTest.swift */,
 				A58F0CAF2983EFE000B5615C /* OfflineHrDataTest.swift */,
 				A5CD1733297C229D00C62BC7 /* PmdSecretTest.swift */,
@@ -783,6 +794,8 @@
 				A5DE095A295C10E300BC2E0B /* PmdActiveMeasurement.swift */,
 				A5DE095E295C131A00BC2E0B /* PmdControlPointCommand.swift */,
 				A5A88BFE299A64C8007B9C28 /* PmdOfflineTrigger.swift */,
+				A5385ABA29CDBB0900A6DB6A /* PmdControlPointResponse.swift */,
+				A5385ABE29CDBBDF00A6DB6A /* PmdErrors.swift */,
 			);
 			name = pmd;
 			path = ble/api/model/gatt/client/pmd;
@@ -1218,6 +1231,7 @@
 				A58F0CB02983EFE000B5615C /* OfflineHrDataTest.swift in Sources */,
 				A57D054B2930C84B002824D9 /* PpgDataTest.swift in Sources */,
 				A57D05452930B01D002824D9 /* EcgDataTest.swift in Sources */,
+				A57D951429CD8F5100D771ED /* BlePmdClientTest.swift in Sources */,
 				A543BC17282261E900852672 /* BlePolarHrAdvertisementTest.swift in Sources */,
 				A5A88C03299A6FA0007B9C28 /* PmdOfflineTriggerTest.swift in Sources */,
 				A5488C4C264939A000B2DB5C /* BleHrClientTest.swift in Sources */,
@@ -1243,6 +1257,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A57D050A292254E2002824D9 /* BlePmdClient.swift in Sources */,
+				A5385ABB29CDBB0900A6DB6A /* PmdControlPointResponse.swift in Sources */,
 				6C8BCD3C1CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift in Sources */,
 				A5DE0957295B092700BC2E0B /* PmdRecordingType.swift in Sources */,
 				6C57A5B41F987B44002E50DB /* BleRscClient.swift in Sources */,
@@ -1267,6 +1282,7 @@
 				A57D051D2922658F002824D9 /* GyrData.swift in Sources */,
 				6C5A44A21CB291790006220D /* AtomicBoolean.swift in Sources */,
 				6C9810402158A943002820A2 /* RecursiveCondition.swift in Sources */,
+				A5385ABF29CDBBDF00A6DB6A /* PmdErrors.swift in Sources */,
 				6C5A448F1CB291260006220D /* BleDeviceListener.swift in Sources */,
 				6C5A44AD1CB291A40006220D /* CBDeviceSessionImpl.swift in Sources */,
 				A5DE095F295C131A00BC2E0B /* PmdControlPointCommand.swift in Sources */,
@@ -1313,6 +1329,7 @@
 				6C2409422216A6E3001C1A84 /* CBScanningProtocol.swift in Sources */,
 				A5A127E2273689E0007874B8 /* PolarAdvDataUtility.swift in Sources */,
 				A57D052B292F60E3002824D9 /* AccData.swift in Sources */,
+				A5385AC129CDBBDF00A6DB6A /* PmdErrors.swift in Sources */,
 				A57D050C292254E2002824D9 /* BlePmdClient.swift in Sources */,
 				6C2409432216A6E3001C1A84 /* BlePsFtpUtility.swift in Sources */,
 				6C2409442216A6E3001C1A84 /* BlePsFtpClient.swift in Sources */,
@@ -1348,6 +1365,7 @@
 				6C39E8E6209B07BC001F7E44 /* BleDisClient.swift in Sources */,
 				A55604C7298B8B2700DB6EDB /* PolarH10OfflineExerciseApi.swift in Sources */,
 				A57D051029225779002824D9 /* PmdSetting.swift in Sources */,
+				A5385ABD29CDBB0900A6DB6A /* PmdControlPointResponse.swift in Sources */,
 				A57D0514292258D5002824D9 /* PmdMeasurementType.swift in Sources */,
 				6C39E8E7209B07BC001F7E44 /* BleHrClient.swift in Sources */,
 				6C39E8EA209B07BC001F7E44 /* BlePsdClient.swift in Sources */,
@@ -1397,6 +1415,7 @@
 				6CEA10E02175AA5B00E16FBF /* BlePsFtpClient.swift in Sources */,
 				6C981041215B7136002820A2 /* AtomicType.swift in Sources */,
 				A57D052A292F60E3002824D9 /* AccData.swift in Sources */,
+				A5385AC029CDBBDF00A6DB6A /* PmdErrors.swift in Sources */,
 				A57D050B292254E2002824D9 /* BlePmdClient.swift in Sources */,
 				6C707D2920D7F138002FE7FF /* RxUtils.swift in Sources */,
 				6C770B86206B77F300F3D51D /* CBDeviceListenerImpl.swift in Sources */,
@@ -1432,6 +1451,7 @@
 				6C770B92206B77F300F3D51D /* BleBasClient.swift in Sources */,
 				A55604C6298B8B2700DB6EDB /* PolarH10OfflineExerciseApi.swift in Sources */,
 				A57D050F29225779002824D9 /* PmdSetting.swift in Sources */,
+				A5385ABC29CDBB0900A6DB6A /* PmdControlPointResponse.swift in Sources */,
 				A57D0513292258D5002824D9 /* PmdMeasurementType.swift in Sources */,
 				6C770B93206B77F300F3D51D /* BleDisClient.swift in Sources */,
 				6C770B94206B77F300F3D51D /* BleHrClient.swift in Sources */,

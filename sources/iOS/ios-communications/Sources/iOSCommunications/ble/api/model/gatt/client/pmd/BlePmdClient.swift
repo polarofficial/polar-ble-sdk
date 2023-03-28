@@ -5,71 +5,6 @@ import RxSwift
 
 public struct Pmd {
     
-    public enum BlePmdError: Error {
-        case controlPointRequestFailed(errorCode: Int, description:String)
-    }
-    
-    public enum PmdResponseCode: Int {
-        case success = 0
-        case errorInvalidOpCode = 1
-        case errorInvalidMeasurementType = 2
-        case errorNotSupported = 3
-        case errorInvalidLength = 4
-        case errorInvalidParameter = 5
-        case errorAlreadyInState = 6
-        case errorInvalidResolution = 7
-        case errorInvalidSampleRate = 8
-        case errorInvalidRange = 9
-        case errorInvalidMTU = 10
-        case errorInvalidNumberOfChannels = 11
-        case errorInvalidState = 12
-        case errorDeviceInCharger = 13
-        case errorDiskFull = 14
-        case unknown_error = 0xffff
-        
-        var description : String {
-            switch self {
-            case .success: return "Success"
-            case .errorInvalidOpCode: return "Invalid op code"
-            case .errorInvalidMeasurementType: return "Invalid measurement type"
-            case .errorNotSupported: return "Not supported"
-            case .errorInvalidLength: return "Invalid length"
-            case .errorInvalidParameter: return "Invalid parameter"
-            case .errorAlreadyInState: return "Already in state"
-            case .errorInvalidResolution: return "Invalid Resolution"
-            case .errorInvalidSampleRate: return "Invalid Sample rate"
-            case .errorInvalidRange: return "Invalid Range"
-            case .errorInvalidMTU: return "Invalid MTU"
-            case .errorInvalidNumberOfChannels: return "Invalid Number of channels"
-            case .errorInvalidState: return "Invalid state"
-            case .errorDeviceInCharger: return "Device in charger"
-            case .errorDiskFull: return "Disk full"
-            case .unknown_error: return "unknown error"
-            }
-        }
-    }
-    
-    internal struct PmdControlPointResponse {
-        public let response: UInt8
-        public let opCode: UInt8
-        public let type: PmdMeasurementType
-        public let errorCode: PmdResponseCode
-        public let more: Bool
-        public let parameters = NSMutableData()
-        public init(_ data: Data) {
-            response = data[0]
-            opCode = data[1]
-            type = PmdMeasurementType(rawValue: data[2]) ?? PmdMeasurementType.unknown_type
-            errorCode = PmdResponseCode(rawValue: Int(data[3])) ?? PmdResponseCode.unknown_error
-            if data.count > 4 {
-                more = data[4] != 0
-                parameters.append(data.subdata(in: 5..<data.count))
-            } else {
-                more = false
-            }
-        }
-    }
-    
     static func parseDeltaFrameRefSamples(_ data: Data, channels: UInt8, resolution: UInt8)  -> [Int32] {
         let resolutionInBytes = Int(ceil(Double(resolution)/8.0))
         return Array(stride(from: 0, to: (resolutionInBytes*Int(channels)), by: resolutionInBytes).map { (start) -> Int32 in
@@ -146,7 +81,7 @@ public class BlePmdClient: BleGattClientBase {
     public static let PMD_CP = CBUUID(string: "FB005C81-02E7-F387-1CAD-8ACD2D8DF0C8")
     public static let PMD_DATA = CBUUID(string: "FB005C82-02E7-F387-1CAD-8ACD2D8DF0C8")
     
-    let pmdCpInputQueue = AtomicList<Data>()
+    let pmdCpResponseQueue = AtomicList<Data>()
     var features: Data?
     
     private var observersAcc = AtomicList<RxObserver<AccData>>()
@@ -171,7 +106,7 @@ public class BlePmdClient: BleGattClientBase {
         super.disconnected()
         clearStreamObservers(error: BleGattException.gattDisconnected)
         RxUtils.postErrorOnSingleAndClearList(observersFeature, error: BleGattException.gattDisconnected)
-        pmdCpInputQueue.removeAll()
+        pmdCpResponseQueue.removeAll()
         features = nil
         previousTimeStamp.set([:])
     }
@@ -223,86 +158,130 @@ public class BlePmdClient: BleGattClientBase {
                         observer.obs(.success(PmdMeasurementType.fromByteArray(data)))
                     }
                 } else {
-                    self.pmdCpInputQueue.push(data)
+                    processCpCommand(data)
                 }
             } else {
                 BleLogger.error("PMD CP attribute error: \(err)")
             }
         } else if chr.isEqual(BlePmdClient.PMD_DATA) {
             if err == 0 {
-                BleLogger.trace_hex("PMD Data: ", data: data)
-                
-                let frame: PmdDataFrame
-                do {
-                    frame = try PmdDataFrame(data: data, getPreviousFrameTimeStamp, getFactor, getSampleRate)
-                } catch {
-                    print("Couldn't parse the data frame. Reason: \(error)")
-                    return
-                }
-                setPreviousFrameTimeStamp(frame.measurementType, frame.timeStamp)
-                
-                switch (frame.measurementType ) {
-                case PmdMeasurementType.ecg:
-                    RxUtils.emitNext(observersEcg) { (emitter) in
-                        do {
-                            let parsedData = try EcgData.parseDataFromDataFrame(frame: frame)
-                            emitter.obs.onNext(parsedData)
-                        } catch let error {
-                            emitter.obs.onError(error)
-                        }
-                    }
-                    
-                case PmdMeasurementType.ppg:
-                    RxUtils.emitNext(observersPpg) { (emitter) in
-                        do {
-                            let parsedData = try PpgData.parseDataFromDataFrame(frame: frame)
-                            emitter.obs.onNext(parsedData)
-                        } catch let error {
-                            emitter.obs.onError(error)
-                        }
-                    }
-                case PmdMeasurementType.acc:
-                    RxUtils.emitNext(observersAcc) { (emitter) in
-                        do {
-                            let parsedData = try AccData.parseDataFromDataFrame(frame: frame)
-                            emitter.obs.onNext(parsedData)
-                        } catch let error {
-                            emitter.obs.onError(error)
-                        }
-                    }
-                case PmdMeasurementType.ppi:
-                    RxUtils.emitNext(observersPpi) { (emitter) in
-                        do {
-                            let parsedData = try PpiData.parseDataFromDataFrame(frame: frame)
-                            emitter.obs.onNext(parsedData)
-                        } catch let error {
-                            emitter.obs.onError(error)
-                        }
-                    }
-                case PmdMeasurementType.mgn:
-                    RxUtils.emitNext(observersMagnetometer) { (emitter) in
-                        do {
-                            let parsedData = try MagData.parseDataFromDataFrame(frame: frame)
-                            emitter.obs.onNext(parsedData)
-                        } catch let error {
-                            emitter.obs.onError(error)
-                        }
-                    }
-                case PmdMeasurementType.gyro:
-                    RxUtils.emitNext(observersGyro) { (emitter) in
-                        do {
-                            let parsedData = try GyrData.parseDataFromDataFrame(frame: frame)
-                            emitter.obs.onNext(parsedData)
-                        } catch let error {
-                            emitter.obs.onError(error)
-                        }
-                    }
-                default:
-                    BleLogger.trace("Non handled stream type received")
-                }
+                processPmdData(data)
             } else {
                 BleLogger.error("PMD MTU attribute error: \(err)")
             }
+        }
+    }
+    private func processCpCommand(_ data: Data) {
+        BleLogger.trace_hex("PMD command: ", data: data)
+        
+        guard !data.isEmpty else {
+            BleLogger.error("PMD CP received empty data")
+            return
+        }
+        
+        if(data[0] != PmdControlPointResponse.CONTROL_POINT_RESPONSE_CODE) {
+            switch (data[0]) {
+            case PmdControlPointCommandServiceToClient.ONLINE_MEASUREMENT_STOPPED:
+                for dataType in data.dropFirst() {
+                    let errorDescription = "Stop command from device"
+                    switch PmdMeasurementType.fromId(id: dataType) {
+                    case .ecg:
+                        RxUtils.postErrorAndClearList(observersEcg, error: BlePmdError.bleOnlineStreamClosed(description: errorDescription ))
+                    case .ppg:
+                        RxUtils.postErrorAndClearList(observersPpg, error: BlePmdError.bleOnlineStreamClosed(description: errorDescription))
+                    case .acc:
+                        RxUtils.postErrorAndClearList(observersAcc, error: BlePmdError.bleOnlineStreamClosed(description: errorDescription))
+                    case .ppi:
+                        RxUtils.postErrorAndClearList(observersPpi, error: BlePmdError.bleOnlineStreamClosed(description: errorDescription))
+                    case .gyro:
+                        RxUtils.postErrorAndClearList(observersGyro, error: BlePmdError.bleOnlineStreamClosed(description: errorDescription))
+                    case .mgn:
+                        RxUtils.postErrorAndClearList(observersMagnetometer, error: BlePmdError.bleOnlineStreamClosed(description: errorDescription))
+                    default:
+                        BleLogger.error("PMD CP, not supported PmdMeasurementType for Measurement stop. Measurement type value \(dataType) ")
+                    }
+                }
+                break
+            default:
+                BleLogger.error("PMD CP, not supported CP command from server. Command \(data[0]) ")
+                break
+            }
+            
+        } else {
+            self.pmdCpResponseQueue.push(data)
+        }
+    }
+    
+    private func processPmdData(_ data: Data) {
+        BleLogger.trace_hex("PMD Data: ", data: data)
+        
+        let frame: PmdDataFrame
+        do {
+            frame = try PmdDataFrame(data: data, getPreviousFrameTimeStamp, getFactor, getSampleRate)
+        } catch {
+            print("Couldn't parse the data frame. Reason: \(error)")
+            return
+        }
+        setPreviousFrameTimeStamp(frame.measurementType, frame.timeStamp)
+        
+        switch (frame.measurementType ) {
+        case PmdMeasurementType.ecg:
+            RxUtils.emitNext(observersEcg) { (emitter) in
+                do {
+                    let parsedData = try EcgData.parseDataFromDataFrame(frame: frame)
+                    emitter.obs.onNext(parsedData)
+                } catch let error {
+                    emitter.obs.onError(error)
+                }
+            }
+            
+        case PmdMeasurementType.ppg:
+            RxUtils.emitNext(observersPpg) { (emitter) in
+                do {
+                    let parsedData = try PpgData.parseDataFromDataFrame(frame: frame)
+                    emitter.obs.onNext(parsedData)
+                } catch let error {
+                    emitter.obs.onError(error)
+                }
+            }
+        case PmdMeasurementType.acc:
+            RxUtils.emitNext(observersAcc) { (emitter) in
+                do {
+                    let parsedData = try AccData.parseDataFromDataFrame(frame: frame)
+                    emitter.obs.onNext(parsedData)
+                } catch let error {
+                    emitter.obs.onError(error)
+                }
+            }
+        case PmdMeasurementType.ppi:
+            RxUtils.emitNext(observersPpi) { (emitter) in
+                do {
+                    let parsedData = try PpiData.parseDataFromDataFrame(frame: frame)
+                    emitter.obs.onNext(parsedData)
+                } catch let error {
+                    emitter.obs.onError(error)
+                }
+            }
+        case PmdMeasurementType.mgn:
+            RxUtils.emitNext(observersMagnetometer) { (emitter) in
+                do {
+                    let parsedData = try MagData.parseDataFromDataFrame(frame: frame)
+                    emitter.obs.onNext(parsedData)
+                } catch let error {
+                    emitter.obs.onError(error)
+                }
+            }
+        case PmdMeasurementType.gyro:
+            RxUtils.emitNext(observersGyro) { (emitter) in
+                do {
+                    let parsedData = try GyrData.parseDataFromDataFrame(frame: frame)
+                    emitter.obs.onNext(parsedData)
+                } catch let error {
+                    emitter.obs.onError(error)
+                }
+            }
+        default:
+            BleLogger.trace("Non handled stream type received")
         }
     }
     
@@ -360,7 +339,7 @@ public class BlePmdClient: BleGattClientBase {
                 let requestByte = recordingType.asBitField() | measurementType
                 let settingsBytes = settings.serialize()
                 let secretBytes = secret?.serializeToPmdSettings() ?? Data()
-                var packet = Data([PmdControlPointCommand.REQUEST_MEASUREMENT_START, requestByte])
+                var packet = Data([PmdControlPointCommandClientToService.REQUEST_MEASUREMENT_START, requestByte])
                 packet.append(settingsBytes)
                 packet.append(secretBytes)
                 BleLogger.trace( "start measurement. Measurement type: \(type) Recording type: \(recordingType) Secret provided: \(secret != nil) ")
@@ -372,7 +351,7 @@ public class BlePmdClient: BleGattClientBase {
                     }
                     observer(.completed)
                 } else {
-                    observer(.error(Pmd.BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
+                    observer(.error(BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
                 }
             } catch let err {
                 observer(.error(err))
@@ -385,12 +364,12 @@ public class BlePmdClient: BleGattClientBase {
     func stopMeasurement(_ type: PmdMeasurementType) -> Completable {
         return Completable.create{ observer in
             do {
-                let packet = Data([PmdControlPointCommand.STOP_MEASUREMENT ,type.rawValue])
+                let packet = Data([PmdControlPointCommandClientToService.STOP_MEASUREMENT ,type.rawValue])
                 let cpResponse = try self.sendControlPointCommand(packet)
                 if cpResponse.errorCode == .success {
                     observer(.completed)
                 } else {
-                    observer(.error(Pmd.BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
+                    observer(.error(BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
                 }
                 self.setPreviousFrameTimeStamp(type, 0)
             } catch let err {
@@ -427,7 +406,7 @@ public class BlePmdClient: BleGattClientBase {
     func readMeasurementStatus() -> Single<[(PmdMeasurementType, PmdActiveMeasurement)]> {
         return Single.create{ [unowned self] observer in
             do {
-                let cpResponse = try self.sendControlPointCommand(Data([PmdControlPointCommand.GET_MEASUREMENT_STATUS]))
+                let cpResponse = try self.sendControlPointCommand(Data([PmdControlPointCommandClientToService.GET_MEASUREMENT_STATUS]))
                 if cpResponse.errorCode == .success {
                     var measurementStatus = [(PmdMeasurementType, PmdActiveMeasurement)]()
                     for parameter in cpResponse.parameters as Data {
@@ -490,7 +469,7 @@ public class BlePmdClient: BleGattClientBase {
             do {
                 let measurementType = type.rawValue
                 let requestByte = recordingType.asBitField() | measurementType
-                let packet = Data([PmdControlPointCommand.GET_MEASUREMENT_SETTINGS, requestByte])
+                let packet = Data([PmdControlPointCommandClientToService.GET_MEASUREMENT_SETTINGS, requestByte])
                 
                 let cpResponse = try self.sendControlPointCommand(packet)
                 if cpResponse.errorCode == .success {
@@ -513,7 +492,7 @@ public class BlePmdClient: BleGattClientBase {
             do {
                 let measurementType = type.rawValue
                 let requestByte = recordingType.asBitField() | measurementType
-                let packet = Data([PmdControlPointCommand.GET_SDK_MODE_SETTINGS, requestByte])
+                let packet = Data([PmdControlPointCommandClientToService.GET_SDK_MODE_SETTINGS, requestByte])
                 let cpResponse = try self.sendControlPointCommand(packet)
                 if cpResponse.errorCode == .success {
                     let settings = PmdSetting(cpResponse.parameters as Data)
@@ -533,12 +512,12 @@ public class BlePmdClient: BleGattClientBase {
     public func startSdkMode() -> Completable {
         return Completable.create{ observer in
             do {
-                let packet = Data([PmdControlPointCommand.REQUEST_MEASUREMENT_START, PmdMeasurementType.sdkMode.rawValue])
+                let packet = Data([PmdControlPointCommandClientToService.REQUEST_MEASUREMENT_START, PmdMeasurementType.sdkMode.rawValue])
                 let cpResponse = try self.sendControlPointCommand(packet)
                 if cpResponse.errorCode == .success || cpResponse.errorCode == .errorAlreadyInState {
                     observer(.completed)
                 } else {
-                    observer(.error(Pmd.BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
+                    observer(.error(BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
                 }
             } catch let err {
                 observer(.error(err))
@@ -558,12 +537,12 @@ public class BlePmdClient: BleGattClientBase {
     public func stopSdkMode() -> Completable {
         return Completable.create{ observer in
             do {
-                let packet = Data([PmdControlPointCommand.STOP_MEASUREMENT, PmdMeasurementType.sdkMode.rawValue])
+                let packet = Data([PmdControlPointCommandClientToService.STOP_MEASUREMENT, PmdMeasurementType.sdkMode.rawValue])
                 let cpResponse = try self.sendControlPointCommand(packet)
                 if cpResponse.errorCode == .success || cpResponse.errorCode == .errorAlreadyInState{
                     observer(.completed)
                 } else {
-                    observer(.error(Pmd.BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
+                    observer(.error(BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
                 }
             } catch let err {
                 observer(.error(err))
@@ -583,7 +562,7 @@ public class BlePmdClient: BleGattClientBase {
     func isSdkModeEnabled() -> Single<PmdSdkMode> {
         return Single.create{ [unowned self] observer in
             do {
-                let packet = Data([PmdControlPointCommand.GET_SDK_MODE_STATUS])
+                let packet = Data([PmdControlPointCommandClientToService.GET_SDK_MODE_STATUS])
                 let cpResponse = try self.sendControlPointCommand(packet)
                 if cpResponse.errorCode == .success {
                     let byteArray = [UInt8](cpResponse.parameters as Data)
@@ -616,7 +595,6 @@ public class BlePmdClient: BleGattClientBase {
                     let allSettingCommands = pmdOfflineTriggers.triggers
                         .map { availableMeasurementType in
                             if let trigger = offlineRecordingTrigger.triggers[availableMeasurementType.key] {
-                                let settings = trigger.setting
                                 BleLogger.trace("Enable trigger \(availableMeasurementType.key)")
                                 return self.setOfflineRecordingTriggerSetting(triggerStatus: PmdOfflineRecTriggerStatus.enabled, type: availableMeasurementType.key, setting: trigger.setting, secret: secret)
                                 
@@ -637,12 +615,12 @@ public class BlePmdClient: BleGattClientBase {
     private func setOfflineRecordingTriggerMode(triggerMode: PmdOfflineRecTriggerMode) -> Completable {
         return Completable.create{ observer in
             do {
-                let packet = Data([PmdControlPointCommand.SET_OFFLINE_RECORDING_TRIGGER_MODE, triggerMode.rawValue])
+                let packet = Data([PmdControlPointCommandClientToService.SET_OFFLINE_RECORDING_TRIGGER_MODE, triggerMode.rawValue])
                 let cpResponse = try self.sendControlPointCommand(packet)
                 if cpResponse.errorCode == .success {
                     observer(.completed)
                 } else {
-                    observer(.error(Pmd.BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
+                    observer(.error(BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
                 }
             } catch let err {
                 observer(.error(err))
@@ -654,7 +632,7 @@ public class BlePmdClient: BleGattClientBase {
     func getOfflineRecordingTriggerStatus() -> Single<PmdOfflineTrigger> {
         return Single.create{ [unowned self] observer in
             do {
-                let packet = Data([PmdControlPointCommand.GET_OFFLINE_RECORDING_TRIGGER_STATUS])
+                let packet = Data([PmdControlPointCommandClientToService.GET_OFFLINE_RECORDING_TRIGGER_STATUS])
                 let cpResponse = try self.sendControlPointCommand(packet)
                 if cpResponse.errorCode == .success {
                     let data = (cpResponse.parameters as Data)
@@ -697,16 +675,16 @@ public class BlePmdClient: BleGattClientBase {
                     }
                     
                     let parameters = Data([triggerStatusByte, measurementTypeByte]) + settingsBytes
-                    let packet = Data([PmdControlPointCommand.SET_OFFLINE_RECORDING_TRIGGER_SETTINGS]) + parameters
+                    let packet = Data([PmdControlPointCommandClientToService.SET_OFFLINE_RECORDING_TRIGGER_SETTINGS]) + parameters
                     let cpResponse = try self.sendControlPointCommand(packet)
                     if cpResponse.errorCode == .success {
                         observer(.completed)
                     } else {
-                        observer(.error(Pmd.BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
+                        observer(.error(BlePmdError.controlPointRequestFailed(errorCode: cpResponse.errorCode.rawValue, description: cpResponse.errorCode.description)))
                     }
                     
                 } else {
-                    observer(.error(Pmd.BlePmdError.controlPointRequestFailed(errorCode: Pmd.PmdResponseCode.errorInvalidMeasurementType.rawValue, description: "Invalid PmdMeasurementType: \(type)")))
+                    observer(.error(BlePmdError.controlPointRequestFailed(errorCode: PmdResponseCode.errorInvalidMeasurementType.rawValue, description: "Invalid PmdMeasurementType: \(type)")))
                     
                 }
             } catch let err {
@@ -716,16 +694,16 @@ public class BlePmdClient: BleGattClientBase {
         }.subscribe(on: baseSerialDispatchQueue)
     }
     
-    private func sendControlPointCommand(_ data: Data) throws -> Pmd.PmdControlPointResponse {
+    private func sendControlPointCommand(_ data: Data) throws -> PmdControlPointResponse {
         guard let transport = self.gattServiceTransmitter else {
             throw BleGattException.gattTransportNotAvailable
         }
         try transport.transmitMessage(self, serviceUuid: BlePmdClient.PMD_SERVICE, characteristicUuid: BlePmdClient.PMD_CP, packet: data, withResponse: true)
-        let response = try self.pmdCpInputQueue.poll(60)
-        let resp = Pmd.PmdControlPointResponse(response)
+        let response = try self.pmdCpResponseQueue.poll(60)
+        let resp = PmdControlPointResponse(response)
         var more = resp.more
         while (more) {
-            let parameters = try self.pmdCpInputQueue.poll(60)
+            let parameters = try self.pmdCpResponseQueue.poll(60)
             more = parameters[0] != 0
             resp.parameters.append(parameters.subdata(in: 1..<parameters.count))
         }
