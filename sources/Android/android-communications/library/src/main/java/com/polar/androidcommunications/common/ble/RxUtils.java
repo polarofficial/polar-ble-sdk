@@ -66,6 +66,28 @@ public final class RxUtils {
         }
     }
 
+    public static <T> void complete(@NonNull AtomicSet<T> list) {
+        Set<T> objects = list.objects();
+        for (T emitter : objects) {
+            if (emitter instanceof ObservableEmitter) {
+                if (!((ObservableEmitter) emitter).isDisposed()) {
+                    ((ObservableEmitter) emitter).onComplete();
+                }
+            } else if (emitter instanceof FlowableEmitter) {
+                if (!((FlowableEmitter) emitter).isCancelled()) {
+                    ((FlowableEmitter) emitter).onComplete();
+                }
+            } else if (emitter instanceof CompletableEmitter) {
+                if (!((CompletableEmitter) emitter).isDisposed()) {
+                    ((CompletableEmitter) emitter).onComplete();
+                }
+            } else {
+                throw new AssertionError("emitter type not found");
+            }
+        }
+        list.clear();
+    }
+
     /**
      * Template type monitor notifications to remove broiler plate code
      *

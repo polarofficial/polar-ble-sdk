@@ -8,6 +8,7 @@ class BleLogger {
         fun e(tag: String, msg: String)
         fun w(tag: String, msg: String)
         fun i(tag: String, msg: String)
+        fun d_hex(tag: String, msg: String, data: ByteArray)
     }
 
     private var bleLoggerInterface: BleLoggerInterface? = null

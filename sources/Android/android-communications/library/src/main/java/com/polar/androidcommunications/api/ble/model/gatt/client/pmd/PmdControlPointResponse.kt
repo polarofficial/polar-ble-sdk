@@ -1,8 +1,12 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd
 
 class PmdControlPointResponse(data: ByteArray) {
+    companion object {
+        const val CONTROL_POINT_RESPONSE_CODE = 0xF0.toByte()
+    }
+
     val responseCode: Byte = data[0]
-    val opCode: PmdControlPointCommand = PmdControlPointCommand.values()[data[1].toInt()]
+    val opCode: PmdControlPointCommandClientToService = PmdControlPointCommandClientToService.values()[data[1].toInt()]
     val measurementType: Byte = data[2]
     val status: PmdControlPointResponseCode = PmdControlPointResponseCode.values()[data[3].toInt()]
     val more: Boolean

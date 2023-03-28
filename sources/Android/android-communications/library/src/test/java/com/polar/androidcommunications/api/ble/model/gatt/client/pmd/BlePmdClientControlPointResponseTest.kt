@@ -21,7 +21,7 @@ class BlePmdClientControlPointResponseTest {
         // 0:       Response code                          size 1:     0xF0
         val expectedResponseCode = 0xF0.toByte()
         // 1:       Op code                                size 1:     0x01 (Request stream settings)
-        val expectedOpCode = PmdControlPointCommand.GET_MEASUREMENT_SETTINGS
+        val expectedOpCode = PmdControlPointCommandClientToService.GET_MEASUREMENT_SETTINGS
         // 2:       Measurement Type                       size 1:     0x02 (Acc)
         val expectedMeasurementType = 0x02.toByte()
         // 3:       Error Code                             size 1:     0x00 (Success)
@@ -65,7 +65,7 @@ class BlePmdClientControlPointResponseTest {
         // 0:       Response code                          size 1:     0xF0
         val expectedResponseCode = 0xF0.toByte()
         // 1:       Op code                                size 1:     0x01 (Request stream settings)
-        val expectedOpCode = PmdControlPointCommand.GET_MEASUREMENT_SETTINGS
+        val expectedOpCode = PmdControlPointCommandClientToService.GET_MEASUREMENT_SETTINGS
         // 2:       Measurement Type                       size 1:     0x06 (mag)
         val expectedMeasurementType = 0x06.toByte()
         // 3:       Error Code                             size 1:     0x07 (Failure)
