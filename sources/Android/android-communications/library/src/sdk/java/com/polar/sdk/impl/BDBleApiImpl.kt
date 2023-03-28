@@ -65,6 +65,7 @@ import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.BiFunction
 import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.functions.Function
+import io.reactivex.rxjava3.plugins.RxJavaPlugins
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.schedulers.Timed
 import org.reactivestreams.Publisher
@@ -134,7 +135,21 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             override fun i(tag: String, msg: String) {
                 log("$tag/$msg")
             }
+
+            override fun d_hex(tag: String, msg: String, data: ByteArray) {
+                log("$tag/$msg hex: ${data.joinToString(" ") { "%02x".format(it) }}")
+            }
         })
+
+        RxJavaPlugins.setErrorHandler { e: Throwable ->
+            if (e.cause is BleDisconnected) {
+                // fine, BleDisconnection occasionally causes UndeliverableException
+                // Read more in https://github.com/ReactiveX/RxJava/blob/3.x/docs/What's-different-in-2.0.md#error-handling
+                return@setErrorHandler
+            }
+            BleLogger.e(TAG, "Undeliverable exception received, not sure what to do $e")
+            Thread.currentThread().uncaughtExceptionHandler?.uncaughtException(Thread.currentThread(), e)
+        }
     }
 
     override fun setMtu(mtu: Int) {
