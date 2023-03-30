@@ -30,9 +30,8 @@ struct OnlineStreamsView: View {
                 }
             }
             .fullScreenCover(item: $bleSdkManager.onlineStreamSettings) { streamSettings in
-                if let settings = streamSettings {
-                    SettingsView(streamedFeature: settings.feature, streamSettings: settings)
-                }
+                let settings = streamSettings
+                SettingsView(streamedFeature: settings.feature, streamSettings: settings)
             }
             .sheet(
                 item: Binding(

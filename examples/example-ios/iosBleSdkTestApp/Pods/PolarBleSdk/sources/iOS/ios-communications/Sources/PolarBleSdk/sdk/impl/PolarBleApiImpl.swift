@@ -1080,6 +1080,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             .map { (entry) -> PolarOfflineRecordingEntry in
                 let components = entry.name.split(separator: "/")
                 let dateFormatter = DateFormatter()
+                dateFormatter.locale = Locale(identifier: "en_US_POSIX")
                 dateFormatter.dateFormat = "yyyyMMddHHmmss"
                 
                 guard let date = dateFormatter.date(from: String(components[2] + components[4])) else {
@@ -1508,6 +1509,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 .map { (entry) -> (path: String, date: Date, entryId: String) in
                     let components = entry.name.split(separator: "/")
                     let dateFormatter = DateFormatter()
+                    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
                     dateFormatter.dateFormat = "yyyyMMddHHmmss"
                     if let date = dateFormatter.date(from: String(components[2] + components[4])) {
                         return (entry.name, date: date, entryId: String(components[2] + components[4]))

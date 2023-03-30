@@ -21,9 +21,8 @@ struct OfflineRecordingStartView: View {
                         OfflineRecStartButton(dataType: .hr)
                     }
                 }.fullScreenCover(item: $bleSdkManager.offlineRecordingSettings) { offlineRecSettings in
-                    if let settings = offlineRecSettings {
-                        SettingsView(streamedFeature: settings.feature, streamSettings: settings, isOfflineSettings: true)
-                    }
+                    let settings = offlineRecSettings
+                    SettingsView(streamedFeature: settings.feature, streamSettings: settings, isOfflineSettings: true)
                 }
             }.task {
                 await bleSdkManager.getOfflineRecordingStatus()
