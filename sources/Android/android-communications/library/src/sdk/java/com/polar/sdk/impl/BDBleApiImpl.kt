@@ -72,6 +72,7 @@ import org.reactivestreams.Publisher
 import protocol.PftpError.PbPFtpError
 import protocol.PftpNotification
 import protocol.PftpRequest
+import protocol.PftpResponse
 import protocol.PftpResponse.PbPFtpDirectory
 import protocol.PftpResponse.PbRequestRecordingStatusResult
 import java.io.ByteArrayOutputStream
@@ -864,6 +865,26 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 }
         }
         return Flowable.error(PolarBleSdkInstanceException("PolarBleApi instance is shutdown"))
+    }
+
+    override fun getDiskSpace(identifier: String): Single<PolarDiskSpaceData> {
+        val session = try {
+            sessionPsFtpClientReady(identifier)
+        } catch (error: Throwable) {
+            return Single.error(error)
+        }
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Single.error(PolarServiceNotAvailable())
+        return client.query(PftpRequest.PbPFtpQuery.GET_DISK_SPACE_VALUE, null)
+            .map {
+                val proto = PftpResponse.PbPFtpDiskSpaceResult.parseFrom(it.toByteArray())
+                PolarDiskSpaceData.fromProto(proto)
+            }.onErrorResumeNext {
+                if (it is PftpResponseError && it.error == 201) {
+                    Single.error(BleNotSupported("${session.name} do not support getDiskSpace"))
+                } else {
+                    Single.error(it)
+                }
+            }
     }
 
     private fun <T : Any> startStreaming(identifier: String, type: PmdMeasurementType, setting: PolarSensorSetting, observer: Function<BlePMDClient, Flowable<T>>): Flowable<T> {

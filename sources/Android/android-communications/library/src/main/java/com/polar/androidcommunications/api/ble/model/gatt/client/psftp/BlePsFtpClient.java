@@ -49,7 +49,7 @@ public class BlePsFtpClient extends BleGattBase {
     private final AtomicBoolean notificationWaiting = new AtomicBoolean(false);
     private final AtomicInteger notificationPacketsWritten = new AtomicInteger(0);
     private final AtomicInteger packetsCount = new AtomicInteger(5); // default every 5th packet is written with response
-    private static final int PROTOCOL_TIMEOUT = 30;
+    private static final int PROTOCOL_TIMEOUT_SECONDS = 90;
 
     /**
      * true  = uses attribute operation WRITE
@@ -266,7 +266,7 @@ public class BlePsFtpClient extends BleGattBase {
                 synchronized (written) {
                     if (written.get() != count) {
                         int was = written.get();
-                        written.wait(PROTOCOL_TIMEOUT * 1000);
+                        written.wait(PROTOCOL_TIMEOUT_SECONDS * 1000);
                         if (was == written.get()) {
                             if (!txInterface.isConnected()) {
                                 throw new BleDisconnected("Connection lost during waiting packets to be written");
@@ -562,7 +562,7 @@ public class BlePsFtpClient extends BleGattBase {
                                         notificationMessage.byteArrayOutputStream.write(response.payload, 1, response.payload.length - 1);
                                         int status = response.status;
                                         while (status == BlePsFtpUtils.RFC76_STATUS_MORE) {
-                                            packet = notificationInputQueue.poll(PROTOCOL_TIMEOUT, TimeUnit.SECONDS);
+                                            packet = notificationInputQueue.poll(PROTOCOL_TIMEOUT_SECONDS, TimeUnit.SECONDS);
                                             if (packet != null && packet.second == 0) {
                                                 response = BlePsFtpUtils.processRfc76MessageFrameHeader(packet.first);
                                                 status = response.status;
@@ -626,7 +626,7 @@ public class BlePsFtpClient extends BleGattBase {
             if (txInterface.isConnected()) {
                 synchronized (mtuInputQueue) {
                     if (mtuInputQueue.isEmpty()) {
-                        mtuInputQueue.wait(PROTOCOL_TIMEOUT * 1000L);
+                        mtuInputQueue.wait(PROTOCOL_TIMEOUT_SECONDS * 1000L);
                     }
                 }
             } else {

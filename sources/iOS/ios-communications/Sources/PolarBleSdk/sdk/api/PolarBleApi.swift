@@ -249,6 +249,15 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - onError: see `PolarErrors` for possible errors invoked
     func getLocalTime(_ identifier: String) -> Single<Date>
     
+    /// Get `PolarDiskSpaceData` from device.
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id or UUID
+    /// - Returns: Single stream
+    ///   - success: once after disk space received from device
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func getDiskSpace(_ identifier: String) -> Single<PolarDiskSpaceData>
+    
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }
     

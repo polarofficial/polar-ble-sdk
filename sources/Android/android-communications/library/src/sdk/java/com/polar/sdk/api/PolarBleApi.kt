@@ -231,4 +231,12 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * <BR></BR> - onComplete non produced unless stream is further configured
      */
     abstract fun startListenForPolarHrBroadcasts(deviceIds: Set<String>?): Flowable<PolarHrBroadcastData>
+
+    /**
+     * Get [PolarDiskSpaceData] from device.
+     *
+     * @param identifier Polar device ID or BT address
+     * @return [Single] which emits [PolarDiskSpaceData]
+     */
+    abstract fun getDiskSpace(identifier: String): Single<PolarDiskSpaceData>
 }

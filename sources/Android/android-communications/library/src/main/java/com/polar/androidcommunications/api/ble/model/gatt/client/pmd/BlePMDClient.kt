@@ -241,8 +241,9 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
         var more = response.more
         while (more) {
             val moreParameters = receiveControlPointPacket()
-            more = moreParameters[0].toInt() != 0
-            response.parameters = response.parameters.copyOf() + moreParameters.copyOfRange(1, moreParameters.size)
+            val moreResponse = PmdControlPointResponse(moreParameters)
+            more = moreResponse.more
+            response.parameters = response.parameters.copyOf() + moreParameters.copyOfRange(5, moreParameters.size)
         }
         return response
     }

@@ -75,7 +75,7 @@ class BlePmdClientTest: XCTestCase {
             case .next((let _)):
                 XCTFail()
             case .error(let error):
-                guard case Pmd.BlePmdError.bleOnlineStreamClosed = error else {
+                guard case BlePmdError.bleOnlineStreamClosed = error else {
                     return XCTFail()
                 }
             case .completed:
@@ -89,7 +89,7 @@ class BlePmdClientTest: XCTestCase {
             case .next((let _)):
                 XCTFail()
             case .error(let error):
-                guard case Pmd.BlePmdError.bleOnlineStreamClosed = error else {
+                guard case BlePmdError.bleOnlineStreamClosed = error else {
                     return XCTFail()
                 }
             case .completed:

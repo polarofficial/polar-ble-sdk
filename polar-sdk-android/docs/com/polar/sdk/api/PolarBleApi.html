@@ -432,6 +432,14 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Start listening the heart rate from Polar devices when subscribed.</td>
                                         </tr>
                                         
+                                        <tr id="i18" class="altColor">
+                                            <td class="colFirst"><code>abstract Single&lt;<a href=model/PolarDiskSpaceData.html>PolarDiskSpaceData</a>&gt;</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getDiskSpace(String)>getDiskSpace</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">Get <a href=model/PolarDiskSpaceData.html>PolarDiskSpaceData</a> from device.</td>
+                                        </tr>
+                                        
                                         </tbody>
                                     </table>
                                 </div>
@@ -874,7 +882,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                     <!--   -->
                                 </a>
                                 <ul class=
-                                              "blockListLast"
+                                              "blockList"
                                           >
                                     <li class="blockList">
                                         <h4>startListenForPolarHrBroadcasts</h4>
@@ -886,6 +894,30 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             
                                             
                                             <dd><code>deviceIds</code> - set of Polar device ids to filter or null for a any Polar device</dd>
+                                            
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="getDiskSpace(String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getDiskSpace</h4>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarDiskSpaceData.html>PolarDiskSpaceData</a>&gt; <a href=PolarBleApi.html#getDiskSpace(String)>getDiskSpace</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Get <a href=model/PolarDiskSpaceData.html>PolarDiskSpaceData</a> from device.</p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device ID or BT address</dd>
                                             
                                             
                                         </dl>
