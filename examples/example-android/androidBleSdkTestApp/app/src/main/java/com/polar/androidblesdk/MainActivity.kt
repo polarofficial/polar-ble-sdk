@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ATTENTION! Replace with the device ID from your device.
-    private var deviceId = "968BEA2E"
+    private var deviceId = "8C4E5023"
 
     private val api: PolarBleApi by lazy {
         // Notice all features are enabled
@@ -94,6 +94,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var setTimeButton: Button
     private lateinit var getTimeButton: Button
     private lateinit var toggleSdkModeButton: Button
+    private lateinit var getDiskSpaceButton: Button
 
     //Verity Sense offline recording use
     private lateinit var listRecordingsButton: Button
@@ -128,6 +129,7 @@ class MainActivity : AppCompatActivity() {
         setTimeButton = findViewById(R.id.set_time)
         getTimeButton = findViewById(R.id.get_time)
         toggleSdkModeButton = findViewById(R.id.toggle_SDK_mode)
+        getDiskSpaceButton = findViewById(R.id.get_disk_space)
         //Verity Sense recording buttons
         listRecordingsButton = findViewById(R.id.list_recordings)
         startRecordingButton = findViewById(R.id.start_recording)
@@ -844,6 +846,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        getDiskSpaceButton.setOnClickListener {
+            api.getDiskSpace(deviceId)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    { diskSpace ->
+                        Log.d(TAG, "disk space: $diskSpace")
+                        showToast("Disk space left: ${diskSpace.freeSpace}/${diskSpace.totalSpace} Bytes")
+                    },
+                    { error: Throwable -> Log.e(TAG, "get disk space failed: $error") }
+                )
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT), PERMISSION_REQUEST_CODE)
@@ -982,6 +996,7 @@ class MainActivity : AppCompatActivity() {
         setTimeButton.isEnabled = false
         getTimeButton.isEnabled = false
         toggleSdkModeButton.isEnabled = false
+        getDiskSpaceButton.isEnabled = false
         //Verity Sense recording buttons
         listRecordingsButton.isEnabled = false
         startRecordingButton.isEnabled = false
@@ -1010,6 +1025,7 @@ class MainActivity : AppCompatActivity() {
         setTimeButton.isEnabled = true
         getTimeButton.isEnabled = true
         toggleSdkModeButton.isEnabled = true
+        getDiskSpaceButton.isEnabled = true
         //Verity Sense recording buttons
         listRecordingsButton.isEnabled = true
         startRecordingButton.isEnabled = true

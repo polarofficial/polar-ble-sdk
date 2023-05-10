@@ -785,6 +785,24 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
+    func getDiskSpace(_ identifier: String) -> Single<PolarDiskSpaceData> {
+        do {
+            let session = try sessionFtpClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Single.error(PolarErrors.serviceNotFound)
+            }
+            return client.query(Protocol_PbPFtpQuery.getDiskSpace.rawValue, parameters: nil)
+                .map { data in
+                    let proto = try Protocol_PbPFtpDiskSpaceResult(serializedData: data as Data)
+                    return PolarDiskSpaceData.fromProto(proto: proto)
+                }.catch { error in
+                    return Single<PolarDiskSpaceData>.error(error)
+                }
+        } catch let error {
+            return Single<PolarDiskSpaceData>.error(error)
+        }
+    }
+    
     func startRecording(_ identifier: String, exerciseId: String, interval: RecordingInterval = RecordingInterval.interval_1s, sampleType: SampleType) -> Completable {
         do {
             guard exerciseId.count > 0 && exerciseId.count < 64 else {

@@ -42,4 +42,5 @@
     <string name="stop_recording">stop verity sense recording</string>
     <string name="download_recording">download one verity sense recording</string>
     <string name="delete_recording">delete one verity sense recording</string>
+    <string name="get_disk_space">Get disk space</string>
 </resources>

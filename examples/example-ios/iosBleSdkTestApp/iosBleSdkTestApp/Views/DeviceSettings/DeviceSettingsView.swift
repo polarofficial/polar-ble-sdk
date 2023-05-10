@@ -8,6 +8,7 @@ struct DeviceSettingsView: View {
     @EnvironmentObject private var bleSdkManager: PolarBleSdkManager
     @State private var isPerformingTimeSet = false
     @State private var isPerformingTimeGet = false
+    @State private var isPerformingDiskSpaceGet = false
     @State private var isPerformingSdkModeStatusGet = false
     
     var body: some View {
@@ -59,6 +60,22 @@ struct DeviceSettingsView: View {
             .disabled(isPerformingTimeGet)
             .overlay {
                 if isPerformingTimeGet {
+                    ProgressView()
+                }
+            }
+            
+            Button("Get disk space",
+                   action: {
+                isPerformingDiskSpaceGet = true
+                Task {
+                    await bleSdkManager.getDiskSpace()
+                    isPerformingDiskSpaceGet = false
+                }
+            })
+            .buttonStyle(SecondaryButtonStyle(buttonState: getTimeButtonState()))
+            .disabled(isPerformingDiskSpaceGet)
+            .overlay {
+                if isPerformingDiskSpaceGet {
                     ProgressView()
                 }
             }

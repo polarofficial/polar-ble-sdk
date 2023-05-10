@@ -35,6 +35,8 @@ public class BlePolarHrAdvertisement {
     }
     private var previousAdvFrameCounter: UInt8 = 0
     
+    private var previousSlowAverageHr: UInt8 = 0
+    
     public var broadcastBit: UInt8 {
         get {
             if(currentData.isEmpty) {
@@ -100,7 +102,13 @@ public class BlePolarHrAdvertisement {
     }
     
     public var isHrDataUpdated: Bool {
-        get { return previousAdvFrameCounter != advFrameCounter }
+        get {
+            if( currentData.count == 3 && previousAdvFrameCounter == advFrameCounter ){ // there MAY be 3-byte sensors with (unlike with the H7) a proper counter? (Dunno...) With them, also use the 1s timer-counter, NOT the HR change!
+                return previousSlowAverageHr != slowAverageHr
+            } else {
+                return previousAdvFrameCounter != advFrameCounter
+            }
+        }
     }
     
     public var isPresent: Bool {
@@ -117,6 +125,9 @@ public class BlePolarHrAdvertisement {
     
     public func processPolarManufacturerData(_ data: Data) {
         previousAdvFrameCounter = advFrameCounter
+        if data.count == 3 {
+            previousSlowAverageHr = slowAverageHr
+        }
         currentData = data
     }
     

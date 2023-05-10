@@ -983,6 +983,25 @@ class PolarBleSdkManager : ObservableObject {
         }
     }
     
+    func getDiskSpace() async {
+        if case .connected(let deviceId) = deviceConnectionState {
+            do {
+                let diskSpace: PolarDiskSpaceData = try await api.getDiskSpace(deviceId).value
+                Task { @MainActor in
+                    self.generalMessage = Message(text: String(describing: diskSpace))
+                }
+            } catch let err {
+                Task { @MainActor in
+                    self.somethingFailed(text: "disk space get failed: \(err)")
+                }
+            }
+        } else {
+            Task { @MainActor in
+                self.somethingFailed(text: "disk space get failed. No device connected)")
+            }
+        }
+    }
+    
     private func somethingFailed(text: String) {
         self.generalMessage = Message(text: "Error: \(text)")
         NSLog("Error \(text)")

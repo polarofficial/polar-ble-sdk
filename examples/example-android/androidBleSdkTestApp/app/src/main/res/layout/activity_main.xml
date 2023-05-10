@@ -158,6 +158,12 @@
             android:layout_height="wrap_content"
             android:text="@string/get_time" />
 
+        <Button
+            android:id="@+id/get_disk_space"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/get_disk_space" />
+
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
