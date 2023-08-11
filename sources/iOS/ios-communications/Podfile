@@ -12,6 +12,7 @@ def swift_protobuf_pod
 end
 
 target 'iOSCommunications' do
+  swift_protobuf_pod
   rx_swift_pod
 end
 

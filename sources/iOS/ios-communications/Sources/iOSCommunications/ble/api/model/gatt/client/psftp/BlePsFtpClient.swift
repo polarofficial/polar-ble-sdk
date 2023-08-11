@@ -12,7 +12,10 @@ public class BlePsFtpClient: BleGattClientBase {
     
     var mtuNotificationEnabled: AtomicInteger!
     var pftpD2HNotificationEnabled: AtomicInteger!
-    public var PROTOCOL_TIMEOUT = TimeInterval(30)
+    public var PROTOCOL_TIMEOUT = TimeInterval(90)
+    
+    private let PROTOCOL_TIMEOUT_EXTENDED = TimeInterval(900)
+    private let extendedWriteTimeoutFilePaths: [String] = ["/SYNCPART.TGZ"]
     
     let mtuInputQueue=AtomicList<[Data: Int]>()
     let packetsWritten=AtomicInteger(initialValue:0)
@@ -112,10 +115,10 @@ public class BlePsFtpClient: BleGattClientBase {
         }
     }
     
-    func waitPacketsWritten(_ written: AtomicInteger, canceled: BlockOperation , count: Int ) throws {
+    func waitPacketsWritten(_ written: AtomicInteger, canceled: BlockOperation, count: Int, timeout: TimeInterval) throws {
         while written.get() < count {
             let was = written.get()
-            try written.checkAndWait(count, secs: PROTOCOL_TIMEOUT, canceled: canceled, canceledError: BlePsFtpException.operationCanceled, timeoutCall: {
+            try written.checkAndWait(count, secs: timeout, canceled: canceled, canceledError: BlePsFtpException.operationCanceled, timeoutCall: {
                 BleLogger.trace("PS-FTP OPERATION TIMEOUT")
             })
             if (!(gattServiceTransmitter?.isConnected() ?? false) || was == written.get()) {
@@ -126,7 +129,7 @@ public class BlePsFtpClient: BleGattClientBase {
         written.set(0)
     }
     
-    func readResponse(_ outputStream: NSMutableData, inputQueue: AtomicList<[Data: Int]>, canceled: BlockOperation) throws -> Int {
+    func readResponse(_ outputStream: NSMutableData, inputQueue: AtomicList<[Data: Int]>, canceled: BlockOperation, timeout: TimeInterval) throws -> Int {
         var frameStatus=0
         var next=0
         let sequenceNumber = BlePsFtpUtility.BlePsFtpRfc76SequenceNumber()
@@ -210,12 +213,12 @@ public class BlePsFtpClient: BleGattClientBase {
         self.notificationPacketsWritten.set(0)
     }
     
-    fileprivate func transmitMtuPacket(_ packet: Data, canceled: BlockOperation, response: Bool) throws {
+    fileprivate func transmitMtuPacket(_ packet: Data, canceled: BlockOperation, response: Bool, timeout: TimeInterval) throws {
         if !canceled.isCancelled {
             if let transport = self.gattServiceTransmitter {
                 try transport.transmitMessage(self, serviceUuid: BlePsFtpClient.PSFTP_SERVICE, characteristicUuid: BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC, packet: packet, withResponse: response)
                 BleLogger.trace_hex("MTU send ", data: packet)
-                try self.waitPacketsWritten(self.packetsWritten, canceled: canceled, count: 1)
+                try self.waitPacketsWritten(self.packetsWritten, canceled: canceled, count: 1, timeout: timeout)
                 return
             }
             throw BleGattException.gattTransportNotAvailable
@@ -227,7 +230,7 @@ public class BlePsFtpClient: BleGattClientBase {
         if let transport = self.gattServiceTransmitter {
             try transport.transmitMessage(self, serviceUuid: BlePsFtpClient.PSFTP_SERVICE, characteristicUuid: BlePsFtpClient.PSFTP_H2D_NOTIFICATION_CHARACTERISTIC, packet: packet, withResponse: response)
             BleLogger.trace_hex("H2D send ", data: packet)
-            try self.waitPacketsWritten(self.notificationPacketsWritten, canceled: BlockOperation(), count: 1)
+            try self.waitPacketsWritten(self.notificationPacketsWritten, canceled: BlockOperation(), count: 1, timeout: PROTOCOL_TIMEOUT)
             return
         }
         throw BleGattException.gattTransportNotAvailable
@@ -271,11 +274,11 @@ public class BlePsFtpClient: BleGattClientBase {
                         // send request
                         let requs = BlePsFtpUtility.buildRfc76MessageFrameAll(totalStream, mtuSize: self.mtuSize, sequenceNumber: sequenceNumber)
                         for packet in requs {
-                            try self.transmitMtuPacket(packet, canceled: block ?? BlockOperation(), response: true)
+                            try self.transmitMtuPacket(packet, canceled: block ?? BlockOperation(), response: true, timeout: PROTOCOL_TIMEOUT)
                             anySend = true
                         }
                         let outputStream=NSMutableData()
-                        let error = try self.readResponse(outputStream, inputQueue: self.mtuInputQueue, canceled: block ?? BlockOperation())
+                        let error = try self.readResponse(outputStream, inputQueue: self.mtuInputQueue, canceled: block ?? BlockOperation(), timeout: PROTOCOL_TIMEOUT)
                         switch ( error ){
                         case 0:
                             observer(.success(outputStream))
@@ -331,8 +334,14 @@ public class BlePsFtpClient: BleGattClientBase {
         return Observable.create{ observer in
             // TODO make improvement, if ex. rx retry is used this create could be called n times,
             // now the InputStream on n=1... is already consumed
+            var timeout = self.PROTOCOL_TIMEOUT
+            do {
+                timeout = try self.writeTimeout(for: Communications_PbPFtpOperation(serializedData: Data(referencing: header)).path)
+            } catch {
+                BleLogger.error("Failed to parse PbPFtpOperation: \(error)")
+            }
             let block = BlockOperation()
-            
+
             block.addExecutionBlock { [unowned self, weak block] in
                 BleLogger.trace("PS-FTP new write operation")
                 self.gattServiceTransmitter?.attributeOperationStarted()
@@ -369,9 +378,9 @@ public class BlePsFtpClient: BleGattClientBase {
                             
                             if next == 0 {
                                 // first write cannot be canceled
-                                try self.transmitMtuPacket(packet, canceled: BlockOperation(), response: response)
+                                try self.transmitMtuPacket(packet, canceled: BlockOperation(), response: response, timeout: timeout)
                             } else {
-                                try self.transmitMtuPacket(packet, canceled: block ?? BlockOperation(), response: response)
+                                try self.transmitMtuPacket(packet, canceled: block ?? BlockOperation(), response: response, timeout: timeout)
                             }
                             
                             next = 1
@@ -423,7 +432,7 @@ public class BlePsFtpClient: BleGattClientBase {
                     } while more
                     let output = NSMutableData()
                     do {
-                        let error = try self.readResponse(output, inputQueue: self.mtuInputQueue, canceled: block ?? BlockOperation())
+                        let error = try self.readResponse(output, inputQueue: self.mtuInputQueue, canceled: block ?? BlockOperation(), timeout: timeout)
                         
                         switch ( error ) {
                         case 0:
@@ -451,11 +460,20 @@ public class BlePsFtpClient: BleGattClientBase {
         }
     }
     
+    private func writeTimeout(for filePath: String) -> TimeInterval {
+        for path in extendedWriteTimeoutFilePaths {
+            if filePath.hasPrefix(path) {
+                return PROTOCOL_TIMEOUT_EXTENDED
+            }
+        }
+        return PROTOCOL_TIMEOUT
+    }
+    
     fileprivate func sendMtuCancelPacket() throws {
         let cancelPacket = [UInt8](repeating: 0, count: 3)
         packetsWritten.set(0)
         BleLogger.trace("PS-FTP mtu send cancel packet")
-        try self.transmitMtuPacket(Data(cancelPacket), canceled: BlockOperation(), response: true)
+        try self.transmitMtuPacket(Data(cancelPacket), canceled: BlockOperation(), response: true, timeout: PROTOCOL_TIMEOUT)
     }
     
     /// Sends a single query to device, can be called many at once, but will internally make operations atomic
@@ -485,10 +503,10 @@ public class BlePsFtpClient: BleGattClientBase {
                         let sequenceNumber=BlePsFtpUtility.BlePsFtpRfc76SequenceNumber()
                         let requs = BlePsFtpUtility.buildRfc76MessageFrameAll(totalStream, mtuSize: self.mtuSize, sequenceNumber: sequenceNumber)
                         for packet in requs {
-                            try self.transmitMtuPacket(packet, canceled: BlockOperation.init(), response: true)
+                            try self.transmitMtuPacket(packet, canceled: BlockOperation.init(), response: true, timeout: PROTOCOL_TIMEOUT)
                         }
                         let outputStream=NSMutableData()
-                        let error = try self.readResponse(outputStream, inputQueue: self.mtuInputQueue, canceled: block ?? BlockOperation())
+                        let error = try self.readResponse(outputStream, inputQueue: self.mtuInputQueue, canceled: block ?? BlockOperation(), timeout: PROTOCOL_TIMEOUT)
                         switch ( error ){
                         case 0:
                             observer(.success(outputStream))

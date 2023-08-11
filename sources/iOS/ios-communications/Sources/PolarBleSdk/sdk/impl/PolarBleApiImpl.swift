@@ -137,7 +137,9 @@ import UIKit
         case .sessionOpenPark where session.previousState == .sessionOpen: fallthrough
         case .sessionClosed where session.previousState == .sessionOpen: fallthrough
         case .sessionClosed where session.previousState == .sessionClosing:
-            self.observer?.deviceDisconnected(info)
+            self.observer?.deviceDisconnected(info, pairingError: false)
+        case .sessionOpenPark where session.previousState == .sessionOpening:
+            self.observer?.deviceDisconnected(info, pairingError: true)
         case .sessionOpening:
             self.observer?.deviceConnecting(info)
         case .sessionClosed: fallthrough

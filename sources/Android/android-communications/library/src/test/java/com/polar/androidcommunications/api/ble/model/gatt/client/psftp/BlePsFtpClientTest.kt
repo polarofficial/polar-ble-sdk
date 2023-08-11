@@ -98,6 +98,7 @@ internal class BlePsFtpClientTest {
         val frame11 = byteArrayOf(0xB7.toByte(), 0x82.toByte(), 0x08.toByte(), 0x0A.toByte(), 0x06.toByte(), 0x08.toByte(), 0x03.toByte(), 0x10.toByte(), 0x00.toByte(), 0x18.toByte(), 0x02.toByte(), 0x8A.toByte(), 0x01.toByte(), 0x0D.toByte(), 0x0A.toByte(), 0x09.toByte(), 0x5A.toByte(), 0x48.toByte(), 0x5F.toByte(), 0x4A.toByte())
         val frame12 = byteArrayOf(0xC3.toByte(), 0x5A.toByte(), 0x48.toByte(), 0x5F.toByte(), 0x4A.toByte(), 0x41.toByte(), 0x10.toByte(), 0x09.toByte())
         val output = ByteArrayOutputStream()
+        val timeoutSeconds = 90L
 
         // Act
         blePsFtpClient.processServiceData(RFC77_PFTP_MTU_CHARACTERISTIC, frame0, 0, true)
@@ -113,7 +114,7 @@ internal class BlePsFtpClientTest {
         blePsFtpClient.processServiceData(RFC77_PFTP_MTU_CHARACTERISTIC, frame10, 0, true)
         blePsFtpClient.processServiceData(RFC77_PFTP_MTU_CHARACTERISTIC, frame11, 0, true)
         blePsFtpClient.processServiceData(RFC77_PFTP_MTU_CHARACTERISTIC, frame12, 0, true)
-        blePsFtpClient.readResponse(output)
+        blePsFtpClient.readResponse(output, timeoutSeconds)
 
         // Assert
         val expectedArray = (frame0.drop(1) +

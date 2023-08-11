@@ -704,8 +704,9 @@ public class BlePmdClient: BleGattClientBase {
         var more = resp.more
         while (more) {
             let parameters = try self.pmdCpResponseQueue.poll(60)
-            more = parameters[0] != 0
-            resp.parameters.append(parameters.subdata(in: 1..<parameters.count))
+            let moreResponse = PmdControlPointResponse(parameters)
+            more = moreResponse.more
+            resp.parameters.append(Data(moreResponse.parameters))
         }
         return resp
     }

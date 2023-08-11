@@ -1,0 +1,14 @@
+syntax = "proto2";
+
+package com.polar.androidcommunications.api.ble.model.proto;
+
+message PbPFtpOperation {
+    enum Command {
+        GET = 0;
+        PUT = 1;
+        MERGE = 2;
+        REMOVE = 3;
+    }
+    required Command command = 1;
+    required string path = 2;
+}

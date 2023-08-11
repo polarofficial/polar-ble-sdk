@@ -31,6 +31,7 @@ import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.core.SingleOnSubscribe;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import com.polar.androidcommunications.api.ble.model.proto.CommunicationsPftpRequest;
 
 /**
  * Polar simple file transfer client declaration.
@@ -50,6 +51,9 @@ public class BlePsFtpClient extends BleGattBase {
     private final AtomicInteger notificationPacketsWritten = new AtomicInteger(0);
     private final AtomicInteger packetsCount = new AtomicInteger(5); // default every 5th packet is written with response
     private static final int PROTOCOL_TIMEOUT_SECONDS = 90;
+    private static final int PROTOCOL_TIMEOUT_EXTENDED_SECONDS = 900;
+
+    private final List<String> extendedWriteTimeoutFilePaths = Collections.singletonList("/SYNCPART.TGZ");
 
     /**
      * true  = uses attribute operation WRITE
@@ -232,10 +236,10 @@ public class BlePsFtpClient extends BleGattBase {
                                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                                 try {
                                     txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, requestData, false);
-                                    waitPacketsWritten(packetsWritten, mtuWaiting, requestData.size());
+                                    waitPacketsWritten(packetsWritten, mtuWaiting, requestData.size(), PROTOCOL_TIMEOUT_SECONDS);
                                     requestData.clear();
                                     // start waiting for packets
-                                    readResponse(outputStream);
+                                    readResponse(outputStream, PROTOCOL_TIMEOUT_SECONDS);
                                     emitter.onSuccess(outputStream);
                                 } catch (InterruptedException ex) {
                                     BleLogger.e(TAG, "Request interrupted. Exception: " + ex.getMessage());
@@ -259,14 +263,14 @@ public class BlePsFtpClient extends BleGattBase {
                 .subscribeOn(scheduler);
     }
 
-    private void waitPacketsWritten(final AtomicInteger written, AtomicBoolean waiting, int count) throws InterruptedException, BleDisconnected, BlePsFtpUtils.PftpOperationTimeout {
+    private void waitPacketsWritten(final AtomicInteger written, AtomicBoolean waiting, int count, long timeoutSeconds) throws InterruptedException, BleDisconnected, BlePsFtpUtils.PftpOperationTimeout {
         try {
             waiting.set(true);
             while (written.get() < count) {
                 synchronized (written) {
                     if (written.get() != count) {
                         int was = written.get();
-                        written.wait(PROTOCOL_TIMEOUT_SECONDS * 1000);
+                        written.wait(timeoutSeconds * 1000);
                         if (was == written.get()) {
                             if (!txInterface.isConnected()) {
                                 throw new BleDisconnected("Connection lost during waiting packets to be written");
@@ -318,6 +322,7 @@ public class BlePsFtpClient extends BleGattBase {
                             int next = 0;
                             long totalPayload = totalStream.available();
                             BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();
+                            final long timeoutSeconds = getWriteTimeoutForFilePath(CommunicationsPftpRequest.PbPFtpOperation.parseFrom(header).getPath());
                             do {
                                 byte[] airPacket;
                                 int counter = 0;
@@ -332,7 +337,7 @@ public class BlePsFtpClient extends BleGattBase {
                                         if (useAttributeLevelResponse.get()) {
                                             counter = 1;
                                             packetsWrittenWithResponse.set(0);
-                                            waitPacketsWritten(packetsWrittenWithResponse, mtuWaiting, 1);
+                                            waitPacketsWritten(packetsWrittenWithResponse, mtuWaiting, 1, timeoutSeconds);
                                             packetsWritten.set(0);
                                             counter = 0;
                                         } else {
@@ -375,7 +380,7 @@ public class BlePsFtpClient extends BleGattBase {
                             currentOperationWrite.set(false);
                             ByteArrayOutputStream response = new ByteArrayOutputStream();
                             try {
-                                readResponse(response);
+                                readResponse(response, timeoutSeconds);
                             } catch (InterruptedException ex) {
                                 // catch interrupted as it cannot be rethrown onwards
                                 BleLogger.e(TAG, "write interrupted while reading response");
@@ -401,6 +406,15 @@ public class BlePsFtpClient extends BleGattBase {
                 .serialize();
     }
 
+    private long getWriteTimeoutForFilePath(final String filePath) {
+        for (final String path : extendedWriteTimeoutFilePaths) {
+            if (filePath.startsWith(path)) {
+                return PROTOCOL_TIMEOUT_EXTENDED_SECONDS;
+            }
+        }
+        return PROTOCOL_TIMEOUT_SECONDS;
+    }
+
     public Single<ByteArrayOutputStream> query(final int id, final byte[] parameters) {
         return query(id, parameters, Schedulers.newThread());
     }
@@ -411,10 +425,10 @@ public class BlePsFtpClient extends BleGattBase {
             byte[] cancelPacket = new byte[]{0x00, 0x00, 0x00};
             try {
                 if (mtuWaiting.get()) {
-                    waitPacketsWritten(packetsWritten, mtuWaiting, lastRequest);
+                    waitPacketsWritten(packetsWritten, mtuWaiting, lastRequest, PROTOCOL_TIMEOUT_SECONDS);
                 }
                 txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, Collections.singletonList(cancelPacket), useAttributeLevelResponse.get());
-                waitPacketsWritten(packetsWritten, mtuWaiting, 1);
+                waitPacketsWritten(packetsWritten, mtuWaiting, 1, PROTOCOL_TIMEOUT_SECONDS);
                 BleLogger.d(TAG, "MTU interrupted. Stream cancel has been successfully send");
             } catch (Throwable throwable) {
                 BleLogger.e(TAG, "Exception while trying to cancel streaming");
@@ -446,9 +460,9 @@ public class BlePsFtpClient extends BleGattBase {
                         ByteArrayOutputStream response = new ByteArrayOutputStream();
                         try {
                             txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, requs, false);
-                            waitPacketsWritten(packetsWritten, mtuWaiting, requs.size());
+                            waitPacketsWritten(packetsWritten, mtuWaiting, requs.size(), PROTOCOL_TIMEOUT_SECONDS);
                             requs.clear();
-                            readResponse(response);
+                            readResponse(response, PROTOCOL_TIMEOUT_SECONDS);
                             emitter.onSuccess(response);
                         } catch (InterruptedException ex) {
                             // Note RX throws InterruptedException when the stream is not completed, and it is unsubscribed
@@ -500,7 +514,7 @@ public class BlePsFtpClient extends BleGattBase {
                             BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();
                             List<byte[]> requs = BlePsFtpUtils.buildRfc76MessageFrameAll(totalStream, mtuSize.get(), sequenceNumber);
                             txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_H2D_CHARACTERISTIC, requs, false);
-                            waitPacketsWritten(notificationPacketsWritten, notificationWaiting, requs.size());
+                            waitPacketsWritten(notificationPacketsWritten, notificationWaiting, requs.size(), PROTOCOL_TIMEOUT_SECONDS);
                             emitter.onComplete();
                         } else {
                             BleLogger.e(TAG, "Send notification id: " + id + " failed. PS-FTP notification not enabled");
@@ -616,7 +630,7 @@ public class BlePsFtpClient extends BleGattBase {
     }
 
     @VisibleForTesting
-    void readResponse(ByteArrayOutputStream outputStream) throws Exception {
+    void readResponse(ByteArrayOutputStream outputStream, final long timeoutSeconds) throws Exception {
         long status = 0;
         int next = 0;
         BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();
@@ -626,7 +640,7 @@ public class BlePsFtpClient extends BleGattBase {
             if (txInterface.isConnected()) {
                 synchronized (mtuInputQueue) {
                     if (mtuInputQueue.isEmpty()) {
-                        mtuInputQueue.wait(PROTOCOL_TIMEOUT_SECONDS * 1000L);
+                        mtuInputQueue.wait(timeoutSeconds * 1000L);
                     }
                 }
             } else {
@@ -640,7 +654,7 @@ public class BlePsFtpClient extends BleGattBase {
                     if (response.status == BlePsFtpUtils.RFC76_STATUS_MORE) {
                         byte[] cancelPacket = new byte[]{0x00, 0x00, 0x00};
                         txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, Collections.singletonList(cancelPacket), true);
-                        waitPacketsWritten(packetsWritten, mtuWaiting, 1);
+                        waitPacketsWritten(packetsWritten, mtuWaiting, 1, timeoutSeconds);
                         BleLogger.d(TAG, "Sequence number mismatch. Stream cancel has been successfully send");
                     }
                     throw new BlePsFtpUtils.PftpResponseError("Air packet lost!", 303);
