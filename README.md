@@ -60,6 +60,17 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 * PP interval (milliseconds) representing cardiac pulse-to-pulse interval extracted from PPG signal.
 * Accelerometer data with samplerate of 50Hz and range of 8G. Axis specific acceleration data in mG.
 
+### Ignite 3 watch
+Fitness and wellness watch.
+[Store page](https://www.polar.com/en/ignite3)
+
+#### Polar Ignite 3 features available by the SDK
+* SDK compatibility added to Ignite 3 in firmware update 2.0.14. 
+* Heart rate as beats per minute.
+* Heart rate broadcast.
+* PP interval (milliseconds) representing cardiac pulse-to-pulse interval extracted from PPG signal.
+* Accelerometer data with sample rate of 50 Hz and range of 8 G. Axis specific acceleration data in mG.
+
 ## Project structure
 * [polar-sdk-ios](polar-sdk-ios/) contains source documentation for the iOS SDK source
 * [polar-sdk-android](polar-sdk-android/) contains source documentation for the Android SDK source
