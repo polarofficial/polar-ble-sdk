@@ -296,7 +296,40 @@ import UIKit
             return Single.just(false)
         }
     }
-    
+
+    private func isLedAnimationFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
+        if (discoveredServices.contains(BlePmdClient.PMD_SERVICE) && discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE)) {
+
+            guard let pmdClient = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else {
+                return Single.just(false)
+            }
+            guard let psftpClient = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Single.just(false)
+            }
+
+            let isPmdClientAvailable = pmdClient.clientReady(true)
+                .andThen(
+                    pmdClient.readFeature(true)
+                        .map { (pmdFeatures) -> Bool in
+                            if (pmdFeatures.contains(PmdMeasurementType.sdkMode)) {
+                                return true
+                            } else {
+                                return false
+                            }
+                        }
+                )
+
+            let isFtpClientAvailable = psftpClient.clientReady(true)
+                .andThen(Single.just(true))
+
+            return Observable.combineLatest(isPmdClientAvailable.asObservable(), isFtpClientAvailable.asObservable()) { isPmdClientAvailable, isFtpClientAvailable -> Bool in
+                return (isPmdClientAvailable && isFtpClientAvailable)
+            }.asSingle()
+        } else {
+            return Single.just(false)
+        }
+    }
+
     private func isPolarDeviceTimeFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
         if (discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE)) {
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -387,7 +420,7 @@ import UIKit
             return Single.just(false)
         }
     }
-    
+
     private func makeFeatureCallbackIfNeeded(session: BleDeviceSession, discoveredServices: [CBUUID], featurePolarOfflineRecording: PolarBleSdkFeature) -> Completable {
         let isFeatureAvailable: Single<Bool>
         switch(featurePolarOfflineRecording) {
@@ -407,6 +440,8 @@ import UIKit
             isFeatureAvailable = isPolarDeviceTimeFeatureAvailable(session, discoveredServices)
         case .feature_polar_sdk_mode:
             isFeatureAvailable = isSdkModeFeatureAvailable(session, discoveredServices)
+        case .feature_polar_led_animation:
+            isFeatureAvailable = isLedAnimationFeatureAvailable(session, discoveredServices)
         }
         
         return isFeatureAvailable.flatMapCompletable { (isReady: Bool) -> Completable in
@@ -718,7 +753,15 @@ extension PolarBleApiImpl: PolarBleApi  {
             } catch _ {
                 // do nothing
             }
+        case .feature_polar_led_animation:
+            do {
+                _ = try sessionFtpClientReady(identifier)
+                return true
+            } catch _ {
+                // do nothing
+            }
         }
+        
         return false
     }
     
@@ -1557,6 +1600,40 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
+    func enableLedAnimation(_ identifier: String, enable: Bool) -> Completable {
+        return Completable.create { completable in
+            do {
+                let session = try self.sessionFtpClientReady(identifier)
+                guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                    completable(.error(PolarErrors.serviceNotFound))
+                    return Disposables.create()
+                }
+
+                var builder = Protocol_PbPFtpOperation()
+                builder.command = Protocol_PbPFtpOperation.Command.put
+                builder.path = SdkModeLed.SDK_MODE_LEDS_FILENAME
+                let proto = try builder.serializedData()
+                let byteValue: UInt8 = enable ? SdkModeLed.LED_ANIMATION_ENABLE_BYTE : SdkModeLed.LED_ANIMATION_DISABLE_BYTE
+                let data = Data([byteValue])
+                let inputStream = InputStream(data: data)
+
+                client.write(proto as NSData, data: inputStream)
+                    .subscribe(
+                        onError: { error in
+                          completable(.error(error))
+                      }, onCompleted: {
+                          completable(.completed)
+                      })
+                
+                completable(.completed)
+            } catch let err {
+                completable(.error(err))
+            }
+            
+            return Disposables.create()
+        }
+    }
+
     private func querySettings(_ identifier: String, type: PmdMeasurementType, recordingType: PmdRecordingType) -> Single<PolarSensorSetting> {
         do {
             let session = try sessionPmdClientReady(identifier)

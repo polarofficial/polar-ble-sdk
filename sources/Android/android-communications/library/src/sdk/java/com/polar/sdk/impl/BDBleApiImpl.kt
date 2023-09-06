@@ -75,6 +75,7 @@ import protocol.PftpRequest
 import protocol.PftpResponse
 import protocol.PftpResponse.PbPFtpDirectory
 import protocol.PftpResponse.PbRequestRecordingStatusResult
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
@@ -113,6 +114,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING -> clients.add(BlePsFtpClient::class.java)
                 PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP -> clients.add(BlePsFtpClient::class.java)
                 PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE -> clients.add(BlePMDClient::class.java)
+                PolarBleSdkFeature.FEATURE_POLAR_LED_ANIMATION -> clients.add(BlePsFtpClient::class.java)
             }
         }
 
@@ -241,6 +243,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 }
                 PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE -> {
                     sessionPmdClientReady(deviceId)
+                    true
+                }
+                PolarBleSdkFeature.FEATURE_POLAR_LED_ANIMATION -> {
+                    sessionPsFtpClientReady(deviceId)
                     true
                 }
             }
@@ -887,6 +893,32 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
     }
 
+    override fun enableLedAnimation(identifier: String, enable: Boolean): Completable {
+        return Completable.create { emitter ->
+            try {
+                val session = sessionPsFtpClientReady(identifier)
+                val client =
+                    session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                        ?: throw PolarServiceNotAvailable()
+                val builder = PftpRequest.PbPFtpOperation.newBuilder()
+                builder.command = PftpRequest.PbPFtpOperation.Command.PUT
+                builder.path = SdkModeLed.SDK_MODE_LED_FILENAME
+                val data = ByteArrayInputStream(
+                    byteArrayOf(if (enable) SdkModeLed.LED_ANIMATION_ENABLE_BYTE else SdkModeLed.LED_ANIMATION_DISABLE_BYTE)
+                )
+                client.write(builder.build().toByteArray(), data)
+                    .doOnError { error ->
+                        emitter.onError(error)
+                    }
+                    .subscribe()
+                emitter.onComplete()
+            } catch (error: Throwable) {
+                BleLogger.e(TAG, "enableLedAnimation() error: $error")
+                emitter.onError(error)
+            }
+        }
+    }
+
     private fun <T : Any> startStreaming(identifier: String, type: PmdMeasurementType, setting: PolarSensorSetting, observer: Function<BlePMDClient, Flowable<T>>): Flowable<T> {
         return try {
             val session = sessionPmdClientReady(identifier)
@@ -1465,6 +1497,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP -> isPolarDeviceTimeFeatureAvailable(discoveredServices, session)
             PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE -> isSdkModeFeatureAvailable(discoveredServices, session)
             PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING -> isH10ExerciseFeatureAvailable(discoveredServices, session)
+            PolarBleSdkFeature.FEATURE_POLAR_LED_ANIMATION -> isLedAnimationFeatureAvailable(discoveredServices, session)
         }
 
         return isFeatureAvailable.flatMapCompletable {
@@ -1587,6 +1620,24 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 blePMDClient.readFeature(true)
                     .map { pmdFeatures: Set<PmdMeasurementType> ->
                         pmdFeatures.contains(PmdMeasurementType.OFFLINE_RECORDING)
+                    }
+            )
+        } else {
+            Single.just(false)
+        }
+    }
+
+    private fun isLedAnimationFeatureAvailable(discoveredServices: List<UUID>, session: BleDeviceSession): Single<Boolean> {
+        return if (discoveredServices.contains(BlePMDClient.PMD_SERVICE) && discoveredServices.contains(BlePsFtpUtils.RFC77_PFTP_SERVICE)) {
+            val blePMDClient = session.fetchClient(BlePMDClient.PMD_SERVICE) as BlePMDClient? ?: return Single.just(false)
+            val blePsftpClient = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Single.just(false)
+            Completable.concatArray(
+                blePMDClient.clientReady(true),
+                blePsftpClient.clientReady(true)
+            ).andThen(
+                blePMDClient.readFeature(true)
+                    .map { pmdFeatures: Set<PmdMeasurementType> ->
+                        pmdFeatures.contains(PmdMeasurementType.SDK_MODE)
                     }
             )
         } else {

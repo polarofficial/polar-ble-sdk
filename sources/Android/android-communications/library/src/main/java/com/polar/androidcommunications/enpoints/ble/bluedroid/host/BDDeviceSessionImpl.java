@@ -297,7 +297,9 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                         gatt.setCharacteristicNotification(characteristic, operation.isEnable());
 
                         //Note, some manufacturers, e.g. OnePlus haven't properly implemented the new API.
-                        if (getBuildVersion() >= Build.VERSION_CODES.TIRAMISU && !getBrand().equals("OnePlus")) {
+                        //Ignore with third party devices.
+                        final boolean isThirdPartyDevice = getPolarDeviceType().isEmpty();
+                        if (getBuildVersion() >= Build.VERSION_CODES.TIRAMISU && (!getBrand().equals("OnePlus") || isThirdPartyDevice)) {
                             int status = gatt.writeDescriptor(descriptor, value);
                             if (status == BluetoothStatusCodes.SUCCESS) {
                                 return true;

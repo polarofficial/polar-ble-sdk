@@ -61,6 +61,11 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
          * than in normal operation mode.
          */
         FEATURE_POLAR_SDK_MODE,
+
+        /**
+         * Feature to enable or disable SDK mode blinking LED animation.
+         */
+        FEATURE_POLAR_LED_ANIMATION
     }
 
     /**
@@ -239,4 +244,13 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @return [Single] which emits [PolarDiskSpaceData]
      */
     abstract fun getDiskSpace(identifier: String): Single<PolarDiskSpaceData>
+
+    /**
+     * Enable or disable blinking sensor LEDs (Verity Sense).
+     *
+     * @param identifier Polar device ID or BT address
+     * @param enable to enable or disable LEDs blinking
+     * @return [Completable] emitting success or error
+     */
+    abstract fun enableLedAnimation(identifier: String, enable: Boolean): Completable
 }
