@@ -8,7 +8,11 @@ let package = Package(
     ],
     
     products: [
-        .library( name: "PolarBleSdk", targets: ["PolarBleSdk"]),
+        .library(
+            name: "PolarBleSdk",
+            type: .dynamic,
+            targets: ["PolarBleSdk"]
+        ),
     ],
     dependencies: [
         .package(name: "RxSwift", url: "https://github.com/ReactiveX/RxSwift.git", .exact("6.5.0")),
