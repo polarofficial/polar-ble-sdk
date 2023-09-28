@@ -203,5 +203,17 @@
             android:layout_height="wrap_content"
             android:text="@string/delete_recording" />
 
+        <Button
+            android:id="@+id/change_led_animation_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/disable_led_animation" />
+
+        <Button
+            android:id="@+id/do_factory_reset"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/do_factory_reset" />
+
     </LinearLayout>
 </ScrollView>

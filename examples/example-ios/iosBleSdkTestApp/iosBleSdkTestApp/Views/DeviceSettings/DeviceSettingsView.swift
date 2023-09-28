@@ -10,6 +10,7 @@ struct DeviceSettingsView: View {
     @State private var isPerformingTimeGet = false
     @State private var isPerformingDiskSpaceGet = false
     @State private var isPerformingSdkModeStatusGet = false
+    @State private var isLedAnimationEnabled = false
     
     var body: some View {
         VStack {
@@ -97,6 +98,21 @@ struct DeviceSettingsView: View {
             await bleSdkManager.getSdkModeStatus()
             isPerformingSdkModeStatusGet = false
         }
+        
+        Button(isLedAnimationEnabled ? "Enable LED animation" : "Disable LED animation",
+               action: {
+            Task {
+                await bleSdkManager.enableLedAnimation(enable: isLedAnimationEnabled)
+                isLedAnimationEnabled = !isLedAnimationEnabled
+            }
+        }).buttonStyle(SecondaryButtonStyle(buttonState: ButtonState.released))
+
+        Button("Do factory reset",
+               action: {
+            Task {
+                await bleSdkManager.doFactoryReset(preservePairingInformation: true)
+            }
+        }).buttonStyle(SecondaryButtonStyle(buttonState: ButtonState.released))
     }
     
     func getTimeButtonState() -> ButtonState {

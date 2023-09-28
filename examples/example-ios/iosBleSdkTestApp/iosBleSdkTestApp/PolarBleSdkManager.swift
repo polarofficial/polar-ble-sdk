@@ -47,6 +47,8 @@ class PolarBleSdkManager : ObservableObject {
     
     @Published var batteryStatusFeature: BatteryStatusFeature = BatteryStatusFeature()
     
+    @Published var ledAnimationFeature: LedAnimationFeature = LedAnimationFeature()
+    
     @Published var generalMessage: Message? = nil
     
     private var broadcastDisposable: Disposable?
@@ -1002,6 +1004,47 @@ class PolarBleSdkManager : ObservableObject {
         }
     }
     
+    func enableLedAnimation(enable: Bool) async {
+        if case .connected(let deviceId) = deviceConnectionState {
+            do {
+                let _: Void = try await api.enableLedAnimation(deviceId, enable: enable).value
+                Task { @MainActor in
+                    self.generalMessage = Message(text: "enableLedAnimation() set to: \(enable)")
+                }
+            } catch let err {
+                Task { @MainActor in
+                    self.somethingFailed(text: "enableLedAnimation() error: \(err)")
+                }
+
+            }
+        } else {
+            Task { @MainActor in
+                self.somethingFailed(text: "enableLedAnimation() failed. No device connected)")
+            }
+        }
+    }
+
+    func doFactoryReset(preservePairingInformation: Bool) async {
+        if case .connected(let deviceId) = deviceConnectionState {
+            do {
+                let _: Void = try await api.doFactoryReset(deviceId, preservePairingInformation: preservePairingInformation).value
+                Task { @MainActor in
+                    self.generalMessage = Message(text: "Send factory reset notification to device: \(deviceId)")
+                }
+            } catch let err {
+                Task { @MainActor in
+                    self.somethingFailed(text: "doFactoryReset() error: \(err)")
+                }
+
+            }
+        } else {
+            Task { @MainActor in
+                self.somethingFailed(text: "doFactoryReset() failed. No device connected)")
+            }
+        }
+    }
+
+    
     private func somethingFailed(text: String) {
         self.generalMessage = Message(text: "Error: \(text)")
         NSLog("Error \(text)")
@@ -1177,7 +1220,7 @@ extension PolarBleSdkManager : PolarBleApiObserver {
         }
     }
     
-    func deviceDisconnected(_ polarDeviceInfo: PolarDeviceInfo) {
+    func deviceDisconnected(_ polarDeviceInfo: PolarDeviceInfo, pairingError: Bool) {
         NSLog("DISCONNECTED: \(polarDeviceInfo)")
         Task { @MainActor in
             self.deviceConnectionState = DeviceConnectionState.disconnected(polarDeviceInfo.deviceId)
@@ -1188,6 +1231,7 @@ extension PolarBleSdkManager : PolarBleApiObserver {
             self.h10RecordingFeature = H10RecordingFeature()
             self.deviceInfoFeature = DeviceInfoFeature()
             self.batteryStatusFeature = BatteryStatusFeature()
+            self.ledAnimationFeature = LedAnimationFeature()
         }
     }
 }
@@ -1284,6 +1328,15 @@ extension PolarBleSdkManager : PolarBleApiDeviceFeaturesObserver {
             }
             Task {
                 await getOfflineRecordingStatus()
+            }
+            break
+    
+        case .feature_polar_led_animation:
+            Task { @MainActor in
+                self.ledAnimationFeature.isSupported = true
+            }
+            Task {
+                await getSdkModeStatus()
             }
             break
         }

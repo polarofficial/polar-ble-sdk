@@ -40,6 +40,9 @@ public enum PolarBleSdkFeature: CaseIterable {
     
     ///  In SDK mode the wider range of capabilities are available for the online stream or offline recoding than in normal operation mode.
     case feature_polar_sdk_mode
+
+    /// Feature to enable or disable SDK mode blinking LED animation.
+    case feature_polar_led_animation
 }
 
 /// Polar device info
@@ -257,6 +260,26 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - success: once after disk space received from device
     ///   - onError: see `PolarErrors` for possible errors invoked
     func getDiskSpace(_ identifier: String) -> Single<PolarDiskSpaceData>
+    
+    /// Enable or disable blinking sensor LEDs (Verity Sense).
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id or UUID
+    ///   - enable: to enable or disable LEDs blinking
+    /// - Returns: Completable stream
+    ///   - success: when enable or disable sent to device
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func enableLedAnimation(_ identifier: String, enable: Bool) -> Completable
+
+    /// Perform factory reset to given device.
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id or UUID
+    ///   - preservePairingInformation: preserve pairing information during factory reset
+    /// - Returns: Completable stream
+    ///   - success: when factory reset notification sent to device
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func doFactoryReset(_ identifier: String, preservePairingInformation: Bool) -> Completable
     
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }

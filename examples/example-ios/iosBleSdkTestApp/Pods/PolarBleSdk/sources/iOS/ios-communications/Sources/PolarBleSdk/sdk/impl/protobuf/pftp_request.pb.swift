@@ -187,7 +187,7 @@ public struct Protocol_PbPFtpOperation {
 
 #if swift(>=4.2)
 
-extension Protocol_PbPFtpOperation.Command: CaseIterable {
+extension Communications_PbPFtpOperation.Command {
   // Support synthesized by the compiler.
 }
 

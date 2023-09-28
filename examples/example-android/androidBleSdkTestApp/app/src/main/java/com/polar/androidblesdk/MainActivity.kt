@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ATTENTION! Replace with the device ID from your device.
-    private var deviceId = "8C4E5023"
+    private var deviceId = "BC15022D"
 
     private val api: PolarBleApi by lazy {
         // Notice all features are enabled
@@ -48,7 +48,8 @@ class MainActivity : AppCompatActivity() {
                 PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING,
                 PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING,
                 PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP,
-                PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO
+                PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_LED_ANIMATION
             )
         )
     }
@@ -95,6 +96,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var getTimeButton: Button
     private lateinit var toggleSdkModeButton: Button
     private lateinit var getDiskSpaceButton: Button
+    private lateinit var changeLedAnimationStatusButton: Button
+    private lateinit var doFactoryResetButton: Button
 
     //Verity Sense offline recording use
     private lateinit var listRecordingsButton: Button
@@ -130,6 +133,9 @@ class MainActivity : AppCompatActivity() {
         getTimeButton = findViewById(R.id.get_time)
         toggleSdkModeButton = findViewById(R.id.toggle_SDK_mode)
         getDiskSpaceButton = findViewById(R.id.get_disk_space)
+        changeLedAnimationStatusButton = findViewById(R.id.change_led_animation_status)
+        doFactoryResetButton = findViewById(R.id.do_factory_reset)
+
         //Verity Sense recording buttons
         listRecordingsButton = findViewById(R.id.list_recordings)
         startRecordingButton = findViewById(R.id.start_recording)
@@ -855,6 +861,36 @@ class MainActivity : AppCompatActivity() {
                         showToast("Disk space left: ${diskSpace.freeSpace}/${diskSpace.totalSpace} Bytes")
                     },
                     { error: Throwable -> Log.e(TAG, "get disk space failed: $error") }
+                )
+        }
+
+        var enableAnimation = false
+        changeLedAnimationStatusButton.setOnClickListener {
+            api.enableLedAnimation(deviceId, enableAnimation)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    {
+                        Log.d(TAG, "ledAnimationEnabled set to $enableAnimation")
+                        showToast("ledAnimationEnabled set to $enableAnimation")
+                        changeLedAnimationStatusButton.text =
+                            if (enableAnimation) getString(R.string.disable_led_animation) else getString(
+                                R.string.enable_led_animation
+                            )
+                        enableAnimation = !enableAnimation
+                    },
+                    { error: Throwable -> Log.e(TAG, "changeLedAnimationStatus failed: $error") }
+                )
+        }
+
+        doFactoryResetButton.setOnClickListener {
+            api.doFactoryReset(deviceId, preservePairingInformation = true)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    {
+                        Log.d(TAG, "send do factory reset to device")
+                        showToast("send do factory reset to device")
+                    },
+                    { error: Throwable -> Log.e(TAG, "doFactoryReset() failed: $error") }
                 )
         }
 

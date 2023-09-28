@@ -99,9 +99,9 @@ public enum BinaryDelimited {
   ///     extensions in this message or messages nested within this message's
   ///     fields.
   ///   - partial: If `false` (the default), this method will check
-  ///     `Message.isInitialized` before encoding to verify that all required
+  ///     `Message.isInitialized` after decoding to verify that all required
   ///     fields are present. If any are missing, this method throws
-  ///     `BinaryEncodingError.missingRequiredFields`.
+  ///     `BinaryDecodingError.missingRequiredFields`.
   ///   - options: The BinaryDecodingOptions to use.
   /// - Returns: The message read.
   /// - Throws: `BinaryDecodingError` if decoding fails, throws
@@ -141,9 +141,9 @@ public enum BinaryDelimited {
   ///     extensions in this message or messages nested within this message's
   ///     fields.
   ///   - partial: If `false` (the default), this method will check
-  ///     `Message.isInitialized` before encoding to verify that all required
+  ///     `Message.isInitialized` after decoding to verify that all required
   ///     fields are present. If any are missing, this method throws
-  ///     `BinaryEncodingError.missingRequiredFields`.
+  ///     `BinaryDecodingError.missingRequiredFields`.
   ///   - options: The BinaryDecodingOptions to use.
   /// - Throws: `BinaryDecodingError` if decoding fails, throws
   ///           `BinaryDelimited.Error` for some reading errors, and the
@@ -160,33 +160,43 @@ public enum BinaryDelimited {
       // The message was all defaults, nothing to actually read.
       return
     }
-    guard unsignedLength <= Int.max else {
-      // Due to the trip through an Array below, it has to fit, and Array uses
-      // Int (signed) for Count.
+    guard unsignedLength <= 0x7fffffff else {
       // Adding a new case is a breaking change, reuse malformedProtobuf.
       throw BinaryDecodingError.malformedProtobuf
     }
     let length = Int(unsignedLength)
-    var data = Data(count: length)
-    var bytesRead: Int = 0
-    data.withUnsafeMutableBytes { (body: UnsafeMutableRawBufferPointer) in
-      if let baseAddress = body.baseAddress, body.count > 0 {
-        // This assumingMemoryBound is technically unsafe, but without SR-11078
-        // (https://bugs.swift.org/browse/SR-11087) we don't have another option.
-        // It should be "safe enough".
-        let pointer = baseAddress.assumingMemoryBound(to: UInt8.self)
-        bytesRead = stream.read(pointer, maxLength: length)
-      }
-    }
 
-    if bytesRead != length {
+    // TODO: Consider doing a version with getBuffer:length: if the InputStream
+    // support it and thus avoiding this local copy.
+
+    // Even though the bytes are read in chunks, things can still hard fail if
+    // there isn't enough memory to append to have all the bytes at once for
+    // parsing.
+    var data = Data()
+    let kChunkSize = 16 * 1024 * 1024
+    var chunk = [UInt8](repeating: 0, count: min(length, kChunkSize))
+    var bytesNeeded = length
+    while bytesNeeded > 0 {
+      let maxLength = min(bytesNeeded, chunk.count)
+      var bytesRead: Int = 0
+      chunk.withUnsafeMutableBytes { (body: UnsafeMutableRawBufferPointer) in
+        if let baseAddress = body.baseAddress, body.count > 0 {
+          let pointer = baseAddress.assumingMemoryBound(to: UInt8.self)
+          bytesRead = stream.read(pointer, maxLength: maxLength)
+        }
+      }
       if bytesRead == -1 {
         if let streamError = stream.streamError {
           throw streamError
         }
         throw BinaryDelimited.Error.unknownStreamError
       }
-      throw BinaryDelimited.Error.truncated
+      if bytesRead == 0 {
+        // Hit the end of the stream
+        throw BinaryDelimited.Error.truncated
+      }
+      data.append(chunk, count: bytesRead)
+      bytesNeeded -= bytesRead
     }
 
     try message.merge(serializedData: data,

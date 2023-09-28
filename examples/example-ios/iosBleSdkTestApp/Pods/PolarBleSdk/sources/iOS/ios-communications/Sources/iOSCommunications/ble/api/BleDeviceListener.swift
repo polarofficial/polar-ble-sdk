@@ -115,10 +115,10 @@ public extension Observable where Element: Hashable {
                 objc_sync_exit(self)
             }
             if set.contains(element) {
-                return Observable<Element>.empty()
+                return RxSwift.Observable<Element>.empty()
             } else {
                 set.insert(element)
-                return Observable<Element>.just(element)
+                return RxSwift.Observable<Element>.just(element)
             }
         }.do(onDispose:  {
             set = Set<Element>()

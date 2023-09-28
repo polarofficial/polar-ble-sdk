@@ -20,7 +20,8 @@ public protocol PolarBleApiObserver: AnyObject {
     /// If PolarBleApi#disconnectFromPolarDevice is not called, a new connection attempt is dispatched automatically.
     ///
     /// - Parameter identifier: Polar device info
-    func deviceDisconnected(_ identifier: PolarDeviceInfo)
+    /// -  Parameter pairingError: If true, it indicates that the disconnection was caused by a pairing error. In this case, try removing the pairing from the system settings.
+    func deviceDisconnected(_ identifier: PolarDeviceInfo, pairingError: Bool)
 }
 
 /// Bluetooth state observer.
