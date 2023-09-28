@@ -69,6 +69,8 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
     private final Context context;
     private final Handler handler;
 
+    private final List<String> brandsNotImplementingAndroid13Api = Arrays.asList("OnePlus", "Oppo", "Realme");
+
     BDDeviceSessionImpl(Context context,
                         BluetoothDevice bluetoothDevice,
                         BDScanCallback scanCallback,
@@ -299,7 +301,8 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                         //Note, some manufacturers, e.g. OnePlus haven't properly implemented the new API.
                         //Ignore with third party devices.
                         final boolean isThirdPartyDevice = getPolarDeviceType().isEmpty();
-                        if (getBuildVersion() >= Build.VERSION_CODES.TIRAMISU && (!getBrand().equals("OnePlus") || isThirdPartyDevice)) {
+                        if (getBuildVersion() >= Build.VERSION_CODES.TIRAMISU
+                                && (isBrandImplementingAndroid13Api(getBrand()) || isThirdPartyDevice)) {
                             int status = gatt.writeDescriptor(descriptor, value);
                             if (status == BluetoothStatusCodes.SUCCESS) {
                                 return true;
@@ -321,6 +324,10 @@ public class BDDeviceSessionImpl extends BleDeviceSession implements BleGattTxIn
                 throw new BleGattNotInitialized("Attribute operation tried while gatt is uninitialized");
             }
         }
+    }
+
+    private boolean isBrandImplementingAndroid13Api(final String brandName) {
+        return brandsNotImplementingAndroid13Api.stream().noneMatch(name -> name.equalsIgnoreCase(brandName));
     }
 
     @Override

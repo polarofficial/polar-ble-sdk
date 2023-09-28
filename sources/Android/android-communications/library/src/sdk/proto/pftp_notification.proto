@@ -5,6 +5,13 @@ package protocol;
 enum PbPFtpHostToDevNotification {
   START_SYNC = 0;
   STOP_SYNC = 1;
+  RESET = 2;
   INITIALIZE_SESSION = 8;
   TERMINATE_SESSION = 9;
+}
+
+message PbPFtpFactoryResetParams {
+  required bool sleep = 1;
+  optional bool do_factory_defaults = 2 [default = true];
+  optional bool ota_fwupdate = 3 [default = false];
 }

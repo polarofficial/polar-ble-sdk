@@ -1634,6 +1634,24 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
 
+    func doFactoryReset(_ identifier: String, preservePairingInformation: Bool) -> Completable {
+        do {
+            let session = try sessionFtpClientReady(identifier)
+    
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Completable.error(PolarErrors.serviceNotFound)
+            }
+
+            var builder = Protocol_PbPFtpFactoryResetParams()
+            builder.sleep = false
+            builder.otaFwupdate = preservePairingInformation
+            BleLogger.trace("Send do factory reset to device: \(identifier)")
+            return try client.sendNotification(Protocol_PbPFtpHostToDevNotification.reset.rawValue, parameters: builder.serializedData() as NSData)
+            } catch let err {
+                return Completable.error(err)
+            }
+    }
+
     private func querySettings(_ identifier: String, type: PmdMeasurementType, recordingType: PmdRecordingType) -> Single<PolarSensorSetting> {
         do {
             let session = try sessionPmdClientReady(identifier)

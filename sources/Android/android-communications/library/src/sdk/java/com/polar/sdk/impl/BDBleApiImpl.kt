@@ -919,6 +919,20 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
+    override fun doFactoryReset(identifier: String, preservePairingInformation: Boolean): Completable {
+        val session = try {
+            sessionPsFtpClientReady(identifier)
+        } catch (error: Throwable) {
+            return Completable.error(error)
+        }
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Completable.error(PolarServiceNotAvailable())
+        val params = PftpNotification.PbPFtpFactoryResetParams.newBuilder()
+        params.sleep = false
+        params.otaFwupdate = preservePairingInformation
+        BleLogger.d(TAG, "send factory reset notification to device $identifier")
+        return client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.RESET.ordinal, params.build().toByteArray())
+    }
+
     private fun <T : Any> startStreaming(identifier: String, type: PmdMeasurementType, setting: PolarSensorSetting, observer: Function<BlePMDClient, Flowable<T>>): Flowable<T> {
         return try {
             val session = sessionPmdClientReady(identifier)

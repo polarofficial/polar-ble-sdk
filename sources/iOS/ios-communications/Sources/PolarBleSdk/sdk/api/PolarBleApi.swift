@@ -270,6 +270,16 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - success: when enable or disable sent to device
     ///   - onError: see `PolarErrors` for possible errors invoked
     func enableLedAnimation(_ identifier: String, enable: Bool) -> Completable
+
+    /// Perform factory reset to given device.
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id or UUID
+    ///   - preservePairingInformation: preserve pairing information during factory reset
+    /// - Returns: Completable stream
+    ///   - success: when factory reset notification sent to device
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func doFactoryReset(_ identifier: String, preservePairingInformation: Bool) -> Completable
     
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }

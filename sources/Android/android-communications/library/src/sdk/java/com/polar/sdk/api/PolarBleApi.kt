@@ -253,4 +253,13 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @return [Completable] emitting success or error
      */
     abstract fun enableLedAnimation(identifier: String, enable: Boolean): Completable
+
+    /**
+     * Perform factory reset to given device.
+     *
+     * @param identifier Polar device ID or BT address
+     * @param preservePairingInformation preserve pairing information during factory reset
+     * @return [Completable] emitting success or error
+     */
+    abstract fun doFactoryReset(identifier: String, preservePairingInformation: Boolean): Completable
 }
