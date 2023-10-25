@@ -204,10 +204,16 @@
             android:text="@string/delete_recording" />
 
         <Button
-            android:id="@+id/change_led_animation_status"
+            android:id="@+id/change_sdk_mode_led_animation_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/disable_led_animation" />
+            android:text="@string/disable_sdk_mode_led_animation" />
+
+        <Button
+            android:id="@+id/change_ppi_mode_led_animation_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/disable_ppi_mode_led_animation" />
 
         <Button
             android:id="@+id/do_factory_reset"

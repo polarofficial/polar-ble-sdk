@@ -4,7 +4,7 @@ PODS:
   - RxSwift (6.5.0)
   - RxTest (6.5.0):
     - RxSwift (= 6.5.0)
-  - SwiftProtobuf (1.21.0)
+  - SwiftProtobuf (1.24.0)
 
 DEPENDENCIES:
   - RxBlocking (~> 6.5.0)
@@ -23,8 +23,8 @@ SPEC CHECKSUMS:
   RxBlocking: 04b5fd28bb5ea49f7d64b80db8bbfe50d9cc1c7d
   RxSwift: 5710a9e6b17f3c3d6e40d6e559b9fa1e813b2ef8
   RxTest: eb2d23adefc5a5ebf5779c7792fa3edfe6ebcc17
-  SwiftProtobuf: afced68785854575756db965e9da52bbf3dc45e7
+  SwiftProtobuf: bcfd2bc231cf9ae552cdc7c4e877bd3b41fe57b1
 
-PODFILE CHECKSUM: 0774f22ce4d7eca1829c3367ca5f19715014d107
+PODFILE CHECKSUM: 1eaa3625d26b2ec118022afdee103ef048c53c31
 
 COCOAPODS: 1.12.0

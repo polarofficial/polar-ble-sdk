@@ -43,7 +43,9 @@
     <string name="download_recording">download one verity sense recording</string>
     <string name="delete_recording">delete one verity sense recording</string>
     <string name="get_disk_space">Get disk space</string>
-    <string name="enable_led_animation">Enable led animation</string>
-    <string name="disable_led_animation">Disable led animation</string>
+    <string name="enable_sdk_mode_led_animation">Enable SDK mode led animation</string>
+    <string name="disable_sdk_mode_led_animation">Disable SDK mode led animation</string>
+    <string name="enable_ppi_mode_led_animation">Enable PPI mode led animation</string>
+    <string name="disable_ppi_mode_led_animation">Disable PPI mode led animation</string>
     <string name="do_factory_reset">Do factory reset</string>
 </resources>

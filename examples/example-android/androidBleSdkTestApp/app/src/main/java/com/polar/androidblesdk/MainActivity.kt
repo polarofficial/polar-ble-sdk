@@ -96,7 +96,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var getTimeButton: Button
     private lateinit var toggleSdkModeButton: Button
     private lateinit var getDiskSpaceButton: Button
-    private lateinit var changeLedAnimationStatusButton: Button
+    private lateinit var changeSdkModeLedAnimationStatusButton: Button
+    private lateinit var changePpiModeLedAnimationStatusButton: Button
     private lateinit var doFactoryResetButton: Button
 
     //Verity Sense offline recording use
@@ -133,7 +134,8 @@ class MainActivity : AppCompatActivity() {
         getTimeButton = findViewById(R.id.get_time)
         toggleSdkModeButton = findViewById(R.id.toggle_SDK_mode)
         getDiskSpaceButton = findViewById(R.id.get_disk_space)
-        changeLedAnimationStatusButton = findViewById(R.id.change_led_animation_status)
+        changeSdkModeLedAnimationStatusButton = findViewById(R.id.change_sdk_mode_led_animation_status)
+        changePpiModeLedAnimationStatusButton = findViewById(R.id.change_ppi_mode_led_animation_status)
         doFactoryResetButton = findViewById(R.id.do_factory_reset)
 
         //Verity Sense recording buttons
@@ -864,21 +866,43 @@ class MainActivity : AppCompatActivity() {
                 )
         }
 
-        var enableAnimation = false
-        changeLedAnimationStatusButton.setOnClickListener {
-            api.enableLedAnimation(deviceId, enableAnimation)
+        var enableSdkModelLedAnimation = false
+        var enablePpiModeLedAnimation = false
+        changeSdkModeLedAnimationStatusButton.setOnClickListener {
+            api.setLedConfig(deviceId, LedConfig(
+                sdkModeLedEnabled = enableSdkModelLedAnimation,
+                ppiModeLedEnabled = !enablePpiModeLedAnimation))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     {
-                        Log.d(TAG, "ledAnimationEnabled set to $enableAnimation")
-                        showToast("ledAnimationEnabled set to $enableAnimation")
-                        changeLedAnimationStatusButton.text =
-                            if (enableAnimation) getString(R.string.disable_led_animation) else getString(
-                                R.string.enable_led_animation
+                        Log.d(TAG, "SdkModeledAnimationEnabled set to $enableSdkModelLedAnimation")
+                        showToast("SdkModeLedAnimationEnabled set to $enableSdkModelLedAnimation")
+                        changeSdkModeLedAnimationStatusButton.text =
+                            if (enableSdkModelLedAnimation) getString(R.string.disable_sdk_mode_led_animation) else getString(
+                                R.string.enable_sdk_mode_led_animation
                             )
-                        enableAnimation = !enableAnimation
+                        enableSdkModelLedAnimation = !enableSdkModelLedAnimation
                     },
-                    { error: Throwable -> Log.e(TAG, "changeLedAnimationStatus failed: $error") }
+                    { error: Throwable -> Log.e(TAG, "changeSdkModeLedAnimationStatus failed: $error") }
+                )
+        }
+
+        changePpiModeLedAnimationStatusButton.setOnClickListener {
+            api.setLedConfig(deviceId, LedConfig(
+                sdkModeLedEnabled = !enableSdkModelLedAnimation,
+                ppiModeLedEnabled = enablePpiModeLedAnimation))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    {
+                        Log.d(TAG, "PpiModeLedAnimationEnabled set to $enablePpiModeLedAnimation")
+                        showToast("PpiModeLedAnimationEnabled set to $enablePpiModeLedAnimation")
+                        changePpiModeLedAnimationStatusButton.text =
+                            if (enablePpiModeLedAnimation) getString(R.string.disable_ppi_mode_led_animation) else getString(
+                                R.string.enable_ppi_mode_led_animation
+                            )
+                        enablePpiModeLedAnimation = !enablePpiModeLedAnimation
+                    },
+                    { error: Throwable -> Log.e(TAG, "changePpiModeLedAnimationStatus failed: $error") }
                 )
         }
 
