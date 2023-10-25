@@ -1004,22 +1004,22 @@ class PolarBleSdkManager : ObservableObject {
         }
     }
     
-    func enableLedAnimation(enable: Bool) async {
+    func setLedConfig(ledConfig: LedConfig) async {
         if case .connected(let deviceId) = deviceConnectionState {
             do {
-                let _: Void = try await api.enableLedAnimation(deviceId, enable: enable).value
+                let _: Void = try await api.setLedConfig(deviceId, ledConfig: ledConfig).value
                 Task { @MainActor in
-                    self.generalMessage = Message(text: "enableLedAnimation() set to: \(enable)")
+                    self.generalMessage = Message(text: "setLedConfig() set to: \(ledConfig)")
                 }
             } catch let err {
                 Task { @MainActor in
-                    self.somethingFailed(text: "enableLedAnimation() error: \(err)")
+                    self.somethingFailed(text: "setLedConfig() error: \(err)")
                 }
 
             }
         } else {
             Task { @MainActor in
-                self.somethingFailed(text: "enableLedAnimation() failed. No device connected)")
+                self.somethingFailed(text: "setLedConfig() failed. No device connected)")
             }
         }
     }

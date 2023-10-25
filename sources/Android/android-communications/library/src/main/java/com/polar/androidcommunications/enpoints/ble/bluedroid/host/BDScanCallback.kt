@@ -20,7 +20,10 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Scheduler
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
+import java.util.function.Predicate
+import kotlin.streams.toList
 
 internal class BDScanCallback(
     context: Context,
@@ -62,7 +65,7 @@ internal class BDScanCallback(
         SCANNING
     }
 
-    private val scanPool: MutableList<Long> = ArrayList()
+    private val scanPool: MutableList<Long> = CopyOnWriteArrayList()
     private val delayScheduler: Scheduler = AndroidSchedulers.from(context.mainLooper)
     private var state = ScannerState.IDLE
     var lowPowerEnabled = false
@@ -333,7 +336,14 @@ internal class BDScanCallback(
             changeState(ScannerState.IDLE)
             return
         }
-        scanPool.removeIf { aLong: Long -> System.currentTimeMillis() - aLong >= SCAN_WINDOW_LIMIT }
+        val isWithinScanWindow = Predicate<Long> { aLong -> System.currentTimeMillis() - aLong < SCAN_WINDOW_LIMIT }
+
+        val scanWindowList = scanPool.stream()
+            .filter(isWithinScanWindow)
+            .toList()
+
+        scanPool.clear()
+        scanPool.addAll(scanWindowList)
         scanPool.add(System.currentTimeMillis())
     }
 

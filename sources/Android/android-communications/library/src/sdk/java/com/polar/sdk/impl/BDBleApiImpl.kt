@@ -683,11 +683,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             builder.command = PftpRequest.PbPFtpOperation.Command.GET
             builder.path = entry.path
 
-            //TODO add back the INITIALIZE_SESSION_VALUE
-            //client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE, null)
-
             BleLogger.d(TAG, "Offline record get. Device: $identifier Path: ${entry.path} Secret used: ${secret != null}")
-            Completable.complete()
+            client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE, null)
                 .andThen(client.request(builder.build().toByteArray()))
                 .map { byteArrayOutputStream: ByteArrayOutputStream ->
                     val pmdSecret = secret?.let { mapPolarSecretToPmdSecret(it) }
@@ -718,12 +715,14 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         else -> throw PolarOfflineRecordingError("Data type is not supported.")
                     }
                 }.onErrorResumeNext { throwable: Throwable -> Single.error(handleError(throwable)) }
-            // TODO add back the TERMINATE_SESSION_VALUE
-            //.doFinally {
-            //    client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.TERMINATE_SESSION_VALUE, null)
-            //        .onErrorComplete()
-            //        .subscribe()
-            //}
+                .doFinally {
+                    client.sendNotification(
+                        PftpNotification.PbPFtpHostToDevNotification.TERMINATE_SESSION_VALUE,
+                        null
+                    )
+                        .onErrorComplete()
+                        .subscribe()
+                }
 
         } else Single.error(PolarOperationNotSupported())
     }
@@ -893,7 +892,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
     }
 
-    override fun enableLedAnimation(identifier: String, enable: Boolean): Completable {
+    override fun setLedConfig(identifier: String, ledConfig: LedConfig): Completable {
         return Completable.create { emitter ->
             try {
                 val session = sessionPsFtpClientReady(identifier)
@@ -902,10 +901,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         ?: throw PolarServiceNotAvailable()
                 val builder = PftpRequest.PbPFtpOperation.newBuilder()
                 builder.command = PftpRequest.PbPFtpOperation.Command.PUT
-                builder.path = SdkModeLed.SDK_MODE_LED_FILENAME
-                val data = ByteArrayInputStream(
-                    byteArrayOf(if (enable) SdkModeLed.LED_ANIMATION_ENABLE_BYTE else SdkModeLed.LED_ANIMATION_DISABLE_BYTE)
-                )
+                builder.path = LedConfig.LED_CONFIG_FILENAME
+                val sdkModeLedByte = if (ledConfig.sdkModeLedEnabled) LedConfig.LED_ANIMATION_ENABLE_BYTE else LedConfig.LED_ANIMATION_DISABLE_BYTE
+                val ppiModeLedByte = if (ledConfig.ppiModeLedEnabled) LedConfig.LED_ANIMATION_ENABLE_BYTE else LedConfig.LED_ANIMATION_DISABLE_BYTE
+                val data = ByteArrayInputStream(byteArrayOf(sdkModeLedByte, ppiModeLedByte))
+
                 client.write(builder.build().toByteArray(), data)
                     .doOnError { error ->
                         emitter.onError(error)
@@ -913,7 +913,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     .subscribe()
                 emitter.onComplete()
             } catch (error: Throwable) {
-                BleLogger.e(TAG, "enableLedAnimation() error: $error")
+                BleLogger.e(TAG, "setLedConfig() error: $error")
                 emitter.onError(error)
             }
         }

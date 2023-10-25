@@ -1,5 +1,6 @@
 $dokka.format:javadoc-v1
 $dokka.linkExtension:html
+$dokka.location:com.polar.sdk.api.model/LedConfig.Companion///PointingToDeclaration/com/polar/sdk/api/model/LedConfig.Companion.html
 $dokka.location:com.polar.sdk.api.model/PolarAccelerometerData.PolarAccelerometerDataSample///PointingToDeclaration/com/polar/sdk/api/model/PolarAccelerometerData.PolarAccelerometerDataSample.html
 $dokka.location:com.polar.sdk.api.model/PolarDiskSpaceData.Companion///PointingToDeclaration/com/polar/sdk/api/model/PolarDiskSpaceData.Companion.html
 $dokka.location:com.polar.sdk.api.model/PolarEcgData.PolarEcgDataSample///PointingToDeclaration/com/polar/sdk/api/model/PolarEcgData.PolarEcgDataSample.html

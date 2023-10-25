@@ -440,6 +440,22 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Get <a href=model/PolarDiskSpaceData.html>PolarDiskSpaceData</a> from device.</td>
                                         </tr>
                                         
+                                        <tr id="i19" class="rowColor">
+                                            <td class="colFirst"><code>abstract Completable</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setLedConfig(String,LedConfig)>setLedConfig</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/LedConfig.html>LedConfig</a> ledConfig) </code>
+                                            </th>
+                                            <td class="colLast">Set <a href=model/LedConfig.html>LedConfig</a> for device (Verity Sense 2.2.1+).</td>
+                                        </tr>
+                                        
+                                        <tr id="i20" class="altColor">
+                                            <td class="colFirst"><code>abstract Completable</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#doFactoryReset(String,Boolean)>doFactoryReset</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> preservePairingInformation) </code>
+                                            </th>
+                                            <td class="colLast">Perform factory reset to given device.</td>
+                                        </tr>
+                                        
                                         </tbody>
                                     </table>
                                 </div>
@@ -906,7 +922,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                     <!--   -->
                                 </a>
                                 <ul class=
-                                              "blockListLast"
+                                              "blockList"
                                           >
                                     <li class="blockList">
                                         <h4>getDiskSpace</h4>
@@ -918,6 +934,62 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             
                                             
                                             <dd><code>identifier</code> - Polar device ID or BT address</dd>
+                                            
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="setLedConfig(String,LedConfig)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>setLedConfig</h4>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#setLedConfig(String,LedConfig)>setLedConfig</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/LedConfig.html>LedConfig</a> ledConfig)</pre>
+                                        <div class="block"><p>Set <a href=model/LedConfig.html>LedConfig</a> for device (Verity Sense 2.2.1+).</p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device ID or BT address</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>ledConfig</code> - new <a href=model/LedConfig.html>LedConfig</a><ul><li><p>@return Completable emitting success or error</p></li></ul></dd>
+                                            
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="doFactoryReset(String,Boolean)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>doFactoryReset</h4>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#doFactoryReset(String,Boolean)>doFactoryReset</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> preservePairingInformation)</pre>
+                                        <div class="block"><p>Perform factory reset to given device.</p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device ID or BT address</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>preservePairingInformation</code> - preserve pairing information during factory reset</dd>
                                             
                                             
                                         </dl>
