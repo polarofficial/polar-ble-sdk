@@ -5,14 +5,15 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurem
 internal object OfflineRecordingUtility {
 
     fun mapOfflineRecordingFileNameToMeasurementType(fileName: String): PmdMeasurementType {
-        return when (fileName) {
-            "ACC.REC" -> PmdMeasurementType.ACC
-            "GYRO.REC" -> PmdMeasurementType.GYRO
-            "MAG.REC" -> PmdMeasurementType.MAGNETOMETER
-            "PPG.REC" -> PmdMeasurementType.PPG
-            "PPI.REC" -> PmdMeasurementType.PPI
-            "HR.REC" -> PmdMeasurementType.OFFLINE_HR
-            else -> throw Exception("Unknown offline file $fileName")
+        val fileNameWithoutExtension = fileName.substringBeforeLast(".")
+        return when (fileNameWithoutExtension.replace(Regex("\\d+"), "")) {
+            "ACC" -> PmdMeasurementType.ACC
+            "GYRO" -> PmdMeasurementType.GYRO
+            "MAG" -> PmdMeasurementType.MAGNETOMETER
+            "PPG" -> PmdMeasurementType.PPG
+            "PPI" -> PmdMeasurementType.PPI
+            "HR" -> PmdMeasurementType.OFFLINE_HR
+            else -> throw IllegalArgumentException("Unknown offline file $fileName")
         }
     }
 }

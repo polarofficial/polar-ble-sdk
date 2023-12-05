@@ -57,10 +57,8 @@ import com.polar.sdk.impl.utils.PolarTimeUtils.pbLocalTimeToJavaCalendar
 import fi.polar.remote.representation.protobuf.ExerciseSamples.PbExerciseSamples
 import fi.polar.remote.representation.protobuf.Types.*
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.CompletableEmitter
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.core.*
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.functions.BiFunction
 import io.reactivex.rxjava3.functions.Consumer
@@ -555,12 +553,15 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         } catch (error: Throwable) {
             return Flowable.error(error)
         }
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Flowable.error(PolarServiceNotAvailable())
+        val client =
+            session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: return Flowable.error(PolarServiceNotAvailable())
 
-        when (getFileSystemType(session.polarDeviceType)) {
+        return when (getFileSystemType(session.polarDeviceType)) {
             FileSystemType.SAGRFC2_FILE_SYSTEM -> {
                 BleLogger.d(TAG, "Start offline recording listing in device: $identifier")
-                return fetchRecursively(
+
+                fetchRecursively(
                     client = client,
                     path = "/U/0/",
                     condition = { entry ->
@@ -569,16 +570,54 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                 entry.matches(Regex("^(\\d{6})(/)")) ||
                                 entry.contains(".REC")
                     }
-                ).map { entry: Pair<String, Long> ->
-                    val components = entry.first.split("/").toTypedArray()
-                    val format = SimpleDateFormat("yyyyMMdd HHmmss", Locale.getDefault())
-                    val date = format.parse(components[3] + " " + components[5])
-                        ?: throw PolarInvalidArgument("Listing offline recording failed. Cannot parse create data from date ${components[3]} and time ${components[5]}")
-                    val type = mapPmdClientFeatureToPolarFeature(mapOfflineRecordingFileNameToMeasurementType(components[6]))
-                    PolarOfflineRecordingEntry(path = entry.first, size = entry.second, date = date, type = type)
-                }.onErrorResumeNext { throwable: Throwable -> Flowable.error(handleError(throwable)) }
+                )
+                    .map { entry: Pair<String, Long> ->
+                        val components = entry.first.split("/").toTypedArray()
+                        val format = SimpleDateFormat("yyyyMMdd HHmmss", Locale.getDefault())
+                        val date = format.parse(components[3] + " " + components[5])
+                            ?: throw PolarInvalidArgument(
+                                "Listing offline recording failed. Cannot parse create data from date ${components[3]} and time ${components[5]}"
+                            )
+                        val type = mapPmdClientFeatureToPolarFeature(
+                            mapOfflineRecordingFileNameToMeasurementType(components[6])
+                        )
+                        PolarOfflineRecordingEntry(
+                            path = entry.first,
+                            size = entry.second,
+                            date = date,
+                            type = type
+                        )
+                    }
+                    .groupBy { entry -> entry.date }
+                    .flatMap { groupedEntries ->
+                        groupedEntries
+                            .toList()
+                            .flatMapPublisher { entriesList ->
+                                var totalSize = 0
+                                entriesList.forEach { (_, size) ->
+                                    totalSize += size.toInt()
+                                }
+                                Flowable.fromIterable(
+                                    entriesList.map {
+                                        PolarOfflineRecordingEntry(
+                                            path = it.path.replace(
+                                                Regex("\\d+\\.REC$"),
+                                                ".REC"
+                                            ),
+                                            size = totalSize.toLong(),
+                                            date = it.date,
+                                            type = it.type
+                                        )
+                                    }
+                                )
+                            }
+                            .distinct { entry -> entry.date }
+                            .onErrorResumeNext { throwable: Throwable ->
+                                Flowable.error(handleError(throwable))
+                            }
+                    }
             }
-            else -> return Flowable.error(PolarOperationNotSupported())
+            else -> Flowable.error(PolarServiceNotAvailable())
         }
     }
 
@@ -669,7 +708,380 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
     }
 
-    override fun getOfflineRecord(identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret?): Single<PolarOfflineRecordingData> {
+    override fun getOfflineRecord(
+        identifier: String,
+        entry: PolarOfflineRecordingEntry,
+        secret: PolarRecordingSecret?
+    ): Single<PolarOfflineRecordingData> {
+        val session = try {
+            sessionPsFtpClientReady(identifier)
+        } catch (e: Exception) {
+            return Single.error(e)
+        }
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Single.error(PolarServiceNotAvailable())
+        val fsType = getFileSystemType(session.polarDeviceType)
+
+        var polarAccData: PolarOfflineRecordingData.AccOfflineRecording? = null
+        var polarGyroData: PolarOfflineRecordingData.GyroOfflineRecording? = null
+        var polarMagData: PolarOfflineRecordingData.MagOfflineRecording? = null
+        var polarPpgData: PolarOfflineRecordingData.PpgOfflineRecording? = null
+        var polarPpiData: PolarOfflineRecordingData.PpiOfflineRecording? = null
+        var polarHrData: PolarOfflineRecordingData.HrOfflineRecording? = null
+        return if (fsType == FileSystemType.SAGRFC2_FILE_SYSTEM) {
+            getSubRecordingCount(identifier, entry)
+                .flatMap { count ->
+                    Single.create<PolarOfflineRecordingData> { emitter ->
+                        // Old format
+                        if (count == 0) {
+                            val builder = PftpRequest.PbPFtpOperation.newBuilder()
+                            builder.command = PftpRequest.PbPFtpOperation.Command.GET
+                            builder.path = entry.path
+
+                            BleLogger.d(TAG, "Offline record get. Device: $identifier Path: ${entry.path} Secret used: ${secret != null}")
+                            client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE, null)
+                                .andThen(client.request(builder.build().toByteArray()))
+                                .map { byteArrayOutputStream: ByteArrayOutputStream ->
+                                    val pmdSecret = secret?.let { mapPolarSecretToPmdSecret(it) }
+                                    OfflineRecordingData.parseDataFromOfflineFile(byteArrayOutputStream.toByteArray(), mapPolarFeatureToPmdClientMeasurementType(entry.type), pmdSecret)
+                                }
+                                .map { offlineRecData ->
+                                    val polarSettings = offlineRecData.recordingSettings?.let { mapPmdSettingsToPolarSettings(it, fromSelected = false) }
+                                    val startTime = offlineRecData.startTime
+                                    when (val offlineData = offlineRecData.data) {
+                                        is AccData -> {
+                                            polarSettings ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Acc data is missing settings")
+                                            PolarOfflineRecordingData.AccOfflineRecording(mapPmdClientAccDataToPolarAcc(offlineData), startTime, polarSettings)
+                                        }
+                                        is GyrData -> {
+                                            polarSettings ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Gyro data is missing settings")
+                                            PolarOfflineRecordingData.GyroOfflineRecording(mapPmdClientGyroDataToPolarGyro(offlineData), startTime, polarSettings)
+                                        }
+                                        is MagData -> {
+                                            polarSettings ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Magnetometer data is missing settings")
+                                            PolarOfflineRecordingData.MagOfflineRecording(mapPmdClientMagDataToPolarMagnetometer(offlineData), startTime, polarSettings)
+                                        }
+                                        is PpgData -> {
+                                            polarSettings ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Ppg data is missing settings")
+                                            PolarOfflineRecordingData.PpgOfflineRecording(mapPMDClientPpgDataToPolarPpg(offlineData), startTime, polarSettings)
+                                        }
+                                        is PpiData -> PolarOfflineRecordingData.PpiOfflineRecording(mapPMDClientPpiDataToPolarPpiData(offlineData), startTime)
+                                        is OfflineHrData -> PolarOfflineRecordingData.HrOfflineRecording(mapPMDClientOfflineHrDataToPolarHrData(offlineData), startTime)
+                                        else -> throw PolarOfflineRecordingError("Data type is not supported.")
+                                    }
+                                }.onErrorResumeNext { throwable: Throwable -> Single.error(handleError(throwable)) }
+                                .doFinally {
+                                    client.sendNotification(
+                                        PftpNotification.PbPFtpHostToDevNotification.TERMINATE_SESSION_VALUE,
+                                        null
+                                    )
+                                        .onErrorComplete()
+                                        .subscribe()
+                                }
+                                .subscribe { polarOfflineRecordingData -> emitter.onSuccess(polarOfflineRecordingData) }
+                        }
+                        Observable.fromIterable(0 until count)
+                            .flatMapSingle { subRecordingIndex ->
+                                val subRecordingPath = if (entry.path.matches(Regex(".*\\.REC$"))) {
+                                    entry.path.replace(
+                                        Regex("(\\.REC)$"),
+                                        "$subRecordingIndex.REC"
+                                    )
+                                } else {
+                                    entry.path.replace(
+                                        Regex("""\d(?=\D*$)"""),
+                                        subRecordingIndex.toString()
+                                    )
+                                }
+
+                                val builder = PftpRequest.PbPFtpOperation.newBuilder()
+                                builder.command = PftpRequest.PbPFtpOperation.Command.GET
+                                builder.path = subRecordingPath.ifBlank {
+                                    entry.path
+                                }
+
+                                BleLogger.d(
+                                    TAG,
+                                    "Offline record get. Device: $identifier Path: ${builder.path} Secret used: ${secret != null}"
+                                )
+
+                                client.sendNotification(
+                                    PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE,
+                                    null
+                                )
+                                    .andThen(client.request(builder.build().toByteArray()))
+                                    .flatMap { byteArrayOutputStream ->
+                                        val pmdSecret =
+                                            secret?.let { mapPolarSecretToPmdSecret(it) }
+
+                                        val offlineRecordingData =
+                                            OfflineRecordingData.parseDataFromOfflineFile(
+                                                byteArrayOutputStream.toByteArray(),
+                                                mapPolarFeatureToPmdClientMeasurementType(entry.type),
+                                                pmdSecret
+                                            )
+
+                                        when (val offlineData = offlineRecordingData.data) {
+                                            is AccData -> {
+                                                val polarSettings =
+                                                    offlineRecordingData.recordingSettings?.let {
+                                                        mapPmdSettingsToPolarSettings(
+                                                            it,
+                                                            fromSelected = false
+                                                        )
+                                                    }
+                                                        ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Acc data is missing settings")
+
+                                                polarAccData?.let { existingData ->
+                                                    polarAccData = existingData.appendAccData(
+                                                        existingData,
+                                                        mapPmdClientAccDataToPolarAcc(offlineData),
+                                                        polarSettings
+                                                    )
+                                                } ?: run {
+                                                    polarAccData =
+                                                        PolarOfflineRecordingData.AccOfflineRecording(
+                                                            mapPmdClientAccDataToPolarAcc(offlineData),
+                                                            offlineRecordingData.startTime,
+                                                            polarSettings
+                                                        )
+                                                }
+                                            }
+                                            is GyrData -> {
+                                                val polarSettings =
+                                                    offlineRecordingData.recordingSettings?.let {
+                                                        mapPmdSettingsToPolarSettings(
+                                                            it,
+                                                            fromSelected = false
+                                                        )
+                                                    }
+                                                        ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Gyro data is missing settings")
+
+                                                polarGyroData?.let { existingData ->
+                                                    polarGyroData = existingData.appendGyroData(
+                                                        existingData,
+                                                        mapPmdClientGyroDataToPolarGyro(offlineData),
+                                                        polarSettings
+                                                    )
+                                                } ?: run {
+                                                    polarGyroData =
+                                                        PolarOfflineRecordingData.GyroOfflineRecording(
+                                                            mapPmdClientGyroDataToPolarGyro(offlineData),
+                                                            offlineRecordingData.startTime,
+                                                            polarSettings
+                                                        )
+                                                }
+                                            }
+                                            is MagData -> {
+                                                val polarSettings =
+                                                    offlineRecordingData.recordingSettings?.let {
+                                                        mapPmdSettingsToPolarSettings(
+                                                            it,
+                                                            fromSelected = false
+                                                        )
+                                                    }
+                                                        ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Magnetometer data is missing settings")
+
+                                                polarMagData?.let { existingData ->
+                                                    polarMagData = existingData.appendMagData(
+                                                        existingData,
+                                                        mapPmdClientMagDataToPolarMagnetometer(offlineData)
+                                                    )
+                                                } ?: run {
+                                                    polarMagData =
+                                                        PolarOfflineRecordingData.MagOfflineRecording(
+                                                            mapPmdClientMagDataToPolarMagnetometer(offlineData),
+                                                            offlineRecordingData.startTime,
+                                                            polarSettings
+                                                        )
+                                                }
+                                            }
+                                            is PpgData -> {
+                                                val polarSettings =
+                                                    offlineRecordingData.recordingSettings?.let {
+                                                        mapPmdSettingsToPolarSettings(
+                                                            it,
+                                                            fromSelected = false
+                                                        )
+                                                    }
+                                                        ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Ppg data is missing settings")
+
+                                                polarPpgData?.let { existingData ->
+                                                    polarPpgData = existingData.appendPpgData(
+                                                        existingData,
+                                                        mapPMDClientPpgDataToPolarPpg(offlineData)
+                                                    )
+                                                } ?: run {
+                                                    polarPpgData =
+                                                        PolarOfflineRecordingData.PpgOfflineRecording(
+                                                            mapPMDClientPpgDataToPolarPpg(
+                                                                offlineData
+                                                            ),
+                                                            offlineRecordingData.startTime,
+                                                            polarSettings
+                                                        )
+                                                }
+                                            }
+                                            is PpiData -> {
+                                                if (polarPpiData == null) {
+                                                    polarPpiData =
+                                                        PolarOfflineRecordingData.PpiOfflineRecording(
+                                                            mapPMDClientPpiDataToPolarPpiData(
+                                                                offlineData
+                                                            ),
+                                                            offlineRecordingData.startTime
+                                                        )
+                                                } else {
+                                                    val existingData = polarPpiData
+
+                                                    polarPpiData = existingData?.appendPpiData(
+                                                        existingData,
+                                                        PolarOfflineRecordingData.PpiOfflineRecording(
+                                                            mapPMDClientPpiDataToPolarPpiData(
+                                                                offlineData
+                                                            ),
+                                                            offlineRecordingData.startTime
+                                                        ).data
+                                                    )
+                                                }
+                                            }
+                                            is OfflineHrData -> {
+                                                polarHrData?.let { existingData ->
+                                                    polarHrData = existingData.appendHrData(
+                                                        existingData,
+                                                        mapPMDClientOfflineHrDataToPolarHrData(offlineData)
+                                                    )
+                                                } ?: run {
+                                                    polarHrData =
+                                                        PolarOfflineRecordingData.HrOfflineRecording(
+                                                            mapPMDClientOfflineHrDataToPolarHrData(offlineData),
+                                                            offlineRecordingData.startTime
+                                                        )
+                                                }
+                                            }
+                                            else -> throw PolarOfflineRecordingError("Data type is not supported.")
+                                        }
+                                        Single.just(true)
+                                    }
+                            }
+                            .toList()
+                            .subscribe(
+                                {
+                                    polarPpiData?.let {
+                                        emitter.onSuccess(
+                                            polarPpiData as PolarOfflineRecordingData
+                                        )
+                                    }
+
+                                    polarPpgData?.let {
+                                        emitter.onSuccess(
+                                            polarPpgData as PolarOfflineRecordingData
+                                        )
+                                    }
+
+                                    polarAccData?.let {
+                                        emitter.onSuccess(
+                                            polarAccData as PolarOfflineRecordingData
+                                        )
+                                    }
+
+                                    polarGyroData?.let {
+                                        emitter.onSuccess(
+                                            polarGyroData as PolarOfflineRecordingData
+                                        )
+                                    }
+
+                                    polarMagData?.let {
+                                        emitter.onSuccess(
+                                            polarMagData as PolarOfflineRecordingData
+                                        )
+                                    }
+
+                                    polarHrData?.let {
+                                        emitter.onSuccess(
+                                            polarHrData as PolarOfflineRecordingData
+                                        )
+                                    }
+                                },
+                                { throwable ->
+                                    emitter.onError(throwable)
+                                }
+                            )
+                    }
+                }
+        } else {
+            Single.error(PolarOperationNotSupported())
+        }
+    }
+
+    private fun getSubRecordingCount(
+        identifier: String,
+        entry: PolarOfflineRecordingEntry
+    ): Single<Int> {
+        return Single.defer {
+            try {
+                val session = sessionPsFtpClientReady(identifier)
+                val client =
+                    session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                        ?: throw PolarServiceNotAvailable()
+
+                val builder = PftpRequest.PbPFtpOperation.newBuilder()
+                builder.command = PftpRequest.PbPFtpOperation.Command.GET
+                val directoryPath = entry.path.substring(0, entry.path.lastIndexOf("/") + 1)
+                builder.path = directoryPath
+
+                client.request(builder.build().toByteArray())
+                    .map { byteArrayOutputStream ->
+                        val directory =
+                            PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray())
+                        val prefix = entry.path.substringAfterLast("/").substringBefore(".REC")
+                        val matchingEntries = directory.entriesList.filter { it.name.startsWith(prefix) && Regex("\\d\\.").containsMatchIn(it.name) }
+                        matchingEntries.size
+                    }
+                    .onErrorResumeNext { throwable: Throwable ->
+                        Single.error(throwable)
+                    }
+            } catch (error: Throwable) {
+                Single.error(error)
+            }
+        }
+    }
+
+    override fun listSplitOfflineRecordings(identifier: String): Flowable<PolarOfflineRecordingEntry> {
+        val session = try {
+            sessionPsFtpClientReady(identifier)
+        } catch (error: Throwable) {
+            return Flowable.error(error)
+        }
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Flowable.error(PolarServiceNotAvailable())
+
+        when (getFileSystemType(session.polarDeviceType)) {
+            FileSystemType.SAGRFC2_FILE_SYSTEM -> {
+                BleLogger.d(TAG, "Start split offline recording listing in device: $identifier")
+                return fetchRecursively(
+                    client = client,
+                    path = "/U/0/",
+                    condition = { entry ->
+                        entry.matches(Regex("^(\\d{8})(/)")) ||
+                                entry == "R/" ||
+                                entry.matches(Regex("^(\\d{6})(/)")) ||
+                                entry.contains(".REC")
+                    }
+                ).map { entry: Pair<String, Long> ->
+                    val components = entry.first.split("/").toTypedArray()
+                    val format = SimpleDateFormat("yyyyMMdd HHmmss", Locale.getDefault())
+                    val date = format.parse(components[3] + " " + components[5])
+                        ?: throw PolarInvalidArgument("Listing offline recording failed. Cannot parse create data from date ${components[3]} and time ${components[5]}")
+                    val type = mapPmdClientFeatureToPolarFeature(mapOfflineRecordingFileNameToMeasurementType(components[6]))
+                    PolarOfflineRecordingEntry(path = entry.first, size = entry.second, date = date, type = type)
+                }.onErrorResumeNext { throwable: Throwable -> Flowable.error(handleError(throwable)) }
+            }
+            else -> return Flowable.error(PolarOperationNotSupported())
+        }
+    }
+
+
+    override fun getSplitOfflineRecord(identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret?): Single<PolarOfflineRecordingData> {
         val session = try {
             sessionPsFtpClientReady(identifier)
         } catch (e: Exception) {
@@ -683,7 +1095,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             builder.command = PftpRequest.PbPFtpOperation.Command.GET
             builder.path = entry.path
 
-            BleLogger.d(TAG, "Offline record get. Device: $identifier Path: ${entry.path} Secret used: ${secret != null}")
+            BleLogger.d(TAG, "Split offline record get. Device: $identifier Path: ${entry.path} Secret used: ${secret != null}")
             client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE, null)
                 .andThen(client.request(builder.build().toByteArray()))
                 .map { byteArrayOutputStream: ByteArrayOutputStream ->
@@ -695,24 +1107,24 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     val startTime = offlineRecData.startTime
                     when (val offlineData = offlineRecData.data) {
                         is AccData -> {
-                            polarSettings ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Acc data is missing settings")
+                            polarSettings ?: throw PolarOfflineRecordingError("getSplitOfflineRecord failed. Acc data is missing settings")
                             PolarOfflineRecordingData.AccOfflineRecording(mapPmdClientAccDataToPolarAcc(offlineData), startTime, polarSettings)
                         }
                         is GyrData -> {
-                            polarSettings ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Gyro data is missing settings")
+                            polarSettings ?: throw PolarOfflineRecordingError("getSplitOfflineRecord failed. Gyro data is missing settings")
                             PolarOfflineRecordingData.GyroOfflineRecording(mapPmdClientGyroDataToPolarGyro(offlineData), startTime, polarSettings)
                         }
                         is MagData -> {
-                            polarSettings ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Magnetometer data is missing settings")
+                            polarSettings ?: throw PolarOfflineRecordingError("getSplitOfflineRecord failed. Magnetometer data is missing settings")
                             PolarOfflineRecordingData.MagOfflineRecording(mapPmdClientMagDataToPolarMagnetometer(offlineData), startTime, polarSettings)
                         }
                         is PpgData -> {
-                            polarSettings ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Ppg data is missing settings")
+                            polarSettings ?: throw PolarOfflineRecordingError("getSplitOfflineRecord failed. Ppg data is missing settings")
                             PolarOfflineRecordingData.PpgOfflineRecording(mapPMDClientPpgDataToPolarPpg(offlineData), startTime, polarSettings)
                         }
                         is PpiData -> PolarOfflineRecordingData.PpiOfflineRecording(mapPMDClientPpiDataToPolarPpiData(offlineData), startTime)
                         is OfflineHrData -> PolarOfflineRecordingData.HrOfflineRecording(mapPMDClientOfflineHrDataToPolarHrData(offlineData), startTime)
-                        else -> throw PolarOfflineRecordingError("Data type is not supported.")
+                        else -> throw PolarOfflineRecordingError("getSplitOfflineRecord failed. Data type is not supported.")
                     }
                 }.onErrorResumeNext { throwable: Throwable -> Single.error(handleError(throwable)) }
                 .doFinally {
@@ -723,7 +1135,6 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         .onErrorComplete()
                         .subscribe()
                 }
-
         } else Single.error(PolarOperationNotSupported())
     }
 
@@ -1472,11 +1883,15 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         BleDisClient.DIS_SERVICE -> {
                             val bleDisClient = session.fetchClient(BleDisClient.DIS_SERVICE) as BleDisClient?
                             if (bleDisClient != null) {
-                                return@flatMap bleDisClient.observeDisInfo(true)
+                                return@flatMap Flowable.merge(bleDisClient.observeDisInfo(true)
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .doOnNext { pair: android.util.Pair<UUID?, String?> ->
                                         callback?.disInformationReceived(deviceId, pair.first!!, pair.second!!)
-                                    }
+                                    }, bleDisClient.observeDisInfoWithKeysAsStrings(true)
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .doOnNext { disInfo ->
+                                        callback?.disInformationReceived(deviceId, disInfo)
+                                    })
                             }
                         }
                         BlePsFtpUtils.RFC77_PFTP_SERVICE -> {

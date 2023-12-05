@@ -103,6 +103,34 @@ interface PolarOfflineRecordingApi {
     fun getOfflineRecord(identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret? = null): Single<PolarOfflineRecordingData>
 
     /**
+     * List split offline recordings stored in the device.
+     *
+     * @param identifier Polar device id found printed on the sensor/device or bt address
+     * @return [Flowable] stream
+     * <BR></BR> - onNext the found offline recording entry in [PolarOfflineRecordingEntry]
+     * <BR></BR> - onComplete the listing completed
+     * <BR></BR> - onError listing request failed
+     */
+    fun listSplitOfflineRecordings(identifier: String): Flowable<PolarOfflineRecordingEntry>
+
+    /**
+     * Fetch split recording from the Polar device.
+     *
+     * Note, the fetching of the recording may take several seconds if the recording is big.
+     *
+     * @param identifier Polar device id found printed on the sensor/device or bt address
+     * @param entry The offline recording to be fetched
+     * @param secret If the secret is provided in [startOfflineRecording] or [setOfflineRecordingTrigger]
+     * then the same secret must be provided when fetching the offline record
+     *
+     * @return [Single]
+     * Produces:
+     * <BR></BR> - onSuccess the offline recording data
+     * <BR></BR> - onError fetch recording request failed
+     */
+    fun getSplitOfflineRecord(identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret? = null): Single<PolarOfflineRecordingData>
+
+    /**
      * Removes offline recording from the device
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address

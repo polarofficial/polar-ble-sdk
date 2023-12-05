@@ -37,6 +37,11 @@ class BleHtsClient(txInterface: BleGattTxInterface?) :
 
     private val htsObserverAtomicList = AtomicSet<FlowableEmitter<in TemperatureMeasurement>>()
 
+    override fun reset() {
+        super.reset()
+        RxUtils.postDisconnectedAndClearList(htsObserverAtomicList)
+    }
+
     override fun processServiceData(
         characteristic: UUID?,
         data: ByteArray?,

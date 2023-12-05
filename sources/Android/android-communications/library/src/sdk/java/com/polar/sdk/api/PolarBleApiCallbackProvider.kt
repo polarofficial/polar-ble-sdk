@@ -1,6 +1,7 @@
 // Copyright © 2019 Polar Electro Oy. All rights reserved.
 package com.polar.sdk.api
 
+import com.polar.androidcommunications.api.ble.model.DisInfo
 import com.polar.sdk.api.PolarBleApi.PolarDeviceDataType
 import com.polar.sdk.api.model.PolarDeviceInfo
 import com.polar.sdk.api.model.PolarHrData
@@ -82,6 +83,14 @@ interface PolarBleApiCallbackProvider {
      * @param value      dis value for uuid
      */
     fun disInformationReceived(identifier: String, uuid: UUID, value: String)
+
+    /**
+     * DIS information received. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO]
+     *
+     * @param identifier Polar device id or bt address
+     * @param disInfo    [DisInfo] key-value pair
+     */
+    fun disInformationReceived(identifier: String, disInfo: DisInfo)
 
     /**
      * Battery level received. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_BATTERY_INFO]
