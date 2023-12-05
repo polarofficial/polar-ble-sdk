@@ -46,8 +46,17 @@ public protocol PolarBleApiDeviceInfoObserver: AnyObject {
     ///
     /// - Parameters:
     ///   - identifier: Polar device id
-    ///   - fwVersion: firmware version in format major.minor.patch
+    ///   - uuid: CBUUID key
+    ///   - value: String value
     func disInformationReceived(_ identifier: String, uuid: CBUUID, value: String)
+
+    ///  Received DIS info with String keys.
+    ///
+    /// - Parameters:
+    ///   - identifier: Polar device id
+    ///   - key: String key
+    ///   - value: String value
+    func disInformationReceivedWithKeysAsStrings(_ identifier: String, key: String, value: String)
 }
 
 /// Heart rate observer

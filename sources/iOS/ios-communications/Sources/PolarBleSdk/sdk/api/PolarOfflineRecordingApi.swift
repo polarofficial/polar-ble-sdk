@@ -79,7 +79,30 @@ public protocol PolarOfflineRecordingApi {
     ///   - success :  the offline recording data
     ///   - error: fetch recording request failed. see `PolarErrors` for possible errors invoked
     func getOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret?) -> Single< PolarOfflineRecordingData>
-    
+
+    /// List split offline recordings stored in the device.
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id
+    /// - Returns: Completable
+    ///   - next :  the found split offline recording entry
+    ///   - completed: the listing completed
+    ///   - error: see `PolarErrors` for possible errors invoked
+    func listSplitOfflineRecordings(_ identifier: String) -> Observable<PolarOfflineRecordingEntry>
+
+    /// Fetch split recording from the device.
+    ///
+    /// Note, the fetching of the recording may take several seconds if the recording is big.
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id
+    ///   - entry:  The split offline recording to be fetched
+    ///   - secret: If the secret is provided in `startOfflineRecording` or `setOfflineRecordingTrigger` then the same secret must be provided when fetching the offline record
+    /// - Returns: Single
+    ///   - success :  the offline recording data
+    ///   - error: fetch recording request failed. see `PolarErrors` for possible errors invoked
+    func getSplitOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret?) -> Single<PolarOfflineRecordingData>
+
     /// Removes offline recording from the device
     ///
     /// - Parameters:
