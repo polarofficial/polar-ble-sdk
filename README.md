@@ -71,6 +71,16 @@ Fitness and wellness watch.
 * PP interval (milliseconds) representing cardiac pulse-to-pulse interval extracted from PPG signal.
 * Accelerometer data with sample rate of 50 Hz and range of 8 G. Axis specific acceleration data in mG.
 
+### Vantage V3 watch
+Fitness and wellness watch.
+[Store page](https://www.polar.com/en/vantage/v3)
+
+### Polar Vantage V3 features available by the SDK
+* Heart rate as beats per minute.
+* Heart rate broadcast.
+* PP interval (milliseconds) representing cardiac pulse-to-pulse interval extracted from PPG signal.
+* Accelerometer data with sample rate of 50 Hz and range of 8 G. Axis specific acceleration data in mG.
+
 ## Project structure
 * [polar-sdk-ios](polar-sdk-ios/) contains source documentation for the iOS SDK source
 * [polar-sdk-android](polar-sdk-android/) contains source documentation for the Android SDK source
