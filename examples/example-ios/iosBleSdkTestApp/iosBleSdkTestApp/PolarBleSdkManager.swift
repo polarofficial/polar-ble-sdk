@@ -1253,6 +1253,15 @@ extension PolarBleSdkManager : PolarBleApiDeviceInfoObserver {
             }
         }
     }
+    
+    func disInformationReceivedWithKeysAsStrings(_ identifier: String, key: String, value: String) {
+        NSLog("dis info: \(key) value: \(value)")
+        if(key == BleDisClient.SOFTWARE_REVISION_STRING.uuidString) {
+            Task { @MainActor in
+                self.deviceInfoFeature.firmwareVersion = value
+            }
+        }
+    }
 }
 
 // MARK: - PolarBleApiDeviceFeaturesObserver

@@ -1291,14 +1291,14 @@ extension PolarBleApiImpl: PolarBleApi  {
                                                         case let .accOfflineRecordingData(existingData, startTime, existingSettings):
                                                             let newSamples = existingData.samples + accData.samples.map { (timeStamp: $0.timeStamp, x: $0.x, y: $0.y, z: $0.z) }
                                                             polarAccData = .accOfflineRecordingData(
-                                                                data: (timeStamp: accData.timeStamp, samples: newSamples),
+                                                                (timeStamp: accData.timeStamp, samples: newSamples),
                                                                 startTime: startTime,
                                                                 settings: existingSettings
                                                             )
                                                             observer.onNext(polarAccData!)
                                                         default:
                                                             polarAccData = .accOfflineRecordingData(
-                                                                data: accData.mapToPolarData(),
+                                                                accData.mapToPolarData(),
                                                                 startTime: offlineRecordingData.startTime,
                                                                 settings: settings
                                                             )
@@ -1309,14 +1309,14 @@ extension PolarBleApiImpl: PolarBleApi  {
                                                         case let .gyroOfflineRecordingData(existingData, startTime, existingSettings):
                                                             let newSamples = existingData.samples + gyroData.samples.map { (timeStamp: $0.timeStamp, x: $0.x, y: $0.y, z: $0.z) }
                                                             polarGyroData = .gyroOfflineRecordingData(
-                                                                data: (timeStamp: gyroData.timeStamp, samples: newSamples),
+                                                                (timeStamp: gyroData.timeStamp, samples: newSamples),
                                                                 startTime: startTime,
                                                                 settings: existingSettings
                                                             )
                                                             observer.onNext(polarGyroData!)
                                                         default:
                                                             polarGyroData = .gyroOfflineRecordingData(
-                                                                data: gyroData.mapToPolarData(),
+                                                                gyroData.mapToPolarData(),
                                                                 startTime: offlineRecordingData.startTime,
                                                                 settings: settings
                                                             )
@@ -1327,14 +1327,14 @@ extension PolarBleApiImpl: PolarBleApi  {
                                                         case let .magOfflineRecordingData(existingData, startTime, existingSettings):
                                                             let newSamples = existingData.samples + magData.samples.map { (timeStamp: $0.timeStamp, x: $0.x, y: $0.y, z: $0.z) }
                                                             polarMagData = .magOfflineRecordingData(
-                                                                data: (timeStamp: magData.timeStamp, samples: newSamples),
+                                                                (timeStamp: magData.timeStamp, samples: newSamples),
                                                                 startTime: startTime,
                                                                 settings: existingSettings
                                                             )
                                                             observer.onNext(polarMagData!)
                                                         default:
                                                             polarMagData = .magOfflineRecordingData(
-                                                                data: magData.mapToPolarData(),
+                                                                magData.mapToPolarData(),
                                                                 startTime: offlineRecordingData.startTime,
                                                                 settings: settings
                                                             )
@@ -1345,14 +1345,14 @@ extension PolarBleApiImpl: PolarBleApi  {
                                                         case let .ppgOfflineRecordingData(existingData, startTime, existingSettings):
                                                             let newSamples = existingData.samples + ppgData.samples.map { (timeStamp: $0.timeStamp, channelSamples: $0.ppgDataSamples) }
                                                             polarPpgData = .ppgOfflineRecordingData(
-                                                                data: (samples: newSamples, type: existingData.type),
+                                                                (samples: newSamples, type: existingData.type),
                                                                 startTime: startTime,
                                                                 settings: existingSettings
                                                             )
                                                             observer.onNext(polarPpgData!)
                                                         default:
                                                             polarPpgData = .ppgOfflineRecordingData(
-                                                                data: ppgData.mapToPolarData(),
+                                                                ppgData.mapToPolarData(),
                                                                 startTime: offlineRecordingData.startTime,
                                                                 settings: settings
                                                             )
@@ -1372,13 +1372,13 @@ extension PolarBleApiImpl: PolarBleApi  {
                                                                 )
                                                             }
                                                             polarPpiData = .ppiOfflineRecordingData(
-                                                                data: (timeStamp: UInt64(startTime.timeIntervalSince1970), samples: newSamples),
+                                                                (timeStamp: UInt64(startTime.timeIntervalSince1970), samples: newSamples),
                                                                 startTime: startTime
                                                             )
                                                             observer.onNext(polarPpiData!)
                                                         default:
                                                             polarPpiData = .ppiOfflineRecordingData(
-                                                                data: (timeStamp: UInt64(offlineRecordingData.startTime.timeIntervalSince1970), samples: ppiData.samples.map {
+                                                                (timeStamp: UInt64(offlineRecordingData.startTime.timeIntervalSince1970), samples: ppiData.samples.map {
                                                                     (
                                                                         hr: $0.hr,
                                                                         ppInMs: $0.ppInMs,
@@ -1405,13 +1405,13 @@ extension PolarBleApiImpl: PolarBleApi  {
                                                                 )
                                                             }
                                                             polarHrData = .hrOfflineRecordingData(
-                                                                data: newSamples,
+                                                                newSamples,
                                                                 startTime: startTime
                                                             )
                                                             observer.onNext(polarHrData!)
                                                         default:
                                                             polarHrData = .hrOfflineRecordingData(
-                                                                data: hrData.samples.map {
+                                                                hrData.samples.map {
                                                                     (
                                                                         hr: $0.hr,
                                                                         rrsMs: [],

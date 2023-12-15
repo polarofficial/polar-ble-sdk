@@ -1187,7 +1187,8 @@ extension PolarBleApiImpl: PolarBleApi  {
             let request = try operation.serializedData()
             
             BleLogger.trace("Offline record get. Device: $identifier Path: \(entry.path) Secret used: \(secret != nil)")
-            return client.request(request)
+            return client.sendNotification(Protocol_PbPFtpHostToDevNotification.initializeSession.rawValue, parameters: nil)
+                .andThen(client.request(request))
                 .map { data -> OfflineRecordingData<Any> in
                     var pmdSecret: PmdSecret? = nil
                     if let s = secret {
@@ -1231,6 +1232,10 @@ extension PolarBleApiImpl: PolarBleApi  {
                     default:
                         throw PolarErrors.polarOfflineRecordingError(description: "GetOfflineRecording failed. Data type is not supported.")
                     }
+                }
+                .flatMap { polarOfflineData -> Single<PolarOfflineRecordingData> in
+                    return client.sendNotification(Protocol_PbPFtpHostToDevNotification.terminateSession.rawValue, parameters: nil)
+                        .andThen(Single.just(polarOfflineData))
                 }
         } catch let err {
             return Single.error(err)
@@ -1599,40 +1604,41 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Observable.error(err)
         }
     }
-    
-    func enableLedAnimation(_ identifier: String, enable: Bool) -> Completable {
-        return Completable.create { completable in
-            do {
-                let session = try self.sessionFtpClientReady(identifier)
-                guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                    completable(.error(PolarErrors.serviceNotFound))
-                    return Disposables.create()
+
+        func setLedConfig(_ identifier: String, ledConfig: LedConfig) -> Completable {
+            return Completable.create { completable in
+                do {
+                    let session = try self.sessionFtpClientReady(identifier)
+                    guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                        completable(.error(PolarErrors.serviceNotFound))
+                        return Disposables.create()
+                    }
+
+                    var builder = Protocol_PbPFtpOperation()
+                    builder.command = Protocol_PbPFtpOperation.Command.put
+                    builder.path = LedConfig.LED_CONFIG_FILENAME
+                    let proto = try builder.serializedData()
+                    let sdkModeLedByte: UInt8 = ledConfig.sdkModeLedEnabled ? LedConfig.LED_ANIMATION_ENABLE_BYTE : LedConfig.LED_ANIMATION_DISABLE_BYTE
+                    let ppiModeLedByte: UInt8 = ledConfig.ppiModeLedEnabled ? LedConfig.LED_ANIMATION_ENABLE_BYTE : LedConfig.LED_ANIMATION_DISABLE_BYTE
+                    let data = Data([sdkModeLedByte, ppiModeLedByte])
+                    let inputStream = InputStream(data: data)
+
+                    client.write(proto as NSData, data: inputStream)
+                        .subscribe(
+                            onError: { error in
+                              completable(.error(error))
+                          }, onCompleted: {
+                              completable(.completed)
+                          })
+
+                    completable(.completed)
+                } catch let err {
+                    completable(.error(err))
                 }
 
-                var builder = Protocol_PbPFtpOperation()
-                builder.command = Protocol_PbPFtpOperation.Command.put
-                builder.path = SdkModeLed.SDK_MODE_LEDS_FILENAME
-                let proto = try builder.serializedData()
-                let byteValue: UInt8 = enable ? SdkModeLed.LED_ANIMATION_ENABLE_BYTE : SdkModeLed.LED_ANIMATION_DISABLE_BYTE
-                let data = Data([byteValue])
-                let inputStream = InputStream(data: data)
-
-                client.write(proto as NSData, data: inputStream)
-                    .subscribe(
-                        onError: { error in
-                          completable(.error(error))
-                      }, onCompleted: {
-                          completable(.completed)
-                      })
-                
-                completable(.completed)
-            } catch let err {
-                completable(.error(err))
+                return Disposables.create()
             }
-            
-            return Disposables.create()
         }
-    }
 
     func doFactoryReset(_ identifier: String, preservePairingInformation: Bool) -> Completable {
         do {
