@@ -46,8 +46,8 @@ internal class OfflineRecordingData<out T>(
         private const val PACKET_SIZE_LENGTH = 2
 
         @Throws(Exception::class)
-        fun parseDataFromOfflineFile(fileData: ByteArray, type: PmdMeasurementType, secret: PmdSecret? = null): OfflineRecordingData<Any> {
-            BleLogger.d(TAG, "Start offline file parsing. File size is ${fileData.size} and type $type")
+        fun parseDataFromOfflineFile(fileData: ByteArray, type: PmdMeasurementType, secret: PmdSecret? = null, lastTimestamp: ULong = 0uL): OfflineRecordingData<Any> {
+            BleLogger.d(TAG, "Start offline file parsing. File size is ${fileData.size} and type $type, previous file last timestamp: $lastTimestamp")
 
             // guard
             if (fileData.isEmpty()) {
@@ -70,7 +70,8 @@ internal class OfflineRecordingData<out T>(
             val parsedData = parseData(
                 dataBytes = payloadDataBytes,
                 metaData = metaData,
-                builder = getDataBuilder(type)
+                builder = getDataBuilder(type),
+                lastTimestamp = lastTimestamp
             )
 
             return OfflineRecordingData(
@@ -271,9 +272,9 @@ internal class OfflineRecordingData<out T>(
             return TypeUtils.convertArrayToUnsignedInt(packetSize.toByteArray(), 0, 2)
         }
 
-        private fun <T> parseData(dataBytes: List<Byte>, metaData: OfflineRecordingMetaData, builder: T): T {
+        private fun <T> parseData(dataBytes: List<Byte>, metaData: OfflineRecordingMetaData, builder: T, lastTimestamp: ULong = 0uL): T {
 
-            var previousTimeStamp: ULong = 0uL
+            var previousTimeStamp: ULong = lastTimestamp
             var packetSize = metaData.dataPayloadSize
             val sampleRate = metaData.recordingSettings?.settings?.get(PmdSetting.PmdSettingType.SAMPLE_RATE)?.first() ?: 0
             val factor = metaData.recordingSettings?.settings?.get(PmdSetting.PmdSettingType.FACTOR)?.first()?.let {

@@ -1239,32 +1239,33 @@ extension PolarBleApiImpl: PolarBleApi  {
                 var polarPpiData: PolarOfflineRecordingData?
                 var polarHrData: PolarOfflineRecordingData?
                 
+                var lastTimestamp: UInt64 = 0
                 _ = subRecordingCountObservable
                     .flatMap { count -> Observable<PolarOfflineRecordingData> in
                         return Observable.range(start: 0, count: count)
                             .flatMap { subRecordingIndex -> Observable<PolarOfflineRecordingData> in
                                 Observable.create { observer in
-            
+
                                     let subRecordingPath: String
                                     if entry.path.range(of: ".*\\.REC$", options: .regularExpression) != nil && count > 0 {
                                         subRecordingPath = entry.path.replacingOccurrences(of: "\\d(?=\\.REC$)", with: "\(subRecordingIndex)", options: .regularExpression)
                                     } else {
                                         subRecordingPath = entry.path
                                     }
-                                
+
                                     do {
                                         var operation = Protocol_PbPFtpOperation()
                                         operation.command = Protocol_PbPFtpOperation.Command.get
                                         operation.path = subRecordingPath.isEmpty ? entry.path : subRecordingPath
                                         let request = try operation.serializedData()
-                                        
+
                                         BleLogger.trace("Offline record get. Device: \(identifier) Path: \(subRecordingPath) Secret used: \(secret != nil)")
-                                        
+
                                         let notificationResult = client.sendNotification(
                                             Protocol_PbPFtpHostToDevNotification.initializeSession.rawValue,
                                             parameters: nil
                                         )
-                                        
+
                                         let requestResult = notificationResult
                                             .andThen(Single.deferred { client.request(request) })
                                             .map { dataResult in
@@ -1273,20 +1274,22 @@ extension PolarBleApiImpl: PolarBleApi  {
                                                     let offlineRecordingData: OfflineRecordingData = try OfflineRecordingData<Any>.parseDataFromOfflineFile(
                                                         fileData: dataResult as Data,
                                                         type: PolarDataUtils.mapToPmdClientMeasurementType(from: entry.type),
-                                                        secret: pmdSecret
+                                                        secret: pmdSecret,
+                                                        lastTimestamp: lastTimestamp
                                                     )
                                                     return offlineRecordingData
                                                 } catch {
                                                     throw PolarErrors.polarOfflineRecordingError(description: "Failed to parse data")
                                                 }
                                             }
-                        
+
                                         _ = requestResult.subscribe(
                                             onSuccess: { offlineRecordingData in
                                                 do {
                                                     let settings: PolarSensorSetting = offlineRecordingData.recordingSettings?.mapToPolarSettings() ?? PolarSensorSetting()
                                                     switch offlineRecordingData.data {
                                                     case let accData as AccData:
+                                                        lastTimestamp = accData.samples.last?.timeStamp ?? 0
                                                         switch polarAccData {
                                                         case let .accOfflineRecordingData(existingData, startTime, existingSettings):
                                                             let newSamples = existingData.samples + accData.samples.map { (timeStamp: $0.timeStamp, x: $0.x, y: $0.y, z: $0.z) }
@@ -1305,6 +1308,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                                                             observer.onNext(polarAccData!)
                                                         }
                                                     case let gyroData as GyrData:
+                                                        lastTimestamp = gyroData.samples.last?.timeStamp ?? 0
                                                         switch polarGyroData {
                                                         case let .gyroOfflineRecordingData(existingData, startTime, existingSettings):
                                                             let newSamples = existingData.samples + gyroData.samples.map { (timeStamp: $0.timeStamp, x: $0.x, y: $0.y, z: $0.z) }
@@ -1323,6 +1327,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                                                             observer.onNext(polarGyroData!)
                                                         }
                                                     case let magData as MagData:
+                                                        lastTimestamp = magData.samples.last?.timeStamp ?? 0
                                                         switch polarMagData {
                                                         case let .magOfflineRecordingData(existingData, startTime, existingSettings):
                                                             let newSamples = existingData.samples + magData.samples.map { (timeStamp: $0.timeStamp, x: $0.x, y: $0.y, z: $0.z) }
@@ -1341,6 +1346,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                                                             observer.onNext(polarMagData!)
                                                         }
                                                     case let ppgData as PpgData:
+                                                        lastTimestamp = ppgData.samples.last?.timeStamp ?? 0
                                                         switch polarPpgData {
                                                         case let .ppgOfflineRecordingData(existingData, startTime, existingSettings):
                                                             let newSamples = existingData.samples + ppgData.samples.map { (timeStamp: $0.timeStamp, channelSamples: $0.ppgDataSamples) }
