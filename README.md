@@ -83,18 +83,6 @@ Fitness and wellness watch.
 * PP interval (milliseconds) representing cardiac pulse-to-pulse interval extracted from PPG signal.
 * Accelerometer data with sample rate of 50 Hz and range of 8 G. Axis specific acceleration data in mG.
 
-### Pacer and Pacer Pro watches
-Fitness and wellness watch.<br />
-Pacer: [Store page](https://www.polar.com/en/pacer) <br />
-Pacer Pro: [Store page](https://www.polar.com/en/pacer-pro)
-
-#### Polar Pacer and Pacer Pro features available by the SDK
-* Heart rate as beats per minute.
-* Heart rate broadcast.
-* PP interval (milliseconds) representing cardiac pulse-to-pulse interval extracted from PPG signal.
-* Accelerometer data with sample rate of 50 Hz and range of 8 G. Axis specific acceleration data in mG.
-* [SDK mode](documentation/SdkModeExplained.md) from version 2.0 onwards.
-
 ## Project structure
 * [polar-sdk-ios](polar-sdk-ios/) contains source documentation for the iOS SDK source
 * [polar-sdk-android](polar-sdk-android/) contains source documentation for the Android SDK source
