@@ -20,9 +20,9 @@ The SDK mode is the mode of the sensor in which the wider range of stream capabi
 | Data        |Operation mode     | Sampling Rate                   | Range (+-)                                           | Resolution |
 |:-----------:|:-----------------:|:-------------------------------:|:----------------------------------------------------:|:----------:|
 | Acc         | Online streaming  | 26Hz, 52Hz, 104Hz, 208Hz, 416Hz | 2g, 4g, 8g, 16g                                      |16          |
-| Acc         | Offline recording | 26Hz, 52Hz                      | 2g, 4g, 8g, 16g                                      |16          |
+| Acc         | Offline recording | 13Hz, 26Hz, 52Hz                | 2g, 4g, 8g, 16g                                      |16          |
 | Gyro        | Online streaming  | 26Hz, 52Hz, 104Hz, 208Hz, 416Hz | 250 deg/sec, 500 deg/sec, 1000 deg/sec, 2000 deg/sec |16          |
-| Gyro        | Offline recording | 26Hz, 52Hz                      | 250 deg/sec, 500 deg/sec, 1000 deg/sec, 2000 deg/sec |16          |
+| Gyro        | Offline recording | 13Hz, 26Hz, 52Hz                | 250 deg/sec, 500 deg/sec, 1000 deg/sec, 2000 deg/sec |16          |
 | Magnetometer| Online streaming  | 10Hz, 20Hz, 50Hz, 100Hz         | 50 Gauss                                             |16          |
 | Magnetometer| Offline recording | 10Hz, 20Hz, 50Hz                | 50 Gauss                                             |16          |
 | PPG         | Online streaming  | 28Hz, 44Hz, 55Hz,  135Hz, 176Hz | -                                                    |22          |
