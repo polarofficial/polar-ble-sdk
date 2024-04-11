@@ -10,7 +10,7 @@
 - **FIX:** FIXED IN VERITY SENSE FIRMWARE 2.1.0      
 
 #### Issue 2
-- **Firmware:** all firmwares
+- **Firmware:** Fixed available from 2.2.6
 - **Feature:** Battery status
 - **Problem:** When the Polar Verity Sense is plugged into the charger (i.e. connected with the USB), the battery status is not correctly reported by the Polar Verity Sense. The reported battery level is the battery level at the time charging was started, but even though the charging is progressing the status of the battery level is not updated. 
 - **Workaround:** 
