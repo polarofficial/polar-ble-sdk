@@ -46,7 +46,7 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 > PP interval is highly sensitive to movement and shall be used only at rest. When the algorithm is enabled, the heart rate is computed from the PP interval every 5 seconds.
 > If movement is detected, the heart rate is fixed to the last reliable value. To ensure that the heart rate is accurately computed, please check the “blocker” flag in the PPG packet.
 * Accelerometer data with sample rate of 52Hz and range of 8G. Axis specific acceleration data in mG.
-* Gyroscope data with sample rate of 52Hz and ranges of 250dps, 500dps, 1000dps and 2000dps. Axis specific gyroscope data in dps.
+* Gyroscope data with sample rate of 52Hz and ranges of 2000dps. Axis specific gyroscope data in dps.
 * Magnetometer data with sample rates of 10Hz, 20Hz, 50HZ and 100Hz and range of +/-50 Gauss. Axis specific magnetometer data in Gauss.
 * [SDK mode](documentation/SdkModeExplained.md) from version 1.1.5 onwards.
 * [Offline recording](documentation/OfflineRecordingExplained.md) from version 2.1.0 onwards.
