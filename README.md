@@ -1,4 +1,4 @@
-# SDK for Polar sensors
+# SDK for Polar sensors and watches
 
 This is the official repository of Polar's software development kit. With this SDK you are able to develop your own Android and iOS applications for sensors made by Polar.
 
