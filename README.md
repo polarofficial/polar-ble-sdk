@@ -14,6 +14,19 @@ The SDK API uses ReactiveX. You can read more about ReactiveX from their website
 - [Third-party code and licenses](#third-party-code-and-licenses)
 
 ## Features 
+### Polar 360
+Polar 360 is a new stylish wearable that is designed for individuals but made for business.  It can be customized by companies and integrated into their own applications and solutions.
+It is a device designed to increase general well-being and to make the lives of end users healthier and happier. 
+
+#### Polar 360 features available by the SDK
+* Acceleration
+* Skin temperature
+* Heart rate
+* PP interval
+* Battery level
+* [SDK mode](documentation/SdkModeExplained.md) 
+* [Offline recording](documentation/OfflineRecordingExplained.md)
+ 
 ### H10 Heart rate sensor
 Most accurate Heart rate sensor in the markets. The H10 is used in the Getting started section of this page. 
 [Store page](https://www.polar.com/en/sensors/h10-heart-rate-sensor)
