@@ -19,13 +19,14 @@ Polar 360 is a new stylish wearable that is designed for individuals but made fo
 It is a device designed to increase general well-being and to make the lives of end users healthier and happier. 
 
 #### Polar 360 features available by the SDK
-* Heart rate: 1Hz
+* Heart rate as beats per minute.
 * Acceleration: 50Hz, 16bit resolution, Range 8G
-* PPi: no sampling rate
+* PP interval (milliseconds) representing cardiac pulse-to-pulse interval extracted from PPG signal.
+** PP interval is highly sensitive to movement and shall be used only at rest. 
 * Skin temperature: 1Hz, 2Hz, 4Hz options, 32 bit resolution
 * Battery level
 * [SDK mode](documentation/SdkModeExplained.md)
-> Acceleration: 12Hz, 25Hz, 50Hz, 100Hz, 200Hz, 400Hz, 16bit resolution, Range: 2G, 4G, 8G, 16G
+** Acceleration: 12Hz, 25Hz, 50Hz, 100Hz, 200Hz, 400Hz, 16bit resolution, Range: 2G, 4G, 8G, 16G
 * [Offline recording](documentation/OfflineRecordingExplained.md)
  
 ### H10 Heart rate sensor
