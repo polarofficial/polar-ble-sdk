@@ -89,6 +89,7 @@ Fitness and wellness watch.
 ### Vantage V3 watch and Grit X2 Pro watch
 Polar Vantage V3 is a premium fitness and wellness watch.
 [Store page](https://www.polar.com/en/vantage/v3)
+
 Polar Grit X2 Pro is a premium outdoor watch.
 [Store page](https://www.polar.com/en/grit-x2-pro)
 
