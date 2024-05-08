@@ -86,11 +86,13 @@ Fitness and wellness watch.
 * PP interval (milliseconds) representing cardiac pulse-to-pulse interval extracted from PPG signal.
 * Accelerometer data with sample rate of 50 Hz and range of 8 G. Axis specific acceleration data in mG.
 
-### Vantage V3 watch
-Fitness and wellness watch.
+### Vantage V3 watch and Grit X2 Pro watch
+Polar Vantage V3 is a premium fitness and wellness watch.
 [Store page](https://www.polar.com/en/vantage/v3)
+Polar Grit X2 Pro is a premium outdoor watch.
+[Store page](https://www.polar.com/en/grit-x2-pro)
 
-#### Polar Vantage V3 features available by the SDK
+#### Polar Vantage V3 and Grit X2 Pro features available by the SDK
 * Heart rate as beats per minute.
 * Heart rate broadcast.
 * PP interval (milliseconds) representing cardiac pulse-to-pulse interval extracted from PPG signal.
