@@ -1,6 +1,6 @@
 # SDK for Polar sensors and watches
 
-This is the official repository of Polar's software development kit. With this SDK you are able to develop your own Android and iOS applications for sensors made by Polar.
+This is the official repository of Polar's software development kit. With this SDK you are able to develop your own Android and iOS applications for sensors and watches made by Polar.
 
 The SDK API uses ReactiveX. You can read more about ReactiveX from their website [reactivex](http://reactivex.io)
 
