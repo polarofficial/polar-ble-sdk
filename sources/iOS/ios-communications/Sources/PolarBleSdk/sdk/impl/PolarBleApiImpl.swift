@@ -1657,6 +1657,66 @@ extension PolarBleApiImpl: PolarBleApi  {
                 return Completable.error(err)
             }
     }
+    
+    func doRestart(_ identifier: String, preservePairingInformation: Bool) -> Completable {
+                do {
+                    let session = try sessionFtpClientReady(identifier)
+            
+                    guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                        return Completable.error(PolarErrors.serviceNotFound)
+                    }
+
+                    var builder = Protocol_PbPFtpFactoryResetParams()
+                    builder.sleep = false
+                    builder.doFactoryDefaults = false
+                    builder.otaFwupdate = preservePairingInformation
+                    BleLogger.trace("Send do restart to device: \(identifier)")
+                    return try client.sendNotification(Protocol_PbPFtpHostToDevNotification.reset.rawValue, parameters: builder.serializedData() as NSData)
+                    } catch let err {
+                        return Completable.error(err)
+                    }
+            }
+        
+        func doFirstTimeUse(_ identifier: String, ftuConfig: PolarFirstTimeUseConfig) -> Completable {
+            return Completable.create { completable in
+                do {
+                    let session = try self.sessionFtpClientReady(identifier)
+                    guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                        return Disposables.create()
+                    }
+
+                    let ftuConfigProto = try ftuConfig.toProto()?.serializedData() ?? {
+                        throw PolarErrors.deviceError(description: "Serialization of FTU Config failed.")
+                    }()
+
+                    var operation = Protocol_PbPFtpOperation()
+                    operation.command = Protocol_PbPFtpOperation.Command.put
+                    operation.path = PolarFirstTimeUseConfig.FTU_CONFIG_FILEPATH
+                    let proto = try operation.serializedData()
+
+                    let data = Data(ftuConfigProto)
+                    let inputStream = InputStream(data: data)
+
+                    BleLogger.trace("First Time Use Configuration set. Device: \(identifier) Path: \(operation.path)")
+
+                    client.write(proto as NSData, data: inputStream)
+                        .subscribe(
+                            onError: { error in
+                                BleLogger.error("Failed to write FTU configuration to device: \(identifier) - \(error.localizedDescription)")
+                                completable(.error(error))
+                            }, onCompleted: {
+                                
+                                completable(.completed)
+                            })
+
+                } catch let error {
+                    BleLogger.error("Error processing FTU configuration for device: \(identifier) - \(error.localizedDescription)")
+                    completable(.error(error))
+                }
+
+                return Disposables.create()
+            }
+        }
 
     private func querySettings(_ identifier: String, type: PmdMeasurementType, recordingType: PmdRecordingType) -> Single<PolarSensorSetting> {
         do {

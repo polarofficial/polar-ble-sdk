@@ -933,6 +933,51 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         return client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.RESET.ordinal, params.build().toByteArray())
     }
 
+    override fun doRestart(identifier: String): Completable {
+        val session = try {
+            sessionPsFtpClientReady(identifier)
+        } catch (error: Throwable) {
+            return Completable.error(error)
+        }
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Completable.error(PolarServiceNotAvailable())
+        val params = PftpNotification.PbPFtpFactoryResetParams.newBuilder()
+        params.sleep = false
+        params.doFactoryDefaults = false
+        BleLogger.d(TAG, "send restart notification to device $identifier")
+        return client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.RESET.ordinal, params.build().toByteArray())
+    }
+
+    override fun doFirstTimeUse(identifier: String, ftuConfig: PolarFirstTimeUseConfig): Completable {
+        return Completable.create { emitter ->
+            try {
+                val session = sessionPsFtpClientReady(identifier)
+                val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                    ?: throw PolarServiceNotAvailable()
+
+                val builder = PftpRequest.PbPFtpOperation.newBuilder().apply {
+                    command = PftpRequest.PbPFtpOperation.Command.PUT
+                    path = PolarFirstTimeUseConfig.FTU_CONFIG_FILENAME
+                }
+
+                val data = ByteArrayOutputStream().use { baos ->
+                    ftuConfig.toProto().writeTo(baos)
+                    baos.toByteArray()
+                }
+
+                val inputStream = ByteArrayInputStream(data)
+                client.write(builder.build().toByteArray(), inputStream)
+                    .subscribe(
+                        { emitter.onComplete() },
+                        { error -> emitter.onError(error) }
+                    )
+            } catch (error: Throwable) {
+                BleLogger.e(TAG, "writeFtuData() error: $error")
+                emitter.onError(error)
+            }
+        }
+    }
+
     private fun <T : Any> startStreaming(identifier: String, type: PmdMeasurementType, setting: PolarSensorSetting, observer: Function<BlePMDClient, Flowable<T>>): Flowable<T> {
         return try {
             val session = sessionPmdClientReady(identifier)

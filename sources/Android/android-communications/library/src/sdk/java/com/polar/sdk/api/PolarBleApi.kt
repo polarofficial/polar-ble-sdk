@@ -262,4 +262,30 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @return [Completable] emitting success or error
      */
     abstract fun doFactoryReset(identifier: String, preservePairingInformation: Boolean): Completable
+
+    /**
+     * Perform restart device.
+     *
+     * @param identifier Polar device ID or BT address
+     * @return [Completable] emitting success or error
+     */
+    abstract fun doRestart(identifier: String): Completable
+
+    /**
+     * Set [FtuConfig] for device
+     *
+     * @param identifier Polar device ID or BT address.
+     * @param ftuConfig Configuration data for the first-time use, encapsulated in [PolarFirstTimeUseConfig].
+     * @return [Completable] emitting success or error.
+     *
+     * [PolarFirstTimeUseConfig] class enforces specific ranges and valid values for each parameter:
+     * - Gender: "Male" or "Female"
+     * - Height: 90 to 240 cm
+     * - Weight: 15 to 300 kg
+     * - Max heart rate: 100 to 240 bpm
+     * - Resting heart rate: 20 to 120 bpm
+     * - VO2 max: 10 to 95
+     * - Training background: One of the predefined levels (10, 20, 30, 40, 50, 60)
+     */
+    abstract fun doFirstTimeUse(identifier: String, ftuConfig: PolarFirstTimeUseConfig): Completable
 }

@@ -281,6 +281,33 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - onError: see `PolarErrors` for possible errors invoked
     func doFactoryReset(_ identifier: String, preservePairingInformation: Bool) -> Completable
     
+    /// Perform restart to given device.
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id or UUID
+    ///   - preservePairingInformation: preserve pairing information during restart
+    /// - Returns: Completable stream
+    ///   - success: when restart notification sent to device
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func doRestart(_ identifier: String, preservePairingInformation: Bool) -> Completable
+        
+    ///Set [FtuConfig] for device
+    /// - Parameters:
+    ///   - identifier: polar device id or UUID
+    ///   - ftuConfig: Configuration data for the first-time use, encapsulated in [PolarFirstTimeUseConfig].
+    /// - Returns: Completable stream
+    ///   - success: when enable or disable sent to device
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    ///- [PolarFirstTimeUseConfig] class enforces specific ranges and valid values for each parameter:
+    ///   - Gender: "Male" or "Female"
+    ///   - Height: 90 to 240 cm
+    ///   - Weight: 15 to 300 kg
+    ///   - Max heart rate: 100 to 240 bpm
+    ///   - Resting heart rate: 20 to 120 bpm
+    ///   - VO2 max: 10 to 95
+    ///   - Training background: One of the predefined levels (10, 20, 30, 40, 50, 60)
+    func doFirstTimeUse(_ identifier: String, ftuConfig: PolarFirstTimeUseConfig) -> Completable
+    
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }
     

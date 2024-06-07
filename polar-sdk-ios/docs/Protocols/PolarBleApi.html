@@ -27,9 +27,11 @@
     </header>
     <div class="content-wrapper">
       <p id="breadcrumbs">
-        <a href="../index.html"> Reference</a>
+        <a href="../index.html">Index</a>
         <img id="carat" src="../img/carat.png" alt=""/>
-        PolarBleApi Protocol Reference
+        <a href="../Protocols.html">Protocols</a>
+        <img id="carat" src="../img/carat.png" alt=""/>
+        PolarBleSdk.PolarBleApi Protocol Reference
       </p>
     </div>
     <div class="content-wrapper">
@@ -38,6 +40,15 @@
           <li class="nav-group-name">
             <a href="../Classes.html">Classes</a>
             <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Classes/BleHtsClient.html">BleHtsClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BleHtsClient/TemperatureMeasurement.html">– TemperatureMeasurement</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/HealthThermometer.html">HealthThermometer</a>
+              </li>
               <li class="nav-group-task">
                 <a href="../Classes/PolarBleApiDefaultImpl.html">PolarBleApiDefaultImpl</a>
               </li>
@@ -134,7 +145,16 @@
                 <a href="../Structs/LedConfig.html">LedConfig</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/s:11PolarBleSdk0A13DiskSpaceDataV">PolarDiskSpaceData</a>
+                <a href="../Structs/PolarDiskSpaceData.html">PolarDiskSpaceData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarFirstTimeUseConfig.html">PolarFirstTimeUseConfig</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarFirstTimeUseConfig/Gender.html">– Gender</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarFirstTimeUseConfig/TrainingBackground.html">– TrainingBackground</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a>
@@ -810,14 +830,14 @@ from the BLE advertisement</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Get <code><a href="../Structs.html#/s:11PolarBleSdk0A13DiskSpaceDataV">PolarDiskSpaceData</a></code> from device.</p>
+                        <p>Get <code><a href="../Structs/PolarDiskSpaceData.html">PolarDiskSpaceData</a></code> from device.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getDiskSpace</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Structs.html#/s:11PolarBleSdk0A13DiskSpaceDataV">PolarDiskSpaceData</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getDiskSpace</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarDiskSpaceData.html">PolarDiskSpaceData</a></span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -981,6 +1001,148 @@ from the BLE advertisement</p>
 <ul>
 <li>success: when factory reset notification sent to device</li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP9doRestart_26preservePairingInformation7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SbtF"></a>
+                    <a name="//apple_ref/swift/Method/doRestart(_:preservePairingInformation:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP9doRestart_26preservePairingInformation7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SbtF">doRestart(_:<wbr>preservePairingInformation:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Perform restart to given device.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">doRestart</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">preservePairingInformation</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>polar device id or UUID</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>preservePairingInformation</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>preserve pairing information during restart</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Completable stream
+
+<ul>
+<li>success: when restart notification sent to device</li>
+<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP14doFirstTimeUse_9ftuConfig7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_AA0afghJ0VtF"></a>
+                    <a name="//apple_ref/swift/Method/doFirstTimeUse(_:ftuConfig:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP14doFirstTimeUse_9ftuConfig7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_AA0afghJ0VtF">doFirstTimeUse(_:<wbr>ftuConfig:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Set [FtuConfig] for device</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">doFirstTimeUse</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">ftuConfig</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarFirstTimeUseConfig.html">PolarFirstTimeUseConfig</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>polar device id or UUID</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>ftuConfig</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Configuration data for the first-time use, encapsulated in [PolarFirstTimeUseConfig].</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Completable stream
+
+<ul>
+<li>success: when enable or disable sent to device</li>
+<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
+<li>[PolarFirstTimeUseConfig] class enforces specific ranges and valid values for each parameter:</li>
+<li>Gender: &ldquo;Male&rdquo; or &ldquo;Female&rdquo;</li>
+<li>Height: 90 to 240 cm</li>
+<li>Weight: 15 to 300 kg</li>
+<li>Max heart rate: 100 to 240 bpm</li>
+<li>Resting heart rate: 20 to 120 bpm</li>
+<li>VO2 max: 10 to 95</li>
+<li>Training background: One of the predefined levels (10, 20, 30, 40, 50, 60)</li>
 </ul></p>
                       </div>
                     </section>
@@ -1240,8 +1402,8 @@ from the BLE advertisement</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2023 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2023-10-25)</p>
-          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.14.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
+          <p>&copy; 2024 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2024-06-07)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>
     </div>

@@ -16,6 +16,9 @@ enum PbDataType {
   DAY = 8;
   MONTH = 9;
   YEAR = 10;
+  WEIGHT    = 11;
+  HEIGHT    = 12;
+  VO2MAX    = 13;
   HEARTRATE = 20;
   TIME_ZONE_OFFSET = 66;
 }

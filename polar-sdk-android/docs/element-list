@@ -4,6 +4,8 @@ $dokka.location:com.polar.sdk.api.model/LedConfig.Companion///PointingToDeclarat
 $dokka.location:com.polar.sdk.api.model/PolarAccelerometerData.PolarAccelerometerDataSample///PointingToDeclaration/com/polar/sdk/api/model/PolarAccelerometerData.PolarAccelerometerDataSample.html
 $dokka.location:com.polar.sdk.api.model/PolarDiskSpaceData.Companion///PointingToDeclaration/com/polar/sdk/api/model/PolarDiskSpaceData.Companion.html
 $dokka.location:com.polar.sdk.api.model/PolarEcgData.PolarEcgDataSample///PointingToDeclaration/com/polar/sdk/api/model/PolarEcgData.PolarEcgDataSample.html
+$dokka.location:com.polar.sdk.api.model/PolarFirstTimeUseConfig.Companion///PointingToDeclaration/com/polar/sdk/api/model/PolarFirstTimeUseConfig.Companion.html
+$dokka.location:com.polar.sdk.api.model/PolarFirstTimeUseConfig.Gender///PointingToDeclaration/com/polar/sdk/api/model/PolarFirstTimeUseConfig.Gender.html
 $dokka.location:com.polar.sdk.api.model/PolarGyroData.PolarGyroDataSample///PointingToDeclaration/com/polar/sdk/api/model/PolarGyroData.PolarGyroDataSample.html
 $dokka.location:com.polar.sdk.api.model/PolarHrData.PolarHrSample///PointingToDeclaration/com/polar/sdk/api/model/PolarHrData.PolarHrSample.html
 $dokka.location:com.polar.sdk.api.model/PolarMagnetometerData.PolarMagnetometerDataSample///PointingToDeclaration/com/polar/sdk/api/model/PolarMagnetometerData.PolarMagnetometerDataSample.html
