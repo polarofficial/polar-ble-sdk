@@ -28,3 +28,5 @@ The SDK mode is the mode of the sensor in which the wider range of stream capabi
 | PPG         | Online streaming  | 28Hz, 44Hz, 55Hz,  135Hz, 176Hz | -                                                    |22          |
 | PPG         | Offline recording | 28Hz, 44Hz, 55Hz                | -                                                    |22          |
 | PPI         | PPI online stream or offline recording is not supported in SDK MODE             |
+
+SDK mode also works with other products such as Polar 360. Supported capabilities depend on the product.
