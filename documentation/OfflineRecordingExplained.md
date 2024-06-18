@@ -49,6 +49,7 @@ The offline record saved in device memory can be encrypted by providing the 128b
 | Device             | Version onwards |
 |:-------------------|:---------------:|
 | Polar Verity Sense |2.1.0            |
+| Polar 360          |1.0              |
 
 
 ## Considerations
