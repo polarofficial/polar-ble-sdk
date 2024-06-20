@@ -38,7 +38,6 @@ internal class PolarTimeUtils {
         return pbPftpSystemDateTime
     }
     
-    
     static func dateFromPbPftpLocalDateTime(_ pbPFtpSetLocalTimeParams: Protocol_PbPFtpSetLocalTimeParams?) throws -> Date {
         
         guard let year = pbPFtpSetLocalTimeParams?.date.year,
@@ -47,13 +46,15 @@ internal class PolarTimeUtils {
               let hour = pbPFtpSetLocalTimeParams?.time.hour,
               let minute = pbPFtpSetLocalTimeParams?.time.minute,
               let second = pbPFtpSetLocalTimeParams?.time.seconds,
-              let millis = pbPFtpSetLocalTimeParams?.time.millis,
-              let timeZoneOffsetInMinutes = pbPFtpSetLocalTimeParams?.tzOffset else {
+              let millis = pbPFtpSetLocalTimeParams?.time.millis else {
             
             BleLogger.error("dateFromPbPftpLocalDateTime failed, pbPFtpSetLocalTimeParams is missing parameters")
             throw PolarErrors.dateTimeFormatFailed(description: "dateFromPbPftpLocalDateTime failed, pbPFtpSetLocalTimeParams is missing parameters")
         }
         
+        /// Take timezone offset  into  account only if it has been set.  Honda device does not set timezone offset.
+        let timeZoneOffsetInMinutes = pbPFtpSetLocalTimeParams!.hasTzOffset ? pbPFtpSetLocalTimeParams?.tzOffset : nil
+
         var dateComponents = DateComponents()
         dateComponents.year = Int(year)
         dateComponents.month = Int(month)
@@ -62,8 +63,10 @@ internal class PolarTimeUtils {
         dateComponents.minute = Int(minute)
         dateComponents.second = Int(second)
         dateComponents.nanosecond = millisToNanos(milliseconds: Int(millis))
-        dateComponents.timeZone = try timeZoneFromMinutes(Int(timeZoneOffsetInMinutes))
         
+        if (timeZoneOffsetInMinutes != nil) {
+            dateComponents.timeZone = try timeZoneFromMinutes(Int(timeZoneOffsetInMinutes!))
+        }
         let userCalendar = Calendar(identifier: .gregorian)
         guard let dateTime = userCalendar.date(from: dateComponents) else {
             BleLogger.error("dateFromPbPftpLocalDateTime failed, cannot create date from dateComponents")
@@ -76,17 +79,108 @@ internal class PolarTimeUtils {
         return Int(round(Double(nanoseconds) / Double(nanoToMillisMultiplier)))
     }
     
+    static func pbLocalDateTimeToDate(pbLocalDateTime: PbLocalDateTime?) throws -> Date {
+        
+        guard let year = pbLocalDateTime?.date.year,
+              let month = pbLocalDateTime?.date.month,
+              let day = pbLocalDateTime?.date.day,
+              let hour = pbLocalDateTime?.time.hour,
+              let minute = pbLocalDateTime?.time.minute,
+              let seconds = pbLocalDateTime?.time.seconds,
+              let millis = pbLocalDateTime?.time.millis else {
+            
+            BleLogger.error("pbLocalDateTimeToDate failed, pbLocalDateTime is missing parameters")
+            throw PolarErrors.dateTimeFormatFailed(description: "pbLocalDateTimeToDate failed, pbLocalDateTime is missing parameters")
+        }
+        
+        /// Take timezone offset  into  account only if it has been set.  Honda device does not set timezone offset.
+        let timeZoneOffsetInMinutes = pbLocalDateTime!.hasTimeZoneOffset ? pbLocalDateTime?.timeZoneOffset : nil
+
+        var dateComponents = DateComponents()
+        dateComponents.year = Int(year)
+        dateComponents.month = Int(month)
+        dateComponents.day = Int(day)
+        dateComponents.hour = Int(hour)
+        dateComponents.minute = Int(minute)
+        dateComponents.second = Int(seconds)
+        dateComponents.nanosecond = millisToNanos(milliseconds: Int(millis))
+
+        if (timeZoneOffsetInMinutes != nil) {
+            dateComponents.timeZone = try timeZoneFromMinutes(Int(timeZoneOffsetInMinutes!))
+        }
+
+        let userCalendar = Calendar(identifier: .gregorian)
+        guard let date = userCalendar.date(from: dateComponents) else {
+            BleLogger.error("pbLocalDateTimeToDate failed, cannot create date from dateComponents")
+            throw PolarErrors.dateTimeFormatFailed(description: "pbLocalDateTimeToDate failed, cannot create date from dateComponents")
+        }
+        return date
+    }
+
+    static func pbSystemDateTimeToDate(pbSystemDateTime: PbSystemDateTime?) throws -> Date {
+        
+        guard let year = pbSystemDateTime?.date.year,
+              let month = pbSystemDateTime?.date.month,
+              let day = pbSystemDateTime?.date.day,
+              let hour = pbSystemDateTime?.time.hour,
+              let minute = pbSystemDateTime?.time.minute,
+              let seconds = pbSystemDateTime?.time.seconds,
+              let millis = pbSystemDateTime?.time.millis else {
+            
+            BleLogger.error("pbSystemDateTimeToDate failed, pbSystemDateTime is missing parameters")
+            throw PolarErrors.dateTimeFormatFailed(description: "pbSystemDateTime failed, pbLocalDateTime is missing parameters")
+        }
+
+        var dateComponents = DateComponents()
+        dateComponents.year = Int(year)
+        dateComponents.month = Int(month)
+        dateComponents.day = Int(day)
+        dateComponents.hour = Int(hour)
+        dateComponents.minute = Int(minute)
+        dateComponents.second = Int(seconds)
+        dateComponents.nanosecond = millisToNanos(milliseconds: Int(millis))
+
+        let userCalendar = Calendar(identifier: .gregorian)
+        guard let date = userCalendar.date(from: dateComponents) else {
+            BleLogger.error("pbSystemDateTimeToDate failed, cannot create date from dateComponents")
+            throw PolarErrors.dateTimeFormatFailed(description: "pbSystemDateTime failed, cannot create date from dateComponents")
+        }
+        return date
+    }
+
+    static func pbDateToDate(pbDate: PbDate?) throws -> Date {
+        guard let year = pbDate?.year,
+              let month = pbDate?.month,
+              let day = pbDate?.day else {
+            BleLogger.error("pbDateToDate failed, pbDate is missing parameters")
+            throw PolarErrors.dateTimeFormatFailed(description: "pbDateToDate failed, pbDate is missing parameters")
+        }
+
+        var dateComponents = DateComponents()
+        dateComponents.year = Int(year)
+        dateComponents.month = Int(month)
+        dateComponents.day = Int(day)
+        
+        let userCalendar = Calendar(identifier: .gregorian)
+        guard let date = userCalendar.date(from: dateComponents) else {
+            BleLogger.error("pbDateToDate failed, cannot create date from dateComponents")
+            throw PolarErrors.dateTimeFormatFailed(description: "pbDateToDate failed, cannot create date from dateComponents")
+        }
+        return date
+    }
+
     private static func millisToNanos(milliseconds: Int) -> Int {
         return milliseconds * nanoToMillisMultiplier
     }
+    
     private static func secondsToMinutes(seconds: Int) -> Int {
         return Int(round(Double(seconds) / Double(secondsToMinutesMultiplier)))
     }
-    
+
     private static func minutesToSeconds(minutes: Int) -> Int {
         return minutes * secondsToMinutesMultiplier
     }
-    
+
     private static func timeZoneFromMinutes(_ minutes: Int) throws -> TimeZone {
         let secondsFromGmt = minutesToSeconds(minutes: minutes)
         if let timeZone = TimeZone.init(secondsFromGMT: secondsFromGmt) {
@@ -95,24 +189,24 @@ internal class PolarTimeUtils {
             throw PolarErrors.dateTimeFormatFailed(description: "Could not create valid time zone from \(minutes)min time zone offset")
         }
     }
-    
+
     private static func pbDateTimeBuilder(_ date: Date, _ timeZone: TimeZone) -> (PbDate, PbTime)? {
         var calendar = Calendar(identifier: Calendar.Identifier.iso8601)
         calendar.timeZone = timeZone
         let dateComponents = calendar.dateComponents([.day, .month, .year, .hour, .minute, .second, .nanosecond], from: date)
-        
+
         if let year = dateComponents.year,
            let month = dateComponents.month,
            let day = dateComponents.day,
            let hour = dateComponents.hour,
            let minute = dateComponents.minute,
            let seconds = dateComponents.second {
-            
+
             var pbDate = PbDate()
             pbDate.year = UInt32(year)
             pbDate.month = UInt32(month)
             pbDate.day = UInt32(day)
-            
+
             var pbTime = PbTime()
             pbTime.hour = UInt32(hour)
             pbTime.minute = UInt32(minute)

@@ -136,6 +136,7 @@ internal object PolarDataUtils {
             PolarBleApi.PolarDeviceDataType.GYRO -> PmdMeasurementType.GYRO
             PolarBleApi.PolarDeviceDataType.MAGNETOMETER -> PmdMeasurementType.MAGNETOMETER
             PolarBleApi.PolarDeviceDataType.HR -> PmdMeasurementType.OFFLINE_HR
+            PolarBleApi.PolarDeviceDataType.TEMPERATURE -> PmdMeasurementType.TEMPERATURE
             else -> {
                 throw PolarBleSdkInternalException("Error when map $polarFeature to PMD measurement type")
             }
@@ -151,6 +152,7 @@ internal object PolarDataUtils {
             PmdMeasurementType.GYRO -> PolarBleApi.PolarDeviceDataType.GYRO
             PmdMeasurementType.MAGNETOMETER -> PolarBleApi.PolarDeviceDataType.MAGNETOMETER
             PmdMeasurementType.OFFLINE_HR -> PolarBleApi.PolarDeviceDataType.HR
+            PmdMeasurementType.OFFLINE_TEMP -> PolarBleApi.PolarDeviceDataType.TEMPERATURE
             else -> throw PolarBleSdkInternalException("Error when map measurement type $pmdMeasurementType to Polar feature")
         }
     }
@@ -265,6 +267,27 @@ internal object PolarDataUtils {
             strategy = PmdSecret.SecurityStrategy.AES128,
             key = polarSecret.secret
         )
+    }
+
+    fun mapPMDClientOfflineTemperatureDataToPolarTemperatureData(offlineTemperatureData: TemperatureData): PolarTemperatureData {
+        val samples: MutableList<PolarTemperatureData.PolarTemperatureDataSample> = mutableListOf()
+        for (sample in offlineTemperatureData.temperatureSamples) {
+            samples.add(
+                PolarTemperatureData.PolarTemperatureDataSample(
+                    timeStamp = sample.timeStamp.toLong(),
+                    temperature = sample.temperature
+                )
+            )
+        }
+        return PolarTemperatureData(samples)
+    }
+
+    fun mapPmdClientTemperatureDataToPolarTemperature(temperatureData: TemperatureData): PolarTemperatureData {
+        val samples: MutableList<PolarTemperatureData.PolarTemperatureDataSample> = mutableListOf()
+        for ((timeStamp, temperature) in temperatureData.temperatureSamples) {
+            samples.add(PolarTemperatureData.PolarTemperatureDataSample(timeStamp.toLong(), temperature))
+        }
+        return PolarTemperatureData(samples)
     }
 }
 

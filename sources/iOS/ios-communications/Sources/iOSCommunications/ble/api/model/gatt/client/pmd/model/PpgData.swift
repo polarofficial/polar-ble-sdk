@@ -8,7 +8,8 @@ public class PpgData {
     struct PpgSample {
         let timeStamp: UInt64
         let ppgDataSamples: [Int32]
-        let ambientSample: Int32
+        let ambientSample: Int32!
+        let status: Int32!
     }
     
     var samples: [PpgSample]
@@ -21,11 +22,15 @@ public class PpgData {
     private static let TYPE_0_SAMPLE_SIZE_IN_BYTES: UInt8 = 3
     private static let TYPE_0_SAMPLE_SIZE_IN_BITS: UInt8 = TYPE_0_SAMPLE_SIZE_IN_BYTES * 8
     private static let TYPE_0_CHANNELS_IN_SAMPLE: UInt8 = 4
+    private static let TYPE_7_SAMPLE_SIZE_IN_BYTES: UInt8 = 3
+    private static let TYPE_7_SAMPLE_SIZE_IN_BITS: UInt8 = TYPE_7_SAMPLE_SIZE_IN_BYTES * 8
+    private static let TYPE_7_CHANNELS_IN_SAMPLE: UInt8 = 17
     
     static func parseDataFromDataFrame(frame: PmdDataFrame) throws -> PpgData {
         if (frame.isCompressedFrame) {
             switch (frame.frameType) {
             case PmdDataFrameType.type_0: return try dataFromCompressedType0(frame: frame)
+            case PmdDataFrameType.type_7: return try dataFromCompressedType7(frame: frame)
             default: throw BleGattException.gattDataError(description: "Compressed FrameType: \(frame.frameType) is not supported by PPG data parser")
             }
         } else {
@@ -54,7 +59,7 @@ public class PpgData {
             let ambient = TypeUtils.convertArrayToSignedInt(frame.dataContent, offset: offset, size: Int(step))
             offset += Int(step)
             
-            ppgSamples.append( PpgSample( timeStamp: timeStamps[timeStampIndex], ppgDataSamples: [ppg0, ppg1, ppg2], ambientSample: ambient))
+            ppgSamples.append( PpgSample( timeStamp: timeStamps[timeStampIndex], ppgDataSamples: [ppg0, ppg1, ppg2], ambientSample: ambient, status: nil))
             timeStampIndex += 1
         }
         return PpgData(timeStamp: frame.timeStamp, samples: ppgSamples)
@@ -70,8 +75,28 @@ public class PpgData {
             let ppg1:Int32 = sample[1]
             let ppg2:Int32 = sample[2]
             let ambient: Int32 = sample[3]
-            ppgSamples.append( PpgSample( timeStamp: timeStamps[index], ppgDataSamples: [ppg0, ppg1, ppg2], ambientSample: ambient))
+            ppgSamples.append( PpgSample( timeStamp: timeStamps[index], ppgDataSamples: [ppg0, ppg1, ppg2], ambientSample: ambient, status: nil))
         }
         return PpgData(timeStamp: frame.timeStamp, samples: ppgSamples)
+    }
+
+    private static func dataFromCompressedType7(frame: PmdDataFrame) throws -> PpgData {
+            let samples = Pmd.parseDeltaFramesToSamples(frame.dataContent, channels: TYPE_7_CHANNELS_IN_SAMPLE, resolution: TYPE_7_SAMPLE_SIZE_IN_BITS)
+            let timeStamps = try PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp: frame.previousTimeStamp, frameTimeStamp: frame.timeStamp, samplesSize: UInt(samples.count), sampleRate: frame.sampleRate)
+
+            var ppgSamplesFrameType7 = [PpgSample]()
+            for (index, sample) in samples.enumerated() {
+                let channelSamples = sample.map{ item in
+                    if (frame.factor != 1.0) {
+                        return Int32(Float(item) * frame.factor)
+                    }
+                    else {
+                        return item
+                    }
+                }
+                let status = Int32(sample[16] & 0xFFFFFF)
+                ppgSamplesFrameType7.append( PpgSample( timeStamp: timeStamps[index], ppgDataSamples: channelSamples, ambientSample: nil, status: status))
+            }
+            return PpgData(timeStamp: frame.timeStamp, samples: ppgSamplesFrameType7)
     }
 }

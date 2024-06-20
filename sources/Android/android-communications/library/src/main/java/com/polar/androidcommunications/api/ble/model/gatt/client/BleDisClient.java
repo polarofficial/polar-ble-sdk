@@ -6,14 +6,21 @@ import androidx.annotation.NonNull;
 
 import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError;
 import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected;
+import com.polar.androidcommunications.api.ble.model.DisInfo;
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase;
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface;
 import com.polar.androidcommunications.common.ble.AtomicSet;
 import com.polar.androidcommunications.common.ble.RxUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
@@ -35,9 +42,14 @@ public class BleDisClient extends BleGattBase {
     public static final UUID IEEE_11073_20601 = UUID.fromString("00002a2a-0000-1000-8000-00805f9b34fb");
     public static final UUID PNP_ID = UUID.fromString("00002a50-0000-1000-8000-00805f9b34fb");
 
+    public static final String SYSTEM_ID_HEX = "SYSTEM_ID_HEX";
+
     // store in map
     private final HashMap<UUID, String> disInformation = new HashMap<>();
     private final AtomicSet<FlowableEmitter<? super Pair<UUID, String>>> disObserverAtomicList = new AtomicSet<>();
+
+    private final Set<DisInfo> disInformationDataSet = new HashSet<>();
+    private final AtomicSet<FlowableEmitter<DisInfo>> disInfoObservers = new AtomicSet<>();
 
     public BleDisClient(BleGattTxInterface txInterface) {
         super(txInterface, DIS_SERVICE);
@@ -57,20 +69,51 @@ public class BleDisClient extends BleGattBase {
         super.reset();
         synchronized (disInformation) {
             disInformation.clear();
+            disInformationDataSet.clear();
         }
         RxUtils.postDisconnectedAndClearList(disObserverAtomicList);
+        RxUtils.postDisconnectedAndClearList(disInfoObservers);
     }
 
     @Override
     public void processServiceData(final UUID characteristic, final byte[] data, int status, boolean notifying) {
         if (status == 0) {
+            final String asciiRepresentation = new String(data, StandardCharsets.UTF_8);
             synchronized (disInformation) {
-                disInformation.put(characteristic, new String(data, StandardCharsets.UTF_8));
+                disInformation.put(characteristic, asciiRepresentation);
+            }
+            synchronized (disInformationDataSet) {
+                if (characteristic.equals(BleDisClient.SYSTEM_ID)) {
+                    final String hexRepresentation = systemIdBytesToHex(data);
+                    disInformationDataSet.add(new DisInfo(BleDisClient.SYSTEM_ID_HEX, hexRepresentation));
+                } else {
+                    disInformationDataSet.add(new DisInfo(characteristic.toString(), asciiRepresentation));
+                }
             }
             RxUtils.emitNext(disObserverAtomicList, object -> {
                 object.onNext(new Pair<>(characteristic, new String(data, StandardCharsets.UTF_8)));
                 synchronized (disInformation) {
                     if (hasAllAvailableReadableCharacteristics(disInformation.keySet())) {
+                        object.onComplete();
+                    }
+                }
+            });
+
+            RxUtils.emitNext(disInfoObservers, object -> {
+                disInformationDataSet.stream()
+                        .filter(info -> (characteristic.equals(BleDisClient.SYSTEM_ID)
+                                && info.getKey().equals(BleDisClient.SYSTEM_ID_HEX))
+                                || (characteristic.toString().equals(info.getKey())))
+                        .findFirst().ifPresent(object::onNext);
+
+                synchronized (disInformationDataSet) {
+                    final Set<UUID> validUuids = disInformationDataSet.stream()
+                            .map(DisInfo::getKey)
+                            .filter(this::isValidUUIDString)
+                            .map(UUID::fromString)
+                            .collect(Collectors.toSet());
+
+                    if (hasAllAvailableReadableCharacteristics(validUuids)) {
                         object.onComplete();
                     }
                 }
@@ -117,6 +160,59 @@ public class BleDisClient extends BleGattBase {
                 subscriber.tryOnError(new BleDisconnected());
             }
         }, BackpressureStrategy.BUFFER).doFinally(() -> disObserverAtomicList.remove(observer[0]));
+    }
+
+    /**
+     * Produces: onNext, when a {@link DisInfo} has been read <BR>
+     * onCompleted, after all available {@link DisInfo} has been read <BR>
+     * onError, if client is not initially connected or ble disconnect's  <BR>
+     *
+     * @param checkConnection, optionally check connection on subscribe <BR>
+     * @return Flowable stream emitting {@link DisInfo} <BR>
+     */
+    public Flowable<DisInfo> observeDisInfoWithKeysAsStrings(final boolean checkConnection) {
+        final FlowableEmitter<DisInfo>[] observer = new FlowableEmitter[1];
+        return Flowable.create((FlowableOnSubscribe<DisInfo>) subscriber -> {
+                    if (!checkConnection || BleDisClient.this.txInterface.isConnected()) {
+                        observer[0] = subscriber;
+                        disInfoObservers.add(subscriber);
+
+                        synchronized (disInformationDataSet) {
+                            for (DisInfo disInfo : disInformationDataSet) {
+                                subscriber.onNext(disInfo);
+                            }
+
+                            final Set<UUID> validUuids = disInformationDataSet.stream()
+                                    .filter(disInfo -> isValidUUIDString(disInfo.getKey()))
+                                    .map(disInfo -> UUID.fromString(disInfo.getKey()))
+                                    .collect(Collectors.toSet());
+
+                            if (hasAllAvailableReadableCharacteristics(validUuids)) {
+                                subscriber.onComplete();
+                            }
+                        }
+                    } else if (!subscriber.isCancelled()) {
+                        subscriber.tryOnError(new BleDisconnected());
+                    }
+                }, BackpressureStrategy.BUFFER)
+                .doFinally(() -> disInfoObservers.remove(observer[0]));
+    }
+
+    private String systemIdBytesToHex(final byte[] bytes) {
+        final StringBuilder hex = new StringBuilder(2 * bytes.length);
+        for (int i = bytes.length - 1; i >= 0; i--) {
+            hex.append(String.format("%02X", bytes[i]));
+        }
+        return hex.toString();
+    }
+
+    private boolean isValidUUIDString(final String s) {
+        try {
+            UUID.fromString(s);
+            return true;
+        } catch (final IllegalArgumentException e) {
+            return false;
+        }
     }
 }
 

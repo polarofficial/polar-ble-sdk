@@ -9,4 +9,5 @@ public enum PolarOfflineRecordingData  {
     case ppgOfflineRecordingData(PolarPpgData, startTime:Date, settings:PolarSensorSetting)
     case ppiOfflineRecordingData(PolarPpiData, startTime:Date)
     case hrOfflineRecordingData(PolarHrData, startTime:Date)
+    case temperatureOfflineRecordingData(PolarTemperatureData, startTime:Date)
 }

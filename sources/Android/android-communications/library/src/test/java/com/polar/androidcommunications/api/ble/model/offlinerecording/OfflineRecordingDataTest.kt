@@ -7,6 +7,8 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.*
 import com.polar.androidcommunications.testrules.BleLoggerTestRule
 import org.joda.time.DateTime
 import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -178,6 +180,9 @@ internal class OfflineRecordingDataTest {
         assertTrue(offlineData.data is AccData)
     }
 
+
+
+
     @Test
     fun `parse encrypted Magnetometer offline recording data`() {
         // Act
@@ -186,6 +191,32 @@ internal class OfflineRecordingDataTest {
         assertTrue(offlineData.data is MagData)
     }
 
+    @Test
+    fun `temperature offline recording data`() {
+        // Act
+        val offlineData = OfflineRecordingData.parseDataFromOfflineFile(
+            MockTemperatureOfflineRecordingData.temperatureDataMock,
+            PmdMeasurementType.TEMPERATURE, null
+        )
+
+        // Assert
+        assertTrue(offlineData.data is TemperatureData)
+        assertEquals(8, (listOf(offlineData.data)[0] as TemperatureData).temperatureSamples.size)
+        assertEquals(20.398438f,
+            (listOf(offlineData.data)[0] as TemperatureData).temperatureSamples[0].temperature
+        )
+        assertNotNull(offlineData.startTime)
+    }
+
+    private object MockTemperatureOfflineRecordingData {
+
+        val temperatureDataMock = byteArrayOf(0, 43, 76, 124, 61, 1, 0, 0, 0, 0, 0, 0, 0, -89, -40, -1, -78, 50, 48,
+            50, 50, 45, 48, 49, 45, 48, 50, 32, 49, 55, 58, 50, 53, 58, 50, 57, 0, 11, 0, 1, 4, 0,
+            1, 1, 32, 0, 4, 1, 1, 0, 42, 0, 12, -101, 61, -62, 15, 109, 16, 0, 0, 0, 0, 48, -93, 65,
+            0, 48, -93, 65, 0, 32, -93, 65, 0, 32, -93, 65, 0, 48, -93, 65, 0, 48, -93, 65, 0, 48,
+            -93, 65, 0, 32, -93, 65
+        )
+    }
     private object MockEncryptedOfflineRecordingDataAcc {
         val security = PmdSecret(strategy = PmdSecret.SecurityStrategy.AES128, key = byteArrayOf(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F))
 

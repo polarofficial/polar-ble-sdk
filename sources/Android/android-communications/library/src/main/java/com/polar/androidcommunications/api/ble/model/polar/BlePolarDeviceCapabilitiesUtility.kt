@@ -11,6 +11,14 @@ class BlePolarDeviceCapabilitiesUtility {
     }
 
     companion object {
+        private const val DEVICE_TYPE_SENSE = "sense"
+        private const val DEVICE_TYPE_OH1 = "oh1"
+        private const val DEVICE_TYPE_H10 = "h10"
+        private const val DEVICE_TYPE_HONDA = "honda"
+        private const val DEVICE_TYPE_IGNITE_3 = "Ignite 3"
+        private const val DEVICE_TYPE_GRIT_X2_PRO = "Grit X2 Pro"
+        private const val DEVICE_TYPE_VANTAGE_V3 = "Vantage V3"
+
         /**
          * Get type of filesystem the device supports
          *
@@ -37,6 +45,17 @@ class BlePolarDeviceCapabilitiesUtility {
         fun isRecordingSupported(deviceType: String): Boolean {
             return when (deviceType.lowercase(Locale.getDefault())) {
                 "h10" -> true
+                else -> false
+            }
+        }
+
+        @JvmStatic
+        fun isActivityDataSupported(deviceType: String): Boolean {
+            return when (deviceType.lowercase(Locale.getDefault())) {
+                DEVICE_TYPE_HONDA -> true
+                DEVICE_TYPE_IGNITE_3 -> true
+                DEVICE_TYPE_GRIT_X2_PRO -> true
+                DEVICE_TYPE_VANTAGE_V3 -> true
                 else -> false
             }
         }

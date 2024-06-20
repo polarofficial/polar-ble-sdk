@@ -33,8 +33,8 @@ public struct OfflineRecordingData<DataType> {
     let recordingSettings: PmdSetting?
     let data: DataType
     
-    public static func parseDataFromOfflineFile(fileData: Data, type: PmdMeasurementType, secret: PmdSecret? = nil) throws -> OfflineRecordingData<Any> {
-        BleLogger.trace("Start offline file parsing. File size is \(fileData.count) and type \(type)")
+    public static func parseDataFromOfflineFile(fileData: Data, type: PmdMeasurementType, secret: PmdSecret? = nil, lastTimestamp: UInt64 = 0) throws -> OfflineRecordingData<Any> {
+        BleLogger.trace("Start offline file parsing. File size is \(fileData.count) and type \(type), previous file last timestamp: \(lastTimestamp)")
         
         guard !fileData.isEmpty else {
             throw OfflineRecordingError.emptyFile
@@ -56,7 +56,8 @@ public struct OfflineRecordingData<DataType> {
         let parsedData = try parseData(
             dataBytes: payloadDataBytes,
             metaData: metaData,
-            builder: try getDataBuilder(type: type)
+            builder: try getDataBuilder(type: type),
+            lastTimestamp: lastTimestamp
         )
         
         return OfflineRecordingData<Any>(offlineRecordingHeader: metaData.offlineRecordingHeader, startTime: metaData.startTime, recordingSettings: metaData.recordingSettings,  data: parsedData)
@@ -78,6 +79,8 @@ public struct OfflineRecordingData<DataType> {
             return MagData()
         case .offline_hr:
             return OfflineHrData()
+        case .temperature:
+            return TemperatureData()
         default:
             throw OfflineRecordingError.offlineRecordingErrorNoParserForData
         }
@@ -253,8 +256,8 @@ public struct OfflineRecordingData<DataType> {
         return Int(TypeUtils.convertArrayToUnsignedInt(packetSize, offset: 0, size: 2))
     }
     
-    private static func parseData(dataBytes: Data, metaData: OfflineRecordingMetaData, builder: Any) throws -> Any {
-        var previousTimeStamp: UInt64 = 0
+    private static func parseData(dataBytes: Data, metaData: OfflineRecordingMetaData, builder: Any, lastTimestamp: UInt64 = 0) throws -> Any {
+        var previousTimeStamp: UInt64 = lastTimestamp
         
         var packetSize = metaData.dataPayloadSize
         let sampleRate = UInt(metaData.recordingSettings?.settings[PmdSetting.PmdSettingType.sampleRate]?.first ?? 0)
@@ -301,6 +304,9 @@ public struct OfflineRecordingData<DataType> {
             case is OfflineHrData:
                 let offlineHrData =  try OfflineHrData.parseDataFromDataFrame(frame: dataFrame)
                 (builder as! OfflineHrData).samples.append(contentsOf: offlineHrData.samples)
+            case is TemperatureData:
+                let temperatureData =  try TemperatureData.parseDataFromDataFrame(frame: dataFrame)
+                (builder as! TemperatureData).samples.append(contentsOf: temperatureData.samples)
             default:
                 throw OfflineRecordingError.offlineRecordingErrorSecretMissing
             }

@@ -108,6 +108,11 @@ var pathtoroot = "../../../../";
                         <dt>All Implemented Interfaces:</dt>
                         <dd>
                             
+                            <code>com.polar.sdk.api.PolarActivityApi</code>
+                            
+                            ,
+                            
+                            
                             <code>com.polar.sdk.api.PolarH10OfflineExerciseApi</code>
                             
                             ,
@@ -125,6 +130,11 @@ var pathtoroot = "../../../../";
                             
                             <code>com.polar.sdk.api.PolarSdkModeApi</code>
                             
+                            ,
+                            
+                            
+                            <code>com.polar.sdk.api.PolarSleepApi</code>
+                            
                             
                         </dd>
                     </dl>
@@ -133,7 +143,7 @@ var pathtoroot = "../../../../";
                     <pre class="wrap-overflow">
 
 public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>PolarBleApi</a></span>
- implements <a href=PolarOnlineStreamingApi.html>PolarOnlineStreamingApi</a>, <a href=PolarOfflineRecordingApi.html>PolarOfflineRecordingApi</a>, <a href=PolarH10OfflineExerciseApi.html>PolarH10OfflineExerciseApi</a>, <a href=PolarSdkModeApi.html>PolarSdkModeApi</a>
+ implements <a href=PolarOnlineStreamingApi.html>PolarOnlineStreamingApi</a>, <a href=PolarOfflineRecordingApi.html>PolarOfflineRecordingApi</a>, <a href=PolarH10OfflineExerciseApi.html>PolarH10OfflineExerciseApi</a>, <a href=PolarSdkModeApi.html>PolarSdkModeApi</a>, <a href=PolarActivityApi.html>PolarActivityApi</a>, <a href=PolarSleepApi.html>PolarSleepApi</a>
                     </pre>
                     <div class="block"><p>Polar BLE API.</p></div>
                 </li>
@@ -178,6 +188,13 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <th class="colSecond" scope="row"><code><a href="PolarBleApi.PolarDeviceDataType.html">PolarBleApi.PolarDeviceDataType</a></span></code>
                                             </th>
                                             <td class="colLast"><p>The data types available in Polar devices for online streaming or offline recording.</p></td>
+                                        </tr>
+                                        
+                                        <tr class="rowColor">
+                                            <td class="colFirst"><code>public enum</code></td>
+                                            <th class="colSecond" scope="row"><code><a href="PolarBleApi.PolarActivityDataType.html">PolarBleApi.PolarActivityDataType</a></span></code>
+                                            </th>
+                                            <td class="colLast"><p>The activity recording data types available in Polar devices.</p></td>
                                         </tr>
                                         
                                     </table>
@@ -467,6 +484,14 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         <tr id="i22" class="altColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setWareHouseSleep(String,Boolean)>setWareHouseSleep</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> sleepEnabled) </code>
+                                            </th>
+                                            <td class="colLast">Set warehouse sleep setting to a given device.</td>
+                                        </tr>
+                                        
+                                        <tr id="i23" class="rowColor">
+                                            <td class="colFirst"><code>abstract Completable</code>
+                                            </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#doFirstTimeUse(String,PolarFirstTimeUseConfig)>doFirstTimeUse</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarFirstTimeUseConfig.html>PolarFirstTimeUseConfig</a> ftuConfig) </code>
                                             </th>
                                             <td class="colLast">Set FtuConfig for device</td>
@@ -481,7 +506,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <!--   -->
                                         </a>
                                             <h3>Methods inherited from class&nbsp;com.polar.sdk.api.PolarBleApi</h3>
-                                            <code>disableSDKMode, enableSDKMode, fetchExercise, getAvailableOfflineRecordingDataTypes, getAvailableOnlineStreamDataTypes, getOfflineRecord, getOfflineRecordingStatus, getOfflineRecordingTriggerSetup, isSDKModeEnabled, listExercises, listOfflineRecordings, removeExercise, removeOfflineRecord, requestFullOfflineRecordingSettings, requestFullStreamSettings, requestOfflineRecordingSettings, requestRecordingStatus, requestStreamSettings, setOfflineRecordingTrigger, startAccStreaming, startEcgStreaming, startGyroStreaming, startHrStreaming, startMagnetometerStreaming, startOfflineRecording, startOhrPPIStreaming, startOhrStreaming, startPpgStreaming, startPpiStreaming, startRecording, stopOfflineRecording, stopRecording</code></li>
+                                            <code>disableSDKMode, enableSDKMode, fetchExercise, getActiveTime, getAvailableOfflineRecordingDataTypes, getAvailableOnlineStreamDataTypes, getDistance, getOfflineRecord, getOfflineRecordingStatus, getOfflineRecordingTriggerSetup, getSleep, getSplitOfflineRecord, getSteps, isSDKModeEnabled, listExercises, listOfflineRecordings, listSplitOfflineRecordings, removeExercise, removeOfflineRecord, requestFullOfflineRecordingSettings, requestFullStreamSettings, requestOfflineRecordingSettings, requestRecordingStatus, requestStreamSettings, setOfflineRecordingTrigger, startAccStreaming, startEcgStreaming, startGyroStreaming, startHrStreaming, startMagnetometerStreaming, startOfflineRecording, startOhrPPIStreaming, startOhrStreaming, startPpgStreaming, startPpiStreaming, startRecording, startTemperatureStreaming, stopOfflineRecording, stopRecording</code></li>
                                  
                                     <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
                                         <!--   -->
@@ -1030,6 +1055,34 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             
                                             
                                             <dd><code>identifier</code> - Polar device ID or BT address</dd>
+                                            
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="setWareHouseSleep(String,Boolean)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>setWareHouseSleep</h4>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#setWareHouseSleep(String,Boolean)>setWareHouseSleep</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> sleepEnabled)</pre>
+                                        <div class="block"><p>Set warehouse sleep setting to a given device.</p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device ID or BT address</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>sleepEnabled</code> - Boolean value for the warehouse sleep setting</dd>
                                             
                                             
                                         </dl>

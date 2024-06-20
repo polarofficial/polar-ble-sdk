@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+package data;
+
+option java_package = "fi.polar.remote.representation.protobuf";
+option java_outer_classname = "ActivitySamples";
+message PbActivitySamples {
+  repeated uint32 steps_samples = 5   [packed=true];
+};

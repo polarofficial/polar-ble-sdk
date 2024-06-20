@@ -312,12 +312,20 @@ public interface <span class="typeNameLabel"><a href=PolarBleApiCallbackProvider
                                         <tr id="i9" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#disInformationReceived(String,<ERROR CLASS>)>disInformationReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, &lt;ERROR CLASS&gt; disInfo) </code>
+                                            </th>
+                                            <td class="colLast">DIS information received.</td>
+                                        </tr>
+                                        
+                                        <tr id="i10" class="altColor">
+                                            <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#batteryLevelReceived(String,Integer)>batteryLevelReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> level) </code>
                                             </th>
                                             <td class="colLast">Battery level received.</td>
                                         </tr>
                                         
-                                        <tr id="i10" class="altColor">
+                                        <tr id="i11" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#hrNotificationReceived(String,PolarHrData.PolarHrSample)>hrNotificationReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarHrData.PolarHrSample.html>PolarHrData.PolarHrSample</a> data) </code>
@@ -325,7 +333,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleApiCallbackProvider
                                             <td class="colLast">HR notification data received from device.</td>
                                         </tr>
                                         
-                                        <tr id="i11" class="rowColor">
+                                        <tr id="i12" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#polarFtpFeatureReady(String)>polarFtpFeatureReady</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -601,6 +609,34 @@ public interface <span class="typeNameLabel"><a href=PolarBleApiCallbackProvider
                                             
                                             
                                             <dd><code>value</code> - dis value for uuid</dd>
+                                            
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="disInformationReceived(String,&lt;ERROR CLASS&gt;)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>disInformationReceived</h4>
+                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBleApiCallbackProvider.html#disInformationReceived(String,<ERROR CLASS>)>disInformationReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, &lt;ERROR CLASS&gt; disInfo)</pre>
+                                        <div class="block"><p>DIS information received. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_DEVICE_INFO>PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO</a></p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device id or bt address</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>disInfo</code> - DisInfo key-value pair</dd>
                                             
                                             
                                         </dl>

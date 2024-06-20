@@ -24,6 +24,8 @@ object PhoneUtils {
         Pair("Realme", "RMX3262"), //C21Y
         Pair("Realme", "RMX3265"), //C25Y
         Pair("Realme", "RMX3269"), //C25Y
+        Pair("Realme", "RMX3624"), //C33
+        Pair("Realme", "RMX3760"), //C53
         Pair("Realme", "RMP2105"), //Pad Mini
         Pair("Realme", "RMP2106"), //Pad Mini
 
@@ -42,7 +44,11 @@ object PhoneUtils {
      */
     @JvmStatic
     fun isMtuNegotiationBroken(brand: String, model: String): Boolean {
-        return if (phonesWithMtuNegotiationProblem.any { it.first.equals(brand, ignoreCase = true) && it.second.equals(model, ignoreCase = true) }) {
+        val modelWithoutParentheses = model.replace("(", "").replace(")", "")
+        return if (phonesWithMtuNegotiationProblem.any {
+                it.first.equals(brand, ignoreCase = true)
+                        && it.second.equals(modelWithoutParentheses, ignoreCase = true)
+            }) {
             BleLogger.d(TAG, "MTU problematic phone detected. Manufacturer: $brand Model: $model")
             true
         } else {

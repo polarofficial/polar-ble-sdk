@@ -52,81 +52,83 @@ data class PolarFirstTimeUseConfig(
     }
 }
 
-fun PolarFirstTimeUseConfig.toProto(): PhysData.PbUserPhysData {
-    val deviceTimeParsed = LocalDateTime.parse(deviceTime, DateTimeFormatter.ISO_DATE_TIME)
-    val lastModified = Types.PbSystemDateTime.newBuilder()
-        .setDate(Types.PbDate.newBuilder()
-            .setYear(deviceTimeParsed.year)
-            .setMonth(deviceTimeParsed.monthValue)
-            .setDay(deviceTimeParsed.dayOfMonth)
-            .build())
-        .setTime(Types.PbTime.newBuilder()
-            .setHour(deviceTimeParsed.hour)
-            .setMinute(deviceTimeParsed.minute)
-            .setSeconds(deviceTimeParsed.second)
-            .build())
-        .setTrusted(true)
-        .build()
+    fun PolarFirstTimeUseConfig.toProto(): PhysData.PbUserPhysData {
+        val deviceTimeParsed = LocalDateTime.parse(deviceTime, DateTimeFormatter.ISO_DATE_TIME)
+        val lastModified = Types.PbSystemDateTime.newBuilder()
+            .setDate(Types.PbDate.newBuilder()
+                .setYear(deviceTimeParsed.year)
+                .setMonth(deviceTimeParsed.monthValue)
+                .setDay(deviceTimeParsed.dayOfMonth)
+                .build())
+            .setTime(Types.PbTime.newBuilder()
+                .setHour(deviceTimeParsed.hour)
+                .setMinute(deviceTimeParsed.minute)
+                .setSeconds(deviceTimeParsed.second)
+                .build())
+            .setTrusted(true)
+            .build()
 
-    val birthdayParsed = Calendar.getInstance().apply { time = birthDate }
-    val birthday = PhysData.PbUserBirthday.newBuilder().apply {
-        setValue(Types.PbDate.newBuilder()
-            .setYear(birthdayParsed.get(Calendar.YEAR))
-            .setMonth(birthdayParsed.get(Calendar.MONTH) + 1)
-            .setDay(birthdayParsed.get(Calendar.DAY_OF_MONTH))
-            .build())
-        setLastModified(lastModified)
-    }.build()
+        val birthdayParsed = Calendar.getInstance().apply { time = birthDate }
+        val birthday = PhysData.PbUserBirthday.newBuilder().apply {
+            setValue(Types.PbDate.newBuilder()
+                .setYear(birthdayParsed.get(Calendar.YEAR))
+                .setMonth(birthdayParsed.get(Calendar.MONTH) + 1)
+                .setDay(birthdayParsed.get(Calendar.DAY_OF_MONTH))
+                .build())
+            setLastModified(lastModified)
+        }.build()
 
-    val gender = PhysData.PbUserGender.newBuilder().apply {
-        setValue(when (gender) {
-            PolarFirstTimeUseConfig.Gender.MALE -> PhysData.PbUserGender.Gender.MALE
-            PolarFirstTimeUseConfig.Gender.FEMALE -> PhysData.PbUserGender.Gender.FEMALE
-        })
-        setLastModified(lastModified)
-    }.build()
+        val gender = PhysData.PbUserGender.newBuilder().apply {
+            setValue(when (gender) {
+                PolarFirstTimeUseConfig.Gender.MALE -> PhysData.PbUserGender.Gender.MALE
+                PolarFirstTimeUseConfig.Gender.FEMALE -> PhysData.PbUserGender.Gender.FEMALE
+            })
+            setLastModified(lastModified)
+        }.build()
 
-    val weightBuilder = PhysData.PbUserWeight.newBuilder().apply {
-        setValue(weight)
-        setLastModified(lastModified)
-    }.build()
+        val weightBuilder = PhysData.PbUserWeight.newBuilder().apply {
+            setValue(weight)
+            setLastModified(lastModified)
+        }.build()
 
-    val heightBuilder = PhysData.PbUserHeight.newBuilder().apply {
-        setValue(height)
-        setLastModified(lastModified)
-    }.build()
+        val heightBuilder = PhysData.PbUserHeight.newBuilder().apply {
+            setValue(height)
+            setLastModified(lastModified)
+        }.build()
 
-    val maxHeartRateBuilder = PhysData.PbUserHrAttribute.newBuilder().apply {
-        setValue(maxHeartRate)
-        setLastModified(lastModified)
-    }.build()
+        val maxHeartRateBuilder = PhysData.PbUserHrAttribute.newBuilder().apply {
+            setValue(maxHeartRate)
+            setLastModified(lastModified)
+        }.build()
 
-    val restingHeartRateBuilder = PhysData.PbUserHrAttribute.newBuilder().apply {
-        setValue(restingHeartRate)
-        setLastModified(lastModified)
-    }.build()
+        val restingHeartRateBuilder = PhysData.PbUserHrAttribute.newBuilder().apply {
+            setValue(restingHeartRate)
+            setLastModified(lastModified)
+        }.build()
 
-    val trainingBackgroundBuilder = PhysData.PbUserTrainingBackground.newBuilder().apply {
-        setValue(PhysData.PbUserTrainingBackground.TrainingBackground.forNumber(trainingBackground))
-        setLastModified(lastModified)
-    }.build()
+        val trainingBackgroundBuilder = PhysData.PbUserTrainingBackground.newBuilder().apply {
+            setValue(PhysData.PbUserTrainingBackground.TrainingBackground.forNumber(trainingBackground))
+            setLastModified(lastModified)
+        }.build()
 
-    val vo2MaxBuilder = PhysData.PbUserVo2Max.newBuilder().apply {
-        setValue(vo2Max) // Range: [10-95] ml/kg/min
-        setLastModified(lastModified)
-    }.build()
+        val vo2MaxBuilder = PhysData.PbUserVo2Max.newBuilder().apply {
+            setValue(vo2Max) // Range: [10-95] ml/kg/min
+            setLastModified(lastModified)
+        }.build()
 
 
-    return PhysData.PbUserPhysData.newBuilder().apply {
-        setBirthday(birthday)
-        setGender(gender)
-        setWeight(weightBuilder)
-        setHeight(heightBuilder)
-        setMaximumHeartrate(maxHeartRateBuilder)
-        setRestingHeartrate(restingHeartRateBuilder)
-        setTrainingBackground(trainingBackgroundBuilder)
-        setVo2Max(vo2MaxBuilder)
+        return PhysData.PbUserPhysData.newBuilder().apply {
+            setBirthday(birthday)
+            setGender(gender)
+            setWeight(weightBuilder)
+            setHeight(heightBuilder)
+            setMaximumHeartrate(maxHeartRateBuilder)
+            setRestingHeartrate(restingHeartRateBuilder)
+            setTrainingBackground(trainingBackgroundBuilder)
+            setVo2Max(vo2MaxBuilder)
 
-        setLastModified(lastModified)
-    }.build()
-}
+            setLastModified(lastModified)
+        }.build()
+    }
+
+

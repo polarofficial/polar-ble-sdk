@@ -1,0 +1,28 @@
+// Custom options for defining:
+// - Maximum size of string/bytes
+// - Maximum number of elements in array
+//
+// These are used by nanopb to generate statically allocable structures
+// for memory-limited environments.
+syntax = "proto2";
+
+import "google/protobuf/descriptor.proto";
+option java_package = "fi.polar.remote.representation.protobuf";
+
+message NanoPBOptions {
+  optional int32 max_size = 1;
+  optional int32 max_count = 2;
+}
+
+// Protocol Buffers extension number registry
+// --------------------------------                                                                                                            
+// Project:  Nanopb                                                                                                                            
+// Contact:  Petteri Aimonen <jpa@kapsi.fi>                                                                                                    
+// Web site: http://kapsi.fi/~jpa/nanopb                                                                                                       
+// Extensions: 1010 (all types)                                                                                                                
+// --------------------------------   
+
+extend google.protobuf.FieldOptions {
+    optional NanoPBOptions nanopb = 1010;
+}
+

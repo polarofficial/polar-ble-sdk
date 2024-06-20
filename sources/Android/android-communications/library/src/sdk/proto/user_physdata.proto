@@ -1,3 +1,4 @@
+// PHYSDATA.BPB=PbUserPhysData
 syntax = "proto2";
 
 package data;
@@ -11,112 +12,112 @@ option java_outer_classname = "PhysData";
 
 message PbUserBirthday {
 
-  // value should be in past.
-  required PbDate             value          = 1;
-  required PbSystemDateTime   last_modified  = 2;
+    // value should be in past.
+    required PbDate             value          = 1;
+    required PbSystemDateTime   last_modified  = 2;
 };
 
 message PbUserGender {
 
-  enum Gender {
-    MALE   = 1;
-    FEMALE = 2;
-  };
+    enum Gender {
+        MALE   = 1;
+        FEMALE = 2;
+    };
 
-  required Gender             value          = 1;
-  required PbSystemDateTime   last_modified  = 2;
+    required Gender             value          = 1;
+    required PbSystemDateTime   last_modified  = 2;
 };
 
 message PbUserHrAttribute
 {
-  enum HrSettingSource {
-    SOURCE_DEFAULT   = 0;
-    SOURCE_AGE_BASED = 1;
-    SOURCE_USER      = 2;
-    SOURCE_MEASURED  = 3;
-    SOURCE_KEEP      = 4;
-  };
+    enum HrSettingSource {
+        SOURCE_DEFAULT   = 0;
+        SOURCE_AGE_BASED = 1;
+        SOURCE_USER      = 2;
+        SOURCE_MEASURED  = 3;
+        SOURCE_KEEP      = 4;
+    };
 
-  // range [0-250] 1/min
-  required uint32             value          = 1 [(type)=HEARTRATE];
-  required PbSystemDateTime   last_modified  = 2;
-  optional HrSettingSource    setting_source = 3;
+    // range [0-250] 1/min
+    required uint32             value          = 1 [(type)=HEARTRATE];
+    required PbSystemDateTime   last_modified  = 2;
+    optional HrSettingSource    setting_source = 3;
 };
 
 message PbUserWeight
 {
-  enum WeightSettingSource {
-    SOURCE_DEFAULT   = 0;
-    SOURCE_USER      = 2;
-    SOURCE_MEASURED  = 3;
-  };
+    enum WeightSettingSource {
+        SOURCE_DEFAULT   = 0;
+        SOURCE_USER      = 2;
+        SOURCE_MEASURED  = 3;
+    };
 
-  // User weight (aka. User mass)
-  // range: [0.0-300.0] kg
-  //
-  required float              value          = 1  [(type)=WEIGHT];
-  required PbSystemDateTime   last_modified  = 2;
-  optional WeightSettingSource    setting_source = 3;
+    // User weight (aka. User mass)
+    // range: [0.0-300.0] kg
+    //
+    required float              value          = 1  [(type)=WEIGHT];
+    required PbSystemDateTime   last_modified  = 2;
+    optional WeightSettingSource    setting_source = 3;
 };
 
 message PbUserHeight
 {
-  // User Height
-  // range: [90.0-240.0] cm
-  //
-  required float              value          = 1  [(type)=HEIGHT];
-  required PbSystemDateTime   last_modified  = 2;
+    // User Height
+    // range: [90.0-240.0] cm
+    //
+    required float              value          = 1  [(type)=HEIGHT];
+    required PbSystemDateTime   last_modified  = 2;
 };
 
 message PbUserVo2Max
 {
-  enum Vo2MaxSettingSource {
-    SOURCE_DEFAULT     = 0;
-    SOURCE_ESTIMATE    = 1;
-    SOURCE_USER        = 2;
-    SOURCE_FITNESSTEST = 3;
-  };
-  //
-  // Range: [10-95] ml/kg/min
-  //
-  required uint32              value          = 1  [(type)=VO2MAX];
-  required PbSystemDateTime    last_modified  = 2;
-  optional Vo2MaxSettingSource setting_source = 3;
+    enum Vo2MaxSettingSource {
+        SOURCE_DEFAULT     = 0;
+        SOURCE_ESTIMATE    = 1;
+        SOURCE_USER        = 2;
+        SOURCE_FITNESSTEST = 3;
+    };
+    //
+    // Range: [10-95] ml/kg/min
+    //
+    required uint32              value          = 1  [(type)=VO2MAX];
+    required PbSystemDateTime    last_modified  = 2;
+    optional Vo2MaxSettingSource setting_source = 3;
 };
 
 message PbUserTrainingBackground
 {
-  enum TrainingBackground {
-    OCCASIONAL    = 10;
-    REGULAR       = 20;
-    FREQUENT      = 30;
-    HEAVY         = 40;
-    SEMI_PRO      = 50;
-    PRO           = 60;
-  };
+    enum TrainingBackground {
+        OCCASIONAL    = 10;
+        REGULAR       = 20;
+        FREQUENT      = 30;
+        HEAVY         = 40;
+        SEMI_PRO      = 50;
+        PRO           = 60;
+    };
 
-  required TrainingBackground  value          = 1;
-  required PbSystemDateTime    last_modified  = 2;
+    required TrainingBackground  value          = 1;
+    required PbSystemDateTime    last_modified  = 2;
 };
 
 message PbUserPhysData {
 
-  required PbUserBirthday        birthday            = 1;
-  required PbUserGender          gender              = 2;
+    required PbUserBirthday        birthday            = 1;
+    required PbUserGender          gender              = 2;
 
-  optional PbUserWeight          weight              = 3;
-  optional PbUserHeight          height              = 4;
+    optional PbUserWeight          weight              = 3;
+    optional PbUserHeight          height              = 4;
 
-  optional PbUserHrAttribute     maximum_heartrate   = 5;
-  optional PbUserHrAttribute     resting_heartrate   = 6;
+    optional PbUserHrAttribute     maximum_heartrate   = 5;
+    optional PbUserHrAttribute     resting_heartrate   = 6;
 
-  optional PbUserVo2Max          vo2max              = 10;
-  optional PbUserTrainingBackground   training_background      = 11;
+    optional PbUserVo2Max          vo2max              = 10;
+    optional PbUserTrainingBackground   training_background      = 11;
 
 
-  //
-  // Timestamps for the whole component: these are updated
-  // if any of the component fields are updated.
-  //
-  optional PbSystemDateTime last_modified = 100;
+    //
+    // Timestamps for the whole component: these are updated
+    // if any of the component fields are updated.
+    //
+    optional PbSystemDateTime last_modified = 100;
 };

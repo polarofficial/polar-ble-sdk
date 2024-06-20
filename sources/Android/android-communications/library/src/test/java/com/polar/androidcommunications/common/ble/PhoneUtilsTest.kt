@@ -14,6 +14,7 @@ internal class PhoneUtilsTest {
     fun `test phone with MTU negotiation problem`() {
         //Arrange, Act & Assert
         Assert.assertTrue(PhoneUtils.isMtuNegotiationBroken("MotorolA", "moto e30"))
+        Assert.assertTrue(PhoneUtils.isMtuNegotiationBroken("MotorolA", "moto g(20)"))
     }
 
     @Test

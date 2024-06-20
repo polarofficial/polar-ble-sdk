@@ -63,3 +63,4 @@ public class BleHtsClient: BleGattClientBase {
          return RxUtils.monitor(htsObserverAtomicList, transport: self.gattServiceTransmitter, checkConnection: checkConnection)
     }
 }
+

@@ -366,6 +366,126 @@ class PolarTimeUtilsTests: XCTestCase {
         XCTAssertEqual(Int32(minutesFromGMT), result.tzOffset)
     }
     
+    func testDateConversionToPftpLocalTime_noTimeZone() throws {
+
+        // Arrange
+        var dateComponents = DateComponents()
+        dateComponents.year = 2022
+        dateComponents.month = 12
+        dateComponents.day = 30
+        dateComponents.hour = 11
+        dateComponents.minute = 59
+        dateComponents.second = 1
+        let milliSeconds = 999 // 999ms
+        let nanoSeconds = milliSeconds * 1000 * 1000
+        dateComponents.nanosecond = nanoSeconds
+
+        let date = Calendar(identifier: .gregorian).date(from: dateComponents)
+
+        // Act
+        do {
+            let pbPFtpSetLocalTimeParams = PolarBleSdk.Protocol_PbPFtpSetLocalTimeParams.with {
+                $0.date = PolarBleSdk.PbDate.with {
+                    $0.year = UInt32(dateComponents.year!)
+                    $0.month = UInt32(dateComponents.month!)
+                    $0.day = UInt32(dateComponents.day!)
+                }
+                $0.time = PolarBleSdk.PbTime.with {
+                    $0.hour = UInt32(dateComponents.hour!)
+                    $0.minute = UInt32(dateComponents.minute!)
+                    $0.seconds = UInt32(dateComponents.second!)
+                    $0.millis = UInt32(milliSeconds)
+                }
+            }
+
+            let result = try PolarTimeUtils.dateFromPbPftpLocalDateTime(pbPFtpSetLocalTimeParams)
+
+            // Assert
+            let calendar = Calendar.current
+            let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second, .nanosecond], from: result)
+
+            XCTAssertEqual(components.year, dateComponents.year)
+            XCTAssertEqual(components.month, dateComponents.month)
+            XCTAssertEqual(components.day, dateComponents.day)
+            XCTAssertEqual(components.hour, dateComponents.hour)
+            XCTAssertEqual(components.minute, dateComponents.minute)
+            XCTAssertEqual(components.second, dateComponents.second)
+        } catch {
+            XCTFail("Error: \(error)")
+        }
+    }
+    
+    func testPbLocalDateTimeConversionToDate() throws {
+        
+        var pbLocalDateTime: PolarBleSdk.PbLocalDateTime?
+        pbLocalDateTime?.date.year = 2525
+        pbLocalDateTime?.date.month = 1
+        pbLocalDateTime?.date.day = 2
+        pbLocalDateTime?.time.hour = 3
+        pbLocalDateTime?.time.minute = 4
+        pbLocalDateTime?.time.seconds = 5
+        pbLocalDateTime?.time.millis = 6
+        pbLocalDateTime?.timeZoneOffset = 2
+    
+        let result = try PolarTimeUtils.pbLocalDateTimeToDate(pbLocalDateTime: pbLocalDateTime)
+        
+        // Assert
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second, .nanosecond], from: result)
+        
+        XCTAssertEqual(components.year, 2525)
+        XCTAssertEqual(components.month, 1)
+        XCTAssertEqual(components.day, 2)
+        XCTAssertEqual(components.hour, 1)
+        XCTAssertEqual(components.minute,4)
+        XCTAssertEqual(components.second, 5)
+        XCTAssertEqual(components.nanosecond, 6000000)
+    }
+
+    func testpbSystemDateTimeConversionToDate () throws {
+        
+        var pbSystemDateTime: PolarBleSdk.PbSystemDateTime?
+        pbSystemDateTime?.date.year = 2525
+        pbSystemDateTime?.date.month = 1
+        pbSystemDateTime?.date.day = 2
+        pbSystemDateTime?.time.hour = 3
+        pbSystemDateTime?.time.minute = 4
+        pbSystemDateTime?.time.seconds = 5
+        pbSystemDateTime?.time.millis = 6
+    
+        let result = try PolarTimeUtils.pbSystemDateTimeToDate(pbSystemDateTime: pbSystemDateTime)
+        
+        // Assert
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second, .nanosecond], from: result)
+        
+        XCTAssertEqual(components.year, 2525)
+        XCTAssertEqual(components.month, 1)
+        XCTAssertEqual(components.day, 2)
+        XCTAssertEqual(components.hour, 3)
+        XCTAssertEqual(components.minute,4)
+        XCTAssertEqual(components.second, 5)
+        XCTAssertEqual(components.nanosecond, 6000000)
+    }
+    
+    func testpbDateConversionToDate() throws {
+        
+        var pbDate: PolarBleSdk.PbDate?
+        pbDate?.year = 2525
+        pbDate?.month = 1
+        pbDate?.day = 2
+        
+        let result = try PolarTimeUtils.pbDateToDate(pbDate: pbDate)
+        
+        // Assert
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day], from: result)
+        
+        XCTAssertEqual(components.year, 2525)
+        XCTAssertEqual(components.month, 1)
+        XCTAssertEqual(components.day, 2)
+    }
+    
     private func getDateComponentsInUTC(_ iso8061: String) throws -> DateComponents {
         var calendar = Calendar(identifier: Calendar.Identifier.iso8601)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!

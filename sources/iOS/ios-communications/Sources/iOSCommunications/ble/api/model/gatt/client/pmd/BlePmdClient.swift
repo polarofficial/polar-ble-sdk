@@ -90,6 +90,7 @@ public class BlePmdClient: BleGattClientBase {
     private var observersEcg = AtomicList<RxObserver<EcgData>>()
     private var observersPpg = AtomicList<RxObserver<PpgData>>()
     private var observersPpi = AtomicList<RxObserver<PpiData>>()
+    private var observersTemperature = AtomicList<RxObserver<TemperatureData>>()
     private var observersFeature = AtomicList<RxObserverSingle<Set<PmdMeasurementType>>>()
     private var storedSettings  = AtomicType<[PmdMeasurementType : PmdSetting]>(initialValue: [PmdMeasurementType : PmdSetting]())
     private var previousTimeStamp = AtomicType<[PmdMeasurementType : UInt64]>(initialValue: [PmdMeasurementType : UInt64]())
@@ -197,6 +198,8 @@ public class BlePmdClient: BleGattClientBase {
                         RxUtils.postErrorAndClearList(observersGyro, error: BlePmdError.bleOnlineStreamClosed(description: errorDescription))
                     case .mgn:
                         RxUtils.postErrorAndClearList(observersMagnetometer, error: BlePmdError.bleOnlineStreamClosed(description: errorDescription))
+                    case .temperature:
+                        RxUtils.postErrorAndClearList(observersTemperature, error: BlePmdError.bleOnlineStreamClosed(description: errorDescription))
                     default:
                         BleLogger.error("PMD CP, not supported PmdMeasurementType for Measurement stop. Measurement type value \(dataType) ")
                     }
@@ -280,6 +283,15 @@ public class BlePmdClient: BleGattClientBase {
                     emitter.obs.onError(error)
                 }
             }
+        case PmdMeasurementType.temperature:
+            RxUtils.emitNext(observersTemperature) { (emitter) in
+                do {
+                    let parsedData = try TemperatureData.parseDataFromDataFrame(frame: frame)
+                    emitter.obs.onNext(parsedData)
+                } catch let error {
+                    emitter.obs.onError(error)
+                }
+            }
         default:
             BleLogger.trace("Non handled stream type received")
         }
@@ -328,7 +340,11 @@ public class BlePmdClient: BleGattClientBase {
     public func observePpi() -> Observable<PpiData> {
         return RxUtils.monitor(observersPpi, transport: gattServiceTransmitter, checkConnection: true)
     }
-    
+
+    public func observeTemperature() -> Observable<TemperatureData> {
+        return RxUtils.monitor(observersTemperature, transport: gattServiceTransmitter, checkConnection: true)
+    }
+
     public func startMeasurement(_ type: PmdMeasurementType, settings: PmdSetting, _ recordingType: PmdRecordingType = PmdRecordingType.online, _ secret: PmdSecret? = nil) -> Completable {
         storedSettings.accessItem { (settingsStored) in
             settingsStored[type] = settings
@@ -718,5 +734,6 @@ public class BlePmdClient: BleGattClientBase {
         RxUtils.postErrorAndClearList(observersEcg, error: error)
         RxUtils.postErrorAndClearList(observersPpg, error: error)
         RxUtils.postErrorAndClearList(observersPpi, error: error)
+        RxUtils.postErrorAndClearList(observersTemperature, error: error)
     }
 }

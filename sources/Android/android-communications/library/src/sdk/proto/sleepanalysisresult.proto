@@ -1,0 +1,112 @@
+// SLEEPRES.BPB=PbSleepAnalysisResult
+syntax = "proto2";
+package data;
+
+import "types.proto";
+import "structures.proto";
+
+option java_package = "fi.polar.remote.representation.protobuf";
+option java_outer_classname = "SleepanalysisResult";
+
+/*
+  Sleepanalysis result structure definition
+
+  Domain Data classification: History data.
+
+  Domain Data types: Component
+  ( https://wiki.polar.grp/display/SAG/SAGRFC27 )
+
+  For intended usage of this data, see "File System Structure in Genesis ecosystem devices"
+  ( https://wiki.polar.grp/display/SAG/SAGRFC2+File+system )
+*/
+
+enum PbSleepWakeState {
+    PB_UNKNOWN  =  0;    // State is unknown e.g. because of bad skin contact (possible with OHR based sleep)
+    PB_WAKE     = -2;    // This is regarded as an interruption of sleep during night
+    PB_REM      = -3;    // rem sleep
+    PB_NONREM12 = -5;    // combined non rem 1 and 2 sleep
+    PB_NONREM3  = -6;    // Deepest sleep. This is used in general during sleep if the 2 above aren't possible (due to technical / algorithm restrictions)
+};
+
+/*
+ A single state change in a night's sleep
+*/
+message PbSleepWakePhase {
+
+    // Start time / offset from the beginning of the night sleep
+    required uint32 seconds_from_sleep_start = 1;
+
+    // Sleep / wake state
+    required PbSleepWakeState sleepwake_state = 2;
+};
+
+/*
+ Sleep cycle: a single rem-to-rem period. Note that sleep depth at the end of last cycle is also needed in which the offset = total duration of sleep.
+*/
+message PbSleepCycle {
+
+    // Start time / offset from the beginning of the night sleep
+    required uint32 seconds_from_sleep_start = 1;
+
+    // Sleep depth at the start of sleep cycle (normalised std of respiration)
+    // range: [0.0 - 2.0]
+    required float sleep_depth_start = 2;
+};
+
+/*
+ Complete summary of a night's sleep. 
+ Note! Optional sleep_cycles fields can be found only as output of new Sleep Structure features and this can be used to
+ check if sleep result is coming from "old" or "new" algorithm and separate field for version is not needed.
+*/
+message PbSleepAnalysisResult {
+
+    // Sleep start time and date
+    required PbLocalDateTime sleep_start_time = 1;
+
+    // Sleep end time and date
+    required PbLocalDateTime sleep_end_time = 2;
+
+    // The time when the file was last written to.
+    required PbSystemDateTime last_modified  = 3;
+
+    // The Sleep Goal at the time of recording, in minutes.
+    // If the user physical settings does not have this
+    // data, it should be calculated according to age.
+    required uint32 sleep_goal_minutes = 4;
+
+    // Sleep / wake phases during night (hypnogram)
+    repeated PbSleepWakePhase sleepwake_phases = 5;
+
+    // Snooze time (time when alarm was snoozed)
+    repeated PbLocalDateTime snooze_time = 6;
+
+    // Alarm time (time when alarm was stopped)
+    optional PbLocalDateTime alarm_time = 7;
+
+    // Offset seconds for sleep_start_time. Used in trimming.
+    optional int32 sleep_start_offset_seconds = 8 [default = 0];
+
+    // Offset seconds for sleep_end_time. Used in trimming.
+    optional int32 sleep_end_offset_seconds = 9 [default = 0];
+
+    // How well the user thought they slept.
+    optional PbSleepUserRating user_sleep_rating = 10;
+
+    // Device used to measure the Sleep.
+    optional PbDeviceId recording_device = 11;
+
+    // Battery was nearly empty and Sleep was automatically stopped.
+    optional bool battery_ran_out = 12 [default = false];
+
+    // Sleep cycles (rem-to-rem) - not available in Sleep Plus
+    repeated PbSleepCycle sleep_cycles = 13;
+
+    // Date for which this sleep result is for
+    optional PbDate sleep_result_date = 14;
+
+    // Date and time of the result created
+    optional PbSystemDateTime created_timestamp = 15;
+
+    // Initial sleep start and end times, before any edits to sleep data
+    optional PbLocalDateTimeRange original_sleep_range = 16;
+};

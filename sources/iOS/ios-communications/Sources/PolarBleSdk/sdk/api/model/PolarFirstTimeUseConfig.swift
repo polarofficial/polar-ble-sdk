@@ -1,15 +1,13 @@
-//  Copyright © 2024 Polar. All rights reserved.
-
 import Foundation
 import SwiftProtobuf
 
 public struct PolarFirstTimeUseConfig {
-    
+
     public enum Gender {
         case male
         case female
     }
-    
+
     public enum TrainingBackground: Int {
             case occasional = 10
             case regular = 20
@@ -30,7 +28,7 @@ public struct PolarFirstTimeUseConfig {
     public let deviceTime: String
 
     static let FTU_CONFIG_FILEPATH = "/U/0/S/PHYSDATA.BPB"
-    
+
     public init(gender: Gender, birthDate: Date, height: Float, weight: Float, maxHeartRate: Int, vo2Max: Int, restingHeartRate: Int, trainingBackground: TrainingBackground, deviceTime: String) {
         assert(height >= 90.0 && height <= 240.0, "Height must be between 90 and 240 cm")
         assert(weight >= 15.0 && weight <= 300.0, "Weight must be between 15 and 300 kg")
@@ -105,7 +103,7 @@ public struct PolarFirstTimeUseConfig {
             $0.value = UInt32(restingHeartRate)
             $0.lastModified = lastModified
         }
-        
+
         let trainingBackgroundPb = Data_PbUserTrainingBackground.with {
             $0.value = Data_PbUserTrainingBackground.TrainingBackground(rawValue: trainingBackground.rawValue)!
             $0.lastModified = lastModified

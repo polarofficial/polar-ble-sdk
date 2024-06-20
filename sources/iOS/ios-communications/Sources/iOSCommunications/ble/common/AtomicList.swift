@@ -46,10 +46,13 @@ class AtomicList<T> {
         return items.count
     }
     
-    func pop() -> T {
+    func pop() throws -> T {
         var item: T
         lock.lock()
-        item = items.removeFirst()
+        guard let item = items.first else {
+            throw AtomicListException.emptyQueueSignal
+        }
+        items.removeFirst()
         lock.unlock()
         return item
     }
@@ -98,7 +101,7 @@ class AtomicList<T> {
     func poll( _ secs: TimeInterval, canceled: BlockOperation, cancelError: Error ) throws -> T {
         if !canceled.isCancelled {
             if( size() != 0 ){
-                return pop()
+                return try pop()
             }else{
                 lock.lock()
                 if lock.wait(until: Date (timeIntervalSinceNow: secs)) {
@@ -106,7 +109,7 @@ class AtomicList<T> {
                     if canceled.isCancelled {
                         throw cancelError
                     } else if( size() != 0 ){
-                        return pop()
+                        return try pop()
                     } else {
                         throw AtomicListException.emptyQueueSignal
                     }
@@ -122,13 +125,13 @@ class AtomicList<T> {
     
     func poll( _ secs: TimeInterval ) throws -> T {
         if( size() != 0 ){
-            return pop()
+            return try pop()
         }else{
             lock.lock()
             if lock.wait(until: Date (timeIntervalSinceNow: secs)) {
                 lock.unlock()
                 if( size() != 0 ){
-                    return pop()
+                    return try pop()
                 }else{
                     throw AtomicListException.emptyQueueSignal
                 }
@@ -141,7 +144,7 @@ class AtomicList<T> {
     
     func poll() throws -> T {
         if(size() != 0){
-            return pop()
+            return try pop()
         } else {
             throw AtomicListException.emptyQueueSignal
         }
@@ -149,7 +152,7 @@ class AtomicList<T> {
     
     func pollUntilSignaled() throws -> T {
         if(size() != 0){
-            return pop()
+            return try pop()
         } else {
             self.lock.lock()
             self.lock.wait()
@@ -161,7 +164,7 @@ class AtomicList<T> {
     func pollUntilSignaled(canceled: BlockOperation, cancelError: Error) throws -> T {
         if !canceled.isCancelled {
             if(size() != 0){
-                return pop()
+                return try pop()
             } else {
                 self.lock.lock()
                 self.lock.wait()
@@ -169,7 +172,7 @@ class AtomicList<T> {
                 if canceled.isCancelled {
                     throw cancelError
                 } else if( size() != 0 ){
-                    return pop()
+                    return try pop()
                 } else {
                     throw AtomicListException.emptyQueueSignal
                 }

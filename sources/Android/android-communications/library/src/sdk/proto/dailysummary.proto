@@ -1,0 +1,25 @@
+// DSUM.BPB=PbDailySummary
+syntax = "proto2";
+
+package data;
+
+import "types.proto";
+
+option java_package = "fi.polar.remote.representation.protobuf";
+option java_outer_classname = "DailySummary";
+
+message PbActivityClassTimes {
+  required PbDuration time_non_wear = 1;
+  required PbDuration time_sleep = 2;
+  required PbDuration time_sedentary = 3;
+  required PbDuration time_light_activity = 4;
+  required PbDuration time_continuous_moderate = 5;
+  required PbDuration time_intermittent_moderate = 6;
+  required PbDuration time_continuous_vigorous = 7;
+  required PbDuration time_intermittent_vigorous = 8;
+};
+
+message PbDailySummary {
+  optional PbActivityClassTimes activity_class_times = 7;
+  optional float activity_distance = 8 [(type)=DISTANCE];
+};

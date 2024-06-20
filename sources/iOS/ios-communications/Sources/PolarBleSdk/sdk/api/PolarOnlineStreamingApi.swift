@@ -122,4 +122,15 @@ public protocol PolarOnlineStreamingApi {
     
     @available(*, deprecated, renamed: "startPpiStreaming")
     func startOhrPPIStreaming(_ identifier: String) -> Observable<PolarPpiData>
+    
+    /// Start temperature stream. Temperature stream is stopped if the connection is closed,
+    /// error occurs or stream is disposed.
+    ///
+    /// - Parameters:
+    ///   - identifier: Polar device id or device address
+    ///   - settings: selected settings to start the stream
+    /// - Returns: Observable stream
+    ///   - onNext: for every air packet received. see `PolarTemperatureData`
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func startTemperatureStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarTemperatureData>
 }

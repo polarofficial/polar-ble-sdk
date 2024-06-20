@@ -333,6 +333,14 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                             <td class="colLast">Start Gyro stream.</td>
                                         </tr>
                                         
+                                        <tr id="i12" class="altColor">
+                                            <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarTemperatureData.html>PolarTemperatureData</a>&gt;</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarOnlineStreamingApi.html#startTemperatureStreaming(String,PolarSensorSetting)>startTemperatureStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting) </code>
+                                            </th>
+                                            <td class="colLast">Start Temperature data stream.</td>
+                                        </tr>
+                                        
                                         </tbody>
                                     </table>
                                 </div>
@@ -664,12 +672,40 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                     <!--   -->
                                 </a>
                                 <ul class=
-                                              "blockListLast"
+                                              "blockList"
                                           >
                                     <li class="blockList">
                                         <h4>startGyroStreaming</h4>
                                         <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarGyroData.html>PolarGyroData</a>&gt; <a href=PolarOnlineStreamingApi.html#startGyroStreaming(String,PolarSensorSetting)>startGyroStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting)</pre>
                                         <div class="block"><p>Start Gyro stream. Gyro stream is stopped if the connection is closed, error occurs during start or stream is disposed.</p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>sensorSetting</code> - settings to be used to start streaming</dd>
+                                            
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="startTemperatureStreaming(String,PolarSensorSetting)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>startTemperatureStreaming</h4>
+                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarTemperatureData.html>PolarTemperatureData</a>&gt; <a href=PolarOnlineStreamingApi.html#startTemperatureStreaming(String,PolarSensorSetting)>startTemperatureStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting)</pre>
+                                        <div class="block"><p>Start Temperature data stream. Temperature stream is stopped if the connection is closed, error occurs during start or stream is disposed. Requires feature .FEATURE_POLAR_ONLINE_STREAMING. Before starting the stream it is recommended to query the available settings using .requestStreamSettings</p></div>
                                         
                                         <dl>
                                             <dt><span class="paramLabel">Parameters:</span></dt>

@@ -41,7 +41,7 @@ class BlePmdClientTest: XCTestCase {
         blePmdClient.processServiceData(BlePmdClient.PMD_CP, data: controlPointResponse, err: successErrCode)
         
         // Assert
-        let data = blePmdClient.pmdCpResponseQueue.pop()
+        let data = try blePmdClient.pmdCpResponseQueue.pop()
         XCTAssertEqual(controlPointResponse, data)
     }
     

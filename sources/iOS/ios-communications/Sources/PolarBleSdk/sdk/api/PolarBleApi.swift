@@ -13,6 +13,7 @@ public enum PolarDeviceDataType: CaseIterable {
     case gyro
     case magnetometer
     case hr
+    case temperature
 }
 
 /// Features available in Polar BLE SDK library
@@ -43,6 +44,9 @@ public enum PolarBleSdkFeature: CaseIterable {
 
     /// Feature to enable or disable SDK mode blinking LED animation.
     case feature_polar_led_animation
+
+    /// Feature to receive activity data from Polar device.
+    case feature_polar_activity_data
 }
 
 /// Polar device info
@@ -106,6 +110,14 @@ public typealias PolarGyroData = (timeStamp: UInt64, samples: [(timeStamp: UInt6
 ///         - z axis value in Gauss
 public typealias PolarMagnetometerData = (timeStamp: UInt64, samples: [(timeStamp: UInt64, x: Float, y: Float, z: Float)])
 
+/// Polar Temperature data
+///
+///     - timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
+///     - samples: Temperature samples
+///         - timeStamp: moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000
+///         - temperature value in celsius
+public typealias PolarTemperatureData = (timeStamp: UInt64, samples: [(timeStamp: UInt64, temperature: Float)])
+
 /// OHR data source enum
 @available(*, deprecated, renamed: "PpgDataType")
 public enum OhrDataType: Int, CaseIterable {
@@ -130,6 +142,8 @@ public typealias PolarOhrData = (timeStamp: UInt64, type: OhrDataType, samples: 
 public enum PpgDataType: Int, CaseIterable {
     /// 3 ppg + 1 ambient
     case ppg3_ambient1 = 4
+    /// 16 ppg + 1 status
+    case ppg17 = 5
     case unknown = 18
 }
 
@@ -173,7 +187,7 @@ public typealias PolarExerciseData = (interval: UInt32, samples: [UInt32])
 public typealias PolarRecordingStatus = (ongoing: Bool, entryId: String)
 
 /// API.
-public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi {
+public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarActivityApi, PolarSleepApi {
     
     /// remove all known devices, which are not in use
     func cleanup()
@@ -290,7 +304,7 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - success: when restart notification sent to device
     ///   - onError: see `PolarErrors` for possible errors invoked
     func doRestart(_ identifier: String, preservePairingInformation: Bool) -> Completable
-        
+
     ///Set [FtuConfig] for device
     /// - Parameters:
     ///   - identifier: polar device id or UUID
@@ -307,7 +321,17 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - VO2 max: 10 to 95
     ///   - Training background: One of the predefined levels (10, 20, 30, 40, 50, 60)
     func doFirstTimeUse(_ identifier: String, ftuConfig: PolarFirstTimeUseConfig) -> Completable
-    
+
+    /// Set warehouse sleep to a device. Factory reset will be performed in order to enable the setting.
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id or UUID
+    ///   - enableWarehouseSleep: Bool value for the warehouse sleep setting
+    /// - Returns: Completable stream
+    ///   - success: when warehouse sleep has been set together with  factory reset
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func setWarehouseSleep(_ identifier: String, enableWarehouseSleep: Bool?) -> Completable
+
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }
     

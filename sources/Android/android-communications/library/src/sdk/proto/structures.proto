@@ -1,0 +1,459 @@
+syntax = "proto2";
+
+import "types.proto";
+import "nanopb.proto";
+
+option java_package = "fi.polar.remote.representation.protobuf";
+
+/*
+  Definitions for common composite data structures used in data transfer.
+
+  This file contains definitions for messages which are commonly used in other messages. 
+
+  For intended usage of this data, see "File System Structure in Genesis ecosystem devices"
+  (https://swa.polar.fi/sag/wiki/SAGRFC/SAGRFC2)
+    
+  The "products" column is used for optimizing the collector software 
+  by removing unused "optional" fields from the generated code.
+
+*/
+
+message PbVolumeTarget {
+
+    enum PbVolymeTargetType {
+        VOLUME_TARGET_TYPE_DURATION = 0;
+        VOLUME_TARGET_TYPE_DISTANCE = 1;
+        VOLUME_TARGET_TYPE_CALORIES = 2;
+    };
+
+    // Exercise target type
+    //
+    required PbVolymeTargetType target_type = 1;
+
+    // Duration target
+    optional PbDuration duration = 2;
+    
+    // Distance target
+    optional float distance = 3 [(type)=DISTANCE];
+    
+    // Calories target
+    optional uint32 calories = 4 [(type)=CALORIES];
+};
+
+message PbStravaSegmentTargets {
+    // Own best time
+    optional PbDuration own_best = 1;
+
+    // King or Queen of the Mountain
+    optional PbDuration kom_qom = 2;
+};
+
+message PbStravaSegmentTarget {
+
+    enum PbStravaSegmentType {
+        STRAVA_SEGMENT_TYPE_RIDE = 1;
+        STRAVA_SEGMENT_TYPE_RUN = 2;
+    };
+
+    required PbStravaSegmentType strava_segment_type = 1;
+    optional PbStravaSegmentTargets strava_segment_targets = 2;
+};
+
+message PbFuelingReminder {
+
+    // There are 3 types of reminders - energy and hydration (drinking) reminder
+    // can be given at the same time
+    enum PbFuelingReminderType {
+        REMINDER_TYPE_ENERGY_MANUAL = 1;
+        REMINDER_TYPE_ENERGY_SMART = 2;
+        REMINDER_TYPE_HYDRATION = 3;
+        REMINDER_TYPE_HYDRATION_AND_ENERGY_MANUAL = 4;
+        REMINDER_TYPE_HYDRATION_AND_ENERGY_SMART = 5;
+    };
+
+    // Time when reminder was given to user (since start of training session)
+    required PbDuration timestamp = 1;
+
+    // Type of reminder
+    optional PbFuelingReminderType fueling_reminder_type = 2;
+};
+
+
+message PbTrainingLoad {
+
+    // Training load value of the exercise
+    optional uint32 training_load_val = 1;
+
+    // Recovery time in hours what the exercise caused
+    optional PbDuration recovery_time = 2;
+
+    // Carbohydrates consumed during the exercise in percent's
+    optional uint32 carbohydrate_consumption = 3 [(type)=PERCENT];
+
+    // Proteins consumed during the exercise in percent's
+    optional uint32 protein_consumption = 4 [(type)=PERCENT];
+
+    // Fats consumed during the exercise in percent's
+    optional uint32 fat_consumption = 5 [(type)=PERCENT];
+
+    // Carbohydrate consumption in grams
+    optional float carbohydrate_grams = 6;
+
+    // Protein consumption in grams
+    optional float protein_grams = 7;
+
+    // Fat consumption in grams
+    optional float fat_grams = 8;
+    
+    // Size of the meal set for the exercise. Default 20 grams
+    optional float meal_size = 9;
+
+    // Given fueling reminders during training session
+    repeated PbFuelingReminder fueling_reminders = 10;
+};
+
+
+message PbHeartRateZone {
+
+    //Heart rate zone lower limit, range [0 -250] 1/min	
+    required uint32 lower_limit = 1         [(type)=HEARTRATE];
+
+    //Heart rate zone upper limit, range [0 -250] 1/min	
+    required uint32 higher_limit = 2        [(type)=HEARTRATE];
+};
+
+message PbSpeedZone {
+
+    //Speed zone lower limit, range [0.0 - 399.0] km/h
+    required float lower_limit = 1          [(type)=SPEED];
+
+    //Speed zone upper limit, range [0.0 - 399.0] km/h
+    required float higher_limit = 2         [(type)=SPEED];
+};
+
+message PbPowerZone {
+
+    //Power zone lower limit, range [0 - 2000] W
+    required uint32 lower_limit = 1         [(type)=POWER];
+
+    //Power zone upper limit, range [0 - 2000] W
+    required uint32 higher_limit = 2        [(type)=POWER];
+};
+
+message PbZones {
+
+    repeated PbHeartRateZone heart_rate_zone = 1          [(nanopb).max_count = 7];
+    repeated PbSpeedZone speed_zone = 2                   [(nanopb).max_count = 7];
+    repeated PbPowerZone power_zone = 3                   [(nanopb).max_count = 7];
+    
+    optional PbHeartRateZoneSettingSource heart_rate_setting_source = 10;
+    optional PbPowerZoneSettingSource power_setting_source = 11;
+    optional PbSpeedZoneSettingSource speed_setting_source = 12;
+    optional PbPowerZoneCalculationMethod power_zone_calculation_method = 13;
+    optional PbSpeedZoneCalculationMethod speed_zone_calculation_method = 14;
+};
+
+message PbBleMac {
+
+    required bytes mac = 1 [(nanopb).max_size = 6];
+    required PbMacType type = 2;
+};
+
+
+message PbBleDeviceName {
+    //Advertising name or name from DIS
+    required string name = 1 [(nanopb).max_size = 31];
+};
+
+
+message PbDeviceId {
+    //Used only with Polar devices
+    required string device_id = 1;
+};
+
+
+message PbRunningIndex {
+    // Running Index
+    // range [25 - 100] ml/kg/min
+    required uint32 value = 1 [(type)=RUNNING_INDEX];
+
+    // Time duration from exercise start to moment when index is calculated
+    optional PbDuration calculation_time = 2;
+};
+
+
+message PbSportIdentifier {
+    // Sport identifier
+    // range [1 - xxx]
+    required uint64 value = 1;
+};
+
+
+message PbOneLineText {
+    // Text/name/etc meant to be printed in one line
+    // Max size is 45 UTF-8 characters excluding line end / null!
+    // Also note the max size is 45 characters, not bytes!
+    required string text = 1;
+};
+
+
+message PbMultiLineText {
+    // Text/name/etc meant to be printed on multiple lines
+    // Maximum size is 1024. (nanopb).max_size definition removed due to ESW memory limits
+    //
+    required string text = 1;
+};
+
+
+message PbLanguageId {
+    // Locale handling is specified in SAGRFC91, see https://wiki.polar.grp/x/d5j-Cg
+    //
+    // Two-letter lower case language code.
+    // See http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+    //
+    required string language = 1 [(nanopb).max_size = 3];
+
+    // Two-letter upper case region code
+    // See https://en.wikipedia.org/wiki/ISO_3166-1
+    optional string region = 2 [(nanopb).max_size = 3];
+
+    // Four letter camel case script code
+    // See http://www.unicode.org/iso15924/iso15924-codes.html
+    optional string script = 3 [(nanopb).max_size = 5];
+};
+
+
+message PbTrainingSessionTargetId {
+    // Ecosystem training session target identifier
+    // 
+    required uint64 value = 1;
+    
+    // Last modified timestamp from the referenced training session target
+    optional PbSystemDateTime last_modified = 2;
+};
+
+message PbTrainingSessionFavoriteId {
+    // Ecosystem training session favorite identifier
+    // 
+    required uint64 value = 1;
+    
+    // Last modified timestamp from the referenced favorite training session target
+    optional PbSystemDateTime last_modified = 2;
+};
+
+message PbRouteId {
+    // Ecosystem route identifier
+    // 
+    required uint64 value = 1;
+};
+
+message PbSwimmingPoolInfo {
+    // Swimming pool length in meters
+    optional float pool_length = 1;
+
+    // Swimming pool type used
+    required PbSwimmingPoolUnits swimming_pool_type = 2;
+};
+
+message PbTrainingProgramId {
+    // Ecosystem training program identifier
+    //
+    required uint64 value = 1;
+};
+
+message PbTrainingProgram {
+    // Identifies Training Program.
+    // Contains uint64 as a string presentation when target is part of Event Training Program.
+    // E.g. "9223372036854775807"
+    // Contains UUID when target is part of other training program types.
+    // E.g. "123e4567-e89b-42d3-a456-556642440000
+    optional string id = 1 [(nanopb).max_size = 37];
+
+    // The program type. E.g.
+    // "ATP" when target is part of Adaptive Training Program
+    // "ETP" when target is part of Event training program
+    optional string type = 2 [(nanopb).max_size = 32];
+}
+
+message PbEventId {
+    // Ecosystem event identifier
+    //
+    required uint64 value = 1;
+};
+
+message PbOnDemandTrainingTargetTypeId {
+    // Ecosystem on demand training target type identifier
+    // List of the IDs: https://wiki.polar.grp/display/SYSFEA/Workout+Library
+    required uint64 value = 1;
+};
+
+message PbPauseTime {
+    // Offset from the beginning of the exercise
+    // Snapshot of exercise duration which does not include pause times
+    //   Exercise 12:00-12:10, two pauses: at 12:02-12:05 and 12:06-12:07.
+    //   Exercise duration is 6min
+    //   Pause times:
+    //   1. start _time 02:00 duration 03:00
+    //   2. start_time 03:00 duration 01:00
+    required PbDuration start_time = 1;
+
+    // Duration of the pause period
+    required PbDuration duration = 2;
+};
+
+message PbApplicationId {
+    // Ecosystem application identifier
+    required uint64 value = 1;
+};
+
+message PbVersion
+{
+    // range: 0-255
+    required uint32 major = 1;
+    // range: 0-255
+    required uint32 minor = 2;
+    // range: 0-65535
+    required uint32 patch = 3;
+    optional string specifier = 4 [(nanopb).max_size = 32];
+};
+
+message PbAlgorithmVersion
+{
+    // OHR algorithm version
+    optional PbVersion ohr_version = 1;
+};
+
+message PbSubcomponentInfo
+{
+    // The name of the component. For example "BleBootloader". Use unique names.
+    required string name = 1;
+
+    // The version that this main processor firmware requires for this sub component
+    optional PbVersion OBSOLETE_required_version = 2;
+
+    // The version this sub component has now. 0.0.0 means error.
+    optional PbVersion version = 3;
+};
+
+message PbFontInfo
+{
+    // File name of the font
+    optional string file_name = 1;
+
+    // Version of the font
+    optional uint32 version = 2;
+};
+
+message PbBleUuid{
+    required bytes uuid = 1 [(nanopb).max_size = 16];
+}
+
+message PbBleCharacteristic{
+    required uint32 handle = 1; //Should be uint16 but there is no such type?
+    required PbBleUuid type = 2;
+}
+
+message PbBleService{
+    required PbBleUuid serviceUuid = 1;
+    repeated PbBleCharacteristic characteristics = 2 [(nanopb).max_count = 10];
+}
+
+/* 
+   Metadata for identifying the source of a data
+
+   Each field must be set in the case the value is available.
+
+   If no suitable data is available for the only required field (i.e. no way to name the device), 
+   then there's obviously no need to create this source message.
+*/
+message PbSourceDevice {
+
+    // Name of the device or app which has produced the data
+    //
+    // Polar device: Device name (e.g. "Polar V800 12345678", "Polar H10 87654321")
+    // Mobile app: Application name (e.g. "Polar Flow Android", "Polar Beat iOS")
+    // 3rd party device: Device name (first value that is available):
+    // 1) Device name from GAP (e.g "Stryd")
+    // 2) Manufacturer + model_number (e.g. "Stryd 2")
+    // 3) Just manufacturer (e.g. "Stryd")
+    required string name = 1;
+
+    // Device or app manufacturer
+    // 
+    // Polar device and mobile app: "Polar Electro Oy"
+    // 3rd party device: Manufacturer from DIS if available (e.g. "Stryd")
+    optional string manufacturer = 2;
+
+    // Device model number
+    //
+    // Polar device: "V800", "H10", ...
+    // Mobile app: "SM-G925F", "MQ7E2", ...
+    // 3rd party device: Model number from DIS if available (e.g. "2")
+    optional string model_number = 3;
+
+    // Device hardware code
+    //
+    // Polar device: hardware_code in device.proto (e.g. 00853923.01)
+    // Mobile app: Always absent
+    // 3rd party device: Hardware revision from DIS if available
+    optional string hardware_code = 4;
+
+    // Device platform version
+    //
+    // Polar device: platform_version in device.proto
+    // Mobile app: OS version
+    // 3rd party device: Firmware revision from DIS if available
+    optional PbVersion platform_version = 5;
+
+    // Device firmware version
+    //
+    // Polar device: device_version in device.proto
+    // Mobile app: Application version
+    // 3rd party device: Software version from DIS if available
+    optional PbVersion software_version = 6;
+
+    // Polar Math Smart version
+    //
+    // Polar devices: polarmathsmart_version in device.proto
+    // Mobile app: Polar Math Smart version
+    // 3rd party device: Always absent
+    optional PbVersion polarmathsmart_version = 7;
+
+    // Data collector
+    //
+    // This field is set only if the source device is an exernal sensor.
+    // Collector is the device (or app) that connects to the sensor and
+    // creates the data this PbSourceDevice is for.
+    // 
+    // E.g. If the source of HR data is OH1, then the collector here 
+    // could be e.g. Polar Beat
+    repeated PbSourceDevice collector = 8;
+}
+
+message PbSampleSourceDevice {
+
+    // On a sample array merged from multiple sources, this is the start index for 
+    // samples that have been produced by the device described by source_device. 
+    // The subsequence of samples produced by the source implicitly ends where the 
+    // next starts (or at the end of the sample array).
+    required uint32 start_index = 1;
+
+    // Source device
+    required PbSourceDevice source_device = 2;
+}
+
+// Defines the resistance used for a set of strength training movements
+message PbStrengthTrainingResistance {
+    enum PbStrengthTrainingResistanceType {
+        BODY_WEIGHT = 0;    // Body weight resistance, no additional weights
+        WEIGHT      = 1;    // Additional weights
+    }
+
+    // The type of resistance
+    required PbStrengthTrainingResistanceType resistance_type = 1;
+
+    // Target weight to be used for the set if type == WEIGHT.
+    optional float weight = 2 [(type)=WEIGHT];
+}
+
+

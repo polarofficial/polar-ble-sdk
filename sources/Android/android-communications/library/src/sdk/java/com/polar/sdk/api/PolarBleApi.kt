@@ -15,7 +15,9 @@ import java.util.concurrent.TimeUnit
  *
  * @property features the set of the features API is used for. By giving only the needed features the SDK may reserve only the required resources
  */
-abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineStreamingApi, PolarOfflineRecordingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi {
+abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineStreamingApi,
+    PolarOfflineRecordingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi,
+        PolarActivityApi, PolarSleepApi {
 
     /**
      * Features available in Polar BLE SDK library
@@ -65,7 +67,17 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
         /**
          * Feature to enable or disable SDK mode blinking LED animation.
          */
-        FEATURE_POLAR_LED_ANIMATION
+        FEATURE_POLAR_LED_ANIMATION,
+
+        /**
+         * Feature to receive activity data form Polar device.
+         */
+        FEATURE_POLAR_ACTIVITY_DATA,
+
+        /**
+         * Feature to receive sleep data from Polar device.
+         */
+        FEATURE_POLAR_SLEEP_DATA
     }
 
     /**
@@ -84,7 +96,14 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * The data types available in Polar devices for online streaming or offline recording.
      */
     enum class PolarDeviceDataType {
-        HR, ECG, ACC, PPG, PPI, GYRO, MAGNETOMETER
+        HR, ECG, ACC, PPG, PPI, GYRO, MAGNETOMETER, TEMPERATURE
+    }
+
+    /**
+     * The activity recording data types available in Polar devices.
+     */
+    enum class PolarActivityDataType {
+        SLEEP, STEPS, DISTANCE
     }
 
     /**
@@ -270,6 +289,15 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @return [Completable] emitting success or error
      */
     abstract fun doRestart(identifier: String): Completable
+
+    /**
+     * Set warehouse sleep setting to a given device.
+     *
+     * @param identifier Polar device ID or BT address
+     * @param sleepEnabled Boolean value for the warehouse sleep setting
+     * @return [Completable] emitting success or error
+     */
+    abstract fun setWareHouseSleep(identifier: String, sleepEnabled: Boolean?): Completable
 
     /**
      * Set [FtuConfig] for device
