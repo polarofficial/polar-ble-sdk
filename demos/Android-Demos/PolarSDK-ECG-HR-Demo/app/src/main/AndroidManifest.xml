@@ -43,7 +43,6 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -51,15 +50,9 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ECGActivity"
+            android:name=".ImageActivity"
             android:exported="false"
-            android:label="@string/ecg_name"
-            android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".HRActivity"
-            android:exported="false"
-            android:label="@string/hr_name"
+            android:label="@string/activity_images_name"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" />
     </application>

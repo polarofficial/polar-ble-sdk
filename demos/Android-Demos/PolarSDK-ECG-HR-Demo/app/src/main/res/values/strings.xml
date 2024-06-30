@@ -1,14 +1,10 @@
 <resources>
-    <string name="app_name">Polar ECG</string>
-    <string name="ecg_name">ECG</string>
-    <string name="hr_name">HR / RR</string>
-    <string name="hr_title">HR and RR vs. Time (for 5 min)</string>
-    <string name="hr_range_title">HR, /sec RR, ms/10</string>
-    <string name="disconnect">DISCONNECT</string>
-    <string name="connectEcg">CONNECT ECG</string>
-    <string name="connectHr">CONNECT HR/RR</string>
-    <string name="connecting">Connecting to device</string>
-    <string name="connected">Connected!</string>
-    <string name="device_id">device_id</string>
-    <string name="set_id_button">Change device ID</string>
+    <string name="app_name">AI HArt</string>
+    <string name="activity_images_name">AI HArt</string>
+    <string name="start_recording_button">Start Recording</string>
+    <string name="stop_recording_button">Stop Recording</string>
+    <string name="check_status_button">Check Recording status</string>
+    <string name="generate_images">Generate your images</string>
+    <string name="connecting">Connecting to Device</string>
+    <string name="connected">Connected</string>
 </resources>

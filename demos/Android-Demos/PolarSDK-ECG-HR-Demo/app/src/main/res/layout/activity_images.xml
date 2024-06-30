@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ECGActivity">
+    tools:context=".ImageActivity">
 
     <LinearLayout
         android:id="@+id/ecgViewHeading"
@@ -23,7 +23,7 @@
             android:textAlignment="center"
             android:textColor="@android:color/black"
             android:textSize="20sp"
-            tools:text="Id 123456" />
+            tools:text="Device ID: ??" />
 
         <TextView
             android:id="@+id/battery_level"
@@ -32,7 +32,7 @@
             android:textAlignment="center"
             android:textColor="@android:color/black"
             android:textSize="20sp"
-            tools:text="Battery level: 80%" />
+            tools:text="Battery level: ??" />
 
         <TextView
             android:id="@+id/fw_version"
@@ -41,60 +41,27 @@
             android:textAlignment="center"
             android:textColor="@android:color/black"
             android:textSize="20sp"
-            tools:text="Firmware: 3.1.1" />
+            tools:text="Firmware: ??" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/ecgViewHrAndRr"
-        android:layout_width="match_parent"
+    <ImageView
+        android:id="@+id/generated_image"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@id/plot"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ecgViewHeading">
-
-        <TextView
-            android:id="@+id/hr"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:textAlignment="center"
-            android:textColor="#C00000"
-            android:textSize="30sp"
-            tools:text="100" />
-
-        <TextView
-            android:id="@+id/rr"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAlignment="center"
-            android:textColor="@android:color/holo_blue_dark"
-            android:textSize="16sp"
-            tools:text="(1002ms, 1009ms)" />
-    </LinearLayout>
-
-    <com.androidplot.xy.XYPlot
-        android:id="@+id/plot"
-        style="@style/FullScreenGraph"
-        android:layout_width="fill_parent"
-        android:layout_height="304dp"
-        android:layout_marginTop="345dp"
-        app:graphBackgroundColor="@color/colorAccent"
-        app:graphMarginBottom="12dp"
-        app:graphMarginTop="12dp"
-        app:graphMarginLeft="16dp"
-        app:gridInsetLeft="25dp"
-        app:gridBackgroundColor="@color/colorAccent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:lineLabelInsetLeft="12dp"
-        app:rangeTitleTextColor="@android:color/black"
-        app:rangeTitleTextSize="12dp"
-        app:lineLabels="left"
-        app:rangeTitle="mV"
-        app:renderMode="use_background_thread"
-        app:title="" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:srcCompat="@tools:sample/avatars" />
+
+    <Button
+        android:id="@+id/buttonTestImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/generate_images"
+        app:layout_constraintBottom_toTopOf="@+id/generated_image"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ecgViewHeading" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

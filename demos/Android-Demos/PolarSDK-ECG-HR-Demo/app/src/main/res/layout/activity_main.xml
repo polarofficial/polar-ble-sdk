@@ -7,7 +7,57 @@
     tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/buttonSetID"
+        android:id="@+id/buttonStartRecording"
+        style="@style/Widget.AppCompat.Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:layout_marginStart="64dp"
+        android:layout_marginEnd="64dp"
+        android:background="@color/colorPrimary"
+        android:padding="8dp"
+        android:text="@string/start_recording_button"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintBottom_toTopOf="@+id/buttonStopRecording"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/buttonStopRecording"
+        style="@style/Widget.AppCompat.Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="64dp"
+        android:layout_marginEnd="64dp"
+        android:background="@color/colorPrimary"
+        android:padding="8dp"
+        android:text="@string/stop_recording_button"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintBottom_toTopOf="@+id/buttonCheckRecordingStatus"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonStartRecording" />
+
+    <Button
+        android:id="@+id/buttonCheckRecordingStatus"
+        style="@style/Widget.AppCompat.Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="64dp"
+        android:layout_marginEnd="64dp"
+        android:background="@color/colorPrimary"
+        android:padding="8dp"
+        android:text="@string/check_status_button"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintBottom_toBottomOf="@id/buttonGenerateImages"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonStopRecording"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <Button
+        android:id="@+id/buttonGenerateImages"
         style="@style/Widget.AppCompat.Button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -16,48 +66,12 @@
         android:layout_marginBottom="160dp"
         android:background="@color/colorPrimary"
         android:padding="8dp"
-        android:text="@string/set_id_button"
-        android:textColor="@color/colorAccent"
-        app:layout_constraintBottom_toTopOf="@+id/buttonConnectEcg"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/buttonConnectEcg"
-        style="@style/Widget.AppCompat.Button"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="64dp"
-        android:layout_marginEnd="64dp"
-        android:background="@color/colorPrimary"
-        android:padding="8dp"
-        android:text="@string/connectEcg"
-        android:textColor="@color/colorAccent"
-        app:layout_constraintBottom_toTopOf="@+id/buttonConnectHr"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonSetID" />
-
-    <Button
-        android:id="@+id/buttonConnectHr"
-        style="@style/Widget.AppCompat.Button"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="64dp"
-        android:layout_marginEnd="64dp"
-        android:layout_marginBottom="220dp"
-        android:background="@color/colorPrimary"
-        android:padding="8dp"
-        android:text="@string/connectHr"
+        android:text="@string/generate_images"
         android:textColor="@color/colorAccent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonConnectEcg"
+        app:layout_constraintTop_toBottomOf="@+id/buttonCheckRecordingStatus"
         app:layout_constraintVertical_bias="1.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
