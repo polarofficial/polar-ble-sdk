@@ -5,13 +5,20 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
+import android.content.ContentValues
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -63,6 +70,7 @@ class MainActivity : AppCompatActivity() {
     private var recordingEntries: MutableList<PolarExerciseEntry> = mutableListOf()
 
     private lateinit var welcomeView: TextView
+    private lateinit var loadRecordingButton: Button
     private lateinit var startRecordingButton: Button
     private lateinit var stopRecordingButton: Button
     private lateinit var deleteButton: Button
@@ -86,6 +94,7 @@ class MainActivity : AppCompatActivity() {
         //Use getPreferences if you need only one preferences file for your Activity. For this reason you don't supply a name. Otherwise, use getSharedPreferences() if you want to share preferences across activities.
         sharedPreferences = getPreferences(MODE_PRIVATE)
         welcomeView = findViewById(R.id.welcomeDisplay)
+        loadRecordingButton = findViewById(R.id.buttonLoadRecording)
         startRecordingButton = findViewById(R.id.buttonStartRecording)
         stopRecordingButton = findViewById(R.id.buttonStopRecording)
         checkRecordingStatusButton = findViewById(R.id.buttonCheckRecordingStatus)
@@ -268,7 +277,7 @@ class MainActivity : AppCompatActivity() {
                             val recordingStatus = if (!recordingOn && recordingId.isEmpty()) {
                                 "No recording is in progress and no saved recording was found."
                             } else if (!recordingOn && recordingId.isNotEmpty()) {
-                                "No recording is in progress but one saved recording was found."
+                                "No recording is in progress but one saved recording was found with \"${recordingId}\"."
                             } else if (recordingOn && recordingId.isNotEmpty()) {
                                 "Recording is in progress."
                             } else if (recordingOn && recordingId.isEmpty()) {
@@ -283,7 +292,7 @@ class MainActivity : AppCompatActivity() {
                         },
                         { error: Throwable ->
                             val title = "Recording status read failed"
-                            val message = "Possible reasons are, the connection to the device is lost or there is already a request in progress.\n\n" +
+                            val message = "Possible reasons are, there is no connection to the device or there is already a request in progress.\n\n" +
                                     "Detailed Reason: $error"
                             Log.e(TAG, "Recording status read failed. Reason: $error")
                             showDialog(title, message)
@@ -373,6 +382,7 @@ class MainActivity : AppCompatActivity() {
                                         { polarExerciseData: PolarExerciseData ->
                                             //It's called hrSamples but it can be HR or RR samples. In my case RR-intervals.
                                             Log.d(TAG, "Recording sample count: ${polarExerciseData.hrSamples.size} samples: ${polarExerciseData.hrSamples}")
+                                            val lastRecording = mutableListOf<Int>()
                                             var onComplete = "The Recording has ${polarExerciseData.hrSamples.size} RR samples.\n\n"
                                             val inter = polarExerciseData.hrSamples.size - 1
                                             var samples = ""
@@ -380,6 +390,7 @@ class MainActivity : AppCompatActivity() {
                                             for (i in 0..inter) {
                                                 samples += "\n${polarExerciseData.hrSamples[i]} ms"
                                                 sumRR += polarExerciseData.hrSamples[i]
+                                                lastRecording.add(i, polarExerciseData.hrSamples[i])
                                             }
                                             val meanRR = sumRR / polarExerciseData.hrSamples.size
                                             var deviations = 0.0
@@ -389,6 +400,7 @@ class MainActivity : AppCompatActivity() {
                                             val sdrr = sqrt(deviations / inter)
                                             onComplete += "\nSDRR: $sdrr and would conclude ${if (sdrr < 50.0) {"more stressful"} else {"less stressful"}}"
                                             showDialog("Recording data read", onComplete + samples)
+                                            saveRecording(lastRecording, recordingEntries.first().identifier)
                                             toggleButton(deleteButton, false)
                                             toggleButton(generateImagesButton, false)
                                             sharedPreferences.edit().putBoolean(SHARED_DELETE_BUTTON_ENABLED, true).apply()
@@ -425,6 +437,10 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("id", DEVICE_ID)
             intent.putExtra("participant", PARTICIPANT_NUMBER)
             startActivity(intent)
+        }
+
+        loadRecordingButton.setOnClickListener {
+            showRecordingDialog(it)
         }
     }
 
@@ -472,12 +488,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun disableAllButtons() {
+        loadRecordingButton.isEnabled = false
         startRecordingButton.isEnabled = false
         stopRecordingButton.isEnabled = false
         checkRecordingStatusButton.isEnabled = false
         generateImagesButton.isEnabled = false
         deleteButton.isEnabled = false
         listRecordingsButton.isEnabled = false
+        toggleButton(loadRecordingButton, true)
         toggleButton(listRecordingsButton, true)
         toggleButton(deleteButton, true)
         toggleButton(startRecordingButton, true)
@@ -507,6 +525,8 @@ class MainActivity : AppCompatActivity() {
             generateImagesButton.isEnabled = true
             toggleButton(generateImagesButton, false)
         }
+        loadRecordingButton.isEnabled = true
+        toggleButton(loadRecordingButton, false)
         checkRecordingStatusButton.isEnabled = true
         toggleButton(checkRecordingStatusButton, false)
     }
@@ -521,6 +541,44 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun showRecordingDialog(view: View) {
+        val dialog = AlertDialog.Builder(this, R.style.PolarTheme)
+        dialog.setTitle("Enter the recording you want to load")
+        val viewInflated = LayoutInflater.from(applicationContext).inflate(R.layout.recordings_dialog_layout, view.rootView as ViewGroup, false)
+        val input = viewInflated.findViewById<EditText>(R.id.input)
+        input.inputType = InputType.TYPE_CLASS_TEXT
+        dialog.setView(viewInflated)
+        dialog.setPositiveButton("OK") { _: DialogInterface?, _: Int ->
+            val recordingId = input.text.toString()
+            val recording = loadRecording(recordingId)
+            if (recording != null) {
+                val title = "Recording found"
+                var message = "The retrieved samples are:\n"
+                for (i in recording.indices)
+                    message += "${recording[i]} ms\n"
+                AlertDialog.Builder(this, R.style.PolarTheme)
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setPositiveButton("OK") { _, _ ->
+                        val nextDialog = AlertDialog.Builder(this, R.style.PolarTheme)
+                        nextDialog.setTitle("Do you wish to delete the recording?")
+                        nextDialog.setPositiveButton("Yes") { _: DialogInterface?, _: Int ->
+                            removeRecording(recordingId)
+                        }
+                        nextDialog.setNegativeButton("No") { dialogInterface: DialogInterface, _: Int -> dialogInterface.cancel() }
+                        nextDialog.show()
+                    }
+                    .show()
+            } else {
+                val title = "Recording not found"
+                val message = "The supplied recording id was wrong or there is no recording with this id."
+                showDialog(title, message)
+            }
+        }
+        dialog.setNegativeButton("Cancel") { dialogInterface: DialogInterface, _: Int -> dialogInterface.cancel() }
+        dialog.show()
+    }
+
     private fun toggleButton(button: Button, isDown: Boolean) {
         var buttonDrawable = button.background
         buttonDrawable = DrawableCompat.wrap(buttonDrawable!!)
@@ -530,6 +588,45 @@ class MainActivity : AppCompatActivity() {
             DrawableCompat.setTint(buttonDrawable, resources.getColor(R.color.colorPrimary, null))
         }
         button.background = buttonDrawable
+    }
+
+    private fun saveRecording(recording: MutableList<Int>, recordingName: String) {
+        val editor = sharedPreferences.edit()
+        editor.putInt(recordingName + "_size", recording.size)
+        for (i in recording.indices)
+            editor.putInt(recordingName + "_" + i, recording[i])
+        editor.apply()
+        Log.d(TAG, "Last Recording was saved")
+    }
+
+    private fun loadRecording(recordingName: String): Array<Int?>? {
+        if (sharedPreferences.contains(recordingName + "_size")) {
+            val size = sharedPreferences.getInt(recordingName + "_size", 0)
+            val recording = arrayOfNulls<Int>(size)
+            for (i in 0 until size)
+                recording[i] = sharedPreferences.getInt(recordingName + "_" + i, 0)
+            Log.d(TAG, "Recording was loaded")
+            return recording
+        } else {
+            Log.d(TAG, "No recording with this id")
+            return null
+        }
+    }
+
+    private fun removeRecording(recordingName: String): Boolean {
+        if (sharedPreferences.contains(recordingName + "_size")) {
+            val editor = sharedPreferences.edit()
+            val size = sharedPreferences.getInt(recordingName + "_size", 0)
+            for (i in 0 until size)
+                editor.remove(recordingName + "_" + i)
+            editor.remove(recordingName + "_size")
+            editor.apply()
+            Log.d(TAG, "Recording was deleted from internal memory")
+            return true
+        } else {
+            Log.d(TAG, "No recording with this id")
+            return false
+        }
     }
 
     public override fun onDestroy() {
