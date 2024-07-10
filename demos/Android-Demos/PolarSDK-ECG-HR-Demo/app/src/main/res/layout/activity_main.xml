@@ -6,13 +6,26 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <TextView
+        android:id="@+id/welcomeDisplay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:padding="8dp"
+        android:textSize="18sp"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toTopOf="@+id/buttonStartRecording"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <Button
         android:id="@+id/buttonStartRecording"
         style="@style/Widget.AppCompat.Button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
         android:layout_marginStart="64dp"
+        android:layout_marginTop="140dp"
         android:layout_marginEnd="64dp"
         android:background="@color/colorPrimary"
         android:padding="8dp"
@@ -63,7 +76,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="64dp"
         android:layout_marginEnd="64dp"
-        android:layout_marginBottom="160dp"
+        android:layout_marginBottom="120dp"
         android:background="@color/colorPrimary"
         android:padding="8dp"
         android:text="@string/generate_images"
@@ -73,5 +86,31 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonCheckRecordingStatus"
         app:layout_constraintVertical_bias="1.0" />
+
+    <Button
+        android:id="@+id/buttonDelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:background="@color/colorPrimary"
+        android:text="Delete Recording"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonStopRecording"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/buttonCheckRecordingStatus" />
+
+    <Button
+        android:id="@+id/buttonFetchandList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:background="@color/colorPrimary"
+        android:text="List Recording"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonCheckRecordingStatus"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/buttonGenerateImages" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
