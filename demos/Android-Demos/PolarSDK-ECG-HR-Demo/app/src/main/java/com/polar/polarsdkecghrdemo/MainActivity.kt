@@ -1,7 +1,6 @@
 package com.polar.polarsdkecghrdemo
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
@@ -10,21 +9,23 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.text.InputType
+import android.os.Environment
+import android.provider.MediaStore
+import android.provider.Settings
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.util.Pair
 import com.polar.sdk.api.PolarBleApi
@@ -37,6 +38,11 @@ import com.polar.sdk.api.model.PolarExerciseData
 import com.polar.sdk.api.model.PolarExerciseEntry
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.PrintWriter
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -51,12 +57,13 @@ class MainActivity : AppCompatActivity() {
         private const val DEVICE_ID = "89D62721"
         private const val PARTICIPANT_NUMBER = 1
         private const val PERMISSION_REQUEST_CODE = 1
-        private const val SHARED_WELCOME_MESSAGE = "welcome"
+        private const val SHARED_LAST_ACTION = "last_action"
         private const val SHARED_START_BUTTON_ENABLED = "start_button_enabled"
         private const val SHARED_STOP_BUTTON_ENABLED = "stop_button_enabled"
         private const val SHARED_FETCH_BUTTON_ENABLED = "fetch_button_enabled"
         private const val SHARED_DELETE_BUTTON_ENABLED = "delete_button_enabled"
         private const val SHARED_GENERATE_IMAGES_BUTTON_ENABLED = "generate_images_button_enabled"
+        private const val SHARED_WELCOME_SCREEN = "welcome_screen"
     }
 
     private lateinit var api: PolarBleApi
@@ -112,7 +119,20 @@ class MainActivity : AppCompatActivity() {
                 PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO
             )
         )
-
+        if (sharedPreferences.getBoolean(SHARED_WELCOME_SCREEN, true)) {
+            val title = "Welcome!"
+            val message = "Make sure Bluetooth is turned on and you gave the necessary permission to use Bluetooth.\n\n" +
+                    "On older devices the location services are needed to search for nearby devices, but we will never actually use or save your location.\n" +
+                    "If the app requested the permission to use location services, a restart by closing the app completely is necessary.\n\n" +
+                    "If any unexpected problems occur or if you have some questions, please contact us."
+            AlertDialog.Builder(this, R.style.PolarTheme)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("I understand") { _ , _ ->
+                    sharedPreferences.edit().putBoolean(SHARED_WELCOME_SCREEN, false).apply()
+                }
+                .show()
+        }
         api.setPolarFilter(true)
         checkBT()
 
@@ -135,7 +155,7 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "CONNECTED: ${polarDeviceInfo.deviceId}")
                 var connectedText = "Device connected"
                 welcomeView.text = connectedText
-                connectedText = "\nLast Action: " + sharedPreferences.getString(SHARED_WELCOME_MESSAGE, "")
+                connectedText = "\nLast Action: " + sharedPreferences.getString(SHARED_LAST_ACTION, "")
                 welcomeView.append(connectedText)
                 //Problem: Buttons will be enabled before bleSdkFeatures are ready which might result in a PolarNotificationNotEnabled, if user is inpatient
                 //However, problem does not break anything and is thus temporary ignored.
@@ -205,7 +225,7 @@ class MainActivity : AppCompatActivity() {
                             val stringDateWithPoints = stringDate.replace("-", ":")
                             val recordingStartOk = "Recording started at ${stringDateWithPoints.substring(11)}"
                             welcomeView.text = recordingStartOk
-                            sharedPreferences.edit().putString(SHARED_WELCOME_MESSAGE, recordingStartOk).apply()
+                            sharedPreferences.edit().putString(SHARED_LAST_ACTION, recordingStartOk).apply()
                             sharedPreferences.edit().putBoolean(SHARED_STOP_BUTTON_ENABLED, true).apply()
                             toggleButton(stopRecordingButton, false)
                             stopRecordingButton.isEnabled = true
@@ -244,7 +264,7 @@ class MainActivity : AppCompatActivity() {
                             Log.d(TAG, "Recording stopped")
                             val recordingStopOk = "Recording was stopped at $stringTime"
                             welcomeView.text = recordingStopOk
-                            sharedPreferences.edit().putString(SHARED_WELCOME_MESSAGE, recordingStopOk).apply()
+                            sharedPreferences.edit().putString(SHARED_LAST_ACTION, recordingStopOk).apply()
                             sharedPreferences.edit().putBoolean(SHARED_FETCH_BUTTON_ENABLED, true).apply()
                             toggleButton(listRecordingsButton, false)
                             listRecordingsButton.isEnabled = true
@@ -277,15 +297,15 @@ class MainActivity : AppCompatActivity() {
                             val recordingStatus = if (!recordingOn && recordingId.isEmpty()) {
                                 "No recording is in progress and no saved recording was found."
                             } else if (!recordingOn && recordingId.isNotEmpty()) {
-                                "No recording is in progress but one saved recording was found with \"${recordingId}\"."
+                                "No recording is in progress but one saved recording was found."
                             } else if (recordingOn && recordingId.isNotEmpty()) {
                                 "Recording is in progress."
                             } else if (recordingOn && recordingId.isEmpty()) {
                                 // This state is undefined. If recording is currently ongoing the H10 must return id of the recording
-                                "H10 Recording state UNDEFINED, please contact us"
+                                "H10 Recording state UNDEFINED, please contact us!"
                             } else {
                                 // This state is unreachable and should never happen
-                                "H10 recording state ERROR, please contact us"
+                                "H10 recording state ERROR, please contact us!"
                             }
                             Log.d(TAG, recordingStatus)
                             showDialog("Recording status", recordingStatus)
@@ -318,7 +338,7 @@ class MainActivity : AppCompatActivity() {
                                 recordingEntries.remove(entry)
                                 val recordingRemovedOk = "Recording successfully removed from device"
                                 welcomeView.text = recordingRemovedOk
-                                sharedPreferences.edit().putString(SHARED_WELCOME_MESSAGE, recordingRemovedOk).apply()
+                                sharedPreferences.edit().putString(SHARED_LAST_ACTION, recordingRemovedOk).apply()
                                 Log.d(TAG, "Recording with id:${entry.identifier} successfully removed")
                                 //Toggle the buttons afterwards
                                 deleteButton.isEnabled = false
@@ -382,25 +402,24 @@ class MainActivity : AppCompatActivity() {
                                         { polarExerciseData: PolarExerciseData ->
                                             //It's called hrSamples but it can be HR or RR samples. In my case RR-intervals.
                                             Log.d(TAG, "Recording sample count: ${polarExerciseData.hrSamples.size} samples: ${polarExerciseData.hrSamples}")
-                                            val lastRecording = mutableListOf<Int>()
-                                            var onComplete = "The Recording has ${polarExerciseData.hrSamples.size} RR samples.\n\n"
-                                            val inter = polarExerciseData.hrSamples.size - 1
-                                            var samples = ""
+                                            val recording = mutableListOf<Int>()
+                                            val title = "Recording data read"
+                                            var message = "The Recording has ${polarExerciseData.hrSamples.size} RR samples.\n\n"
                                             var sumRR = 0.0
-                                            for (i in 0..inter) {
-                                                samples += "\n${polarExerciseData.hrSamples[i]} ms"
+                                            for (i in polarExerciseData.hrSamples.indices) {
                                                 sumRR += polarExerciseData.hrSamples[i]
-                                                lastRecording.add(i, polarExerciseData.hrSamples[i])
+                                                recording.add(i, polarExerciseData.hrSamples[i])
                                             }
                                             val meanRR = sumRR / polarExerciseData.hrSamples.size
                                             var deviations = 0.0
-                                            for (i in 0..inter) {
+                                            for (i in polarExerciseData.hrSamples.indices) {
                                                 deviations += (polarExerciseData.hrSamples[i] - meanRR).pow(2)
                                             }
-                                            val sdrr = sqrt(deviations / inter)
-                                            onComplete += "\nSDRR: $sdrr and would conclude ${if (sdrr < 50.0) {"more stressful"} else {"less stressful"}}"
-                                            showDialog("Recording data read", onComplete + samples)
-                                            saveRecording(lastRecording, recordingEntries.first().identifier)
+                                            val sdrr = sqrt(deviations / polarExerciseData.hrSamples.lastIndex)
+                                            message += "\nSDRR: $sdrr and would conclude ${if (sdrr < 50.0) {"more stressful"} else {"less stressful"}}"
+                                            showDialog(title, message)
+                                            val id = recordingEntries.first().identifier
+                                            saveRecordingToExternalStorage(id, recording)
                                             toggleButton(deleteButton, false)
                                             toggleButton(generateImagesButton, false)
                                             sharedPreferences.edit().putBoolean(SHARED_DELETE_BUTTON_ENABLED, true).apply()
@@ -440,7 +459,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         loadRecordingButton.setOnClickListener {
-            showRecordingDialog(it)
+            showRecordingDialog()
         }
     }
 
@@ -456,7 +475,7 @@ class MainActivity : AppCompatActivity() {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             bluetoothOnActivityResultLauncher.launch(enableBtIntent)
         }
-
+        //Q is 29, S is 31, S_V2 is 32
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT), PERMISSION_REQUEST_CODE)
@@ -541,42 +560,44 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun showRecordingDialog(view: View) {
-        val dialog = AlertDialog.Builder(this, R.style.PolarTheme)
-        dialog.setTitle("Enter the recording you want to load")
-        val viewInflated = LayoutInflater.from(applicationContext).inflate(R.layout.recordings_dialog_layout, view.rootView as ViewGroup, false)
-        val input = viewInflated.findViewById<EditText>(R.id.input)
-        input.inputType = InputType.TYPE_CLASS_TEXT
-        dialog.setView(viewInflated)
-        dialog.setPositiveButton("OK") { _: DialogInterface?, _: Int ->
-            val recordingId = input.text.toString()
-            val recording = loadRecording(recordingId)
-            if (recording != null) {
-                val title = "Recording found"
-                var message = "The retrieved samples are:\n"
-                for (i in recording.indices)
-                    message += "${recording[i]} ms\n"
+    private fun showRecordingDialog() {
+        val recordings = listFiles()
+        if (recordings != null) {
+            val alertDialogBuilder = AlertDialog.Builder(this, R.style.PolarTheme)
+            alertDialogBuilder.setTitle("Choose the recording you want to load")
+
+            val mAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, recordings)
+            alertDialogBuilder.setAdapter(mAdapter) { _, which ->
+                val pickedItem: String = mAdapter.getItem(which).toString()
+                val loadResult = loadRecordingFromExternalStorage(pickedItem)
+                val title = "Recording loaded"
+                val message = "The retrieved samples are:\n"
                 AlertDialog.Builder(this, R.style.PolarTheme)
                     .setTitle(title)
-                    .setMessage(message)
+                    .setMessage(message + loadResult)
                     .setPositiveButton("OK") { _, _ ->
                         val nextDialog = AlertDialog.Builder(this, R.style.PolarTheme)
                         nextDialog.setTitle("Do you wish to delete the recording?")
                         nextDialog.setPositiveButton("Yes") { _: DialogInterface?, _: Int ->
-                            removeRecording(recordingId)
+                            val removeResult = removeRecordingFromExternalStorage(pickedItem)
+                            if (removeResult) {
+                                Log.d(TAG, "File deleted")
+                            } else {
+                                showDialog("Error occurred", "File was not deleted")
+                            }
                         }
-                        nextDialog.setNegativeButton("No") { dialogInterface: DialogInterface, _: Int -> dialogInterface.cancel() }
+                        nextDialog.setNegativeButton("No") { dialogInterface: DialogInterface, _: Int -> dialogInterface.dismiss() }
                         nextDialog.show()
                     }
                     .show()
+            }
+            alertDialogBuilder.setNegativeButton("Cancel") { dialogInterface: DialogInterface, _: Int -> dialogInterface.dismiss() }
+            alertDialogBuilder.show()
             } else {
-                val title = "Recording not found"
+                val title = "No recording found"
                 val message = "The supplied recording id was wrong or there is no recording with this id."
                 showDialog(title, message)
-            }
         }
-        dialog.setNegativeButton("Cancel") { dialogInterface: DialogInterface, _: Int -> dialogInterface.cancel() }
-        dialog.show()
     }
 
     private fun toggleButton(button: Button, isDown: Boolean) {
@@ -590,42 +611,144 @@ class MainActivity : AppCompatActivity() {
         button.background = buttonDrawable
     }
 
-    private fun saveRecording(recording: MutableList<Int>, recordingName: String) {
-        val editor = sharedPreferences.edit()
-        editor.putInt(recordingName + "_size", recording.size)
-        for (i in recording.indices)
-            editor.putInt(recordingName + "_" + i, recording[i])
-        editor.apply()
-        Log.d(TAG, "Last Recording was saved")
+    private fun loadRecordingFromExternalStorage(recordingName: String): String? {
+        try {
+            if (!checkPermission()) {
+                requestPermission()
+            }
+            val myInputStream = FileInputStream(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + File.separatorChar + recordingName)
+            val size: Int = myInputStream.available()
+            val buffer = ByteArray(size)
+            myInputStream.read(buffer)
+            val myOutput = String(buffer)
+            myInputStream.close()
+            Log.d(TAG, "File loaded")
+            return myOutput
+        } catch (e: IOException) {
+            e.printStackTrace()
+            Log.e(TAG, "File not found or permission denied")
+        }
+        return null
     }
 
-    private fun loadRecording(recordingName: String): Array<Int?>? {
-        if (sharedPreferences.contains(recordingName + "_size")) {
-            val size = sharedPreferences.getInt(recordingName + "_size", 0)
-            val recording = arrayOfNulls<Int>(size)
-            for (i in 0 until size)
-                recording[i] = sharedPreferences.getInt(recordingName + "_" + i, 0)
-            Log.d(TAG, "Recording was loaded")
-            return recording
+    private fun saveRecordingToExternalStorage(recordingName: String, recording: MutableList<Int>): Boolean {
+        if (!checkPermission()) {
+            requestPermission()
+        }
+        //Is the Android sdk version 29 or higher, we need MediaStore
+        val outputStream = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val contentValues = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, recordingName)
+                put(MediaStore.MediaColumns.MIME_TYPE, "text/plain")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+            }
+            val resolver = this.contentResolver
+            val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+            if (uri != null) {
+                this.contentResolver.openOutputStream(uri)
+            } else {
+                null
+            }
         } else {
-            Log.d(TAG, "No recording with this id")
+            val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), recordingName)
+            FileOutputStream(file)
+        }
+        if (outputStream != null) {
+            try {
+                val itr = recording.listIterator()
+                val p = PrintWriter(outputStream)
+                while(itr.hasNext()){
+                    p.println(itr.next())
+                }
+                p.close()
+                Log.d(TAG, "File written")
+                return true
+            } catch (e: IOException) {
+                e.printStackTrace()
+                Log.e(TAG, "Error while writing to file or permission denied")
+            }
+        } else {
+            Log.e(TAG, "Output stream is null")
+        }
+        return false
+    }
+
+    private fun removeRecordingFromExternalStorage(recordingName: String): Boolean {
+        val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + File.separatorChar + recordingName)
+        try {
+            if (file.isFile) {
+                return file.delete()
+            } else {
+                Log.e(TAG, "File does not exist")
+                return false
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e(TAG, "Error while deleting file or permission denied")
+        }
+        return false
+    }
+
+    private fun listFiles(): List<Any>? {
+        val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()
+        val directory = File(path)
+        val files = directory.listFiles()?.filter {
+            it.isFile
+            it.extension.contains("txt")
+            it.name.contains("P1")
+        }
+        if (files != null) {
+            Log.d(TAG, "Found " + files.size + " files")
+            val labels: MutableList<String> = mutableListOf()
+            for (i in files.indices) {
+                labels.add(files[i].name)
+                Log.d(TAG, "FileName:" + files[i].name)
+            }
+            return labels
+        } else {
+            Log.d(TAG,"No files in target Directory")
             return null
         }
     }
 
-    private fun removeRecording(recordingName: String): Boolean {
-        if (sharedPreferences.contains(recordingName + "_size")) {
-            val editor = sharedPreferences.edit()
-            val size = sharedPreferences.getInt(recordingName + "_size", 0)
-            for (i in 0 until size)
-                editor.remove(recordingName + "_" + i)
-            editor.remove(recordingName + "_size")
-            editor.apply()
-            Log.d(TAG, "Recording was deleted from internal memory")
-            return true
+    private fun requestPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                intent.addCategory("android.intent.category.DEFAULT")
+                intent.setData(
+                    Uri.parse(
+                        String.format(
+                            "package:%s",
+                            applicationContext.packageName
+                        )
+                    )
+                )
+                startActivityForResult(intent, 2296)
+            } catch (e: java.lang.Exception) {
+                val intent = Intent()
+                intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                startActivityForResult(intent, 2296)
+            }
         } else {
-            Log.d(TAG, "No recording with this id")
-            return false
+            //below android 11
+            ActivityCompat.requestPermissions(
+                this, arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ), PERMISSION_REQUEST_CODE
+            )
+        }
+    }
+
+    private fun checkPermission(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return Environment.isExternalStorageManager()
+        } else {
+            val result =
+                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+            val result1 =
+                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            return result == PackageManager.PERMISSION_GRANTED && result1 == PackageManager.PERMISSION_GRANTED
         }
     }
 
