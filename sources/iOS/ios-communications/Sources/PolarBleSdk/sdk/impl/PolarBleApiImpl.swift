@@ -1248,293 +1248,143 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
-    func getOfflineRecord(
-        _ identifier: String,
-        entry: PolarOfflineRecordingEntry,
-        secret: PolarRecordingSecret?
-    ) -> Single<PolarOfflineRecordingData> {
-        do {
-            let session = try sessionFtpClientReady(identifier)
-            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                throw PolarErrors.serviceNotFound
-            }
-            guard .sagRfc2FileSystem == BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType) else {
-                throw PolarErrors.operationNotSupported
-            }
-            
-            let subRecordingCountObservable = getSubRecordingCount(identifier: identifier, entry: entry).asObservable()
-            
-            return Single.create { single in
-                var polarAccData: PolarOfflineRecordingData?
-                var polarGyroData: PolarOfflineRecordingData?
-                var polarMagData: PolarOfflineRecordingData?
-                var polarPpgData: PolarOfflineRecordingData?
-                var polarPpiData: PolarOfflineRecordingData?
-                var polarHrData: PolarOfflineRecordingData?
-                var polarTemperatureData: PolarOfflineRecordingData?
+   func getOfflineRecord(
+          _ identifier: String,
+          entry: PolarOfflineRecordingEntry,
+          secret: PolarRecordingSecret?
+      ) -> Single<PolarOfflineRecordingData> {
+          do {
+              let session = try sessionFtpClientReady(identifier)
+              guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                  throw PolarErrors.serviceNotFound
+              }
+              guard .sagRfc2FileSystem == BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType) else {
+                  throw PolarErrors.operationNotSupported
+              }
 
-                var lastTimestamp: UInt64 = 0
-                _ = subRecordingCountObservable
-                    .flatMap { count -> Observable<PolarOfflineRecordingData> in
-                        return Observable.range(start: 0, count: count)
-                            .flatMap { subRecordingIndex -> Observable<PolarOfflineRecordingData> in
-                                Observable.create { observer in
-            
-                                    let subRecordingPath: String
-                                    if entry.path.range(of: ".*\\.REC$", options: .regularExpression) != nil && count > 0 {
-                                        subRecordingPath = entry.path.replacingOccurrences(of: "\\d(?=\\.REC$)", with: "\(subRecordingIndex)", options: .regularExpression)
-                                    } else {
-                                        subRecordingPath = entry.path
-                                    }
-                                
-                                    do {
-                                        var operation = Protocol_PbPFtpOperation()
-                                        operation.command = Protocol_PbPFtpOperation.Command.get
-                                        operation.path = subRecordingPath.isEmpty ? entry.path : subRecordingPath
-                                        let request = try operation.serializedData()
-                                        
-                                        BleLogger.trace("Offline record get. Device: \(identifier) Path: \(subRecordingPath) Secret used: \(secret != nil)")
-                                        
-                                        let notificationResult = client.sendNotification(
-                                            Protocol_PbPFtpHostToDevNotification.initializeSession.rawValue,
-                                            parameters: nil
-                                        )
-                                        
-                                        let requestResult = notificationResult
-                                            .andThen(Single.deferred { client.request(request) })
-                                            .map { dataResult in
-                                                do {
-                                                    let pmdSecret = try secret.map { try PolarDataUtils.mapToPmdSecret(from: $0) }
-                                                    let offlineRecordingData: OfflineRecordingData = try OfflineRecordingData<Any>.parseDataFromOfflineFile(
-                                                        fileData: dataResult as Data,
-                                                        type: PolarDataUtils.mapToPmdClientMeasurementType(from: entry.type),
-                                                        secret: pmdSecret,
-                                                        lastTimestamp: lastTimestamp
-                                                    )
-                                                    return offlineRecordingData
-                                                } catch {
-                                                    throw PolarErrors.polarOfflineRecordingError(description: "Failed to parse data")
-                                                }
-                                            }
-                        
-                                        _ = requestResult.subscribe(
-                                            onSuccess: { offlineRecordingData in
-                                                do {
-                                                    let settings: PolarSensorSetting = offlineRecordingData.recordingSettings?.mapToPolarSettings() ?? PolarSensorSetting()
-                                                    switch offlineRecordingData.data {
-                                                    case let accData as AccData:
-                                                        lastTimestamp = accData.samples.last?.timeStamp ?? 0
-                                                        switch polarAccData {
-                                                        case let .accOfflineRecordingData(existingData, startTime, existingSettings):
-                                                            let newSamples = existingData.samples + accData.samples.map { (timeStamp: $0.timeStamp, x: $0.x, y: $0.y, z: $0.z) }
-                                                            polarAccData = .accOfflineRecordingData(
-                                                                (timeStamp: accData.timeStamp, samples: newSamples),
-                                                                startTime: startTime,
-                                                                settings: existingSettings
-                                                            )
-                                                            observer.onNext(polarAccData!)
-                                                        default:
-                                                            polarAccData = .accOfflineRecordingData(
-                                                                accData.mapToPolarData(),
-                                                                startTime: offlineRecordingData.startTime,
-                                                                settings: settings
-                                                            )
-                                                            observer.onNext(polarAccData!)
-                                                        }
-                                                    case let gyroData as GyrData:
-                                                        lastTimestamp = gyroData.samples.last?.timeStamp ?? 0
-                                                        switch polarGyroData {
-                                                        case let .gyroOfflineRecordingData(existingData, startTime, existingSettings):
-                                                            let newSamples = existingData.samples + gyroData.samples.map { (timeStamp: $0.timeStamp, x: $0.x, y: $0.y, z: $0.z) }
-                                                            polarGyroData = .gyroOfflineRecordingData(
-                                                                (timeStamp: gyroData.timeStamp, samples: newSamples),
-                                                                startTime: startTime,
-                                                                settings: existingSettings
-                                                            )
-                                                            observer.onNext(polarGyroData!)
-                                                        default:
-                                                            polarGyroData = .gyroOfflineRecordingData(
-                                                                gyroData.mapToPolarData(),
-                                                                startTime: offlineRecordingData.startTime,
-                                                                settings: settings
-                                                            )
-                                                            observer.onNext(polarGyroData!)
-                                                        }
-                                                    case let magData as MagData:
-                                                        lastTimestamp = magData.samples.last?.timeStamp ?? 0
-                                                        switch polarMagData {
-                                                        case let .magOfflineRecordingData(existingData, startTime, existingSettings):
-                                                            let newSamples = existingData.samples + magData.samples.map { (timeStamp: $0.timeStamp, x: $0.x, y: $0.y, z: $0.z) }
-                                                            polarMagData = .magOfflineRecordingData(
-                                                                (timeStamp: magData.timeStamp, samples: newSamples),
-                                                                startTime: startTime,
-                                                                settings: existingSettings
-                                                            )
-                                                            observer.onNext(polarMagData!)
-                                                        default:
-                                                            polarMagData = .magOfflineRecordingData(
-                                                                magData.mapToPolarData(),
-                                                                startTime: offlineRecordingData.startTime,
-                                                                settings: settings
-                                                            )
-                                                            observer.onNext(polarMagData!)
-                                                        }
-                                                    case let ppgData as PpgData:
-                                                        lastTimestamp = ppgData.samples.last?.timeStamp ?? 0
-                                                        switch polarPpgData {
-                                                        case let .ppgOfflineRecordingData(existingData, startTime, existingSettings):
-                                                            let newSamples = existingData.samples + ppgData.samples.map { (timeStamp: $0.timeStamp, channelSamples: $0.ppgDataSamples) }
-                                                            polarPpgData = .ppgOfflineRecordingData(
-                                                                (samples: newSamples, type: existingData.type),
-                                                                startTime: startTime,
-                                                                settings: existingSettings
-                                                            )
-                                                            observer.onNext(polarPpgData!)
-                                                        default:
-                                                            polarPpgData = .ppgOfflineRecordingData(
-                                                                ppgData.mapToPolarData(),
-                                                                startTime: offlineRecordingData.startTime,
-                                                                settings: settings
-                                                            )
-                                                            observer.onNext(polarPpgData!)
-                                                        }
-                                                    case let ppiData as PpiData:
-                                                        switch polarPpiData {
-                                                        case let .ppiOfflineRecordingData(existingData, startTime):
-                                                            let newSamples = existingData.samples + ppiData.samples.map {
-                                                                (
-                                                                    hr: $0.hr,
-                                                                    ppInMs: $0.ppInMs,
-                                                                    ppErrorEstimate: $0.ppErrorEstimate,
-                                                                    blockerBit: $0.blockerBit,
-                                                                    skinContactStatus: $0.skinContactStatus,
-                                                                    skinContactSupported: $0.skinContactSupported
-                                                                )
-                                                            }
-                                                            polarPpiData = .ppiOfflineRecordingData(
-                                                                (timeStamp: UInt64(startTime.timeIntervalSince1970), samples: newSamples),
-                                                                startTime: startTime
-                                                            )
-                                                            observer.onNext(polarPpiData!)
-                                                        default:
-                                                            polarPpiData = .ppiOfflineRecordingData(
-                                                                (timeStamp: UInt64(offlineRecordingData.startTime.timeIntervalSince1970), samples: ppiData.samples.map {
-                                                                    (
-                                                                        hr: $0.hr,
-                                                                        ppInMs: $0.ppInMs,
-                                                                        ppErrorEstimate: $0.ppErrorEstimate,
-                                                                        blockerBit: $0.blockerBit,
-                                                                        skinContactStatus: $0.skinContactStatus,
-                                                                        skinContactSupported: $0.skinContactSupported
-                                                                    )
-                                                                }),
-                                                                startTime: offlineRecordingData.startTime
-                                                            )
-                                                            observer.onNext(polarPpiData!)
-                                                        }
-                                                    case let hrData as OfflineHrData:
-                                                        switch polarHrData {
-                                                        case let .hrOfflineRecordingData(existingData, startTime):
-                                                            let newSamples = existingData + hrData.samples.map {
-                                                                (
-                                                                    hr: $0.hr,
-                                                                    rrsMs: [],
-                                                                    rrAvailable: false,
-                                                                    contactStatus: false,
-                                                                    contactStatusSupported: false
-                                                                )
-                                                            }
-                                                            polarHrData = .hrOfflineRecordingData(
-                                                                newSamples,
-                                                                startTime: startTime
-                                                            )
-                                                            observer.onNext(polarHrData!)
-                                                        default:
-                                                            polarHrData = .hrOfflineRecordingData(
-                                                                hrData.samples.map {
-                                                                    (
-                                                                        hr: $0.hr,
-                                                                        rrsMs: [],
-                                                                        rrAvailable: false,
-                                                                        contactStatus: false,
-                                                                        contactStatusSupported: false
-                                                                    )
-                                                                },
-                                                                startTime: offlineRecordingData.startTime
-                                                            )
-                                                            observer.onNext(polarHrData!)
-                                                        }
-                                                    case let temperatureData as TemperatureData:
-                                                        switch PolarTemperatureData {
-                                                        case let .temperatureOfflineRecordingData(existingData, startTime):
-                                                            let newSamples = existingData + temperatureData.samples.map {
-                                                                (
-                                                                    temperature: $0.temperature,
-                                                                    timeStamp: $0.timeStamp
-                                                                )
-                                                            }
-                                                            polarTemperatureData = .temperatureOfflineRecordingData(
-                                                                newSamples,
-                                                                startTime: startTime
-                                                            )
-                                                            observer.onNext(polarTemperatureData!)
-                                                        default:
-                                                            polarTemperatureData = .temperatureOfflineRecordingData(
-                                                                temperatureData.samples.map {
-                                                                    (
-                                                                        temperature: $0.temperature,
-                                                                        timeStamp: $0.timeStamp
-                                                                    )
-                                                                },
-                                                                startTime: offlineRecordingData.startTime
-                                                            )
-                                                            observer.onNext(polarTemperatureData!)
-                                                        }
-                                                    default:
-                                                        observer.onError(PolarErrors.polarOfflineRecordingError(description: "GetOfflineRecording failed. Data type is not supported."))
-                                                        return
-                                                    }
-                                                    observer.onCompleted()
-                                                } catch {
-                                                    observer.onError(error)
-                                                }
-                                            },
-                                            onError: { error in
-                                                observer.onError(error)
-                                            }
-                                        )
-                                    } catch {
-                                        observer.onError(error)
-                                    }
-                                    
-                                    return Disposables.create {
-                                    }
-                                }
-                            }
-                    }
-                    .ignoreElements()
-                    .asCompletable()
-                    .andThen(Single.deferred {
-                        guard let data = polarAccData ?? polarGyroData ?? polarMagData ?? polarPpgData ?? polarPpiData ?? polarHrData ?? polarTemperatureData else {
-                            return Single.error(PolarErrors.polarOfflineRecordingError(description: "Invalid data"))
-                        }
-                        return Single.just(data)
-                    })
-                    .subscribe(
-                        onSuccess: { data in
-                            single(.success(data))
+              let subRecordingCountObservable = getSubRecordingCount(identifier: identifier, entry: entry).asObservable()
 
-                        },
-                        onError: { error in
-                            single(.failure(error))
-                        }
-                    )
-                return Disposables.create {
-                }
-            }
-        } catch {
-            return Single.error(error)
-        }
+              return Single.create { single in
+                  var polarAccData: PolarOfflineRecordingData?
+                  var polarGyroData: PolarOfflineRecordingData?
+                  var polarMagData: PolarOfflineRecordingData?
+                  var polarPpgData: PolarOfflineRecordingData?
+                  var polarPpiData: PolarOfflineRecordingData?
+                  var polarHrData: PolarOfflineRecordingData?
+                  var polarTemperatureData: PolarOfflineRecordingData?
+
+                  let lastTimestamp: UInt64 = 0
+
+                  let processingObservable = subRecordingCountObservable
+                      .flatMap { count -> Observable<PolarOfflineRecordingData> in
+                          return Observable.range(start: 0, count: count)
+                              .flatMap { subRecordingIndex -> Observable<PolarOfflineRecordingData> in
+                                  Observable.create { observer in
+                                      let subRecordingPath: String
+                                      if entry.path.range(of: ".*\\.REC$", options: .regularExpression) != nil && count > 0 {
+                                          subRecordingPath = entry.path.replacingOccurrences(of: "\\d(?=\\.REC$)", with: "\(subRecordingIndex)", options: .regularExpression)
+                                      } else {
+                                          subRecordingPath = entry.path
+                                      }
+
+                                      do {
+                                          var operation = Protocol_PbPFtpOperation()
+                                          operation.command = .get
+                                          operation.path = subRecordingPath.isEmpty ? entry.path : subRecordingPath
+                                          let request = try operation.serializedData()
+
+                                          BleLogger.trace("Offline record get. Device: \(identifier) Path: \(subRecordingPath) Secret used: \(secret != nil)")
+
+                                          let notificationResult = client.sendNotification(
+                                              Protocol_PbPFtpHostToDevNotification.initializeSession.rawValue,
+                                              parameters: nil
+                                          )
+
+                                          let requestResult = notificationResult
+                                              .andThen(Single.deferred { client.request(request) })
+                                              .map { dataResult -> OfflineRecordingData<Any> in
+                                                  do {
+                                                      let pmdSecret = try secret.map { try PolarDataUtils.mapToPmdSecret(from: $0) }
+                                                      return try OfflineRecordingData<Any>.parseDataFromOfflineFile(
+                                                          fileData: dataResult as Data,
+                                                          type: PolarDataUtils.mapToPmdClientMeasurementType(from: entry.type),
+                                                          secret: pmdSecret,
+                                                          lastTimestamp: lastTimestamp
+                                                      )
+                                                  } catch {
+                                                      throw PolarErrors.polarOfflineRecordingError(description: "Failed to parse data")
+                                                  }
+                                              }
+
+                                          _ = requestResult.subscribe(
+                                              onSuccess: { offlineRecordingData in
+                                                  let settings: PolarSensorSetting = offlineRecordingData.recordingSettings?.mapToPolarSettings() ?? PolarSensorSetting()
+
+                                                  switch offlineRecordingData.data {
+                                                  case let accData as AccData:
+                                                      polarAccData = self.processAccData(accData, polarAccData, offlineRecordingData, settings)
+                                                      observer.onNext(polarAccData!)
+                                                  case let gyroData as GyrData:
+                                                      polarGyroData = self.processGyroData(gyroData, polarGyroData, offlineRecordingData, settings)
+                                                      observer.onNext(polarGyroData!)
+                                                  case let magData as MagData:
+                                                      polarMagData = self.processMagData(magData, polarMagData, offlineRecordingData, settings)
+                                                      observer.onNext(polarMagData!)
+                                                  case let ppgData as PpgData:
+                                                      polarPpgData = self.processPpgData(ppgData, polarPpgData, offlineRecordingData, settings)
+                                                      observer.onNext(polarPpgData!)
+                                                  case let ppiData as PpiData:
+                                                      polarPpiData = self.processPpiData(ppiData, polarPpiData, offlineRecordingData)
+                                                      observer.onNext(polarPpiData!)
+                                                  case let hrData as OfflineHrData:
+                                                      polarHrData = self.processHrData(hrData, polarHrData, offlineRecordingData)
+                                                      observer.onNext(polarHrData!)
+                                                  case let temperatureData as TemperatureData:
+                                                      polarTemperatureData = self.processTemperatureData(temperatureData, polarTemperatureData, offlineRecordingData)
+                                                      observer.onNext(polarTemperatureData!)
+                                                  default:
+                                                      observer.onError(PolarErrors.polarOfflineRecordingError(description: "GetOfflineRecording failed. Data type is not supported."))
+                                                      return
+                                                  }
+                                                  observer.onCompleted()
+                                              },
+                                              onFailure: { error in
+                                                  observer.onError(error)
+                                              }
+                                          )
+                                      } catch {
+                                          observer.onError(error)
+                                      }
+
+                                      return Disposables.create { }
+                                  }
+                              }
+                      }
+                      .ignoreElements()
+                      .asCompletable()
+
+                  _ = processingObservable.andThen(Single.deferred {
+                      let data = polarAccData ?? polarGyroData ?? polarMagData ?? polarPpgData ?? polarPpiData ?? polarHrData ?? polarTemperatureData
+                      if let validData = data {
+                          return Single.just(validData)
+                      } else {
+                          return Single.error(PolarErrors.polarOfflineRecordingError(description: "Invalid data"))
+                      }
+                  })
+                  .subscribe(
+                      onSuccess: { data in
+                          single(.success(data))
+                      },
+                      onFailure: { error in
+                          single(.failure(error))
+                      }
+                  )
+
+                  return Disposables.create { }
+              }
+          } catch {
+              return Single.error(error)
+          }
     }
 
     private func getSubRecordingCount(identifier: String, entry: PolarOfflineRecordingEntry) -> Single<Int> {
@@ -1545,12 +1395,12 @@ extension PolarBleApiImpl: PolarBleApi  {
                     single(.failure(PolarErrors.serviceNotFound))
                     return Disposables.create()
                 }
-                
+
                 var operation = Protocol_PbPFtpOperation()
                 operation.command = Protocol_PbPFtpOperation.Command.get
                 let directoryPath = entry.path.components(separatedBy: "/").dropLast().joined(separator: "/") + "/"
                 operation.path = directoryPath
-                
+
                 _ = client.request(try operation.serializedData())
                     .subscribe(
                         onSuccess: { content in
@@ -1618,7 +1468,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Observable.error(err)
         }
     }
-    
+
     func getSplitOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret?) -> RxSwift.Single<PolarOfflineRecordingData> {
         do {
             let session = try sessionFtpClientReady(identifier)
@@ -1704,14 +1554,14 @@ extension PolarBleApiImpl: PolarBleApi  {
             guard .sagRfc2FileSystem == BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType) else {
                 return Completable.error(PolarErrors.operationNotSupported)
             }
-            
+
             return removeOfflineFilesRecursively(client, entry.path, deleteIfMatchesRegex: "/\\d{8}/")
-            
+
         } catch let err {
             return Completable.error(err)
         }
     }
-    
+
     private func removeOfflineFilesRecursively(_ client: BlePsFtpClient, _ deletePath: String, deleteIfMatchesRegex: String? = nil) -> Completable {
         do {
             if(deleteIfMatchesRegex != nil) {
@@ -1719,9 +1569,9 @@ extension PolarBleApiImpl: PolarBleApi  {
                     return Completable.error(PolarErrors.polarOfflineRecordingError(description:  "Not valid offline recording path to delete \(deletePath)"))
                 }
             }
-            
+
             var parentDir: String = ""
-            
+
             if (deletePath.last == "/") {
                 if let lastSlashIndex = deletePath.dropLast().lastIndex(of: "/") {
                     parentDir = String(deletePath[...lastSlashIndex])
@@ -1731,12 +1581,12 @@ extension PolarBleApiImpl: PolarBleApi  {
                     parentDir = String(deletePath[...lastSlashIndex])
                 }
             }
-            
+
             var operation = Protocol_PbPFtpOperation()
             operation.command = .get
             operation.path = parentDir
             let request = try operation.serializedData()
-            
+
             return client.request(request)
                 .flatMapCompletable { content -> Completable in
                     do {
@@ -1757,8 +1607,8 @@ extension PolarBleApiImpl: PolarBleApi  {
                             let request = try removeOperation.serializedData()
                             return client.request(request).asCompletable()
                         }
-                        
-                        
+
+
                     } catch {
                         return Completable.error(PolarErrors.messageDecodeFailed)
                     }
@@ -1767,24 +1617,24 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Completable.error(err)
         }
     }
-    
+
     func startOfflineRecording(_ identifier: String, feature: PolarDeviceDataType, settings: PolarSensorSetting?, secret: PolarRecordingSecret?) -> RxSwift.Completable {
         do {
             let session = try sessionPmdClientReady(identifier)
             guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Completable.error(PolarErrors.serviceNotFound) }
-            
+
             var pmdSecret: PmdSecret? = nil
             if let s = secret {
                 pmdSecret = try PolarDataUtils.mapToPmdSecret(from: s)
             }
-            
+
             return client.startMeasurement(
                 PolarDataUtils.mapToPmdClientMeasurementType(from:feature), settings: (settings ?? PolarSensorSetting()) .map2PmdSetting(), PmdRecordingType.offline, pmdSecret)
         } catch let err {
             return Completable.error(err)
         }
     }
-    
+
     func stopOfflineRecording(_ identifier: String, feature: PolarDeviceDataType) -> Completable {
         do {
             let session = try sessionPmdClientReady(identifier)
@@ -1795,26 +1645,26 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Completable.error(err)
         }
     }
-    
+
     func setOfflineRecordingTrigger(_ identifier: String, trigger: PolarOfflineRecordingTrigger, secret: PolarRecordingSecret?) -> Completable {
         do {
             let session = try sessionPmdClientReady(identifier)
             guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Completable.error(PolarErrors.serviceNotFound) }
-            
+
             BleLogger.trace("Setup offline recording trigger. Trigger mode: \(trigger.triggerMode) Trigger features: \(trigger.triggerFeatures.map{ "\($0)" }.joined(separator: ",")) Device: \(identifier) Secret used: \(secret != nil)")
-            
+
             let pmdOfflineTrigger = try PolarDataUtils.mapToPmdOfflineTrigger(from: trigger)
             var pmdSecret: PmdSecret? = nil
             if let s = secret {
                 pmdSecret = try PolarDataUtils.mapToPmdSecret(from: s)
             }
-            
+
             return client.setOfflineRecordingTrigger(offlineRecordingTrigger: pmdOfflineTrigger, secret: pmdSecret)
         } catch let err {
             return Completable.error(err)
         }
     }
-    
+
     func getOfflineRecordingTriggerSetup(_ identifier: String) -> Single<PolarOfflineRecordingTrigger> {
         do {
             let session = try sessionPmdClientReady(identifier)
@@ -1826,24 +1676,24 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Single.error(err)
         }
     }
-    
+
     func getAvailableOnlineStreamDataTypes(_ identifier: String) -> Single<Set<PolarDeviceDataType>> {
         do {
             let session = try sessionPmdClientReady(identifier)
-            
+
             // TODO, properly check the situation pmd client is not available but hr client is
             guard let pmdClient = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Single.error(PolarErrors.serviceNotFound) }
-            
+
             let bleHrClient = session.fetchGattClient(BleHrClient.HR_SERVICE) as? BleHrClient
-            
+
             return pmdClient.readFeature(true)
                 .map { pmdFeature -> Set<PolarDeviceDataType> in
                     var deviceData: Set<PolarDeviceDataType> = Set()
-                    
+
                     if (bleHrClient != nil ) {
                         deviceData.insert(PolarDeviceDataType.hr)
                     }
-                    
+
                     if (pmdFeature.contains(PmdMeasurementType.ecg)) {
                         deviceData.insert(PolarDeviceDataType.ecg)
                     }
@@ -1874,7 +1724,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Single.error(err)
         }
     }
-    
+
     func startEcgStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarEcgData> {
         return startStreaming(identifier, type: .ecg, settings: settings) { (client) -> Observable<PolarEcgData> in
             return client.observeEcg()
@@ -1883,7 +1733,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
         }
     }
-    
+
     func startAccStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarAccData> {
         return startStreaming(identifier, type: .acc, settings: settings) { (client) -> Observable<PolarAccData> in
             return client.observeAcc()
@@ -1892,7 +1742,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
         }
     }
-    
+
     func startGyroStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarGyroData> {
         return startStreaming(identifier, type: .gyro, settings: settings) { (client) -> Observable<PolarGyroData> in
             return client.observeGyro()
@@ -1901,7 +1751,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
         }
     }
-    
+
     func startMagnetometerStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarMagnetometerData> {
         return startStreaming(identifier, type: .mgn, settings: settings) { (client) -> Observable<PolarMagnetometerData> in
             return client.observeMagnetometer().map {
@@ -1909,7 +1759,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             }
         }
     }
-    
+
     func startOhrStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarOhrData> {
         return startStreaming(identifier, type: .ppg, settings: settings) { (client) -> Observable<PolarOhrData> in
             return client.observePpg()
@@ -1918,7 +1768,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
         }
     }
-    
+
     func startPpgStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarPpgData> {
         return startStreaming(identifier, type: .ppg, settings: settings) { (client) -> Observable<PolarPpgData> in
             return client.observePpg()
@@ -1927,7 +1777,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
         }
     }
-    
+
     func startPpiStreaming(_ identifier: String) -> Observable<PolarPpiData> {
         return startStreaming(identifier, type: .ppi, settings: PolarSensorSetting()) { (client) -> Observable<PolarPpiData> in
             return client.observePpi()
@@ -1936,7 +1786,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
         }
     }
-    
+
     func startOhrPPIStreaming(_ identifier: String) -> Observable<PolarPpiData> {
         return startStreaming(identifier, type: .ppi, settings: PolarSensorSetting()) { (client) -> Observable<PolarPpiData> in
             return client.observePpi()
@@ -1945,7 +1795,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
         }
     }
-    
+
     func startHrStreaming(_ identifier: String) -> Observable<PolarHrData> {
         do {
             let session = try sessionServiceReady(identifier, service: BleHrClient.HR_SERVICE)
@@ -1976,19 +1826,19 @@ extension PolarBleApiImpl: PolarBleApi  {
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
                 return Single.error(PolarErrors.operationNotSupported)
             }
-            
+
             let fsType = BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType)
-            
+
             let beforeFetch = (fsType == .h10FileSystem) ?
             client.sendNotification(Protocol_PbPFtpHostToDevNotification.initializeSession.rawValue, parameters: nil)
                 .andThen(client.sendNotification(Protocol_PbPFtpHostToDevNotification.startSync.rawValue, parameters: nil))
             : Completable.empty()
-            
+
             let afterFetch = (fsType == .h10FileSystem) ?
             client.sendNotification(Protocol_PbPFtpHostToDevNotification.stopSync.rawValue, parameters: nil)
                 .andThen(client.sendNotification(Protocol_PbPFtpHostToDevNotification.terminateSession.rawValue, parameters: nil))
             : Completable.empty()
-            
+
             var operation = Protocol_PbPFtpOperation()
             operation.command =  Protocol_PbPFtpOperation.Command.get
             operation.path = entry.path
@@ -2024,7 +1874,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Single.error(err)
         }
     }
-    
+
     func fetchStoredExerciseList(_ identifier: String) -> Observable<PolarExerciseEntry> {
         do {
             let session = try sessionFtpClientReady(identifier)
@@ -2107,7 +1957,7 @@ extension PolarBleApiImpl: PolarBleApi  {
     func doFactoryReset(_ identifier: String, preservePairingInformation: Bool) -> Completable {
         do {
             let session = try sessionFtpClientReady(identifier)
-    
+
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
                 return Completable.error(PolarErrors.serviceNotFound)
             }
@@ -2377,6 +2227,201 @@ extension PolarBleApiImpl: PolarBleApi  {
                 return Single.error(error)
             }
         }
+
+    private func processAccData(
+        _ accData: AccData,
+        _ existingData: PolarOfflineRecordingData?,
+        _ offlineRecordingData: OfflineRecordingData<Any>,
+        _ settings: PolarSensorSetting
+    ) -> PolarOfflineRecordingData {
+        switch existingData {
+        case let .accOfflineRecordingData(existingData, startTime, existingSettings):
+            let newSamples = existingData.samples + accData.samples.map { (timeStamp: $0.timeStamp, x: $0.x, y: $0.y, z: $0.z) }
+            return .accOfflineRecordingData(
+                (timeStamp: accData.timeStamp, samples: newSamples),
+                startTime: startTime,
+                settings: existingSettings
+            )
+        default:
+            return .accOfflineRecordingData(
+                accData.mapToPolarData(),
+                startTime: offlineRecordingData.startTime,
+                settings: settings
+            )
+        }
+    }
+
+    private func processGyroData(
+        _ gyroData: GyrData,
+        _ existingData: PolarOfflineRecordingData?,
+        _ offlineRecordingData: OfflineRecordingData<Any>,
+        _ settings: PolarSensorSetting
+    ) -> PolarOfflineRecordingData {
+        switch existingData {
+        case let .gyroOfflineRecordingData(existingData, startTime, existingSettings):
+            let newSamples = existingData.samples + gyroData.samples.map { (timeStamp: $0.timeStamp, x: $0.x, y: $0.y, z: $0.z) }
+            return .gyroOfflineRecordingData(
+                (timeStamp: gyroData.timeStamp, samples: newSamples),
+                startTime: startTime,
+                settings: existingSettings
+            )
+        default:
+            return .gyroOfflineRecordingData(
+                gyroData.mapToPolarData(),
+                startTime: offlineRecordingData.startTime,
+                settings: settings
+            )
+        }
+    }
+
+    private func processMagData(
+        _ magData: MagData,
+        _ existingData: PolarOfflineRecordingData?,
+        _ offlineRecordingData: OfflineRecordingData<Any>,
+        _ settings: PolarSensorSetting
+    ) -> PolarOfflineRecordingData {
+        switch existingData {
+        case let .magOfflineRecordingData(existingData, startTime, existingSettings):
+            let newSamples = existingData.samples + magData.samples.map { (timeStamp: $0.timeStamp, x: $0.x, y: $0.y, z: $0.z) }
+            return .magOfflineRecordingData(
+                (timeStamp: magData.timeStamp, samples: newSamples),
+                startTime: startTime,
+                settings: existingSettings
+            )
+        default:
+            return .magOfflineRecordingData(
+                magData.mapToPolarData(),
+                startTime: offlineRecordingData.startTime,
+                settings: settings
+            )
+        }
+    }
+
+    private func processPpgData(
+        _ ppgData: PpgData,
+        _ existingData: PolarOfflineRecordingData?,
+        _ offlineRecordingData: OfflineRecordingData<Any>,
+        _ settings: PolarSensorSetting
+    ) -> PolarOfflineRecordingData {
+        switch existingData {
+        case let .ppgOfflineRecordingData(existingData, startTime, existingSettings):
+            let newSamples = existingData.samples + ppgData.samples.map { (timeStamp: $0.timeStamp, channelSamples: $0.ppgDataSamples) }
+            return .ppgOfflineRecordingData(
+                (samples: newSamples, type: existingData.type),
+                startTime: startTime,
+                settings: existingSettings
+            )
+        default:
+            return .ppgOfflineRecordingData(
+                ppgData.mapToPolarData(),
+                startTime: offlineRecordingData.startTime,
+                settings: settings
+            )
+        }
+    }
+
+    private func processPpiData(
+        _ ppiData: PpiData,
+        _ existingData: PolarOfflineRecordingData?,
+        _ offlineRecordingData: OfflineRecordingData<Any>
+    ) -> PolarOfflineRecordingData {
+        switch existingData {
+        case let .ppiOfflineRecordingData(existingData, startTime):
+            let newSamples = existingData.samples + ppiData.samples.map {
+                (
+                    hr: $0.hr,
+                    ppInMs: $0.ppInMs,
+                    ppErrorEstimate: $0.ppErrorEstimate,
+                    blockerBit: $0.blockerBit,
+                    skinContactStatus: $0.skinContactStatus,
+                    skinContactSupported: $0.skinContactSupported
+                )
+            }
+            return .ppiOfflineRecordingData(
+                (timeStamp: UInt64(startTime.timeIntervalSince1970), samples: newSamples),
+                startTime: startTime
+            )
+        default:
+            return .ppiOfflineRecordingData(
+                (timeStamp: UInt64(offlineRecordingData.startTime.timeIntervalSince1970), samples: ppiData.samples.map {
+                    (
+                        hr: $0.hr,
+                        ppInMs: $0.ppInMs,
+                        ppErrorEstimate: $0.ppErrorEstimate,
+                        blockerBit: $0.blockerBit,
+                        skinContactStatus: $0.skinContactStatus,
+                        skinContactSupported: $0.skinContactSupported
+                    )
+                }),
+                startTime: offlineRecordingData.startTime
+            )
+        }
+    }
+
+    private func processHrData(
+        _ hrData: OfflineHrData,
+        _ existingData: PolarOfflineRecordingData?,
+        _ offlineRecordingData: OfflineRecordingData<Any>
+    ) -> PolarOfflineRecordingData {
+        switch existingData {
+        case let .hrOfflineRecordingData(existingData, startTime):
+            let newSamples = existingData + hrData.samples.map {
+                (
+                    hr: $0.hr,
+                    rrsMs: [],
+                    rrAvailable: false,
+                    contactStatus: false,
+                    contactStatusSupported: false
+                )
+            }
+            return .hrOfflineRecordingData(
+                newSamples,
+                startTime: startTime
+            )
+        default:
+            return .hrOfflineRecordingData(
+                hrData.samples.map {
+                    (
+                        hr: $0.hr,
+                        rrsMs: [],
+                        rrAvailable: false,
+                        contactStatus: false,
+                        contactStatusSupported: false
+                    )
+                },
+                startTime: offlineRecordingData.startTime
+            )
+        }
+    }
+
+    private func processTemperatureData(
+        _ temperatureData: TemperatureData,
+        _ existingData: PolarOfflineRecordingData?,
+        _ offlineRecordingData: OfflineRecordingData<Any>
+    ) -> PolarOfflineRecordingData {
+        switch existingData {
+        case let .temperatureOfflineRecordingData(existingData, startTime):
+            let newSamples = existingData.samples + temperatureData.samples.map {
+                (
+                    timeStamp: $0.timeStamp,
+                    temperature: $0.temperature
+                )
+            }
+            let updatedData: PolarTemperatureData = (
+                timeStamp: newSamples.last?.timeStamp ?? existingData.timeStamp,
+                samples: newSamples
+            )
+            return .temperatureOfflineRecordingData(
+                updatedData,
+                startTime: startTime
+            )
+        default:
+            return .temperatureOfflineRecordingData(
+                temperatureData.mapToPolarData(),
+                startTime: offlineRecordingData.startTime
+            )
+        }
+    }
 
     private func querySettings(_ identifier: String, type: PmdMeasurementType, recordingType: PmdRecordingType) -> Single<PolarSensorSetting> {
         do {
