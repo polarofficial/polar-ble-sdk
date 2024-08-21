@@ -6,7 +6,7 @@ import Foundation
 
 public class PolarSleepData {
 
-    enum SleepWakeState: Int {
+    public enum SleepWakeState: Int {
         case UNKNOWN = 0
         case WAKE = -2
         case REM = -3
@@ -22,7 +22,7 @@ public class PolarSleepData {
         }
     }
 
-    enum SleepRating: Int {
+    public enum SleepRating: Int {
         case SLEPT_UNDEFINED = -1
         case SLEPT_POORLY = 0
         case SLEPT_SOMEWHAT_POORLY = 1
