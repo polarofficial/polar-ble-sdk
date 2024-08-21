@@ -40,36 +40,36 @@ public class PolarSleepData {
     }
 
    public  struct PolarSleepAnalysisResult {
-        let sleepStartTime: Date!
-        let sleepEndTime: Date!
-        let lastModified: Date!
-        let sleepGoalMinutes: UInt32!
-        let sleepWakePhases: [SleepWakePhase]!
-        let snoozeTime: [Date]?
-        let alarmTime: Date?
-        let sleepStartOffsetSeconds: Int32!
-        let sleepEndOffsetSeconds: Int32!
-        let userSleepRating: SleepRating?
-        let deviceId: String?
-        let batteryRanOut: Bool?
-        let sleepCycles: [SleepCycle]!
-        let sleepResultDate: Date?
-        let originalSleepRange: OriginalSleepRange?
+        public let sleepStartTime: Date!
+        public let sleepEndTime: Date!
+        public let lastModified: Date!
+        public let sleepGoalMinutes: UInt32!
+        public let sleepWakePhases: [SleepWakePhase]!
+        public let snoozeTime: [Date]?
+        public let alarmTime: Date?
+        public let sleepStartOffsetSeconds: Int32!
+        public let sleepEndOffsetSeconds: Int32!
+        public let userSleepRating: SleepRating?
+        public let deviceId: String?
+        public let batteryRanOut: Bool?
+        public let sleepCycles: [SleepCycle]!
+        public let sleepResultDate: Date?
+        public let originalSleepRange: OriginalSleepRange?
     }
 
     struct SleepWakePhase {
-        var secondsFromSleepStart: UInt32!
-        var state: SleepWakeState!
+        public var secondsFromSleepStart: UInt32!
+        public var state: SleepWakeState!
     }
 
     struct SleepCycle {
-        let secondsFromSleepStart: UInt32!
-        let sleepDepthStart: Float!
+        public let secondsFromSleepStart: UInt32!
+        public let sleepDepthStart: Float!
     }
 
     struct OriginalSleepRange {
-        let startTime: Date?
-        let endTime: Date?
+        public let startTime: Date?
+        public let endTime: Date?
         
     }
 
