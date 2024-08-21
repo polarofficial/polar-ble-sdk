@@ -39,7 +39,7 @@ public class PolarSleepData {
         }
     }
 
-   public  struct PolarSleepAnalysisResult {
+   public struct PolarSleepAnalysisResult {
         public let sleepStartTime: Date!
         public let sleepEndTime: Date!
         public let lastModified: Date!
@@ -57,17 +57,17 @@ public class PolarSleepData {
         public let originalSleepRange: OriginalSleepRange?
     }
 
-    struct SleepWakePhase {
+    public struct SleepWakePhase {
         public var secondsFromSleepStart: UInt32!
         public var state: SleepWakeState!
     }
 
-    struct SleepCycle {
+    public struct SleepCycle {
         public let secondsFromSleepStart: UInt32!
         public let sleepDepthStart: Float!
     }
 
-    struct OriginalSleepRange {
+    public struct OriginalSleepRange {
         public let startTime: Date?
         public let endTime: Date?
         
