@@ -5,6 +5,7 @@ import Foundation
 public struct PolarRecordingSecret {
     
     /// Secret key of size 16 bytes. Supported encryption is AES_128
+    /// Please do note that iOS keychain does not support storing AES ciphers. See https://opensource.apple.com/source/Security/Security-58286.41.2/keychain/SecItem.h.auto.html
     let key: Data
     
     public init(key: Data) throws {

@@ -5,4 +5,4 @@ import java.util.Date
 /**
  * [steps] count for given [date].
  */
-data class PolarStepsData(val date: Date, val steps: Int)
+data class PolarStepsData(val date: Date? = null, val steps: Int? = null)

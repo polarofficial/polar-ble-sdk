@@ -1,0 +1,15 @@
+// DEVICE.BPB=PbDeviceInfo
+syntax = "proto2";
+
+package data;
+
+import "structures.proto";
+
+option java_package = "fi.polar.remote.representation.protobuf";
+option java_outer_classname = "Device";
+
+message PbDeviceInfo {
+  optional PbVersion device_version     = 3;
+  optional string model_name = 7;
+  optional string hardware_code = 8;
+};

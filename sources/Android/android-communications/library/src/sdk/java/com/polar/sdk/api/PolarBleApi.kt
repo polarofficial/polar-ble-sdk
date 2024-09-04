@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
  * @property features the set of the features API is used for. By giving only the needed features the SDK may reserve only the required resources
  */
 abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineStreamingApi,
-    PolarOfflineRecordingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi,
+    PolarOfflineRecordingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi,
         PolarActivityApi, PolarSleepApi {
 
     /**
@@ -68,6 +68,11 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
          * Feature to enable or disable SDK mode blinking LED animation.
          */
         FEATURE_POLAR_LED_ANIMATION,
+
+        /**
+         * Firmware update for Polar device.
+         */
+        FEATURE_POLAR_FIRMWARE_UPDATE,
 
         /**
          * Feature to receive activity data form Polar device.

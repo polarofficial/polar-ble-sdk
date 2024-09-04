@@ -14,6 +14,7 @@ public enum PolarDeviceDataType: CaseIterable {
     case magnetometer
     case hr
     case temperature
+    case pressure
 }
 
 /// Features available in Polar BLE SDK library
@@ -45,9 +46,22 @@ public enum PolarBleSdkFeature: CaseIterable {
     /// Feature to enable or disable SDK mode blinking LED animation.
     case feature_polar_led_animation
 
+    /// Firmware update for Polar device.
+    case feature_polar_firmware_update
+
     /// Feature to receive activity data from Polar device.
     case feature_polar_activity_data
 }
+
+///
+///The activity recording data types available in Polar devices.
+///
+public enum PolarActivityDataType: String, CaseIterable {
+    case SLEEP
+    case STEPS
+    case CALORIES
+    case NONE
+   }
 
 /// Polar device info
 ///
@@ -118,6 +132,14 @@ public typealias PolarMagnetometerData = (timeStamp: UInt64, samples: [(timeStam
 ///         - temperature value in celsius
 public typealias PolarTemperatureData = (timeStamp: UInt64, samples: [(timeStamp: UInt64, temperature: Float)])
 
+/// Polar Pressure data
+///
+///     - timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
+///     - samples: Pressure samples
+///         - timeStamp: moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000
+///         - pressure value in bar
+public typealias PolarPressureData = (timeStamp: UInt64, samples: [(timeStamp: UInt64, pressure: Float)])
+
 /// OHR data source enum
 @available(*, deprecated, renamed: "PpgDataType")
 public enum OhrDataType: Int, CaseIterable {
@@ -187,7 +209,7 @@ public typealias PolarExerciseData = (interval: UInt32, samples: [UInt32])
 public typealias PolarRecordingStatus = (ongoing: Bool, entryId: String)
 
 /// API.
-public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarActivityApi, PolarSleepApi {
+public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi, PolarActivityApi, PolarSleepApi {
     
     /// remove all known devices, which are not in use
     func cleanup()
@@ -304,6 +326,23 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - success: when restart notification sent to device
     ///   - onError: see `PolarErrors` for possible errors invoked
     func doRestart(_ identifier: String, preservePairingInformation: Bool) -> Completable
+    
+    /// Get SD log configuration from a device (SDLOGS.BPB)
+    /// - Parameters:
+    ///   - identifier: polar device id or UUID
+    /// - Returns: Single stream
+    ///   - success: A motley crew of boolean values describing the SD log configuration
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func getSDLogConfiguration(_ identifier: String) -> Single<SDLogConfig>
+    
+    /// Set SD log configuration to a device (SDLOGS.BPB)
+    /// - Parameters:
+    ///   - identifier: polar device id or UUID
+    ///   - logConfiguration: A motley crew of boolean values describing the SD log configuration
+    /// - Returns: Completable stream
+    ///   - success: When SD log configuration has been written to the device
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func setSDLogConfiguration(_ identifier: String, logConfiguration: SDLogConfig) -> Completable
 
     ///Set [FtuConfig] for device
     /// - Parameters:

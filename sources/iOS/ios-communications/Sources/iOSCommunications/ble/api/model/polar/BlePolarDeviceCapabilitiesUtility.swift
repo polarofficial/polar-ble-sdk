@@ -11,9 +11,9 @@ open class BlePolarDeviceCapabilitiesUtility {
     public static let H10 = "h10"
     public static let OH1 = "oh1"
     public static let SENSE = "sense"
+    public static let INW4J = "inw4j"
     public static let INW5T = "inw5t"
-    // TODO: Update when device BLE name is updated
-    public static let HONDA = "honda"
+    public static let POLAR_360 = "360"
     public static let IGNITE_3 = "ignite 3"
     public static let GRIT_X2_PRO = "grit x2 pro"
     public static let VANTAGE_V3 = "vantage v3"
@@ -28,7 +28,7 @@ open class BlePolarDeviceCapabilitiesUtility {
         case OH1: fallthrough
         case SENSE: fallthrough
         case INW5T: fallthrough
-        case HONDA: fallthrough
+        case POLAR_360: fallthrough
         case IGNITE_3: fallthrough
         case GRIT_X2_PRO: fallthrough
         case VANTAGE_V3:
@@ -45,14 +45,31 @@ open class BlePolarDeviceCapabilitiesUtility {
         return deviceType == "H10"
     }
 
+    /// Check if device is supporting firmware update
+    /// - Parameter deviceType: device type
+    /// - Returns: true if device firmware update
+    public static func isFirmwareUpdateSupported(_ deviceType: String) -> Bool {
+        let lowercasedDeviceType = deviceType.lowercased()
+        return lowercasedDeviceType != H10 && lowercasedDeviceType != OH1
+    }
+
     /// Check if device is supporting activity data
     /// - Parameter deviceType: device type
     /// - Returns: true if device supports activity data
     public static func isActivityDataSupported(_ deviceType: String) -> Bool {
         let lowercasedDeviceType = deviceType.lowercased()
-        return lowercasedDeviceType == HONDA
+        return lowercasedDeviceType == POLAR_360
             || lowercasedDeviceType == IGNITE_3
             || lowercasedDeviceType == GRIT_X2_PRO
             || lowercasedDeviceType == VANTAGE_V3
+    }
+
+    public static func isDeviceSensor(_ deviceType: String) -> Bool {
+        let lowercasedDeviceType = deviceType.lowercased()
+        return lowercasedDeviceType == OH1 ||
+               lowercasedDeviceType == H10 ||
+               lowercasedDeviceType == SENSE ||
+               lowercasedDeviceType == INW4J ||
+               lowercasedDeviceType == POLAR_360
     }
 }

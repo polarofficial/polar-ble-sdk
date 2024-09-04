@@ -133,4 +133,15 @@ public protocol PolarOnlineStreamingApi {
     ///   - onNext: for every air packet received. see `PolarTemperatureData`
     ///   - onError: see `PolarErrors` for possible errors invoked
     func startTemperatureStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarTemperatureData>
+    
+    /// Start pressure stream. Pressure stream is stopped if the connection is closed,
+    /// error occurs or stream is disposed.
+    ///
+    /// - Parameters:
+    ///   - identifier: Polar device id or device address
+    ///   - settings: selected settings to start the stream
+    /// - Returns: Observable stream
+    ///   - onNext: for every air packet received. see `PolarPressureData`
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func startPressureStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarPressureData>
 }

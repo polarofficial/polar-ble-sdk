@@ -196,6 +196,9 @@ dependencies {
         android:name="android.permission.ACCESS_COARSE_LOCATION"
         android:maxSdkVersion="30" />
 
+      <!-- Allow Polar SDK to check and download firmware updates. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
 ```
 
 On your application you must request for the [permissions](https://developer.android.com/guide/topics/permissions). Here is the example how could you request the needed permissions for the SDK:

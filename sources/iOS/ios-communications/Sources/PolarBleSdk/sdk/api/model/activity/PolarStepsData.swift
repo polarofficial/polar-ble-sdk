@@ -3,7 +3,7 @@
 import Foundation
 
 /// Steps count for given date.
-public struct PolarStepsData {
+public struct PolarStepsData: Codable {
     public let date: Date
     public let steps: Int
 }

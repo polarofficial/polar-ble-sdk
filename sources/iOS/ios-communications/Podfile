@@ -3,7 +3,7 @@ source 'https://github.com/CocoaPods/Specs.git'
 platform :ios, '14.0'
 use_frameworks!
 
-def rx_swift_pod  
+def rx_swift_pod
   pod 'RxSwift', '~> 6.5.0'
 end
 
@@ -11,14 +11,26 @@ def swift_protobuf_pod
   pod 'SwiftProtobuf', '~> 1.0'
 end
 
+def alamofire_pod
+  pod 'Alamofire', '~> 5.8.1'
+end
+
+def zip_pod
+  pod 'Zip', '~> 2.1.2'
+end
+
 target 'iOSCommunications' do
   swift_protobuf_pod
   rx_swift_pod
+  alamofire_pod
+  zip_pod
 end
 
 target 'PolarBleSdk' do
   swift_protobuf_pod
   rx_swift_pod
+  alamofire_pod
+  zip_pod
 end
 
 target 'PolarBleSdkWatchOs' do
@@ -35,4 +47,5 @@ end
 target 'PolarBleSdkTests' do
   pod 'RxBlocking', '~> 6.5.0'
   pod 'RxTest', '~> 6.5.0'
+  pod 'Alamofire', '~> 5.8.1'
 end
