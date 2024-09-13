@@ -231,6 +231,8 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Parameter identifier: Polar device id printed on the sensor/device or UUID.
     /// - Throws: InvalidArgument if identifier is invalid polar device id or invalid uuid
     func connectToDevice(_ identifier: String) throws
+
+    func fetchSession(_ identifier: String) throws -> BleDeviceSession?
     
     /// Disconnect from the current Polar device.
     ///
