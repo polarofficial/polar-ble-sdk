@@ -1874,7 +1874,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
             val deviceInfo = PolarFirmwareUpdateUtils.readDeviceFirmwareInfo(client, identifier).blockingGet()
             return deviceInfo
-        } catch (e) {
+        } catch (e: Exception) {
             BleLogger.e(TAG, "Error reading firmware info. $e")
             return null
         }
