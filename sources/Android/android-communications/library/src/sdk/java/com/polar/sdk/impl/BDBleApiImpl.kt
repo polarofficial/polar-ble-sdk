@@ -35,6 +35,7 @@ import com.polar.androidcommunications.http.client.HttpResponseCodes
 import com.polar.androidcommunications.http.client.RetrofitClient
 import com.polar.androidcommunications.http.fwu.FirmwareUpdateApi
 import com.polar.androidcommunications.http.fwu.FirmwareUpdateRequest
+import com.polar.sdk.api.model.PolarFirmwareVersionInfo
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.PolarBleApiCallbackProvider
 import com.polar.sdk.api.PolarH10OfflineExerciseApi
