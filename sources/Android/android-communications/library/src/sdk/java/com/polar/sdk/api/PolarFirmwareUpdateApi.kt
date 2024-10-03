@@ -18,4 +18,6 @@ interface PolarFirmwareUpdateApi {
      * @return [Flowable] emitting status of firmware update
      */
     fun updateFirmware(identifier: String): Flowable<FirmwareUpdateStatus>
+
+    fun getFirmwareInfo(identifier: String): PolarFirmwareVersionInfo?
 }

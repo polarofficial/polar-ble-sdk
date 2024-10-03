@@ -1866,6 +1866,20 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     })
     }
 
+    override fun getFirmwareInfo(identifier: String): PolarFirmwareVersionInfo? {
+        try {
+            val session = sessionPsFtpClientReady(identifier)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient
+            sendInitializationAndStartSyncNotifications(client)
+
+            val deviceInfo = PolarFirmwareUpdateUtils.readDeviceFirmwareInfo(client, identifier).blockingGet()
+            return deviceInfo
+        } catch (e) {
+            BleLogger.e(TAG, "Error reading firmware info. $e")
+            return null
+        }
+    }
+
     override fun updateFirmware(identifier: String): Flowable<FirmwareUpdateStatus> {
         val session = sessionPsFtpClientReady(identifier)
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient
