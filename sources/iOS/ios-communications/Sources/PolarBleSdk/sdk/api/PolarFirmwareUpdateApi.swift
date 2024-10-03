@@ -11,4 +11,6 @@ public protocol PolarFirmwareUpdateApi {
      * - Returns: Observable emitting status of firmware update
      */
     func updateFirmware(_ identifier: String) -> Observable<FirmwareUpdateStatus>
+  
+    func getFirmwareInfo(_ identifier: String) -> PolarFirmwareVersionInfo?
 }

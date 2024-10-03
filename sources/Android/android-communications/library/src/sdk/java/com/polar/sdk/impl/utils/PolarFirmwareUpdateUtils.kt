@@ -11,7 +11,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.zip.ZipInputStream
 
-internal object PolarFirmwareUpdateUtils {
+object PolarFirmwareUpdateUtils {
 
     const val FIRMWARE_UPDATE_FILE_PATH = "/SYSUPDAT.IMG"
 

@@ -2203,6 +2203,25 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Disposables.create()
         }
     }
+  
+    func getFirmwareInfo(_ identifier: String) -> PolarFirmwareVersionInfo? {
+      do {
+        let session = try self.sessionFtpClientReady(identifier)
+        guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+          return nil
+        }
+        self.sendInitializationAndStartSyncNotifications(client: client)
+        
+        guard let deviceInfo = PolarFirmwareUpdateUtils.readDeviceFirmwareInfo(client: client, deviceId: identifier) else {
+          return nil
+        }
+        
+        return deviceInfo
+      } catch {
+        BleLogger.error("Error during fetching firmware info: \(error)")
+        return nil
+      }
+    }
 
     func updateFirmware(_ identifier: String) -> Observable<FirmwareUpdateStatus> {
         let fwApi = FirmwareUpdateApi()
