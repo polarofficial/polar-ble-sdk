@@ -3,6 +3,7 @@ package com.polar.sdk.api
 
 import com.polar.sdk.api.model.FirmwareUpdateStatus
 import io.reactivex.rxjava3.core.Flowable
+import com.polar.sdk.api.model.PolarFirmwareVersionInfo
 
 /**
  * Polar firmware update API.
