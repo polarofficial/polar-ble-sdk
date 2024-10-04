@@ -1871,7 +1871,6 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         try {
             val session = sessionPsFtpClientReady(identifier)
             val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient
-            sendInitializationAndStartSyncNotifications(client)
 
             val deviceInfo = PolarFirmwareUpdateUtils.readDeviceFirmwareInfo(client, identifier).blockingGet()
             return deviceInfo
