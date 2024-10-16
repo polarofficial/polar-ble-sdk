@@ -15,3 +15,7 @@ message PbPFtpFactoryResetParams {
   optional bool do_factory_defaults = 2 [default = true];
   optional bool ota_fwupdate = 3 [default = false];
 }
+
+message PbPFtpStopSyncParams {
+  required bool completed = 1;
+}

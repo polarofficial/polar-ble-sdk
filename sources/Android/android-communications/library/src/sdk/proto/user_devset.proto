@@ -1,0 +1,21 @@
+// UDEVSET.BPB=PbUserDeviceSettings
+syntax = "proto2";
+
+package data;
+
+import "types.proto";
+
+option java_package = "fi.polar.remote.representation.protobuf";
+option java_outer_classname = "UserDeviceSettings";
+
+message PbUserDeviceGeneralSettings {
+
+  // Device location on user
+  optional PbDeviceLocation device_location = 15;
+};
+
+message PbUserDeviceSettings {
+
+  required PbUserDeviceGeneralSettings general_settings = 1;
+  required PbSystemDateTime last_modified = 101;
+};

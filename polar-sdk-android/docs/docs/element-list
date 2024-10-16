@@ -1,0 +1,55 @@
+$dokka.format:javadoc-v1
+$dokka.linkExtension:html
+$dokka.location:com.polar.sdk.api.model.sleep/PolarSleepData.Companion///PointingToDeclaration/com/polar/sdk/api/model/sleep/PolarSleepData.Companion.html
+$dokka.location:com.polar.sdk.api.model.sleep/SleepRating.Companion///PointingToDeclaration/com/polar/sdk/api/model/sleep/SleepRating.Companion.html
+$dokka.location:com.polar.sdk.api.model.sleep/SleepWakeState.Companion///PointingToDeclaration/com/polar/sdk/api/model/sleep/SleepWakeState.Companion.html
+$dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.FetchingFwUpdatePackage///PointingToDeclaration/com/polar/sdk/api/model/FirmwareUpdateStatus.FetchingFwUpdatePackage.html
+$dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.FinalizingFwUpdate///PointingToDeclaration/com/polar/sdk/api/model/FirmwareUpdateStatus.FinalizingFwUpdate.html
+$dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.FwUpdateCompletedSuccessfully///PointingToDeclaration/com/polar/sdk/api/model/FirmwareUpdateStatus.FwUpdateCompletedSuccessfully.html
+$dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.FwUpdateFailed///PointingToDeclaration/com/polar/sdk/api/model/FirmwareUpdateStatus.FwUpdateFailed.html
+$dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.FwUpdateNotAvailable///PointingToDeclaration/com/polar/sdk/api/model/FirmwareUpdateStatus.FwUpdateNotAvailable.html
+$dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.PreparingDeviceForFwUpdate///PointingToDeclaration/com/polar/sdk/api/model/FirmwareUpdateStatus.PreparingDeviceForFwUpdate.html
+$dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.WritingFwUpdatePackage///PointingToDeclaration/com/polar/sdk/api/model/FirmwareUpdateStatus.WritingFwUpdatePackage.html
+$dokka.location:com.polar.sdk.api.model/LedConfig.Companion///PointingToDeclaration/com/polar/sdk/api/model/LedConfig.Companion.html
+$dokka.location:com.polar.sdk.api.model/PolarAccelerometerData.PolarAccelerometerDataSample///PointingToDeclaration/com/polar/sdk/api/model/PolarAccelerometerData.PolarAccelerometerDataSample.html
+$dokka.location:com.polar.sdk.api.model/PolarDiskSpaceData.Companion///PointingToDeclaration/com/polar/sdk/api/model/PolarDiskSpaceData.Companion.html
+$dokka.location:com.polar.sdk.api.model/PolarEcgData.PolarEcgDataSample///PointingToDeclaration/com/polar/sdk/api/model/PolarEcgData.PolarEcgDataSample.html
+$dokka.location:com.polar.sdk.api.model/PolarFirstTimeUseConfig.Companion///PointingToDeclaration/com/polar/sdk/api/model/PolarFirstTimeUseConfig.Companion.html
+$dokka.location:com.polar.sdk.api.model/PolarFirstTimeUseConfig.Gender///PointingToDeclaration/com/polar/sdk/api/model/PolarFirstTimeUseConfig.Gender.html
+$dokka.location:com.polar.sdk.api.model/PolarFirstTimeUseConfig.TypicalDay///PointingToDeclaration/com/polar/sdk/api/model/PolarFirstTimeUseConfig.TypicalDay.html
+$dokka.location:com.polar.sdk.api.model/PolarGyroData.PolarGyroDataSample///PointingToDeclaration/com/polar/sdk/api/model/PolarGyroData.PolarGyroDataSample.html
+$dokka.location:com.polar.sdk.api.model/PolarHrData.PolarHrSample///PointingToDeclaration/com/polar/sdk/api/model/PolarHrData.PolarHrSample.html
+$dokka.location:com.polar.sdk.api.model/PolarMagnetometerData.PolarMagnetometerDataSample///PointingToDeclaration/com/polar/sdk/api/model/PolarMagnetometerData.PolarMagnetometerDataSample.html
+$dokka.location:com.polar.sdk.api.model/PolarOfflineRecordingData.AccOfflineRecording///PointingToDeclaration/com/polar/sdk/api/model/PolarOfflineRecordingData.AccOfflineRecording.html
+$dokka.location:com.polar.sdk.api.model/PolarOfflineRecordingData.GyroOfflineRecording///PointingToDeclaration/com/polar/sdk/api/model/PolarOfflineRecordingData.GyroOfflineRecording.html
+$dokka.location:com.polar.sdk.api.model/PolarOfflineRecordingData.HrOfflineRecording///PointingToDeclaration/com/polar/sdk/api/model/PolarOfflineRecordingData.HrOfflineRecording.html
+$dokka.location:com.polar.sdk.api.model/PolarOfflineRecordingData.MagOfflineRecording///PointingToDeclaration/com/polar/sdk/api/model/PolarOfflineRecordingData.MagOfflineRecording.html
+$dokka.location:com.polar.sdk.api.model/PolarOfflineRecordingData.PpgOfflineRecording///PointingToDeclaration/com/polar/sdk/api/model/PolarOfflineRecordingData.PpgOfflineRecording.html
+$dokka.location:com.polar.sdk.api.model/PolarOfflineRecordingData.PpiOfflineRecording///PointingToDeclaration/com/polar/sdk/api/model/PolarOfflineRecordingData.PpiOfflineRecording.html
+$dokka.location:com.polar.sdk.api.model/PolarOfflineRecordingData.TemperatureOfflineRecording///PointingToDeclaration/com/polar/sdk/api/model/PolarOfflineRecordingData.TemperatureOfflineRecording.html
+$dokka.location:com.polar.sdk.api.model/PolarOhrData.OhrDataType///PointingToDeclaration/com/polar/sdk/api/model/PolarOhrData.OhrDataType.html
+$dokka.location:com.polar.sdk.api.model/PolarOhrData.PolarOhrSample///PointingToDeclaration/com/polar/sdk/api/model/PolarOhrData.PolarOhrSample.html
+$dokka.location:com.polar.sdk.api.model/PolarOhrPPIData.PolarOhrPPISample///PointingToDeclaration/com/polar/sdk/api/model/PolarOhrPPIData.PolarOhrPPISample.html
+$dokka.location:com.polar.sdk.api.model/PolarPpgData.PolarPpgSample///PointingToDeclaration/com/polar/sdk/api/model/PolarPpgData.PolarPpgSample.html
+$dokka.location:com.polar.sdk.api.model/PolarPpgData.PpgDataType///PointingToDeclaration/com/polar/sdk/api/model/PolarPpgData.PpgDataType.html
+$dokka.location:com.polar.sdk.api.model/PolarPpiData.PolarPpiSample///PointingToDeclaration/com/polar/sdk/api/model/PolarPpiData.PolarPpiSample.html
+$dokka.location:com.polar.sdk.api.model/PolarSensorSetting.SettingType///PointingToDeclaration/com/polar/sdk/api/model/PolarSensorSetting.SettingType.html
+$dokka.location:com.polar.sdk.api.model/PolarTemperatureData.PolarTemperatureDataSample///PointingToDeclaration/com/polar/sdk/api/model/PolarTemperatureData.PolarTemperatureDataSample.html
+$dokka.location:com.polar.sdk.api.model/PolarUserDeviceSettings.Companion///PointingToDeclaration/com/polar/sdk/api/model/PolarUserDeviceSettings.Companion.html
+$dokka.location:com.polar.sdk.api.model/PolarUserDeviceSettings.DeviceLocation///PointingToDeclaration/com/polar/sdk/api/model/PolarUserDeviceSettings.DeviceLocation.html
+$dokka.location:com.polar.sdk.api.model/UserIdentifierType.Companion///PointingToDeclaration/com/polar/sdk/api/model/UserIdentifierType.Companion.html
+$dokka.location:com.polar.sdk.api/PolarBleApi.PolarActivityDataType///PointingToDeclaration/com/polar/sdk/api/PolarBleApi.PolarActivityDataType.html
+$dokka.location:com.polar.sdk.api/PolarBleApi.PolarBleApiLogger///PointingToDeclaration/com/polar/sdk/api/PolarBleApi.PolarBleApiLogger.html
+$dokka.location:com.polar.sdk.api/PolarBleApi.PolarBleSdkFeature///PointingToDeclaration/com/polar/sdk/api/PolarBleApi.PolarBleSdkFeature.html
+$dokka.location:com.polar.sdk.api/PolarBleApi.PolarDeviceDataType///PointingToDeclaration/com/polar/sdk/api/PolarBleApi.PolarDeviceDataType.html
+$dokka.location:com.polar.sdk.api/PolarBleApi.PolarStoredDataType///PointingToDeclaration/com/polar/sdk/api/PolarBleApi.PolarStoredDataType.html
+$dokka.location:com.polar.sdk.api/PolarH10OfflineExerciseApi.RecordingInterval///PointingToDeclaration/com/polar/sdk/api/PolarH10OfflineExerciseApi.RecordingInterval.html
+$dokka.location:com.polar.sdk.api/PolarH10OfflineExerciseApi.SampleType///PointingToDeclaration/com/polar/sdk/api/PolarH10OfflineExerciseApi.SampleType.html
+$dokka.location:com.polar.sdk.impl.utils/PolarBackupManager.BackupFileData///PointingToDeclaration/com/polar/sdk/impl/utils/PolarBackupManager.BackupFileData.html
+com.polar.sdk.api
+com.polar.sdk.api.errors
+com.polar.sdk.api.model
+com.polar.sdk.api.model.activity
+com.polar.sdk.api.model.sleep
+com.polar.sdk.impl.utils
+

@@ -2,6 +2,7 @@ package com.polar.sdk.impl.utils
 
 import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
+import com.polar.sdk.impl.BDBleApiImpl
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
@@ -14,7 +15,7 @@ import protocol.PftpRequest
 import protocol.PftpResponse.PbPFtpDirectory
 
 private const val TAG = "PolarDeviceBackup"
-private const val ARABICA_BACK_UP_FILE = "/SYS/BACKUP.TXT"
+private const val ARABICA_SYS_FOLDER = "/SYS/"
 private const val ARABICA_USER_ROOT_FOLDER = "/U/0/"
 private const val USER_WILD_CARD_ROOT_FOLDER = "/U/*/"
 private const val WILD_CARD_CHARACTER = "*"
@@ -45,13 +46,66 @@ class PolarBackupManager(private val client: BlePsFtpClient) {
      */
     fun backupDevice(): Single<List<BackupFileData>> {
         return Single.fromCallable {
-            loadFile(ARABICA_BACK_UP_FILE).blockingGet()
-        }.flatMap { bytes ->
-            val stream = ByteArrayInputStream(bytes)
-            val backupDirectories = stream.bufferedReader().use(BufferedReader::readLines)
+            val builder = PftpRequest.PbPFtpOperation.newBuilder()
+            builder.command = PftpRequest.PbPFtpOperation.Command.GET
+            builder.path = ARABICA_SYS_FOLDER
 
-            Observable.fromIterable(backupDirectories)
-                    .flatMapSingle { line -> backupDirectory(line) }
+            val entries = client.request(builder.build().toByteArray())
+                    .toFlowable()
+                    .flatMap { byteArrayOutputStream: ByteArrayOutputStream ->
+                        BleLogger.d(TAG, "Received response from client request")
+                        val dir = PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray())
+                        val entries: MutableList<Pair<String, Long>> = mutableListOf()
+
+                        for (entry in dir.entriesList) {
+                            entries.add(ARABICA_SYS_FOLDER + entry.name to entry.size)
+                            BleLogger.d(TAG, "Entry added: ${entry.name}, size: ${entry.size}")
+                        }
+
+                        Flowable.fromIterable(entries)
+                    }
+                    .toList()
+                    .blockingGet()
+
+            BleLogger.d(TAG, "Entries retrieved: ${entries.size}")
+
+            val backupEntry = entries.find { it.first.endsWith("BACKUP.TXT") }
+
+            if (backupEntry != null) {
+                BleLogger.d(TAG, "Backup Entry: ${backupEntry.first}, Size: ${backupEntry.second}")
+
+                val data = loadFile(backupEntry.first).blockingGet()
+                BleLogger.d(TAG, "Data loaded for backup entry, size: ${data.size}")
+
+                val stream = ByteArrayInputStream(data)
+                val reader = stream.bufferedReader()
+                val lines = reader.useLines { lines ->
+                    lines.mapNotNull { line ->
+                        try {
+                            BleLogger.d(TAG, "Reading line: $line")
+                            line
+                        } catch (e: Exception) {
+                            BleLogger.e(TAG, "Failed to read line: $line, error: $e")
+                            null
+                        }
+                    }.toList()
+                }
+                BleLogger.d(TAG, "Lines read from backup entry: ${lines.size}")
+                lines
+            } else {
+                BleLogger.w(TAG, "Device does not have BACKUP.TXT")
+                emptyList()
+            }
+        }.flatMap { lines ->
+            Observable.fromIterable(lines)
+                    .flatMapSingle { line ->
+                        BleLogger.d(TAG, "Backing up line: $line")
+                        backupDirectory(line)
+                                .onErrorResumeNext { error ->
+                                    BleLogger.e(TAG, "Failed to backup line: $line, error: $error")
+                                    Single.just(emptyList())
+                                }
+                    }
                     .toList()
                     .map { it.flatten() }
         }.onErrorReturn {
@@ -66,6 +120,9 @@ class PolarBackupManager(private val client: BlePsFtpClient) {
      * @return Completable indicating the completion of the restore operation.
      */
     fun restoreBackup(backupFiles: List<BackupFileData>): Completable {
+        backupFiles.forEach {
+            BleLogger.d(TAG, "Restoring backup file: ${it.directory} + ${it.fileName}")
+        }
         return Completable.defer {
             Observable.fromIterable(backupFiles)
                     .flatMapCompletable { backupFileData ->
@@ -75,12 +132,18 @@ class PolarBackupManager(private val client: BlePsFtpClient) {
                                 .build().toByteArray()
                         val dataStream = ByteArrayInputStream(backupFileData.data)
                         client.write(header, dataStream)
+                                .doOnSubscribe {
+                                    BleLogger.d(TAG, "Sending PftpRequest: ${header.toString(Charsets.UTF_8)}")
+                                }
+                                .doOnComplete {
+                                    BleLogger.d(TAG, "Successfully restored backup file: ${backupFileData.fileName}")
+                                }
+                                .doOnError { error ->
+                                    BleLogger.e(TAG, "Failed to restore backup file: ${backupFileData.fileName}, error: $error")
+                                }
                                 .ignoreElements()
                                 .onErrorResumeNext { error ->
-                                    BleLogger.e(
-                                            TAG,
-                                            "Failed to restore backup file: ${backupFileData.fileName}, error: $error"
-                                    )
+                                    BleLogger.e(TAG, "Failed to restore backup file: ${backupFileData.fileName}, error: $error")
                                     Completable.complete()
                                 }
                     }
@@ -116,26 +179,38 @@ class PolarBackupManager(private val client: BlePsFtpClient) {
                         .split(File.separator)
                         .firstOrNull()
 
-                val backupDirectories = loadSubDirectories(rootPath)
-                        .filter { it.isFolder() }
-                        .flatMap { folder ->
-                            loadEntries(folder).entriesList.filter {
-                                val name = it.name.replace(File.separator, "")
-                                name == subFolderToBackup
-                            }.map {
-                                folder + it.name
+                val backupDirectories = try {
+                    loadSubDirectories(rootPath)
+                            .filter { it.isFolder() }
+                            .flatMap { folder ->
+                                loadEntries(folder).entriesList.filter {
+                                    val name = it.name.replace(File.separator, "")
+                                    name == subFolderToBackup
+                                }.map {
+                                    folder + it.name
+                                }
                             }
-                        }
+                } catch (e: Exception) {
+                    BleLogger.e(TAG, "Error loading subdirectories: $rootPath, error: $e")
+                    emptyList()
+                }
+
                 val backupFiles = backUpDirectories(backupDirectories)
                 Single.just(backupFiles)
             }
 
             path.isFolder() -> {
-                val backupFiles = backUpDirectories(loadSubDirectories(path))
+                val backupFiles = try {
+                    backUpDirectories(loadSubDirectories(path))
+                } catch (e: Exception) {
+                    BleLogger.e(TAG, "Error loading subdirectories: $path, error: $e")
+                    emptyList()
+                }
                 Single.just(backupFiles)
             }
 
             else -> {
+                BleLogger.d(TAG, "Backup file: $path")
                 loadFile(path)
                         .map { data ->
                             val file = path.substringAfterLast(File.separator)
