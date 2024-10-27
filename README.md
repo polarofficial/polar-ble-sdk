@@ -28,6 +28,8 @@ It is a device designed to increase general well-being and to make the lives of 
 * [SDK mode](documentation/SdkModeExplained.md)
   * Acceleration: 12Hz, 25Hz, 50Hz, 100Hz, 200Hz, 400Hz, 16bit resolution, Range: 2G, 4G, 8G, 16G
 * [Offline recording](documentation/OfflineRecordingExplained.md)
+* 24/7 Steps counting
+* Sleep duration and sleep stages
  
 ### H10 Heart rate sensor
 Most accurate Heart rate sensor in the markets. The H10 is used in the Getting started section of this page. 
@@ -195,6 +197,9 @@ dependencies {
     <uses-permission
         android:name="android.permission.ACCESS_COARSE_LOCATION"
         android:maxSdkVersion="30" />
+
+      <!-- Allow Polar SDK to check and download firmware updates. -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
 ```
 

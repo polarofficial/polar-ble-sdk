@@ -1,16 +1,14 @@
 package com.polar.sdk.api.model
 
 import java.util.Date
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.TimeZone
 import java.util.Calendar
 
-import fi.polar.remote.representation.protobuf.PhysData.PbUserPhysData
 import fi.polar.remote.representation.protobuf.Types
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import fi.polar.remote.representation.protobuf.PhysData
+import fi.polar.remote.representation.protobuf.PhysData.PbUserTypicalDay.TypicalDay
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 
 
 data class PolarFirstTimeUseConfig(
@@ -22,10 +20,18 @@ data class PolarFirstTimeUseConfig(
     val vo2Max: Int, // valid Range: [10-95] ml/kg/min]
     val restingHeartRate: Int, // bpm, valid range [20-120]
     val trainingBackground: Int, // valid values [10, 20, 30, 40, 50, 60]
-    val deviceTime: String // ISO 8601 DateTime String
+    val deviceTime: String, // ISO 8601 DateTime String
+    val typicalDay: TypicalDay, // One of [TypicalDay] values
+    val sleepGoalMinutes: Int // Minutes, valid range [300-660]
 ) {
     enum class Gender {
         MALE, FEMALE;
+    }
+
+    enum class TypicalDay(val index: Int) {
+        MOSTLY_SITTING(1),
+        MOSTLY_STANDING(2),
+        MOSTLY_MOVING(3);
     }
     init {
         require(height in HEIGHT_MIN..HEIGHT_MAX) { "Height must be between $HEIGHT_MIN and $HEIGHT_MAX cm" }
@@ -34,6 +40,7 @@ data class PolarFirstTimeUseConfig(
         require(restingHeartRate in RESTING_HEART_RATE_MIN..RESTING_HEART_RATE_MAX) { "Resting heart rate must be between $RESTING_HEART_RATE_MIN and $RESTING_HEART_RATE_MAX bpm" }
         require(vo2Max in VO2_MAX_MIN..VO2_MAX_MAX) { "VO2 max must be between $VO2_MAX_MIN and $VO2_MAX_MAX" }
         require(trainingBackground in TRAINING_BACKGROUND_VALUES) { "Training background must be one of the following values: ${TRAINING_BACKGROUND_VALUES.joinToString()}" }
+        require(sleepGoalMinutes in SLEEP_GOAL_RANGE_MINUTES) { "Sleep goal must be between ${SLEEP_GOAL_RANGE_MINUTES.first} and ${SLEEP_GOAL_RANGE_MINUTES.last} minutes" }
     }
 
     companion object {
@@ -48,23 +55,25 @@ data class PolarFirstTimeUseConfig(
         const val VO2_MAX_MIN = 10
         const val VO2_MAX_MAX = 95
         val TRAINING_BACKGROUND_VALUES = listOf(10, 20, 30, 40, 50, 60)
+        val SLEEP_GOAL_RANGE_MINUTES = 300..660
         const val FTU_CONFIG_FILENAME = "/U/0/S/PHYSDATA.BPB"
     }
 }
 
     fun PolarFirstTimeUseConfig.toProto(): PhysData.PbUserPhysData {
-        val deviceTimeParsed = LocalDateTime.parse(deviceTime, DateTimeFormatter.ISO_DATE_TIME)
-        val lastModified = Types.PbSystemDateTime.newBuilder()
+    val deviceTimeUtc = ZonedDateTime.parse(deviceTime, DateTimeFormatter.ISO_DATE_TIME)
+            .withZoneSameInstant(ZoneOffset.UTC)
+    val lastModified = Types.PbSystemDateTime.newBuilder()
             .setDate(Types.PbDate.newBuilder()
-                .setYear(deviceTimeParsed.year)
-                .setMonth(deviceTimeParsed.monthValue)
-                .setDay(deviceTimeParsed.dayOfMonth)
-                .build())
+                    .setYear(deviceTimeUtc.year)
+                    .setMonth(deviceTimeUtc.monthValue)
+                    .setDay(deviceTimeUtc.dayOfMonth)
+                    .build())
             .setTime(Types.PbTime.newBuilder()
-                .setHour(deviceTimeParsed.hour)
-                .setMinute(deviceTimeParsed.minute)
-                .setSeconds(deviceTimeParsed.second)
-                .build())
+                    .setHour(deviceTimeUtc.hour)
+                    .setMinute(deviceTimeUtc.minute)
+                    .setSeconds(deviceTimeUtc.second)
+                    .build())
             .setTrusted(true)
             .build()
 
@@ -116,6 +125,15 @@ data class PolarFirstTimeUseConfig(
             setLastModified(lastModified)
         }.build()
 
+        val typicalDay = PhysData.PbUserTypicalDay.newBuilder()
+                .setValue(TypicalDay.forNumber(typicalDay.index))
+                .setLastModified(lastModified)
+                .build()
+
+        val sleepGoal = PhysData.PbSleepGoal.newBuilder()
+                .setSleepGoalMinutes(sleepGoalMinutes)
+                .setLastModified(lastModified)
+                .build()
 
         return PhysData.PbUserPhysData.newBuilder().apply {
             setBirthday(birthday)
@@ -126,7 +144,8 @@ data class PolarFirstTimeUseConfig(
             setRestingHeartrate(restingHeartRateBuilder)
             setTrainingBackground(trainingBackgroundBuilder)
             setVo2Max(vo2MaxBuilder)
-
+            setTypicalDay(typicalDay)
+            setSleepGoal(sleepGoal)
             setLastModified(lastModified)
         }.build()
     }

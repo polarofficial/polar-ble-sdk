@@ -1,0 +1,87 @@
+// AUTOS%03d.BPB=PbAutomaticSampleSessions
+syntax = "proto2";
+
+package data;
+
+import "types.proto";
+import "nanopb.proto";
+import "ppi_samples.proto";
+
+option java_package = "fi.polar.remote.representation.protobuf";
+option java_outer_classname = "AutomaticSamples";
+
+/*
+  Automatic sample sessions
+
+  Domain Data classification: History data.
+*/
+
+/*
+    Automatic sample session per day
+*/
+message PbAutomaticSampleSessions {
+
+  // Date of samples (starting time of 00:00 in user local time zone)
+  required PbDate day = 1;
+
+  // Heart rate samples
+  repeated PbAutomaticHeartRateSamples samples = 2;
+
+  // PP interval samples
+  repeated PbPpIntervalAutoSamples ppi_samples = 3;
+}
+
+enum PbMeasTriggerType {
+
+  //Automatic measurement triggered by user high activity. Contains 1-n samples
+  TRIGGER_TYPE_HIGH_ACTIVITY = 1;
+  //Automatic measurement triggered by user low activity. Contains 1-n samples
+  TRIGGER_TYPE_LOW_ACTIVITY = 2;
+  //Automatic measurement triggered by timer. Contains 1 sample
+  TRIGGER_TYPE_TIMED = 3;
+  //Manual measurement (other than exercise) triggered by user. Contains 1-n samples
+  TRIGGER_TYPE_MANUAL = 4;
+};
+
+message PbAutomaticHeartRateSamples {
+
+  // recording trigger type
+  required PbMeasTriggerType trigger_type = 1;
+
+  // recording time. Delta from parent messages 'day'-field 00:00 time.
+  required PbTime time = 2;
+
+  // heart rate
+  // range [0 - 250] (1/min)
+  repeated uint32 heart_rate = 3 [packed=true, (type)=HEARTRATE];
+}
+
+
+/*
+    Optical PP interval samples
+      - PP interval: time period between two optical heart rate pulses
+*/
+message PbPpIntervalAutoSamples {
+  // PP interval recording trigger types
+  enum PbPpIntervalRecordingTriggerType {
+
+    // Undefined
+    PPI_TRIGGER_TYPE_UNDEFINED = 0;
+
+    // Automatic recording (for example 24/7 recording)
+    PPI_TRIGGER_TYPE_AUTOMATIC = 1;
+
+    // Manual recording (started by user)
+    PPI_TRIGGER_TYPE_MANUAL = 2;
+  };
+
+  // Recording trigger type
+  optional PbPpIntervalRecordingTriggerType trigger_type = 1;
+
+  // Recording time, start time of the first PP interval in this sample packet
+  //   - Delta from parent messages 'day'-field 00:00 time in user local time zone
+  optional PbTime recording_time = 2;
+
+  // PP interval samples
+  optional PbPpIntervalSamples ppi = 3;
+}

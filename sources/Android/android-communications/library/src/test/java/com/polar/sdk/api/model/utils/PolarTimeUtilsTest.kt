@@ -657,8 +657,13 @@ internal class PolarTimeUtilsTest {
             .build()
 
         //Act
+        val calendar = PolarTimeUtils.pbLocalTimeToJavaCalendar(pbLocalTime)
+
+        val timeZone = TimeZone.getTimeZone("Europe/Helsinki")
+        calendar.timeZone = timeZone
+
         val result =
-            org.joda.time.LocalDateTime(PolarTimeUtils.pbLocalTimeToJavaCalendar(pbLocalTime).time)
+            org.joda.time.LocalDateTime(calendar.timeInMillis, org.joda.time.DateTimeZone.forID("Europe/Helsinki"))
 
         //Assert
         Assert.assertEquals(pbLocalYear, result.year)

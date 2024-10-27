@@ -14,7 +14,8 @@ class BlePolarDeviceCapabilitiesUtility {
         private const val DEVICE_TYPE_SENSE = "sense"
         private const val DEVICE_TYPE_OH1 = "oh1"
         private const val DEVICE_TYPE_H10 = "h10"
-        private const val DEVICE_TYPE_HONDA = "honda"
+        private const val DEVICE_TYPE_360 = "360"
+        private const val DEVICE_TYPE_INW5T = "polar_inw5t"
         private const val DEVICE_TYPE_IGNITE_3 = "Ignite 3"
         private const val DEVICE_TYPE_GRIT_X2_PRO = "Grit X2 Pro"
         private const val DEVICE_TYPE_VANTAGE_V3 = "Vantage V3"
@@ -44,7 +45,28 @@ class BlePolarDeviceCapabilitiesUtility {
         @JvmStatic
         fun isRecordingSupported(deviceType: String): Boolean {
             return when (deviceType.lowercase(Locale.getDefault())) {
-                "h10" -> true
+                DEVICE_TYPE_H10 -> true
+                else -> false
+            }
+        }
+
+        @JvmStatic
+        fun isFirmwareUpdateSupported(deviceType: String): Boolean {
+            return when (deviceType.lowercase(Locale.getDefault())) {
+                DEVICE_TYPE_OH1 -> false
+                DEVICE_TYPE_H10 -> false
+                else -> true
+            }
+        }
+
+        @JvmStatic
+        fun isDeviceSensor(deviceType: String): Boolean {
+            return when (deviceType.lowercase(Locale.getDefault())) {
+                DEVICE_TYPE_OH1 -> true
+                DEVICE_TYPE_H10 -> true
+                DEVICE_TYPE_SENSE -> true
+                DEVICE_TYPE_360 -> true
+                DEVICE_TYPE_INW5T -> true
                 else -> false
             }
         }
@@ -52,7 +74,8 @@ class BlePolarDeviceCapabilitiesUtility {
         @JvmStatic
         fun isActivityDataSupported(deviceType: String): Boolean {
             return when (deviceType.lowercase(Locale.getDefault())) {
-                DEVICE_TYPE_HONDA -> true
+                DEVICE_TYPE_360 -> true
+                DEVICE_TYPE_INW5T -> true
                 DEVICE_TYPE_IGNITE_3 -> true
                 DEVICE_TYPE_GRIT_X2_PRO -> true
                 DEVICE_TYPE_VANTAGE_V3 -> true

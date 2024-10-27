@@ -7,6 +7,7 @@ import com.polar.sdk.api.model.*
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Single
+import java.time.LocalDate
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -16,7 +17,7 @@ import java.util.concurrent.TimeUnit
  * @property features the set of the features API is used for. By giving only the needed features the SDK may reserve only the required resources
  */
 abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineStreamingApi,
-    PolarOfflineRecordingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi,
+    PolarOfflineRecordingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi,
         PolarActivityApi, PolarSleepApi {
 
     /**
@@ -70,6 +71,11 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
         FEATURE_POLAR_LED_ANIMATION,
 
         /**
+         * Firmware update for Polar device.
+         */
+        FEATURE_POLAR_FIRMWARE_UPDATE,
+
+        /**
          * Feature to receive activity data form Polar device.
          */
         FEATURE_POLAR_ACTIVITY_DATA,
@@ -78,6 +84,19 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
          * Feature to receive sleep data from Polar device.
          */
         FEATURE_POLAR_SLEEP_DATA
+    }
+
+    /**
+     * The data types in Polar devices that are available for cleanup.
+     */
+    enum class PolarStoredDataType(val type: String) {
+        ACTIVITY("ACT"),
+        AUTO_SAMPLE("AUTOS") ,
+        DAILY_SUMMARY("DSUM"),
+        NIGHTLY_RECOVERY("NR"),
+        SDLOGS("SDLOGS"),
+        SLEEP("SLEEP"),
+        SLEEP_SCORE("SLEEPSCO")
     }
 
     /**
@@ -297,16 +316,27 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @param sleepEnabled Boolean value for the warehouse sleep setting
      * @return [Completable] emitting success or error
      */
+    @Deprecated(level = DeprecationLevel.WARNING,
+        message = "Method signature has changed use 'setWareHouseSleep(identifier: String)' instead.")
     abstract fun setWareHouseSleep(identifier: String, sleepEnabled: Boolean?): Completable
 
     /**
-     * Set [FtuConfig] for device
+     * Set warehouse sleep setting to a given device. Warehouse sleep does factory reset to the device
+     * and makes it sleep.
      *
-     * @param identifier Polar device ID or BT address.
+     * @param identifier Polar device ID or BT address
+     * @return [Completable] emitting success or error
+     */
+    abstract fun setWareHouseSleep(identifier: String): Completable
+
+    /**
+     * Configure the Polar device with first-time use settings and user identifier.
+     *
+     * @param identifier Polar device ID or Bluetooth address.
      * @param ftuConfig Configuration data for the first-time use, encapsulated in [PolarFirstTimeUseConfig].
      * @return [Completable] emitting success or error.
      *
-     * [PolarFirstTimeUseConfig] class enforces specific ranges and valid values for each parameter:
+     * [PolarFirstTimeUseConfig] class requires valid values for each parameter within specific ranges:
      * - Gender: "Male" or "Female"
      * - Height: 90 to 240 cm
      * - Weight: 15 to 300 kg
@@ -314,6 +344,36 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * - Resting heart rate: 20 to 120 bpm
      * - VO2 max: 10 to 95
      * - Training background: One of the predefined levels (10, 20, 30, 40, 50, 60)
+     * - Sleep goal: In minutes between 300 to 660
+     * - Typical day: "MOSTLY_SITTING", "MOSTLY_STANDING", or "MOSTLY_MOVING"
      */
     abstract fun doFirstTimeUse(identifier: String, ftuConfig: PolarFirstTimeUseConfig): Completable
+
+    /**
+     * Set [PolarUserDeviceSettings] for device. Currently only 'user device location' is supported.
+     *
+     * @param identifier Polar device ID or BT address.
+     * @param deviceUserSettings Currently only device location for the user is supported.
+     * @return [Completable] emitting success or error.
+     */
+    abstract fun setUserDeviceSettings(identifier: String, deviceUserSetting: PolarUserDeviceSettings): Completable
+
+    /**
+     * Get [PolarUserDeviceSettings] from device.
+     *
+     * @param identifier Polar device ID or BT address
+    + @return [Single] emitting [PolarUserDeviceSettings] or error
+     */
+    abstract fun getUserDeviceSettings(identifier: String): Single<PolarUserDeviceSettings>
+
+    /**
+     * Delete data [PolarStoredDataType] from a device.
+     *
+     * @param identifier, Polar device ID or BT address
+     * @param dataType, [PolarStoredDataType] A specific data type that shall be deleted
+     * @param until, Data will be deleted from device from history until this date.
+     * @return [Completable] emitting success or error
+     */
+    abstract fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Completable
+
 }

@@ -2,4 +2,6 @@ ${PODS_ROOT}/Target Support Files/Pods-iOSCommunicationsTests/Pods-iOSCommunicat
 ${BUILT_PRODUCTS_DIR}/RxSwift-iOS/RxSwift.framework
 ${BUILT_PRODUCTS_DIR}/RxBlocking/RxBlocking.framework
 ${BUILT_PRODUCTS_DIR}/RxTest/RxTest.framework
+${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework
 ${BUILT_PRODUCTS_DIR}/SwiftProtobuf-iOS/SwiftProtobuf.framework
+${BUILT_PRODUCTS_DIR}/Zip/Zip.framework

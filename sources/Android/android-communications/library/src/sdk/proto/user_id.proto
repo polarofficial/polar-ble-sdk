@@ -1,0 +1,24 @@
+// USERID.BPB=PbUserIdentifier
+syntax = "proto2";
+
+package data;
+
+import "types.proto";
+import "structures.proto";
+import "nanopb.proto";
+
+option java_package = "fi.polar.remote.representation.protobuf";
+option java_outer_classname = "UserIds";
+
+
+message PbUserIdentifier {
+    
+    /*
+    * User's master identifier. Might not have been set for 
+    * User (before first synchronization).
+    */
+    optional uint64 master_identifier = 1;
+
+    optional PbSystemDateTime user_id_last_modified = 100;
+
+};

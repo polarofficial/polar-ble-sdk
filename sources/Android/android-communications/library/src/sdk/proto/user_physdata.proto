@@ -100,6 +100,25 @@ message PbUserTrainingBackground
     required PbSystemDateTime    last_modified  = 2;
 };
 
+message PbUserTypicalDay
+{
+    enum TypicalDay {
+        MOSTLY_SITTING = 1;
+        MOSTLY_STANDING = 2;
+        MOSTLY_MOVING = 3;
+    };
+
+    required TypicalDay         value          = 1;
+    required PbSystemDateTime   last_modified  = 2;
+};
+
+message PbSleepGoal
+{
+    // The Sleep Goal of the user, in minutes. Can be null.
+    optional uint32              sleep_goal_minutes    = 1;
+    optional PbSystemDateTime    last_modified         = 2;
+};
+
 message PbUserPhysData {
 
     required PbUserBirthday        birthday            = 1;
@@ -114,6 +133,10 @@ message PbUserPhysData {
     optional PbUserVo2Max          vo2max              = 10;
     optional PbUserTrainingBackground   training_background      = 11;
 
+    optional PbUserTypicalDay      typical_day         = 12;
+
+    // The Sleep Goal of the user
+    optional PbSleepGoal sleep_goal                                 = 17;
 
     //
     // Timestamps for the whole component: these are updated
