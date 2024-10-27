@@ -7,7 +7,7 @@
     tools:context=".ImageActivity">
 
     <LinearLayout
-        android:id="@+id/ecgViewHeading"
+        android:id="@+id/imageViewHeading"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
@@ -15,35 +15,31 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-
-        <TextView
-            android:id="@+id/deviceId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAlignment="center"
-            android:textColor="@android:color/black"
-            android:textSize="20sp" />
-
     </LinearLayout>
 
     <ImageView
         android:id="@+id/generated_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:importantForAccessibility="no"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:srcCompat="@tools:sample/avatars" />
+        tools:srcCompat="@drawable/ic_launcher_background" />
 
     <Button
         android:id="@+id/buttonTestImage"
+        style="@style/Widget.AppCompat.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/generate_images"
+        android:background="@color/colorPrimary"
+        android:padding="8dp"
+        android:text="@string/remove_recording_button"
+        android:textColor="@color/colorAccent"
         app:layout_constraintBottom_toTopOf="@+id/generated_image"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ecgViewHeading" />
+        app:layout_constraintTop_toBottomOf="@+id/imageViewHeading" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

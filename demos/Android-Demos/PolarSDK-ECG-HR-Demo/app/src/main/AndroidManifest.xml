@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- AI-HArt needs permission to use the internet to prompt for images.
+    Internet and Bluetooth permissions are given by installation and must not be asked for.
+    <uses-permission android:name="android.permission.INTERNET" /> -->
+
+    <!-- AI-HArt needs permission to check for internet.
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/> -->
 
     <!-- This attribute is "false" by default on apps targeting Android 10 or higher. -->
     <uses-permission
@@ -11,43 +19,43 @@
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
 
+    <!-- This attribute is needed to load the recordings. -->
     <uses-permission
         android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="30" />
+        tools:ignore="ScopedStorage" />
 
-    <!-- Polar SDK needs Bluetooth scan permission to search for BLE devices.-->
-    <uses-permission
-        android:name="android.permission.BLUETOOTH_SCAN"
-        android:usesPermissionFlags="neverForLocation" />
-
-    <!-- Polar SDK needs Bluetooth connect permission to connect for found BLE devices.-->
+    <!-- Polar SDK needs Bluetooth connect permission to connect for found BLE devices.
+    Needs to be requested by the app, if Android version is 12 or newer. -->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
     <!-- Allows Polar SDK to connect to paired bluetooth devices. Legacy Bluetooth permission,
-     which is needed on devices with API 30 (Android Q) or older. -->
+     which is needed on devices with API 30 (Android Q/11) or older. -->
     <uses-permission
         android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
 
     <!-- Allows Polar SDK to discover and pair bluetooth devices. Legacy Bluetooth permission,
-     which is needed on devices with API 30 (Android Q) or older. -->
+     which is needed on devices with API 30 (Android Q/11) or older. -->
     <uses-permission
         android:name="android.permission.BLUETOOTH_ADMIN"
         android:maxSdkVersion="30" />
 
-    <!-- Polar SDK needs the fine location permission to get results for Bluetooth scan. Request
-    fine location permission on devices with API 30 (Android Q). -->
+    <!-- Polar SDK needs the fine location permission to get results for Bluetooth scan.
+    Request fine location permission on devices with API 30 (Android Q/11) or older. -->
     <uses-permission
         android:name="android.permission.ACCESS_FINE_LOCATION"
         android:maxSdkVersion="30" />
 
-    <!-- The coarse location permission is needed, if fine location permission is requested. Request
-     coarse location permission on devices with API 30 (Android Q). -->
+
+    <!-- The coarse location permission is needed, if fine location permission is requested.
+    Request coarse location permission on devices with API 30 (Android Q/11) or older.
+    Must be requested if android.permission.ACCESS_FINE_LOCATION is requested. -->
     <uses-permission
         android:name="android.permission.ACCESS_COARSE_LOCATION"
         android:maxSdkVersion="30" />
 
-    <!-- This attribute is "false" by default on apps targeting Android 10 or higher. -->
+    <!-- The attribute android:requestLegacyExternalStorage is "false" by default
+    on apps targeting Android 10 or higher. -->
     <application
         android:requestLegacyExternalStorage="true"
         android:allowBackup="true"
@@ -56,6 +64,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <!-- TODO OPTIONAL Fix screenOrientation to get rid of four warnings.
+        If an Android apps is rotated the app is killed and restarted.
+        This is normal behavior but bad for me, see here:
+        https://stackoverflow.com/questions/5123407/losing-data-when-rotate-screen -->
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -22,6 +22,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -39,79 +40,39 @@ import com.polar.sdk.api.model.PolarExerciseEntry
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.PrintWriter
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
-import java.util.TimeZone
 import java.util.UUID
-import kotlin.math.pow
-import kotlin.math.sqrt
 
+// The main purpose of the app is currently only data collection.
 class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "Polar_MainActivity"
-        private const val DEVICE_ID = "89D62721"
         private const val PARTICIPANT_NUMBER = 1
         private const val PERMISSION_REQUEST_CODE = 1
         private const val SHARED_LAST_ACTION = "last_action"
+        private const val SHARED_RECORDING_ID = "recording_id"
+        private const val SHARED_START_TIME = "start_time"
+        private const val SHARED_END_TIME = "end_time"
         private const val SHARED_START_BUTTON_ENABLED = "start_button_enabled"
         private const val SHARED_STOP_BUTTON_ENABLED = "stop_button_enabled"
-        private const val SHARED_FETCH_BUTTON_ENABLED = "fetch_button_enabled"
-        private const val SHARED_DELETE_BUTTON_ENABLED = "delete_button_enabled"
-        private const val SHARED_GENERATE_IMAGES_BUTTON_ENABLED = "generate_images_button_enabled"
+        private const val SHARED_SAVE_BUTTON_ENABLED = "save_button_enabled"
+        private const val SHARED_REMOVE_BUTTON_ENABLED = "remove_button_enabled"
         private const val SHARED_WELCOME_SCREEN = "welcome_screen"
+
     }
 
-    private lateinit var api: PolarBleApi
+    // Attention!! Replace this field with the device ID from your device!
+    private val deviceId = "89D62721"
 
-    private var recordingStartStopDisposable: Disposable? = null
-    private var recordingStatusReadDisposable: Disposable? = null
-    private var listRecordingsDisposable: Disposable? = null
-    private var removeRecordingDisposable: Disposable? = null
-
-    //It is called entries, but on the H10 there is only entry/recording possible
-    private var recordingEntries: MutableList<PolarExerciseEntry> = mutableListOf()
-
-    private lateinit var welcomeView: TextView
-    private lateinit var loadRecordingButton: Button
-    private lateinit var startRecordingButton: Button
-    private lateinit var stopRecordingButton: Button
-    private lateinit var deleteButton: Button
-    private lateinit var checkRecordingStatusButton: Button
-    private lateinit var listRecordingsButton: Button
-    private lateinit var generateImagesButton: Button
-
-    private lateinit var sharedPreferences: SharedPreferences
-
-    private val bluetoothOnActivityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-        if (result.resultCode != Activity.RESULT_OK) {
-            Log.w(TAG, "ActivityResult: Bluetooth still turned off")
-        } else {
-            Log.w(TAG, "ActivityResult: Bluetooth was turned on")
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        //Use getPreferences if you need only one preferences file for your Activity. For this reason you don't supply a name. Otherwise, use getSharedPreferences() if you want to share preferences across activities.
-        sharedPreferences = getPreferences(MODE_PRIVATE)
-        welcomeView = findViewById(R.id.welcomeDisplay)
-        loadRecordingButton = findViewById(R.id.buttonLoadRecording)
-        startRecordingButton = findViewById(R.id.buttonStartRecording)
-        stopRecordingButton = findViewById(R.id.buttonStopRecording)
-        checkRecordingStatusButton = findViewById(R.id.buttonCheckRecordingStatus)
-        generateImagesButton = findViewById(R.id.buttonGenerateImages)
-        deleteButton = findViewById(R.id.buttonDelete)
-        listRecordingsButton = findViewById(R.id.buttonFetchandList)
-        disableAllButtons()
-        Log.d(TAG, "MainActivity started, version: " + PolarBleApiDefaultImpl.versionInfo())
-
-        api = PolarBleApiDefaultImpl.defaultImplementation(
+    // By lazy makes the api a singleton.
+    private val api: PolarBleApi by lazy {
+        PolarBleApiDefaultImpl.defaultImplementation(
             applicationContext,
             setOf(
                 PolarBleApi.PolarBleSdkFeature.FEATURE_BATTERY_INFO,
@@ -119,11 +80,71 @@ class MainActivity : AppCompatActivity() {
                 PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO
             )
         )
+    }
+
+    private var recordingStartStopDisposable: Disposable? = null
+    private var recordingStatusReadDisposable: Disposable? = null
+    private var fetchExerciseDisposable: Disposable? = null
+    private var removeRecordingDisposable: Disposable? = null
+
+    // It is called entries, but on the H10 there is only one saved recording possible.
+    private var recordingEntries: MutableList<PolarExerciseEntry> = mutableListOf()
+
+    private lateinit var welcomeView: TextView
+    private lateinit var loadRecordingButton: Button
+    private lateinit var startRecordingButton: Button
+    private lateinit var stopRecordingButton: Button
+    private lateinit var checkRecordingStatusButton: Button
+    private lateinit var saveRecordingButton: Button
+    private lateinit var removeRecordingButton: Button
+
+    private lateinit var sharedPreferences: SharedPreferences
+
+    private val bluetoothOnActivityResultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            result: ActivityResult ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    Log.w(TAG, "ActivityResult: Bluetooth was turned on")
+                } else {
+                    Log.w(TAG, "ActivityResult: Bluetooth still turned off")
+                }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    private val storageOnActivityResultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            result: ActivityResult ->
+                if (result.resultCode == Activity.RESULT_OK && Environment.isExternalStorageManager()) {
+                    Log.w(TAG, "ActivityResult: Storage access was granted")
+                } else {
+                    Log.w(TAG, "ActivityResult: Storage access still denied")
+                }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        Log.d(TAG, "MainActivity started, version: " + PolarBleApiDefaultImpl.versionInfo())
+
+        // getPreferences returns one preferences file without name for only one activity.
+        sharedPreferences = getPreferences(MODE_PRIVATE)
+
+        // Initialize buttons and text view, then disable all buttons.
+        welcomeView = findViewById(R.id.welcomeDisplay)
+        loadRecordingButton = findViewById(R.id.buttonLoadRecording)
+        startRecordingButton = findViewById(R.id.buttonStartRecording)
+        stopRecordingButton = findViewById(R.id.buttonStopRecording)
+        checkRecordingStatusButton = findViewById(R.id.buttonCheckRecordingStatus)
+        removeRecordingButton = findViewById(R.id.buttonRemoveRecording)
+        saveRecordingButton = findViewById(R.id.buttonSaveRecording)
+        disableAllButtonsVisually()
+
+        // Display the welcome message on every app start until user hits the "I understand" option.
         if (sharedPreferences.getBoolean(SHARED_WELCOME_SCREEN, true)) {
             val title = "Welcome!"
             val message = "Make sure Bluetooth is turned on and you gave the necessary permission to use Bluetooth.\n\n" +
                     "On older devices the location services are needed to search for nearby devices, but we will never actually use or save your location.\n" +
-                    "If the app requested the permission to use location services, a restart by closing the app completely is necessary.\n\n" +
+                    "If the app requested the permission to use location services, you need to turn bluetooth off and then on again.\n\n" +
                     "If any unexpected problems occur or if you have some questions, please contact us."
             AlertDialog.Builder(this, R.style.PolarTheme)
                 .setTitle(title)
@@ -131,36 +152,44 @@ class MainActivity : AppCompatActivity() {
                 .setPositiveButton("I understand") { _ , _ ->
                     sharedPreferences.edit().putBoolean(SHARED_WELCOME_SCREEN, false).apply()
                 }
+                .setNegativeButton("Remind me") { _, _ ->
+                    // No action needed here.
+                }
                 .show()
         }
-        api.setPolarFilter(true)
+
+        // Request Bluetooth permissions if needed, check status and ask to switch Bluetooth on.
         checkBT()
 
+        // Configure Polar API and try to connect device.
         api.setApiCallback(object : PolarBleApiCallback() {
             override fun blePowerStateChanged(powered: Boolean) {
                 Log.d(TAG, "BLE power: $powered")
                 if (powered) {
-                    val startText = "You are ready to go, put the sensor on and wait for connection."
+                    val startText = "You are ready to go, put the sensor on and wait for connection.\n\n" +
+                            "If not nothing happens, turn Bluetooth on/off and wait\n" +
+                            "or close and open the app again with Bluetooth and GPS on."
                     welcomeView.text = startText
-                    showToast("Phone Bluetooth on")
                 } else {
-                    disableAllButtons()
+                    disableAllButtonsVisually()
                     val startText = "Please ensure bluetooth is on."
                     welcomeView.text = startText
-                    showToast("Phone Bluetooth off")
                 }
             }
 
             override fun deviceConnected(polarDeviceInfo: PolarDeviceInfo) {
                 Log.d(TAG, "CONNECTED: ${polarDeviceInfo.deviceId}")
-                var connectedText = "Device connected"
+                val connectedText = "Device connected\n\n" +
+                        "Last Action: " + sharedPreferences.getString(SHARED_LAST_ACTION, "")
                 welcomeView.text = connectedText
-                connectedText = "\nLast Action: " + sharedPreferences.getString(SHARED_LAST_ACTION, "")
-                welcomeView.append(connectedText)
-                //Problem: Buttons will be enabled before bleSdkFeatures are ready which might result in a PolarNotificationNotEnabled, if user is inpatient
-                //However, problem does not break anything and is thus temporary ignored.
-                //Solution: Not found and writing enableButtons() into bleSdkFeatureReady works not for any reason
-                enableButtons()
+                enableButtonsVisually()
+                /* Problem: Buttons will be enabled before bleSdkFeatures are ready.
+                This might result in a PolarNotificationNotEnabled, if user is impatient.
+                However, the problem does not break anything and is thus temporarily ignored.
+                Writing enableButtons() into bleSdkFeatureReady throws, but is caught somewhere:
+                "android.view.ViewRootImpl$CalledFromWrongThreadException:
+                Only the original thread that created a view hierarchy can touch its views."
+                Solution: Thread.sleep(2000) in enableButtons, this is not satisfying but works. */
             }
 
             override fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo) {
@@ -168,9 +197,9 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {
-                disableAllButtons()
                 Log.d(TAG, "DISCONNECTED: ${polarDeviceInfo.deviceId}")
-                val disconnectedText = "Device disconnected"
+                disableAllButtonsVisually()
+                val disconnectedText = "Device disconnected."
                 welcomeView.text = disconnectedText
             }
 
@@ -179,61 +208,83 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun disInformationReceived(identifier: String, uuid: UUID, value: String) {
-                Log.d(TAG, "DIS INFO uuid: $uuid value: $value")
+                // DIS = Device Information Service
+                Log.d(TAG, "DIS INFO UUID: $uuid value: $value")
                 if (uuid == UUID.fromString("00002a28-0000-1000-8000-00805f9b34fb")) {
-                    val msg = "Firmware: " + value.trim { it <= ' ' }
-                    Log.d(TAG, "Firmware: " + identifier + " " + value.trim { it <= ' ' })
-                    welcomeView.append("\n" + msg.trimIndent())
+                    val firmwareVersion = value.trim { it <= ' '}
+                    Log.d(TAG, "Firmware of device with id $identifier is $firmwareVersion")
                 }
             }
 
             override fun batteryLevelReceived(identifier: String, level: Int) {
-                Log.d(TAG, "BATTERY LEVEL of $identifier: $level%")
-                val batteryLevelText = "\n\nBattery level: $level% (might be incorrect)"
-                welcomeView.append(batteryLevelText)
+                // Until now it was always 100%, questionable if the returned number is correct.
+                Log.d(TAG, "Battery level of device with id $identifier: $level%")
             }
         })
+
         try {
-            api.connectToDevice(DEVICE_ID)
+            api.connectToDevice(deviceId)
         } catch (a: PolarInvalidArgument) {
             a.printStackTrace()
         }
 
         startRecordingButton.setOnClickListener {
-            val isDisposed = recordingStartStopDisposable?.isDisposed ?: true
+            val isDisposed = recordingStartStopDisposable?.isDisposed?: true
+            // Check if the api is already busy, if yes queue requests or throw an error dialog.
             if (isDisposed) {
-                val backup = TimeZone.getDefault()
-                val timeZoneTarget = TimeZone.getTimeZone("GMT+2")
-                //Changes TimeZone for the current process only. However, no guarantees to last for whole app lifecycle.
-                TimeZone.setDefault(timeZoneTarget)
+
+                // Deactivate the buttons to prevent multiple requests and change the button text.
+                disableAllButtons()
+                toggleButtonProcess(startRecordingButton)
+                val workingText = "Processing..."
+                startRecordingButton.text = workingText
+
+                // Get the start time of the recording and construct the recording id.
                 val calendar = Calendar.getInstance()
                 val date = calendar.time
-                val newFormat = SimpleDateFormat("dd-MM-yyyy'T'HH-mm-ss", Locale.GERMANY)
+                val newFormat = SimpleDateFormat("dd-MM-yyyy'T'HH-mm-ss-SSS", Locale.GERMANY)
                 val stringDate = newFormat.format(date)
-                //To avoid side effects, undo the TimeZone change
-                TimeZone.setDefault(backup)
                 val recordIdentifier = "P$PARTICIPANT_NUMBER-$stringDate"
-                //Sample Time will be ignored if SampleType is RR, which is the case
-                recordingStartStopDisposable = api.startRecording(DEVICE_ID, recordIdentifier, PolarH10OfflineExerciseApi.RecordingInterval.INTERVAL_1S, PolarH10OfflineExerciseApi.SampleType.RR)
+
+                // Sample Time will be ignored if SampleType is RR, which is the case.
+                recordingStartStopDisposable =
+                    api.startRecording(deviceId,
+                        recordIdentifier,
+                        PolarH10OfflineExerciseApi.RecordingInterval.INTERVAL_1S,
+                        PolarH10OfflineExerciseApi.SampleType.RR)
                     .observeOn(AndroidSchedulers.mainThread())
+                    .doFinally {
+                        // Activate the other buttons again and reset button text.
+                        val normalText = resources.getString(R.string.start_recording_button)
+                        startRecordingButton.text = normalText
+                        enableButtonsVisually()
+                    }
                     .subscribe(
                         {
-                            startRecordingButton.isEnabled = false
-                            toggleButton(startRecordingButton, true)
-                            sharedPreferences.edit().putBoolean(SHARED_START_BUTTON_ENABLED, false).apply()
-                            Log.d(TAG, "Recording started with id \"$recordIdentifier\"")
+                            // Save the starting time as unix timestamp into shared preferences.
+                            val unixTimestamp = System.currentTimeMillis()
+                            sharedPreferences.edit().putLong(SHARED_START_TIME, unixTimestamp).apply()
+                            Log.d(TAG, "Recording started with id: \"$recordIdentifier\"")
+
+                            // Save the current action as last action and update welcomeView.
                             val stringDateWithPoints = stringDate.replace("-", ":")
-                            val recordingStartOk = "Recording started at ${stringDateWithPoints.substring(11)}"
+                            val recordingStartOk = "Recording was started at ${stringDateWithPoints.substring(11, 19)}."
                             welcomeView.text = recordingStartOk
                             sharedPreferences.edit().putString(SHARED_LAST_ACTION, recordingStartOk).apply()
+
+                            // Save the recording id into shared preferences to get the recording later from device.
+                            sharedPreferences.edit().putString(SHARED_RECORDING_ID, recordIdentifier).apply()
+
+                            // Save the button states afterwards.
+                            sharedPreferences.edit().putBoolean(SHARED_START_BUTTON_ENABLED, false).apply()
                             sharedPreferences.edit().putBoolean(SHARED_STOP_BUTTON_ENABLED, true).apply()
-                            toggleButton(stopRecordingButton, false)
-                            stopRecordingButton.isEnabled = true
+                            sharedPreferences.edit().putBoolean(SHARED_SAVE_BUTTON_ENABLED, true).apply()
+                            toggleButton(startRecordingButton, true)
                         },
                         { error: Throwable ->
                             val title = "Recording start failed"
-                            val message = "Possible reasons are, the recording has already started or there is a saved recording. " +
-                                    "The sensor can only have one recording in the memory at the time.\n\n" +
+                            val message = "Possible reasons are, the recording has already started or there is already a saved recording. " +
+                                    "The sensor can only have one saved recording at the time.\n\n" +
                                     "Detailed Reason: $error"
                             Log.e(TAG, "Recording start failed with id \"$recordIdentifier\". Reason: $error")
                             showDialog(title, message)
@@ -247,31 +298,50 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        loadRecordingButton.setOnClickListener {
+            showRecordingDialog()
+        }
+
         stopRecordingButton.setOnClickListener {
-            val isDisposed = recordingStartStopDisposable?.isDisposed ?: true
+            val isDisposed = recordingStartStopDisposable?.isDisposed?: true
             if (isDisposed) {
-                recordingStartStopDisposable = api.stopRecording(DEVICE_ID)
+                // Deactivate the buttons to prevent multiple requests and change the button text.
+                disableAllButtons()
+                toggleButtonProcess(stopRecordingButton)
+                val workingText = "Processing..."
+                stopRecordingButton.text = workingText
+
+                recordingStartStopDisposable = api.stopRecording(deviceId)
                     .observeOn(AndroidSchedulers.mainThread())
+                    .doFinally {
+                        // Activate the other buttons again and reset button text.
+                        val normalText = resources.getString(R.string.stop_recording_button)
+                        stopRecordingButton.text = normalText
+                        enableButtonsVisually()
+                    }
                     .subscribe(
                         {
-                            stopRecordingButton.isEnabled = false
-                            toggleButton(stopRecordingButton, true)
-                            sharedPreferences.edit().putBoolean(SHARED_STOP_BUTTON_ENABLED, false).apply()
+                            // Save the current action as last action, update welcomeView and save end time.
                             val calendar = Calendar.getInstance()
                             val date = calendar.time
-                            val newFormat = SimpleDateFormat("HH:mm:ss", Locale.GERMANY)
+                            val newFormat = SimpleDateFormat("HH:mm:ss:SSS", Locale.GERMANY)
                             val stringTime = newFormat.format(date)
-                            Log.d(TAG, "Recording stopped")
-                            val recordingStopOk = "Recording was stopped at $stringTime"
+                            val recordingStopOk = "Recording was stopped at " + stringTime.substring(0, 8) + "."
                             welcomeView.text = recordingStopOk
+                            Log.d(TAG, "Recording stopped at $stringTime.")
                             sharedPreferences.edit().putString(SHARED_LAST_ACTION, recordingStopOk).apply()
-                            sharedPreferences.edit().putBoolean(SHARED_FETCH_BUTTON_ENABLED, true).apply()
-                            toggleButton(listRecordingsButton, false)
-                            listRecordingsButton.isEnabled = true
+                            sharedPreferences.edit().putString(SHARED_END_TIME, stringTime).apply()
+
+                            // Save the button states afterwards.
+                            sharedPreferences.edit().putBoolean(SHARED_STOP_BUTTON_ENABLED, false).apply()
+                            sharedPreferences.edit().putBoolean(SHARED_SAVE_BUTTON_ENABLED, true).apply()
+                            toggleButton(stopRecordingButton, true)
+
                         },
                         { error: Throwable ->
                             val title = "Recording stop failed"
-                            val message = "Possible reasons are, the connection to the device is lost or there is no recording currently on the device. \n\n" +
+                            val message = "Possible reason is that the recording was already stopped.\n\n" +
+                                    "In most cases the recording has already stopped, since the sensor was taken off for longer than 30 seconds.\n\n" +
                                     "Detailed Reason: $error"
                             Log.e(TAG, "Recording stop failed. Reason: $error")
                             showDialog(title, message)
@@ -286,10 +356,23 @@ class MainActivity : AppCompatActivity() {
         }
 
         checkRecordingStatusButton.setOnClickListener {
-            val isDisposed = recordingStatusReadDisposable?.isDisposed ?: true
+            val isDisposed = recordingStatusReadDisposable?.isDisposed?: true
             if (isDisposed) {
-                recordingStatusReadDisposable = api.requestRecordingStatus(DEVICE_ID)
+                // Deactivate the buttons to prevent multiple requests and change the button text.
+                disableAllButtons()
+                toggleButtonProcess(checkRecordingStatusButton)
+                val workingText = "Processing..."
+                checkRecordingStatusButton.text = workingText
+
+                recordingStatusReadDisposable = api.requestRecordingStatus(deviceId)
                     .observeOn(AndroidSchedulers.mainThread())
+                    .doFinally {
+                        // Activate the other buttons again and reset button text.
+                        val normalText = resources.getString(R.string.check_recording_status_button)
+                        checkRecordingStatusButton.text = normalText
+                        toggleButton(checkRecordingStatusButton, false)
+                        enableButtons()
+                    }
                     .subscribe(
                         { pair: Pair<Boolean, String> ->
                             val recordingOn = pair.first
@@ -301,14 +384,14 @@ class MainActivity : AppCompatActivity() {
                             } else if (recordingOn && recordingId.isNotEmpty()) {
                                 "Recording is in progress."
                             } else if (recordingOn && recordingId.isEmpty()) {
-                                // This state is undefined. If recording is currently ongoing the H10 must return id of the recording
+                                // This state is undefined, there cannot be a recording without id.
                                 "H10 Recording state UNDEFINED, please contact us!"
                             } else {
-                                // This state is unreachable and should never happen
+                                // This state is unreachable and should never happen.
                                 "H10 recording state ERROR, please contact us!"
                             }
                             Log.d(TAG, recordingStatus)
-                            showDialog("Recording status", recordingStatus)
+                            showToast(recordingStatus)
                         },
                         { error: Throwable ->
                             val title = "Recording status read failed"
@@ -326,140 +409,163 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        deleteButton.setOnClickListener {
-            val isDisposed = removeRecordingDisposable?.isDisposed ?: true
+        saveRecordingButton.setOnClickListener {
+            val isDisposed = fetchExerciseDisposable?.isDisposed?: true
             if (isDisposed) {
-                if (recordingEntries.isNotEmpty()) {
-                    val entry = recordingEntries.first()
-                    removeRecordingDisposable = api.removeExercise(DEVICE_ID, entry)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                            {
-                                recordingEntries.remove(entry)
-                                val recordingRemovedOk = "Recording successfully removed from device"
-                                welcomeView.text = recordingRemovedOk
-                                sharedPreferences.edit().putString(SHARED_LAST_ACTION, recordingRemovedOk).apply()
-                                Log.d(TAG, "Recording with id:${entry.identifier} successfully removed")
-                                //Toggle the buttons afterwards
-                                deleteButton.isEnabled = false
-                                generateImagesButton.isEnabled = false
-                                listRecordingsButton.isEnabled = false
-                                toggleButton(deleteButton, true)
-                                toggleButton(generateImagesButton, true)
-                                toggleButton(listRecordingsButton, true)
-                                sharedPreferences.edit().putBoolean(SHARED_DELETE_BUTTON_ENABLED, false).apply()
-                                sharedPreferences.edit().putBoolean(SHARED_FETCH_BUTTON_ENABLED, false).apply()
-                                sharedPreferences.edit().putBoolean(SHARED_GENERATE_IMAGES_BUTTON_ENABLED, false).apply()
-                                sharedPreferences.edit().putBoolean(SHARED_START_BUTTON_ENABLED, true).apply()
-                                toggleButton(startRecordingButton, false)
-                                startRecordingButton.isEnabled = true
-                            },
-                            { error: Throwable ->
-                                val title = "Removal of recording failed"
-                                val message = "Possible reasons are, the recording was already deleted or internal bug appeared, please contact us.\n\n" +
-                                        "Detailed Reason: $error"
-                                Log.e(TAG, "Removal of recording:${entry.identifier} failed. Reason: $error")
-                                showDialog(title, message)
-                            }
-                        )
-                } else {
-                    val title = "Removing the recording is not possible"
-                    val message = "Either the device has no recording entries or you haven't list them yet."
-                    Log.e(TAG, "Removing the recording is not possible. Reason: No recording found or listed")
-                    showDialog(title, message)
-                }
+                // Ask user if the recording was already stopped and how.
+                val titleDialog = "Just to be sure..."
+                val messageDialog = "Have you stopped the recording using the \"Stop Recording\" button or maybe accidentally by taking off the sensor?\n\n" +
+                        "Otherwise, the app can become stuck for a while until it throws an error, which then requires an app restart or switching on/off Bluetooth."
+                AlertDialog.Builder(this, R.style.PolarTheme)
+                    .setTitle(titleDialog)
+                    .setMessage(messageDialog)
+                    .setPositiveButton("Yes") { _, _ ->
+                        // If there was no recording found or recording id was deleted by clearing the cache, abort.
+                        if (getRecordingPath()) {
+                            // Deactivate the buttons to prevent multiple requests and change the button text.
+                            disableAllButtons()
+                            toggleButtonProcess(saveRecordingButton)
+                            val workingText = "Processing..."
+                            saveRecordingButton.text = workingText
+
+                            Log.d(TAG, "Fetching of recording with id: ${recordingEntries.first().identifier}.")
+                            fetchExerciseDisposable = api.fetchExercise(deviceId, recordingEntries.first())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .doFinally {
+                                    // Activate the other buttons again and reset button text.
+                                    val normalText = resources.getString(R.string.save_recording_button)
+                                    saveRecordingButton.text = normalText
+                                    enableButtonsVisually()
+                                }
+                                .subscribe(
+                                    { polarExerciseData: PolarExerciseData ->
+                                        // Save recording and calculate timestamps.
+                                        val recording = mutableListOf<Int>()
+                                        val timestamps = mutableListOf<Long>()
+                                        var unixTimestamp = sharedPreferences.getLong(SHARED_START_TIME, 0)
+                                        for (i in polarExerciseData.hrSamples.indices) {
+                                            val currentSample = polarExerciseData.hrSamples[i]
+                                            recording.add(currentSample)
+                                            unixTimestamp += currentSample
+                                            timestamps.add(unixTimestamp)
+                                        }
+
+                                        // Add the end time to the recording name before writing it to external storage.
+                                        val id = if (sharedPreferences.contains(SHARED_END_TIME)) {
+                                            val endTime = sharedPreferences.getString(SHARED_END_TIME, "")
+                                            recordingEntries.first().identifier + "--" + endTime?.replace(":", "-")
+                                        } else {
+                                            // For the future the last 30 seconds could be deleted if the sensor was taken off.
+                                            Log.d(TAG, "End time not found and last result appended to id.")
+                                            val calculatedEndTime = Date(unixTimestamp)
+                                            val newFormat = SimpleDateFormat("HH-mm-ss-SSS", Locale.GERMANY)
+                                            val stringDate = newFormat.format(calculatedEndTime)
+                                            recordingEntries.first().identifier + "--" + stringDate
+                                        }
+                                        Thread {
+                                            saveRecordingToExternalStorage(id, recording, timestamps)
+                                            Log.d(TAG, "Recording with id: ${recordingEntries.first().identifier} saved.")
+                                        }.start()
+
+                                        // Save the button status afterwards
+                                        sharedPreferences.edit().putBoolean(SHARED_SAVE_BUTTON_ENABLED, false).apply()
+                                        sharedPreferences.edit().putBoolean(SHARED_STOP_BUTTON_ENABLED, false).apply()
+                                        sharedPreferences.edit().putBoolean(SHARED_REMOVE_BUTTON_ENABLED, true).apply()
+                                        toggleButton(saveRecordingButton, true)
+
+                                        // Remove start and end time afterwards.
+                                        sharedPreferences.edit().remove(SHARED_START_TIME).apply()
+                                        sharedPreferences.edit().remove(SHARED_END_TIME).apply()
+
+                                        // Update welcomeView
+                                        val recordingSavedOk = "Recording saved to device."
+                                        welcomeView.text = recordingSavedOk
+                                        sharedPreferences.edit().putString(SHARED_LAST_ACTION, recordingSavedOk).apply()
+                                    },
+                                    { error: Throwable ->
+                                        val title = "Failed to read recordings"
+                                        val message = "Possible reasons are, there was no recording on the device found or you cleared the app data.\n\n" +
+                                                    "Note: Use this button only after hitting stop recording or if you have accidentally taken off the sensor!\n\n" +
+                                                    "Detailed Reason: $error"
+                                        Log.e(TAG, "Failed to read recording. Reason: $error")
+                                        showDialog(title, message)
+                                    }
+                                )
+                        }
+                    }
+                    .setNegativeButton("No") { _, _ ->
+                        // No action needed here.
+                    }
+                    .show()
             } else {
                 val title = "Please be patient"
-                val message = "Removing of a recoding is already in progress at the moment."
-                Log.d(TAG, "Removing of a recoding is in progress at the moment.")
+                val message = "Fetching of a recoding is already in progress at the moment."
+                Log.d(TAG, "Fetching of a recoding is in progress at the moment.")
                 showDialog(title, message)
             }
         }
 
-        listRecordingsButton.setOnClickListener {
-            val isDisposed = listRecordingsDisposable?.isDisposed ?: true
+        removeRecordingButton.setOnClickListener {
+            val isDisposed = removeRecordingDisposable?.isDisposed?: true
             if (isDisposed) {
-                recordingEntries.clear()
-                listRecordingsDisposable = api.listExercises(DEVICE_ID)
+                // Deactivate the buttons to prevent multiple requests and change the button text.
+                disableAllButtons()
+                toggleButtonProcess(removeRecordingButton)
+                val workingText = "Processing..."
+                removeRecordingButton.text = workingText
+
+                // Check if the name of the recording is saved, else retrieve the name.
+                val recordingEntry = recordingEntries.firstOrNull()?: run {
+                    if (getRecordingPath()) {
+                        recordingEntries.first()
+                    } else {
+                        // Activate the other buttons again and reset button text before return.
+                        val normalText = resources.getString(R.string.remove_recording_button)
+                        removeRecordingButton.text = normalText
+                        enableButtonsVisually()
+                        return@setOnClickListener
+                    }
+                }
+
+                removeRecordingDisposable = api.removeExercise(deviceId, recordingEntry)
                     .observeOn(AndroidSchedulers.mainThread())
+                    .doFinally {
+                        // Activate the other buttons again and reset button text.
+                        val normalText = resources.getString(R.string.remove_recording_button)
+                        removeRecordingButton.text = normalText
+                        enableButtonsVisually()
+                    }
                     .subscribe(
-                        { polarExerciseEntry: PolarExerciseEntry ->
-                            Log.d(TAG, "path: ${polarExerciseEntry.path} id: ${polarExerciseEntry.identifier}")
-                            recordingEntries.add(polarExerciseEntry)
+                        {
+                            // Save button status afterwards.
+                            sharedPreferences.edit().putBoolean(SHARED_REMOVE_BUTTON_ENABLED, false).apply()
+                            sharedPreferences.edit().putBoolean(SHARED_START_BUTTON_ENABLED, true).apply()
+                            toggleButton(removeRecordingButton, true)
+
+                            // Update welcomeView.
+                            val recordingRemovedOk = "Recording successfully removed from device."
+                            welcomeView.text = recordingRemovedOk
+                            sharedPreferences.edit().putString(SHARED_LAST_ACTION, recordingRemovedOk).apply()
+
+                            // Clear recording data.
+                            recordingEntries.clear()
+                            sharedPreferences.edit().remove(SHARED_RECORDING_ID).apply()
+                            Log.d(TAG, "Recording with id: ${recordingEntry.identifier} successfully removed.")
                         },
                         { error: Throwable ->
-                            val title = "Failed to list recordings"
-                            val message = "Possible reasons are, there were no recordings found or there is one in progress.\n\n" +
+                            val title = "Removal of recording failed"
+                            val message = "Possible reasons are, the recording was already deleted or an internal bug appeared, please contact us.\n\n" +
                                     "Detailed Reason: $error"
-                            Log.e(TAG, "Failed to read recordings. Reason: $error")
+                            Log.e(TAG, "Removal of recording: ${recordingEntry.identifier} failed. Reason: $error")
                             showDialog(title, message)
-                        },
-                        {
-                            if (recordingEntries.isNotEmpty()) {
-                                api.fetchExercise(DEVICE_ID, recordingEntries.first())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(
-                                        { polarExerciseData: PolarExerciseData ->
-                                            //It's called hrSamples but it can be HR or RR samples. In my case RR-intervals.
-                                            Log.d(TAG, "Recording sample count: ${polarExerciseData.hrSamples.size} samples: ${polarExerciseData.hrSamples}")
-                                            val recording = mutableListOf<Int>()
-                                            val title = "Recording data read"
-                                            var message = "The Recording has ${polarExerciseData.hrSamples.size} RR samples.\n\n"
-                                            var sumRR = 0.0
-                                            for (i in polarExerciseData.hrSamples.indices) {
-                                                sumRR += polarExerciseData.hrSamples[i]
-                                                recording.add(i, polarExerciseData.hrSamples[i])
-                                            }
-                                            val meanRR = sumRR / polarExerciseData.hrSamples.size
-                                            var deviations = 0.0
-                                            for (i in polarExerciseData.hrSamples.indices) {
-                                                deviations += (polarExerciseData.hrSamples[i] - meanRR).pow(2)
-                                            }
-                                            val sdrr = sqrt(deviations / polarExerciseData.hrSamples.lastIndex)
-                                            message += "\nSDRR: $sdrr and would conclude ${if (sdrr < 50.0) {"more stressful"} else {"less stressful"}}"
-                                            showDialog(title, message)
-                                            val id = recordingEntries.first().identifier
-                                            saveRecordingToExternalStorage(id, recording)
-                                            toggleButton(deleteButton, false)
-                                            toggleButton(generateImagesButton, false)
-                                            sharedPreferences.edit().putBoolean(SHARED_DELETE_BUTTON_ENABLED, true).apply()
-                                            sharedPreferences.edit().putBoolean(SHARED_GENERATE_IMAGES_BUTTON_ENABLED, true).apply()
-                                            deleteButton.isEnabled = true
-                                            generateImagesButton.isEnabled = true
-                                        },
-                                        { error: Throwable ->
-                                            val title = "Failed to read recordings"
-                                            val message = "Possible reasons are, the recordings were not listed correctly or there was no recording on the device found. \n\n" +
-                                                    "Detailed Reason: $error"
-                                            Log.e(TAG, "Failed to read recording. Reason: $error")
-                                            showDialog(title, message)
-                                        }
-                                    )
-                            } else {
-                                val title = "Failed to read recordings"
-                                val message = "Possible reasons are, the recordings were not listed correctly or there was no recording on the device found."
-                                Log.e(TAG, "Failed to read recordings. Reason: RecordingEntries were empty")
-                                showDialog(title, message)
-                            }
                         }
                     )
             } else {
                 val title = "Please be patient"
-                val message = "Listing and Fetching of a recoding is already in progress at the moment."
-                Log.d(TAG, "Listing and Fetching of a recording entries is in progress at the moment.")
+                val message = "Removing of a recording is already in progress."
+                Log.d(TAG, "Removing of a recording is already in progress.")
                 showDialog(title, message)
             }
-        }
-
-        generateImagesButton.setOnClickListener {
-            val intent = Intent(this, ImageActivity::class.java)
-            intent.putExtra("id", DEVICE_ID)
-            intent.putExtra("participant", PARTICIPANT_NUMBER)
-            startActivity(intent)
-        }
-
-        loadRecordingButton.setOnClickListener {
-            showRecordingDialog()
         }
     }
 
@@ -467,7 +573,7 @@ class MainActivity : AppCompatActivity() {
         val btManager = applicationContext.getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         val bluetoothAdapter: BluetoothAdapter? = btManager.adapter
         if (bluetoothAdapter == null) {
-            showToast("Device doesn't support Bluetooth")
+            showToast("Your Device doesn't support Bluetooth.")
             return
         }
 
@@ -475,10 +581,10 @@ class MainActivity : AppCompatActivity() {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             bluetoothOnActivityResultLauncher.launch(enableBtIntent)
         }
-        //Q is 29, S is 31, S_V2 is 32
+        //Q is build version 29 (Android 10), R is 30 (Android 11), S is 31 (Android 12), S_V2 is 32
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT), PERMISSION_REQUEST_CODE)
+                requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_CONNECT), PERMISSION_REQUEST_CODE)
             } else {
                 requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_REQUEST_CODE)
             }
@@ -501,29 +607,35 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showToast(message: String) {
-        val toast = Toast.makeText(applicationContext, message, Toast.LENGTH_LONG)
-        toast.show()
+    private fun disableAllButtonsVisually() {
+        startRecordingButton.isEnabled = false
+        loadRecordingButton.isEnabled = false
+        stopRecordingButton.isEnabled = false
+        saveRecordingButton.isEnabled = false
+        checkRecordingStatusButton.isEnabled = false
+        removeRecordingButton.isEnabled = false
+        toggleButton(startRecordingButton, true)
+        toggleButton(loadRecordingButton, true)
+        toggleButton(stopRecordingButton, true)
+        toggleButton(saveRecordingButton, true)
+        toggleButton(checkRecordingStatusButton, true)
+        toggleButton(removeRecordingButton, true)
     }
 
     private fun disableAllButtons() {
-        loadRecordingButton.isEnabled = false
         startRecordingButton.isEnabled = false
+        loadRecordingButton.isEnabled = false
         stopRecordingButton.isEnabled = false
+        saveRecordingButton.isEnabled = false
         checkRecordingStatusButton.isEnabled = false
-        generateImagesButton.isEnabled = false
-        deleteButton.isEnabled = false
-        listRecordingsButton.isEnabled = false
-        toggleButton(loadRecordingButton, true)
-        toggleButton(listRecordingsButton, true)
-        toggleButton(deleteButton, true)
-        toggleButton(startRecordingButton, true)
-        toggleButton(stopRecordingButton, true)
-        toggleButton(checkRecordingStatusButton, true)
-        toggleButton(generateImagesButton, true)
+        removeRecordingButton.isEnabled = false
     }
 
-    private fun enableButtons() {
+    private fun enableButtonsVisually() {
+        // Thread sleeps two seconds to give the sensor more time to start the features.
+        Thread.sleep(2000)
+
+        // Activate unlocked buttons and toggle them visually.
         if (sharedPreferences.getBoolean(SHARED_START_BUTTON_ENABLED, true)) {
             startRecordingButton.isEnabled = true
             toggleButton(startRecordingButton, false)
@@ -532,17 +644,13 @@ class MainActivity : AppCompatActivity() {
             stopRecordingButton.isEnabled = true
             toggleButton(stopRecordingButton, false)
         }
-        if (sharedPreferences.getBoolean(SHARED_FETCH_BUTTON_ENABLED, false)) {
-            listRecordingsButton.isEnabled = true
-            toggleButton(listRecordingsButton, false)
-            if (sharedPreferences.getBoolean(SHARED_DELETE_BUTTON_ENABLED, false)) {
-                deleteButton.isEnabled = true
-                toggleButton(deleteButton, false)
-            }
+        if (sharedPreferences.getBoolean(SHARED_SAVE_BUTTON_ENABLED, false)) {
+            saveRecordingButton.isEnabled = true
+            toggleButton(saveRecordingButton, false)
         }
-        if (sharedPreferences.getBoolean(SHARED_GENERATE_IMAGES_BUTTON_ENABLED, false)) {
-            generateImagesButton.isEnabled = true
-            toggleButton(generateImagesButton, false)
+        if (sharedPreferences.getBoolean(SHARED_REMOVE_BUTTON_ENABLED, false)) {
+            removeRecordingButton.isEnabled = true
+            toggleButton(removeRecordingButton, false)
         }
         loadRecordingButton.isEnabled = true
         toggleButton(loadRecordingButton, false)
@@ -550,53 +658,79 @@ class MainActivity : AppCompatActivity() {
         toggleButton(checkRecordingStatusButton, false)
     }
 
-    private fun showDialog(title: String, message: String) {
-        AlertDialog.Builder(this, R.style.PolarTheme)
-            .setTitle(title)
-            .setMessage(message)
-            .setPositiveButton("OK") { _, _ ->
-                // Respond to positive button press
-            }
-            .show()
+    private fun enableButtons() {
+        // Activate unlocked buttons internally.
+        if (sharedPreferences.getBoolean(SHARED_START_BUTTON_ENABLED, true)) {
+            startRecordingButton.isEnabled = true
+        }
+        if (sharedPreferences.getBoolean(SHARED_STOP_BUTTON_ENABLED, false)) {
+            stopRecordingButton.isEnabled = true
+        }
+        if (sharedPreferences.getBoolean(SHARED_SAVE_BUTTON_ENABLED, false)) {
+            saveRecordingButton.isEnabled = true
+        }
+        if (sharedPreferences.getBoolean(SHARED_REMOVE_BUTTON_ENABLED, false)) {
+            removeRecordingButton.isEnabled = true
+        }
+        loadRecordingButton.isEnabled = true
+        checkRecordingStatusButton.isEnabled = true
     }
 
     private fun showRecordingDialog() {
+        if (!checkStoragePermission()) {
+            requestStoragePermission()
+        }
+
+        // Check for files matching the naming pattern of the app.
         val recordings = listFiles()
         if (recordings != null) {
-            val alertDialogBuilder = AlertDialog.Builder(this, R.style.PolarTheme)
-            alertDialogBuilder.setTitle("Choose the recording you want to load")
 
+            // Construct the main dialog and an adapter to choose the right recording in a list.
             val mAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, recordings)
-            alertDialogBuilder.setAdapter(mAdapter) { _, which ->
-                val pickedItem: String = mAdapter.getItem(which).toString()
-                val loadResult = loadRecordingFromExternalStorage(pickedItem)
-                val title = "Recording loaded"
-                val message = "The retrieved samples are:\n"
-                AlertDialog.Builder(this, R.style.PolarTheme)
-                    .setTitle(title)
-                    .setMessage(message + loadResult)
-                    .setPositiveButton("OK") { _, _ ->
-                        val nextDialog = AlertDialog.Builder(this, R.style.PolarTheme)
-                        nextDialog.setTitle("Do you wish to delete the recording?")
-                        nextDialog.setPositiveButton("Yes") { _: DialogInterface?, _: Int ->
-                            val removeResult = removeRecordingFromExternalStorage(pickedItem)
-                            if (removeResult) {
-                                Log.d(TAG, "File deleted")
-                            } else {
-                                showDialog("Error occurred", "File was not deleted")
-                            }
+            AlertDialog.Builder(this, R.style.PolarTheme)
+                .setTitle("Choose the recording you want to load")
+                .setAdapter(mAdapter) { _, which ->
+                    val pickedItem: String = mAdapter.getItem(which).toString()
+
+                    // Show the selected recording in a second dialog.
+                    val title = "Recording loaded"
+                    val recordingContent = loadRecordingFromExternalStorage(pickedItem)
+                    AlertDialog.Builder(this, R.style.PolarTheme)
+                        .setTitle(title)
+                        .setMessage(recordingContent)
+                        .setPositiveButton("Close") { _, _ ->
+                            // No action needed here.
                         }
-                        nextDialog.setNegativeButton("No") { dialogInterface: DialogInterface, _: Int -> dialogInterface.dismiss() }
-                        nextDialog.show()
-                    }
-                    .show()
-            }
-            alertDialogBuilder.setNegativeButton("Cancel") { dialogInterface: DialogInterface, _: Int -> dialogInterface.dismiss() }
-            alertDialogBuilder.show()
-            } else {
-                val title = "No recording found"
-                val message = "The supplied recording id was wrong or there is no recording with this id."
-                showDialog(title, message)
+                        .setNeutralButton("Delete") { _, _ ->
+
+                            // Show a third dialog to confirm that the recording should be deleted.
+                            AlertDialog.Builder(this, R.style.PolarTheme)
+                                .setTitle("Do you wish to delete the recording?")
+                                .setPositiveButton("Yes") { _: DialogInterface?, _: Int ->
+                                    val removeResult = removeRecordingFromExternalStorage(pickedItem)
+                                    if (removeResult) {
+                                        Log.d(TAG, "File deleted.")
+                                    } else {
+                                        showDialog("An error occurred",
+                                            "Maybe because of missing storage permissions or the recording was already deleted.")
+                                    }
+                                }
+                                .setNegativeButton("No") { _, _ ->
+                                    // No action needed here.
+                                }
+                                .show()
+                        }
+                        .show()
+                }
+                .setNegativeButton("Cancel") { _, _ ->
+                    // No action needed here.
+                }
+                .show()
+        } else {
+            val title = "No recordings found"
+            val message = "There was no saved recording found on this device.\n" +
+                    "If you think there are recordings, check if the permission was given correctly."
+            showDialog(title, message)
         }
     }
 
@@ -611,35 +745,81 @@ class MainActivity : AppCompatActivity() {
         button.background = buttonDrawable
     }
 
-    private fun loadRecordingFromExternalStorage(recordingName: String): String? {
-        try {
-            if (!checkPermission()) {
-                requestPermission()
-            }
-            val myInputStream = FileInputStream(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + File.separatorChar + recordingName)
-            val size: Int = myInputStream.available()
-            val buffer = ByteArray(size)
-            myInputStream.read(buffer)
-            val myOutput = String(buffer)
-            myInputStream.close()
-            Log.d(TAG, "File loaded")
-            return myOutput
-        } catch (e: IOException) {
-            e.printStackTrace()
-            Log.e(TAG, "File not found or permission denied")
-        }
-        return null
+    private fun toggleButtonProcess(button: Button) {
+        var buttonDrawable = button.background
+        buttonDrawable = DrawableCompat.wrap(buttonDrawable!!)
+        DrawableCompat.setTint(buttonDrawable, resources.getColor(R.color.colorSecondary, null))
+        button.background = buttonDrawable
     }
 
-    private fun saveRecordingToExternalStorage(recordingName: String, recording: MutableList<Int>): Boolean {
-        if (!checkPermission()) {
-            requestPermission()
+    private fun getRecordingPath(): Boolean {
+        if (sharedPreferences.contains(SHARED_RECORDING_ID)) {
+            // Shared preferences for strings can be null but only if set in the default value.
+            val identifier = sharedPreferences.getString(SHARED_RECORDING_ID, "")?: ""
+            // Clear old recording entries, which might be still there if app wasn't closed in between.
+            recordingEntries.clear()
+            // Save the device recording path.
+            val date = Calendar.getInstance().time
+            val recordingEntry = PolarExerciseEntry("/$identifier/SAMPLES.BPB", date, identifier)
+            recordingEntries.add(recordingEntry)
+            return true
+        } else {
+            // This case should not happen, if the app data was deleted, the user is stuck.
+            val titleError = "An error occurred"
+            val messageError = "Sorry, it seems like you cannot save or remove the recording, since you probably cleared the data of the app.\n\n" +
+                    "Please inform us."
+            Log.e(TAG, "Removing or saving of the recording failed. Reason: No recording found or data lost.")
+            showDialog(titleError, messageError)
+            return false
         }
-        //Is the Android sdk version 29 or higher, we need MediaStore
+    }
+
+    private fun loadRecordingFromExternalStorage(recordingName: String): String? {
+        val file = File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+            recordingName
+        )
+        if (!file.exists()) {
+            Log.e(TAG, "File not found.")
+            return null
+        }
+
+        return try {
+            file.bufferedReader().use {
+                it.readText()
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            Log.e(TAG, "Error while reading file or permission denied.")
+            null
+        }
+    }
+
+    private fun removeRecordingFromExternalStorage(recordingName: String): Boolean {
+        val recording = File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() +
+                    File.separatorChar + recordingName
+        )
+        return try {
+            if (recording.isFile) {
+                recording.delete()
+            } else {
+                Log.e(TAG, "File does not exist.")
+                false
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e(TAG, "Error while deleting file or permission denied.")
+            false
+        }
+    }
+
+    private fun saveRecordingToExternalStorage(recordingName: String, recording: MutableList<Int>, timestamps: MutableList<Long>) {
+        // Is the Android sdk version 29 or higher, the usage of the MediaStore is necessary
         val outputStream = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val contentValues = ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, recordingName)
-                put(MediaStore.MediaColumns.MIME_TYPE, "text/plain")
+                put(MediaStore.MediaColumns.MIME_TYPE, "text/csv")
                 put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
             }
             val resolver = this.contentResolver
@@ -650,43 +830,41 @@ class MainActivity : AppCompatActivity() {
                 null
             }
         } else {
-            val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), recordingName)
+            val file = File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                "$recordingName.csv"
+            )
             FileOutputStream(file)
         }
         if (outputStream != null) {
             try {
-                val itr = recording.listIterator()
+                val recordingIterator = recording.listIterator()
+                val timestampIterator = timestamps.listIterator()
                 val p = PrintWriter(outputStream)
-                while(itr.hasNext()){
-                    p.println(itr.next())
+                p.println("RR-Intervals,Timestamps (End Time)")
+                while(recordingIterator.hasNext()){
+                    p.println(recordingIterator.next().toString() + "," +  timestampIterator.next().toString())
                 }
                 p.close()
-                Log.d(TAG, "File written")
-                return true
+                Log.d(TAG, "File written.")
             } catch (e: IOException) {
                 e.printStackTrace()
-                Log.e(TAG, "Error while writing to file or permission denied")
+                Log.e(TAG, "Error while writing to file or permission denied.")
             }
         } else {
-            Log.e(TAG, "Output stream is null")
+            // This case should not be reached.
+            Log.e(TAG, "Output stream is null.")
         }
-        return false
     }
 
-    private fun removeRecordingFromExternalStorage(recordingName: String): Boolean {
-        val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + File.separatorChar + recordingName)
-        try {
-            if (file.isFile) {
-                return file.delete()
-            } else {
-                Log.e(TAG, "File does not exist")
-                return false
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Log.e(TAG, "Error while deleting file or permission denied")
+    private fun checkStoragePermission(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return Environment.isExternalStorageManager()
+        } else {
+            val result = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+            val result1 = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            return result == PackageManager.PERMISSION_GRANTED && result1 == PackageManager.PERMISSION_GRANTED
         }
-        return false
     }
 
     private fun listFiles(): List<Any>? {
@@ -694,62 +872,61 @@ class MainActivity : AppCompatActivity() {
         val directory = File(path)
         val files = directory.listFiles()?.filter {
             it.isFile
-            it.extension.contains("txt")
-            it.name.contains("P1")
+            it.extension.contains("csv")
+            it.name.contains("--")
         }
         if (files != null) {
-            Log.d(TAG, "Found " + files.size + " files")
+            Log.d(TAG, "Found " + files.size + " files.")
             val labels: MutableList<String> = mutableListOf()
             for (i in files.indices) {
                 labels.add(files[i].name)
-                Log.d(TAG, "FileName:" + files[i].name)
             }
             return labels
         } else {
-            Log.d(TAG,"No files in target Directory")
+            //This case should not be reached.
+            Log.e(TAG,"The given directory was no directory.")
             return null
         }
     }
 
-    private fun requestPermission() {
+    private fun requestStoragePermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // For Api Level > 30.
             try {
                 val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
                 intent.addCategory("android.intent.category.DEFAULT")
-                intent.setData(
-                    Uri.parse(
-                        String.format(
-                            "package:%s",
-                            applicationContext.packageName
-                        )
-                    )
-                )
-                startActivityForResult(intent, 2296)
+                intent.setData(Uri.parse(String.format("package:%s", applicationContext.packageName)))
+                storageOnActivityResultLauncher.launch(intent)
             } catch (e: java.lang.Exception) {
                 val intent = Intent()
                 intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-                startActivityForResult(intent, 2296)
+                storageOnActivityResultLauncher.launch(intent)
             }
         } else {
-            //below android 11
+            // Below Api Level 30, i.e., Android 10 or older.
             ActivityCompat.requestPermissions(
                 this, arrayOf(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
                 ), PERMISSION_REQUEST_CODE
             )
         }
     }
 
-    private fun checkPermission(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            return Environment.isExternalStorageManager()
-        } else {
-            val result =
-                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-            val result1 =
-                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            return result == PackageManager.PERMISSION_GRANTED && result1 == PackageManager.PERMISSION_GRANTED
-        }
+    private fun showDialog(title: String, message: String) {
+        AlertDialog.Builder(this, R.style.PolarTheme)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("OK") { _, _ ->
+                // No action needed here.
+            }
+            .show()
+    }
+
+    // Toasts are incredibly faster than dialogs and thus probably better for performance.
+    private fun showToast(message: String) {
+        val toast = Toast.makeText(applicationContext, message, Toast.LENGTH_LONG)
+        toast.show()
     }
 
     public override fun onDestroy() {

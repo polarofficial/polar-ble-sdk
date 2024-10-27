@@ -4,51 +4,75 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.polar.sdk.api.PolarBleApi
-import com.polar.sdk.api.PolarBleApiCallback
-import com.polar.sdk.api.PolarBleApiDefaultImpl.defaultImplementation
-import com.polar.sdk.api.errors.PolarInvalidArgument
-import com.polar.sdk.api.model.PolarDeviceInfo
-import java.util.*
+
+/* The image generation is far from being finished, the recordings would be processed (filtered and interpolated)
+in the app, which is not implemented, as well as the switching prompting system and saving of the images.
+The prompting itself would actually work. If the commented-out code is adopted. */
+
+/* val intent = Intent(this, ImageActivity::class.java)
+startActivity(intent) */
 
 class ImageActivity : AppCompatActivity() {
     companion object {
-        private const val TAG = "ImageActivity"
+        private const val TAG = "Polar_ImageActivity"
+        //private val OPENAI_API_KEY = SecretKey().getKey() => Implement a class SecretKey with a getter
     }
 
-    private lateinit var textViewDeviceId: TextView
     private lateinit var imageViewGeneratedImages: ImageView
     private lateinit var imageTestButton: Button
-
-    private lateinit var deviceId: String
-    private lateinit var participantNumber: Number
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_images)
-        deviceId = intent.getStringExtra("id") ?: throw Exception("ImageActivity couldn't be created, no device id given")
-        //Note if no value was given, defaultValue is -1
-        participantNumber = intent.getIntExtra("participant", -1)
-        try {
-            assert(participantNumber != -1)
-        } catch (assertionError: AssertionError) {
-            Log.e(TAG, "Participant number was not correctly initialized, further details value was -1")
-            //Should not happen but would instantly kill the activity
-            throw Exception("Participant number was not correct")
-        }
-        textViewDeviceId = findViewById(R.id.deviceId)
+        Log.d(TAG, "ImageActivity started")
+
         imageViewGeneratedImages = findViewById(R.id.generated_image)
         imageTestButton = findViewById(R.id.buttonTestImage)
 
-        val deviceIdText = "Device ID: $deviceId"
-        textViewDeviceId.text = deviceIdText
+        imageTestButton.setOnClickListener {
+            imageViewGeneratedImages.setImageResource(R.mipmap.a_landscape_filled_with_life_and_good_weather)
+        }
+
+        /* Code for image generation and displaying it.
+
+        val config = OpenAIConfig(
+            token = OPENAI_API_KEY,
+            timeout = Timeout(socket = 60.seconds)
+            // additional configurations possible...
+        )
+
+        val openAI = OpenAI(config)
 
         imageTestButton.setOnClickListener {
-            imageViewGeneratedImages.setImageResource(R.drawable.imagetest)
+            val requestReceived = "Processing..."
+            imageTestButton.text = requestReceived
+            try {
+                runBlocking{
+                        val result = withContext(Dispatchers.IO) {
+                            // Alternatively, I could use openAI.imageJSON to get the image as JSON.
+                            openAI.imageURL(
+                                creation = ImageCreation(
+                                    prompt = "A landscape filled with life and good weather.",
+                                    model = ModelId("dall-e-3"),
+                                    n = 1,
+                                    // DALL-E 3 only supports images of size 1024x1024, 1024x1792 or 1792x1024 pixels.
+                                    size = ImageSize.is1024x1024
+                                    // style = "natural possible, images are "vivid" by default
+                                    // quality = "hd" possible, images are "normal" quality by default
+                                )
+                            ).first().url
+                        }
+                    Picasso.get().load(result).resize(1024, 1024).into(imageViewGeneratedImages)
+                    Log.i(TAG, result)
+                    val normalText = resources.getText(R.string.generate_images)
+                    imageTestButton.text = normalText
+                }
+            } catch(e: InterruptedException) {
+                e.printStackTrace()
+            }
         }
+        */
     }
 
     public override fun onDestroy() {
