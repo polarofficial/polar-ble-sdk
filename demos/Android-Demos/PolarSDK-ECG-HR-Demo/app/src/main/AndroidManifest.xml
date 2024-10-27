@@ -2,13 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- AI-HArt needs permission to use the internet to prompt for images.
-    Internet and Bluetooth permissions are given by installation and must not be asked for.
-    <uses-permission android:name="android.permission.INTERNET" /> -->
-
-    <!-- AI-HArt needs permission to check for internet.
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/> -->
-
     <!-- This attribute is "false" by default on apps targeting Android 10 or higher. -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -64,7 +57,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <!-- TODO OPTIONAL Fix screenOrientation to get rid of four warnings.
+        <!-- OPTIONAL Fix screenOrientation to get rid of four warnings.
         If an Android apps is rotated the app is killed and restarted.
         This is normal behavior but bad for me, see here:
         https://stackoverflow.com/questions/5123407/losing-data-when-rotate-screen -->
@@ -77,11 +70,5 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ImageActivity"
-            android:exported="false"
-            android:label="@string/activity_images_name"
-            android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait" />
     </application>
 </manifest>

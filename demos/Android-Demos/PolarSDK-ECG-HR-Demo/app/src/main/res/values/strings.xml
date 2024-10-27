@@ -1,9 +1,8 @@
 <resources>
     <string name="app_name">AI HArt</string>
-    <string name="activity_images_name">AI HArt</string>
     <string name="start_recording_button">Start Recording</string>
     <string name="stop_recording_button">Stop Recording</string>
     <string name="save_recording_button">Save Recording</string>
     <string name="check_recording_status_button">Check Recording status</string>
-    <string name="remove_recording_button">Remove Recording from sensor</string>
+    <string name="remove_recording_button">Remove Recording</string>
 </resources>

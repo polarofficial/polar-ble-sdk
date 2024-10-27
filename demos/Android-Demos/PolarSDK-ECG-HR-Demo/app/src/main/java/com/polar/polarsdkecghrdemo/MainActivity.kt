@@ -5,30 +5,24 @@ import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.ContentValues
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.provider.Settings
 import android.util.Log
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.util.Pair
+import com.polar.androidcommunications.api.ble.model.DisInfo
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.PolarBleApiCallback
 import com.polar.sdk.api.PolarBleApiDefaultImpl
@@ -47,7 +41,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.UUID
 
 // The main purpose of the app is currently only data collection.
 class MainActivity : AppCompatActivity() {
@@ -64,7 +57,6 @@ class MainActivity : AppCompatActivity() {
         private const val SHARED_SAVE_BUTTON_ENABLED = "save_button_enabled"
         private const val SHARED_REMOVE_BUTTON_ENABLED = "remove_button_enabled"
         private const val SHARED_WELCOME_SCREEN = "welcome_screen"
-
     }
 
     // Attention!! Replace this field with the device ID from your device!
@@ -84,14 +76,13 @@ class MainActivity : AppCompatActivity() {
 
     private var recordingStartStopDisposable: Disposable? = null
     private var recordingStatusReadDisposable: Disposable? = null
-    private var fetchExerciseDisposable: Disposable? = null
+    private var saveExerciseDisposable: Disposable? = null
     private var removeRecordingDisposable: Disposable? = null
 
     // It is called entries, but on the H10 there is only one saved recording possible.
     private var recordingEntries: MutableList<PolarExerciseEntry> = mutableListOf()
 
     private lateinit var welcomeView: TextView
-    private lateinit var loadRecordingButton: Button
     private lateinit var startRecordingButton: Button
     private lateinit var stopRecordingButton: Button
     private lateinit var checkRecordingStatusButton: Button
@@ -110,17 +101,6 @@ class MainActivity : AppCompatActivity() {
                 }
     }
 
-    @RequiresApi(Build.VERSION_CODES.R)
-    private val storageOnActivityResultLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            result: ActivityResult ->
-                if (result.resultCode == Activity.RESULT_OK && Environment.isExternalStorageManager()) {
-                    Log.w(TAG, "ActivityResult: Storage access was granted")
-                } else {
-                    Log.w(TAG, "ActivityResult: Storage access still denied")
-                }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -131,7 +111,6 @@ class MainActivity : AppCompatActivity() {
 
         // Initialize buttons and text view, then disable all buttons.
         welcomeView = findViewById(R.id.welcomeDisplay)
-        loadRecordingButton = findViewById(R.id.buttonLoadRecording)
         startRecordingButton = findViewById(R.id.buttonStartRecording)
         stopRecordingButton = findViewById(R.id.buttonStopRecording)
         checkRecordingStatusButton = findViewById(R.id.buttonCheckRecordingStatus)
@@ -207,12 +186,11 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "Feature ready $feature")
             }
 
-            override fun disInformationReceived(identifier: String, uuid: UUID, value: String) {
+            override fun disInformationReceived(identifier: String, disInfo: DisInfo) {
                 // DIS = Device Information Service
-                Log.d(TAG, "DIS INFO UUID: $uuid value: $value")
-                if (uuid == UUID.fromString("00002a28-0000-1000-8000-00805f9b34fb")) {
-                    val firmwareVersion = value.trim { it <= ' '}
-                    Log.d(TAG, "Firmware of device with id $identifier is $firmwareVersion")
+                if (disInfo.key == "00002a28-0000-1000-8000-00805f9b34fb") {
+                    val value = disInfo.value.trim {it <=' '}
+                    Log.d(TAG, "Firmware of device with id $identifier is $value")
                 }
             }
 
@@ -235,7 +213,6 @@ class MainActivity : AppCompatActivity() {
 
                 // Deactivate the buttons to prevent multiple requests and change the button text.
                 disableAllButtons()
-                toggleButtonProcess(startRecordingButton)
                 val workingText = "Processing..."
                 startRecordingButton.text = workingText
 
@@ -298,16 +275,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        loadRecordingButton.setOnClickListener {
-            showRecordingDialog()
-        }
-
         stopRecordingButton.setOnClickListener {
             val isDisposed = recordingStartStopDisposable?.isDisposed?: true
             if (isDisposed) {
                 // Deactivate the buttons to prevent multiple requests and change the button text.
                 disableAllButtons()
-                toggleButtonProcess(stopRecordingButton)
                 val workingText = "Processing..."
                 stopRecordingButton.text = workingText
 
@@ -360,7 +332,6 @@ class MainActivity : AppCompatActivity() {
             if (isDisposed) {
                 // Deactivate the buttons to prevent multiple requests and change the button text.
                 disableAllButtons()
-                toggleButtonProcess(checkRecordingStatusButton)
                 val workingText = "Processing..."
                 checkRecordingStatusButton.text = workingText
 
@@ -410,7 +381,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         saveRecordingButton.setOnClickListener {
-            val isDisposed = fetchExerciseDisposable?.isDisposed?: true
+            val isDisposed = saveExerciseDisposable?.isDisposed?: true
             if (isDisposed) {
                 // Ask user if the recording was already stopped and how.
                 val titleDialog = "Just to be sure..."
@@ -424,12 +395,11 @@ class MainActivity : AppCompatActivity() {
                         if (getRecordingPath()) {
                             // Deactivate the buttons to prevent multiple requests and change the button text.
                             disableAllButtons()
-                            toggleButtonProcess(saveRecordingButton)
                             val workingText = "Processing..."
                             saveRecordingButton.text = workingText
 
                             Log.d(TAG, "Fetching of recording with id: ${recordingEntries.first().identifier}.")
-                            fetchExerciseDisposable = api.fetchExercise(deviceId, recordingEntries.first())
+                            saveExerciseDisposable = api.fetchExercise(deviceId, recordingEntries.first())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .doFinally {
                                     // Activate the other buttons again and reset button text.
@@ -510,7 +480,6 @@ class MainActivity : AppCompatActivity() {
             if (isDisposed) {
                 // Deactivate the buttons to prevent multiple requests and change the button text.
                 disableAllButtons()
-                toggleButtonProcess(removeRecordingButton)
                 val workingText = "Processing..."
                 removeRecordingButton.text = workingText
 
@@ -609,13 +578,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun disableAllButtonsVisually() {
         startRecordingButton.isEnabled = false
-        loadRecordingButton.isEnabled = false
         stopRecordingButton.isEnabled = false
         saveRecordingButton.isEnabled = false
         checkRecordingStatusButton.isEnabled = false
         removeRecordingButton.isEnabled = false
         toggleButton(startRecordingButton, true)
-        toggleButton(loadRecordingButton, true)
         toggleButton(stopRecordingButton, true)
         toggleButton(saveRecordingButton, true)
         toggleButton(checkRecordingStatusButton, true)
@@ -624,7 +591,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun disableAllButtons() {
         startRecordingButton.isEnabled = false
-        loadRecordingButton.isEnabled = false
         stopRecordingButton.isEnabled = false
         saveRecordingButton.isEnabled = false
         checkRecordingStatusButton.isEnabled = false
@@ -652,8 +618,6 @@ class MainActivity : AppCompatActivity() {
             removeRecordingButton.isEnabled = true
             toggleButton(removeRecordingButton, false)
         }
-        loadRecordingButton.isEnabled = true
-        toggleButton(loadRecordingButton, false)
         checkRecordingStatusButton.isEnabled = true
         toggleButton(checkRecordingStatusButton, false)
     }
@@ -672,66 +636,7 @@ class MainActivity : AppCompatActivity() {
         if (sharedPreferences.getBoolean(SHARED_REMOVE_BUTTON_ENABLED, false)) {
             removeRecordingButton.isEnabled = true
         }
-        loadRecordingButton.isEnabled = true
         checkRecordingStatusButton.isEnabled = true
-    }
-
-    private fun showRecordingDialog() {
-        if (!checkStoragePermission()) {
-            requestStoragePermission()
-        }
-
-        // Check for files matching the naming pattern of the app.
-        val recordings = listFiles()
-        if (recordings != null) {
-
-            // Construct the main dialog and an adapter to choose the right recording in a list.
-            val mAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, recordings)
-            AlertDialog.Builder(this, R.style.PolarTheme)
-                .setTitle("Choose the recording you want to load")
-                .setAdapter(mAdapter) { _, which ->
-                    val pickedItem: String = mAdapter.getItem(which).toString()
-
-                    // Show the selected recording in a second dialog.
-                    val title = "Recording loaded"
-                    val recordingContent = loadRecordingFromExternalStorage(pickedItem)
-                    AlertDialog.Builder(this, R.style.PolarTheme)
-                        .setTitle(title)
-                        .setMessage(recordingContent)
-                        .setPositiveButton("Close") { _, _ ->
-                            // No action needed here.
-                        }
-                        .setNeutralButton("Delete") { _, _ ->
-
-                            // Show a third dialog to confirm that the recording should be deleted.
-                            AlertDialog.Builder(this, R.style.PolarTheme)
-                                .setTitle("Do you wish to delete the recording?")
-                                .setPositiveButton("Yes") { _: DialogInterface?, _: Int ->
-                                    val removeResult = removeRecordingFromExternalStorage(pickedItem)
-                                    if (removeResult) {
-                                        Log.d(TAG, "File deleted.")
-                                    } else {
-                                        showDialog("An error occurred",
-                                            "Maybe because of missing storage permissions or the recording was already deleted.")
-                                    }
-                                }
-                                .setNegativeButton("No") { _, _ ->
-                                    // No action needed here.
-                                }
-                                .show()
-                        }
-                        .show()
-                }
-                .setNegativeButton("Cancel") { _, _ ->
-                    // No action needed here.
-                }
-                .show()
-        } else {
-            val title = "No recordings found"
-            val message = "There was no saved recording found on this device.\n" +
-                    "If you think there are recordings, check if the permission was given correctly."
-            showDialog(title, message)
-        }
     }
 
     private fun toggleButton(button: Button, isDown: Boolean) {
@@ -742,13 +647,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             DrawableCompat.setTint(buttonDrawable, resources.getColor(R.color.colorPrimary, null))
         }
-        button.background = buttonDrawable
-    }
-
-    private fun toggleButtonProcess(button: Button) {
-        var buttonDrawable = button.background
-        buttonDrawable = DrawableCompat.wrap(buttonDrawable!!)
-        DrawableCompat.setTint(buttonDrawable, resources.getColor(R.color.colorSecondary, null))
         button.background = buttonDrawable
     }
 
@@ -774,45 +672,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadRecordingFromExternalStorage(recordingName: String): String? {
-        val file = File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-            recordingName
-        )
-        if (!file.exists()) {
-            Log.e(TAG, "File not found.")
-            return null
-        }
-
-        return try {
-            file.bufferedReader().use {
-                it.readText()
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-            Log.e(TAG, "Error while reading file or permission denied.")
-            null
-        }
-    }
-
-    private fun removeRecordingFromExternalStorage(recordingName: String): Boolean {
-        val recording = File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() +
-                    File.separatorChar + recordingName
-        )
-        return try {
-            if (recording.isFile) {
-                recording.delete()
-            } else {
-                Log.e(TAG, "File does not exist.")
-                false
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Log.e(TAG, "Error while deleting file or permission denied.")
-            false
-        }
-    }
 
     private fun saveRecordingToExternalStorage(recordingName: String, recording: MutableList<Int>, timestamps: MutableList<Long>) {
         // Is the Android sdk version 29 or higher, the usage of the MediaStore is necessary
@@ -854,62 +713,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             // This case should not be reached.
             Log.e(TAG, "Output stream is null.")
-        }
-    }
-
-    private fun checkStoragePermission(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            return Environment.isExternalStorageManager()
-        } else {
-            val result = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-            val result1 = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            return result == PackageManager.PERMISSION_GRANTED && result1 == PackageManager.PERMISSION_GRANTED
-        }
-    }
-
-    private fun listFiles(): List<Any>? {
-        val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()
-        val directory = File(path)
-        val files = directory.listFiles()?.filter {
-            it.isFile
-            it.extension.contains("csv")
-            it.name.contains("--")
-        }
-        if (files != null) {
-            Log.d(TAG, "Found " + files.size + " files.")
-            val labels: MutableList<String> = mutableListOf()
-            for (i in files.indices) {
-                labels.add(files[i].name)
-            }
-            return labels
-        } else {
-            //This case should not be reached.
-            Log.e(TAG,"The given directory was no directory.")
-            return null
-        }
-    }
-
-    private fun requestStoragePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // For Api Level > 30.
-            try {
-                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                intent.addCategory("android.intent.category.DEFAULT")
-                intent.setData(Uri.parse(String.format("package:%s", applicationContext.packageName)))
-                storageOnActivityResultLauncher.launch(intent)
-            } catch (e: java.lang.Exception) {
-                val intent = Intent()
-                intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-                storageOnActivityResultLauncher.launch(intent)
-            }
-        } else {
-            // Below Api Level 30, i.e., Android 10 or older.
-            ActivityCompat.requestPermissions(
-                this, arrayOf(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                ), PERMISSION_REQUEST_CODE
-            )
         }
     }
 
