@@ -376,6 +376,8 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - onError: see `PolarErrors` for possible errors invoked
     @available(*, deprecated, message: "Use setWarehouseSleep(_ identifier: String) instead")
     func setWarehouseSleep(_ identifier: String, enableWarehouseSleep: Bool?) -> Completable
+  
+    func dumpAllFiles(_ identifier: String) -> Observable<(name: String, size:UInt64)>
 
     /// Set the device to warehouse sleep state. Factory reset will be performed in order to enable the setting.
     ///

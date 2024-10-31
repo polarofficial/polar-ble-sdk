@@ -1537,6 +1537,19 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
+    override fun dumpAllFiles(identifier: String): Flowable<Pair<String, Long>> {
+        val session = try {
+            sessionPsFtpClientReady(identifier)
+        } catch (error: Throwable) {
+            return Flowable.error(error)
+        }
+
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Flowable.error(PolarServiceNotAvailable())
+        
+        return fetchRecursively(client = client, path = "/", condition = { entry -> true});
+    }
+
     override fun setWareHouseSleep(identifier: String, sleepEnabled: Boolean?): Completable {
         val session = try {
             sessionPsFtpClientReady(identifier)

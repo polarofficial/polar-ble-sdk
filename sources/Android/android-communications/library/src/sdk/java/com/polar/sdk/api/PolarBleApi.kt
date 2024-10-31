@@ -349,6 +349,8 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      */
     abstract fun doFirstTimeUse(identifier: String, ftuConfig: PolarFirstTimeUseConfig): Completable
 
+    abstract fun dumpAllFiles(identifier: String): Flowable<Pair<String, Long>>
+
     /**
      * Set [PolarUserDeviceSettings] for device. Currently only 'user device location' is supported.
      *

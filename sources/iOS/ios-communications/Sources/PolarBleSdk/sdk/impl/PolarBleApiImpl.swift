@@ -2204,6 +2204,19 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
   
+    func dumpAllFiles(_ identifier: String) -> Observable<(name: String, size:UInt64)> {
+        do {
+            let session = try sessionFtpClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Observable.error(PolarErrors.serviceNotFound)
+            }
+          
+            return fetchRecursive("/", client: client, condition: { (entry) -> Bool in true })
+        } catch let err {
+            return Observable.error(err)
+        }
+    }
+  
     func getFirmwareInfo(_ identifier: String) -> PolarFirmwareVersionInfo? {
       do {
         let session = try self.sessionFtpClientReady(identifier)
