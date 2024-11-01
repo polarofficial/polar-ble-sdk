@@ -161,12 +161,52 @@ internal class PolarTimeUtils {
         dateComponents.month = Int(month)
         dateComponents.day = Int(day)
         
-        let userCalendar = Calendar(identifier: .gregorian)
+        var userCalendar = Calendar(identifier: .gregorian)
         guard let date = userCalendar.date(from: dateComponents) else {
             BleLogger.error("pbDateToDate failed, cannot create date from dateComponents")
             throw PolarErrors.dateTimeFormatFailed(description: "pbDateToDate failed, cannot create date from dateComponents")
         }
         return date
+    }
+
+    static func pbDateToUTCDate(pbDate: PbDate?) throws -> Date {
+        guard let year = pbDate?.year,
+              let month = pbDate?.month,
+              let day = pbDate?.day else {
+            BleLogger.error("pbDateToDate failed, pbDate is missing parameters")
+            throw PolarErrors.dateTimeFormatFailed(description: "pbDateToDate failed, pbDate is missing parameters")
+        }
+
+        var dateComponents = DateComponents()
+        dateComponents.year = Int(year)
+        dateComponents.month = Int(month)
+        dateComponents.day = Int(day)
+
+        var userCalendar = Calendar(identifier: .gregorian)
+        userCalendar.timeZone = TimeZone(identifier: "UTC")!
+        guard let date = userCalendar.date(from: dateComponents) else {
+            BleLogger.error("pbDateToDate failed, cannot create date from dateComponents")
+            throw PolarErrors.dateTimeFormatFailed(description: "pbDateToDate failed, cannot create date from dateComponents")
+        }
+        return date
+    }
+    
+    static func dateToPbSystemDateTime(date: Date) -> PbSystemDateTime {
+        
+        var proto = PbSystemDateTime()
+    
+        let calendar = Calendar.current
+        proto.time.hour = UInt32(calendar.component(.hour, from: date))
+        proto.time.minute = UInt32(calendar.component(.minute, from: date))
+        proto.time.seconds = UInt32(calendar.component(.second, from: date))
+        proto.time.millis = 0
+        
+        proto.date.day = UInt32(calendar.component(.day, from: date))
+        proto.date.month = UInt32(calendar.component(.month, from: date))
+        proto.date.year = UInt32(calendar.component(.year, from: date))
+        proto.trusted = true
+        
+        return proto
     }
 
     private static func millisToNanos(milliseconds: Int) -> Int {

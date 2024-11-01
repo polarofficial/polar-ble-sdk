@@ -4,7 +4,7 @@ import Foundation
 import RxSwift
 
 private let TAG = "PolarDeviceBackup"
-private let ARABICA_BACK_UP_FILE = "/SYS/BACKUP.TXT"
+private let ARABICA_SYS_FOLDER = "/SYS/"
 private let ARABICA_USER_ROOT_FOLDER = "/U/0/"
 private let USER_WILD_CARD_ROOT_FOLDER = "/U/*/"
 private let WILD_CARD_CHARACTER = "*"
@@ -38,49 +38,74 @@ public class PolarBackupManager {
     /// - Returns: Single stream
     ///   - success: emitting backup files once after read from the device
     ///   - onError: see logs for more details
-    public func backupDevice() -> Single<[BackupFileData]> {
-        Single<[BackupFileData]>.create { single in
-            let singleResult: Single<[UInt8]> = self.loadFile(path: ARABICA_BACK_UP_FILE)
-            return singleResult.flatMap { bytes in
-                let data = Data(bytes)
-                let backupFileData = BackupFileData(data: data, directory: "", fileName: ARABICA_BACK_UP_FILE)
-                return Single<[BackupFileData]>.just([backupFileData])
-            }
-            .subscribe { event in
-                switch event {
-                case .success(let backupFiles):
-                    single(.success(backupFiles))
-                case .failure(let error):
-                    single(.failure(error))
-                }
-            }
-        }
-        .flatMap { backupFiles -> Single<[BackupFileData]> in
-            let data = Data(backupFiles.first!.data)
-            let stream = InputStream(data: data)
-            
-            var backupDirectories: [String] = []
-            stream.open()
-            defer { stream.close() }
-            let bufferSize = 1024
-            let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
-            while stream.hasBytesAvailable {
-                let bytesRead = stream.read(buffer, maxLength: bufferSize)
-                if let line = String(bytesNoCopy: buffer, length: bytesRead, encoding: .utf8, freeWhenDone: false) {
-                    backupDirectories.append(line)
-                }
-            }
-            buffer.deallocate()
-            
-            let backupDataSingles = backupDirectories.map { self.backupDirectory(backupDirectory: $0) }
-            return Single.zip(backupDataSingles)
-                .map { $0.flatMap { $0 } }
-        }
-        .catch { error in
-            BleLogger.error("Failed to get backup content, error: \(error)")
-            return .just([])
-        }
-    }
+   public func backupDevice() -> Single<[BackupFileData]> {
+       BleLogger.trace("backupDevice() called")
+       let operation = Protocol_PbPFtpOperation.with {
+           $0.command = .get
+           $0.path = ARABICA_SYS_FOLDER
+       }
+       let requestData = try! operation.serializedData()
+
+       return client.request(requestData)
+           .flatMap { content -> Single<[BackupFileData]> in
+               do {
+                   let parentDirEntries = try Protocol_PbPFtpDirectory(serializedData: content as Data)
+
+                   let entries: [String] = parentDirEntries.entries.map { entry in
+                       ARABICA_SYS_FOLDER + entry.name
+                   }
+
+                   if let backupEntry = entries.first(where: { $0.hasSuffix("BACKUP.TXT") }) {
+                       BleLogger.trace("Found BACKUP.TXT: \(backupEntry)")
+
+                       return self.loadFile(path: backupEntry)
+                           .flatMap { backupData -> Single<[BackupFileData]> in
+                               let data = Data(backupData)
+
+                               let stream = InputStream(data: data)
+                               var backupDirectories: [String] = []
+                               stream.open()
+                               defer { stream.close() }
+
+                               let bufferSize = 1024
+                               let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
+                               defer { buffer.deallocate() }
+
+                               var accumulatedString = ""
+
+                               while stream.hasBytesAvailable {
+                                   let bytesRead = stream.read(buffer, maxLength: bufferSize)
+                                   if bytesRead > 0, let chunk = String(bytesNoCopy: buffer, length: bytesRead, encoding: .utf8, freeWhenDone: false) {
+                                       accumulatedString += chunk
+
+                                       while let range = accumulatedString.range(of: "\n") {
+                                           let line = String(accumulatedString[..<range.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+                                           backupDirectories.append(line)
+                                           BleLogger.trace("Read line from BACKUP.TXT: \(line)")
+                                           accumulatedString.removeSubrange(..<range.upperBound)
+                                       }
+                                   }
+                               }
+
+                               BleLogger.trace("Backup directories found: \(backupDirectories)")
+                               let backupDataSingles = backupDirectories.map { self.backupDirectory(backupDirectory: $0) }
+                               return Single.zip(backupDataSingles)
+                                   .map { $0.flatMap { $0 } }
+                           }
+                   } else {
+                       BleLogger.error("No BACKUP.TXT found in entries: \(entries)")
+                       return .just([])
+                   }
+               } catch {
+                   BleLogger.error("Failed to parse /SYS/ directory: \(error)")
+                   return .error(error)
+               }
+           }
+           .catch { error in
+               BleLogger.error("Failed to get backup content, error: \(error)")
+               return .just([])
+           }
+   }
 
     /// Restores backup to the device.
     ///
@@ -91,42 +116,53 @@ public class PolarBackupManager {
     ///   - onError: see logs for more details
     public func restoreBackup(backupFiles: [BackupFileData]) -> Completable {
         return Completable.create { completable in
+            BleLogger.trace("Starting backup restoration process for \(backupFiles.count) files")
             let subscription = Observable.from(backupFiles)
                 .flatMap { backupFileData in
+                    BleLogger.trace("Restoring backup file: \(backupFileData.fileName) from directory: \(backupFileData.directory)")
                     do {
                         var operation = Protocol_PbPFtpOperation()
-                        operation.command =  Protocol_PbPFtpOperation.Command.put
+                        operation.command = Protocol_PbPFtpOperation.Command.put
                         operation.path = backupFileData.directory + backupFileData.fileName
                         let header = try operation.serializedData() as NSData
+                        BleLogger.trace("Serialized operation for file: \(backupFileData.fileName), path: \(operation.path)")
                         
                         let dataStream = InputStream(data: backupFileData.data)
                         
                         return self.client.write(header, data: dataStream)
                             .asObservable()
                             .ignoreElements()
+                            .do(onSubscribe: {
+                                BleLogger.trace("Restoring file: \(backupFileData.fileName)")
+                            })
                             .catch { error in
                                 BleLogger.error("Failed to restore backup file: \(backupFileData.fileName), error: \(error)")
                                 completable(.error(error))
                                 return Observable.empty()
                             }
                     } catch {
+                        BleLogger.error("Failed to serialize operation for file: \(backupFileData.fileName), error: \(error)")
                         completable(.error(error))
                         return Observable.empty()
                     }
                 }
                 .subscribe(
                     onError: { error in
+                        BleLogger.error("Error occurred during backup restoration: \(error)")
                         completable(.error(error))
                     },
                     onCompleted: {
+                        BleLogger.trace("Successfully completed backup restoration")
                         completable(.completed)
                     }
                 )
+            
             return Disposables.create {
                 subscription.dispose()
             }
         }
     }
+
     
     private func loadFile(path: String) -> Single<[UInt8]> {
         return Single<[UInt8]>.create { single in

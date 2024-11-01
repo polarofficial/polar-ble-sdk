@@ -477,6 +477,106 @@ extension Data_PbUserTrainingBackground.TrainingBackground: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+struct Data_PbUserTypicalDay {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var value: Data_PbUserTypicalDay.TypicalDay {
+    get {return _value ?? .mostlySitting}
+    set {_value = newValue}
+  }
+  /// Returns true if `value` has been explicitly set.
+  var hasValue: Bool {return self._value != nil}
+  /// Clears the value of `value`. Subsequent reads from it will return its default value.
+  mutating func clearValue() {self._value = nil}
+
+  var lastModified: PbSystemDateTime {
+    get {return _lastModified ?? PbSystemDateTime()}
+    set {_lastModified = newValue}
+  }
+  /// Returns true if `lastModified` has been explicitly set.
+  var hasLastModified: Bool {return self._lastModified != nil}
+  /// Clears the value of `lastModified`. Subsequent reads from it will return its default value.
+  mutating func clearLastModified() {self._lastModified = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  enum TypicalDay: SwiftProtobuf.Enum {
+    typealias RawValue = Int
+    case mostlySitting // = 1
+    case mostlyStanding // = 2
+    case mostlyMoving // = 3
+
+    init() {
+      self = .mostlySitting
+    }
+
+    init?(rawValue: Int) {
+      switch rawValue {
+      case 1: self = .mostlySitting
+      case 2: self = .mostlyStanding
+      case 3: self = .mostlyMoving
+      default: return nil
+      }
+    }
+
+    var rawValue: Int {
+      switch self {
+      case .mostlySitting: return 1
+      case .mostlyStanding: return 2
+      case .mostlyMoving: return 3
+      }
+    }
+
+  }
+
+  init() {}
+
+  fileprivate var _value: Data_PbUserTypicalDay.TypicalDay? = nil
+  fileprivate var _lastModified: PbSystemDateTime? = nil
+}
+
+#if swift(>=4.2)
+
+extension Data_PbUserTypicalDay.TypicalDay: CaseIterable {
+  // Support synthesized by the compiler.
+}
+
+#endif  // swift(>=4.2)
+
+struct Data_PbSleepGoal {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// The Sleep Goal of the user, in minutes. Can be null.
+  var sleepGoalMinutes: UInt32 {
+    get {return _sleepGoalMinutes ?? 0}
+    set {_sleepGoalMinutes = newValue}
+  }
+  /// Returns true if `sleepGoalMinutes` has been explicitly set.
+  var hasSleepGoalMinutes: Bool {return self._sleepGoalMinutes != nil}
+  /// Clears the value of `sleepGoalMinutes`. Subsequent reads from it will return its default value.
+  mutating func clearSleepGoalMinutes() {self._sleepGoalMinutes = nil}
+
+  var lastModified: PbSystemDateTime {
+    get {return _lastModified ?? PbSystemDateTime()}
+    set {_lastModified = newValue}
+  }
+  /// Returns true if `lastModified` has been explicitly set.
+  var hasLastModified: Bool {return self._lastModified != nil}
+  /// Clears the value of `lastModified`. Subsequent reads from it will return its default value.
+  mutating func clearLastModified() {self._lastModified = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _sleepGoalMinutes: UInt32? = nil
+  fileprivate var _lastModified: PbSystemDateTime? = nil
+}
+
 struct Data_PbUserPhysData {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -554,6 +654,25 @@ struct Data_PbUserPhysData {
   /// Clears the value of `trainingBackground`. Subsequent reads from it will return its default value.
   mutating func clearTrainingBackground() {_uniqueStorage()._trainingBackground = nil}
 
+  var typicalDay: Data_PbUserTypicalDay {
+    get {return _storage._typicalDay ?? Data_PbUserTypicalDay()}
+    set {_uniqueStorage()._typicalDay = newValue}
+  }
+  /// Returns true if `typicalDay` has been explicitly set.
+  var hasTypicalDay: Bool {return _storage._typicalDay != nil}
+  /// Clears the value of `typicalDay`. Subsequent reads from it will return its default value.
+  mutating func clearTypicalDay() {_uniqueStorage()._typicalDay = nil}
+
+  /// The Sleep Goal of the user
+  var sleepGoal: Data_PbSleepGoal {
+    get {return _storage._sleepGoal ?? Data_PbSleepGoal()}
+    set {_uniqueStorage()._sleepGoal = newValue}
+  }
+  /// Returns true if `sleepGoal` has been explicitly set.
+  var hasSleepGoal: Bool {return _storage._sleepGoal != nil}
+  /// Clears the value of `sleepGoal`. Subsequent reads from it will return its default value.
+  mutating func clearSleepGoal() {_uniqueStorage()._sleepGoal = nil}
+
   ///
   /// Timestamps for the whole component: these are updated
   /// if any of the component fields are updated.
@@ -586,6 +705,9 @@ extension Data_PbUserVo2Max: @unchecked Sendable {}
 extension Data_PbUserVo2Max.Vo2MaxSettingSource: @unchecked Sendable {}
 extension Data_PbUserTrainingBackground: @unchecked Sendable {}
 extension Data_PbUserTrainingBackground.TrainingBackground: @unchecked Sendable {}
+extension Data_PbUserTypicalDay: @unchecked Sendable {}
+extension Data_PbUserTypicalDay.TypicalDay: @unchecked Sendable {}
+extension Data_PbSleepGoal: @unchecked Sendable {}
 extension Data_PbUserPhysData: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
@@ -1000,6 +1122,110 @@ extension Data_PbUserTrainingBackground.TrainingBackground: SwiftProtobuf._Proto
   ]
 }
 
+extension Data_PbUserTypicalDay: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".PbUserTypicalDay"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "value"),
+    2: .standard(proto: "last_modified"),
+  ]
+
+  public var isInitialized: Bool {
+    if self._value == nil {return false}
+    if self._lastModified == nil {return false}
+    if let v = self._lastModified, !v.isInitialized {return false}
+    return true
+  }
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self._value) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._lastModified) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._value {
+      try visitor.visitSingularEnumField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._lastModified {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Data_PbUserTypicalDay, rhs: Data_PbUserTypicalDay) -> Bool {
+    if lhs._value != rhs._value {return false}
+    if lhs._lastModified != rhs._lastModified {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Data_PbUserTypicalDay.TypicalDay: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "MOSTLY_SITTING"),
+    2: .same(proto: "MOSTLY_STANDING"),
+    3: .same(proto: "MOSTLY_MOVING"),
+  ]
+}
+
+extension Data_PbSleepGoal: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".PbSleepGoal"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "sleep_goal_minutes"),
+    2: .standard(proto: "last_modified"),
+  ]
+
+  public var isInitialized: Bool {
+    if let v = self._lastModified, !v.isInitialized {return false}
+    return true
+  }
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self._sleepGoalMinutes) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._lastModified) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._sleepGoalMinutes {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._lastModified {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Data_PbSleepGoal, rhs: Data_PbSleepGoal) -> Bool {
+    if lhs._sleepGoalMinutes != rhs._sleepGoalMinutes {return false}
+    if lhs._lastModified != rhs._lastModified {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension Data_PbUserPhysData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".PbUserPhysData"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -1011,6 +1237,8 @@ extension Data_PbUserPhysData: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     6: .standard(proto: "resting_heartrate"),
     10: .same(proto: "vo2max"),
     11: .standard(proto: "training_background"),
+    12: .standard(proto: "typical_day"),
+    17: .standard(proto: "sleep_goal"),
     100: .standard(proto: "last_modified"),
   ]
 
@@ -1023,6 +1251,8 @@ extension Data_PbUserPhysData: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     var _restingHeartrate: Data_PbUserHrAttribute? = nil
     var _vo2Max: Data_PbUserVo2Max? = nil
     var _trainingBackground: Data_PbUserTrainingBackground? = nil
+    var _typicalDay: Data_PbUserTypicalDay? = nil
+    var _sleepGoal: Data_PbSleepGoal? = nil
     var _lastModified: PbSystemDateTime? = nil
 
     #if swift(>=5.10)
@@ -1046,6 +1276,8 @@ extension Data_PbUserPhysData: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       _restingHeartrate = source._restingHeartrate
       _vo2Max = source._vo2Max
       _trainingBackground = source._trainingBackground
+      _typicalDay = source._typicalDay
+      _sleepGoal = source._sleepGoal
       _lastModified = source._lastModified
     }
   }
@@ -1069,6 +1301,8 @@ extension Data_PbUserPhysData: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       if let v = _storage._restingHeartrate, !v.isInitialized {return false}
       if let v = _storage._vo2Max, !v.isInitialized {return false}
       if let v = _storage._trainingBackground, !v.isInitialized {return false}
+      if let v = _storage._typicalDay, !v.isInitialized {return false}
+      if let v = _storage._sleepGoal, !v.isInitialized {return false}
       if let v = _storage._lastModified, !v.isInitialized {return false}
       return true
     }
@@ -1090,6 +1324,8 @@ extension Data_PbUserPhysData: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
         case 6: try { try decoder.decodeSingularMessageField(value: &_storage._restingHeartrate) }()
         case 10: try { try decoder.decodeSingularMessageField(value: &_storage._vo2Max) }()
         case 11: try { try decoder.decodeSingularMessageField(value: &_storage._trainingBackground) }()
+        case 12: try { try decoder.decodeSingularMessageField(value: &_storage._typicalDay) }()
+        case 17: try { try decoder.decodeSingularMessageField(value: &_storage._sleepGoal) }()
         case 100: try { try decoder.decodeSingularMessageField(value: &_storage._lastModified) }()
         default: break
         }
@@ -1127,6 +1363,12 @@ extension Data_PbUserPhysData: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       try { if let v = _storage._trainingBackground {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
       } }()
+      try { if let v = _storage._typicalDay {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+      } }()
+      try { if let v = _storage._sleepGoal {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 17)
+      } }()
       try { if let v = _storage._lastModified {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 100)
       } }()
@@ -1147,6 +1389,8 @@ extension Data_PbUserPhysData: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
         if _storage._restingHeartrate != rhs_storage._restingHeartrate {return false}
         if _storage._vo2Max != rhs_storage._vo2Max {return false}
         if _storage._trainingBackground != rhs_storage._trainingBackground {return false}
+        if _storage._typicalDay != rhs_storage._typicalDay {return false}
+        if _storage._sleepGoal != rhs_storage._sleepGoal {return false}
         if _storage._lastModified != rhs_storage._lastModified {return false}
         return true
       }

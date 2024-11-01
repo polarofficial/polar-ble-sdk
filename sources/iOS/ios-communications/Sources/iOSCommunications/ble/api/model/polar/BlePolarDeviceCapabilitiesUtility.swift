@@ -44,7 +44,7 @@ open class BlePolarDeviceCapabilitiesUtility {
     public static func isRecordingSupported(_ deviceType: String) -> Bool {
         return deviceType == "H10"
     }
-
+    
     /// Check if device is supporting firmware update
     /// - Parameter deviceType: device type
     /// - Returns: true if device firmware update
@@ -63,7 +63,7 @@ open class BlePolarDeviceCapabilitiesUtility {
             || lowercasedDeviceType == GRIT_X2_PRO
             || lowercasedDeviceType == VANTAGE_V3
     }
-
+    
     public static func isDeviceSensor(_ deviceType: String) -> Bool {
         let lowercasedDeviceType = deviceType.lowercased()
         return lowercasedDeviceType == OH1 ||

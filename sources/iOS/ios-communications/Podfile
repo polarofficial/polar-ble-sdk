@@ -22,8 +22,8 @@ end
 target 'iOSCommunications' do
   swift_protobuf_pod
   rx_swift_pod
-  alamofire_pod
   zip_pod
+  alamofire_pod
 end
 
 target 'PolarBleSdk' do

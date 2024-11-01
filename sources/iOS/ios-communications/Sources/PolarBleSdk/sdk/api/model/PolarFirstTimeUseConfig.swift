@@ -8,6 +8,23 @@ public struct PolarFirstTimeUseConfig {
         case female
     }
 
+    public enum TypicalDay: Int, CaseIterable {
+        case mostlySitting = 1
+        case mostlyStanding = 2
+        case mostlyMoving = 3
+
+        public var description: String {
+            switch self {
+            case .mostlySitting:
+                return "Mostly Sitting"
+            case .mostlyStanding:
+                return "Mostly Standing"
+            case .mostlyMoving:
+                return "Mostly Moving"
+            }
+        }
+    }
+
     public enum TrainingBackground: Int {
             case occasional = 10
             case regular = 20
@@ -26,16 +43,31 @@ public struct PolarFirstTimeUseConfig {
     public let restingHeartRate: Int
     public let trainingBackground: TrainingBackground
     public let deviceTime: String
+    public let typicalDay: TypicalDay
+    public let sleepGoalMinutes: Int
 
     static let FTU_CONFIG_FILEPATH = "/U/0/S/PHYSDATA.BPB"
 
-    public init(gender: Gender, birthDate: Date, height: Float, weight: Float, maxHeartRate: Int, vo2Max: Int, restingHeartRate: Int, trainingBackground: TrainingBackground, deviceTime: String) {
+    public init(
+        gender: Gender,
+        birthDate: Date,
+        height: Float,
+        weight: Float,
+        maxHeartRate: Int,
+        vo2Max: Int,
+        restingHeartRate: Int,
+        trainingBackground: TrainingBackground,
+        deviceTime: String,
+        typicalDay: TypicalDay,
+        sleepGoalMinutes: Int
+    ) {
         assert(height >= 90.0 && height <= 240.0, "Height must be between 90 and 240 cm")
         assert(weight >= 15.0 && weight <= 300.0, "Weight must be between 15 and 300 kg")
         assert(maxHeartRate >= 100 && maxHeartRate <= 240, "Max heart rate must be between 100 and 240 bpm")
         assert(restingHeartRate >= 20 && restingHeartRate <= 120, "Resting heart rate must be between 20 and 120 bpm")
         assert(trainingBackground.rawValue >= 10 && trainingBackground.rawValue <= 60, "Training background out of range")
         assert(vo2Max >= 10 && vo2Max <= 95, "VO2 max must be between 10 and 95")
+        assert(sleepGoalMinutes >= 300 && sleepGoalMinutes <= 660, "Sleep goal must be between 300 and 660 minutes")
 
         self.gender = gender
         self.birthDate = birthDate
@@ -46,26 +78,34 @@ public struct PolarFirstTimeUseConfig {
         self.restingHeartRate = restingHeartRate
         self.trainingBackground = trainingBackground
         self.deviceTime = deviceTime
+        self.typicalDay = typicalDay
+        self.sleepGoalMinutes = sleepGoalMinutes
     }
 
     func toProto() -> Data_PbUserPhysData? {
         let dateFormatter = ISO8601DateFormatter()
-            dateFormatter.formatOptions = [.withInternetDateTime]
+        dateFormatter.formatOptions = [.withInternetDateTime]
+        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
 
-            guard let deviceTimeDate = dateFormatter.date(from: deviceTime) else {
-                return nil
-            }
+        guard let deviceTimeDate = dateFormatter.date(from: deviceTime) else {
+            BleLogger.error("Failed to parse deviceTime from: \(deviceTime)")
+            return nil
+        }
+
+        let calendar = Calendar(identifier: .gregorian)
+        let utcTimeZone = TimeZone(secondsFromGMT: 0)!
+        let components = calendar.dateComponents(in: utcTimeZone, from: deviceTimeDate)
 
         let lastModified = PbSystemDateTime.with {
             $0.date = PbDate.with {
-                $0.year = UInt32(Calendar.current.component(.year, from: deviceTimeDate))
-                $0.month = UInt32(Calendar.current.component(.month, from: deviceTimeDate))
-                $0.day = UInt32(Calendar.current.component(.day, from: deviceTimeDate))
+                $0.year = UInt32(components.year!)
+                $0.month = UInt32(components.month!)
+                $0.day = UInt32(components.day!)
             }
             $0.time = PbTime.with {
-                $0.hour = UInt32(Calendar.current.component(.hour, from: deviceTimeDate))
-                $0.minute = UInt32(Calendar.current.component(.minute, from: deviceTimeDate))
-                $0.seconds = UInt32(Calendar.current.component(.second, from: deviceTimeDate))
+                $0.hour = UInt32(components.hour!)
+                $0.minute = UInt32(components.minute!)
+                $0.seconds = UInt32(components.second!)
             }
             $0.trusted = true
         }
@@ -109,9 +149,18 @@ public struct PolarFirstTimeUseConfig {
             $0.lastModified = lastModified
         }
 
-
         let vo2MaxPb = Data_PbUserVo2Max.with {
             $0.value = UInt32(vo2Max)
+            $0.lastModified = lastModified
+        }
+
+        let typicalDayPb = Data_PbUserTypicalDay.with {
+            $0.value = Data_PbUserTypicalDay.TypicalDay(rawValue: typicalDay.rawValue)!
+            $0.lastModified = lastModified
+        }
+
+        let sleepGoalPb = Data_PbSleepGoal.with {
+            $0.sleepGoalMinutes = UInt32(sleepGoalMinutes)
             $0.lastModified = lastModified
         }
 
@@ -124,6 +173,8 @@ public struct PolarFirstTimeUseConfig {
             $0.restingHeartrate = restingHeartRatePb
             $0.trainingBackground = trainingBackgroundPb
             $0.vo2Max = vo2MaxPb
+            $0.typicalDay = typicalDayPb
+            $0.sleepGoal = sleepGoalPb
             $0.lastModified = lastModified
         }
     }

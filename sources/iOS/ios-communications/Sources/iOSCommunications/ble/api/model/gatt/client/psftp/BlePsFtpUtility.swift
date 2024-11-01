@@ -294,7 +294,11 @@ public class BlePsFtpUtility {
         } else {
             if (packet.count > RFC76_HEADER_SIZE) {
                 header.payload = packet.subdata(in: 1..<(packet.count))
-            } else {
+            } else if (packet.count == RFC76_HEADER_SIZE && header.status == 1) {
+                // header status 1 indicates the last packet in response from the device.
+                BleLogger.trace("Received response from device has header only, no payload.")
+            }
+            else {
                 throw BlePsFtpUtility.RFC76FrameProcessError.frameHasNoPayload
             }
         }

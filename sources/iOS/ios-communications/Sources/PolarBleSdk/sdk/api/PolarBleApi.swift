@@ -359,8 +359,11 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - Resting heart rate: 20 to 120 bpm
     ///   - VO2 max: 10 to 95
     ///   - Training background: One of the predefined levels (10, 20, 30, 40, 50, 60)
+    ///   - Typical day: One of [TypicalDay] values
+    ///   - Sleep goal: Minutes, valid range [300-660]
     func doFirstTimeUse(_ identifier: String, ftuConfig: PolarFirstTimeUseConfig) -> Completable
 
+    /// Deprecated. Use "func setWarehouseSleep(_ identifier: String)" instead.
     /// Set warehouse sleep to a device. Factory reset will be performed in order to enable the setting.
     ///
     /// - Parameters:
@@ -369,8 +372,43 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Returns: Completable stream
     ///   - success: when warehouse sleep has been set together with  factory reset
     ///   - onError: see `PolarErrors` for possible errors invoked
+    @available(*, deprecated, message: "Use setWarehouseSleep(_ identifier: String) instead")
     func setWarehouseSleep(_ identifier: String, enableWarehouseSleep: Bool?) -> Completable
 
+    /// Set the device to warehouse sleep state. Factory reset will be performed in order to enable the setting.
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id or UUID
+    /// - Returns: Completable stream
+    ///   - success: when warehouse sleep has been set together with  factory reset
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func setWarehouseSleep(_ identifier: String) -> Completable
+    
+    /// Get Device User Settings to a device from proto in device (UDEVSET.BPB)
+    /// - Parameters:
+    ///   - identifier: polar device id or UUID
+    /// - Returns: Single stream
+    ///   - success: Collection of user device settings, like device location on user.
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func getPolarUserDeviceSettings(identifier: String) -> Single<PolarUserDeviceSettings.PolarUserDeviceSettingsResult>
+    
+    /// Set Device User Settings to a device (UDEVSET.BPB)
+    /// - Parameters:
+    ///   - identifier: Polar device id or UUID
+    ///   - polarUserDeviceSettings: Collection of user device settings, like device location on user.
+    /// - Returns: Completable stream
+    ///   - success: When Device User Settings configuration has been written to the device
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func setPolarUserDeviceSettings(_ identifier: String, polarUserDeviceSettings: PolarUserDeviceSettings?) -> Completable
+    
+    /// Delete data [PolarStoredDataType] from a device.
+    ///
+    /// @param identifier, Polar device ID or BT address
+    /// @param dataType, [PolarStoredDataType] A specific data type that shall be deleted
+    /// @param until, Data will be deleted from device from history until this date.
+    /// @return [Completable] emitting success or error
+    func deleteStoredDeviceData(_ identifier: String, dataType: PolarStoredDataType.StoredDataType, until: Date?) -> Completable
+    
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }
     

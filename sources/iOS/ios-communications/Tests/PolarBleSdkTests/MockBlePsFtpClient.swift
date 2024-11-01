@@ -10,6 +10,7 @@ public protocol BlePsFtpClient {
 
 class MockBlePsFtpClient: BlePsFtpClient {
     var requestCalls: [Data] = []
+    var requestReturnValueClosure: ((Data) -> Single<Data>)?
     var requestReturnValue: Single<Data>?
     var directoryContentReturnValue: Single<Data>?
     
@@ -21,12 +22,12 @@ class MockBlePsFtpClient: BlePsFtpClient {
 
     func request(_ data: Data) -> Single<Data> {
         requestCalls.append(data)
-        if let directoryContentReturnValue = directoryContentReturnValue, let requestDataString = String(data: data, encoding: .utf8), requestDataString.contains("/SYS/BT/") {
-            return directoryContentReturnValue
+        if let returnValue = requestReturnValueClosure {
+            return returnValue(data)
         }
         return requestReturnValue ?? Single.just(Data())
     }
-    
+
     func write(_ header: NSData, data: InputStream) -> Completable {
         writeCalls.append((header, data))
         return writeReturnValue ?? Completable.empty()
