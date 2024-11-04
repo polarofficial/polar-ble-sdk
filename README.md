@@ -30,6 +30,9 @@ It is a device designed to increase general well-being and to make the lives of 
 * [Offline recording](documentation/OfflineRecordingExplained.md)
 * 24/7 Steps counting
 * Sleep duration and sleep stages
+* Firmware update
+* Setting user's physical info
+* Deleting data from device
  
 ### H10 Heart rate sensor
 Most accurate Heart rate sensor in the markets. The H10 is used in the Getting started section of this page. 
