@@ -25,7 +25,7 @@ To know what are the capabilities of each `PolarDeviceDataType` in offline recor
 
 **SDK Mode**
 
-The offline recording can be used in [SDK mode](SdkModeExplained.md). The SDK mode provides wider range of settings to be used, to know the available settings in SDK mode for offline recording the settings can be queried by the `requestFullOfflineRecordingSettings`. Please note that in SDK Mode, it is not possible to perform operations such as listing offline recordings (`listOfflineRecordings`), reading specific offline recording (`getOfflineRecord`), or deleting offline recordings (`removeOfflineRecord`). 
+The offline recording can be used in [SDK mode](SdkModeExplained.md). The SDK mode provides wider range of settings to be used, to know the available settings in SDK mode for offline recording the settings can be queried by the `requestFullOfflineRecordingSettings`.
 
 **Offline recording triggers**
 
