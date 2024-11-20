@@ -2877,11 +2877,17 @@ extension PolarBleApiImpl: PolarBleApi  {
 
                     switch dateCompareResult {
                     case .orderedSame:
+                        /// If file date is same as until date, it should not be deleted, hence we remote if from deletion map.
                         self.fileDeletionMap.removeValue(forKey: filePath.key)
-                        BleLogger.trace("Auto sample file \(filePath.key) removed from deletion list.")
+                        BleLogger.trace("Auto sample file \(filePath.key) removed from deletion map.")
+                        break;
                     case .orderedAscending:
+                        /// If file date is earlier than until date, it should be deleted, hence we keep it in deletion map.
                         break
                     case .orderedDescending:
+                        /// If file date is later than until date, it should not be deleted, hence we remove it from deletion map.
+                        self.fileDeletionMap.removeValue(forKey: filePath.key)
+                        BleLogger.trace("Auto sample file \(filePath.key) removed from deletion map.")
                         break
                     }
 
