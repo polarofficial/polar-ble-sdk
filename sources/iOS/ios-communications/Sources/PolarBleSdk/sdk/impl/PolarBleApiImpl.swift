@@ -2719,7 +2719,8 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
     
     func deleteStoredDeviceData(_ identifier: String, dataType: PolarStoredDataType.StoredDataType, until: Date?) -> Completable {
-        
+        BleLogger.trace("Deleting stored data from device \(identifier) of type \(dataType.rawValue) until \(until ?? Date()).")
+      
         fileDeletionMap.removeAll()
         let entryPattern = dataType.rawValue
         
@@ -2894,7 +2895,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             .flatMap() { file, item -> PrimitiveSequence<SingleTrait, ()> in
                 self.removeSingleFile(identifier: identifier, filePath: file)
                     .map { _ -> () in
-                        BleLogger.trace("Auto sample file \(file) deleted. Removing from deletion list.")
+                        BleLogger.trace("Auto sample file \(file) deleted. Removing from deletion map.")
                         self.fileDeletionMap[file] = true
                     }
             }

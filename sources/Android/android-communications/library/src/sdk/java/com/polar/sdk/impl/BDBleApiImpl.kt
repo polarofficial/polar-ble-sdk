@@ -2378,8 +2378,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     override fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Completable {
+        BleLogger.d(TAG, "Deleting stored data from device $identifier of type ${dataType.type} until: $until.")
 
         fileDeletionMap.clear()
+        
         var folderPath = "/U/0"
         val entryPattern = dataType.type
         var cond: FetchRecursiveCondition?
@@ -2413,19 +2415,27 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
         }
 
-        listFiles(identifier, folderPath, condition = cond)
+        return listFiles(identifier, folderPath, condition = cond)
             .map {
+                BleLogger.d(TAG, "File $it marked for deletion.")
                 fileDeletionMap[it] = false
             }
-            .doOnComplete {
+            .ignoreElements()
+            .andThen(Completable.defer {
+                BleLogger.d(TAG, "List files completed.")
+
                 when (dataType.type) {
                     PolarStoredDataType.AUTO_SAMPLE.type -> {
                         BleLogger.d(TAG, "Starting to delete files from /U/0/AUTOS/ folder from device $identifier.")
-                        deleteAutoSyncFiles(identifier).subscribe()
+                        return@defer deleteAutoSyncFiles(identifier, until).doOnComplete {
+                            BleLogger.d(TAG, "Deleting auto sync files completed.")
+                        }
                     }
 
                     PolarStoredDataType.SDLOGS.type -> {
                         BleLogger.d(TAG, "Starting to delete files from SDLOGS folder from device $identifier.")
+
+                        // TODO: wait for completion
                         deleteSdLogFiles(identifier).subscribe()
                     }
 
@@ -2434,44 +2444,47 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                             TAG,
                             "Starting to delete files from /U/0 directory, file type: $dataType.name from device $identifier."
                         )
+
+                        // TODO: wait for completion
                         deleteDataDirectories(identifier, until).subscribe()
                     }
                 }
-            }.doOnError { error ->
+
+                Completable.complete()
+            }).doOnError { error ->
                 BleLogger.e(TAG, "Encountered exception while deleting files in device $identifier.. Error: $error")
                 Completable.error(error)
-            }.subscribe()
-
-        return Completable.complete()
+            }
     }
 
-    private fun deleteAutoSyncFiles(identifier: String): Flowable<Map.Entry<String, Boolean>> {
-
-        return Flowable.fromIterable(fileDeletionMap.asIterable()).doOnEach() { item ->
-            val file = item.value
-            if (file != null && !file.value) {
+    private fun deleteAutoSyncFiles(identifier: String, until: LocalDate?): Completable {
+        return Flowable.fromIterable(fileDeletionMap.asIterable())
+            .flatMapCompletable { file ->
                 getFile(identifier, file.key)
-                    .subscribe(
-                        { byteArray ->
-                            val proto = PbAutomaticSampleSessions.parseFrom(byteArray)
-                            val date = PolarTimeUtils.pbDateToLocalDate(proto.day)
-                            // Delete all files but leave files from today.
-                            if (date.isBefore(LocalDate.now())) {
-                                fileDeletionMap[file.key] = true
-                                removeSingleFile(identifier, file.key)
-                                    .map { _ ->
-                                        fileDeletionMap[file.key] = true
-                                    }.doOnError { error ->
-                                        BleLogger.e(TAG, "Failed to delete autosync file $file.key from device $identifier. Error: $error")
-                                    }.subscribe()
-                            }
-                        },
-                        { error ->
-                            BleLogger.e(TAG, "Failed to load file ${file.key} from device $identifier. Error: $error")
+                    .flatMapCompletable { byteArray ->
+                        val proto = PbAutomaticSampleSessions.parseFrom(byteArray)
+                        val date = PolarTimeUtils.pbDateToLocalDate(proto.day)
+                        
+                        val until = until ?: LocalDate.now()
+                        val isBefore = date.isBefore(until)
+
+                        BleLogger.d(TAG, "Comparing autosync file ${file.key} date: $date with until date: $until. Result: $isBefore")
+
+                        // Delete all files but leave files from today.
+                        if (isBefore) {
+                            fileDeletionMap[file.key] = true
+                            return@flatMapCompletable removeSingleFile(identifier, file.key)
+                                .map { _ ->
+                                    BleLogger.d(TAG, "Autosync file ${file.key} deleted. Removing from deletion map.")
+                                    fileDeletionMap[file.key] = true
+                                }.doOnError { error ->
+                                    BleLogger.e(TAG, "Failed to delete autosync file ${file.key} from device $identifier. Error: $error")
+                                }.ignoreElement()
                         }
-                    )
+
+                        Completable.complete()
+                    }
             }
-        }
     }
 
     private fun deleteSdLogFiles(identifier: String):Flowable<Map.Entry<String, Boolean>> {
