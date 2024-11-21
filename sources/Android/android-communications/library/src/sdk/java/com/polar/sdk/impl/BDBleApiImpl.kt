@@ -2109,17 +2109,17 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
     }
 
+    
     private fun getDatesBetween(startDate: LocalDate, endDate: LocalDate): MutableList<LocalDate> {
         var theDate: LocalDate = startDate
         var datesList = mutableListOf<LocalDate>()
-
-        while (startDate == endDate || endDate.isAfter(theDate)) {
+        
+        while (theDate == endDate || endDate.isAfter(theDate)) {
             datesList.add(theDate)
             theDate = theDate.plusDays(1)
         }
 
         return datesList
-
     }
 
     override fun getActiveTime(identifier: String, fromDate: Date, toDate: Date): Single<List<PolarActiveTimeData>> {
