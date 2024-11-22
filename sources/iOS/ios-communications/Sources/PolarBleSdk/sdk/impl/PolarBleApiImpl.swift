@@ -2864,49 +2864,55 @@ extension PolarBleApiImpl: PolarBleApi  {
         return Observable.range(start: 0, count: self.fileDeletionMap.count)
             /// Use concatMap to ensure that files are checked one by one (sequentially, not concurrently).
             .concatMap() { [self] index -> Observable<NSData> in
+              /// Use deferred to ensure that each file is checked only "when it time comes". This is important
+              /// because we want to check each file only after the previous one has been processed.
+              return Observable.deferred {
                 let filePath = Array(fileDeletionMap)[index]
+                
+                BleLogger.trace("Checking auto sample file \(filePath.key). filesDeleted \(filesDeleted).")
 
                 if let maxFilesToDelete = maxFilesToDelete, filesDeleted >= maxFilesToDelete {
                     BleLogger.trace("Max files to delete \(maxFilesToDelete) reached. File \(filePath.key) will not be checked.")
                     return Observable.empty()
                 }
                 
-               return getFile(identifier: identifier, filePath: filePath.key)
-                .map { file -> NSData in
+                return getFile(identifier: identifier, filePath: filePath.key)
+                  .map { file -> NSData in
                     let calendar = Calendar.current
                     let dateFormatter = DateFormatter()
                     dateFormatter.dateFormat = "yyyyMMdd"
                     dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
-
+                    
                     let fileData = try Data_PbAutomaticSampleSessions(serializedData: file as Data)
                     let proto = AutomaticSamples.fromProto(proto: fileData)
-                  
+                    
                     let fileDay = self.dateFromStringWOTime(dateFrom: dateFormatter.string(from: proto.day!))
                     let untilDay = self.dateFromStringWOTime(dateFrom: dateFormatter.string(from: until))
-                                                             
+                    
                     let dateCompareResult = calendar.compare(fileDay, to: untilDay, toGranularity: .day)
-                  
+                    
                     BleLogger.trace("Comparing auto sample file \(filePath.key) date \(fileDay), until date \(untilDay), compare result \(dateCompareResult.rawValue), maxFilesToDelete \(maxFilesToDelete ?? -1), filesDeleted \(filesDeleted).")
-
+                    
                     switch dateCompareResult {
                     case .orderedSame:
-                        /// If file date is same as until date, it should not be deleted, hence we remote if from deletion map.
-                        self.fileDeletionMap.removeValue(forKey: filePath.key)
-                        BleLogger.trace("Auto sample file \(filePath.key) removed from deletion map.")
-                        break;
+                      /// If file date is same as until date, it should not be deleted, hence we remote if from deletion map.
+                      self.fileDeletionMap.removeValue(forKey: filePath.key)
+                      BleLogger.trace("Auto sample file \(filePath.key) removed from deletion map.")
+                      break;
                     case .orderedAscending:
-                        /// If file date is earlier than until date, it should be deleted, hence we keep it in deletion map.
-                        filesDeleted += 1
-                        break
+                      /// If file date is earlier than until date, it should be deleted, hence we keep it in deletion map.
+                      filesDeleted += 1
+                      break
                     case .orderedDescending:
-                        /// If file date is later than until date, it should not be deleted, hence we remove it from deletion map.
-                        self.fileDeletionMap.removeValue(forKey: filePath.key)
-                        BleLogger.trace("Auto sample file \(filePath.key) removed from deletion map.")
-                        break
+                      /// If file date is later than until date, it should not be deleted, hence we remove it from deletion map.
+                      self.fileDeletionMap.removeValue(forKey: filePath.key)
+                      BleLogger.trace("Auto sample file \(filePath.key) removed from deletion map.")
+                      break
                     }
-
+                    
                     return file as NSData
-                }
+                  }
+              }
             }
     }
 

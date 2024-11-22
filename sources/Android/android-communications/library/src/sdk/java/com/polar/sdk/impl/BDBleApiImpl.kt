@@ -2468,36 +2468,40 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         return Flowable.fromIterable(fileDeletionMap.asIterable())
             /// Use concatMapCompletable in order to delete files one by one (sequentially, not concurrently).
             .concatMapCompletable { file ->
-                if (maxFilesToDelete != null && filesDeleted >= maxFilesToDelete) {
-                    BleLogger.d(TAG, "Max files to delete $maxFilesToDelete reached. File ${file.key} will not be deleted.")
-                    return@concatMapCompletable Completable.complete()
-                }
-
-                getFile(identifier, file.key)
-                    .flatMapCompletable { byteArray ->
-                        val proto = PbAutomaticSampleSessions.parseFrom(byteArray)
-                        val date = PolarTimeUtils.pbDateToLocalDate(proto.day)
-                        
-                        val until = until ?: LocalDate.now()
-                        val isBefore = date.isBefore(until)
-
-                        BleLogger.d(TAG, "Comparing autosync file ${file.key} date: $date, until date: $until, isBefore: $isBefore, filesDeleted: $filesDeleted, maxFilesToDelete: $maxFilesToDelete")
-
-                        // Delete all files but leave files from today.
-                        if (isBefore) {
-                            filesDeleted++
-                            fileDeletionMap[file.key] = true
-                            return@flatMapCompletable removeSingleFile(identifier, file.key)
-                                .map { _ ->
-                                    BleLogger.d(TAG, "Autosync file ${file.key} deleted. Removing from deletion map.")
-                                    fileDeletionMap[file.key] = true
-                                }.doOnError { error ->
-                                    BleLogger.e(TAG, "Failed to delete autosync file ${file.key} from device $identifier. Error: $error")
-                                }.ignoreElement()
-                        }
-
-                        Completable.complete()
+                /// Use deferred to ensure that each file is checked only "when it time comes". This is important
+                /// because we want to check each file only after the previous one has been processed.
+                Completable.defer {
+                    if (maxFilesToDelete != null && filesDeleted >= maxFilesToDelete) {
+                        BleLogger.d(TAG, "Max files to delete $maxFilesToDelete reached. File ${file.key} will not be deleted.")
+                        return@defer Completable.complete()
                     }
+
+                    getFile(identifier, file.key)
+                        .flatMapCompletable { byteArray ->
+                            val proto = PbAutomaticSampleSessions.parseFrom(byteArray)
+                            val date = PolarTimeUtils.pbDateToLocalDate(proto.day)
+                            
+                            val untilDate = until ?: LocalDate.now()
+                            val isBefore = date.isBefore(untilDate)
+
+                            BleLogger.d(TAG, "Comparing autosync file ${file.key} date: $date, until date: $untilDate, isBefore: $isBefore, filesDeleted: $filesDeleted, maxFilesToDelete: $maxFilesToDelete")
+
+                            // Delete all files but leave files from today.
+                            if (isBefore) {
+                                filesDeleted++
+                                fileDeletionMap[file.key] = true
+                                return@flatMapCompletable removeSingleFile(identifier, file.key)
+                                    .map { _ ->
+                                        BleLogger.d(TAG, "Autosync file ${file.key} deleted. Removing from deletion map.")
+                                        fileDeletionMap[file.key] = true
+                                    }.doOnError { error ->
+                                        BleLogger.e(TAG, "Failed to delete autosync file ${file.key} from device $identifier. Error: $error")
+                                    }.ignoreElement()
+                            }
+
+                            Completable.complete()
+                        }
+                }
             }
     }
 
