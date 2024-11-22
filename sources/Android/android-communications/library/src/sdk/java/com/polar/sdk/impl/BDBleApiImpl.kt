@@ -2377,8 +2377,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 })
     }
 
-    override fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Completable {
-        BleLogger.d(TAG, "Deleting stored data from device $identifier of type ${dataType.type} until: $until.")
+    override fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?, maxFilesToDelete: Int?): Completable {
+        BleLogger.d(TAG, "Deleting stored data from device $identifier of type ${dataType.type}, until: $until, maxFilesToDelete: $maxFilesToDelete")
 
         fileDeletionMap.clear()
         
@@ -2427,7 +2427,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 when (dataType.type) {
                     PolarStoredDataType.AUTO_SAMPLE.type -> {
                         BleLogger.d(TAG, "Starting to delete files from /U/0/AUTOS/ folder from device $identifier.")
-                        return@defer deleteAutoSyncFiles(identifier, until).doOnComplete {
+                        return@defer deleteAutoSyncFiles(identifier, until, maxFilesToDelete).doOnComplete {
                             BleLogger.d(TAG, "Deleting auto sync files completed.")
                         }
                     }
@@ -2457,9 +2457,22 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
     }
 
-    private fun deleteAutoSyncFiles(identifier: String, until: LocalDate?): Completable {
+    private fun deleteAutoSyncFiles(identifier: String, until: LocalDate?, maxFilesToDelete: Int?): Completable {
+        if (maxFilesToDelete != null && maxFilesToDelete == 0) {
+            BleLogger.d(TAG, "Max files to delete set to 0. Skipping deletion.")
+            return Completable.complete()
+        }
+
+        var filesDeleted = 0
+
         return Flowable.fromIterable(fileDeletionMap.asIterable())
-            .flatMapCompletable { file ->
+            /// Use concatMapCompletable in order to delete files one by one (sequentially, not concurrently).
+            .concatMapCompletable { file ->
+                if (maxFilesToDelete != null && filesDeleted >= maxFilesToDelete) {
+                    BleLogger.d(TAG, "Max files to delete $maxFilesToDelete reached. File ${file.key} will not be deleted.")
+                    return@concatMapCompletable Completable.complete()
+                }
+
                 getFile(identifier, file.key)
                     .flatMapCompletable { byteArray ->
                         val proto = PbAutomaticSampleSessions.parseFrom(byteArray)
@@ -2468,10 +2481,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         val until = until ?: LocalDate.now()
                         val isBefore = date.isBefore(until)
 
-                        BleLogger.d(TAG, "Comparing autosync file ${file.key} date: $date with until date: $until. Result: $isBefore")
+                        BleLogger.d(TAG, "Comparing autosync file ${file.key} date: $date, until date: $until, isBefore: $isBefore, filesDeleted: $filesDeleted, maxFilesToDelete: $maxFilesToDelete")
 
                         // Delete all files but leave files from today.
                         if (isBefore) {
+                            filesDeleted++
                             fileDeletionMap[file.key] = true
                             return@flatMapCompletable removeSingleFile(identifier, file.key)
                                 .map { _ ->

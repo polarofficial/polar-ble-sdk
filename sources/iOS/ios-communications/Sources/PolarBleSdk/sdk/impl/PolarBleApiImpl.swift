@@ -2718,21 +2718,21 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
-    func deleteStoredDeviceData(_ identifier: String, dataType: PolarStoredDataType.StoredDataType, until: Date?) -> Completable {
-        BleLogger.trace("Deleting stored data from device \(identifier) of type \(dataType.rawValue) until \(until ?? Date()).")
+    func deleteStoredDeviceData(_ identifier: String, dataType: PolarStoredDataType.StoredDataType, until: Date?, maxFilesToDelete: Int?) -> Completable {
+        BleLogger.trace("Deleting stored device data of type \(dataType.rawValue), until \(until ?? Date.distantFuture), maxFilesToDelete \(maxFilesToDelete ?? -1).")        
       
         fileDeletionMap.removeAll()
         let entryPattern = dataType.rawValue
         
         switch dataType {
         case .AUTO_SAMPLE:
-            return deleteListedFilesByType(identifier: identifier, entryPath: "/U/0/AUTOS", until: until!, dataType, condition:{ (entry) -> Bool in
+          return deleteListedFilesByType(identifier: identifier, entryPath: "/U/0/AUTOS", until: until!, dataType, maxFilesToDelete: maxFilesToDelete, condition:{ (entry) -> Bool in
                 entry.contains("^(\\d{8})(/)") ||
                 entry == "\(entryPattern)/" ||
                 entry.contains(".BPB")
             })
         case .SDLOGS:
-            return deleteListedFilesByType(identifier: identifier, entryPath: "/SDLOGS", until: until!, dataType, condition:{ (entry) -> Bool in
+          return deleteListedFilesByType(identifier: identifier, entryPath: "/SDLOGS", until: until!, dataType, maxFilesToDelete: maxFilesToDelete, condition:{ (entry) -> Bool in
                 entry.contains("^(\\d{8})(/)") ||
                 entry == "\(entryPattern)/" ||
                 entry.contains(".SLG") ||
@@ -2748,7 +2748,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             fallthrough
         case .SLEEP_SCORE:
             if (until != nil) {
-                         return deleteListedFilesByType(identifier: identifier, entryPath: "/U/0/", until: until!, dataType, condition:{ (entry) -> Bool in
+              return deleteListedFilesByType(identifier: identifier, entryPath: "/U/0/", until: until!, dataType, maxFilesToDelete: maxFilesToDelete, condition:{ (entry) -> Bool in
                              return entry.matches("^([0-9]{8})(\\/)") ||
                                  entry == "\(entryPattern)/" ||
                                  entry.contains(".BPB") &&
@@ -2763,8 +2763,8 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
 
-    private func deleteListedFilesByType(identifier: String, entryPath: String, until: Date, _ dataType: PolarStoredDataType.StoredDataType, condition: @escaping (_ p: String) -> Bool) -> Completable {
-      BleLogger.trace("Deleting files of type \(dataType.rawValue) in entry path \(entryPath) until \(until).")
+    private func deleteListedFilesByType(identifier: String, entryPath: String, until: Date, _ dataType: PolarStoredDataType.StoredDataType, maxFilesToDelete: Int?, condition: @escaping (_ p: String) -> Bool) -> Completable {
+      BleLogger.trace("Deleting files of type \(dataType.rawValue) in entry path \(entryPath) until \(until), maxFilesToDelete \(maxFilesToDelete ?? -1).")
       
       return listFiles(identifier: identifier, folderPath: entryPath, condition: condition)
         .map{ [self] item -> () in
@@ -2787,7 +2787,7 @@ extension PolarBleApiImpl: PolarBleApi  {
           switch dataType {
           case .AUTO_SAMPLE:
             BleLogger.trace("Starting to delete files from /U/0/AUTOS/ folder.")
-            return checkAutoSampleFiles(identifier: identifier, until: until)
+            return checkAutoSampleFiles(identifier: identifier, until: until, maxFilesToDelete: maxFilesToDelete)
               .ignoreElements()
               .asCompletable()
               .andThen(Completable.deferred({ [weak self] in
@@ -2854,10 +2854,23 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
 
-  private func checkAutoSampleFiles(identifier: String, until: Date) -> Observable<NSData> {
+  private func checkAutoSampleFiles(identifier: String, until: Date, maxFilesToDelete: Int?) -> Observable<NSData> {
+        if maxFilesToDelete == 0 {
+            return Observable.empty()
+        }
+
+        var filesDeleted = 0
+
         return Observable.range(start: 0, count: self.fileDeletionMap.count)
-            .flatMap() { [self] index -> Observable<NSData> in
+            /// Use concatMap to ensure that files are checked one by one (sequentially, not concurrently).
+            .concatMap() { [self] index -> Observable<NSData> in
                 let filePath = Array(fileDeletionMap)[index]
+
+                if let maxFilesToDelete = maxFilesToDelete, filesDeleted >= maxFilesToDelete {
+                    BleLogger.trace("Max files to delete \(maxFilesToDelete) reached. File \(filePath.key) will not be checked.")
+                    return Observable.empty()
+                }
+                
                return getFile(identifier: identifier, filePath: filePath.key)
                 .map { file -> NSData in
                     let calendar = Calendar.current
@@ -2873,7 +2886,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                                                              
                     let dateCompareResult = calendar.compare(fileDay, to: untilDay, toGranularity: .day)
                   
-                    BleLogger.trace("Comparing auto sample file \(filePath.key) date \(fileDay) with until date \(untilDay). Result: \(dateCompareResult.rawValue)")
+                    BleLogger.trace("Comparing auto sample file \(filePath.key) date \(fileDay), until date \(untilDay), compare result \(dateCompareResult.rawValue), maxFilesToDelete \(maxFilesToDelete ?? -1), filesDeleted \(filesDeleted).")
 
                     switch dateCompareResult {
                     case .orderedSame:
@@ -2883,6 +2896,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                         break;
                     case .orderedAscending:
                         /// If file date is earlier than until date, it should be deleted, hence we keep it in deletion map.
+                        filesDeleted += 1
                         break
                     case .orderedDescending:
                         /// If file date is later than until date, it should not be deleted, hence we remove it from deletion map.
@@ -2898,8 +2912,10 @@ extension PolarBleApiImpl: PolarBleApi  {
 
     private func deleteAutoSampleFiles(identifier: String) -> Observable<()> {
         return Observable.from(self.fileDeletionMap)
-            .flatMap() { file, item -> PrimitiveSequence<SingleTrait, ()> in
-                self.removeSingleFile(identifier: identifier, filePath: file)
+            /// Use concatMap to ensure that files are deleted one by one (sequentially, not concurrently).
+            .concatMap() { file, item -> PrimitiveSequence<SingleTrait, ()> in
+                BleLogger.trace("Deleting auto sample file \(file).")
+                return self.removeSingleFile(identifier: identifier, filePath: file)
                     .map { _ -> () in
                         BleLogger.trace("Auto sample file \(file) deleted. Removing from deletion map.")
                         self.fileDeletionMap[file] = true
@@ -2910,7 +2926,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 BleLogger.error("Error in deleting auto samples file from device \(identifier). Error: \(error)")
               },
               onCompleted: {
-                  BleLogger.trace("Auto sample files deletetion completed.")
+                  BleLogger.trace("Auto sample files deletion completed.")
               })
     }
 

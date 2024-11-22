@@ -374,8 +374,9 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @param identifier, Polar device ID or BT address
      * @param dataType, [PolarStoredDataType] A specific data type that shall be deleted
      * @param until, Data will be deleted from device from history until this date.
+     * @param maxFilesToDelete, Maximum number of files to delete. If null, all files will be deleted.
      * @return [Completable] emitting success or error
      */
-    abstract fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Completable
+    abstract fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?, maxFilesToDelete: Int?): Completable
 
 }
