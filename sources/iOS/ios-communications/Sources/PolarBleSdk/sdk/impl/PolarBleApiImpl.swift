@@ -2872,7 +2872,8 @@ extension PolarBleApiImpl: PolarBleApi  {
                 BleLogger.trace("Checking auto sample file \(filePath.key). filesDeleted \(filesDeleted).")
 
                 if let maxFilesToDelete = maxFilesToDelete, filesDeleted >= maxFilesToDelete {
-                    BleLogger.trace("Max files to delete \(maxFilesToDelete) reached. File \(filePath.key) will not be checked.")
+                    BleLogger.trace("Max files to delete \(maxFilesToDelete) reached. File \(filePath.key) will not be checked. Removing from file deletion map.")
+                    self.fileDeletionMap.removeValue(forKey: filePath.key)
                     return Observable.empty()
                 }
                 
