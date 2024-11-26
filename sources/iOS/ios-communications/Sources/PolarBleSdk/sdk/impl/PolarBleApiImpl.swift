@@ -2860,8 +2860,12 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
 
         var filesDeleted = 0
+    
+        /// Copy the file deletion map to a local variable. Original fileDeletionMap is being modified during the execution of this function,
+        /// so we need to make sure that we are iterating over the copy to avoid index out ot range errors.
+        let fileDeletionMap = self.fileDeletionMap
 
-        return Observable.range(start: 0, count: self.fileDeletionMap.count)
+        return Observable.range(start: 0, count: fileDeletionMap.count)
             /// Use concatMap to ensure that files are checked one by one (sequentially, not concurrently).
             .concatMap() { [self] index -> Observable<NSData> in
               /// Use deferred to ensure that each file is checked only "when it time comes". This is important
@@ -2873,6 +2877,7 @@ extension PolarBleApiImpl: PolarBleApi  {
 
                 if let maxFilesToDelete = maxFilesToDelete, filesDeleted >= maxFilesToDelete {
                     BleLogger.trace("Max files to delete \(maxFilesToDelete) reached. File \(filePath.key) will not be checked. Removing from file deletion map.")
+                    /// Modify original fileDeletionMap to remove the file from it.
                     self.fileDeletionMap.removeValue(forKey: filePath.key)
                     return Observable.empty()
                 }
