@@ -51,7 +51,6 @@ import UIKit
     var connectSubscriptions = [String : Disposable]()
     var serviceList = [CBUUID.init(string: "180D")]
     let features:Set<PolarBleSdkFeature>
-    var fileDeletionMap = [String : Bool]()
     let dateFormatter = ISO8601DateFormatter()
     
     required public init(_ queue: DispatchQueue, features: Set<PolarBleSdkFeature>) {
@@ -2719,9 +2718,9 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
     
     func deleteStoredDeviceData(_ identifier: String, dataType: PolarStoredDataType.StoredDataType, until: Date?, maxFilesToDelete: Int?) -> Completable {
-        BleLogger.trace("Deleting stored device data of type \(dataType.rawValue), until \(until ?? Date.distantFuture), maxFilesToDelete \(maxFilesToDelete ?? -1).")        
+        BleLogger.trace("Deleting stored device data of type \(dataType.rawValue), until \(until ?? Date.distantFuture), maxFilesToDelete \(maxFilesToDelete ?? -1).") 
       
-        fileDeletionMap.removeAll()
+        var fileDeletionMap = [String : Bool]()
         let entryPattern = dataType.rawValue
         
         switch dataType {
@@ -2730,14 +2729,14 @@ extension PolarBleApiImpl: PolarBleApi  {
                 entry.contains("^(\\d{8})(/)") ||
                 entry == "\(entryPattern)/" ||
                 entry.contains(".BPB")
-            })
+            }, fileDeletionMap: &fileDeletionMap)
         case .SDLOGS:
           return deleteListedFilesByType(identifier: identifier, entryPath: "/SDLOGS", until: until!, dataType, maxFilesToDelete: maxFilesToDelete, condition:{ (entry) -> Bool in
                 entry.contains("^(\\d{8})(/)") ||
                 entry == "\(entryPattern)/" ||
                 entry.contains(".SLG") ||
                 entry.contains(".TXT")
-            })
+            }, fileDeletionMap: &fileDeletionMap)
         case .ACTIVITY:
             fallthrough
         case .DAILY_SUMMARY:
@@ -2754,7 +2753,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                                  entry.contains(".BPB") &&
                                  !entry.contains("USERID.BPB") &&
                                  !entry.contains("HIST")
-                         })
+                         }, fileDeletionMap: &fileDeletionMap)
             } else {
                 return Completable.error(PolarErrors.dateTimeFormatFailed(description: "Value for until date cannot be empty."))
             }
@@ -2763,10 +2762,10 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
 
-    private func deleteListedFilesByType(identifier: String, entryPath: String, until: Date, _ dataType: PolarStoredDataType.StoredDataType, maxFilesToDelete: Int?, condition: @escaping (_ p: String) -> Bool) -> Completable {
+    private func deleteListedFilesByType(identifier: String, entryPath: String, until: Date, _ dataType: PolarStoredDataType.StoredDataType, maxFilesToDelete: Int?, condition: @escaping (_ p: String) -> Bool, fileDeletionMap: inout [String : Bool]) -> Completable {
       BleLogger.trace("Deleting files of type \(dataType.rawValue) in entry path \(entryPath) until \(until), maxFilesToDelete \(maxFilesToDelete ?? -1).")
       
-      return listFiles(identifier: identifier, folderPath: entryPath, condition: condition)
+      return listFiles(identifier: identifier, folderPath: entryPath, condition: condition, fileDeletionMap: &fileDeletionMap)
         .map{ [self] item -> () in
           BleLogger.trace("File \(item) marked for deletion.")
           fileDeletionMap[item] = false
@@ -2787,7 +2786,7 @@ extension PolarBleApiImpl: PolarBleApi  {
           switch dataType {
           case .AUTO_SAMPLE:
             BleLogger.trace("Starting to delete files from /U/0/AUTOS/ folder.")
-            return checkAutoSampleFiles(identifier: identifier, until: until, maxFilesToDelete: maxFilesToDelete)
+            return checkAutoSampleFiles(identifier: identifier, until: until, maxFilesToDelete: maxFilesToDelete, fileDeletionMap: &fileDeletionMap)
               .ignoreElements()
               .asCompletable()
               .andThen(Completable.deferred({ [weak self] in
@@ -2801,7 +2800,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 
                 BleLogger.trace("Checking auto sample files completed.")
                 
-                return self.deleteAutoSampleFiles(identifier: identifier).ignoreElements().asCompletable()
+                return self.deleteAutoSampleFiles(identifier: identifier, fileDeletionMap: &fileDeletionMap).ignoreElements().asCompletable()
               }))
           case .SDLOGS:
             BleLogger.trace("Starting to delete files from SDLOGS folder.")
@@ -2826,7 +2825,7 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
                      
   
-    private func listFiles(identifier: String, folderPath: String = "/", condition: @escaping (_ p: String) -> Bool) -> Observable<String> {
+    private func listFiles(identifier: String, folderPath: String = "/", condition: @escaping (_ p: String) -> Bool, fileDeletionMap: inout [String : Bool]) -> Observable<String> {
         
         do {
             let session = try self.sessionFtpClientReady(identifier)
@@ -2845,7 +2844,7 @@ extension PolarBleApiImpl: PolarBleApi  {
        
             return fetchRecursive(path, client: client, condition: condition)
             .map { (entry) -> String in
-                self.fileDeletionMap[entry.name] = false
+                fileDeletionMap[entry.name] = false
                 return (entry.name)
             }
 
@@ -2854,7 +2853,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
 
-  private func checkAutoSampleFiles(identifier: String, until: Date, maxFilesToDelete: Int?) -> Observable<NSData> {
+    private func checkAutoSampleFiles(identifier: String, until: Date, maxFilesToDelete: Int?, fileDeletionMap: inout [String : Bool]) -> Observable<NSData> {
         if maxFilesToDelete == 0 {
             return Observable.empty()
         }
@@ -2863,7 +2862,7 @@ extension PolarBleApiImpl: PolarBleApi  {
     
         /// Copy the file deletion map to a local variable. Original fileDeletionMap is being modified during the execution of this function,
         /// so we need to make sure that we are iterating over the copy to avoid index out ot range errors.
-        let fileDeletionMap = self.fileDeletionMap
+        let fileDeletionMapCopy = fileDeletionMap
 
         return Observable.range(start: 0, count: fileDeletionMap.count)
             /// Use concatMap to ensure that files are checked one by one (sequentially, not concurrently).
@@ -2878,7 +2877,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 if let maxFilesToDelete = maxFilesToDelete, filesDeleted >= maxFilesToDelete {
                     BleLogger.trace("Max files to delete \(maxFilesToDelete) reached. File \(filePath.key) will not be checked. Removing from file deletion map.")
                     /// Modify original fileDeletionMap to remove the file from it.
-                    self.fileDeletionMap.removeValue(forKey: filePath.key)
+                    fileDeletionMap.removeValue(forKey: filePath.key)
                     return Observable.empty()
                 }
                 
@@ -2922,15 +2921,15 @@ extension PolarBleApiImpl: PolarBleApi  {
             }
     }
 
-    private func deleteAutoSampleFiles(identifier: String) -> Observable<()> {
-        return Observable.from(self.fileDeletionMap)
+    private func deleteAutoSampleFiles(identifier: String, fileDeletionMap: inout [String : Bool]) -> Observable<()> {
+        return Observable.from(fileDeletionMap)
             /// Use concatMap to ensure that files are deleted one by one (sequentially, not concurrently).
             .concatMap() { file, item -> PrimitiveSequence<SingleTrait, ()> in
                 BleLogger.trace("Deleting auto sample file \(file).")
                 return self.removeSingleFile(identifier: identifier, filePath: file)
                     .map { _ -> () in
                         BleLogger.trace("Auto sample file \(file) deleted. Removing from deletion map.")
-                        self.fileDeletionMap[file] = true
+                        fileDeletionMap[file] = true
                     }
             }
             .do(
@@ -2942,13 +2941,12 @@ extension PolarBleApiImpl: PolarBleApi  {
               })
     }
 
-    private func deleteSdLogFiles(identifier: String) {
-        
-        Observable.from(self.fileDeletionMap)
+    private func deleteSdLogFiles(identifier: String, fileDeletionMap: inout [String : Bool]) {
+        Observable.from(fileDeletionMap)
             .flatMap() { file, item -> PrimitiveSequence<SingleTrait, ()> in
                 self.removeSingleFile(identifier: identifier, filePath: file)
                     .map { _ -> () in
-                        self.fileDeletionMap[file] = true
+                        fileDeletionMap[file] = true
                     }
             }
             .subscribe(
@@ -2959,7 +2957,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             )
     }
     
-    private func deleteDataDirectories(identifier: String, until: Date) {
+    private func deleteDataDirectories(identifier: String, until: Date, fileDeletionMap: inout [String : Bool]) {
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyyMMdd"
@@ -2973,7 +2971,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             // Remove time from until date.
             let until = dateFromStringWOTime(dateFrom: dateFormatter.string(from: until))
             if !(fileDate < until) {
-                self.fileDeletionMap.removeValue(forKey: file)
+                fileDeletionMap.removeValue(forKey: file)
             }
         }
                 
@@ -3031,7 +3029,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         return Completable.empty()
     }
     
-    private func deleteDayDirectories(identifier: String) {
+    private func deleteDayDirectories(identifier: String, fileDeletionMap: inout [String : Bool]) {
         
         var directorySet = [String : Bool]()
         
@@ -3052,7 +3050,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     BleLogger.error("An error occurred while deleting a directory, error: \(error)")
                 },
                 onCompleted: {
-                    self.deleteDayDirectories(identifier: identifier)
+                  self.deleteDayDirectories(identifier: identifier, fileDeletionMap: &fileDeletionMap)
                 }
             )
     }

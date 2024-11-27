@@ -122,7 +122,6 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     private var deviceSessionState: DeviceSessionState? = null
     private var callback: PolarBleApiCallbackProvider? = null
     private var logger: PolarBleApiLogger? = null
-    private val fileDeletionMap: MutableMap<String, Boolean> = mutableMapOf()
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd", Locale.ENGLISH)
 
     init {
@@ -2380,7 +2379,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     override fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?, maxFilesToDelete: Int?): Completable {
         BleLogger.d(TAG, "Deleting stored data from device $identifier of type ${dataType.type}, until: $until, maxFilesToDelete: $maxFilesToDelete")
 
-        fileDeletionMap.clear()
+        val fileDeletionMap: MutableMap<String, Boolean> = mutableMapOf()
         
         var folderPath = "/U/0"
         val entryPattern = dataType.type
@@ -2427,7 +2426,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 when (dataType.type) {
                     PolarStoredDataType.AUTO_SAMPLE.type -> {
                         BleLogger.d(TAG, "Starting to delete files from /U/0/AUTOS/ folder from device $identifier.")
-                        return@defer deleteAutoSyncFiles(identifier, until, maxFilesToDelete).doOnComplete {
+                        return@defer deleteAutoSyncFiles(identifier, until, maxFilesToDelete, fileDeletionMap).doOnComplete {
                             BleLogger.d(TAG, "Deleting auto sync files completed.")
                         }
                     }
@@ -2436,7 +2435,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         BleLogger.d(TAG, "Starting to delete files from SDLOGS folder from device $identifier.")
 
                         // TODO: wait for completion
-                        deleteSdLogFiles(identifier).subscribe()
+                        deleteSdLogFiles(identifier, fileDeletionMap).subscribe()
                     }
 
                     else -> {
@@ -2446,7 +2445,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         )
 
                         // TODO: wait for completion
-                        deleteDataDirectories(identifier, until).subscribe()
+                        deleteDataDirectories(identifier, until, fileDeletionMap).subscribe()
                     }
                 }
 
@@ -2457,7 +2456,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
     }
 
-    private fun deleteAutoSyncFiles(identifier: String, until: LocalDate?, maxFilesToDelete: Int?): Completable {
+    private fun deleteAutoSyncFiles(identifier: String, until: LocalDate?, maxFilesToDelete: Int?, fileDeletionMap: MutableMap<String, Boolean>): Completable {
         if (maxFilesToDelete != null && maxFilesToDelete == 0) {
             BleLogger.d(TAG, "Max files to delete set to 0. Skipping deletion.")
             return Completable.complete()
@@ -2505,7 +2504,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
     }
 
-    private fun deleteSdLogFiles(identifier: String):Flowable<Map.Entry<String, Boolean>> {
+    private fun deleteSdLogFiles(identifier: String, fileDeletionMap: MutableMap<String, Boolean>):Flowable<Map.Entry<String, Boolean>> {
 
         return Flowable.fromIterable(fileDeletionMap.asIterable()).doOnEach() { item ->
             val file = item.value
@@ -2523,7 +2522,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
-    private fun deleteDataDirectories(identifier: String, until: LocalDate?): Flowable<Unit> {
+    private fun deleteDataDirectories(identifier: String, until: LocalDate?, fileDeletionMap: MutableMap<String, Boolean>): Flowable<Unit> {
 
         var directoryList: MutableList<String> = mutableListOf()
 
