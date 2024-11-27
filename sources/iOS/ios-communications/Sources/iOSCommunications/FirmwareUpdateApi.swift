@@ -5,7 +5,7 @@ import Alamofire
 import RxSwift
 
 class FirmwareUpdateApi {
-    let baseURL = "https://firmware-management-app.ds-2012.env.polar.com"
+    let baseURL = "https://firmware-management.polar.com"
 
     func checkFirmwareUpdate(firmwareUpdateRequest: FirmwareUpdateRequest, completion: @escaping (Result<FirmwareUpdateResponse, AFError>) -> Void) {
         let url = "\(baseURL)/api/v1/firmware-update/check"

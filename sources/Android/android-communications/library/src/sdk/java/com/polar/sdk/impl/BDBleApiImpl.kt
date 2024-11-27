@@ -96,6 +96,7 @@ import protocol.PftpResponse.PbPFtpDirectory
 import protocol.PftpResponse.PbRequestRecordingStatusResult
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -104,6 +105,8 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.regex.Matcher
 import java.util.regex.Pattern
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 
 
 /**
@@ -1278,7 +1281,60 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Completable.error(PolarServiceNotAvailable())
         val fsType = getFileSystemType(session.polarDeviceType)
         return if (fsType == FileSystemType.SAGRFC2_FILE_SYSTEM) {
-            removeOfflineFilesRecursively(client, entry.path, whileContaining = Regex("/\\d{8}/"))
+            getSubRecordingCount(identifier, entry)
+                .flatMap { count ->
+                    if (count == 0 || entry.path.contains(Regex("""(\D+)(\d+)\.REC"""))) {
+                        val builder = PftpRequest.PbPFtpOperation.newBuilder()
+                        builder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
+                        builder.path = entry.path
+                        return@flatMap client.request(builder.build().toByteArray())
+                    } else {
+                        Observable.fromIterable(0 until count)
+                            .flatMap { subRecordingIndex ->
+                                val recordingPath = entry.path.replace(
+                                    Regex("(\\.REC)$"),
+                                    "$subRecordingIndex.REC"
+                                )
+
+                                fileDeletionMap.put(listOf(recordingPath.split("/")
+                                    .subList(0, recordingPath.split("/")
+                                        .lastIndex - 1))[0].joinToString(separator = "/"), false)
+                                val builder = PftpRequest.PbPFtpOperation.newBuilder()
+                                builder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
+                                builder.path = recordingPath
+
+                                client.request(builder.build().toByteArray()).toObservable()
+                            }.ignoreElements().toSingleDefault(count)
+                    }
+                }.doFinally {
+                    val dir = "/U/0"
+                    var fileList: MutableList<String> = mutableListOf()
+                    listFiles(identifier, dir,
+                        condition = { entry: String ->
+                            entry.matches(Regex("^(\\d{8})(/)")) ||
+                                    entry.matches(Regex("^(\\d{6})(/)")) ||
+                                    entry == "R/" ||
+                                    entry.contains(".REC") &&
+                                    !entry.contains(".BPB") &&
+                                    !entry.contains("HIST")
+                        })
+                        .map {
+                            fileList.add(it)
+                        }
+                        .doFinally {
+                            if (fileList.isEmpty()) {
+                                deleteDataDirectories(identifier).subscribe()
+                            }
+                        }
+                        .doOnError { error ->
+                            BleLogger.e(
+                                TAG,
+                                "Failed to list files from directory $dir from device $identifier. Error: $error"
+                            )
+                            Completable.error(error)
+                        }
+                        .subscribe()
+                }.ignoreElement()
         } else {
             Completable.error(PolarOperationNotSupported())
         }
@@ -1522,11 +1578,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                     }
                                 }
                         )
+                        .doOnComplete {
+                            sendTerminateAndStopSyncNotifications(client)
+                        }
                         .subscribe(
-                                {
-                                    sendTerminateAndStopSyncNotifications(client)
-                                    emitter.onComplete()
-                                },
+                                { emitter.onComplete() },
                                 { error -> emitter.onError(error) }
                         )
             } catch (error: Throwable) {
@@ -1912,15 +1968,40 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                             .flatMap { firmwareBytes ->
                                                                 val contentLength = firmwareBytes.contentLength()
                                                                 BleLogger.d(TAG, "FW package for version ${firmwareUpdateResponse.version} downloaded, size: $contentLength bytes")
-                                                                val unzippedFwPackage = PolarFirmwareUpdateUtils.unzipFirmwarePackage(firmwareBytes.bytes())
+                                                                val firmwareFiles = mutableListOf<Pair<String, ByteArray>>()
+                                                                val zipInputStream = ZipInputStream(ByteArrayInputStream(firmwareBytes.bytes()))
+                                                                var entry: ZipEntry?
+                                                                val buffer = ByteArray(PolarFirmwareUpdateUtils.BUFFER_SIZE)
+                                                                while (zipInputStream.nextEntry.also { entry = it } != null) {
+                                                                    val byteArrayOutputStream = ByteArrayOutputStream()
+                                                                    var length: Int
+                                                                    while (zipInputStream.read(buffer).also { length = it } != -1) {
+                                                                        byteArrayOutputStream.write(buffer, 0, length)
+                                                                    }
+                                                                    val fileName = entry!!.name
+                                                                    BleLogger.d(TAG, "Extracted firmware file: $fileName")
+                                                                    firmwareFiles.add(Pair(fileName, byteArrayOutputStream.toByteArray()))
+                                                                    zipInputStream.closeEntry()
+                                                                }
+                                                                zipInputStream.close()
+
+                                                                firmwareFiles.sortWith { f1, f2 ->
+                                                                    PolarFirmwareUpdateUtils.FwFileComparator().compare(File(f1.first), File(f2.first))
+                                                                }
+
                                                                 doFactoryReset(identifier, true)
                                                                         .andThen(Completable.timer(30, TimeUnit.SECONDS))
                                                                         .andThen(waitDeviceSessionToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L))
                                                                         .andThen(Completable.timer(5, TimeUnit.SECONDS))
                                                                         .andThen(
-                                                                                writeFirmwareToDevice(identifier, unzippedFwPackage)
-                                                                                        .map<FirmwareUpdateStatus> { bytesWritten ->
-                                                                                            FirmwareUpdateStatus.WritingFwUpdatePackage("Writing firmware update file for version ${firmwareUpdateResponse.version}, bytes written: $bytesWritten/${unzippedFwPackage.size}")
+                                                                                Flowable.fromIterable(firmwareFiles)
+                                                                                        .concatMap { firmwareFile ->
+                                                                                            writeFirmwareToDevice(identifier, firmwareFile.first, firmwareFile.second)
+                                                                                                    .map<FirmwareUpdateStatus> { bytesWritten ->
+                                                                                                        FirmwareUpdateStatus.WritingFwUpdatePackage(
+                                                                                                                "Writing firmware update file ${firmwareFile.first}, bytes written: $bytesWritten/${firmwareFile.second.size}"
+                                                                                                        )
+                                                                                                    }
                                                                                         }
                                                                         )
                                                             }
@@ -1934,7 +2015,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                                     BleLogger.d(TAG, "Starting finalization of firmware update")
                                                                     Completable.timer(rebootTriggeredWaitTimeSeconds, TimeUnit.SECONDS)
                                                                             .andThen(
-                                                                                    waitDeviceSessionToOpen(identifier, rebootMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 120L)
+                                                                                    waitDeviceSessionToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 120L)
                                                                                             .andThen(
                                                                                                     Completable.fromCallable {
                                                                                                         BleLogger.d(TAG, "Restoring backup to device after version ${firmwareUpdateResponse.version}")
@@ -2243,6 +2324,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     private fun sendInitializationAndStartSyncNotifications(client: BlePsFtpClient) {
+        BleLogger.d(TAG, "Sending initialize session and start sync notifications")
         client.sendNotification(
                 PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE,
                 null
@@ -2254,6 +2336,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     private fun sendTerminateAndStopSyncNotifications(client: BlePsFtpClient) {
+        BleLogger.d(TAG, "Sending terminate session and stop sync notifications")
         client.sendNotification(
                 PftpNotification.PbPFtpHostToDevNotification.STOP_SYNC_VALUE,
                 PbPFtpStopSyncParams.newBuilder().setCompleted(true).build().toByteArray()
@@ -2265,7 +2348,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
 
-    private fun writeFirmwareToDevice(deviceId: String, firmwareBytes: ByteArray): Flowable<Long> {
+    private fun writeFirmwareToDevice(deviceId: String, firmwareFilePath: String, firmwareBytes: ByteArray): Flowable<Long> {
         return Flowable.create({ emitter ->
             try {
                 val session = sessionPsFtpClientReady(deviceId)
@@ -2285,10 +2368,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 BleLogger.d(TAG, "Prepare firmware update")
                 val disposable = client.query(PftpRequest.PbPFtpQuery.PREPARE_FIRMWARE_UPDATE_VALUE, null)
                         .flatMapCompletable {
-                            BleLogger.d(TAG, "Start ${PolarFirmwareUpdateUtils.FIRMWARE_UPDATE_FILE_PATH} write")
+                            BleLogger.d(TAG, "Start $firmwareFilePath write")
                             val builder = PftpRequest.PbPFtpOperation.newBuilder()
                             builder.command = PftpRequest.PbPFtpOperation.Command.PUT
-                            builder.path = PolarFirmwareUpdateUtils.FIRMWARE_UPDATE_FILE_PATH
+                            builder.path = "/$firmwareFilePath"
                             client.write(
                                     builder.build().toByteArray(),
                                     ByteArrayInputStream(firmwareBytes)
@@ -2301,6 +2384,9 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                     .ignoreElements()
                         }
                         .subscribe({
+                            if (firmwareFilePath.contains("SYSUPDAT.IMG")) {
+                                BleLogger.d(TAG, "Firmware file is SYSUPDAT.IMG, waiting for reboot")
+                            }
                             emitter.onComplete()
                         }, { error ->
                             if (error is PftpResponseError && error.error == PbPFtpError.REBOOTING.number) {
@@ -2495,6 +2581,26 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                             deleteDayDirectory(identifier, listOf(file.key.split("/").subList(0,file.key.split("/").lastIndex - 1))[0].joinToString(separator = "/")).subscribe()
                         }.subscribe()
                 }
+            }
+
+        return Flowable.just(Unit)
+    }
+
+    private fun deleteDataDirectories(identifier: String): Flowable<Unit> {
+
+        return Flowable.fromIterable(fileDeletionMap.asIterable())
+            .map { file ->
+                val dir = listOf(file.key.split("/").subList(0, file.key.split("/").lastIndex))[0].joinToString(separator = "/")
+                removeSingleFile(identifier, dir)
+                    .doOnError { error ->
+                        BleLogger.e(
+                            TAG,
+                            "Failed to delete data directory $dir from device $identifier. Error: $error"
+                        )
+                    }
+                    .doOnSuccess {
+                        deleteDayDirectory(identifier, listOf(file.key.split("/").subList(0,file.key.split("/").lastIndex - 1))[0].joinToString(separator = "/")).subscribe()
+                    }.subscribe()
             }
 
         return Flowable.just(Unit)

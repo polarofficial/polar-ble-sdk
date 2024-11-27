@@ -9,15 +9,34 @@ import io.reactivex.rxjava3.core.Single
 import protocol.PftpRequest
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.util.zip.ZipInputStream
 
 internal object PolarFirmwareUpdateUtils {
 
+    /**
+     * Comparator for sorting FW files so that the order doesn't matter as long as
+     * the SYSUPDAT.IMG file is the last one (since it makes the device boot itself).
+     */
+    class FwFileComparator : Comparator<File> {
+        companion object {
+            private const val SYSUPDAT_IMG = "SYSUPDAT.IMG"
+        }
+
+        override fun compare(f1: File, f2: File): Int {
+            return when {
+                f1.name.contains(SYSUPDAT_IMG) -> 1
+                f2.name.contains(SYSUPDAT_IMG) -> -1
+                else -> 0
+            }
+        }
+    }
+
     const val FIRMWARE_UPDATE_FILE_PATH = "/SYSUPDAT.IMG"
+    const val BUFFER_SIZE = 8192
 
     private const val DEVICE_FIRMWARE_INFO_PATH = "/DEVICE.BPB"
     private const val TAG = "PolarFirmwareUpdateUtils"
-    private const val BUFFER_SIZE = 8192
 
     fun readDeviceFirmwareInfo(client: BlePsFtpClient, deviceId: String): Single<PolarFirmwareVersionInfo> {
         BleLogger.d(TAG, "readDeviceFirmwareInfo: $deviceId")

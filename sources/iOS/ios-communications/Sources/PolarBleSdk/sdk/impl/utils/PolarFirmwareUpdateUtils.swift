@@ -7,6 +7,20 @@ import Zip
 class PolarFirmwareUpdateUtils {
     static let FIRMWARE_UPDATE_FILE_PATH = "/SYSUPDAT.IMG"
     static let DEVICE_FIRMWARE_INFO_PATH = "/DEVICE.BPB"
+
+    public class FwFileComparator {
+        private static let SYSUPDAT_IMG = "SYSUPDAT.IMG"
+
+        static func compare(_ file1: String, _ file2: String) -> ComparisonResult {
+            if file1.contains(SYSUPDAT_IMG) {
+                return .orderedDescending
+            } else if file2.contains(SYSUPDAT_IMG) {
+                return .orderedAscending
+            } else {
+                return .orderedSame
+            }
+        }
+    }
     
     static func readDeviceFirmwareInfo(client: BlePsFtpClient, deviceId: String) -> PolarFirmwareVersionInfo? {
         let semaphore = DispatchSemaphore(value: 0)
@@ -75,29 +89,34 @@ class PolarFirmwareUpdateUtils {
         return available.count > current.count
     }
 
-    static func unzipFirmwarePackage(zippedData: Data) -> Data? {
+    static func unzipFirmwarePackage(zippedData: Data) -> [String: Data]? {
         let temporaryDirectory = FileManager.default.temporaryDirectory
         
         let zipFilePath = temporaryDirectory.appendingPathComponent(UUID().uuidString + ".zip")
         do {
             try zippedData.write(to: zipFilePath)
-            
+
             let destinationURL = temporaryDirectory.appendingPathComponent(UUID().uuidString)
-            
+
             try Zip.unzipFile(zipFilePath, destination: destinationURL, overwrite: true, password: nil)
-            
+
             let contents = try FileManager.default.contentsOfDirectory(at: destinationURL, includingPropertiesForKeys: nil)
-            guard let fileURL = contents.first else {
+            guard !contents.isEmpty else {
                 BleLogger.error("unzipFirmwarePackage() error: No files found in the extracted directory")
                 return nil
             }
-            
-            let decompressedData = try Data(contentsOf: fileURL)
-            
+            var fileDataDictionary: [String: Data] = [:]
+            for fileURL in contents {
+                let fileName = fileURL.lastPathComponent
+                let decompressedData = try Data(contentsOf: fileURL)
+                fileDataDictionary[fileName] = decompressedData
+                BleLogger.trace("Extracted file: \(fileName) - Size: \(decompressedData.count) bytes")
+            }
+
             try FileManager.default.removeItem(at: zipFilePath)
-            try FileManager.default.removeItem(at: fileURL)
-            
-            return decompressedData
+            try FileManager.default.removeItem(at: destinationURL)
+
+            return fileDataDictionary
         } catch {
             BleLogger.error("Error during unzipFirmwarePackage(): \(error)")
             return nil
