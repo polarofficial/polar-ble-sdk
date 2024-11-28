@@ -12,7 +12,7 @@ The SDK mode is the mode of the device in which a wider range of stream capabili
 
 ## How to use SDK Mode
 
-If SDK Mode is not available for you Polar device, attempting to send any of the commands below will result in `ERROR_NOT_SUPPORTED`, otherwise :
+If SDK Mode is not available for your Polar device, attempting to send any of the commands below will result in `ERROR_NOT_SUPPORTED`, otherwise :
 
 - SDK Mode is started by calling the `startSdkMode` function.
 - SDK Mode is stopped but turning the device off, or calling the `stopSdkMode` function.

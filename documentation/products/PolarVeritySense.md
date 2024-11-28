@@ -20,16 +20,21 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 ## Important considerations
 
 > [!IMPORTANT]
->Any file transfer is **prohibited** when Verity Sense is in internal recording or swimming mode. Attempting to list, fetch or delete any offline recording
+>Any file transfer is **prohibited** when Polar Verity Sense is in internal recording or swimming mode. Attempting to list, fetch or delete any offline recording
 will return `SYSTEM_BUSY` error. Device must be in **sensor mode** (the "heart" on the optical leds, blue side LED) to be able to interact with its files. Reason behind this behavior is to prevent attemps to sync a training session while it's still ongoing.
 
 > [!WARNING]
 >
-> Verity Sense PPI algorithm is a separate algorithm than the HR one used when PPI data is not being requested. When PPI recording is enabled, HR is only updated every 5 seconds. PPI algorithm is also very sensitive to movement, and should only be used at complete rest to output good data. As PPI recording is incompatible with the notion of training, enabling PPI recording **will abort any ongoing training** (internal training or swimming).
+> Polar Verity Sense PPI algorithm is a separate algorithm than the HR one used when PPI data is not being requested. When PPI recording is enabled, HR is only updated every 5 seconds. Also it takes around 25 seconds for the first sample batch to be sent to the offline recording file or over BLE for streaming. As PPI recording is incompatible with the notion of training, enabling PPI recording **will abort any ongoing training** (internal training or swimming).
 >
 > If movement is detected, the heart rate is fixed to the last reliable value.
 > 
 > Also, attempting to set `TRIGER_EXERCISE_START` with PPI measurement type when using the offline recording triggered settings will return `ERROR_NOT_SUPPORTED`
+>
+
+> [!IMPORTANT]
+>
+> Skin contact detection is very unreliable in Polar Verity Sense. Skin contact of PPI packets should not be trusted, and it might be possible for the device to output a heart rate that is not 0 even the device is not worn. That is a limitation of the older generation of optical heart rate solution.
 
 ## SDK Mode capabilities in Polar Verity Sense
 

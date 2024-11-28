@@ -9,6 +9,6 @@ Reliable high quality heart rate chest strap.
 
 * Heart rate as beats per minute and RR Interval in ms.
 * Heart rate broadcast.
-  
+
 >[!NOTE]
-> Polar H9 doesn't support any streaming over BLE PMD service like its bigger brother H10 does.
+> Polar H9 doesn't support any streaming over BLE Polar Measurement Data (PMD) service like its bigger brother H10 does.

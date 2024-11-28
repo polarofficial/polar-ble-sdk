@@ -1,10 +1,12 @@
 # First time use
 
-First time use (FTU) is the process of configuring the device. The `doFirstTimeUse()` is the function that needs to be called 
+First time use (FTU) is the process of configuring the device. The `doFirstTimeUse()` is the function that needs to be called to perform this action.
 
 # First time use config
 
 As a parameter of the `doFirstTimeUse()` function needs to be passed a configuration that contains all necessary data that needs to be set.
+
+Below is some guidance and explanation behind some of the mandotary values to set which might be unclear for some.
 
 ## User's gender
 
@@ -32,11 +34,9 @@ This table represents what values should be used as an input, if the actual user
 
 ![](./images/VO2max_female.PNG)
 
-TODO: Add vo2 max estimation algorithm based on age, weight, height and sex.
-
 ## Sleep goal
 
-A sleep goal can be between 5 and 11 hours of time. It corresponds to the user's sleep target time, which is slightly different for everyone. That metric is used for sleep guidance.
+A sleep goal can be between 5 and 11 hours of time. It corresponds to the user's nightly sleep target time, which varies from person to person. That value is used as a metric for sleep guidance.
 
 ## Typical day
 

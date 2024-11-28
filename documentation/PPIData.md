@@ -16,8 +16,13 @@ On the other hand,
 
 Each PPI sample that can be fetched using Polar BLE SDK has 2 important flags : 
 
-- The skin contact flag : indicates if there was skin contact present for that sample
-- The blocker flag : the blocker flag is set to 1 if there was movement detected during the acquisition
+- The skin contact supported flag : indicates if the skin contact flag can be used to know if skin contact is present on the sample.
+- The skin contact flag : indicates if there was skin contact present for that sample (only if flag above is 1).
+- The blocker flag : the blocker flag is set to 1 if there was movement detected during the acquisition.
+
+> [!WARNING]
+>
+> Some older generation optical sensors such as Verity Sense and OH1 might expose that skin contact is supported, but that cannot be trusted. Skin contact is quite unreliable with these devices.
 
 If skin contact flag is 0 or blocker flag is 1, the sample should not be treated as valid and discarded.
 
