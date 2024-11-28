@@ -2,6 +2,7 @@ package com.polar.sdk.api.model.utils
 
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
 import com.polar.sdk.impl.utils.PolarFirmwareUpdateUtils
+import com.polar.sdk.impl.utils.PolarFirmwareUpdateUtils.FwFileComparator
 import fi.polar.remote.representation.protobuf.Device
 import fi.polar.remote.representation.protobuf.Structures.PbVersion
 import io.mockk.confirmVerified
@@ -13,6 +14,7 @@ import org.junit.Assert
 import org.junit.Test
 import protocol.PftpRequest
 import java.io.ByteArrayOutputStream
+import java.io.File
 
 
 class PolarFirmwareUpdateUtilsTest {
@@ -125,5 +127,45 @@ class PolarFirmwareUpdateUtilsTest {
                 "2.0.0"
             )
         )
+    }
+
+    @Test
+    fun `FwFileComparator sorts files correctly`() {
+        // Arrange
+        val btFile = mockFile("BTUPDAT.BIN")
+        val sysFile = mockFile("SYSUPDAT.IMG")
+        val touchFile = mockFile("TCHUPDAT.BIN")
+        val files = mutableListOf(btFile, sysFile, touchFile)
+
+        // Act
+        files.sortWith(FwFileComparator())
+
+        // Assert
+        Assert.assertEquals(btFile, files[0])
+        Assert.assertEquals(touchFile, files[1])
+        Assert.assertEquals(sysFile, files[2])
+    }
+
+    @Test
+    fun `FwFileComparator keeps already sorted files`() {
+        // Arrange
+        val f1 = mockFile("BTUPDAT.BIN")
+        val f2 = mockFile("TCHUPDAT.BIN")
+        val f3 = mockFile("SYSUPDAT.IMG")
+        val files = mutableListOf(f1, f2, f3)
+
+        // Act
+        files.sortWith(FwFileComparator())
+
+        // Assert
+        Assert.assertEquals(f1, files[0])
+        Assert.assertEquals(f2, files[1])
+        Assert.assertEquals(f3, files[2])
+    }
+
+    private fun mockFile(name: String): File {
+        val file = mockk<File>()
+        every { file.name } returns name
+        return file
     }
 }

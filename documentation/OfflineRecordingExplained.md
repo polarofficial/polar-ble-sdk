@@ -25,7 +25,7 @@ To know what are the capabilities of each `PolarDeviceDataType` in offline recor
 
 **SDK Mode**
 
-The offline recording can be used in [SDK mode](SdkModeExplained.md). The SDK mode provides wider range of settings to be used, to know the available settings in SDK mode for offline recording the settings can be queried by the `requestFullOfflineRecordingSettings`. Please note that in SDK Mode, it is not possible to perform operations such as listing offline recordings (`listOfflineRecordings`), reading specific offline recording (`getOfflineRecord`), or deleting offline recordings (`removeOfflineRecord`). 
+The offline recording can be used in [SDK mode](SdkModeExplained.md). The SDK mode provides wider range of settings to be used, to know the available settings in SDK mode for offline recording the settings can be queried by the `requestFullOfflineRecordingSettings`.
 
 **Offline recording triggers**
 
@@ -33,27 +33,28 @@ Triggers are the way to automatically start the offline recording. The options a
 
 The API `setOfflineRecordingTrigger` is used to setup the trigger. When the offline recording is automatically started by the trigger the recording will end in two conditions, either recording is stopped by `stopOfflineRecording` or user switch off the device. To disable the trigger the `setOfflineRecordingTrigger` function is called with the option `TRIGGER_DISABLED`
 
-## Memory management
-
-The device does not automatically erase offline recordings to make space for new ones. If there is less than 2 MB of memory left when a new recording is started, the device will respond with the `DISK_FULL` error when `startOfflineRecording` is subscribed. Similarly, the same 2 MB memory limit prevents the setting of new triggers with `setOfflineRecordingTrigger`.
-
-In addition, please note that the device will automatically stop the offline recording when there is less than 300 kB of free space remaining. At this point, all offline recording triggers will also be disabled.
-
-
-## Security
+**Security**
 
 The offline record saved in device memory can be encrypted by providing the 128bit AES key as parameter for `startOfflineRecording` request. If providing the key with the  `startOfflineRecording` request, the exact same key must be provided in `getOfflineRecord` to be able to read out the offline record. Each of the started recoding may be started with different key. The key management is not provided by the SDK, but the application developer shall implement the key management. It is recommended the security option is used, otherwise it might be possible by others to read out recordings in VeritySense. 
 
-## Availability
+## Memory management
 
-| Device             | Version onwards |
-|:-------------------|:---------------:|
-| Polar Verity Sense |2.1.0            |
-| Polar 360          |1.0              |
+The device does not automatically erase offline recordings to make space for new ones. There are 2 different memory limits :
 
+- Memory limit 1 : Once free space is below that limit, attemping to start a recording or enable any trigger will return `ERROR_DISK_FULL` error. 
+- Memory limit 2 : Once free space is below that limit, all active offline recordings are automatically stopped and triggered recordings are disabled.
+
+To anticipate this scenario, the disk space can be queried to the device by calling `getDiskSpace` function at any time. 
+
+## Product specific availability and details
+
+| Device             | From ver. onwards | Offline recording triggers | Security | Memory limit 1 | Memory limit 2 |
+|:-------------------|:-----------------:|:--------------------------:|:--------:|:--------------:|:--------------:|
+| Polar Verity Sense |2.1.0              | Yes                        | Yes      | 2 MB           | 300 KB
+| Polar 360          |1.0                | No                         | No       | 2 MB           | 2 MB
 
 ## Considerations
 
-The online streaming and offline recording do not work same time for the same data type. For example if either accelerometer offline recording or the accelerometer online streaming is started, the attempt to start the online streaming or offline recording at this state will return the error ERROR_ALREADY_IN_STATE.
+The online streaming and offline recording do not work same time for the same data type. For example if either accelerometer offline recording or the accelerometer online streaming is started, the attempt to start the online streaming or offline recording at this state will return the error `ERROR_ALREADY_IN_STATE`.
 
 The offline recording read `getOfflineRecord` and delete `removeOfflineRecord` can be called while the offline recording is recording, but that is not recommended. It is recommended to stop the offline recording by `stopOfflineRecording` before trying to access the recording with `getOfflineRecord` or  `removeOfflineRecord` functions. 

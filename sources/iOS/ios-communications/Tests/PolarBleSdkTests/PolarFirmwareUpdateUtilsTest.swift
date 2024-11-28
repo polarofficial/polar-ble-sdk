@@ -104,4 +104,36 @@ class PolarFirmwareUpdateUtilsTest: XCTestCase {
             )
         )
     }
+    
+    func testFwFileComparatorSortsFilesCorrectly() {
+           // Arrange
+           let btFile = "BTUPDAT.BIN"
+           let sysFile = "SYSUPDAT.IMG"
+           let touchFile = "TCHUPDAT.BIN"
+           var files = [btFile, sysFile, touchFile]
+           
+           // Act
+           files.sort { PolarFirmwareUpdateUtils.FwFileComparator.compare($0, $1) == .orderedAscending }
+           
+           // Assert
+           XCTAssertEqual(files[0], btFile, "First file should be BTUPDAT.BIN")
+           XCTAssertEqual(files[1], touchFile, "Second file should be TCHUPDAT.BIN")
+           XCTAssertEqual(files[2], sysFile, "Last file should be SYSUPDAT.IMG")
+       }
+       
+       func testFwFileComparatorKeepsAlreadySortedFiles() {
+           // Arrange
+           let f1 = "BTUPDAT.BIN"
+           let f2 = "TCHUPDAT.BIN"
+           let f3 = "SYSUPDAT.IMG"
+           var files = [f1, f2, f3]
+           
+           // Act
+           files.sort { PolarFirmwareUpdateUtils.FwFileComparator.compare($0, $1) == .orderedAscending }
+           
+           // Assert
+           XCTAssertEqual(files[0], f1, "Files should maintain initial order if already sorted")
+           XCTAssertEqual(files[1], f2, "Files should maintain initial order if already sorted")
+           XCTAssertEqual(files[2], f3, "Files should maintain initial order if already sorted")
+       }
 }

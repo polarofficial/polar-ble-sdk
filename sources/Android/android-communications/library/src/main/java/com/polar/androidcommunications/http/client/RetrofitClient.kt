@@ -8,7 +8,7 @@ class RetrofitClient {
     companion object {
         fun createRetrofitInstance(): Retrofit {
             return Retrofit.Builder()
-                .baseUrl("https://firmware-management-app.ds-2012.env.polar.com")
+                .baseUrl("https://firmware-management.polar.com")
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
                 .build()

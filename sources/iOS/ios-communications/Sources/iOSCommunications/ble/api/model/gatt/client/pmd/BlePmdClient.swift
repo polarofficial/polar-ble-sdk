@@ -733,6 +733,10 @@ public class BlePmdClient: BleGattClientBase {
         try transport.transmitMessage(self, serviceUuid: BlePmdClient.PMD_SERVICE, characteristicUuid: BlePmdClient.PMD_CP, packet: data, withResponse: true)
         let response = try self.pmdCpResponseQueue.poll(60)
         let resp = PmdControlPointResponse(response)
+
+        if resp.errorCode != .success {
+            throw BleGattException.gattAttributeError(errorCode: resp.errorCode.rawValue, errorDescription: resp.errorCode.description)
+        }
         var more = resp.more
         while (more) {
             let parameters = try self.pmdCpResponseQueue.poll(60)

@@ -2337,13 +2337,24 @@ extension PolarBleApiImpl: PolarBleApi  {
                                             return Observable.empty()
                                         }
 
-                                        let unzippedContentLength = unzippedFirmwarePackage.count
-                                        BleLogger.trace("Firmware package unzipped, size: \(unzippedContentLength) bytes")
+                                        let unzippedContentLength = unzippedFirmwarePackage.reduce(0) { $0 + $1.value.count }
+                                        BleLogger.trace("Firmware package unzipped, total size: \(unzippedContentLength) bytes")
 
-                                        return self.writeFirmwareToDevice(deviceId: identifier, firmwareBytes: unzippedFirmwarePackage)
-                                            .map { bytesWritten -> FirmwareUpdateStatus in
-                                                BleLogger.trace("Writing firmware update file, bytes written: \(bytesWritten)/\(unzippedContentLength) bytes")
-                                                return FirmwareUpdateStatus.writingFwUpdatePackage(details: "Writing firmware update file, bytes written: \(bytesWritten)/\(unzippedContentLength) bytes")
+                                        let sortedFirmwarePackage = unzippedFirmwarePackage.sorted { (file1, file2) -> Bool in
+                                            return PolarFirmwareUpdateUtils.FwFileComparator.compare(file1.key, file2.key) == .orderedAscending
+                                        }
+
+                                        return Observable.from(sortedFirmwarePackage)
+                                            .flatMap { fileEntry -> Observable<FirmwareUpdateStatus> in
+                                                let fileName = fileEntry.key
+                                                let firmwareBytes = fileEntry.value
+                                                let filePath = "/\(fileName)"
+
+                                                return self.writeFirmwareToDevice(deviceId: identifier, firmwareFilePath: filePath, firmwareBytes: firmwareBytes)
+                                                    .map { bytesWritten -> FirmwareUpdateStatus in
+                                                        BleLogger.trace("Writing firmware update file \(fileName), bytes written: \(bytesWritten)/\(firmwareBytes.count) bytes")
+                                                        return FirmwareUpdateStatus.writingFwUpdatePackage(details: "Writing firmware update file \(fileName), bytes written: \(bytesWritten)/\(firmwareBytes.count) bytes")
+                                                    }
                                             }
                                             .concat(Observable.just(FirmwareUpdateStatus.finalizingFwUpdate(details: "Finalizing firmware update...")))
                                     }
@@ -2354,7 +2365,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                                         BleLogger.trace("Firmware update is in finalizing stage")
 
                                         BleLogger.trace("Device rebooting")
-                                        self.waitDeviceSessionToOpen(deviceId: identifier, timeoutSeconds: Int(rebootMaxWaitTimeSeconds), waitForDeviceDownSeconds: 10)
+                                        self.waitDeviceSessionToOpen(deviceId: identifier, timeoutSeconds: Int(factoryResetMaxWaitTimeSeconds), waitForDeviceDownSeconds: 10)
                                             .do(onSubscribe: {
                                                 BleLogger.trace("Waiting for device session to open after reboot with timeout: \(rebootMaxWaitTimeSeconds) seconds")
                                             })
@@ -3186,7 +3197,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         ).subscribe()
     }
 
-    private func writeFirmwareToDevice(deviceId: String, firmwareBytes: Data) -> Observable<UInt> {
+    private func writeFirmwareToDevice(deviceId: String, firmwareFilePath: String, firmwareBytes: Data) -> Observable<UInt> {
         let factoryResetMaxWaitTimeSeconds: TimeInterval = 6 * 60
         BleLogger.trace("Write FW to device")
         return doFactoryReset(deviceId, preservePairingInformation: true)
@@ -3201,11 +3212,11 @@ extension PolarBleApiImpl: PolarBleApi  {
                         BleLogger.trace("Initialize session")
                         self.sendInitializationAndStartSyncNotifications(client: client)
                         sleep(1) // Some race condition here?
-                        BleLogger.trace("Start \(PolarFirmwareUpdateUtils.FIRMWARE_UPDATE_FILE_PATH) write")
+                        BleLogger.trace("Start \(firmwareFilePath) write")
 
                         var builder = Protocol_PbPFtpOperation()
                         builder.command = Protocol_PbPFtpOperation.Command.put
-                        builder.path = PolarFirmwareUpdateUtils.FIRMWARE_UPDATE_FILE_PATH
+                        builder.path = firmwareFilePath
                         let proto = try builder.serializedData()
                         return client.write(
                             proto as NSData,
@@ -3219,12 +3230,16 @@ extension PolarBleApiImpl: PolarBleApi  {
                         .ignoreElements()
                         .asCompletable()
                         .subscribe(onCompleted: {
+                            if firmwareFilePath.contains("SYSUPDAT.IMG") {
+                                BleLogger.trace("Firmware file is SYSUPDAT.IMG, waiting for reboot")
+                            }
                             observer.onCompleted()
                         }, onError: { error in
                             BleLogger.trace("ERROR: \(error.localizedDescription)")
                             if (error.localizedDescription.contains("ResponseError error 1")) {
                                 observer.onCompleted()
                             } else {
+                                BleLogger.trace("Error in writeFirmwareToDevice(): \(error.localizedDescription)")
                                 observer.onError(error)
                             }
                         })
@@ -3233,7 +3248,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     }
                     return Disposables.create()
                 })
-        }
+    }
 
 
     private func waitDeviceSessionToOpen(deviceId: String, timeoutSeconds: Int, waitForDeviceDownSeconds: Int = 0) -> Completable {
