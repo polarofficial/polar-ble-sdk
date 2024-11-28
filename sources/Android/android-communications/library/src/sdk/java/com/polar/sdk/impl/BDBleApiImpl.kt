@@ -1294,11 +1294,12 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                 val recordingPath = entry.path.replace(
                                     Regex("(\\.REC)$"),
                                     "$subRecordingIndex.REC"
-                                )
-
-                                fileDeletionMap.put(listOf(recordingPath.split("/")
-                                    .subList(0, recordingPath.split("/")
-                                        .lastIndex - 1))[0].joinToString(separator = "/"), false)
+                                )   
+                                
+                                // fileDeletionMap.put(listOf(recordingPath.split("/")
+                                //     .subList(0, recordingPath.split("/")
+                                //         .lastIndex - 1))[0].joinToString(separator = "/"), false)
+                                
                                 val builder = PftpRequest.PbPFtpOperation.newBuilder()
                                 builder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
                                 builder.path = recordingPath
