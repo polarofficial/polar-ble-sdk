@@ -3029,6 +3029,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             })
     }
 
+    /// This method checks if there are any remaining files in day directory. If not, the day directory can be deleted.
     private func findFilesFromDayDirectories(identifier: String, files: [String]) -> Completable {
         return Observable.from(files)
             .concatMap() { file -> Completable in
