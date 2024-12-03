@@ -7,7 +7,9 @@ altough some special user action is required to be able to start the streaming f
 
 > [!IMPORTANT]
 >
-> Although the namings might be confusing, enabling the SDK on the wrist unit is not starting [SDK Mode](./SdkModeExplained.md) with `startSdkMode()` function. SDK Mode is currently not supported in Polar watches.
+> Although the namings might be confusing, enabling the SDK on the Polar watches is not starting [SDK Mode](./SdkModeExplained.md) with `startSdkMode()` function. SDK Mode is currently not supported in Polar watches.
+>
+> In Polar watches, it is required to give permission to your watch to be usable with the BLE Polar Measurement Data Service used for data streaming. This is the process of enabling the SDK in the watches. See below for step by step guide.
 
 ## Step by step how to
 

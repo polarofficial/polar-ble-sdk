@@ -22,7 +22,7 @@ Theoretical maxmimum heart rate can be calculated by a simple formula such as `2
 
 ## VO2 max
 
-Please read this [Polar blog](https://www.polar.com/blog/vo2max/) about VO2 max. VO2 max can be calculated by Polar wirst units by doing a [fitness test](https://www.polar.com/blog/lets-talk-polar-polar-fitness-test/) or using FlowApp with sensors such as Polar Verity Sense or Polar H10.
+Please read this [Polar blog](https://www.polar.com/blog/vo2max/) about VO2 max. VO2 max can be calculated by Polar watches by doing a [fitness test](https://www.polar.com/blog/lets-talk-polar-polar-fitness-test/) or using FlowApp with sensors such as Polar Verity Sense or Polar H10.
 
 This table represents what values should be used as an input, if the actual user's VO2 max is not known : 
 

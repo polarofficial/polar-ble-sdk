@@ -54,7 +54,7 @@ The following state chart describes how to bring the device into use :
 
 Polar 360, as of version 1.1, is designed to be used with 1 peer device only. When the device is in factory defaults state (when leaving factory or explicitely resetting it via either `doFactoryReset()` or by pressing its needle reset button (hidden under the strap) while being connected to charger), it will perform casual advertising that all scanners can see. 
 
-Once pairing is made with a peer device, the latter will be the only device that will get handled by Polar 360 when it receives scan requests or connections request. Device will become invisible to any device that is not the paired device. 
+Once pairing is made with a peer device, the latter will be the only device that will get handled by Polar 360 when it receives scan requests or connections request. Device will become invisible to any device that is not the paired device.
 
 >[!IMPORTANT]
 >
@@ -64,9 +64,13 @@ Once pairing is made with a peer device, the latter will be the only device that
 >
 >For security reasons, Polar 360 doesn't accept pairing overwrite. It means that if pairing is removed from the phone settings, trying to re-establish a new pairing from the same phone will get refused by the device as this could open up spoofing attack vector. Device must be put back to factory defaults before it can be paired again.
 
+>[!IMPORTANT]
+>
+>Pairing on the Polar 360 side is checking for proximity of the phone. Please be within 1 meter of range of your phone when attempting to pair your device to make sure the pairing is accepted by Polar 360.
+
 ### Memory management
 
-Polar 360 has 15 MB of space that it can use for storing all kinds of data, wheter it is activity, sleep or [SDK offline recordings](./../SdkOfflineRecordingExplained.md). 
+Polar 360 has 15 MB of space that it can use for storing all kinds of data, whether it is activity, sleep or [SDK offline recordings](./../SdkOfflineRecordingExplained.md). 
 
 Activity and sleep data is passively recorded by the device overtime and will start slowly filling up the memory if the data is never deleted by the SDK.
 
