@@ -1271,34 +1271,53 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     override fun removeOfflineRecord(identifier: String, entry: PolarOfflineRecordingEntry): Completable {
-        BleLogger.d(TAG, "Remove offline record from device $identifier path ${entry.path}")
+        BleLogger.d(TAG, "Remove offline record from device $identifier at path ${entry.path}")
         val session = try {
             sessionPsFtpClientReady(identifier)
         } catch (error: Throwable) {
             return Completable.error(error)
         }
 
+        val fileDeletionMap: MutableMap<String, Boolean> = mutableMapOf()
+        val parentDirectory = entry.path.substringBeforeLast("/")
+
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Completable.error(PolarServiceNotAvailable())
         val fsType = getFileSystemType(session.polarDeviceType)
         return if (fsType == FileSystemType.SAGRFC2_FILE_SYSTEM) {
+            /// Fetch the sub recording count and delete each subrecording one by one.
+            ///
+            /// Offline recordings are stored in batches of sub recordings.
+            /// 
+            /// For example, HR recording /U/0/20241203/R/094150/HR.REC may be actually stored as the following sub recording files: 
+            /// /U/0/20241203/R/094150/HR0.REC, /U/0/20241203/R/094150/HR1.REC, ...
+            ///
+            /// Please note that the file /U/0/20241203/R/094150/HR.REC doesn't really exist on the device,
+            /// unless it's the old format where the recording is stored in a single file (no sub recordings).
             getSubRecordingCount(identifier, entry)
                 .flatMap { count ->
+                    BleLogger.d(TAG, "Remove offline record from device $identifier at path ${entry.path}: sub recording count $count")
+                    
                     if (count == 0 || entry.path.contains(Regex("""(\D+)(\d+)\.REC"""))) {
                         val builder = PftpRequest.PbPFtpOperation.newBuilder()
                         builder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
                         builder.path = entry.path
                         return@flatMap client.request(builder.build().toByteArray())
                     } else {
+                        /// Example entry.path for HR recording: /U/0/20241203/R/094150/HR.REC
                         Observable.fromIterable(0 until count)
-                            .flatMap { subRecordingIndex ->
+                            /// Use concatMap to make sure that the sub recordings are removed one by one.
+                            .concatMap { subRecordingIndex ->
+                                /// Example sub recording paths for HR recording:
+                                /// - /U/0/20241203/R/094150/HR0.REC
+                                /// - /U/0/20241203/R/094150/HR1.REC
+                                /// - /U/0/20241203/R/094150/HR2.REC
+                                /// - ...
                                 val recordingPath = entry.path.replace(
                                     Regex("(\\.REC)$"),
                                     "$subRecordingIndex.REC"
-                                )   
+                                )
                                 
-                                // fileDeletionMap.put(listOf(recordingPath.split("/")
-                                //     .subList(0, recordingPath.split("/")
-                                //         .lastIndex - 1))[0].joinToString(separator = "/"), false)
+                                BleLogger.d(TAG, "Remove offline record from device $identifier path $recordingPath")
                                 
                                 val builder = PftpRequest.PbPFtpOperation.newBuilder()
                                 builder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
@@ -1307,30 +1326,40 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                 client.request(builder.build().toByteArray()).toObservable()
                             }.ignoreElements().toSingleDefault(count)
                     }
-                }.doFinally {
+                }
+                /// When all sub recordings are removed, the parent directory is empty.
+                ///
+                /// For example, removing all subrecordings:
+                /// /U/0/20241203/R/094150/HR0.REC, /U/0/20241203/R/094150/HR1.REC, ...
+                ///
+                /// will leave the /U/0/20241203/R/094150/ directory empty.
+                ///
+                /// This code will double check if the offline recording's parent directory is empty and remove if it is.
+                .doFinally {
+                    BleLogger.d(TAG, "Remove offline record from device $identifier at path ${entry.path}: completed.")
+                    BleLogger.d(TAG, "Remove offline record from device $identifier at path ${entry.path}: checking if parent directory $parentDirectory can be deleted")
+
                     val dir = "/U/0"
                     var fileList: MutableList<String> = mutableListOf()
                     listFiles(identifier, dir,
                         condition = { entry: String ->
-                            entry.matches(Regex("^(\\d{8})(/)")) ||
-                                    entry.matches(Regex("^(\\d{6})(/)")) ||
-                                    entry == "R/" ||
-                                    entry.contains(".REC") &&
-                                    !entry.contains(".BPB") &&
-                                    !entry.contains("HIST")
+                            entry.startsWith(parentDirectory)
                         })
                         .map {
                             fileList.add(it)
                         }
                         .doFinally {
+                            BleLogger.d(TAG, "Remove offline record from device $identifier path ${entry.path}: files in parentDirectory: $fileList")
+
                             if (fileList.isEmpty()) {
-                                deleteDataDirectories(identifier).subscribe()
+                                BleLogger.d(TAG, "Remove offline record from device $identifier path ${entry.path}: parent directory $parentDirectory is empty, removing it.")
+                                deleteDataDirectories(identifier, fileDeletionMap).subscribe()
                             }
                         }
                         .doOnError { error ->
                             BleLogger.e(
                                 TAG,
-                                "Failed to list files from directory $dir from device $identifier. Error: $error"
+                                "Remove offline record from device $identifier path ${entry.path}: failed to list files in parent directory $parentDirectory, error: $error",
                             )
                             Completable.error(error)
                         }
@@ -2644,8 +2673,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         return Flowable.just(Unit)
     }
 
-    private fun deleteDataDirectories(identifier: String): Flowable<Unit> {
-
+    private fun deleteDataDirectories(identifier: String, fileDeletionMap: MutableMap<String, Boolean>): Flowable<Unit> {
         return Flowable.fromIterable(fileDeletionMap.asIterable())
             .map { file ->
                 val dir = listOf(file.key.split("/").subList(0, file.key.split("/").lastIndex))[0].joinToString(separator = "/")
