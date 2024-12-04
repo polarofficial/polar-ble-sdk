@@ -2432,19 +2432,27 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                     builder.build().toByteArray(),
                                     ByteArrayInputStream(firmwareBytes)
                             )
-                                    .throttleFirst(5, TimeUnit.SECONDS)
+                                    .throttleFirst(1, TimeUnit.SECONDS)
                                     .doOnNext { bytesWritten: Long ->
                                         BleLogger.d(TAG, "Writing firmware update file, bytes written: $bytesWritten/${firmwareBytes.size}")
                                         emitter.onNext(bytesWritten)
                                     }
                                     .ignoreElements()
+                                    .doOnComplete {
+                                        BleLogger.d(TAG, "Writing file $firmwareFilePath completed")
+                                    }
                         }
                         .subscribe({
+                            BleLogger.d(TAG, "Firmware file $firmwareFilePath written")
+
                             if (firmwareFilePath.contains("SYSUPDAT.IMG")) {
                                 BleLogger.d(TAG, "Firmware file is SYSUPDAT.IMG, waiting for reboot")
                             }
+
                             emitter.onComplete()
                         }, { error ->
+                            BleLogger.e(TAG, "Error writing firmware file $firmwareFilePath: $error")
+                            
                             if (error is PftpResponseError && error.error == PbPFtpError.REBOOTING.number) {
                                 BleLogger.d(TAG, "REBOOTING")
                                 emitter.onComplete()
