@@ -1,32 +1,27 @@
+[Back to main page](../README.md)
+
 # SDK Mode
 
-The SDK mode is the mode of the sensor in which the wider range of stream capabilities are offered, i.e higher sampling rates, wider (or narrow) ranges etc. For example, in the SDK mode the accelerometer sampling rate can be chosen from values 26Hz, 52Hz, 104Hz, 208Hz or 416Hz compared to 52Hz available in normal operation mode. 
+The SDK mode is the mode of the device in which a wider range of stream capabilities are offered, i.e higher sampling rates, wider (or narrow) ranges etc. 
 
-[Polar Verity Sense](https://www.polar.com/en/products/accessories/polar-verity-sense) (starting from firmware 1.1.5) is the first sensor to support the SDK Mode. 
+> [!WARNING]
+> When SDK mode is enabled, all algorithms on the device are disabled as they work with only certain device sensor settings. It means that any computed data such as heart rate, PP intervals, RR intervals, etc. is not available anymore. Any passively gathered data such as activity or sleep data will not be gathered anymore as well.
 
-***How to use SDK Mode in Polar Verity Sense***
-- first of all you need to update the Polar Verity Sense sensor to firmware [1.1.5](https://support.polar.com/en/updates/polar-verity-sense-11-firmware-update). Which can be done by registering the sensor to Polar Flow, see the [help](https://support.polar.com/e_manuals/verity-sense/polar-verity-sense-user-manual-english/firmware-update.htm)
-- secondly you will enable or disable SDK Mode using API's provided in Polar BLE SDK library
-- once the SDK mode is enabled you may start the data online stream or offline recording as in normal operation mode 
+> [!NOTE]
+>Enabling the SDK mode shutdowns all sensors (accelerometer, gyroscope, PPG, ...) as they are not needed anymore by the device. These will only be enabled when explictely requested for streaming or offline recording (if supported, see [here](OfflineRecordingExplained)). Using SDK mode could also be a way to extend device lifetime to much longer time for example if only some of the sensors are enabled with low sampling rates.
 
-***Good to know about SDK Mode in Polar Verity Sense***
-- you may read the capabilities available in SDK from the device with the `requestFullStreamSettings` or `requestFullOfflineRecordingSettings` function in any operation mode. 
-- if starting many online streams on high frequency at the same time, it cannot be guaranteed that all the data is sent over the Bluetooth as traffic may get too high
-- if the online stream or offline recording is currently running on the device, the SDK Mode cannot be changed. Attempting to change the SDK Mode in will result in an "INVALID STATE" error.
-- sample code on how to use SDK mode can seen from [Android](../examples/example-android)  and [iOS](../examples/example-ios) examples
+## How to use SDK Mode
 
-***SDK Mode capabilities in Polar Verity Sense***
+If SDK Mode is not available for your Polar device, attempting to send any of the commands below will result in `ERROR_NOT_SUPPORTED`, otherwise :
 
-| Data        |Operation mode     | Sampling Rate                   | Range (+-)                                           | Resolution |
-|:-----------:|:-----------------:|:-------------------------------:|:----------------------------------------------------:|:----------:|
-| Acc         | Online streaming  | 26Hz, 52Hz, 104Hz, 208Hz, 416Hz | 2g, 4g, 8g, 16g                                      |16          |
-| Acc         | Offline recording | 13Hz, 26Hz, 52Hz                | 2g, 4g, 8g, 16g                                      |16          |
-| Gyro        | Online streaming  | 26Hz, 52Hz, 104Hz, 208Hz, 416Hz | 250 deg/sec, 500 deg/sec, 1000 deg/sec, 2000 deg/sec |16          |
-| Gyro        | Offline recording | 13Hz, 26Hz, 52Hz                | 250 deg/sec, 500 deg/sec, 1000 deg/sec, 2000 deg/sec |16          |
-| Magnetometer| Online streaming  | 10Hz, 20Hz, 50Hz, 100Hz         | 50 Gauss                                             |16          |
-| Magnetometer| Offline recording | 10Hz, 20Hz, 50Hz                | 50 Gauss                                             |16          |
-| PPG         | Online streaming  | 28Hz, 44Hz, 55Hz,  135Hz, 176Hz | -                                                    |22          |
-| PPG         | Offline recording | 28Hz, 44Hz, 55Hz                | -                                                    |22          |
-| PPI         | PPI online stream or offline recording is not supported in SDK MODE             |
+- SDK Mode is started by calling the `startSdkMode` function.
+- SDK Mode is stopped but turning the device off, or calling the `stopSdkMode` function.
+- SDK Mode status can be read from the device at any time by using `getSdkModeStatus`.
 
-SDK mode also works with other products such as Polar 360. Supported capabilities depend on the product.
+## Good to know about SDK Mode
+
+- You may read the capabilities available in SDK from the device with the `requestFullStreamSettings` or `requestFullOfflineRecordingSettings` function in any operation mode.
+- If starting many online streams on high frequency at the same time, it cannot be guaranteed that all the data is sent over the Bluetooth as traffic may get too high.
+- If the online stream or offline recording is currently running on the device, the SDK Mode cannot be changed. Attempting to change the SDK Mode in will result in an `ERROR_INVALID_STATE` error. Recordings must be stopped beforehand.
+- Sample code on how to use SDK mode can seen from [Android](../examples/example-android)  and [iOS](../examples/example-ios) examples
+

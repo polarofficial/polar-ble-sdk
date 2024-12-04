@@ -1,3 +1,5 @@
+[Back to main page](../README.md)
+
 # PolarBleSDK 5.0.0 Migration Guide
 
 PolarBleSDK 5.0.0 is a major release that includes API-breaking changes. This guide aims to make the transition easier for developers who are updating their existing applications from PolarBleSDK 4.x.x to the latest APIs

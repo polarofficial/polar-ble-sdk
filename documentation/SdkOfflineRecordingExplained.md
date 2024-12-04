@@ -1,13 +1,15 @@
-# Offline Recording
+[Back to main page](../README.md)
 
-The offline recording makes it possible to record data into Polar device internal memory. The recording continues even though the BLE connection is lost while recording. 
+# SDK offline Recording
 
-- [Basic usage](#features)
-- [Advanced usage](#advanced-usage)
-- [Memory management](#memory-management)
-- [Security](#security)
-- [Availability](#availability)
-- [Considerations](#considerations)
+The SDK offline recording makes it possible to record data into Polar device internal memory. The recording continues even though the BLE connection is lost while recording. 
+
+- [SDK offline Recording](#sdk-offline-recording)
+  - [Basic usage](#basic-usage)
+  - [Advanced usage](#advanced-usage)
+  - [Memory management](#memory-management)
+  - [Product specific availability and details](#product-specific-availability-and-details)
+  - [Considerations](#considerations)
 
 ## Basic usage
 
@@ -27,9 +29,14 @@ To know what are the capabilities of each `PolarDeviceDataType` in offline recor
 
 The offline recording can be used in [SDK mode](SdkModeExplained.md). The SDK mode provides wider range of settings to be used, to know the available settings in SDK mode for offline recording the settings can be queried by the `requestFullOfflineRecordingSettings`.
 
+> [!NOTE]
+> Usually devices don't provide as high sampling rates when doing offline recording as when doing streaming over BLE. The reason is that device internal memory is limited in size and could get filled very quickly, and it's also more power hungry to store data in non-volatile memory instead of streaming it over the BLE radio, which results in much shorter device lifetime.
+
 **Offline recording triggers**
 
-Triggers are the way to automatically start the offline recording. The options are `TRIGGER_SYSTEM_START` and `TRIGGER_EXERCISE_START`. In case the trigger is set to `TRIGGER_SYSTEM_START` the offline recording is started every time the Polar device is switched on, e.g. when VeritySense device power button is pressed by the user to turn device on. In case the trigger is set to `TRIGER_EXERCISE_START` the offline recording is started every time exercise is started in Polar device. With the VeritySense `TRIGER_EXERCISE_START` will trigger offline recording if either the [exercise](https://support.polar.com/en/how-to-use-polar-verity-sense-in-recording-mode) or [swimming](https://support.polar.com/en/how-to-use-polar-verity-sense-in-swimming-mode) mode is started by the user of VeritySense.
+Triggers are the way to automatically start the offline recording. The options are `TRIGGER_SYSTEM_START` and `TRIGGER_EXERCISE_START`. In case the trigger is set to `TRIGGER_SYSTEM_START` the offline recording is started every time the Polar device is switched on, e.g. when VeritySense device power button is pressed by the user to turn device on. In case the trigger is set to `TRIGER_EXERCISE_START` the offline recording is started every time exercise is started in Polar device. 
+
+With the VeritySense `TRIGGER_EXERCISE_START` will trigger offline recording if either the [exercise](https://support.polar.com/en/how-to-use-polar-verity-sense-in-recording-mode) or [swimming](https://support.polar.com/en/how-to-use-polar-verity-sense-in-swimming-mode) mode is started by the user of VeritySense.
 
 The API `setOfflineRecordingTrigger` is used to setup the trigger. When the offline recording is automatically started by the trigger the recording will end in two conditions, either recording is stopped by `stopOfflineRecording` or user switch off the device. To disable the trigger the `setOfflineRecordingTrigger` function is called with the option `TRIGGER_DISABLED`
 
