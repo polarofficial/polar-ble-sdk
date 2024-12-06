@@ -1991,7 +1991,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
                                                                 doFactoryReset(identifier, true)
                                                                         .andThen(Completable.timer(30, TimeUnit.SECONDS))
-                                                                        .andThen(waitDeviceSessionWithFtpToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L))
+                                                                        .andThen(waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L))
                                                                         .andThen(Completable.timer(5, TimeUnit.SECONDS))
                                                                         .andThen(
                                                                                 Flowable.fromIterable(firmwareFiles)
@@ -2015,7 +2015,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                                     BleLogger.d(TAG, "Starting finalization of firmware update")
                                                                     Completable.timer(rebootTriggeredWaitTimeSeconds, TimeUnit.SECONDS)
                                                                             .andThen(
-                                                                                    waitDeviceSessionWithFtpToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 120L)
+                                                                                    waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 120L)
                                                                                             .andThen(
                                                                                                     Completable.fromCallable {
                                                                                                         BleLogger.d(TAG, "Restoring backup to device after version ${firmwareUpdateResponse.version}")
@@ -2031,7 +2031,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                             }
                                                             .concatMap { status ->
                                                                 if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
-                                                                    waitDeviceSessionWithFtpToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 60L)
+                                                                    waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 60L)
                                                                             .andThen(Flowable.just(FirmwareUpdateStatus.FwUpdateCompletedSuccessfully(firmwareUpdateResponse.version)))
                                                                 } else {
                                                                     Flowable.just(status)
@@ -2403,12 +2403,12 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }, BackpressureStrategy.BUFFER)
     }
 
-    private fun waitDeviceSessionWithFtpToOpen(
+    private fun waitDeviceSessionWithPftpToOpen(
             deviceId: String,
             timeoutSeconds: Long,
             waitForDeviceDownSeconds: Long = 0L
     ): Completable {
-        BleLogger.d(TAG, "waitDeviceSessionWithFtpToOpen(): seconds $timeoutSeconds, waitForDeviceDownSeconds $waitForDeviceDownSeconds")
+        BleLogger.d(TAG, "waitDeviceSessionWithPftpToOpen(): seconds $timeoutSeconds, waitForDeviceDownSeconds $waitForDeviceDownSeconds")
         val pollIntervalSeconds = 5L
 
         return Observable.timer(waitForDeviceDownSeconds, TimeUnit.SECONDS)
@@ -2422,17 +2422,17 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                 val isSessionOpen = deviceSessionState == DeviceSessionState.SESSION_OPEN
                                 val isFtpClientReady = isFtpClientReady(deviceId)
 
-                                BleLogger.d(TAG, "waitDeviceSessionWithFtpToOpen(): isSessionOpen $isSessionOpen, isFtpClientReady $isFtpClientReady")
+                                BleLogger.d(TAG, "waitDeviceSessionWithPftpToOpen(): isSessionOpen $isSessionOpen, isFtpClientReady $isFtpClientReady")
 
                                 if (isSessionOpen && isFtpClientReady) {
-                                    BleLogger.d(TAG, "waitDeviceSessionWithFtpToOpen(): completed")
+                                    BleLogger.d(TAG, "waitDeviceSessionWithPftpToOpen(): completed")
                                     disposable?.dispose()
                                     emitter.onComplete()
                                 } else {
-                                    BleLogger.d(TAG, "waitDeviceSessionWithFtpToOpen(): current state $deviceSessionState")
+                                    BleLogger.d(TAG, "waitDeviceSessionWithPftpToOpen(): current state $deviceSessionState")
                                 }
                             }, { error ->
-                                BleLogger.e(TAG, "waitDeviceSessionWithFtpToOpen(): error $error")
+                                BleLogger.e(TAG, "waitDeviceSessionWithPftpToOpen(): error $error")
                                 emitter.onError(error)
                             })
                     emitter.setCancellable {
