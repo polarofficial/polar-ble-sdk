@@ -3123,11 +3123,11 @@ extension PolarBleApiImpl: PolarBleApi  {
                 .timeout(RxTimeInterval.seconds(timeoutSeconds), scheduler: MainScheduler.instance)
                 .subscribe(onNext: { _ in
                     let isSessionOpen = self.deviceSessionState == BleDeviceSession.DeviceSessionState.sessionOpen
-                    let isFtpClientReady = self.isFtpClientReady(deviceId)
+                    let isPftpClientReady = self.isPftpClientReady(deviceId)
                     
-                    BleLogger.trace("waitDeviceSessionWithPftpToOpen(): isSessionOpen \(isSessionOpen), isFTPReady \(isFtpClientReady)")
+                    BleLogger.trace("waitDeviceSessionWithPftpToOpen(): isSessionOpen \(isSessionOpen), isFTPReady \(isPftpClientReady)")
                     
-                    if isSessionOpen && isFtpClientReady {
+                    if isSessionOpen && isPftpClientReady {
                         BleLogger.trace("waitDeviceSessionWithPftpToOpen(): completed")
                         disposable?.dispose()
                         emitter(.completed)
@@ -3144,7 +3144,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
-    private func isFtpClientReady(_ identifier: String) -> Bool {
+    private func isPftpClientReady(_ identifier: String) -> Bool {
         do {
             let session = try self.sessionFtpClientReady(identifier)
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {

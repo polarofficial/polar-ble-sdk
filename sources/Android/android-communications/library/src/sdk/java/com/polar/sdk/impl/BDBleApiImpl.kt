@@ -2420,11 +2420,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                             .timeout(timeoutSeconds, TimeUnit.SECONDS)
                             .subscribe({
                                 val isSessionOpen = deviceSessionState == DeviceSessionState.SESSION_OPEN
-                                val isFtpClientReady = isFtpClientReady(deviceId)
+                                val isPftpClientReady = isPftpClientReady(deviceId)
 
-                                BleLogger.d(TAG, "waitDeviceSessionWithPftpToOpen(): isSessionOpen $isSessionOpen, isFtpClientReady $isFtpClientReady")
+                                BleLogger.d(TAG, "waitDeviceSessionWithPftpToOpen(): isSessionOpen $isSessionOpen, isPftpClientReady $isPftpClientReady")
 
-                                if (isSessionOpen && isFtpClientReady) {
+                                if (isSessionOpen && isPftpClientReady) {
                                     BleLogger.d(TAG, "waitDeviceSessionWithPftpToOpen(): completed")
                                     disposable?.dispose()
                                     emitter.onComplete()
@@ -2441,7 +2441,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 })
     }
 
-    private fun isFtpClientReady(identifier: String): Boolean {
+    private fun isPftpClientReady(identifier: String): Boolean {
         try {
             val session = sessionPsFtpClientReady(identifier)
 
