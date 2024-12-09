@@ -17,4 +17,4 @@ Polar Grit X2 Pro is a premium outdoor watch.
 
 ## How to use the SDK with this product ? 
 
-Polar wrist devices need to explicitely follow [these steps](./../UsingSdkWithWatches.md) to enable SDK sharing.
+Polar wrist devices need to explicitely follow [these steps](./../UsingSDKWithWatches.md) to enable SDK sharing.
