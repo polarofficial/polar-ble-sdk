@@ -2365,7 +2365,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                                         BleLogger.trace("Firmware update is in finalizing stage")
 
                                         BleLogger.trace("Device rebooting")
-                                        self.waitDeviceSessionToOpen(deviceId: identifier, timeoutSeconds: Int(factoryResetMaxWaitTimeSeconds), waitForDeviceDownSeconds: 10)
+                                        self.waitDeviceSessionWithPftpToOpen(deviceId: identifier, timeoutSeconds: Int(factoryResetMaxWaitTimeSeconds), waitForDeviceDownSeconds: 10)
                                             .do(onSubscribe: {
                                                 BleLogger.trace("Waiting for device session to open after reboot with timeout: \(rebootMaxWaitTimeSeconds) seconds")
                                             })
@@ -2380,7 +2380,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                                             }
                                             .flatMap { _ in
                                                 BleLogger.trace("Waiting for device session to open after factory reset with timeout: \(factoryResetMaxWaitTimeSeconds) seconds")
-                                                return self.waitDeviceSessionToOpen(deviceId: identifier, timeoutSeconds: Int(factoryResetMaxWaitTimeSeconds), waitForDeviceDownSeconds: 10)
+                                                return self.waitDeviceSessionWithPftpToOpen(deviceId: identifier, timeoutSeconds: Int(factoryResetMaxWaitTimeSeconds), waitForDeviceDownSeconds: 10)
                                                     .do(onSubscribe: {
                                                         BleLogger.trace("Waiting for device session to open post factory reset")
                                                     })
@@ -3201,7 +3201,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         let factoryResetMaxWaitTimeSeconds: TimeInterval = 6 * 60
         BleLogger.trace("Write FW to device")
         return doFactoryReset(deviceId, preservePairingInformation: true)
-                .andThen(waitDeviceSessionToOpen(deviceId: deviceId, timeoutSeconds: Int(factoryResetMaxWaitTimeSeconds), waitForDeviceDownSeconds: 10))
+                .andThen(waitDeviceSessionWithPftpToOpen(deviceId: deviceId, timeoutSeconds: Int(factoryResetMaxWaitTimeSeconds), waitForDeviceDownSeconds: 10))
                 .andThen(Observable.create { observer in
                     do {
                         let session = try self.sessionFtpClientReady(deviceId)
@@ -3250,9 +3250,8 @@ extension PolarBleApiImpl: PolarBleApi  {
                 })
     }
 
-
-    private func waitDeviceSessionToOpen(deviceId: String, timeoutSeconds: Int, waitForDeviceDownSeconds: Int = 0) -> Completable {
-        BleLogger.trace("Wait for device session to open, timeoutSeconds: \(timeoutSeconds), waitForDeviceDownSeconds: \(waitForDeviceDownSeconds)")
+    private func waitDeviceSessionWithPftpToOpen(deviceId: String, timeoutSeconds: Int, waitForDeviceDownSeconds: Int = 0) -> Completable {
+        BleLogger.trace("waitDeviceSessionWithPftpToOpen(): timeoutSeconds \(timeoutSeconds), waitForDeviceDownSeconds \(waitForDeviceDownSeconds)")
         let pollIntervalSeconds = 5
 
         return Completable.create { emitter in
@@ -3264,20 +3263,37 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
                 .timeout(RxTimeInterval.seconds(timeoutSeconds), scheduler: MainScheduler.instance)
                 .subscribe(onNext: { _ in
-                    if self.deviceSessionState == BleDeviceSession.DeviceSessionState.sessionOpen {
-                        BleLogger.trace("Session opened, deviceId: \(deviceId)")
+                    let isSessionOpen = self.deviceSessionState == BleDeviceSession.DeviceSessionState.sessionOpen
+                    let isPftpClientReady = self.isPftpClientReady(deviceId)
+                    
+                    BleLogger.trace("waitDeviceSessionWithPftpToOpen(): isSessionOpen \(isSessionOpen), isFTPReady \(isPftpClientReady)")
+                    
+                    if isSessionOpen && isPftpClientReady {
+                        BleLogger.trace("waitDeviceSessionWithPftpToOpen(): completed")
                         disposable?.dispose()
                         emitter(.completed)
                     } else {
-                        BleLogger.trace("Waiting for device session to open, deviceId: \(deviceId), current state: \(String(describing: self.deviceSessionState))")
+                        BleLogger.trace("waitDeviceSessionWithPftpToOpen(): current state \(String(describing: self.deviceSessionState))")
                     }
                 }, onError: { error in
-                    BleLogger.trace("Timeout reached while waiting for device session to open, deviceId: \(deviceId)")
+                    BleLogger.error("waitDeviceSessionWithPftpToOpen(): error \(error)")
                     emitter(.error(error))
                 })
             return Disposables.create {
                 disposable?.dispose()
             }
+        }
+    }
+    
+    private func isPftpClientReady(_ identifier: String) -> Bool {
+        do {
+            let session = try self.sessionFtpClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return false
+            }
+            return true
+        } catch _ {
+            return false
         }
     }
 
