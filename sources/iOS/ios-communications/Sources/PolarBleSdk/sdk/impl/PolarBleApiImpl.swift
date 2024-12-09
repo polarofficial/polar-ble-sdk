@@ -2345,7 +2345,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                                         }
 
                                         return Observable.from(sortedFirmwarePackage)
-                                            .flatMap { fileEntry -> Observable<FirmwareUpdateStatus> in
+                                            .concatMap { fileEntry -> Observable<FirmwareUpdateStatus> in
                                                 let fileName = fileEntry.key
                                                 let firmwareBytes = fileEntry.value
                                                 let filePath = "/\(fileName)"
