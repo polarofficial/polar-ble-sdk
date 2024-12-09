@@ -15,4 +15,4 @@ Pacer Pro: [Store page](https://www.polar.com/en/pacer-pro)
 
 ## How to use the SDK with this product ? 
 
-Polar wrist devices need to explicitely follow [these steps](./../UsingSdkWithWatches.md) to enable SDK sharing.
+Polar wrist devices need to explicitely follow [these steps](./../UsingSDKWithWatches.md) to enable SDK sharing.
