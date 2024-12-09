@@ -2019,6 +2019,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                         backupManager.backupDevice()
                                                 .toFlowable()
                                                 .flatMap {
+                                                    backup.addAll(it)
+
+                                                    BleLogger.d(TAG, "Device backup completed: $it, starting firmware update to version ${firmwareUpdateResponse.version}")
+
                                                     firmwareUpdateApi.getFirmwareUpdatePackage(firmwareUpdateResponse.fileUrl)
                                                             .toFlowable()
                                                             .flatMap { firmwareBytes ->
@@ -2103,10 +2107,6 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                                     BleLogger.e(TAG, "Error during updateFirmware() for version ${firmwareUpdateResponse.version}, backup not available, error: $error")
                                                                     Flowable.error(error)
                                                                 }
-                                                            }
-                                                            .doOnSubscribe {
-                                                                BleLogger.d(TAG, "Preparing for firmware update started, fetching backup content...")
-                                                                backup.addAll(backupManager.backupDevice().blockingGet())
                                                             }
                                                             .doFinally {
                                                                 val disposable = setLocalTime(identifier, Calendar.getInstance())
