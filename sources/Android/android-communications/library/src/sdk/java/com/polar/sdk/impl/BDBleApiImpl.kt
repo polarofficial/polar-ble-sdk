@@ -2050,9 +2050,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                                 }
 
                                                                 doFactoryReset(identifier, true)
-                                                                        .andThen(Completable.timer(30, TimeUnit.SECONDS))
                                                                         .andThen(waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L))
-                                                                        .andThen(Completable.timer(5, TimeUnit.SECONDS))
                                                                         .andThen(
                                                                                 Flowable.fromIterable(firmwareFiles)
                                                                                         .concatMap { firmwareFile ->
@@ -2073,18 +2071,22 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                             .concatMap { status ->
                                                                 if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
                                                                     BleLogger.d(TAG, "Starting finalization of firmware update")
-                                                                    Completable.timer(rebootTriggeredWaitTimeSeconds, TimeUnit.SECONDS)
-                                                                            .andThen(
-                                                                                    waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 120L)
-                                                                                            .andThen(
-                                                                                                    Completable.fromCallable {
-                                                                                                        BleLogger.d(TAG, "Restoring backup to device after version ${firmwareUpdateResponse.version}")
-                                                                                                        sendInitializationAndStartSyncNotifications(client)
-                                                                                                        backupManager.restoreBackup(backup).subscribe()
-                                                                                                    }
-                                                                                            )
-                                                                            )
-                                                                            .andThen(Flowable.just(FirmwareUpdateStatus.FinalizingFwUpdate()))
+                                                                    BleLogger.d(TAG, "Waiting for device session to open after reboot")
+                                                                    waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L)
+                                                                        .andThen(Completable.defer {
+                                                                            BleLogger.d(TAG, "Performing factory reset while preserving pairing information")
+                                                                            return@defer doFactoryReset(identifier, true)
+                                                                        })
+                                                                        .andThen(Completable.defer {
+                                                                            BleLogger.d(TAG, "Waiting for device session to open after factory reset")
+                                                                            return@defer waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L)
+                                                                        })
+                                                                        .andThen(Completable.defer {
+                                                                            BleLogger.d(TAG, "Restoring backup to device after version ${firmwareUpdateResponse.version}")
+                                                                            sendInitializationAndStartSyncNotifications(client)
+                                                                            return@defer backupManager.restoreBackup(backup)
+                                                                        })
+                                                                        .andThen(Flowable.just(status))
                                                                 } else {
                                                                     Flowable.just(status)
                                                                 }
