@@ -43,10 +43,15 @@ import com.polar.sdk.api.model.*
 import com.polar.sdk.api.model.activity.PolarActiveTimeData
 import com.polar.sdk.api.model.activity.PolarDistanceData
 import com.polar.sdk.api.model.activity.PolarStepsData
+import com.polar.sdk.api.model.activity.PolarCaloriesData
+import com.polar.sdk.impl.utils.CaloriesType
 import com.polar.sdk.api.model.sleep.PolarSleepAnalysisResult
 import com.polar.sdk.api.model.sleep.PolarSleepData
 import com.polar.sdk.api.model.PolarUserDeviceSettings
+import com.polar.sdk.api.model.activity.Polar247HrSamplesData
+import com.polar.sdk.api.model.sleep.PolarNightlyRechargeData
 import com.polar.sdk.impl.utils.PolarActivityUtils
+import com.polar.sdk.impl.utils.PolarAutomaticSamplesUtils
 import com.polar.sdk.impl.utils.PolarBackupManager
 import com.polar.sdk.impl.utils.PolarDataUtils
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientOfflineHrDataToPolarHrData
@@ -67,6 +72,7 @@ import com.polar.sdk.impl.utils.PolarDataUtils.mapPolarOfflineTriggerToPmdOfflin
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPolarSecretToPmdSecret
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPolarSettingsToPmdSettings
 import com.polar.sdk.impl.utils.PolarFirmwareUpdateUtils
+import com.polar.sdk.impl.utils.PolarNightlyRechargeUtils
 import com.polar.sdk.impl.utils.PolarSleepUtils
 import com.polar.sdk.impl.utils.PolarTimeUtils
 import com.polar.sdk.impl.utils.PolarTimeUtils.javaCalendarToPbPftpSetLocalTime
@@ -101,6 +107,9 @@ import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicBoolean
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.regex.Matcher
@@ -124,7 +133,6 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     private var deviceSessionState: DeviceSessionState? = null
     private var callback: PolarBleApiCallbackProvider? = null
     private var logger: PolarBleApiLogger? = null
-    private val fileDeletionMap: MutableMap<String, Boolean> = mutableMapOf()
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd", Locale.ENGLISH)
 
     init {
@@ -1271,6 +1279,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     override fun removeOfflineRecord(identifier: String, entry: PolarOfflineRecordingEntry): Completable {
+        val fileDeletionMap: MutableMap<String, Boolean> = mutableMapOf()
         BleLogger.d(TAG, "Remove offline record from device $identifier path ${entry.path}")
         val session = try {
             sessionPsFtpClientReady(identifier)
@@ -2190,17 +2199,53 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
     }
 
+    override fun getCalories(identifier: String, fromDate: Date, toDate: Date, caloriesType: CaloriesType): Single<List<PolarCaloriesData>> {
+        val session = try {
+            sessionPsFtpClientReady(identifier)
+        } catch (error: Throwable) {
+            return Single.error(error)
+        }
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Single.error(PolarServiceNotAvailable())
+
+        val caloriesDataList = mutableListOf<Pair<Date, Int>>()
+
+        val calendar = Calendar.getInstance()
+        calendar.time = fromDate
+
+        val datesList = mutableListOf<Date>()
+
+        while (!calendar.time.after(toDate)) {
+            datesList.add(calendar.time)
+            calendar.add(Calendar.DATE, 1)
+        }
+
+        return Observable.fromIterable(datesList)
+            .flatMapSingle { date ->
+                PolarActivityUtils.readSpecificCaloriesFromDayDirectory(client, date, caloriesType)
+                    .map { calories ->
+                        Pair(date, calories)
+                    }
+            }
+            .toList()
+            .map { pairs ->
+                pairs.forEach { pair ->
+                    caloriesDataList.add(Pair(pair.first, pair.second))
+                }
+                caloriesDataList.map { PolarCaloriesData(it.first, it.second) }
+            }
+    }
+
     private fun getDatesBetween(startDate: LocalDate, endDate: LocalDate): MutableList<LocalDate> {
         var theDate: LocalDate = startDate
         var datesList = mutableListOf<LocalDate>()
 
-        while (startDate == endDate || endDate.isAfter(theDate)) {
+        while (theDate == endDate || endDate.isAfter(theDate)) {
             datesList.add(theDate)
             theDate = theDate.plusDays(1)
         }
 
         return datesList
-
     }
 
     override fun getActiveTime(identifier: String, fromDate: Date, toDate: Date): Single<List<PolarActiveTimeData>> {
@@ -2323,6 +2368,52 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
+    override fun get247HrSamples(identifier: String, fromDate: Date, toDate: Date): Single<List<Polar247HrSamplesData>> {
+        val session = try {
+            sessionPsFtpClientReady(identifier)
+        } catch (error: Throwable) {
+            return Single.error(error)
+        }
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: return Single.error(PolarServiceNotAvailable())
+
+        return PolarAutomaticSamplesUtils.read247HrSamples(client, fromDate, toDate)
+    }
+
+    override fun getNightlyRecharge(identifier: String, fromDate: Date, toDate: Date): Single<List<PolarNightlyRechargeData>> {
+        val session = try {
+            sessionPsFtpClientReady(identifier)
+        } catch (error: Throwable) {
+            return Single.error(error)
+        }
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: return Single.error(PolarServiceNotAvailable())
+
+        val nightlyRechargeDataList = mutableListOf<PolarNightlyRechargeData>()
+
+        val calendar = Calendar.getInstance()
+        calendar.time = fromDate
+
+        val datesList = mutableListOf<Date>()
+
+        while (!calendar.time.after(toDate)) {
+            datesList.add(calendar.time)
+            calendar.add(Calendar.DATE, 1)
+        }
+
+        return Observable.fromIterable(datesList)
+                .flatMapMaybe { date ->
+                    PolarNightlyRechargeUtils.readNightlyRechargeData(client, date)
+                            .doOnSuccess { nightlyRechargeData ->
+                                nightlyRechargeDataList.add(nightlyRechargeData)
+                            }
+                }
+                .toList()
+                .flatMap { list ->
+                    Single.just(nightlyRechargeDataList)
+                }
+    }
+
     private fun sendInitializationAndStartSyncNotifications(client: BlePsFtpClient) {
         BleLogger.d(TAG, "Sending initialize session and start sync notifications")
         client.sendNotification(
@@ -2438,7 +2529,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
     override fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Completable {
 
-        fileDeletionMap.clear()
+        var dataDeletionStats = DataDeletionStats(AtomicBoolean(false), 0)
         var folderPath = "/U/0"
         val entryPattern = dataType.type
         var cond: FetchRecursiveCondition?
@@ -2451,6 +2542,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                             entry.contains(".BPB")
                 }
             }
+
             PolarStoredDataType.SDLOGS.type -> {
                 folderPath = "/SDLOGS"
                 cond = FetchRecursiveCondition { entry: String ->
@@ -2474,55 +2566,85 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
         listFiles(identifier, folderPath, condition = cond)
             .map {
-                fileDeletionMap[it] = false
-            }
-            .doOnComplete {
-                when (dataType.type) {
-                    PolarStoredDataType.AUTO_SAMPLE.type -> {
-                        BleLogger.d(TAG, "Starting to delete files from /U/0/AUTOS/ folder from device $identifier.")
-                        deleteAutoSyncFiles(identifier).subscribe()
-                    }
-
-                    PolarStoredDataType.SDLOGS.type -> {
-                        BleLogger.d(TAG, "Starting to delete files from SDLOGS folder from device $identifier.")
-                        deleteSdLogFiles(identifier).subscribe()
-                    }
-
-                    else -> {
-                        BleLogger.d(
-                            TAG,
-                            "Starting to delete files from /U/0 directory, file type: $dataType.name from device $identifier."
-                        )
-                        deleteDataDirectories(identifier, until).subscribe()
-                    }
-                }
+                dataDeletionStats.fileDeletionMap[it] = false
             }.doOnError { error ->
                 BleLogger.e(TAG, "Encountered exception while deleting files in device $identifier.. Error: $error")
                 Completable.error(error)
-            }.subscribe()
+            }.doOnComplete {
+                if (dataDeletionStats.amountOfHandedDeletions == dataDeletionStats.fileDeletionMap.size) {
+                    dataDeletionStats.deleteOperationCompleteLock.set(true)
+                }
+            }.blockingSubscribe()
+
+        when (dataType.type) {
+            PolarStoredDataType.AUTO_SAMPLE.type -> {
+                BleLogger.d(TAG, "Starting to delete files from /U/0/AUTOS/ folder from device $identifier.")
+                deleteAutoSampleFiles(identifier, dataDeletionStats).parallel().runOn(Schedulers.computation()).sequential()
+                    .doOnError { error ->
+                        BleLogger.e(TAG, "Encountered exception while deleting AUTO_SAMPLE files in device $identifier. Error: $error")
+                        Completable.error(error)
+                    }.subscribe()
+            }
+
+            PolarStoredDataType.SDLOGS.type -> {
+                BleLogger.d(TAG, "Starting to delete files from SDLOGS folder from device $identifier.")
+                deleteSdLogFiles(identifier, dataDeletionStats)
+                    .doOnError { error ->
+                        BleLogger.e(TAG, "Encountered exception while deleting SDLOGS files in device $identifier. Error: $error")
+                        Completable.error(error)
+                    }.subscribe()
+            }
+
+            else -> {
+                BleLogger.d(
+                    TAG,
+                    "Starting to delete files from /U/0 directory, file type: $dataType.name from device $identifier."
+                )
+                deleteDataDirectories(identifier, until, dataDeletionStats).parallel().runOn(Schedulers.computation()).sequential()
+                    .doOnError { error ->
+                        BleLogger.e(TAG, "Encountered exception while deleting ${dataType.type} files in device $identifier. Error: $error")
+                        Completable.error(error)
+                    }.subscribe()
+            }
+        }
+
+        try {
+            while(!dataDeletionStats.deleteOperationCompleteLock.get()){
+                Thread.sleep(500);
+            }
+        } catch (e: InterruptedException) {
+            BleLogger.e(TAG, "Encountered exception while waiting for deletion process to complete. Error: $e")
+        }
 
         return Completable.complete()
     }
 
-    private fun deleteAutoSyncFiles(identifier: String): Flowable<Map.Entry<String, Boolean>> {
+    private fun deleteAutoSampleFiles(identifier: String, dataDeletionStats: DataDeletionStats): Flowable<Map.Entry<String, Boolean>> {
 
-        return Flowable.fromIterable(fileDeletionMap.asIterable()).doOnEach() { item ->
+        return Flowable.fromIterable(dataDeletionStats.fileDeletionMap.asIterable()).doOnEach() { item ->
             val file = item.value
             if (file != null && !file.value) {
                 getFile(identifier, file.key)
                     .subscribe(
                         { byteArray ->
+                            dataDeletionStats.amountOfHandedDeletions++
                             val proto = PbAutomaticSampleSessions.parseFrom(byteArray)
                             val date = PolarTimeUtils.pbDateToLocalDate(proto.day)
                             // Delete all files but leave files from today.
                             if (date.isBefore(LocalDate.now())) {
-                                fileDeletionMap[file.key] = true
+                                dataDeletionStats.fileDeletionMap[file.key] = true
                                 removeSingleFile(identifier, file.key)
                                     .map { _ ->
-                                        fileDeletionMap[file.key] = true
+                                        dataDeletionStats.fileDeletionMap[file.key] = true
+                                    }.doFinally {
+                                        if (dataDeletionStats.amountOfHandedDeletions == dataDeletionStats.fileDeletionMap.size) {
+                                            dataDeletionStats.deleteOperationCompleteLock.set(true)
+                                        }
                                     }.doOnError { error ->
                                         BleLogger.e(TAG, "Failed to delete autosync file $file.key from device $identifier. Error: $error")
                                     }.subscribe()
+                            } else if (dataDeletionStats.amountOfHandedDeletions == dataDeletionStats.fileDeletionMap.size) {
+                                dataDeletionStats.deleteOperationCompleteLock.set(true)
                             }
                         },
                         { error ->
@@ -2533,31 +2655,38 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
-    private fun deleteSdLogFiles(identifier: String):Flowable<Map.Entry<String, Boolean>> {
+    private fun deleteSdLogFiles(identifier: String, dataDeletionStats: DataDeletionStats):Flowable<Map.Entry<String, Boolean>> {
 
-        return Flowable.fromIterable(fileDeletionMap.asIterable()).doOnEach() { item ->
+        return Flowable.fromIterable(dataDeletionStats.fileDeletionMap.asIterable()).doOnEach() { item ->
             val file = item.value
             if (file != null && !file.value) {
+                dataDeletionStats.amountOfHandedDeletions++
                 removeSingleFile(identifier, file.key)
                     .map { _ ->
-                        fileDeletionMap[file.key] = true
+                        dataDeletionStats.fileDeletionMap[file.key] = true
+
+                    }.doFinally {
+                        if (dataDeletionStats.amountOfHandedDeletions == dataDeletionStats.fileDeletionMap.size) {
+                            dataDeletionStats.deleteOperationCompleteLock.set(true)
+                        }
                     }.doOnError { error ->
                         BleLogger.e(
                             TAG,
                             "Failed to delete Log file $file.key from device $identifier. Error: $error"
                         )
                     }.subscribe()
+            } else if (dataDeletionStats.amountOfHandedDeletions == dataDeletionStats.fileDeletionMap.size) {
+                dataDeletionStats.deleteOperationCompleteLock.set(true)
             }
         }
     }
 
-    private fun deleteDataDirectories(identifier: String, until: LocalDate?): Flowable<Unit> {
+    private fun deleteDataDirectories(identifier: String, until: LocalDate?, dataDeletionStats: DataDeletionStats): Flowable<Unit> {
 
-        var directoryList: MutableList<String> = mutableListOf()
-
-        return Flowable.fromIterable(fileDeletionMap.asIterable())
+        return Flowable.fromIterable(dataDeletionStats.fileDeletionMap.asIterable())
             .map { file ->
-                var deleteFile = false
+                dataDeletionStats.amountOfHandedDeletions++
+                var fileDateIsBefore = false
                 val pattern: Pattern =
                     Pattern.compile("(?<!\\d)\\d{8}(?!\\d)")
                 val matcher: Matcher = pattern.matcher(file.key)
@@ -2565,29 +2694,49 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 if (found) {
                     var entryDate = LocalDate.parse(matcher.group(), dateFormatter)
                     if (until != null && entryDate.isBefore(until)) {
-                        deleteFile = true
+                        fileDateIsBefore = true
                     }
                 }
-                if (deleteFile) {
-                    val dir = listOf(file.key.split("/").subList(0, file.key.split("/").lastIndex))[0].joinToString(separator = "/")
-                    removeSingleFile(identifier, dir)
-                        .doOnError { error ->
-                            BleLogger.e(
-                                TAG,
-                                "Failed to delete data directory $dir from device $identifier. Error: $error"
-                            )
+                if (fileDateIsBefore) {
+                    val path = listOf(file.key.split("/").subList(0, file.key.split("/").lastIndex))[0].joinToString(separator = "/")
+                    var deleteDir = true
+                    for (dir in dataDeletionStats.deletedDirs) {
+                        if (dir.equals(path)) {
+                            deleteDir = false
+                            break
                         }
-                        .doOnSuccess {
-                            deleteDayDirectory(identifier, listOf(file.key.split("/").subList(0,file.key.split("/").lastIndex - 1))[0].joinToString(separator = "/")).subscribe()
-                        }.subscribe()
+                    }
+                    if (deleteDir) {
+                        dataDeletionStats.deletedDirs.add(path)
+                        removeSingleFile(identifier, path)
+                            .doOnError { error ->
+                                BleLogger.e(
+                                    TAG,
+                                    "Failed to delete data directory $path from device $identifier. Error: $error"
+                                )
+                            }.doFinally {
+                                if (dataDeletionStats.amountOfHandedDeletions == dataDeletionStats.fileDeletionMap.size) {
+                                    dataDeletionStats.deleteOperationCompleteLock.set(true)
+                                }
+                            }.doOnSuccess {
+                                deleteDayDirectory(
+                                    identifier,
+                                    listOf(
+                                        file.key.split("/")
+                                            .subList(0, file.key.split("/").lastIndex - 1)
+                                    )[0].joinToString(separator = "/")
+                                ).subscribe()
+                            }.subscribe()
+                    }
+                } else if (dataDeletionStats.amountOfHandedDeletions == dataDeletionStats.fileDeletionMap.size) {
+                    dataDeletionStats.deleteOperationCompleteLock.set(true)
                 }
             }
-
-        return Flowable.just(Unit)
     }
 
     private fun deleteDataDirectories(identifier: String): Flowable<Unit> {
 
+        val fileDeletionMap: MutableMap<String, Boolean> = mutableMapOf()
         return Flowable.fromIterable(fileDeletionMap.asIterable())
             .map { file ->
                 val dir = listOf(file.key.split("/").subList(0, file.key.split("/").lastIndex))[0].joinToString(separator = "/")
@@ -2602,43 +2751,43 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         deleteDayDirectory(identifier, listOf(file.key.split("/").subList(0,file.key.split("/").lastIndex - 1))[0].joinToString(separator = "/")).subscribe()
                     }.subscribe()
             }
-
-        return Flowable.just(Unit)
     }
 
-    private fun deleteDayDirectory(identifier: String, dir: String): Completable {
+    private fun deleteDayDirectory(identifier: String, dir: String): Flowable<String> {
 
         var fileList: MutableList<String> = mutableListOf()
-        listFiles(identifier, dir,
-            condition = { entry ->
-                entry.matches(Regex("^(\\d{8})(/)")) ||
-                        entry.matches(Regex("^([A-Z-0-9]{1,6}[0-9]{0,10000})(/)")) ||
-                        entry.contains(".BPB") ||
-                        entry.contains(".REC")
-            })
-            .map {
-                fileList.add(it)
-            }
-            .doFinally {
-                if (fileList.isEmpty()) {
-                    removeSingleFile(identifier, dir)
-                        .doOnError { error ->
-                            BleLogger.e(
-                                TAG,
-                                "Failed to delete day directory $dir from device $identifier. Error: $error"
-                            )
-                        }.subscribe()
+
+        return Flowable.create({ emitter ->
+            listFiles(identifier, dir,
+                condition = { entry ->
+                    entry.matches(Regex("^(\\d{8})(/)")) ||
+                            entry.matches(Regex("^([A-Z-0-9]{1,6}[0-9]{0,10000})(/)")) ||
+                            //entry.matches(Regex("^(\\d{6})(/)")) ||
+                            entry.contains(".BPB") ||
+                            entry.contains(".REC")
+                })
+                .map {
+                    fileList.add(it)
                 }
-            }
-            .doOnError { error ->
-                BleLogger.e(
-                    TAG,
-                    "Failed to list files from day directory $dir from device $identifier. Error: $error"
-                )
-                Completable.error(error)
-            }
-            .subscribe()
-        return Completable.complete()
+                .doFinally {
+                    if (fileList.isEmpty()) {
+                        removeSingleFile(identifier, dir)
+                            .doOnError { error ->
+                                BleLogger.e(
+                                    TAG,
+                                    "Failed to delete day directory $dir from device $identifier. Error: $error"
+                                )
+                            }.subscribe()
+                    }
+                }
+                .doOnError { error ->
+                    BleLogger.e(
+                        TAG,
+                        "Failed to list files from day directory $dir from device $identifier. Error: $error"
+                    )
+                    throw PolarBleSdkInstanceException("Failed to delete day directory $dir from device $identifier. Error: $error")
+                }.subscribe()
+        }, BackpressureStrategy.BUFFER)
     }
 
     private fun removeSingleFile(identifier: String, filePath: String): Single<ByteArrayOutputStream> {
@@ -2652,7 +2801,9 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         val builder = PftpRequest.PbPFtpOperation.newBuilder()
         builder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
         builder.path = filePath
-        return client.request(builder.build().toByteArray())
+        return client.request(builder.build().toByteArray()).onErrorResumeNext { throwable: Throwable ->
+            Single.error(handleError(throwable))
+        }
     }
 
     private fun listFiles(identifier: String, folderPath: String = "/", condition: FetchRecursiveCondition): Flowable<String> {
@@ -3260,3 +3411,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 }
+
+data class DataDeletionStats(
+    val deleteOperationCompleteLock: AtomicBoolean = AtomicBoolean(false),
+    var amountOfHandedDeletions: Int,
+    var deletedDirs: ConcurrentLinkedQueue<String> = ConcurrentLinkedQueue(),
+    val fileDeletionMap: ConcurrentHashMap<String, Boolean> = ConcurrentHashMap()
+)

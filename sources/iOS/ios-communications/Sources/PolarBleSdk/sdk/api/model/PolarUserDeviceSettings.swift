@@ -44,7 +44,7 @@ public class PolarUserDeviceSettings {
     }
     
     public struct PolarUserDeviceSettingsResult: Codable {
-        public var deviceLocation: DeviceLocation!
+        public var deviceLocation: DeviceLocation = .UNDEFINED
     }
     
     static func toProto(deviceUserLocation: (DeviceLocation)) -> Data_PbUserDeviceSettings {

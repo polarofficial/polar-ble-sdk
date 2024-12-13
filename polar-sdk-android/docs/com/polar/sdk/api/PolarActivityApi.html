@@ -261,6 +261,30 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                             <td class="colLast">Get active time for a given period.</td>
                                         </tr>
                                         
+                                        <tr id="i3" class="rowColor">
+                                            <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarCaloriesData.html>PolarCaloriesData</a>&gt;&gt;</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarActivityApi.html#getCalories(String,Date,Date,CaloriesType)>getCalories</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate, <a href=../impl/utils/CaloriesType.html>CaloriesType</a> caloriesType) </code>
+                                            </th>
+                                            <td class="colLast">Get specific calories type for a given period.</td>
+                                        </tr>
+                                        
+                                        <tr id="i4" class="altColor">
+                                            <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/Polar247HrSamplesData.html>Polar247HrSamplesData</a>&gt;&gt;</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarActivityApi.html#get247HrSamples(String,Date,Date)>get247HrSamples</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate) </code>
+                                            </th>
+                                            <td class="colLast">Get 24/7 heart rate samples for a given period.</td>
+                                        </tr>
+                                        
+                                        <tr id="i5" class="rowColor">
+                                            <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/sleep/PolarNightlyRechargeData.html>PolarNightlyRechargeData</a>&gt;&gt;</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarActivityApi.html#getNightlyRecharge(String,Date,Date)>getNightlyRecharge</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate) </code>
+                                            </th>
+                                            <td class="colLast">Get nightly recharge for a given period.</td>
+                                        </tr>
+                                        
                                         </tbody>
                                     </table>
                                 </div>
@@ -373,7 +397,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                     <!--   -->
                                 </a>
                                 <ul class=
-                                              "blockListLast"
+                                              "blockList"
                                           >
                                     <li class="blockList">
                                         <h4>getActiveTime</h4>
@@ -393,6 +417,106 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                             
                                             
                                             <dd><code>toDate</code> - The ending date of the period to retrieve active time from.</dd>
+                                            
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="getCalories(String,Date,Date,CaloriesType)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getCalories</h4>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarCaloriesData.html>PolarCaloriesData</a>&gt;&gt; <a href=PolarActivityApi.html#getCalories(String,Date,Date,CaloriesType)>getCalories</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate, <a href=../impl/utils/CaloriesType.html>CaloriesType</a> caloriesType)</pre>
+                                        <div class="block"><p>Get specific calories type for a given period.</p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - The Polar device ID or BT address.</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>fromDate</code> - The starting date of the period to retrieve calories data from.</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>toDate</code> - The ending date of the period to retrieve calories data from.</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>caloriesType</code> - The type of calories data to retrieve (e.g., ACTIVITY, TRAINING, BMR).</dd>
+                                            
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="get247HrSamples(String,Date,Date)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>get247HrSamples</h4>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/Polar247HrSamplesData.html>Polar247HrSamplesData</a>&gt;&gt; <a href=PolarActivityApi.html#get247HrSamples(String,Date,Date)>get247HrSamples</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate)</pre>
+                                        <div class="block"><p>Get 24/7 heart rate samples for a given period.</p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - The Polar device ID or BT address.</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>fromDate</code> - The starting date of the period to retrieve heart rate samples from.</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>toDate</code> - The ending date of the period to retrieve heart rate samples from.</dd>
+                                            
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="getNightlyRecharge(String,Date,Date)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getNightlyRecharge</h4>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/sleep/PolarNightlyRechargeData.html>PolarNightlyRechargeData</a>&gt;&gt; <a href=PolarActivityApi.html#getNightlyRecharge(String,Date,Date)>getNightlyRecharge</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate)</pre>
+                                        <div class="block"><p>Get nightly recharge for a given period.</p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - The Polar device ID or BT address.</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>fromDate</code> - The starting date of the period to retrieve nightly recharge from.</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>toDate</code> - The ending date of the period to retrieve nightly recharge from.</dd>
                                             
                                             
                                         </dl>

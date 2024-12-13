@@ -2,6 +2,12 @@
 
 import Foundation
 
+public enum CheckFirmwareUpdateStatus {
+    case checkFwUpdateAvailable(version: String)
+    case checkFwUpdateNotAvailable(details: String)
+    case checkFwUpdateFailed(details: String)
+}
+
 public enum FirmwareUpdateStatus {
     case fetchingFwUpdatePackage(details: String)
     case preparingDeviceForFwUpdate(details: String)

@@ -149,6 +149,13 @@ public final class <span class="typeNameLabel"><a href=PolarFirstTimeUseConfig.h
                                         </tr>
                                         
                                         <tr class="rowColor">
+                                            <td class="colFirst"><code>public enum</code></td>
+                                            <th class="colSecond" scope="row"><code><a href="PolarFirstTimeUseConfig.TypicalDay.html">PolarFirstTimeUseConfig.TypicalDay</a></span></code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="altColor">
                                             <td class="colFirst"><code>public class</code></td>
                                             <th class="colSecond" scope="row"><code><a href="PolarFirstTimeUseConfig.Companion.html">PolarFirstTimeUseConfig.Companion</a></span></code>
                                             </th>
@@ -232,6 +239,18 @@ public final class <span class="typeNameLabel"><a href=PolarFirstTimeUseConfig.h
                                             <td class="colLast"></td>
                                         </tr>
                                         
+                                        <tr class="rowColor">
+                                            <td class="colFirst"><code>private final <a href=PolarFirstTimeUseConfig.TypicalDay.html>PolarFirstTimeUseConfig.TypicalDay</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarFirstTimeUseConfig.html#typicalDay>typicalDay</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="altColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarFirstTimeUseConfig.html#sleepGoalMinutes>sleepGoalMinutes</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
                                     </table>
                                 </div>
                             </li>
@@ -258,7 +277,7 @@ public final class <span class="typeNameLabel"><a href=PolarFirstTimeUseConfig.h
                                         
                                             <tr class="altColor">
                                                 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a
-                                                        href="#PolarFirstTimeUseConfig(PolarFirstTimeUseConfig.Gender,Date,Float,Float,Integer,Integer,Integer,Integer,String)">PolarFirstTimeUseConfig</a></span>(<a href=PolarFirstTimeUseConfig.Gender.html>PolarFirstTimeUseConfig.Gender</a> gender, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> birthDate, <a href=https://developer.android.com/reference/kotlin/java/lang/Float.html>Float</a> height, <a href=https://developer.android.com/reference/kotlin/java/lang/Float.html>Float</a> weight, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> maxHeartRate, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> vo2Max, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> restingHeartRate, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> trainingBackground, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceTime)</code></th>
+                                                        href="#PolarFirstTimeUseConfig(PolarFirstTimeUseConfig.Gender,Date,Float,Float,Integer,Integer,Integer,Integer,String,PolarFirstTimeUseConfig.TypicalDay,Integer)">PolarFirstTimeUseConfig</a></span>(<a href=PolarFirstTimeUseConfig.Gender.html>PolarFirstTimeUseConfig.Gender</a> gender, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> birthDate, <a href=https://developer.android.com/reference/kotlin/java/lang/Float.html>Float</a> height, <a href=https://developer.android.com/reference/kotlin/java/lang/Float.html>Float</a> weight, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> maxHeartRate, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> vo2Max, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> restingHeartRate, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> trainingBackground, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceTime, <a href=PolarFirstTimeUseConfig.TypicalDay.html>PolarFirstTimeUseConfig.TypicalDay</a> typicalDay, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> sleepGoalMinutes)</code></th>
                                                 <td class="colLast"></td>
                                             </tr>
                                         
@@ -383,6 +402,22 @@ public final class <span class="typeNameLabel"><a href=PolarFirstTimeUseConfig.h
                                             <td class="colLast"></td>
                                         </tr>
                                         
+                                        <tr id="i9" class="rowColor">
+                                            <td class="colFirst"><code>final <a href=PolarFirstTimeUseConfig.TypicalDay.html>PolarFirstTimeUseConfig.TypicalDay</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarFirstTimeUseConfig.html#getTypicalDay()>getTypicalDay</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i10" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarFirstTimeUseConfig.html#getSleepGoalMinutes()>getSleepGoalMinutes</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
                                         </tbody>
                                     </table>
                                 </div>
@@ -414,11 +449,11 @@ public final class <span class="typeNameLabel"><a href=PolarFirstTimeUseConfig.h
                             </a>
                                 <h3>Constructor Detail</h3>
                                 
-                                <a name="PolarFirstTimeUseConfig(PolarFirstTimeUseConfig.Gender,Date,Float,Float,Integer,Integer,Integer,Integer,String)"></a>
+                                <a name="PolarFirstTimeUseConfig(PolarFirstTimeUseConfig.Gender,Date,Float,Float,Integer,Integer,Integer,Integer,String,PolarFirstTimeUseConfig.TypicalDay,Integer)"></a>
                                 <ul class="blockList">
                                     <li class="blockList">
                                         <h4>PolarFirstTimeUseConfig</h4>
-                                        <pre>PolarFirstTimeUseConfig(<a href=PolarFirstTimeUseConfig.Gender.html>PolarFirstTimeUseConfig.Gender</a> gender, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> birthDate, <a href=https://developer.android.com/reference/kotlin/java/lang/Float.html>Float</a> height, <a href=https://developer.android.com/reference/kotlin/java/lang/Float.html>Float</a> weight, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> maxHeartRate, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> vo2Max, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> restingHeartRate, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> trainingBackground, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceTime)</pre>
+                                        <pre>PolarFirstTimeUseConfig(<a href=PolarFirstTimeUseConfig.Gender.html>PolarFirstTimeUseConfig.Gender</a> gender, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> birthDate, <a href=https://developer.android.com/reference/kotlin/java/lang/Float.html>Float</a> height, <a href=https://developer.android.com/reference/kotlin/java/lang/Float.html>Float</a> weight, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> maxHeartRate, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> vo2Max, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> restingHeartRate, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> trainingBackground, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceTime, <a href=PolarFirstTimeUseConfig.TypicalDay.html>PolarFirstTimeUseConfig.TypicalDay</a> typicalDay, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> sleepGoalMinutes)</pre>
                                         <div class="block"></div>
                                         
                                     </li>
@@ -561,11 +596,41 @@ public final class <span class="typeNameLabel"><a href=PolarFirstTimeUseConfig.h
                                     <!--   -->
                                 </a>
                                 <ul class=
-                                              "blockListLast"
+                                              "blockList"
                                           >
                                     <li class="blockList">
                                         <h4>getDeviceTime</h4>
                                         <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> <a href=PolarFirstTimeUseConfig.html#getDeviceTime()>getDeviceTime</a>()</pre>
+                                        <div class="block"></div>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="getTypicalDay()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getTypicalDay</h4>
+                                        <pre class="methodSignature"> final <a href=PolarFirstTimeUseConfig.TypicalDay.html>PolarFirstTimeUseConfig.TypicalDay</a> <a href=PolarFirstTimeUseConfig.html#getTypicalDay()>getTypicalDay</a>()</pre>
+                                        <div class="block"></div>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="getSleepGoalMinutes()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getSleepGoalMinutes</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> <a href=PolarFirstTimeUseConfig.html#getSleepGoalMinutes()>getSleepGoalMinutes</a>()</pre>
                                         <div class="block"></div>
                                         
                                         <!-- TODO missing return annotation -->

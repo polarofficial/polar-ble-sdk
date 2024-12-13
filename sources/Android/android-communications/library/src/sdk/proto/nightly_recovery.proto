@@ -1,0 +1,81 @@
+// NR.BPB=PbNightlyRecoveryStatus
+syntax = "proto2";
+
+package data;
+import "types.proto";
+import "nanopb.proto";
+
+option java_package = "fi.polar.remote.representation.protobuf";
+option java_outer_classname = "NightlyRecovery";
+
+/*
+  Nightly recovery data structure definition
+*/
+
+message PbNightlyRecoveryStatus {
+    // Date and time of the result was created
+    required PbSystemDateTime created_timestamp = 1;
+    
+    // Date and time when the file was last modified
+    optional PbSystemDateTime modified_timestamp = 2;
+
+    // The limit of ansStatus is from -15.7068 to 15.7068. A value over 0 is representing 
+    // higher parasymphatetic activity than usually (and lower symphatetic) and value below 0 
+    // is representing lower parasymphatetic activity than usually (and higher symphatetic)
+    optional float ans_status = 3;
+    
+    // The combination of normalized ANS status and normalized Sleep Score and Sleep Metric. Between 1 to 6.
+    optional int32 recovery_indicator = 4;
+    
+    // This is a number between 0-100 and it indicates in more detail what is the level of combination of ANS 
+    // and Sleep inside the recoveryIndicator class. I.e. if your recovery_indicator is 2, than
+    // recovery_indicator_sub_level 0 indicates that you are at the bottom of that class and ~100
+    // indicates that you are at almost recovery_indicator level 3.
+    optional int32 recovery_indicator_sub_level = 5;
+    
+    // Rating of ans status in scale 1-5 compared to own usual level. (5 = best, 1 = worst)
+    optional int32 ans_rate = 6;
+    
+    // Rating of sleep score status in scale 1-5 compared to own usual level (5 = best, 1 = worst)
+    optional int32 score_rate_OBSOLETE = 7;
+    
+    // Mean of the HR (after 0.5h from sleep start to 4,5h after sleep start hr) samples to beat interval time. (ms) 
+    optional int32 mean_nightly_recovery_RRI = 8;
+
+    // Mean of the PPI (after 0.5h from sleep start to 4,5h after sleep start PPI) calculated RMSSD values. (ms)
+    optional int32 mean_nightly_recovery_RMSSD = 9;
+
+    // Mean of the respiration interval (after 0.5h from sleep start to 4,5h after sleep start) samples. (ms)
+    optional int32 mean_nightly_recovery_respiration_interval = 10;
+    
+    // The mean RRI from the baseline calculation. (ms)
+    optional int32 mean_baseline_RRI = 11;
+
+    // The standard deviation of RRI from baseline calculation.
+    optional int32 sd_baseline_RRI = 12;
+
+    // The mean RMSSD from the baseline calculation.
+    optional int32 mean_baseline_RMSSD = 13;
+
+    // The standard deviation of RMSSD from baseline calculation.
+    optional int32 sd_baseline_RMSSD = 14;
+
+    // mean Respiration Interval from the baseline calculation. (ms)
+    optional int32 mean_baseline_respiration_interval = 15;
+
+    // The standard deviation of Respiration Interval from baseline calculation.
+    optional int32 sd_baseline_respiration_interval = 16;
+    
+    // Chosen sleep tip for the user.
+    optional string sleep_tip = 17 [(nanopb).max_size = 6];
+    
+    // Chosen vitality tip for the user.
+    optional string vitality_tip = 18 [(nanopb).max_size = 6];
+    
+    // Chosen exercise tip for the user.
+    optional string exercise_tip = 19 [(nanopb).max_size = 6];
+
+    // Date for which the sleep result and nightly recovery result is for
+    optional PbDate sleep_result_date = 20;
+};
+

@@ -3,6 +3,7 @@ package com.polar.sdk.api.model.utils
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
 import com.polar.sdk.api.model.activity.PolarActiveTime
 import com.polar.sdk.api.model.activity.PolarActiveTimeData
+import com.polar.sdk.impl.utils.CaloriesType
 import com.polar.sdk.impl.utils.PolarActivityUtils
 import fi.polar.remote.representation.protobuf.ActivitySamples
 import fi.polar.remote.representation.protobuf.DailySummary
@@ -151,6 +152,88 @@ class PolarActivityUtilsTest {
         testObserver.assertComplete()
         testObserver.assertNoErrors()
         testObserver.assertValue(0f)
+
+        verifyOrder {
+            client.sendNotification(
+                PftpNotification.PbPFtpHostToDevNotification.START_SYNC.number,
+                null
+            )
+            client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath(expectedPath)
+                    .build()
+                    .toByteArray()
+            )
+        }
+        confirmVerified(client)
+    }
+
+    @Test
+    fun `readSpecificCaloriesFromDayDirectory() should return specific calories value`() {
+        // Arrange
+        val client = mockk<BlePsFtpClient>()
+        val date = Date()
+        val caloriesType = CaloriesType.ACTIVITY
+        val expectedCalories = 500
+        val expectedPath = "/U/0/${dateFormat.format(date)}/DSUM/DSUM.BPB"
+
+        val dailySummaryBuilder = DailySummary.PbDailySummary.newBuilder()
+        when (caloriesType) {
+            CaloriesType.ACTIVITY -> dailySummaryBuilder.activityCalories = expectedCalories
+            CaloriesType.TRAINING -> dailySummaryBuilder.trainingCalories = expectedCalories
+            CaloriesType.BMR -> dailySummaryBuilder.bmrCalories = expectedCalories
+        }
+        val dailySummary = dailySummaryBuilder.build()
+        val outputStream = ByteArrayOutputStream()
+        dailySummary.writeTo(outputStream)
+
+        every { client.request(any()) } returns Single.just(outputStream)
+        every { client.sendNotification(any(), null) } returns Completable.complete()
+
+        // Act
+        val testObserver = PolarActivityUtils.readSpecificCaloriesFromDayDirectory(client, date, caloriesType).test()
+
+        // Assert
+        testObserver.assertComplete()
+        testObserver.assertNoErrors()
+        testObserver.assertValue(expectedCalories)
+
+        verifyOrder {
+            client.sendNotification(
+                PftpNotification.PbPFtpHostToDevNotification.START_SYNC.number,
+                null
+            )
+            client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath(expectedPath)
+                    .build()
+                    .toByteArray()
+            )
+        }
+        confirmVerified(client)
+    }
+
+    @Test
+    fun `readSpecificCaloriesFromDayDirectory() should return 0 if activity file not found`() {
+        // Arrange
+        val client = mockk<BlePsFtpClient>()
+        val date = Date()
+        val caloriesType = CaloriesType.ACTIVITY
+        val expectedPath = "/U/0/${dateFormat.format(date)}/DSUM/DSUM.BPB"
+        val expectedError = Throwable("File not found")
+
+        every { client.request(any()) } returns Single.error(expectedError)
+        every { client.sendNotification(any(), null) } returns Completable.complete()
+
+        // Act
+        val testObserver = PolarActivityUtils.readSpecificCaloriesFromDayDirectory(client, date, caloriesType).test()
+
+        // Assert
+        testObserver.assertComplete()
+        testObserver.assertNoErrors()
+        testObserver.assertValue(0)
 
         verifyOrder {
             client.sendNotification(

@@ -80,6 +80,17 @@ public protocol PolarOfflineRecordingApi {
     ///   - error: fetch recording request failed. see `PolarErrors` for possible errors invoked
     func getOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret?) -> Single< PolarOfflineRecordingData>
 
+    /// Fetch number sub recordings in recording from the  device.
+    ///
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id
+    ///   - entry:  The offline recording whose subrecording count will be checked
+    /// - Returns: Single
+    ///   - success :  the offline recording subrecording count
+    ///   - error: fetch recording request failed. see `PolarErrors` for possible errors invoked
+    func getSubRecordingCount(identifier: String, entry: PolarOfflineRecordingEntry) -> Single<Int>
+
     /// List split offline recordings stored in the device.
     ///
     /// - Parameters:

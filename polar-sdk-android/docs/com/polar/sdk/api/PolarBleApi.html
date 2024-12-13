@@ -182,20 +182,27 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         </tr>
                                         
                                         <tr class="rowColor">
+                                            <td class="colFirst"><code>public enum</code></td>
+                                            <th class="colSecond" scope="row"><code><a href="PolarBleApi.PolarStoredDataType.html">PolarBleApi.PolarStoredDataType</a></span></code>
+                                            </th>
+                                            <td class="colLast"><p>The data types in Polar devices that are available for cleanup.</p></td>
+                                        </tr>
+                                        
+                                        <tr class="altColor">
                                             <td class="colFirst"><code>public interface</code></td>
                                             <th class="colSecond" scope="row"><code><a href="PolarBleApi.PolarBleApiLogger.html">PolarBleApi.PolarBleApiLogger</a></span></code>
                                             </th>
                                             <td class="colLast"><p>Logger interface for logging events from SDK. Shall be used only for tracing and debugging purposes.</p></td>
                                         </tr>
                                         
-                                        <tr class="altColor">
+                                        <tr class="rowColor">
                                             <td class="colFirst"><code>public enum</code></td>
                                             <th class="colSecond" scope="row"><code><a href="PolarBleApi.PolarDeviceDataType.html">PolarBleApi.PolarDeviceDataType</a></span></code>
                                             </th>
                                             <td class="colLast"><p>The data types available in Polar devices for online streaming or offline recording.</p></td>
                                         </tr>
                                         
-                                        <tr class="rowColor">
+                                        <tr class="altColor">
                                             <td class="colFirst"><code>public enum</code></td>
                                             <th class="colSecond" scope="row"><code><a href="PolarBleApi.PolarActivityDataType.html">PolarBleApi.PolarActivityDataType</a></span></code>
                                             </th>
@@ -497,9 +504,41 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         <tr id="i23" class="rowColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setWareHouseSleep(String)>setWareHouseSleep</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">Set warehouse sleep setting to a given device.</td>
+                                        </tr>
+                                        
+                                        <tr id="i24" class="altColor">
+                                            <td class="colFirst"><code>abstract Completable</code>
+                                            </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#doFirstTimeUse(String,PolarFirstTimeUseConfig)>doFirstTimeUse</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarFirstTimeUseConfig.html>PolarFirstTimeUseConfig</a> ftuConfig) </code>
                                             </th>
-                                            <td class="colLast">Set FtuConfig for device</td>
+                                            <td class="colLast">Configure the Polar device with first-time use settings and user identifier.</td>
+                                        </tr>
+                                        
+                                        <tr id="i25" class="rowColor">
+                                            <td class="colFirst"><code>abstract Completable</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setUserDeviceSettings(String,PolarUserDeviceSettings)>setUserDeviceSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarUserDeviceSettings.html>PolarUserDeviceSettings</a> deviceUserSetting) </code>
+                                            </th>
+                                            <td class="colLast">Set <a href=model/PolarUserDeviceSettings.html>PolarUserDeviceSettings</a> for device.</td>
+                                        </tr>
+                                        
+                                        <tr id="i26" class="altColor">
+                                            <td class="colFirst"><code>abstract Single&lt;<a href=model/PolarUserDeviceSettings.html>PolarUserDeviceSettings</a>&gt;</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getUserDeviceSettings(String)>getUserDeviceSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">Get <a href=model/PolarUserDeviceSettings.html>PolarUserDeviceSettings</a> from device.</td>
+                                        </tr>
+                                        
+                                        <tr id="i27" class="rowColor">
+                                            <td class="colFirst"><code>abstract Completable</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#deleteStoredDeviceData(String,PolarBleApi.PolarStoredDataType,LocalDate)>deleteStoredDeviceData</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarStoredDataType.html>PolarBleApi.PolarStoredDataType</a> dataType, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> until) </code>
+                                            </th>
+                                            <td class="colLast">Delete data <a href=PolarBleApi.PolarStoredDataType.html>PolarStoredDataType</a> from a device.</td>
                                         </tr>
                                         
                                         </tbody>
@@ -511,7 +550,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <!--   -->
                                         </a>
                                             <h3>Methods inherited from class&nbsp;com.polar.sdk.api.PolarBleApi</h3>
-                                            <code>disableSDKMode, enableSDKMode, fetchExercise, getActiveTime, getAvailableOfflineRecordingDataTypes, getAvailableOnlineStreamDataTypes, getDistance, getOfflineRecord, getOfflineRecordingStatus, getOfflineRecordingTriggerSetup, getSleep, getSplitOfflineRecord, getSteps, isSDKModeEnabled, listExercises, listOfflineRecordings, listSplitOfflineRecordings, removeExercise, removeOfflineRecord, requestFullOfflineRecordingSettings, requestFullStreamSettings, requestOfflineRecordingSettings, requestRecordingStatus, requestStreamSettings, setOfflineRecordingTrigger, startAccStreaming, startEcgStreaming, startGyroStreaming, startHrStreaming, startMagnetometerStreaming, startOfflineRecording, startOhrPPIStreaming, startOhrStreaming, startPpgStreaming, startPpiStreaming, startRecording, startTemperatureStreaming, stopOfflineRecording, stopRecording, updateFirmware</code></li>
+                                            <code>disableSDKMode, enableSDKMode, fetchExercise, get247HrSamples, getActiveTime, getAvailableOfflineRecordingDataTypes, getAvailableOnlineStreamDataTypes, getCalories, getDistance, getNightlyRecharge, getOfflineRecord, getOfflineRecordingStatus, getOfflineRecordingTriggerSetup, getSleep, getSplitOfflineRecord, getSteps, isSDKModeEnabled, listExercises, listOfflineRecordings, listSplitOfflineRecordings, removeExercise, removeOfflineRecord, requestFullOfflineRecordingSettings, requestFullStreamSettings, requestOfflineRecordingSettings, requestRecordingStatus, requestStreamSettings, setOfflineRecordingTrigger, startAccStreaming, startEcgStreaming, startGyroStreaming, startHrStreaming, startMagnetometerStreaming, startOfflineRecording, startOhrPPIStreaming, startOhrStreaming, startPpgStreaming, startPpiStreaming, startRecording, startTemperatureStreaming, stopOfflineRecording, stopRecording, updateFirmware</code></li>
                                  
                                     <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
                                         <!--   -->
@@ -1076,7 +1115,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                           >
                                     <li class="blockList">
                                         <h4>setWareHouseSleep</h4>
-                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#setWareHouseSleep(String,Boolean)>setWareHouseSleep</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> sleepEnabled)</pre>
+                                        <pre class="methodSignature">@<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-deprecated/index.html>Deprecated</a>(level = <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-deprecation-level/-w-a-r-n-i-n-g/index.html>DeprecationLevel.WARNING</a>, message = "Method signature has changed use 'setWareHouseSleep(identifier: String)' instead.") abstract Completable <a href=PolarBleApi.html#setWareHouseSleep(String,Boolean)>setWareHouseSleep</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> sleepEnabled)</pre>
                                         <div class="block"><p>Set warehouse sleep setting to a given device.</p></div>
                                         
                                         <dl>
@@ -1096,16 +1135,68 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                     </li>
                                 </ul>
                                 
+                                <a id="setWareHouseSleep(String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>setWareHouseSleep</h4>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#setWareHouseSleep(String)>setWareHouseSleep</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Set warehouse sleep setting to a given device. Warehouse sleep does factory reset to the device and makes it sleep.</p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device ID or BT address</dd>
+                                            
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
                                 <a id="doFirstTimeUse(String,PolarFirstTimeUseConfig)">
                                     <!--   -->
                                 </a>
                                 <ul class=
-                                              "blockListLast"
+                                              "blockList"
                                           >
                                     <li class="blockList">
                                         <h4>doFirstTimeUse</h4>
                                         <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#doFirstTimeUse(String,PolarFirstTimeUseConfig)>doFirstTimeUse</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarFirstTimeUseConfig.html>PolarFirstTimeUseConfig</a> ftuConfig)</pre>
-                                        <div class="block"><p>Set FtuConfig for device</p></div>
+                                        <div class="block"><p>Configure the Polar device with first-time use settings and user identifier.</p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device ID or Bluetooth address.</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>ftuConfig</code> - Configuration data for the first-time use, encapsulated in <a href=model/PolarFirstTimeUseConfig.html>PolarFirstTimeUseConfig</a>.</dd>
+                                            
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="setUserDeviceSettings(String,PolarUserDeviceSettings)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>setUserDeviceSettings</h4>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#setUserDeviceSettings(String,PolarUserDeviceSettings)>setUserDeviceSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarUserDeviceSettings.html>PolarUserDeviceSettings</a> deviceUserSetting)</pre>
+                                        <div class="block"><p>Set <a href=model/PolarUserDeviceSettings.html>PolarUserDeviceSettings</a> for device. Currently only 'user device location' is supported.</p></div>
                                         
                                         <dl>
                                             <dt><span class="paramLabel">Parameters:</span></dt>
@@ -1115,7 +1206,61 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             
                                             
                                             
-                                            <dd><code>ftuConfig</code> - Configuration data for the first-time use, encapsulated in <a href=model/PolarFirstTimeUseConfig.html>PolarFirstTimeUseConfig</a>.</dd>
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="getUserDeviceSettings(String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getUserDeviceSettings</h4>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarUserDeviceSettings.html>PolarUserDeviceSettings</a>&gt; <a href=PolarBleApi.html#getUserDeviceSettings(String)>getUserDeviceSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Get <a href=model/PolarUserDeviceSettings.html>PolarUserDeviceSettings</a> from device.</p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device ID or BT address<ul><li><p>@return Single emitting <a href=model/PolarUserDeviceSettings.html>PolarUserDeviceSettings</a> or error</p></li></ul></dd>
+                                            
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="deleteStoredDeviceData(String,PolarBleApi.PolarStoredDataType,LocalDate)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>deleteStoredDeviceData</h4>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#deleteStoredDeviceData(String,PolarBleApi.PolarStoredDataType,LocalDate)>deleteStoredDeviceData</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarStoredDataType.html>PolarBleApi.PolarStoredDataType</a> dataType, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> until)</pre>
+                                        <div class="block"><p>Delete data <a href=PolarBleApi.PolarStoredDataType.html>PolarStoredDataType</a> from a device.</p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - , Polar device ID or BT address</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>dataType</code> - , <a href=PolarBleApi.PolarStoredDataType.html>PolarStoredDataType</a> A specific data type that shall be deleted</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>until</code> - , Data will be deleted from device from history until this date.</dd>
                                             
                                             
                                         </dl>

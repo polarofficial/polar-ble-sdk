@@ -60,6 +60,7 @@ public enum PolarActivityDataType: String, CaseIterable {
     case SLEEP
     case STEPS
     case CALORIES
+    case HR_SAMPLES
     case NONE
    }
 
@@ -408,7 +409,7 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// @param until, Data will be deleted from device from history until this date.
     /// @return [Completable] emitting success or error
     func deleteStoredDeviceData(_ identifier: String, dataType: PolarStoredDataType.StoredDataType, until: Date?) -> Completable
-    
+
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }
     

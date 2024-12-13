@@ -122,7 +122,7 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * The activity recording data types available in Polar devices.
      */
     enum class PolarActivityDataType {
-        SLEEP, STEPS, DISTANCE
+        SLEEP, STEPS, DISTANCE, CALORIES, HR_SAMPLES, NIGHTLY_RECHARGE
     }
 
     /**

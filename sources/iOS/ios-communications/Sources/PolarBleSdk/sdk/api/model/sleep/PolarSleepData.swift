@@ -6,19 +6,23 @@ import Foundation
 
 public class PolarSleepData {
 
-    public enum SleepWakeState: Int, Codable {
-        case UNKNOWN = 0
-        case WAKE = -2
-        case REM = -3
-        case NONREM12 = -5
-        case NONREM3 = -6
+    public enum SleepWakeState: String, Codable {
+        case UNKNOWN = "UNKNOWN"
+        case WAKE = "WAKE"
+        case REM = "REM"
+        case NONREM12 = "NONREM12"
+        case NONREM3 = "NONREM3"
 
         static func getByValue(value: Int) -> SleepWakeState {
-            guard let status = SleepWakeState(rawValue: value) else {
-                BleLogger.error("Invalid SleepWakeState value: \(value)")
-                return UNKNOWN
+
+            switch value {
+            case 0: return .UNKNOWN
+            case -2: return .WAKE
+            case -3: return .REM
+            case -5: return .NONREM12
+            case -6: return .NONREM3
+            default: return .UNKNOWN
             }
-            return status
         }
     }
 

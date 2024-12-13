@@ -20,6 +20,9 @@ message PbActivityClassTimes {
 };
 
 message PbDailySummary {
+  optional uint32 activity_calories = 3 [(type)=CALORIES];
+  optional uint32 training_calories = 4 [(type)=CALORIES];
+  optional uint32 bmr_calories = 5 [(type)=CALORIES];
   optional PbActivityClassTimes activity_class_times = 7;
   optional float activity_distance = 8 [(type)=DISTANCE];
 };

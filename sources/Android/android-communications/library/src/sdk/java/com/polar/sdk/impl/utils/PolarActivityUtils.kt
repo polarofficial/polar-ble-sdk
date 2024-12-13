@@ -4,6 +4,7 @@ import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
 import com.polar.sdk.api.model.activity.PolarActiveTime
 import com.polar.sdk.api.model.activity.PolarActiveTimeData
+import com.polar.sdk.api.model.activity.PolarCaloriesData
 import fi.polar.remote.representation.protobuf.ActivitySamples
 import fi.polar.remote.representation.protobuf.DailySummary
 import fi.polar.remote.representation.protobuf.Types.PbDuration
@@ -22,6 +23,10 @@ private const val DAILY_SUMMARY_DIRECTORY = "DSUM/"
 private const val DAILY_SUMMARY_PROTO = "DSUM.BPB"
 private val dateFormat = SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
 private const val TAG = "PolarActivityUtils"
+
+enum class CaloriesType {
+    ACTIVITY, TRAINING, BMR
+}
 
 internal object PolarActivityUtils {
 
@@ -111,6 +116,37 @@ internal object PolarActivityUtils {
                         { error ->
                             BleLogger.w(TAG, "readActiveTimeFromDayDirectory() failed for path: $dailySummaryFilePath, error: $error")
                             emitter.onSuccess(PolarActiveTimeData(date, PolarActiveTime()))
+                        }
+                    )
+                emitter.setDisposable(disposable)
+            })
+    }
+
+    fun readSpecificCaloriesFromDayDirectory(client: BlePsFtpClient, date: Date, caloriesType: CaloriesType): Single<Int> {
+        BleLogger.d(TAG, "readSpecificCaloriesFromDayDirectory: $date, type: $caloriesType")
+        return sendSyncStart(client)
+            .andThen(Single.create { emitter ->
+                val dailySummaryFilePath = "$ARABICA_USER_ROOT_FOLDER${dateFormat.format(date)}/${DAILY_SUMMARY_DIRECTORY}${DAILY_SUMMARY_PROTO}"
+                val disposable = client.request(
+                    PftpRequest.PbPFtpOperation.newBuilder()
+                        .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                        .setPath(dailySummaryFilePath)
+                        .build()
+                        .toByteArray()
+                )
+                    .subscribe(
+                        { response ->
+                            val proto = DailySummary.PbDailySummary.parseFrom(response.toByteArray())
+                            val caloriesValue = when (caloriesType) {
+                                CaloriesType.ACTIVITY -> proto.activityCalories
+                                CaloriesType.TRAINING -> proto.trainingCalories
+                                CaloriesType.BMR -> proto.bmrCalories
+                            }
+                            emitter.onSuccess(caloriesValue)
+                        },
+                        { error ->
+                            BleLogger.w(TAG, "readSpecificCaloriesFromDayDirectory() failed for path: $dailySummaryFilePath, error: $error")
+                            emitter.onSuccess(0)
                         }
                     )
                 emitter.setDisposable(disposable)

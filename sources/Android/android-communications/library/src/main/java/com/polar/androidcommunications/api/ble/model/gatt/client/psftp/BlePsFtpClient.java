@@ -647,7 +647,7 @@ public class BlePsFtpClient extends BleGattBase {
                 // connection lost
                 throw new BleDisconnected("Connection lost during read response");
             }
-            Pair<byte[], Integer> packet = mtuInputQueue.poll();
+            Pair<byte[], Integer> packet = mtuInputQueue.poll(PROTOCOL_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             if (packet != null && packet.second == 0) {
                 BlePsFtpUtils.processRfc76MessageFrameHeader(response, packet.first);
                 if (sequenceNumber.getSeq() != response.sequenceNumber) {

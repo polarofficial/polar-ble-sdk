@@ -34,7 +34,7 @@ internal class PolarUserDeviceSettingsUtils {
                 },
                 onFailure: { error in
                     BleLogger.error("getDeviceUserLocation() failed for device: \(client), error: \(error).")
-                    emitter(.success(PolarUserDeviceSettings.PolarUserDeviceSettingsResult(deviceLocation: nil)))
+                    emitter(.success(PolarUserDeviceSettings.PolarUserDeviceSettingsResult(deviceLocation: .UNDEFINED)))
                 }
             )
             return Disposables.create {

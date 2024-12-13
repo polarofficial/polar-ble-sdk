@@ -31,4 +31,13 @@ public protocol PolarActivityApi {
     ///   - toDate: The ending date of the period to retrieve active time from.
     /// - Returns: A Single emitting an array of `PolarActiveTimeData` representing the active time data for the specified period.
     func getActiveTime(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarActiveTimeData]>
+    
+    /// Get 24/7 heart rate samples for a given period.
+    ///
+    /// - Parameters:
+    ///   - identifier: The Polar device ID or BT address.
+    ///   - fromDate: The starting date of the period to retrieve heart rate samples from.
+    ///   - toDate: The ending date of the period to retrieve heart rate samples from.
+    /// - Returns: A Single emitting an array of `PolarActiveTimeData` representing the heart rate samples data for the specified period.
+    func get247HrSamples(identifier: String, fromDate: Date, toDate: Date) -> Single<[Polar247HrSamplesData]>
 }

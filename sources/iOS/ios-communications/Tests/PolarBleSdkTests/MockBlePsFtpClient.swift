@@ -10,6 +10,7 @@ public protocol BlePsFtpClient {
 
 class MockBlePsFtpClient: BlePsFtpClient {
     var requestCalls: [Data] = []
+    var requestReturnValues: [Single<Data>] = []
     var requestReturnValueClosure: ((Data) -> Single<Data>)?
     var requestReturnValue: Single<Data>?
     var directoryContentReturnValue: Single<Data>?
@@ -22,6 +23,11 @@ class MockBlePsFtpClient: BlePsFtpClient {
 
     func request(_ data: Data) -> Single<Data> {
         requestCalls.append(data)
+
+        if !requestReturnValues.isEmpty {
+            return requestReturnValues.removeFirst()
+        }
+        
         if let returnValue = requestReturnValueClosure {
             return returnValue(data)
         }
