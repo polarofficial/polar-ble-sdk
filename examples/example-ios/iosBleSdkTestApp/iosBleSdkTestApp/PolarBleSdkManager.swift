@@ -1194,9 +1194,11 @@ class PolarBleSdkManager : ObservableObject {
         case let polarHrData as PolarHrData:
             result += polarHrData.map{ "\($0.hr) \($0.contactStatusSupported) \($0.contactStatus) \($0.rrAvailable) \($0.rrsMs.map { String($0) }.joined(separator: " "))" }.joined(separator: "\n")
         
-        case let polarTemperatureData as PolarTemperatureData: result +=  polarTemperatureData.samples.map{ "\($0.timeStamp) \($0.temperature)" }.joined(separator: "\n")
+        case let polarTemperatureData as PolarTemperatureData:
+            result +=  polarTemperatureData.samples.map{ "\($0.timeStamp) \($0.temperature)" }.joined(separator: "\n")
 
-        case let polarPressureData as PolarPressureData: result +=  polarPressureData.samples.map{ "\($0.timeStamp) \($0.pressure)" }.joined(separator: "\n")
+        case let polarPressureData as PolarPressureData:
+            result +=  polarPressureData.samples.map{ "\($0.timeStamp) \($0.pressure)" }.joined(separator: "\n")
             
         default:
             result = "Data type not supported"
