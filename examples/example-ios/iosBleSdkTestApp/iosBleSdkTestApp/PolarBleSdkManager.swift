@@ -1166,9 +1166,9 @@ class PolarBleSdkManager : ObservableObject {
         case .hr:
             result = "HR CONTACT_SUPPORTED CONTACT_STATUS RR_AVAILABLE RR(ms)\n"
         case .temperature:
-            result = ""
+            result = "TIMESTAMP TEMPERATURE(Celcius)\n"
         case .pressure:
-            result = ""
+            result = "TIMESTAMP PRESSURE(mBar)\n"
         }
         return result
     }
@@ -1285,9 +1285,9 @@ fileprivate extension PolarDeviceDataType {
         case .hr:
             return "HR"
         case .temperature:
-          return ""
+          return "TEMP"
         case .pressure:
-          return ""
+          return "PRE"
         }
     }
 }
@@ -1345,7 +1345,7 @@ extension PolarBleSdkManager : PolarBleApiObserver {
 // MARK: - PolarBleApiDeviceInfoObserver
 extension PolarBleSdkManager : PolarBleApiDeviceInfoObserver {
   func disInformationReceivedWithKeysAsStrings(_ identifier: String, key: String, value: String) {
-    
+    // Not implemented
   }
   
     func batteryLevelReceived(_ identifier: String, batteryLevel: UInt) {

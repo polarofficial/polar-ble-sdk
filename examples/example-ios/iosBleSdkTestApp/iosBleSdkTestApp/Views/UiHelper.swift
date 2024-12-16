@@ -22,7 +22,7 @@ func getShortNameForDataType(_ feature: PolarDeviceDataType) -> String {
     case .temperature:
         return "TEMP"
     case .pressure:
-        return "PRESS"
+        return "PRE"
     }
 }
 
