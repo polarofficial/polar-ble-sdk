@@ -31,7 +31,10 @@ It is a device designed to increase general well-being and to make the lives of 
 * [SDK mode](../SdkModeExplained.md)
 * [Offline recording](../SdkOfflineRecordingExplained.md)
 * 24/7 Steps counting
+* 24/7 HR samples
 * Sleep duration and sleep stages
+* Nightly Recharge data (Android)
+* Calory data (Android)
 * [Firmware update](../FirmwareUpdate.md)
 * Setting user's physical info
 * Deleting data from device
