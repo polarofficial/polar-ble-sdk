@@ -2758,7 +2758,9 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         return Completable.complete()
     }
 
-    private fun removeSingleFile(identifier: String, filePath: String): Single<ByteArrayOutputStream> {
+    override fun removeSingleFile(identifier: String, filePath: String): Single<ByteArrayOutputStream> {
+        BleLogger.d(TAG, "removeSingleFile(): Removing file $filePath from device $identifier")
+
         val session = try {
             sessionPsFtpClientReady(identifier)
         } catch (error: Throwable) {
