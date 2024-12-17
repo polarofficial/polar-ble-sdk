@@ -3129,7 +3129,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             )
     }
 
-    private func removeSingleFile(identifier: String, filePath: String) -> Single<NSData> {
+    func removeSingleFile(identifier: String, filePath: String) -> Single<NSData> {
         BleLogger.trace("Deleting file \(filePath) from device \(identifier).")
         do{
             let session = try self.sessionFtpClientReady(identifier)

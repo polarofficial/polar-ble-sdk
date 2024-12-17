@@ -413,6 +413,12 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// @param maxFilesToDelete, Maximum amount of files to delete, if nil all files will be deleted.
     /// @return [Completable] emitting success or error
     func deleteStoredDeviceData(_ identifier: String, dataType: PolarStoredDataType.StoredDataType, until: Date?, maxFilesToDelete: Int?) -> Completable
+  
+    /// Delete single file or directory from the device.
+    ///
+    /// @param identifier, Polar device ID or BT address
+    /// @param filePath, File path to delete
+    func removeSingleFile(identifier: String, filePath: String) -> Single<NSData>
     
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }
