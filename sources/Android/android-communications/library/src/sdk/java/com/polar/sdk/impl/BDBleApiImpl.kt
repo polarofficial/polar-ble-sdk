@@ -3260,7 +3260,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 val entries: MutableMap<String, Long> = mutableMapOf()
 
                 for (entry in dir.entriesList) {
-                    BleLogger.d(TAG, "fetchRecursively(): entry path: ${path + entry.name}")
+                    BleLogger.d(TAG, "fetchRecursively(): entry path: ${path + entry.name}, size: ${entry.size}")
                     if (condition.include(entry.name)) {
                         entries[path + entry.name] = entry.size
                     }
