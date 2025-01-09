@@ -1312,7 +1312,27 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 val parentDirEntries = PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray())
                 val isParentDirValid = whileContaining?.let { parentDir.contains(it) } ?: true
 
-                if (parentDirEntries.entriesCount <= 1 && isParentDirValid) {
+                var containshr0 = false
+                // log each parent dir entries
+                parentDirEntries.entriesList.forEach {
+                    BleLogger.d(TAG, "removeOfflineFilesRecursively: parent dir entry ${it.name}")
+
+                    /// check if name contains "HR0.REC"
+                    if (it.name.contains("HR0.REC")) {
+                        BleLogger.d(TAG, "removeOfflineFilesRecursively: parent dir entry contains HR0.REC")
+                        containshr0 = true
+                    }
+                }
+
+                if (containshr0) {
+                    BleLogger.d(TAG, "removeOfflineFilesRecursively: parent dir entry contains HR0.REC, deleting flow")
+
+                    val removeBuilder = PftpRequest.PbPFtpOperation.newBuilder()
+                    removeBuilder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
+                    removeBuilder.path = deletePath
+                    BleLogger.d(TAG, "removeOfflineFilesRecursively: remove offline recording from the path $deletePath")
+                    return@flatMapCompletable client.request(removeBuilder.build().toByteArray()).toObservable().ignoreElements()
+                } else if (parentDirEntries.entriesCount <= 1 && isParentDirValid) {
                     // the parent directory is valid to be deleted
                     return@flatMapCompletable removeOfflineFilesRecursively(client, parentDir, whileContaining)
                 } else {
