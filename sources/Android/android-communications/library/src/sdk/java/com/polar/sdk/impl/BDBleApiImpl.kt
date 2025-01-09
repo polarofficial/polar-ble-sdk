@@ -3249,6 +3249,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     private fun fetchRecursively(client: BlePsFtpClient, path: String, condition: FetchRecursiveCondition): Flowable<Pair<String, Long>> {
+        BleLogger.d(TAG, "fetchRecursively(): fetching files from path $path")
         val builder = PftpRequest.PbPFtpOperation.newBuilder()
         builder.command = PftpRequest.PbPFtpOperation.Command.GET
         builder.path = path
@@ -3259,6 +3260,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 val entries: MutableMap<String, Long> = mutableMapOf()
 
                 for (entry in dir.entriesList) {
+                    BleLogger.d(TAG, "fetchRecursively(): entry path: ${path + entry.name}")
                     if (condition.include(entry.name)) {
                         entries[path + entry.name] = entry.size
                     }
