@@ -1287,6 +1287,20 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
+    /// Example run on Verity Sense:
+    /// whileContaining: /\\d{8}/ (date format)
+    /// 
+    /// - 1 level: deletePath /U/0/20250109/R/104951/HR.REC
+    ///     - whileContaining: false - delete path is not date format
+    ///     - parentDir = /U/0/20250109/R/104951/
+    ///     - parentDirEntries: HR.REC
+    ///     - parentDirEntries.entriesCount <= 1 && isParentDirValid (true)
+    ///     - removeOfflineFilesRecursively(parentDir)
+    /// - 2 level: deletePath /U/0/20250109/R/104951
+    ///     - whileContaining: false - delete path is not date format
+    ///     - parentDir = /U/0/20250109/R/
+    ///     - parentDirEntries: 104951/
+    ///     - parentDirEntries.entriesCount <= 1 && isParentDirValid (true)
     private fun removeOfflineFilesRecursively(client: BlePsFtpClient, deletePath: String, whileContaining: Regex? = null): Completable {
         BleLogger.d(TAG, "removeOfflineFilesRecursively: remove offline files from path $deletePath")
         require(whileContaining?.let { deletePath.contains(it) } ?: true) {
@@ -1312,8 +1326,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 val parentDirEntries = PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray())
                 val isParentDirValid = whileContaining?.let { parentDir.contains(it) } ?: true
 
+                BleLogger.d(TAG, "removeOfflineFilesRecursively: isParentDirValid $isParentDirValid")
+
                 if (parentDirEntries.entriesCount <= 1 && isParentDirValid) {
                     // the parent directory is valid to be deleted
+                    BleLogger.d(TAG, "removeOfflineFilesRecursively: call removeOfflineFilesRecursively for parent directory $parentDir")
                     return@flatMapCompletable removeOfflineFilesRecursively(client, parentDir, whileContaining)
                 } else {
                     val removeBuilder = PftpRequest.PbPFtpOperation.newBuilder()
