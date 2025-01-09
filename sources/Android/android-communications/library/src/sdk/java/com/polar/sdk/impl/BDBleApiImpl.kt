@@ -1327,6 +1327,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 val isParentDirValid = whileContaining?.let { parentDir.contains(it) } ?: true
 
                 BleLogger.d(TAG, "removeOfflineFilesRecursively: isParentDirValid $isParentDirValid")
+                BleLogger.d(TAG, "removeOfflineFilesRecursively: parentDirEntries count ${parentDirEntries.entriesCount}")
+                
+                parentDirEntries.entriesList.forEach { entry ->
+                    BleLogger.d(TAG, "removeOfflineFilesRecursively: parentDirEntries: ${entry.name}")
+                }
 
                 if (parentDirEntries.entriesCount <= 1 && isParentDirValid) {
                     // the parent directory is valid to be deleted
