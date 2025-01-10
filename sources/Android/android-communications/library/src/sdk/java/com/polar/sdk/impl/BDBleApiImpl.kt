@@ -1281,26 +1281,88 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Completable.error(PolarServiceNotAvailable())
         val fsType = getFileSystemType(session.polarDeviceType)
         return if (fsType == FileSystemType.SAGRFC2_FILE_SYSTEM) {
-            removeOfflineFilesRecursively(client, entry.path, whileContaining = Regex("/\\d{8}/"))
+            getSubRecordingCount(identifier, entry).flatMapCompletable { count -> 
+                if (count == 0) {
+                    /// If sub recording count is 0, then it device is using old format (single recording file).
+                    BleLogger.d(TAG, "removeOfflineRecord: removing old format recording file (sub recording count is 0)")
+                    return@flatMapCompletable removeOfflineFilesRecursively(client, entry.path, whileContaining = Regex("/\\d{8}/"))
+                } else {
+                    /// Otherwise, device is using new format (split recording files).
+                    BleLogger.d(TAG, "removeOfflineRecord: removing split recording files (sub recording count is $count)")
+
+                    /// First, delete all subrecording files and then cleanup parent directories.
+                    return@flatMapCompletable Observable.fromIterable(0 until count)
+                        .concatMapCompletable { subRecordingIndex ->
+                            val recordingPath = entry.path.replace(
+                                Regex("(\\.REC)$"),
+                                "$subRecordingIndex.REC"
+                            )
+
+                            val builder = PftpRequest.PbPFtpOperation.newBuilder()
+                            builder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
+                            builder.path = recordingPath
+
+                            BleLogger.d(TAG, "removeOfflineRecord: removing sub recording file $recordingPath")
+
+                            return@concatMapCompletable client.request(builder.build().toByteArray()).toObservable().ignoreElements()
+                                .doOnComplete {
+                                    BleLogger.d(TAG, "removeOfflineRecord: removed sub recording file $recordingPath")
+                                }
+                                .doOnError { error ->
+                                    BleLogger.e(TAG, "removeOfflineRecord: failed to remove sub recording file $recordingPath, $error")
+                                }
+                        }
+                        .andThen(Completable.defer {
+                            BleLogger.d(TAG, "removeOfflineRecord: removing sub recording files completed, cleaning up parent directories")
+                            return@defer removeOfflineFilesRecursively(client, entry.path, whileContaining = Regex("/\\d{8}/"))
+                                .doOnComplete {
+                                    BleLogger.d(TAG, "removeOfflineRecord: finished cleaning up parent directories")
+                                }
+                                .doOnError { error ->
+                                    BleLogger.e(TAG, "removeOfflineRecord: failed to clean up parent directories, $error")
+                                }
+                        })
+                }
+            }
         } else {
             Completable.error(PolarOperationNotSupported())
         }
     }
 
-    /// Example run on Verity Sense:
-    /// whileContaining: /\\d{8}/ (date format)
+    /// Example logs from Polar 360 when 
     /// 
-    /// - 1 level: deletePath /U/0/20250109/R/104951/HR.REC
-    ///     - whileContaining: false - delete path is not date format
-    ///     - parentDir = /U/0/20250109/R/104951/
-    ///     - parentDirEntries: HR.REC
-    ///     - parentDirEntries.entriesCount <= 1 && isParentDirValid (true)
-    ///     - removeOfflineFilesRecursively(parentDir)
-    /// - 2 level: deletePath /U/0/20250109/R/104951
-    ///     - whileContaining: false - delete path is not date format
-    ///     - parentDir = /U/0/20250109/R/
-    ///     - parentDirEntries: 104951/
-    ///     - parentDirEntries.entriesCount <= 1 && isParentDirValid (true)
+    /// 17:53:58.582  D  BDBleApiImpl/removeOfflineFilesRecursively: remove offline files from path /U/0/20250109/R/175252/HR0.REC
+    /// 17:53:58.582  D  BDBleApiImpl/removeOfflineFilesRecursively: remove offline files from path /U/0/20250109/R/175252/HR1.REC
+    /// 17:53:58.582  D  BDBleApiImpl/removeOfflineFilesRecursively: parent directory /U/0/20250109/R/175252/
+    /// 17:53:58.833  D  BDBleApiImpl/removeOfflineFilesRecursively: isParentDirValid true
+    /// 17:53:58.833  D  BDBleApiImpl/removeOfflineFilesRecursively: parentDirEntries count 1
+    /// 17:53:58.833  D  BDBleApiImpl/removeOfflineFilesRecursively: parentDirEntries: HR0.REC, HR1.REC
+    /// 17:53:58.834  D  BDBleApiImpl/removeOfflineFilesRecursively: call removeOfflineFilesRecursively for parent directory /U/0/20250109/R/175252/
+    /// 17:53:58.834  D  BDBleApiImpl/removeOfflineFilesRecursively: remove offline files from path /U/0/20250109/R/175252/
+    /// 17:53:58.834  D  BDBleApiImpl/removeOfflineFilesRecursively: parent directory /U/0/20250109/R/
+    /// 17:53:58.968  D  BDBleApiImpl/removeOfflineFilesRecursively: isParentDirValid true
+    /// 17:53:58.969  D  BDBleApiImpl/removeOfflineFilesRecursively: parentDirEntries count 1
+    /// 17:53:58.969  D  BDBleApiImpl/removeOfflineFilesRecursively: parentDirEntries: 175252/
+    /// 17:53:58.969  D  BDBleApiImpl/removeOfflineFilesRecursively: call removeOfflineFilesRecursively for parent directory /U/0/20250109/R/
+    /// 17:53:58.969  D  BDBleApiImpl/removeOfflineFilesRecursively: remove offline files from path /U/0/20250109/R/
+    /// 17:53:58.970  D  BDBleApiImpl/removeOfflineFilesRecursively: parent directory /U/0/20250109/
+    /// 17:53:59.194  D  BDBleApiImpl/removeOfflineFilesRecursively: isParentDirValid true
+    /// 17:53:59.195  D  BDBleApiImpl/removeOfflineFilesRecursively: parentDirEntries count 2
+    /// 17:53:59.195  D  BDBleApiImpl/removeOfflineFilesRecursively: parentDirEntries: ACT/
+    /// 17:53:59.195  D  BDBleApiImpl/removeOfflineFilesRecursively: parentDirEntries: R/
+    /// 17:53:59.196  D  BDBleApiImpl/removeOfflineFilesRecursively: remove offline recording from the path /U/0/20250109/R/
+    /// ---
+    /// 17:57:46.725  D  BDBleApiImpl/fetchRecursively(): fetching files from path /U/0/
+    /// 17:57:46.896  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/20250109/, size: 0
+    /// 17:57:46.897  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/AUTOS/, size: 0
+    /// 17:57:46.899  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/DGOAL/, size: 0
+    /// 17:57:46.900  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/NR/, size: 0
+    /// 17:57:46.902  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/SLEEP/, size: 0
+    /// 17:57:46.903  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/SLPRRSTD.BIN, size: 17672
+    /// 17:57:46.904  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/S/, size: 0
+    /// 17:57:46.905  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/USERID.BPB, size: 44
+    /// 17:57:46.906  D  BDBleApiImpl/fetchRecursively(): fetching files from path /U/0/20250109/
+    /// 17:57:47.027  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/20250109/ACT/, size: 0
     private fun removeOfflineFilesRecursively(client: BlePsFtpClient, deletePath: String, whileContaining: Regex? = null): Completable {
         BleLogger.d(TAG, "removeOfflineFilesRecursively: remove offline files from path $deletePath")
         require(whileContaining?.let { deletePath.contains(it) } ?: true) {
