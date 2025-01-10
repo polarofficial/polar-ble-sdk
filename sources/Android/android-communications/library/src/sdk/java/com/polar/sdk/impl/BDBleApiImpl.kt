@@ -1403,8 +1403,14 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     val removeBuilder = PftpRequest.PbPFtpOperation.newBuilder()
                     removeBuilder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
                     removeBuilder.path = deletePath
-                    BleLogger.d(TAG, "removeOfflineFilesRecursively: remove offline recording from the path $deletePath")
+                    BleLogger.d(TAG, "removeOfflineFilesRecursively: removing file $deletePath")
                     return@flatMapCompletable client.request(removeBuilder.build().toByteArray()).toObservable().ignoreElements()
+                        .doOnComplete {
+                            BleLogger.d(TAG, "removeOfflineFilesRecursively: removed file $deletePath")
+                        }
+                        .doOnError { error ->
+                            BleLogger.e(TAG, "removeOfflineFilesRecursively: failed to remove file $deletePath, $error")
+                        }
                 }
             }
     }
