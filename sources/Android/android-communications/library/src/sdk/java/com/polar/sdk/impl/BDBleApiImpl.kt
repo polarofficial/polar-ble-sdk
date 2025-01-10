@@ -1329,40 +1329,6 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
-    /// Example logs from Polar 360 when 
-    /// 
-    /// 17:53:58.582  D  BDBleApiImpl/removeOfflineFilesRecursively: remove offline files from path /U/0/20250109/R/175252/HR0.REC
-    /// 17:53:58.582  D  BDBleApiImpl/removeOfflineFilesRecursively: remove offline files from path /U/0/20250109/R/175252/HR1.REC
-    /// 17:53:58.582  D  BDBleApiImpl/removeOfflineFilesRecursively: parent directory /U/0/20250109/R/175252/
-    /// 17:53:58.833  D  BDBleApiImpl/removeOfflineFilesRecursively: isParentDirValid true
-    /// 17:53:58.833  D  BDBleApiImpl/removeOfflineFilesRecursively: parentDirEntries count 1
-    /// 17:53:58.833  D  BDBleApiImpl/removeOfflineFilesRecursively: parentDirEntries: HR0.REC, HR1.REC
-    /// 17:53:58.834  D  BDBleApiImpl/removeOfflineFilesRecursively: call removeOfflineFilesRecursively for parent directory /U/0/20250109/R/175252/
-    /// 17:53:58.834  D  BDBleApiImpl/removeOfflineFilesRecursively: remove offline files from path /U/0/20250109/R/175252/
-    /// 17:53:58.834  D  BDBleApiImpl/removeOfflineFilesRecursively: parent directory /U/0/20250109/R/
-    /// 17:53:58.968  D  BDBleApiImpl/removeOfflineFilesRecursively: isParentDirValid true
-    /// 17:53:58.969  D  BDBleApiImpl/removeOfflineFilesRecursively: parentDirEntries count 1
-    /// 17:53:58.969  D  BDBleApiImpl/removeOfflineFilesRecursively: parentDirEntries: 175252/
-    /// 17:53:58.969  D  BDBleApiImpl/removeOfflineFilesRecursively: call removeOfflineFilesRecursively for parent directory /U/0/20250109/R/
-    /// 17:53:58.969  D  BDBleApiImpl/removeOfflineFilesRecursively: remove offline files from path /U/0/20250109/R/
-    /// 17:53:58.970  D  BDBleApiImpl/removeOfflineFilesRecursively: parent directory /U/0/20250109/
-    /// 17:53:59.194  D  BDBleApiImpl/removeOfflineFilesRecursively: isParentDirValid true
-    /// 17:53:59.195  D  BDBleApiImpl/removeOfflineFilesRecursively: parentDirEntries count 2
-    /// 17:53:59.195  D  BDBleApiImpl/removeOfflineFilesRecursively: parentDirEntries: ACT/
-    /// 17:53:59.195  D  BDBleApiImpl/removeOfflineFilesRecursively: parentDirEntries: R/
-    /// 17:53:59.196  D  BDBleApiImpl/removeOfflineFilesRecursively: remove offline recording from the path /U/0/20250109/R/
-    /// ---
-    /// 17:57:46.725  D  BDBleApiImpl/fetchRecursively(): fetching files from path /U/0/
-    /// 17:57:46.896  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/20250109/, size: 0
-    /// 17:57:46.897  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/AUTOS/, size: 0
-    /// 17:57:46.899  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/DGOAL/, size: 0
-    /// 17:57:46.900  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/NR/, size: 0
-    /// 17:57:46.902  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/SLEEP/, size: 0
-    /// 17:57:46.903  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/SLPRRSTD.BIN, size: 17672
-    /// 17:57:46.904  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/S/, size: 0
-    /// 17:57:46.905  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/USERID.BPB, size: 44
-    /// 17:57:46.906  D  BDBleApiImpl/fetchRecursively(): fetching files from path /U/0/20250109/
-    /// 17:57:47.027  D  BDBleApiImpl/fetchRecursively(): entry path: /U/0/20250109/ACT/, size: 0
     private fun removeOfflineFilesRecursively(client: BlePsFtpClient, deletePath: String, whileContaining: Regex? = null): Completable {
         BleLogger.d(TAG, "removeOfflineFilesRecursively: remove offline files from path $deletePath")
         require(whileContaining?.let { deletePath.contains(it) } ?: true) {
@@ -3339,7 +3305,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     private fun fetchRecursively(client: BlePsFtpClient, path: String, condition: FetchRecursiveCondition): Flowable<Pair<String, Long>> {
-        BleLogger.d(TAG, "fetchRecursively(): fetching files from path $path")
+        BleLogger.d(TAG, "fetchRecursively: fetching files from path $path")
         val builder = PftpRequest.PbPFtpOperation.newBuilder()
         builder.command = PftpRequest.PbPFtpOperation.Command.GET
         builder.path = path
@@ -3350,7 +3316,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 val entries: MutableMap<String, Long> = mutableMapOf()
 
                 for (entry in dir.entriesList) {
-                    BleLogger.d(TAG, "fetchRecursively(): entry path: ${path + entry.name}, size: ${entry.size}")
+                    BleLogger.d(TAG, "fetchRecursively: entry path: ${path + entry.name}, size: ${entry.size}")
                     if (condition.include(entry.name)) {
                         entries[path + entry.name] = entry.size
                     }
