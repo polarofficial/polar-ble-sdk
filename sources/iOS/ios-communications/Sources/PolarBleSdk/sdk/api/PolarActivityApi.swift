@@ -40,4 +40,13 @@ public protocol PolarActivityApi {
     ///   - toDate: The ending date of the period to retrieve heart rate samples from.
     /// - Returns: A Single emitting an array of `PolarActiveTimeData` representing the heart rate samples data for the specified period.
     func get247HrSamples(identifier: String, fromDate: Date, toDate: Date) -> Single<[Polar247HrSamplesData]>
+
+    /// Get nightly recharge for a given period.
+    ///
+    /// - Parameters:
+    ///   - identifier: The Polar device ID or BT address.
+    ///   - fromDate: The starting date of the period to retrieve nightly recharge from.
+    ///   - toDate: The ending date of the period to retrieve nightly recharge from.
+    /// - Returns: A Single emitting an array of `PolarNightlyRechargeData` representing the nightly recharge data for the specified period.
+    func getNightlyRecharge(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarNightlyRechargeData]>
 }

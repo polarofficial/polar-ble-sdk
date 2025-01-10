@@ -707,7 +707,6 @@ enum PbDailyBalanceFeedback {
     DB_YOU_SEEM_TO_BE_STRAINED = 10;
 };
 
-// The definitions for readiness feedback: https://wiki.polar.grp/display/SYSFEA/Jump+Test
 enum PbReadinessForSpeedAndStrengthTraining {
     RSST_NOT_CALCULATED = -1;
     RSST_A1_RECOVERED_READY_FOR_ALL_TRAINING = 0;
@@ -727,7 +726,6 @@ enum PbReadinessForSpeedAndStrengthTraining {
 
 enum PbStrengthTrainingRoundRepetitionType {
     // Currently NORMAL is the only type. Other types, such as AMRAP, can/will be added later.
-    // See also: https://wiki.polar.grp/display/SYSFEA/Strength+Training+Logical+Domain+Model
     NORMAL      = 0;
 }
 

@@ -2667,6 +2667,42 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Single.error(error)
         }
     }
+    
+    func getNightlyRecharge(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarNightlyRechargeData]> {
+        do {
+            let session = try self.sessionFtpClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Single.error(PolarErrors.serviceNotFound)
+            }
+
+            var nightlyRechargeDataList = [PolarNightlyRechargeData]()
+
+            let calendar = Calendar.current
+            var currentDate = fromDate
+
+            var datesList = [Date]()
+
+            while currentDate <= toDate {
+                datesList.append(currentDate)
+                currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
+            }
+
+            return Observable.from(datesList)
+                .flatMap { date in
+                    PolarNightlyRechargeUtils.readNightlyRechargeData(client: client, date: date)
+                        .asObservable()
+                        .do(onNext: { nightlyRechargeData in
+                            nightlyRechargeDataList.append(nightlyRechargeData)
+                        })
+                }
+                .toArray()
+                .flatMap { _ in
+                    Single.just(nightlyRechargeDataList)
+                }
+        } catch {
+            return Single.error(error)
+        }
+    }
 
     @available(*, deprecated, message: "Use setWarehouseSleep(_ identifier: String) instead")
     func setWarehouseSleep(_ identifier: String, enableWarehouseSleep: Bool?) -> Completable {

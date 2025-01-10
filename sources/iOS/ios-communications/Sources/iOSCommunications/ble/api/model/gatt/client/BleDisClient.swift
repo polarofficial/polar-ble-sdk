@@ -18,10 +18,12 @@ public class BleDisClient: BleGattClientBase {
     
     public static let SYSTEM_ID_HEX            = String("SYSTEM_ID_HEX")
     
-    var disInformation = [CBUUID : String]()
-    var observers = AtomicList<RxObserver<(CBUUID, String)>>()
-    var disInformationStringKey = [String : String]()
-    var observersStringKey = AtomicList<RxObserver<(String, String)>>()
+    private var observers = AtomicList<RxObserver<(CBUUID, String)>>()
+    private var observersStringKey = AtomicList<RxObserver<(String, String)>>()
+
+    // disInformation and disInformationStringKey are both synchronized using disInformation.accessItem()
+    private let disInformation = AtomicType<[CBUUID : String]>(initialValue: [CBUUID : String]())
+    private var disInformationStringKey = [String : String]()
     
     public init(gattServiceTransmitter: BleAttributeTransportProtocol){
         super.init(serviceUuid: BleDisClient.DIS_SERVICE, gattServiceTransmitter: gattServiceTransmitter)
@@ -39,8 +41,10 @@ public class BleDisClient: BleGattClientBase {
     // from base
     override public func disconnected() {
         super.disconnected()
-        disInformation.removeAll()
-        disInformationStringKey.removeAll()
+        disInformation.accessItem { disInformation in
+            disInformation.removeAll()
+            disInformationStringKey.removeAll()
+        }
         RxUtils.postErrorAndClearList(observers, error: BleGattException.gattDisconnected)
         RxUtils.postErrorAndClearList(observersStringKey, error: BleGattException.gattDisconnected)
     }
@@ -52,18 +56,22 @@ public class BleDisClient: BleGattClientBase {
             if let stringValue = NSString(data: data, encoding: String.Encoding.ascii.rawValue) as String? {
                 asciiRepresentation = stringValue
             }
-            disInformation[chr] = asciiRepresentation
-            if (chr == BleDisClient.SYSTEM_ID) {
-                hexRepresentation = data.map { String(format: "%02X", $0) }.joined()
-                disInformationStringKey[chr.uuidString] = hexRepresentation
-            } else {
-                disInformationStringKey[chr.uuidString] = asciiRepresentation
+            disInformation.accessItem { disInformation in
+                disInformation[chr] = asciiRepresentation
+                if (chr == BleDisClient.SYSTEM_ID) {
+                    hexRepresentation = data.map { String(format: "%02X", $0) }.joined()
+                    disInformationStringKey[chr.uuidString] = hexRepresentation
+                } else {
+                    disInformationStringKey[chr.uuidString] = asciiRepresentation
+                }
             }
             RxUtils.emitNext(observers) { (observer) in
                 observer.obs.onNext((chr, asciiRepresentation))
-                let disList = self.disInformation
-                if self.hasAllAvailableReadableCharacteristics(disList as [CBUUID : AnyObject]) {
+                disInformation.accessItem { disInformation in
+                    let disList = disInformation
+                    if self.hasAllAvailableReadableCharacteristics(disList as [CBUUID : AnyObject]) {
                         observer.obs.onCompleted()
+                    }
                 }
             }
             RxUtils.emitNext(observersStringKey) { observer in
@@ -77,8 +85,10 @@ public class BleDisClient: BleGattClientBase {
                 } else {
                     observer.obs.onNext((chr.uuidString, asciiRepresentation))
                 }
-                if self.hasAllAvailableReadableCharacteristics(self.disInformation as [CBUUID : AnyObject]) {
-                    observer.obs.onCompleted()
+                disInformation.accessItem { disInformation in
+                    if self.hasAllAvailableReadableCharacteristics(disInformation as [CBUUID : AnyObject]) {
+                        observer.obs.onCompleted()
+                    }
                 }
             }
         }
@@ -94,13 +104,15 @@ public class BleDisClient: BleGattClientBase {
             object = RxObserver<(CBUUID ,String)>.init(obs: observer)
             if !checkConnection || self.gattServiceTransmitter?.isConnected() ?? false {
                 self.observers.append(object)
-                let disList = self.disInformation
-                if disList.count != 0 {
-                    for item in disList {
-                        object.obs.onNext((item.key,item.value))
-                    }
-                    if self.hasAllAvailableReadableCharacteristics(disList as [CBUUID : AnyObject]) {
-                        object.obs.onCompleted()
+                self.disInformation.accessItem { disInformation in
+                    let disList = disInformation
+                    if disList.count != 0 {
+                        for item in disList {
+                            object.obs.onNext((item.key,item.value))
+                        }
+                        if self.hasAllAvailableReadableCharacteristics(disList as [CBUUID : AnyObject]) {
+                            object.obs.onCompleted()
+                        }
                     }
                 }
             } else {
@@ -120,14 +132,15 @@ public class BleDisClient: BleGattClientBase {
                 object = RxObserver<(String, String)>.init(obs: observer)
                 if !checkConnection || self.gattServiceTransmitter?.isConnected() ?? false {
                     self.observersStringKey.append(object)
-                    let disList = self.disInformation
-                    
-                    if disList.count != 0 {
-                        for item in disList {
-                            object.obs.onNext((item.key.uuidString, item.value))
-                        }
-                        if self.hasAllAvailableReadableCharacteristics(disList as [CBUUID : AnyObject]) {
-                            object.obs.onCompleted()
+                    self.disInformation.accessItem { disInformation in
+                        let disList = disInformation
+                        if disList.count != 0 {
+                            for item in disList {
+                                object.obs.onNext((item.key.uuidString, item.value))
+                            }
+                            if self.hasAllAvailableReadableCharacteristics(disList as [CBUUID : AnyObject]) {
+                                object.obs.onCompleted()
+                            }
                         }
                     }
                 } else {

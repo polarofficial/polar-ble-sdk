@@ -1529,8 +1529,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     override fun doFirstTimeUse(identifier: String, ftuConfig: PolarFirstTimeUseConfig): Completable {
-        return Completable.create { emitter ->
+        return Completable.defer {
             try {
+                BleLogger.d(TAG, "doFirstTimeUse(identifier: $identifier): started")
+
                 val session = sessionPsFtpClientReady(identifier)
                 val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
                         ?: throw PolarServiceNotAvailable()
@@ -1546,7 +1548,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 }
 
                 val ftuInputStream = ByteArrayInputStream(ftuData)
-                val disposable = client.write(ftuBuilder.build().toByteArray(), ftuInputStream)
+                return@defer client.write(ftuBuilder.build().toByteArray(), ftuInputStream)
                         .concatWith(
                                 Completable.defer {
                                     try {
@@ -1563,6 +1565,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                             baos.toByteArray()
                                         }
 
+                                        BleLogger.d(TAG, "doFirstTimeUse(identifier: $identifier): write user identifier")
+
                                         val userIdInputStream = ByteArrayInputStream(userIdData)
                                         client.write(userIdBuilder.build().toByteArray(), userIdInputStream)
                                                 .ignoreElements()
@@ -1577,29 +1581,31 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                                     throw IllegalArgumentException("Invalid deviceTime format: ${ftuConfig.deviceTime}", e)
                                                                 }
                                                             }
+                                                            BleLogger.d(TAG, "doFirstTimeUse(identifier: $identifier): set local time")
                                                             setLocalTime(identifier, calendar)
                                                         }
                                                 )
                                     } catch (error: Throwable) {
-                                        BleLogger.e(TAG, "writeUserIdentifier() error: $error")
-                                        emitter.onError(error)
-                                        Completable.complete()
+                                        BleLogger.e(TAG, "doFirstTimeUse(identifier: $identifier): write user identifier error: $error")
+                                        Completable.error(error)
                                     }
                                 }
                         )
+                        .ignoreElements()
                         .doOnComplete {
+                            BleLogger.d(TAG, "doFirstTimeUse(identifier: $identifier): completed")
                             sendTerminateAndStopSyncNotifications(client)
                         }
-                        .subscribe(
-                                { emitter.onComplete() },
-                                { error -> emitter.onError(error) }
-                        )
+                        .doOnError { error ->
+                            BleLogger.e(TAG, "doFirstTimeUse(identifier: $identifier): error $error")
+                        }
             } catch (error: Throwable) {
-                BleLogger.e(TAG, "doConfig() error: $error")
-                emitter.onError(error)
+                BleLogger.e(TAG, "doFirstTimeUse(identifier: $identifier): error $error")
+                return@defer Completable.error(error)
             }
         }
     }
+
 
     override fun setWareHouseSleep(identifier: String, sleepEnabled: Boolean?): Completable {
         val session = try {
@@ -2022,18 +2028,22 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                             .concatMap { status ->
                                                                 if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
                                                                     BleLogger.d(TAG, "Starting finalization of firmware update")
-                                                                    Completable.timer(rebootTriggeredWaitTimeSeconds, TimeUnit.SECONDS)
-                                                                            .andThen(
-                                                                                    waitDeviceSessionToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 120L)
-                                                                                            .andThen(
-                                                                                                    Completable.fromCallable {
-                                                                                                        BleLogger.d(TAG, "Restoring backup to device after version ${firmwareUpdateResponse.version}")
-                                                                                                        sendInitializationAndStartSyncNotifications(client)
-                                                                                                        backupManager.restoreBackup(backup).subscribe()
-                                                                                                    }
-                                                                                            )
-                                                                            )
-                                                                            .andThen(Flowable.just(FirmwareUpdateStatus.FinalizingFwUpdate()))
+                                                                    BleLogger.d(TAG, "Waiting for device session to open after reboot")
+                                                                    waitDeviceSessionToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 120L)
+                                                                            .andThen(Completable.defer {
+                                                                                BleLogger.d(TAG, "Performing factory reset while preserving pairing information")
+                                                                                return@defer doFactoryReset(identifier, true)
+                                                                            })
+                                                                            .andThen(Completable.defer {
+                                                                                BleLogger.d(TAG, "Waiting for device session to open after factory reset")
+                                                                                return@defer waitDeviceSessionToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L)
+                                                                            })
+                                                                            .andThen(Completable.defer {
+                                                                                BleLogger.d(TAG, "Restoring backup to device after version ${firmwareUpdateResponse.version}")
+                                                                                sendInitializationAndStartSyncNotifications(client)
+                                                                                return@defer backupManager.restoreBackup(backup)
+                                                                            })
+                                                                            .andThen(Flowable.just(status))
                                                                 } else {
                                                                     Flowable.just(status)
                                                                 }

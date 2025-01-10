@@ -170,8 +170,10 @@ public class CBDeviceListenerImpl: NSObject, CBCentralManagerDelegate {
         queue.async(execute: {
             sess.advertisementContent.processAdvertisementData(RSSI.int32Value, advertisementData: advertisementData)
             
-            RxUtils.emitNext(self.scanner.scanObservers) { (observer) in
-                observer.obs.onNext(sess)
+            self.scanner.scanObservers.accessItem { scanObservers in
+                RxUtils.emitNext(scanObservers) { (observer) in
+                    observer.obs.onNext(sess)
+                }
             }
             
             if sess.state == .sessionOpenPark {

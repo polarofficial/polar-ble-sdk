@@ -78,7 +78,6 @@ struct Data_PbDeviceInfo {
   mutating func clearElectricalSerialNumber() {_uniqueStorage()._electricalSerialNumber = nil}
 
   /// Device ID for identification purposes.
-  /// Format definition at https://wiki.polar.grp/x/MwDU (SAGRFC19)
   var deviceID: String {
     get {return _storage._deviceID ?? String()}
     set {_uniqueStorage()._deviceID = newValue}
@@ -195,7 +194,6 @@ struct Data_PbDeviceInfo {
 
 
   /// Device capabilities
-  /// Capabilities definition: https://wiki.polar.grp/x/FfuMD
   var capabilities: [String] {
     get {return _storage._capabilities}
     set {_uniqueStorage()._capabilities = newValue}
@@ -203,9 +201,7 @@ struct Data_PbDeviceInfo {
 
   /// Device sales region. Some features e.g. ECG may need to be disabled
   /// due to regulatory reasons in a certain country. There needs to be a
-  /// way to define the country where the device is sold. Currently listed
-  /// sales regions can be found from https://wiki.polar.grp/x/98uMD,
-  /// field "sales region" in production data V2.
+  /// way to define the country where the device is sold.
   var salesRegion: String {
     get {return _storage._salesRegion ?? String()}
     set {_uniqueStorage()._salesRegion = newValue}

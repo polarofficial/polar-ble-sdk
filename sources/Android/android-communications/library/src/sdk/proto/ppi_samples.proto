@@ -10,13 +10,6 @@ option java_outer_classname = "PpIntervals";
 
 /*
   PP interval samples
-
-  Data format definition: https://wiki.polar.grp/display/TECHDOC/PP-interval+data+model
-
-*/
-
-/*
-  PP interval samples
     - PP interval: time period between two optical heart rate pulses
     - Every detected PP interval is linked with an error estimate and status values
 

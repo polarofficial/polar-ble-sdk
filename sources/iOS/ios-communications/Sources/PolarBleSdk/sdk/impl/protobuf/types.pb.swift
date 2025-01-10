@@ -2175,7 +2175,6 @@ extension PbDailyBalanceFeedback: CaseIterable {
 
 #endif  // swift(>=4.2)
 
-/// The definitions for readiness feedback: https://wiki.polar.grp/display/SYSFEA/Jump+Test
 public enum PbReadinessForSpeedAndStrengthTraining: SwiftProtobuf.Enum {
   public typealias RawValue = Int
   case rsstNotCalculated // = -1
@@ -2250,7 +2249,6 @@ public enum PbStrengthTrainingRoundRepetitionType: SwiftProtobuf.Enum {
   public typealias RawValue = Int
 
   /// Currently NORMAL is the only type. Other types, such as AMRAP, can/will be added later.
-  /// See also: https://wiki.polar.grp/display/SYSFEA/Strength+Training+Logical+Domain+Model
   case normal // = 0
 
   public init() {

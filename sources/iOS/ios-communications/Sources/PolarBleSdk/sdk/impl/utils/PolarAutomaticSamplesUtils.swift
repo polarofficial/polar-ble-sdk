@@ -48,7 +48,8 @@ internal class PolarAutomaticSamplesUtils {
                                 sampleSessions.samples.forEach { sample in
                                     let sampleTimeProto = sample.time
                                     
-                                    let calendar = Calendar(identifier: .gregorian)
+                                    var calendar = Calendar(identifier: .gregorian)
+                                    calendar.timeZone = TimeZone(secondsFromGMT: 0)!
                                     
                                     let sampleDate = calendar.date(from: DateComponents(
                                         year: Int(sampleDateProto.year),

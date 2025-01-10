@@ -762,8 +762,6 @@ public struct PbLanguageId {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  /// Locale handling is specified in SAGRFC91, see https://wiki.polar.grp/x/d5j-Cg
-  ///
   /// Two-letter lower case language code.
   /// See http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
   public var language: String {
@@ -977,7 +975,6 @@ public struct PbOnDemandTrainingTargetTypeId {
   // methods supported on all messages.
 
   /// Ecosystem on demand training target type identifier
-  /// List of the IDs: https://wiki.polar.grp/display/SYSFEA/Workout+Library
   public var value: UInt64 {
     get {return _value ?? 0}
     set {_value = newValue}

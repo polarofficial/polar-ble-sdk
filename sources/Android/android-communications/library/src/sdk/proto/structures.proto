@@ -206,8 +206,6 @@ message PbMultiLineText {
 
 
 message PbLanguageId {
-    // Locale handling is specified in SAGRFC91, see https://wiki.polar.grp/x/d5j-Cg
-    //
     // Two-letter lower case language code.
     // See http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
     //
@@ -283,7 +281,6 @@ message PbEventId {
 
 message PbOnDemandTrainingTargetTypeId {
     // Ecosystem on demand training target type identifier
-    // List of the IDs: https://wiki.polar.grp/display/SYSFEA/Workout+Library
     required uint64 value = 1;
 };
 

@@ -14,10 +14,6 @@ option java_outer_classname = "SleepanalysisResult";
   Domain Data classification: History data.
 
   Domain Data types: Component
-  ( https://wiki.polar.grp/display/SAG/SAGRFC27 )
-
-  For intended usage of this data, see "File System Structure in Genesis ecosystem devices"
-  ( https://wiki.polar.grp/display/SAG/SAGRFC2+File+system )
 */
 
 enum PbSleepWakeState {

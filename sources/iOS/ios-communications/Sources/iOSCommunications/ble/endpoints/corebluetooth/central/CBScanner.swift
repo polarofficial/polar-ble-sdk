@@ -47,7 +47,7 @@ class CBScanner {
     
     let central: CBCentralManager
     var state = ScannerState.idle
-    var scanObservers = Set<RxObserver<BleDeviceSession>>()
+    var scanObservers = AtomicType(initialValue: Set<RxObserver<BleDeviceSession>>())
     var scanDisposable: Disposable?
     var services: [CBUUID]?
     var adminStops = 0
@@ -72,12 +72,12 @@ class CBScanner {
     }
     
     func addClient(_ scanner: RxObserver<BleDeviceSession>){
-        scanObservers.insert(scanner)
+        scanObservers.accessItem { $0.insert(scanner) }
         self.commandState(ScanAction.clientStartScan)
     }
     
     func removeClient(_ scanner: RxObserver<BleDeviceSession>){
-        scanObservers.remove(scanner)
+        scanObservers.accessItem { $0.remove(scanner) }
         self.commandState(ScanAction.clientRemoved)
     }
     
@@ -129,9 +129,11 @@ class CBScanner {
     
     func scanningNeeded() -> Bool {
         let list = sessions.list()
+        var scanObserversCount: Int = 0
+        scanObservers.accessItem { scanObserversCount = $0.count }
         return list.first { (session: CBDeviceSessionImpl) -> Bool in
             return session.state == .sessionOpenPark
-        } != nil || scanObservers.count != 0
+        } != nil || scanObserversCount != 0
     }
     
     private func scannerIdleState(_ action: ScanAction){
