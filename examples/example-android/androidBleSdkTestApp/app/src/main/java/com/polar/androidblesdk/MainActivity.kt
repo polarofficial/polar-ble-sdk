@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.util.Pair
 import com.google.android.material.snackbar.Snackbar
-import com.polar.androidcommunications.api.ble.model.DisInfo
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.PolarBleApiCallback
 import com.polar.sdk.api.PolarBleApiDefaultImpl
@@ -35,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ATTENTION! Replace with the device ID from your device.
-    private var deviceId = "E0729022"
+    private var deviceId = "BC15022D"
 
     private val api: PolarBleApi by lazy {
         // Notice all features are enabled
@@ -149,7 +148,7 @@ class MainActivity : AppCompatActivity() {
         api.setPolarFilter(false)
 
         // If there is need to log what is happening inside the SDK, it can be enabled like this:
-        val enableSdkLogs = true
+        val enableSdkLogs = false
         if(enableSdkLogs) {
             api.setApiLogger { s: String -> Log.d(API_LOGGER_TAG, s) }
         }
@@ -179,10 +178,7 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "CONNECTING: ${polarDeviceInfo.deviceId}")
             }
 
-            override fun deviceDisconnected(
-                polarDeviceInfo: PolarDeviceInfo,
-                pairingError: Boolean
-            ) {
+            override fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {
                 Log.d(TAG, "DISCONNECTED: ${polarDeviceInfo.deviceId}")
                 deviceConnected = false
                 val buttonText = getString(R.string.connect_to_device, deviceId)
@@ -192,10 +188,6 @@ class MainActivity : AppCompatActivity() {
 
             override fun disInformationReceived(identifier: String, uuid: UUID, value: String) {
                 Log.d(TAG, "DIS INFO uuid: $uuid value: $value")
-            }
-
-            override fun disInformationReceived(identifier: String, disInfo: DisInfo) {
-                TODO("Not yet implemented")
             }
 
             override fun batteryLevelReceived(identifier: String, level: Int) {
@@ -712,7 +704,12 @@ class MainActivity : AppCompatActivity() {
 
         startRecordingButton.setOnClickListener {
             //Example of starting ACC offline recording
-            Log.d(TAG, "Starts HR recording")
+            Log.d(TAG, "Starts ACC recording")
+            val settings: MutableMap<PolarSensorSetting.SettingType, Int> = mutableMapOf()
+            settings[PolarSensorSetting.SettingType.SAMPLE_RATE] = 52
+            settings[PolarSensorSetting.SettingType.RESOLUTION] = 16
+            settings[PolarSensorSetting.SettingType.RANGE] = 8
+            settings[PolarSensorSetting.SettingType.CHANNELS] = 3
             //Using a secret key managed by your own.
             //  You can use a different key to each start recording calls.
             //  When using key at start recording, it is also needed for the recording download, otherwise could not be decrypted
@@ -722,7 +719,7 @@ class MainActivity : AppCompatActivity() {
                     0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07
                 )
             )
-            api.startOfflineRecording(deviceId, PolarBleApi.PolarDeviceDataType.HR, PolarSensorSetting(mapOf()), null)
+            api.startOfflineRecording(deviceId, PolarBleApi.PolarDeviceDataType.ACC, PolarSensorSetting(settings.toMap()), yourSecret)
                 //Without a secret key
                 //api.startOfflineRecording(deviceId, PolarBleApi.PolarDeviceDataType.ACC, PolarSensorSetting(settings.toMap()))
                 .subscribe(
@@ -733,8 +730,8 @@ class MainActivity : AppCompatActivity() {
 
         stopRecordingButton.setOnClickListener {
             //Example of stopping ACC offline recording
-            Log.d(TAG, "Stops HR recording")
-            api.stopOfflineRecording(deviceId, PolarBleApi.PolarDeviceDataType.HR)
+            Log.d(TAG, "Stops ACC recording")
+            api.stopOfflineRecording(deviceId, PolarBleApi.PolarDeviceDataType.ACC)
                 .subscribe(
                     { Log.d(TAG, "stop offline recording completed") },
                     { throwable: Throwable -> Log.e(TAG, "" + throwable.toString()) }
