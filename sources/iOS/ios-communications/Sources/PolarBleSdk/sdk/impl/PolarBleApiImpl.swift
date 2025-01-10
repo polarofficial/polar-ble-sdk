@@ -1577,7 +1577,7 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
 
     func removeOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry) -> Completable {
-        BleLogger.trace("Remove offline record. Device: \(identifier) Path: \(entry.path)")
+        BleLogger.trace("removeOfflineRecord: remove offline, record device \(identifier) path \(entry.path)")
         do {
             let session = try sessionFtpClientReady(identifier)
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -1586,18 +1586,64 @@ extension PolarBleApiImpl: PolarBleApi  {
             guard .sagRfc2FileSystem == BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType) else {
                 return Completable.error(PolarErrors.operationNotSupported)
             }
-            
-            return removeOfflineFilesRecursively(client, entry.path, deleteIfMatchesRegex: "/\\d{8}/")
-            
+          
+        
+            return getSubRecordingCount(identifier: identifier, entry: entry)
+                .flatMapCompletable { count -> Completable in
+                    if count == 0 {
+                        /// If sub recording count is 0, then it device is using old format (single recording file).
+                        BleLogger.trace("removeOfflineRecord: removing old format recording file (sub recording count is 0)")
+                        return self.removeOfflineFilesRecursively(client, entry.path, deleteIfMatchesRegex: "/\\d{8}/")
+                    } else {
+                        /// Otherwise, device is using new format (split recording files).
+                        BleLogger.trace("removeOfflineRecord: removing split recording files (sub recording count is \(count))")
+                        return Observable.range(start: 0, count: count)
+                            .concatMap { subRecordingIndex -> Completable in
+                                let recordingPath = entry.path.replacingOccurrences(of: "\\d(?=\\.REC$)", with: "\(subRecordingIndex)", options: .regularExpression)
+                                
+                                var removeOperation = Protocol_PbPFtpOperation()
+                                removeOperation.command = .remove
+                                removeOperation.path = recordingPath
+                                
+                                BleLogger.trace("removeOfflineRecord: removing sub recording file \(recordingPath)")
+                                
+                                let request = try removeOperation.serializedData()
+                                return client.request(request).asCompletable()
+                                    .do(
+                                        onError: { error in
+                                            BleLogger.error("removeOfflineRecord: failed to remove sub recording file \(recordingPath), \(error)")
+                                        },
+                                        onCompleted: {
+                                            BleLogger.trace("removeOfflineRecord: removed sub recording file \(recordingPath)")
+                                        }
+                                    )
+                            }
+                            .asCompletable()
+                            .andThen(Completable.deferred {
+                                BleLogger.trace("removeOfflineRecord: removing sub recording files completed, cleaning up parent directories")
+                                return self.removeOfflineFilesRecursively(client, entry.path, deleteIfMatchesRegex: "/\\d{8}/")
+                                    .do(
+                                        onError: { error in
+                                            BleLogger.error("removeOfflineRecord: failed to clean up parent directories, \(error)")
+                                        },
+                                        onCompleted: {
+                                            BleLogger.trace("removeOfflineRecord: finished cleaning up parent directories")
+                                        }
+                                    )
+                            })
+                    }
+                }
         } catch let err {
             return Completable.error(err)
         }
     }
     
     private func removeOfflineFilesRecursively(_ client: BlePsFtpClient, _ deletePath: String, deleteIfMatchesRegex: String? = nil) -> Completable {
+        BleLogger.trace("removeOfflineFilesRecursively: remove offline files from path \(deletePath)")
         do {
             if(deleteIfMatchesRegex != nil) {
                 guard deletePath.contains(deleteIfMatchesRegex!) else {
+                    BleLogger.trace("removeOfflineFilesRecursively: not valid offline recording path to delete $deletePath")
                     return Completable.error(PolarErrors.polarOfflineRecordingError(description:  "Not valid offline recording path to delete \(deletePath)"))
                 }
             }
@@ -1614,6 +1660,8 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
             }
             
+            BleLogger.trace("removeOfflineFilesRecursively: parent directory \(parentDir)")
+            
             var operation = Protocol_PbPFtpOperation()
             operation.command = .get
             operation.path = parentDir
@@ -1629,15 +1677,32 @@ extension PolarBleApiImpl: PolarBleApi  {
                         } else {
                             isParentDirValid = true
                         }
+                        
+                        BleLogger.trace("removeOfflineFilesRecursively: isParentDirValid \(isParentDirValid)")
+                        BleLogger.trace("removeOfflineFilesRecursively: parentDirEntries count \(parentDirEntries.entries.count)")
+                        
+                        parentDirEntries.entries.forEach { entry in
+                            BleLogger.trace("removeOfflineFilesRecursively: parentDirEntries: \(entry.name)")
+                        }
+                        
                         if parentDirEntries.entries.count <= 1 && isParentDirValid {
+                            BleLogger.trace("removeOfflineFilesRecursively: call removeOfflineFilesRecursively for parent directory \(parentDir)")
                             return self.removeOfflineFilesRecursively(client, parentDir, deleteIfMatchesRegex: deleteIfMatchesRegex)
                         } else {
-                            BleLogger.trace(" Remove offline recording from the path \(deletePath)")
                             var removeOperation = Protocol_PbPFtpOperation()
                             removeOperation.command = .remove
                             removeOperation.path = deletePath
+                            BleLogger.trace("removeOfflineFilesRecursively: removing file \(deletePath)")
                             let request = try removeOperation.serializedData()
                             return client.request(request).asCompletable()
+                                .do(
+                                    onError: { error in
+                                        BleLogger.error("removeOfflineFilesRecursively: failed to remove file \(deletePath), \(error)")
+                                    },
+                                    onCompleted: {
+                                        BleLogger.trace("removeOfflineFilesRecursively: removed file \(deletePath)")
+                                    }
+                                )
                         }
                         
                         
@@ -3564,6 +3629,7 @@ extension PolarBleApiImpl: PolarBleApi  {
     
     private func fetchRecursive(_ path: String, client: BlePsFtpClient, condition: @escaping (_ p: String) -> Bool) -> Observable<(name: String, size:UInt64)> {
         do {
+            BleLogger.trace("fetchRecursively: fetching files from path \(path)")
             var operation = Protocol_PbPFtpOperation()
             operation.command = Protocol_PbPFtpOperation.Command.get
             operation.path = path
@@ -3576,6 +3642,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                         let dir = try Protocol_PbPFtpDirectory(serializedData: data as Data)
                         let entries = dir.entries
                             .compactMap { (entry) -> (name: String, size:UInt64)? in
+                                BleLogger.trace("fetchRecursively: entry path: \(path + entry.name), size: \(entry.size)")
                                 if condition(entry.name) {
                                     return (name: path + entry.name, size: entry.size)
                                 }
