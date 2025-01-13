@@ -233,6 +233,8 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Parameter identifier: Polar device id printed on the sensor/device or UUID.
     /// - Throws: InvalidArgument if identifier is invalid polar device id or invalid uuid
     func connectToDevice(_ identifier: String) throws
+
+    func fetchSession(_ identifier: String) throws -> BleDeviceSession?
     
     /// Disconnect from the current Polar device.
     ///
@@ -376,6 +378,8 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - onError: see `PolarErrors` for possible errors invoked
     @available(*, deprecated, message: "Use setWarehouseSleep(_ identifier: String) instead")
     func setWarehouseSleep(_ identifier: String, enableWarehouseSleep: Bool?) -> Completable
+  
+    func dumpAllFiles(_ identifier: String) -> Observable<(name: String, size:UInt64)>
 
     /// Set the device to warehouse sleep state. Factory reset will be performed in order to enable the setting.
     ///
@@ -410,7 +414,13 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// @param until, Data will be deleted from device from history until this date.
     /// @return [Completable] emitting success or error
     func deleteStoredDeviceData(_ identifier: String, dataType: PolarStoredDataType.StoredDataType, until: Date?) -> Completable
-
+  
+    /// Delete single file or directory from the device.
+    ///
+    /// @param identifier, Polar device ID or BT address
+    /// @param filePath, File path to delete
+    func removeSingleFile(identifier: String, filePath: String) -> Single<NSData>
+    
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }
     

@@ -10,6 +10,7 @@ import io.reactivex.rxjava3.core.Single
 import java.time.LocalDate
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.io.ByteArrayOutputStream
 
 /**
  * Polar BLE API.
@@ -349,6 +350,8 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      */
     abstract fun doFirstTimeUse(identifier: String, ftuConfig: PolarFirstTimeUseConfig): Completable
 
+    abstract fun dumpAllFiles(identifier: String): Flowable<Pair<String, Long>>
+
     /**
      * Set [PolarUserDeviceSettings] for device. Currently only 'user device location' is supported.
      *
@@ -375,5 +378,13 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @return [Completable] emitting success or error
      */
     abstract fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Completable
+
+    /**
+     * Removes a single file or directory from the device.
+     * 
+     * @param identifier, Polar device ID or BT address
+     * @param filePath, Path to the file or directory to be removed.
+     */
+    abstract fun removeSingleFile(identifier: String, filePath: String): Single<ByteArrayOutputStream>
 
 }

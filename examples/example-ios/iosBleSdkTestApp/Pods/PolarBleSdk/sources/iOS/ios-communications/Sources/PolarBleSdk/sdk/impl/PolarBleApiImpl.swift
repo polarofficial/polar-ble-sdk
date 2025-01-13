@@ -207,7 +207,7 @@ import UIKit
         throw PolarErrors.deviceNotFound
     }
     
-    fileprivate func fetchSession(_ identifier: String) throws -> BleDeviceSession? {
+    func fetchSession(_ identifier: String) throws -> BleDeviceSession? {
         if identifier.matches("^([0-9a-fA-F]{8})(-[0-9a-fA-F]{4}){3}-([0-9a-fA-F]{12})") {
             return sessionByDeviceAddress(identifier)
         } else if identifier.matches("([0-9a-fA-F]){6,8}") {
