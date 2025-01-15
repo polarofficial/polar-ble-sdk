@@ -82,11 +82,13 @@ public typealias PolarHrBroadcastData = (deviceInfo: PolarDeviceInfo, hr: UInt8,
 /// Polar hr data
 ///
 ///     - hr in BPM
+///     - ppgQuality PPG signal quality of the real time HR between 0 and 100
+///     - correctedHr Corrected value of the real time HR value. 0 if unavailable.
 ///     - rrsMs RR interval in ms. R is a the top highest peak in the QRS complex of the ECG wave and RR is the interval between successive Rs.
 ///     - contactStatus true if the sensor has contact (with a measurable surface e.g. skin)
 ///     - contactStatusSupported true if the sensor supports contact status
 ///     - rrAvailable true if RR data is available.
-public typealias PolarHrData = [(hr: UInt8, rrsMs: [Int], rrAvailable: Bool, contactStatus: Bool, contactStatusSupported: Bool)]
+public typealias PolarHrData = [(hr: UInt8, ppgQuality: UInt8, correctedHr: UInt8, rrsMs: [Int], rrAvailable: Bool, contactStatus: Bool, contactStatusSupported: Bool)]
 
 /// Polar Ecg data
 ///

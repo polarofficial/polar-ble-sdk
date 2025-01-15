@@ -1839,7 +1839,8 @@ extension PolarBleApiImpl: PolarBleApi  {
             }
             return bleHrClient.observeHrNotifications(true)
                 .map {
-                    return [(hr: UInt8($0.hr), rrsMs: $0.rrsMs, rrAvailable: $0.rrPresent, contactStatus: $0.sensorContact, contactStatusSupported: $0.sensorContactSupported)]
+                    // Online HR streaming does not provide corrected HR. Thus, ppgQuality and correctedHr are set to zero.
+                    return [(hr: UInt8($0.hr), 0, 0, rrsMs: $0.rrsMs, rrAvailable: $0.rrPresent, contactStatus: $0.sensorContact, contactStatusSupported: $0.sensorContactSupported)]
                 }
         } catch let err {
             return Observable.error(err)
@@ -3462,6 +3463,8 @@ extension PolarBleApiImpl: PolarBleApi  {
             let newSamples = existingData + hrData.samples.map {
                 (
                     hr: $0.hr,
+                    ppgQuality: $0.ppgQuality,
+                    correctedHr: $0.correctedHr,
                     rrsMs: [],
                     rrAvailable: false,
                     contactStatus: false,
@@ -3477,6 +3480,8 @@ extension PolarBleApiImpl: PolarBleApi  {
                 hrData.samples.map {
                     (
                         hr: $0.hr,
+                        ppgQuality: $0.ppgQuality,
+                        correctedHr: $0.correctedHr,
                         rrsMs: [],
                         rrAvailable: false,
                         contactStatus: false,
@@ -3710,9 +3715,10 @@ private extension PpiData {
 
 private extension OfflineHrData {
     func mapToPolarData() -> PolarHrData {
-        var polarSamples: [(hr: UInt8, rrsMs: [Int], rrAvailable: Bool, contactStatus: Bool, contactStatusSupported: Bool)] = []
+        var polarSamples: [(hr: UInt8, ppgQuality: UInt8, correctedHr: UInt8, rrsMs: [Int], rrAvailable: Bool, contactStatus: Bool, contactStatusSupported: Bool)] = []
         for sample in self.samples {
-            polarSamples.append((hr: sample.hr, rrsMs:[], rrAvailable: false, contactStatus: false, contactStatusSupported: false))
+            let data = [(hr: sample.hr, ppgQuality: sample.ppgQuality, correctedHr: sample.correctedHr, rrsMs: [], rrAvailable: false, contactStatus: false, contactStatusSupported: false)]
+            polarSamples.append((hr: sample.hr, ppgQuality: sample.ppgQuality, correctedHr: sample.correctedHr, rrsMs: [], rrAvailable: false, contactStatus: false, contactStatusSupported: false))
         }
         return polarSamples
     }

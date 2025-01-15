@@ -1742,6 +1742,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             .map { hrNotificationData: HrNotificationData ->
                 val sample = PolarHrData.PolarHrSample(
                     hrNotificationData.hrValue,
+                    0,
+                    0,
                     hrNotificationData.rrsMs,
                     hrNotificationData.rrPresent,
                     hrNotificationData.sensorContact,
@@ -3030,6 +3032,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                             deviceId,
                                             PolarHrData.PolarHrSample(
                                                 hrNotificationData.hrValue,
+                                                0,
+                                                0,
                                                 hrNotificationData.rrsMs,
                                                 hrNotificationData.rrPresent,
                                                 hrNotificationData.sensorContact,

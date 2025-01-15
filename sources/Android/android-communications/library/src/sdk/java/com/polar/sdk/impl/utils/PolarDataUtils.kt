@@ -78,6 +78,8 @@ internal object PolarDataUtils {
             samples.add(
                 PolarHrData.PolarHrSample(
                     hr = sample.hr,
+                    ppgQuality = sample.ppgQuality,
+                    correctedHr = sample.correctedHr,
                     rrsMs = emptyList(),
                     rrAvailable = false,
                     contactStatus = false,
