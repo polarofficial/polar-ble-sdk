@@ -54,7 +54,6 @@ class BlePolarDeviceCapabilitiesUtility {
         fun isFirmwareUpdateSupported(deviceType: String): Boolean {
             return when (deviceType.lowercase(Locale.getDefault())) {
                 DEVICE_TYPE_OH1 -> false
-                DEVICE_TYPE_H10 -> false
                 else -> true
             }
         }

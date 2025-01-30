@@ -7,6 +7,7 @@ import com.polar.sdk.api.model.*
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Single
+import java.com.polar.sdk.api.PolarTemperatureApi
 import java.time.LocalDate
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -18,7 +19,7 @@ import java.util.concurrent.TimeUnit
  */
 abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineStreamingApi,
     PolarOfflineRecordingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi,
-        PolarActivityApi, PolarSleepApi {
+    PolarActivityApi, PolarSleepApi, PolarTemperatureApi {
 
     /**
      * Features available in Polar BLE SDK library
@@ -83,7 +84,12 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
         /**
          * Feature to receive sleep data from Polar device.
          */
-        FEATURE_POLAR_SLEEP_DATA
+        FEATURE_POLAR_SLEEP_DATA,
+
+        /**
+         * Feature to receive temperature data from Polar device.
+         */
+        FEATURE_POLAR_TEMPERATURE_DATA
     }
 
     /**
@@ -115,14 +121,14 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * The data types available in Polar devices for online streaming or offline recording.
      */
     enum class PolarDeviceDataType {
-        HR, ECG, ACC, PPG, PPI, GYRO, MAGNETOMETER, TEMPERATURE
+        HR, ECG, ACC, PPG, PPI, GYRO, MAGNETOMETER, PRESSURE, LOCATION, TEMPERATURE, SKIN_TEMPERATURE
     }
 
     /**
      * The activity recording data types available in Polar devices.
      */
     enum class PolarActivityDataType {
-        SLEEP, STEPS, DISTANCE, CALORIES, HR_SAMPLES, NIGHTLY_RECHARGE
+        SLEEP, STEPS, DISTANCE, CALORIES, HR_SAMPLES, NIGHTLY_RECHARGE, SKIN_TEMPERATURE
     }
 
     /**

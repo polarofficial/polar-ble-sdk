@@ -1,7 +1,7 @@
 // Copyright © 2019 Polar Electro Oy. All rights reserved.
 package com.polar.sdk.api.model
 
-import java.util.*
+import java.util.Collections
 
 class PolarSensorSetting {
 
@@ -34,6 +34,25 @@ class PolarSensorSetting {
 
     }
 
+    enum class SensorLocation(val numVal: Int) {
+        SL_UNKNOWN (0),
+
+        /**
+         * Distal from core
+         */
+        SL_DISTAL(1),
+
+        /**
+         * Proximal from core
+         */
+        SL_PROXIMAL(2)
+    }
+
+    enum class TemperatureMeasurementType(val numVal: Int) {
+        TM_UNKNOWN(0),
+        TM_SKIN_TEMPERATURE(1),
+        TM_CORE_TEMPERATURE(2)
+    }
     var settings: MutableMap<SettingType, Set<Int>> = mutableMapOf()
         private set
 

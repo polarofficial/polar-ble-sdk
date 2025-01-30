@@ -1,16 +1,34 @@
-//
-//  PolarSleepApi.swift
-//  iOSCommunications
-//
-//  Created by Rauno Kangastalo on 23.5.2024.
-//  Copyright © 2024 Polar. All rights reserved.
-//
+///  Copyright © 2024 Polar. All rights reserved.
 
 import Foundation
 import RxSwift
 
 /// Protocol defining methods to get Polar Sleep Data
 public protocol PolarSleepApi {
+    
+    /// Get sleep recording state
+    ///
+    /// - Parameters:
+    ///   - identifier: The Polar device ID or BT address
+    /// - Returns: Single Bool value indicating if sleep recording is ongoing
+    func getSleepRecordingState(identifier: String) -> Single<Bool>
+    
+    /// Observe sleep recording state
+    ///
+    /// - Parameters:
+    ///   - identifier: The Polar device ID or BT address
+    /// - Returns: Observable of Bool value indicating if sleep recording is ongoing
+    func observeSleepRecordingState(identifier: String) -> Observable<[Bool]>
+    
+    /// Stop sleep recording
+    ///
+    /// - Parameters:
+    ///   - identifier: The Polar device ID or BT address
+    /// - Returns: Completable stream
+    ///   - success: when sleep recording has been stopped
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func stopSleepRecording(identifier: String) -> Completable
+    
     /// Get sleep analysis data for a given period.
     ///
     /// - Parameters:

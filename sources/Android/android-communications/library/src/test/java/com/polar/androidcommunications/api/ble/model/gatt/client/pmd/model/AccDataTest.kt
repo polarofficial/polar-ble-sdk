@@ -1,6 +1,7 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
 import com.polar.androidcommunications.testrules.BleLoggerTestRule
 import org.junit.Assert
 import org.junit.Rule
@@ -73,9 +74,9 @@ internal class AccDataTest {
         val sampleRate = 52
         val dataFrame = PmdDataFrame(
             data = accDataFrameHeader + accDataFrameContent,
-            getPreviousTimeStamp = { 0uL },
-            getFactor = { 1.0F },
-            getSampleRate = { sampleRate })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> 0uL },
+            getFactor = { 1.0F }
+        ) { sampleRate }
 
         // Act
         val accData = AccData.parseDataFromDataFrame(dataFrame)
@@ -172,9 +173,9 @@ internal class AccDataTest {
         val factor = 2.44E-4f
         val dataFrame = PmdDataFrame(
             data = accDataFrameHeader + accDataFrameContent,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { factor },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { factor }
+        ) { 0 }
 
         // Act
         val accData = AccData.parseDataFromDataFrame(dataFrame)
@@ -236,9 +237,9 @@ internal class AccDataTest {
 
         val dataFrame = PmdDataFrame(
             data = accDataFrameHeader + accDataFrameContent,
-            getPreviousTimeStamp = { 100uL },
-            getFactor = { 1.0f },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = {  pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> 100uL },
+            getFactor = { 1.0f }
+        ) { 0 }
 
         // Act
         val accData = AccData.parseDataFromDataFrame(dataFrame)

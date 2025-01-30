@@ -37,6 +37,10 @@ internal class PmdTimeStampUtils {
         guard previousFrameTimeStamp > 0 || sampleRate > 0 else {
             throw BleGattException.gattDataError(description: "Timestamp delta cannot be calculated for the frame, because previousTimeStamp \(previousFrameTimeStamp) and sampleRate \(sampleRate)")
         }
+
+        guard  timeStamp > previousFrameTimeStamp else {
+            throw BleGattException.gattDataError(description: "Timestamp delta cannot be calculated for the frame, because previousTimeStamp \(previousFrameTimeStamp) is bigger than timestamp \(timeStamp)")
+        }
         
         if (previousFrameTimeStamp <= 0) {
             return deltaFromSamplingRate(sampleRate)

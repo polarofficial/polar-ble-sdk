@@ -3,9 +3,9 @@ package com.polar.androidcommunications.api.ble.model.gatt.client.pmd
 import com.polar.androidcommunications.api.ble.exceptions.BleNotImplemented
 import com.polar.androidcommunications.common.ble.TypeUtils
 
-internal class PmdDataFrame(
+class PmdDataFrame(
     data: ByteArray,
-    getPreviousTimeStamp: (PmdMeasurementType) -> ULong,
+    getPreviousTimeStamp: (PmdMeasurementType, PmdDataFrameType) -> ULong,
     getFactor: (PmdMeasurementType) -> Float,
     getSampleRate: (PmdMeasurementType) -> Int,
 ) {
@@ -32,7 +32,7 @@ internal class PmdDataFrame(
         System.arraycopy(data, 10, content, 0, content.size)
         dataContent = content
 
-        previousTimeStamp = getPreviousTimeStamp(measurementType)
+        previousTimeStamp = getPreviousTimeStamp(measurementType, frameType)
         factor = getFactor(measurementType)
         sampleRate = getSampleRate(measurementType)
     }
@@ -41,7 +41,7 @@ internal class PmdDataFrame(
         return frameTypeByte and DELTA_FRAME_BIT_MASK.toUByte() > 0u
     }
 
-    internal enum class PmdDataFrameType(val id: UByte) {
+    enum class PmdDataFrameType(val id: UByte) {
         TYPE_0(0u),
         TYPE_1(1u),
         TYPE_2(2u),
@@ -51,7 +51,8 @@ internal class PmdDataFrame(
         TYPE_6(6u),
         TYPE_7(7u),
         TYPE_8(8u),
-        TYPE_9(9u);
+        TYPE_9(9u),
+        TYPE_10(10u);
 
         companion object {
             fun getTypeFromFrameDataByte(byte: UByte): PmdDataFrameType {

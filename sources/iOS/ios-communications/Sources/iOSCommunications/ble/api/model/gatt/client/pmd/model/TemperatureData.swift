@@ -42,11 +42,10 @@ public class TemperatureData {
         var temperatureSamples = [TemperatureSample]()
 
         for (index, sample) in samples.enumerated() {
-            let temperature: Float
-            temperature = Float(sample[1])
+            let temperature = Float.init(bitPattern: UInt32(sample.first!))
             temperatureSamples.append(TemperatureSample(timeStamp: timeStamps[index], temperature: temperature))
         }
-
+        temperatureData.samples = temperatureSamples
         return temperatureData
     }
 

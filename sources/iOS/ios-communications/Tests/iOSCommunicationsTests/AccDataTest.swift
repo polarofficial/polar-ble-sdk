@@ -65,7 +65,7 @@ final class AccDataTest: XCTestCase {
      
         let dataFrame = try PmdDataFrame(
             data: accDataFrameHeader + accDataFrameContent,
-            { _ in 0 }  ,
+            { _,_ in 0 }  ,
             { _ in 1.0 },
             { _ in UInt(sampleRate) })
         
@@ -164,7 +164,7 @@ final class AccDataTest: XCTestCase {
             
         let dataFrame = try PmdDataFrame(
             data: accDataFrameHeader + accDataFrameContent,
-            { _ in previousTimeStamp }  ,
+            { _,_ in previousTimeStamp }  ,
             { _ in factor },
             { _ in 0 })
         
@@ -237,7 +237,7 @@ final class AccDataTest: XCTestCase {
         let factor:Float = 1.0
         let dataFrame = try PmdDataFrame(
             data: accDataFrameHeader + accDataFrameContent,
-            { _ in previousTimeStamp }  ,
+            { _,_ in previousTimeStamp }  ,
             { _ in factor },
             { _ in 0 })
         

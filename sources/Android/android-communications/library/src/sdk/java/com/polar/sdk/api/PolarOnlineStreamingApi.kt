@@ -207,4 +207,22 @@ interface PolarOnlineStreamingApi {
             identifier: String,
             sensorSetting: PolarSensorSetting
     ): Flowable<PolarTemperatureData>
+
+    /**
+     * Start Skin Temperature data stream. SkinTemperature stream is stopped if the connection is closed, error occurs during
+     * start or stream is disposed. Requires feature [.FEATURE_POLAR_ONLINE_STREAMING].
+     * Before starting the stream it is recommended to query the available settings using [.requestStreamSettings]
+     *
+     * @param identifier    Polar device id found printed on the sensor/device or bt address
+     * @param sensorSetting settings to be used to start streaming
+     * @return Flowable stream of temperature data.
+     * Produces:
+     * <BR></BR> - onNext [PolarTemperatureData]
+     * <BR></BR> - onError error for possible errors invoked
+     * <BR></BR> - onComplete non produced unless the stream is further configured
+     */
+    fun startSkinTemperatureStreaming(
+        identifier: String,
+        sensorSetting: PolarSensorSetting
+    ): Flowable<PolarTemperatureData>
 }

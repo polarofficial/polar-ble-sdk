@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package data;
+import "types_proto3.proto";
+
+option java_package = "com.polar.services.datamodels.protobuf";
+option java_outer_classname = "TemperatureMeasurement";
+
+/*
+  Defines structure for syncing & storing Temperature measurements.
+
+  For intended usage of this data, see "File System Structure in Genesis ecosystem devices"
+*/
+
+/*
+*   Temperature measurement sample
+*/
+message TemperatureMeasurementSample {
+  // recording time. Delta in milliseconds from beginning of the period.
+  uint64 recording_time_delta_milliseconds = 1;
+
+  // Temperature in celsius.
+  // range [-40.0 - 125.0] C
+  float temperature_celsius = 2;
+}
+
+/*
+*   Temperature measurement period
+*/
+message TemperatureMeasurementPeriod {
+  TemperatureMeasurementType measurement_type = 1;
+
+  string source_device_id = 2;
+
+  // Sensor location of source_device_id
+  SensorLocation sensor_location = 3;
+
+  // Temperature measurement samples.
+  repeated TemperatureMeasurementSample temperature_measurement_samples = 4;
+}

@@ -81,6 +81,8 @@ public struct OfflineRecordingData<DataType> {
             return OfflineHrData()
         case .temperature:
             return TemperatureData()
+        case .skinTemperature:
+            return SkinTemperatureData()
         default:
             throw OfflineRecordingError.offlineRecordingErrorNoParserForData
         }
@@ -276,12 +278,11 @@ public struct OfflineRecordingData<DataType> {
             let data = try decryptedData.subdataSafe(in:offset..<(packetSize + offset))
             offset += packetSize
             let dataFrame = try PmdDataFrame(data:data,
-                                             { _ in previousTimeStamp }  ,
+                                             { _,_  in previousTimeStamp },
                                              { _ in factor },
                                              { _ in sampleRate })
             
             previousTimeStamp = dataFrame.timeStamp
-            
             switch(builder) {
             case is EcgData:
                 let ecgData =  try EcgData.parseDataFromDataFrame(frame: dataFrame)
@@ -307,6 +308,9 @@ public struct OfflineRecordingData<DataType> {
             case is TemperatureData:
                 let temperatureData =  try TemperatureData.parseDataFromDataFrame(frame: dataFrame)
                 (builder as! TemperatureData).samples.append(contentsOf: temperatureData.samples)
+            case is SkinTemperatureData:
+                let skinTemperatureData =  try SkinTemperatureData.parseDataFromDataFrame(frame: dataFrame)
+                (builder as! SkinTemperatureData).samples.append(contentsOf: skinTemperatureData.samples)
             default:
                 throw OfflineRecordingError.offlineRecordingErrorSecretMissing
             }

@@ -41,32 +41,195 @@ final class PpgDataTest: XCTestCase {
         let factor:Float = 1.0
         let dataFrame = try PmdDataFrame(
             data: ppgDataFrameHeader + ppgDataFrameContent,
-            { _ in previousTimeStamp }  ,
+            { _,_ in previousTimeStamp },
             { _ in factor },
-            { _ in 0 })
-        
-        
+            { _ in 55 })
+
         // Act
-        let ppgData = try PpgData.parseDataFromDataFrame(frame: dataFrame)
+        let result = try PpgData.parseDataFromDataFrame(frame: dataFrame)
         
         // Assert
-        XCTAssertEqual(2, ppgData.samples.count)
-        XCTAssertEqual(3, ppgData.samples[0].ppgDataSamples.count)
-        XCTAssertEqual(ppg0Sample0, ppgData.samples[0].ppgDataSamples[0])
-        XCTAssertEqual(ppg1Sample0, ppgData.samples[0].ppgDataSamples[1])
-        XCTAssertEqual(ppg2Sample0, ppgData.samples[0].ppgDataSamples[2])
-        XCTAssertEqual(ambientSample0, ppgData.samples[0].ambientSample)
+        XCTAssertEqual(2, result.samples.count)
+        XCTAssertEqual(3, result.samples[0].ppgDataSamples.count)
+        XCTAssertEqual(ppg0Sample0, result.samples[0].ppgDataSamples[0])
+        XCTAssertEqual(ppg1Sample0, result.samples[0].ppgDataSamples[1])
+        XCTAssertEqual(ppg2Sample0, result.samples[0].ppgDataSamples[2])
+        XCTAssertEqual(ambientSample0, result.samples[0].ambientSample)
         
-        XCTAssertEqual(3, ppgData.samples[1].ppgDataSamples.count)
-        XCTAssertEqual(ppg0Sample1, ppgData.samples[1].ppgDataSamples[0])
-        XCTAssertEqual(ppg1Sample1, ppgData.samples[1].ppgDataSamples[1])
-        XCTAssertEqual(ppg2Sample1, ppgData.samples[1].ppgDataSamples[2])
-        XCTAssertEqual(ambientSample1, ppgData.samples[1].ambientSample)
+        XCTAssertEqual(3, result.samples[1].ppgDataSamples.count)
+        XCTAssertEqual(ppg0Sample1, result.samples[1].ppgDataSamples[0])
+        XCTAssertEqual(ppg1Sample1, result.samples[1].ppgDataSamples[1])
+        XCTAssertEqual(ppg2Sample1, result.samples[1].ppgDataSamples[2])
+        XCTAssertEqual(ambientSample1, result.samples[1].ambientSample)
         
-        XCTAssertEqual(timeStamp, ppgData.timeStamp)
-        XCTAssertEqual(timeStamp, ppgData.samples.last?.timeStamp)
+        XCTAssertEqual(timeStamp, result.timeStamp)
+        XCTAssertEqual(timeStamp, result.samples.last?.timeStamp)
     }
-    func testCompressePpgFrameType0() throws {
+    
+    func testRawPpgFrameType6() throws {
+        // Arrange
+        // HEX: 01 00 94 35 77 00 00 00 00 06
+        // index                                                   data:
+        // 0        type                                           01 (PPG)
+        // 1..9     timestamp                                      00 94 35 77 00 00 00 00
+        let timeStamp:UInt64 = 2000000000
+        // 10       frame type                                     06 (raw, type 6)
+        let ppgDataFrameHeader = Data([
+            0x01,
+            0x00, 0x94, 0x35, 0x77, 0x00, 0x00, 0x00, 0x00,
+            0x06,
+        ])
+        let previousTimeStamp:UInt64 = 100
+        let ppgDataFrameContent = Data([
+            0x1B, 0x00, 0x00,  //Sport id 27 (trail running)
+            0x00, 0x00, 0x00,
+            0x00, 0x00
+        ])
+        let expectedSportId: Int32 = 27
+        let factor:Float = 1.0
+        let dataFrame = try PmdDataFrame(
+            data: ppgDataFrameHeader + ppgDataFrameContent,
+            { _,_ in previousTimeStamp }  ,
+            { _ in factor },
+            { _ in 13 })
+        
+        // Act
+        let result = try PpgData.parseDataFromDataFrame(frame: dataFrame)
+        
+        // Assert
+        XCTAssertEqual(1, result.samples.count)
+        XCTAssertEqual(1, result.samples[0].ppgDataSamples.count)
+        XCTAssertEqual(expectedSportId, result.samples[0].ppgDataSamples[0])
+        XCTAssertEqual(timeStamp, result.timeStamp)
+    }
+    
+    func testCompressedPpgFrameType6ThrowsException() throws {
+
+        // 10th (0x86) (binary 10000110) results true for check compressed mask (0x80, decimal 128, binary 10000000)
+        let ppgDataFrameHeader = Data([
+            0x01,
+            0x00, 0x94, 0x35, 0x77, 0x00, 0x00, 0x00, 0x00,
+            0x86,
+        ])
+        let dataFrame = try PmdDataFrame(
+            data: ppgDataFrameHeader,
+            { _,_ in 0 },
+            { _ in 1.0 },
+            { _ in 13 })
+        
+        XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame), "Compressed FrameType: type_6 is not supported by PPG data parser")
+        XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame)) { error in
+            guard case BleGattException.gattDataError = error else {
+                return XCTFail()
+            }
+        }
+    }
+    
+    func testRawPpgFrameType9() throws {
+        // Arrange
+        // HEX: 01 00 94 35 77 00 00 00 00 09
+        // index                                                   data:
+        // 0        type                                           01 (PPG)
+        // 1..9     timestamp                                      00 94 35 77 00 00 00 00
+        let timeStamp:UInt64 = 2000000000
+        // 10       frame type                                     09 (raw, type 9)
+        let ppgDataFrameHeader = Data([
+            0x01,
+            0x00, 0x94, 0x35, 0x77, 0x00, 0x00, 0x00, 0x00,
+            0x09,
+        ])
+        let previousTimeStamp:UInt64 = 100
+
+        // HEX: 06 06 06 06 06 06 06 06 06 06 06 06
+        //      FF 00 00 00 00 00 00 00 00 00 00 FF
+        //      01 00 00 00 00 00 00 00 00 00 FF FF
+        // index    type                    data:
+        // 0..11:   num Int Ts1-12          06 06 06 06 06 06 06 06 06 06 06 06
+        // 12:  channel1 Gain Ts1           01 => 1
+        // 13:  channel2 Gain Ts1           07 => 7
+        // 14:  channel1 Gain Ts2           FF => 7
+        // 15:  channel2 Gain Ts2           00 => 0
+        // ..
+        // 32: channel1 Gain Ts11           01 => 0
+        // 33: channel2 Gain Ts11           00 => 0
+        // 34: channel1 Gain Ts12           FF => 7
+        // 35: channel2 Gain Ts12           00 => 0
+
+        let expectedNumIntTs1:Int32 = 6
+        let expectedNumIntTs2:Int32 = 6
+        let expectedNumIntTs12:Int32 = 6
+
+        let expectedChannel1GainTs1:Int32 = 7
+        let expectedChannel2GainTs1:Int32 = 0
+        let expectedChannel1GainTs2:Int32 = 0
+        let expectedChannel2GainTs2:Int32 = 0
+        let expectedChannel1GainTs11:Int32 = 0
+        let expectedChannel2GainTs11:Int32 = 0
+        let expectedChannel1GainTs12:Int32 = 7
+        let expectedChannel2GainTs12:Int32 = 7
+
+        let ppgDataFrameContent = Data([
+            0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06,
+            0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
+            0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF]
+        )
+        let factor:Float = 1.0
+        let dataFrame = try PmdDataFrame(
+            data: ppgDataFrameHeader + ppgDataFrameContent,
+            { _,_ in previousTimeStamp },
+            { _ in factor },
+            { _ in 13 })
+
+        // Act
+        let result = try PpgData.parseDataFromDataFrame(frame: dataFrame)
+
+        // Assert
+        XCTAssertEqual(3, result.samples.count)
+        
+        XCTAssertEqual(expectedNumIntTs1, result.samples[0].ppgDataSamples[0])
+        XCTAssertEqual(expectedNumIntTs2, result.samples[0].ppgDataSamples[1])
+        XCTAssertEqual(expectedNumIntTs12, result.samples[0].ppgDataSamples[2])
+
+        XCTAssertEqual(12, result.samples[1].ppgDataSamples.count)
+        XCTAssertEqual(expectedChannel1GainTs1, result.samples[1].ppgDataSamples[0])
+        XCTAssertEqual(expectedChannel1GainTs2, result.samples[1].ppgDataSamples[1])
+        XCTAssertEqual(expectedChannel1GainTs11, result.samples[1].ppgDataSamples[10])
+        XCTAssertEqual(expectedChannel1GainTs12, result.samples[1].ppgDataSamples[11])
+
+        XCTAssertEqual(12, result.samples[2].ppgDataSamples.count)
+        XCTAssertEqual(expectedChannel2GainTs1, result.samples[2].ppgDataSamples[0])
+        XCTAssertEqual(expectedChannel2GainTs2, result.samples[2].ppgDataSamples[1])
+        XCTAssertEqual(expectedChannel2GainTs11, result.samples[2].ppgDataSamples[10])
+        XCTAssertEqual(expectedChannel2GainTs12, result.samples[2].ppgDataSamples[11])
+        
+        XCTAssertEqual(timeStamp, result.timeStamp)
+    }
+    
+    func testCompressedPpgFrameType9Throws() throws {
+
+        // Arrange
+        // 10th (0x89) (binary 10001001) results true for check compressed mask (0x80, decimal 128, binary 10000000 )
+        let ppgDataFrameHeader = Data([
+            0x01,
+            0x00, 0x94, 0x35, 0x77, 0x00, 0x00, 0x00, 0x00,
+            0x89,
+        ])
+        let dataFrame = try PmdDataFrame(
+            data: ppgDataFrameHeader,
+            { _,_ in 0 },
+            { _ in 1.0 },
+            { _ in 13 })
+
+        // Act, Assert
+        XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame), "Compressed FrameType: type_9 is not supported by PPG data parser")
+        XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame)) { error in
+            guard case BleGattException.gattDataError = error else {
+                return XCTFail()
+            }
+        }
+    }
+    
+    func testCompressedPpgFrameType0() throws {
         // Arrange
         // HEX: 01 00 94 35 77 00 00 00 00 80
         // index                                                   data:
@@ -141,29 +304,180 @@ final class PpgDataTest: XCTestCase {
         let factor:Float = 1.0
         let dataFrame = try PmdDataFrame(
             data: ppgDataFrameHeader + ppgDataFrameContent,
-            { _ in previousTimeStamp }  ,
+            { _,_ in previousTimeStamp }  ,
             { _ in factor },
-            { _ in 0 })
+            { _ in 22 })
         
         // Act
-        let ppgData = try PpgData.parseDataFromDataFrame(frame: dataFrame)
+        let result = try PpgData.parseDataFromDataFrame(frame: dataFrame)
         
         // Assert
-        XCTAssertEqual(amountOfSamples, ppgData.samples.count)
-        XCTAssertEqual(3, ppgData.samples[0] .ppgDataSamples.count)
-        XCTAssertEqual(refSample0Channel0, ppgData.samples[0] .ppgDataSamples[0])
-        XCTAssertEqual(refSample0Channel1, ppgData.samples[0].ppgDataSamples[1])
-        XCTAssertEqual(refSample0Channel2, ppgData.samples[0].ppgDataSamples[2])
-        XCTAssertEqual(refSample0Channel3, ppgData.samples[0].ambientSample)
+        XCTAssertEqual(amountOfSamples, result.samples.count)
+        XCTAssertEqual(3, result.samples[0] .ppgDataSamples.count)
+        XCTAssertEqual(refSample0Channel0, result.samples[0] .ppgDataSamples[0])
+        XCTAssertEqual(refSample0Channel1, result.samples[0].ppgDataSamples[1])
+        XCTAssertEqual(refSample0Channel2, result.samples[0].ppgDataSamples[2])
+        XCTAssertEqual(refSample0Channel3, result.samples[0].ambientSample)
         
-        XCTAssertEqual(3, ppgData.samples[1].ppgDataSamples.count)
-        XCTAssertEqual(refSample0Channel0 + refSample1Channel0, ppgData.samples[1].ppgDataSamples[0])
-        XCTAssertEqual(refSample0Channel1 + refSample1Channel1, ppgData.samples[1].ppgDataSamples[1])
-        XCTAssertEqual(refSample0Channel2 + refSample1Channel2, ppgData.samples[1].ppgDataSamples[2])
-        XCTAssertEqual(refSample0Channel3 + refSample1Channel3, ppgData.samples[1].ambientSample)
+        XCTAssertEqual(3, result.samples[1].ppgDataSamples.count)
+        XCTAssertEqual(refSample0Channel0 + refSample1Channel0, result.samples[1].ppgDataSamples[0])
+        XCTAssertEqual(refSample0Channel1 + refSample1Channel1, result.samples[1].ppgDataSamples[1])
+        XCTAssertEqual(refSample0Channel2 + refSample1Channel2, result.samples[1].ppgDataSamples[2])
+        XCTAssertEqual(refSample0Channel3 + refSample1Channel3, result.samples[1].ambientSample)
         
-        XCTAssertEqual(timeStamp, ppgData.timeStamp)
-        XCTAssertEqual(timeStamp, ppgData.samples.last?.timeStamp)
+        XCTAssertEqual(timeStamp, result.timeStamp)
+        XCTAssertEqual(timeStamp, result.samples.last?.timeStamp)
     
     }
+    
+    func testCompressedPpgFrameType10() throws {
+
+        // Arrange
+        let expectedGreenSamples:[Int32] =
+        [1575733, 1957739, 1740229, 1761644, 1807181, 1489480, 1577122, 1822779]
+        let expectedRedSamples:[Int32] = [1973554, 1752419, 1569544, 1126395, 256, 1312672]
+        let expectedIrSamples:[Int32] = [1671106, 2230896, 1670551, 2230476, 1312672, -5901481]
+        let expectedStatus: Int32 = 249855
+        let expectedTimeStamp: UInt64 = 112524943566142944
+        
+        // Frame data with timestamps, frame type data etc.
+        let ppgDataFrameContent = Data([
+            0x01, 0xC0, 0x6E, 0x6A, 0x43, 0xE1,
+            0x61, 0xEE, 0x0A, 0x8A, 0x35, 0x0B,
+            0x18, 0x6B, 0xDF, 0x1D, 0xC5, 0x8D,
+            0x1A, 0x6C, 0xE1, 0x1A, 0x4D, 0x93,
+            0x1B, 0x48, 0xBA, 0x16, 0xA2, 0x10,
+            0x18, 0x3B, 0xD0, 0x1B, 0x32, 0x1D,
+            0x1E, 0x63, 0xBD, 0x1A, 0x08, 0xF3,
+            0x17, 0xFB, 0x2F, 0x11, 0x00, 0x01,
+            0x00, 0xA0, 0x07, 0x14, 0xC2, 0x7F,
+            0x19, 0x70, 0x0A, 0x22, 0x97, 0x7D,
+            0x19, 0xCC, 0x08, 0x22, 0xA0, 0x07,
+            0x14, 0x57, 0xF3, 0xA5, 0xFF, 0xCF,
+            0x03, 0x18, 0x06, 0x52, 0xB3, 0xFF,
+            0x8E, 0xF9, 0xFF, 0xAE, 0xEF, 0xFF,
+            0x5F, 0xFB, 0xFF, 0xB1, 0xA6, 0xFF,
+            0x75, 0xF8, 0xFF, 0xA7, 0xF0, 0xFF,
+            0x32, 0xF1, 0xFF, 0xB8, 0x00, 0x00,
+            0x1E, 0x00, 0x00, 0x97, 0x02, 0x00,
+            0x08, 0xFE, 0xFF, 0x00, 0xFF, 0xFF,
+            0x60, 0xF8, 0xEB, 0x8E, 0x07, 0x00,
+            0x8A, 0x00, 0x00, 0xAE, 0x08, 0x00,
+            0x97, 0x00, 0x00, 0x60, 0xF8, 0xEB,
+            0x32, 0x8A, 0xFD, 0x00, 0x00, 0x00,
+            0x4B, 0x2A, 0xFF, 0xA7, 0x04, 0x00,
+            0xBC, 0x0F, 0x00, 0xD0, 0xFE, 0xFF,
+            0x64, 0xF5, 0xFE, 0x94, 0xE8, 0xFF,
+            0x5E, 0x07, 0x00, 0x2F, 0x17, 0x00,
+            0x34, 0x27, 0x00, 0xE7, 0x11, 0x00,
+            0x7B, 0x08, 0x00, 0x2C, 0x03, 0x00,
+            0x00, 0x01, 0x00, 0xA0, 0x07, 0x14,
+            0x09, 0x3C, 0x00, 0xD0, 0x86, 0x00,
+            0xCE, 0x3B, 0x00, 0xCA, 0x86, 0x00,
+            0xA0, 0x07, 0x14, 0xCE, 0x75, 0x02,
+            0x00, 0x00, 0x00, 0xF0, 0xA4, 0xFF,
+            0xAA, 0x08, 0x00, 0x45, 0x19, 0x00,
+            0x8B, 0xFF, 0xFF, 0x9A, 0x8B, 0xFF,
+            0x65, 0xF4, 0xFF, 0x92, 0x11, 0x00,
+            0x40, 0x20, 0x00, 0xC5, 0x23, 0x00,
+            0x8E, 0x0F, 0x00, 0x01, 0x06, 0x00,
+            0x6F, 0x05, 0x00, 0xD4, 0x02, 0x19,
+            0xB8, 0x2D, 0x38, 0xBF, 0x2D, 0x00,
+            0x2C, 0x78, 0x00, 0x23, 0x2E, 0x00,
+            0xA3, 0x77, 0x00, 0x6C, 0xCA, 0xB5,
+            0x32, 0x8A, 0xFD, 0x00, 0x00, 0x00,
+            0xDE, 0xF1, 0xFF, 0x24, 0x06, 0x00,
+            0x2B, 0x12, 0x00, 0x78, 0xFE, 0xFF,
+            0x89, 0xE9, 0xFF, 0x08, 0xFD, 0xFF,
+            0x31, 0x0B, 0x00, 0x49, 0x0F, 0x00,
+            0xE2, 0x06, 0x00, 0x3C, 0x04, 0x00,
+            0x50, 0x02, 0x00, 0x53, 0x01, 0x00,
+            0x2C, 0xFD, 0xE6, 0x48, 0xD2, 0xC7,
+            0x2E, 0x0C, 0x00, 0x11, 0x1C, 0x00,
+            0x0F, 0x0D, 0x00, 0x2E, 0x1C, 0x00,
+            0x94, 0x35, 0x4A, 0xCE, 0x75, 0x02,
+            0x00, 0x00, 0x00, 0x9C, 0x06, 0x00,
+            0x33, 0x04, 0x00, 0x5F, 0x06, 0x00,
+            0xE1, 0xFB, 0xFF, 0x15, 0x06, 0x00,
+            0xB9, 0x00, 0x00, 0x1C, 0x06, 0x00,
+            0xCE, 0x01, 0x00, 0x6F, 0xFC, 0xFF,
+            0xCD, 0xFF, 0xFF, 0xD1, 0x01, 0x00,
+            0x6A, 0xFF, 0xFF, 0xD4, 0x02, 0x19,
+            0xB8, 0x2D, 0x38, 0x68, 0xFE, 0xFF,
+            0xB5, 0xF6, 0xFF, 0xD8, 0xFD, 0xFF,
+            0xA6, 0xF6, 0xFF, 0x6C, 0xCA, 0xB5,
+            0x32, 0x8A, 0xFD, 0x00, 0x00, 0x00,
+            0x6E, 0xDC, 0xFF, 0xC7, 0x00, 0x00,
+            0x0F, 0x06, 0x00, 0xC5, 0xF8, 0xFF,
+            0x9F, 0xDE, 0xFF, 0xE7, 0xFB, 0xFF,
+            0x0E, 0xFE, 0xFF, 0x61, 0xF9, 0xFF,
+            0x9D, 0x04, 0x00, 0xB8, 0x00, 0x00,
+            0x7E, 0x02, 0x00, 0x67, 0x01, 0x00,
+            0x2C, 0xFD, 0xE6, 0x48, 0xD2, 0xC7,
+            0x7E, 0x07, 0x00, 0xF5, 0x0E, 0x00,
+            0x14, 0x07, 0x00, 0xF1, 0x0E, 0x00,
+            0x94, 0x35, 0x4A, 0xCE, 0x75, 0x02,
+            0x00, 0x00, 0x00])
+        
+        let previousTimeStamp:UInt64 = 100
+        
+        let dataFrame = try PmdDataFrame(
+            data: ppgDataFrameContent,
+            { _,_ in previousTimeStamp },
+            { _ in 1.0 },
+            { _ in 13 })
+        
+        // Act
+        let result = try PpgData.parseDataFromDataFrame(frame: dataFrame)
+        
+        // Assert
+        XCTAssertNotNil(result)
+        XCTAssertEqual(expectedStatus, result.samples.first?.status)
+        XCTAssertEqual(7, result.samples.count)
+        XCTAssertEqual(expectedTimeStamp, result.samples[0].timeStamp)
+
+        var index = 0;
+        for sample in result.samples[0].ppgDataSamples[0..<8] {
+           let expected = expectedGreenSamples[index]
+           XCTAssertEqual(expected, sample)
+           index+=1
+        }
+        index = 0
+        for sample in result.samples[0].ppgDataSamples[8..<14] {
+           let expected = expectedRedSamples[index]
+           XCTAssertEqual(expected, sample)
+           index+=1
+        }
+        index = 0
+        for sample in result.samples[0].ppgDataSamples[14..<20] {
+           let expected = expectedIrSamples[index]
+           XCTAssertEqual(expected, sample)
+           index+=1
+        }
+   }
+
+   func testUnCompressedPpgFrameType10ThrowsException() throws {
+
+       // Arrange
+       // 10th (0x0A) (decimal 10) results false for check compressed mask (0x80, decimal 128 )
+       let ppgDataFrameContent = Data([
+           0x01, 0xC0, 0x6E, 0x6A, 0x43, 0xE1,
+           0x61, 0xEE, 0x0A, 0x0A, 0x35, 0x0B,
+           0x18, 0x6B, 0xDF, 0x1D, 0xC5, 0x8D,
+           0x1A, 0x6C, 0xE1, 0x1A, 0x4D, 0x93]
+       )
+       let dataFrame = try PmdDataFrame(
+           data: ppgDataFrameContent,
+           { _,_ in 0 },
+           { _ in 1.0 },
+           { _ in 13 })
+
+       // Act, Assert
+       XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame), "Raw FrameType: TYPE_10 is not supported by PPG data parser")
+       XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame)) { error in
+           guard case BleGattException.gattDataError = error else {
+               return XCTFail()
+           }
+       }
+   }
 }

@@ -7,6 +7,7 @@ public enum PmdMeasurementType: UInt8, CaseIterable {
     case ppi = 3
     case gyro = 5
     case mgn = 6
+    case skinTemperature = 7
     case sdkMode = 9
     case location = 10
     case pressure = 11
@@ -55,6 +56,12 @@ public enum PmdMeasurementType: UInt8, CaseIterable {
         if (data[1] & 0x40 != 0) {
             measurementTypes.insert(PmdMeasurementType.mgn)
         }
+        if (data[1] & 0x80 != 0) {
+            measurementTypes.insert(PmdMeasurementType.skinTemperature)
+        }
+        if (data[2] & 0x02 != 0) {
+            measurementTypes.insert(PmdMeasurementType.sdkMode)
+        }
         if (data[2] & 0x04 != 0) {
             measurementTypes.insert(PmdMeasurementType.location)
         }
@@ -64,15 +71,11 @@ public enum PmdMeasurementType: UInt8, CaseIterable {
         if (data[2] & 0x10 != 0) {
             measurementTypes.insert(PmdMeasurementType.temperature)
         }
-        if (data[2] & 0x40 != 0) {
-            measurementTypes.insert(PmdMeasurementType.offline_hr)
-        }
-        
-        if (data[2] & 0x02 != 0) {
-            measurementTypes.insert(PmdMeasurementType.sdkMode)
-        }
         if (data[2] & 0x20 != 0) {
             measurementTypes.insert(PmdMeasurementType.offline_recording)
+        }
+        if (data[2] & 0x40 != 0) {
+            measurementTypes.insert(PmdMeasurementType.offline_hr)
         }
         
         return measurementTypes

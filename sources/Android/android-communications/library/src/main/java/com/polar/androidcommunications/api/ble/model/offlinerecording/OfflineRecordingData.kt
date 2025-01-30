@@ -90,6 +90,7 @@ internal class OfflineRecordingData<out T>(
                 PmdMeasurementType.PPI -> PpiData()
                 PmdMeasurementType.GYRO -> GyrData()
                 PmdMeasurementType.MAGNETOMETER -> MagData()
+                PmdMeasurementType.SKIN_TEMP -> SkinTemperatureData()
                 PmdMeasurementType.LOCATION -> GnssLocationData()
                 PmdMeasurementType.PRESSURE -> PressureData()
                 PmdMeasurementType.TEMPERATURE -> TemperatureData()
@@ -288,9 +289,9 @@ internal class OfflineRecordingData<out T>(
                 val data = decryptedData.slice(offset until packetSize + offset)
                 offset += packetSize
                 val dataFrame = PmdDataFrame(data.toByteArray(),
-                    getPreviousTimeStamp = { previousTimeStamp },
-                    getFactor = { factor },
-                    getSampleRate = { sampleRate })
+                    getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+                    getFactor = { factor }
+                ) { sampleRate }
 
                 previousTimeStamp = dataFrame.timeStamp
 

@@ -1,6 +1,7 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
 import com.polar.androidcommunications.testrules.BleLoggerTestRule
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -59,11 +60,11 @@ internal class PpiDataTest {
 
         val dataFrame = PmdDataFrame(
             data = ppiDataFrameHeader + ppiDataFrameContent,
-            getPreviousTimeStamp = { previousTimeStamp },
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
             getFactor = { 1.0f },
             getSampleRate = { 0 })
 
-        // Act
+
         val ppiData = PpiData.parseDataFromDataFrame(dataFrame)
 
         // Assert

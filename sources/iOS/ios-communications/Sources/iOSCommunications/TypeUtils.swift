@@ -33,4 +33,15 @@ class TypeUtils {
         }
         return value
     }
+
+    static func convertArrayToUnsignedInt64(_ data: Data, offset: Int, size: Int) -> UInt64 {
+        return convertArrayToUnsignedInt64(data.subdata(in: offset..<(offset+size)))
+    }
+
+    static func convertArrayToUnsignedInt64(_ data: Data) -> UInt64 {
+        assert(data.count <= 8)
+        var value: UInt64 = 0
+        value = data.reversed().reduce(0) { $0 << 8 + UInt64($1) }
+        return value
+    }
 }

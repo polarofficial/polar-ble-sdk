@@ -59,6 +59,21 @@
                 <a href="../Classes/PolarBleApiDefaultImpl.html">PolarBleApiDefaultImpl</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Classes/PolarSkinTemperatureData.html">PolarSkinTemperatureData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarSkinTemperatureData/SkinTemperatureMeasurementType.html">– SkinTemperatureMeasurementType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarSkinTemperatureData/SkinTemperatureSensorLocation.html">– SkinTemperatureSensorLocation</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarSkinTemperatureData/PolarSkinTemperatureDataSample.html">– PolarSkinTemperatureDataSample</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarSkinTemperatureData/PolarSkinTemperatureResult.html">– PolarSkinTemperatureResult</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Classes/PolarSleepData.html">PolarSleepData</a>
               </li>
               <li class="nav-group-task">
@@ -205,6 +220,9 @@
                 <a href="../Protocols/PolarOnlineStreamingApi.html">PolarOnlineStreamingApi</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Protocols/PolarRestServiceApi.html">PolarRestServiceApi</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Protocols/PolarSdkModeApi.html">PolarSdkModeApi</a>
               </li>
               <li class="nav-group-task">
@@ -229,6 +247,12 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/PolarActiveTimeData.html">PolarActiveTimeData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarDeviceRestApiServiceDescription.html">PolarDeviceRestApiServiceDescription</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs.html#/s:11PolarBleSdk0A21DeviceRestApiServicesV">PolarDeviceRestApiServices</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/PolarDiskSpaceData.html">PolarDiskSpaceData</a>
@@ -352,6 +376,161 @@
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:11PolarBleSdk0A8SleepApiP03getD14RecordingState10identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOSbGSS_tF"></a>
+                    <a name="//apple_ref/swift/Method/getSleepRecordingState(identifier:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A8SleepApiP03getD14RecordingState10identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOSbGSS_tF">getSleepRecordingState(identifier:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Get sleep recording state</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getSleepRecordingState</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt">Bool</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The Polar device ID or BT address</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Single Bool value indicating if sleep recording is ongoing</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0A8SleepApiP07observeD14RecordingState10identifier7RxSwift10ObservableCySaySbGGSS_tF"></a>
+                    <a name="//apple_ref/swift/Method/observeSleepRecordingState(identifier:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A8SleepApiP07observeD14RecordingState10identifier7RxSwift10ObservableCySaySbGGSS_tF">observeSleepRecordingState(identifier:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Observe sleep recording state</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">observeSleepRecordingState</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="p">[</span><span class="kt">Bool</span><span class="p">]</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The Polar device ID or BT address</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Observable of Bool value indicating if sleep recording is ongoing</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0A8SleepApiP04stopD9Recording10identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF"></a>
+                    <a name="//apple_ref/swift/Method/stopSleepRecording(identifier:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A8SleepApiP04stopD9Recording10identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF">stopSleepRecording(identifier:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Stop sleep recording</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">stopSleepRecording</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The Polar device ID or BT address</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Completable stream
+
+<ul>
+<li>success: when sleep recording has been stopped</li>
+<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:11PolarBleSdk0A8SleepApiP03getD4Data10identifier8fromDate02toJ07RxSwift17PrimitiveSequenceVyAH11SingleTraitOSayAA0adG0C0aD14AnalysisResultVGGSS_10Foundation0J0VAUtF"></a>
                     <a name="//apple_ref/swift/Method/getSleepData(identifier:fromDate:toDate:)" class="dashAnchor"></a>
                     <a class="token" href="#/s:11PolarBleSdk0A8SleepApiP03getD4Data10identifier8fromDate02toJ07RxSwift17PrimitiveSequenceVyAH11SingleTraitOSayAA0adG0C0aD14AnalysisResultVGGSS_10Foundation0J0VAUtF">getSleepData(identifier:<wbr>fromDate:<wbr>toDate:<wbr>)</a>
@@ -433,7 +612,7 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-01-15)</p>
+          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-01-30)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

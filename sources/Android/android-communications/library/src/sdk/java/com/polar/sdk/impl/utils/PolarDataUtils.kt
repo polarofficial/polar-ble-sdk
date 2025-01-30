@@ -6,8 +6,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.*
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.errors.PolarBleSdkInternalException
 import com.polar.sdk.api.model.*
-import java.util.*
-import kotlin.math.roundToInt
+import java.util.Collections
 
 internal object PolarDataUtils {
     private const val TAG = "PolarDataUtils"
@@ -287,6 +286,14 @@ internal object PolarDataUtils {
     fun mapPmdClientTemperatureDataToPolarTemperature(temperatureData: TemperatureData): PolarTemperatureData {
         val samples: MutableList<PolarTemperatureData.PolarTemperatureDataSample> = mutableListOf()
         for ((timeStamp, temperature) in temperatureData.temperatureSamples) {
+            samples.add(PolarTemperatureData.PolarTemperatureDataSample(timeStamp.toLong(), temperature))
+        }
+        return PolarTemperatureData(samples)
+    }
+
+    fun mapPmdClientSkinTemperatureDataToPolarTemperatureData(skinTemperatureData: SkinTemperatureData): PolarTemperatureData {
+        val samples: MutableList<PolarTemperatureData.PolarTemperatureDataSample> = mutableListOf()
+        for ((timeStamp, temperature) in skinTemperatureData.skinTemperatureSamples) {
             samples.add(PolarTemperatureData.PolarTemperatureDataSample(timeStamp.toLong(), temperature))
         }
         return PolarTemperatureData(samples)

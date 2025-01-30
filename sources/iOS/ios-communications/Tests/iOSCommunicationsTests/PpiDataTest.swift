@@ -50,7 +50,7 @@ final class PpiDataTest: XCTestCase {
         
         let dataFrame = try PmdDataFrame(
             data: ppiDataFrameHeader + ppiDataFrameContent,
-            { _ in previousTimeStamp }  ,
+            { _,_ in previousTimeStamp }  ,
             { _ in 1.0 },
             { _ in 0 })
         

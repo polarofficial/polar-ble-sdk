@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option java_package = "com.polar.services.datamodels.protobuf";
+option java_outer_classname = "Types";
+
+enum TemperatureMeasurementType {
+  TM_UNKNOWN = 0;
+  TM_SKIN_TEMPERATURE = 1;
+  TM_CORE_TEMPERATURE = 2;
+}
+
+enum SensorLocation {
+  SL_UNKNOWN = 0;
+  SL_DISTAL = 1; // Distal from core
+  SL_PROXIMAL = 2; // Proximal from core
+};

@@ -14,7 +14,7 @@ struct PmdDataFrame {
     private static let DELTA_FRAME_BIT_MASK: UInt8 = 0x80
     
     init(data: Data,
-         _ getPreviousTimeStamp: (PmdMeasurementType) -> UInt64,
+         _ getPreviousTimeStamp: (PmdMeasurementType, PmdDataFrameType) -> UInt64,
          _ getFactor: (PmdMeasurementType) -> Float,
          _ getSampleRate: (PmdMeasurementType) -> UInt) throws {
         
@@ -29,7 +29,7 @@ struct PmdDataFrame {
         isCompressedFrame = PmdDataFrame.isCompressedFrame(byte: frameTypeByte)
         dataContent = data.subdata(in: 10..<data.count)
         
-        previousTimeStamp = getPreviousTimeStamp(measurementType)
+        previousTimeStamp = getPreviousTimeStamp(measurementType, frameType)
         factor = getFactor(measurementType)
         sampleRate = getSampleRate(measurementType)
     }
@@ -51,6 +51,7 @@ enum PmdDataFrameType: UInt8, CaseIterable {
     case type_7 = 7
     case type_8 = 8
     case type_9 = 9
+    case type_10 = 10
     
     private static let DATA_FRAME_BIT_MASK: UInt8 = 0x7F
     

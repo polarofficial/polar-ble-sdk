@@ -34,7 +34,7 @@ final class OfflineHrDataTest: XCTestCase {
         let factor:Float = 1.0
         let dataFrame = try PmdDataFrame(
             data: offlineHrDataFrameHeader + offlineHrDataFrameContent,
-            { _ in previousTimeStamp },
+            { _,_ in previousTimeStamp },
             { _ in factor },
             { _ in 0 })
         
@@ -66,7 +66,7 @@ final class OfflineHrDataTest: XCTestCase {
         // Act
         let dataFrame = try PmdDataFrame(
             data: offlineHrDataFrameHeader,
-            { _ in previousTimeStamp },
+            { _,_ in previousTimeStamp },
             { _ in factor },
             { _ in 0 })
 
@@ -114,7 +114,7 @@ final class OfflineHrDataTest: XCTestCase {
         let factor:Float = 1.0
         let dataFrame = try PmdDataFrame(
             data: offlineHrDataFrameHeader + offlineHrDataFrameContent,
-            { _ in previousTimeStamp },
+            { _,_ in previousTimeStamp },
             { _ in factor },
             { _ in 0 })
 
@@ -149,7 +149,7 @@ final class OfflineHrDataTest: XCTestCase {
         // Act
         let dataFrame = try PmdDataFrame(
             data: offlineHrDataFrameHeader,
-            { _ in previousTimeStamp },
+            { _,_ in previousTimeStamp },
             { _ in factor },
             { _ in 0 })
 

@@ -1,8 +1,15 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
+import androidx.test.espresso.matcher.ViewMatchers.assertThat
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
+import org.hamcrest.Matchers.equalTo
 import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertThrows
 import org.junit.Test
+import org.junit.function.ThrowingRunnable
 
 class PpgDataTest {
     @Test
@@ -42,9 +49,9 @@ class PpgDataTest {
         val factor = 1.0f
         val dataFrame = PmdDataFrame(
             data = ppgDataFrameHeader + ppgDataFrameContent,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { factor },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { factor }
+        ) { 0 }
 
         // Act
         val ppgData = PpgData.parseDataFromDataFrame(dataFrame)
@@ -118,9 +125,9 @@ class PpgDataTest {
         val factor = 1.0f
         val dataFrame = PmdDataFrame(
             data = ppgDataFrameHeader + ppgDataFrameContent,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { factor },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { factor }
+        ) { 0 }
 
 
         // Act
@@ -176,9 +183,9 @@ class PpgDataTest {
         val factor = 1.0f
         val dataFrame = PmdDataFrame(
             data = ppgDataFrameHeader + ppgDataFrameContent,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { factor },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { factor }
+        ) { 0 }
 
         // Act
         val ppgData = PpgData.parseDataFromDataFrame(dataFrame)
@@ -244,9 +251,9 @@ class PpgDataTest {
         val factor = 1.0f
         val dataFrame = PmdDataFrame(
             data = ppgDataFrameHeader + ppgDataFrameContent,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { factor },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { factor }
+        ) { 0 }
 
         // Act
         val ppgData = PpgData.parseDataFromDataFrame(dataFrame)
@@ -350,9 +357,9 @@ class PpgDataTest {
         val factor = 1.0f
         val dataFrame = PmdDataFrame(
             data = ppgDataFrameHeader + ppgDataFrameContent,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { factor },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { factor }
+        ) { 0 }
 
         // Act
         val ppgData = PpgData.parseDataFromDataFrame(dataFrame)
@@ -452,9 +459,9 @@ class PpgDataTest {
 
         val dataFrame = PmdDataFrame(
             data = ppgDataFrameHeader + ppgDataFrameContent,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { factor },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { factor }
+        ) { 0 }
 
         // Act
         val ppgData = PpgData.parseDataFromDataFrame(dataFrame)
@@ -554,9 +561,9 @@ class PpgDataTest {
         val factor = 1.0f
         val dataFrame = PmdDataFrame(
             data = ppgDataFrameHeader + ppgDataFrameContent,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { factor },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { factor }
+        ) { 0 }
 
         // Act
         val ppgData = PpgData.parseDataFromDataFrame(dataFrame)
@@ -574,5 +581,146 @@ class PpgDataTest {
 
         Assert.assertEquals(timeStamp, ppgData.timeStamp)
         Assert.assertEquals(timeStamp, (ppgData.ppgSamples.last() as PpgData.PpgDataFrameType8).timeStamp)
+    }
+
+    @Test
+    fun `test compressed PPG frame type 10`() {
+
+        // Expected first sample values
+        val expectedGreenSamples =
+            intArrayOf(1575733, 1957739, 1740229, 1761644, 1807181, 1489480, 1577122, 1822779).toList()
+        val expectedRedSamples = intArrayOf(1973554, 1752419, 1569544, 1126395, 256, 1312672).toList()
+        val expectedIrSamples = intArrayOf(1671106, 2230896, 1670551, 2230476, 1312672, -5901481).toList()
+        val expectedStatus = 249855
+        val expectedTimeStamp = 112524943566143712uL
+
+        // Frame data with timestamps, frame type data etc.
+        val ppgDataFrameContent = byteArrayOf(
+            0x01.toByte(), 0xC0.toByte(), 0x6E.toByte(), 0x6A.toByte(), 0x43.toByte(), 0xE1.toByte(),
+            0x61.toByte(), 0xEE.toByte(), 0x0A.toByte(), 0x8A.toByte(), 0x35.toByte(), 0x0B.toByte(),
+            0x18.toByte(), 0x6B.toByte(), 0xDF.toByte(), 0x1D.toByte(), 0xC5.toByte(), 0x8D.toByte(),
+            0x1A.toByte(), 0x6C.toByte(), 0xE1.toByte(), 0x1A.toByte(), 0x4D.toByte(), 0x93.toByte(),
+            0x1B.toByte(), 0x48.toByte(), 0xBA.toByte(), 0x16.toByte(), 0xA2.toByte(), 0x10.toByte(),
+            0x18.toByte(), 0x3B.toByte(), 0xD0.toByte(), 0x1B.toByte(), 0x32.toByte(), 0x1D.toByte(),
+            0x1E.toByte(), 0x63.toByte(), 0xBD.toByte(), 0x1A.toByte(), 0x08.toByte(), 0xF3.toByte(),
+            0x17.toByte(), 0xFB.toByte(), 0x2F.toByte(), 0x11.toByte(), 0x00.toByte(), 0x01.toByte(),
+            0x00.toByte(), 0xA0.toByte(), 0x07.toByte(), 0x14.toByte(), 0xC2.toByte(), 0x7F.toByte(),
+            0x19.toByte(), 0x70.toByte(), 0x0A.toByte(), 0x22.toByte(), 0x97.toByte(), 0x7D.toByte(),
+            0x19.toByte(), 0xCC.toByte(), 0x08.toByte(), 0x22.toByte(), 0xA0.toByte(), 0x07.toByte(),
+            0x14.toByte(), 0x57.toByte(), 0xF3.toByte(), 0xA5.toByte(), 0xFF.toByte(), 0xCF.toByte(),
+            0x03.toByte(), 0x18.toByte(), 0x06.toByte(), 0x52.toByte(), 0xB3.toByte(), 0xFF.toByte(),
+            0x8E.toByte(), 0xF9.toByte(), 0xFF.toByte(), 0xAE.toByte(), 0xEF.toByte(), 0xFF.toByte(),
+            0x5F.toByte(), 0xFB.toByte(), 0xFF.toByte(), 0xB1.toByte(), 0xA6.toByte(), 0xFF.toByte(),
+            0x75.toByte(), 0xF8.toByte(), 0xFF.toByte(), 0xA7.toByte(), 0xF0.toByte(), 0xFF.toByte(),
+            0x32.toByte(), 0xF1.toByte(), 0xFF.toByte(), 0xB8.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x1E.toByte(), 0x00.toByte(), 0x00.toByte(), 0x97.toByte(), 0x02.toByte(), 0x00.toByte(),
+            0x08.toByte(), 0xFE.toByte(), 0xFF.toByte(), 0x00.toByte(), 0xFF.toByte(), 0xFF.toByte(),
+            0x60.toByte(), 0xF8.toByte(), 0xEB.toByte(), 0x8E.toByte(), 0x07.toByte(), 0x00.toByte(),
+            0x8A.toByte(), 0x00.toByte(), 0x00.toByte(), 0xAE.toByte(), 0x08.toByte(), 0x00.toByte(),
+            0x97.toByte(), 0x00.toByte(), 0x00.toByte(), 0x60.toByte(), 0xF8.toByte(), 0xEB.toByte(),
+            0x32.toByte(), 0x8A.toByte(), 0xFD.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x4B.toByte(), 0x2A.toByte(), 0xFF.toByte(), 0xA7.toByte(), 0x04.toByte(), 0x00.toByte(),
+            0xBC.toByte(), 0x0F.toByte(), 0x00.toByte(), 0xD0.toByte(), 0xFE.toByte(), 0xFF.toByte(),
+            0x64.toByte(), 0xF5.toByte(), 0xFE.toByte(), 0x94.toByte(), 0xE8.toByte(), 0xFF.toByte(),
+            0x5E.toByte(), 0x07.toByte(), 0x00.toByte(), 0x2F.toByte(), 0x17.toByte(), 0x00.toByte(),
+            0x34.toByte(), 0x27.toByte(), 0x00.toByte(), 0xE7.toByte(), 0x11.toByte(), 0x00.toByte(),
+            0x7B.toByte(), 0x08.toByte(), 0x00.toByte(), 0x2C.toByte(), 0x03.toByte(), 0x00.toByte(),
+            0x00.toByte(), 0x01.toByte(), 0x00.toByte(), 0xA0.toByte(), 0x07.toByte(), 0x14.toByte(),
+            0x09.toByte(), 0x3C.toByte(), 0x00.toByte(), 0xD0.toByte(), 0x86.toByte(), 0x00.toByte(),
+            0xCE.toByte(), 0x3B.toByte(), 0x00.toByte(), 0xCA.toByte(), 0x86.toByte(), 0x00.toByte(),
+            0xA0.toByte(), 0x07.toByte(), 0x14.toByte(), 0xCE.toByte(), 0x75.toByte(), 0x02.toByte(),
+            0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0xF0.toByte(), 0xA4.toByte(), 0xFF.toByte(),
+            0xAA.toByte(), 0x08.toByte(), 0x00.toByte(), 0x45.toByte(), 0x19.toByte(), 0x00.toByte(),
+            0x8B.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0x9A.toByte(), 0x8B.toByte(), 0xFF.toByte(),
+            0x65.toByte(), 0xF4.toByte(), 0xFF.toByte(), 0x92.toByte(), 0x11.toByte(), 0x00.toByte(),
+            0x40.toByte(), 0x20.toByte(), 0x00.toByte(), 0xC5.toByte(), 0x23.toByte(), 0x00.toByte(),
+            0x8E.toByte(), 0x0F.toByte(), 0x00.toByte(), 0x01.toByte(), 0x06.toByte(), 0x00.toByte(),
+            0x6F.toByte(), 0x05.toByte(), 0x00.toByte(), 0xD4.toByte(), 0x02.toByte(), 0x19.toByte(),
+            0xB8.toByte(), 0x2D.toByte(), 0x38.toByte(), 0xBF.toByte(), 0x2D.toByte(), 0x00.toByte(),
+            0x2C.toByte(), 0x78.toByte(), 0x00.toByte(), 0x23.toByte(), 0x2E.toByte(), 0x00.toByte(),
+            0xA3.toByte(), 0x77.toByte(), 0x00.toByte(), 0x6C.toByte(), 0xCA.toByte(), 0xB5.toByte(),
+            0x32.toByte(), 0x8A.toByte(), 0xFD.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0xDE.toByte(), 0xF1.toByte(), 0xFF.toByte(), 0x24.toByte(), 0x06.toByte(), 0x00.toByte(),
+            0x2B.toByte(), 0x12.toByte(), 0x00.toByte(), 0x78.toByte(), 0xFE.toByte(), 0xFF.toByte(),
+            0x89.toByte(), 0xE9.toByte(), 0xFF.toByte(), 0x08.toByte(), 0xFD.toByte(), 0xFF.toByte(),
+            0x31.toByte(), 0x0B.toByte(), 0x00.toByte(), 0x49.toByte(), 0x0F.toByte(), 0x00.toByte(),
+            0xE2.toByte(), 0x06.toByte(), 0x00.toByte(), 0x3C.toByte(), 0x04.toByte(), 0x00.toByte(),
+            0x50.toByte(), 0x02.toByte(), 0x00.toByte(), 0x53.toByte(), 0x01.toByte(), 0x00.toByte(),
+            0x2C.toByte(), 0xFD.toByte(), 0xE6.toByte(), 0x48.toByte(), 0xD2.toByte(), 0xC7.toByte(),
+            0x2E.toByte(), 0x0C.toByte(), 0x00.toByte(), 0x11.toByte(), 0x1C.toByte(), 0x00.toByte(),
+            0x0F.toByte(), 0x0D.toByte(), 0x00.toByte(), 0x2E.toByte(), 0x1C.toByte(), 0x00.toByte(),
+            0x94.toByte(), 0x35.toByte(), 0x4A.toByte(), 0xCE.toByte(), 0x75.toByte(), 0x02.toByte(),
+            0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x9C.toByte(), 0x06.toByte(), 0x00.toByte(),
+            0x33.toByte(), 0x04.toByte(), 0x00.toByte(), 0x5F.toByte(), 0x06.toByte(), 0x00.toByte(),
+            0xE1.toByte(), 0xFB.toByte(), 0xFF.toByte(), 0x15.toByte(), 0x06.toByte(), 0x00.toByte(),
+            0xB9.toByte(), 0x00.toByte(), 0x00.toByte(), 0x1C.toByte(), 0x06.toByte(), 0x00.toByte(),
+            0xCE.toByte(), 0x01.toByte(), 0x00.toByte(), 0x6F.toByte(), 0xFC.toByte(), 0xFF.toByte(),
+            0xCD.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0xD1.toByte(), 0x01.toByte(), 0x00.toByte(),
+            0x6A.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0xD4.toByte(), 0x02.toByte(), 0x19.toByte(),
+            0xB8.toByte(), 0x2D.toByte(), 0x38.toByte(), 0x68.toByte(), 0xFE.toByte(), 0xFF.toByte(),
+            0xB5.toByte(), 0xF6.toByte(), 0xFF.toByte(), 0xD8.toByte(), 0xFD.toByte(), 0xFF.toByte(),
+            0xA6.toByte(), 0xF6.toByte(), 0xFF.toByte(), 0x6C.toByte(), 0xCA.toByte(), 0xB5.toByte(),
+            0x32.toByte(), 0x8A.toByte(), 0xFD.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x6E.toByte(), 0xDC.toByte(), 0xFF.toByte(), 0xC7.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x0F.toByte(), 0x06.toByte(), 0x00.toByte(), 0xC5.toByte(), 0xF8.toByte(), 0xFF.toByte(),
+            0x9F.toByte(), 0xDE.toByte(), 0xFF.toByte(), 0xE7.toByte(), 0xFB.toByte(), 0xFF.toByte(),
+            0x0E.toByte(), 0xFE.toByte(), 0xFF.toByte(), 0x61.toByte(), 0xF9.toByte(), 0xFF.toByte(),
+            0x9D.toByte(), 0x04.toByte(), 0x00.toByte(), 0xB8.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x7E.toByte(), 0x02.toByte(), 0x00.toByte(), 0x67.toByte(), 0x01.toByte(), 0x00.toByte(),
+            0x2C.toByte(), 0xFD.toByte(), 0xE6.toByte(), 0x48.toByte(), 0xD2.toByte(), 0xC7.toByte(),
+            0x7E.toByte(), 0x07.toByte(), 0x00.toByte(), 0xF5.toByte(), 0x0E.toByte(), 0x00.toByte(),
+            0x14.toByte(), 0x07.toByte(), 0x00.toByte(), 0xF1.toByte(), 0x0E.toByte(), 0x00.toByte(),
+            0x94.toByte(), 0x35.toByte(), 0x4A.toByte(), 0xCE.toByte(), 0x75.toByte(), 0x02.toByte(),
+            0x00.toByte(), 0x00.toByte(), 0x00.toByte())
+
+        val dataFrame = PmdDataFrame(
+            data = ppgDataFrameContent,
+            getPreviousTimeStamp = {  pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> 1000uL },
+            getFactor = { 1.0f }
+        ) { 13 }
+
+        val ppgData = PpgData.parseDataFromDataFrame(dataFrame)
+
+        assertNotNull(ppgData)
+        assertEquals(expectedStatus, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType10).status)
+        assertEquals(7, ppgData.ppgSamples.size)
+        assertEquals(expectedTimeStamp, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType10).timeStamp)
+
+        var index = 0
+        for (value in (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType10).redSamples) {
+            val expected = expectedRedSamples[index++]
+            assertEquals(expected, value)
+        }
+        index = 0
+        for (value in (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType10).greenSamples) {
+            val expected = expectedGreenSamples[index++]
+            assertEquals(expected, value)
+        }
+        index = 0
+        for (value in (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType10).irSamples) {
+            val expected = expectedIrSamples[index++]
+            assertEquals(expected, value)
+        }
+    }
+
+    @Test
+    fun `test uncompressed PPG frame type 10 throws error`() {
+
+        // 10th value (0x0A) (decimal 10) results false for check compressed mask (0x80, decimal 128 )
+        val ppgDataFrameContent = byteArrayOf(
+            0x01.toByte(), 0xC0.toByte(), 0x6E.toByte(), 0x6A.toByte(), 0x43.toByte(), 0xE1.toByte(),
+            0x61.toByte(), 0xEE.toByte(), 0x0A.toByte(), 0x0A.toByte(), 0x35.toByte(), 0x0B.toByte(),
+            0x18.toByte(), 0x6B.toByte(), 0xDF.toByte(), 0x1D.toByte(), 0xC5.toByte(), 0x8D.toByte(),
+            0x1A.toByte(), 0x6C.toByte(), 0xE1.toByte(), 0x1A.toByte(), 0x4D.toByte(), 0x93.toByte()
+        )
+        val dataFrame = PmdDataFrame(
+            data = ppgDataFrameContent,
+            getPreviousTimeStamp = {  pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> 1000uL },
+            getFactor = { 1.0f }
+        ) { 13 }
+
+        var throwingRunnable = ThrowingRunnable { PpgData.parseDataFromDataFrame(dataFrame) }
+        val exception = assertThrows(java.lang.Exception::class.java, throwingRunnable)
+        assertThat(exception.message, equalTo("Raw FrameType: TYPE_10 is not supported by PPG data parser"))
     }
 }

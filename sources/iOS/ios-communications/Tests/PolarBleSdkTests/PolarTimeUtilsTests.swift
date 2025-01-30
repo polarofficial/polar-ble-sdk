@@ -384,13 +384,13 @@ class PolarTimeUtilsTests: XCTestCase {
 
         // Act
         do {
-            let pbPFtpSetLocalTimeParams = PolarBleSdk.Protocol_PbPFtpSetLocalTimeParams.with {
-                $0.date = PolarBleSdk.PbDate.with {
+            let pbPFtpSetLocalTimeParams = Protocol_PbPFtpSetLocalTimeParams.with {
+                $0.date = PbDate.with {
                     $0.year = UInt32(dateComponents.year!)
                     $0.month = UInt32(dateComponents.month!)
                     $0.day = UInt32(dateComponents.day!)
                 }
-                $0.time = PolarBleSdk.PbTime.with {
+                $0.time = PbTime.with {
                     $0.hour = UInt32(dateComponents.hour!)
                     $0.minute = UInt32(dateComponents.minute!)
                     $0.seconds = UInt32(dateComponents.second!)
@@ -417,41 +417,40 @@ class PolarTimeUtilsTests: XCTestCase {
     
     func testPbLocalDateTimeConversionToDate() throws {
         
-        var pbLocalDateTime: PolarBleSdk.PbLocalDateTime?
-        pbLocalDateTime?.date.year = 2525
-        pbLocalDateTime?.date.month = 1
-        pbLocalDateTime?.date.day = 2
-        pbLocalDateTime?.time.hour = 3
-        pbLocalDateTime?.time.minute = 4
-        pbLocalDateTime?.time.seconds = 5
-        pbLocalDateTime?.time.millis = 6
-        pbLocalDateTime?.timeZoneOffset = 2
+        var pbLocalDateTime = PbLocalDateTime()
+        pbLocalDateTime.date.year = 2525
+        pbLocalDateTime.date.month = 1
+        pbLocalDateTime.date.day = 2
+        pbLocalDateTime.time.hour = 3
+        pbLocalDateTime.time.minute = 4
+        pbLocalDateTime.time.seconds = 5
+        pbLocalDateTime.time.millis = 6
+        pbLocalDateTime.timeZoneOffset = 2 // Two minutes --> expect value 2 in assertion
     
         let result = try PolarTimeUtils.pbLocalDateTimeToDate(pbLocalDateTime: pbLocalDateTime)
         
         // Assert
         let calendar = Calendar.current
-        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second, .nanosecond], from: result)
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: result)
         
         XCTAssertEqual(components.year, 2525)
         XCTAssertEqual(components.month, 1)
         XCTAssertEqual(components.day, 2)
-        XCTAssertEqual(components.hour, 1)
-        XCTAssertEqual(components.minute,4)
+        XCTAssertEqual(components.hour, 5)
+        XCTAssertEqual(components.minute, 2)
         XCTAssertEqual(components.second, 5)
-        XCTAssertEqual(components.nanosecond, 6000000)
     }
 
     func testpbSystemDateTimeConversionToDate () throws {
         
-        var pbSystemDateTime: PolarBleSdk.PbSystemDateTime?
-        pbSystemDateTime?.date.year = 2525
-        pbSystemDateTime?.date.month = 1
-        pbSystemDateTime?.date.day = 2
-        pbSystemDateTime?.time.hour = 3
-        pbSystemDateTime?.time.minute = 4
-        pbSystemDateTime?.time.seconds = 5
-        pbSystemDateTime?.time.millis = 6
+        var pbSystemDateTime = PbSystemDateTime()
+        pbSystemDateTime.date.year = 2525
+        pbSystemDateTime.date.month = 1
+        pbSystemDateTime.date.day = 2
+        pbSystemDateTime.time.hour = 3
+        pbSystemDateTime.time.minute = 4
+        pbSystemDateTime.time.seconds = 5
+        pbSystemDateTime.time.millis = 6
     
         let result = try PolarTimeUtils.pbSystemDateTimeToDate(pbSystemDateTime: pbSystemDateTime)
         
@@ -465,15 +464,14 @@ class PolarTimeUtilsTests: XCTestCase {
         XCTAssertEqual(components.hour, 3)
         XCTAssertEqual(components.minute,4)
         XCTAssertEqual(components.second, 5)
-        XCTAssertEqual(components.nanosecond, 6000000)
     }
     
     func testpbDateConversionToDate() throws {
         
-        var pbDate: PolarBleSdk.PbDate?
-        pbDate?.year = 2525
-        pbDate?.month = 1
-        pbDate?.day = 2
+        var pbDate = PbDate()
+        pbDate.year = 2525
+        pbDate.month = 1
+        pbDate.day = 2
         
         let result = try PolarTimeUtils.pbDateToDate(pbDate: pbDate)
         

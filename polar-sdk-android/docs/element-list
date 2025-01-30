@@ -26,6 +26,7 @@ $dokka.location:com.polar.sdk.api.model/PolarOfflineRecordingData.HrOfflineRecor
 $dokka.location:com.polar.sdk.api.model/PolarOfflineRecordingData.MagOfflineRecording///PointingToDeclaration/com/polar/sdk/api/model/PolarOfflineRecordingData.MagOfflineRecording.html
 $dokka.location:com.polar.sdk.api.model/PolarOfflineRecordingData.PpgOfflineRecording///PointingToDeclaration/com/polar/sdk/api/model/PolarOfflineRecordingData.PpgOfflineRecording.html
 $dokka.location:com.polar.sdk.api.model/PolarOfflineRecordingData.PpiOfflineRecording///PointingToDeclaration/com/polar/sdk/api/model/PolarOfflineRecordingData.PpiOfflineRecording.html
+$dokka.location:com.polar.sdk.api.model/PolarOfflineRecordingData.SkinTemperatureOfflineRecording///PointingToDeclaration/com/polar/sdk/api/model/PolarOfflineRecordingData.SkinTemperatureOfflineRecording.html
 $dokka.location:com.polar.sdk.api.model/PolarOfflineRecordingData.TemperatureOfflineRecording///PointingToDeclaration/com/polar/sdk/api/model/PolarOfflineRecordingData.TemperatureOfflineRecording.html
 $dokka.location:com.polar.sdk.api.model/PolarOhrData.OhrDataType///PointingToDeclaration/com/polar/sdk/api/model/PolarOhrData.OhrDataType.html
 $dokka.location:com.polar.sdk.api.model/PolarOhrData.PolarOhrSample///PointingToDeclaration/com/polar/sdk/api/model/PolarOhrData.PolarOhrSample.html
@@ -33,10 +34,14 @@ $dokka.location:com.polar.sdk.api.model/PolarOhrPPIData.PolarOhrPPISample///Poin
 $dokka.location:com.polar.sdk.api.model/PolarPpgData.PolarPpgSample///PointingToDeclaration/com/polar/sdk/api/model/PolarPpgData.PolarPpgSample.html
 $dokka.location:com.polar.sdk.api.model/PolarPpgData.PpgDataType///PointingToDeclaration/com/polar/sdk/api/model/PolarPpgData.PpgDataType.html
 $dokka.location:com.polar.sdk.api.model/PolarPpiData.PolarPpiSample///PointingToDeclaration/com/polar/sdk/api/model/PolarPpiData.PolarPpiSample.html
+$dokka.location:com.polar.sdk.api.model/PolarSensorSetting.SensorLocation///PointingToDeclaration/com/polar/sdk/api/model/PolarSensorSetting.SensorLocation.html
 $dokka.location:com.polar.sdk.api.model/PolarSensorSetting.SettingType///PointingToDeclaration/com/polar/sdk/api/model/PolarSensorSetting.SettingType.html
+$dokka.location:com.polar.sdk.api.model/PolarSensorSetting.TemperatureMeasurementType///PointingToDeclaration/com/polar/sdk/api/model/PolarSensorSetting.TemperatureMeasurementType.html
 $dokka.location:com.polar.sdk.api.model/PolarTemperatureData.PolarTemperatureDataSample///PointingToDeclaration/com/polar/sdk/api/model/PolarTemperatureData.PolarTemperatureDataSample.html
 $dokka.location:com.polar.sdk.api.model/PolarUserDeviceSettings.Companion///PointingToDeclaration/com/polar/sdk/api/model/PolarUserDeviceSettings.Companion.html
 $dokka.location:com.polar.sdk.api.model/PolarUserDeviceSettings.DeviceLocation///PointingToDeclaration/com/polar/sdk/api/model/PolarUserDeviceSettings.DeviceLocation.html
+$dokka.location:com.polar.sdk.api.model/SkinTemperatureMeasurementType.Companion///PointingToDeclaration/com/polar/sdk/api/model/SkinTemperatureMeasurementType.Companion.html
+$dokka.location:com.polar.sdk.api.model/SkinTemperatureSensorLocation.Companion///PointingToDeclaration/com/polar/sdk/api/model/SkinTemperatureSensorLocation.Companion.html
 $dokka.location:com.polar.sdk.api.model/UserIdentifierType.Companion///PointingToDeclaration/com/polar/sdk/api/model/UserIdentifierType.Companion.html
 $dokka.location:com.polar.sdk.api/PolarBleApi.PolarActivityDataType///PointingToDeclaration/com/polar/sdk/api/PolarBleApi.PolarActivityDataType.html
 $dokka.location:com.polar.sdk.api/PolarBleApi.PolarBleApiLogger///PointingToDeclaration/com/polar/sdk/api/PolarBleApi.PolarBleApiLogger.html
@@ -53,4 +58,5 @@ com.polar.sdk.api.model.activity
 com.polar.sdk.api.model.sleep
 com.polar.sdk.impl
 com.polar.sdk.impl.utils
+java.com.polar.sdk.api
 

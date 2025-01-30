@@ -31,7 +31,7 @@ final class EcgDataTest: XCTestCase {
         let factor:Float = 1.0
         let dataFrame = try PmdDataFrame(
             data:  ecgDataFrameHeader + ecgDataFrameContent,
-            { _ in previousTimeStamp }  ,
+            { _,_ in previousTimeStamp }  ,
             { _ in factor },
             { _ in 0 })
         

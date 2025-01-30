@@ -50,7 +50,7 @@ open class BlePolarDeviceCapabilitiesUtility {
     /// - Returns: true if device firmware update
     public static func isFirmwareUpdateSupported(_ deviceType: String) -> Bool {
         let lowercasedDeviceType = deviceType.lowercased()
-        return lowercasedDeviceType != H10 && lowercasedDeviceType != OH1
+        return lowercasedDeviceType != OH1
     }
 
     /// Check if device is supporting activity data

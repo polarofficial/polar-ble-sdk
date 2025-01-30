@@ -45,7 +45,11 @@ class PolarBackupManager(private val client: BlePsFtpClient) {
      * @return Single emitting the list of backed up file data.
      */
     fun backupDevice(): Single<List<BackupFileData>> {
+        BleLogger.d(TAG, "Backing up device")
+
         return Single.fromCallable {
+            BleLogger.d(TAG, "Requesting backup content")
+
             val builder = PftpRequest.PbPFtpOperation.newBuilder()
             builder.command = PftpRequest.PbPFtpOperation.Command.GET
             builder.path = ARABICA_SYS_FOLDER

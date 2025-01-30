@@ -7,6 +7,7 @@ enum class PmdMeasurementType(val numVal: UByte) {
     PPI(3u),
     GYRO(5u),
     MAGNETOMETER(6u),
+    SKIN_TEMP(7u),
     SDK_MODE(9u),
     LOCATION(10u),
     PRESSURE(11u),
@@ -38,6 +39,7 @@ enum class PmdMeasurementType(val numVal: UByte) {
         }
 
         fun fromByteArray(data: ByteArray): Set<PmdMeasurementType> {
+
             val measurementTypes: MutableSet<PmdMeasurementType> = mutableSetOf()
             if ((data[1].toUInt() and 0x01u) != 0u) measurementTypes.add(ECG)
             if ((data[1].toUInt() and 0x02u) != 0u) measurementTypes.add(PPG)
@@ -45,10 +47,11 @@ enum class PmdMeasurementType(val numVal: UByte) {
             if ((data[1].toUInt() and 0x08u) != 0u) measurementTypes.add(PPI)
             if ((data[1].toUInt() and 0x20u) != 0u) measurementTypes.add(GYRO)
             if ((data[1].toUInt() and 0x40u) != 0u) measurementTypes.add(MAGNETOMETER)
+            if ((data[1].toUInt() and 0x80u) != 0u) measurementTypes.add(SKIN_TEMP)
+            if ((data[2].toUInt() and 0x02u) != 0u) measurementTypes.add(SDK_MODE)
             if ((data[2].toUInt() and 0x04u) != 0u) measurementTypes.add(LOCATION)
             if ((data[2].toUInt() and 0x08u) != 0u) measurementTypes.add(PRESSURE)
             if ((data[2].toUInt() and 0x10u) != 0u) measurementTypes.add(TEMPERATURE)
-            if ((data[2].toUInt() and 0x02u) != 0u) measurementTypes.add(SDK_MODE)
             if ((data[2].toUInt() and 0x20u) != 0u) measurementTypes.add(OFFLINE_RECORDING)
             if ((data[2].toUInt() and 0x40u) != 0u) measurementTypes.add(OFFLINE_HR)
             return measurementTypes

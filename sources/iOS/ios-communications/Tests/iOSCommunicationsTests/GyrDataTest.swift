@@ -51,7 +51,7 @@ final class GyrDataTest: XCTestCase {
         let factor:Float = 1.0
         let dataFrame = try PmdDataFrame(
             data: gyroDataFrameHeader + gyroDataFrameContent,
-            { _ in previousTimeStamp }  ,
+            { _,_ in previousTimeStamp }  ,
             { _ in factor },
             { _ in 0 })
         

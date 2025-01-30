@@ -1,8 +1,7 @@
 // Copyright © 2022 Polar Electro Oy. All rights reserved.
 package com.polar.sdk.api.model
 
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.TemperatureData
-import java.util.*
+import java.util.Calendar
 
 /**
  * Polar Offline recording data
@@ -198,4 +197,25 @@ sealed class PolarOfflineRecordingData(val startTime: Calendar, val settings: Po
         }
     }
 
+    /**
+     * Skin temperature offline recording data
+     *
+     * @property data skin temperature data
+     * @property startTime the time recording was started in UTC time
+     */
+    class SkinTemperatureOfflineRecording(val data: PolarTemperatureData, startTime: Calendar) :
+        PolarOfflineRecordingData(startTime, null) {
+        internal fun appendTemperatureData(
+            existingTemperatureData: TemperatureOfflineRecording,
+            newData: PolarTemperatureData
+        ): TemperatureOfflineRecording {
+            val mergedSamples = mutableListOf<PolarTemperatureData.PolarTemperatureDataSample>()
+            mergedSamples.addAll(existingTemperatureData.data.samples)
+            mergedSamples.addAll(newData.samples)
+            return TemperatureOfflineRecording(
+                PolarTemperatureData(mergedSamples),
+                startTime
+            )
+        }
+    }
 }

@@ -37,10 +37,11 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
     private val pressureObservers = AtomicSet<FlowableEmitter<in PressureData>>()
     private val locationObservers = AtomicSet<FlowableEmitter<in GnssLocationData>>()
     private val temperatureObservers = AtomicSet<FlowableEmitter<in TemperatureData>>()
+    private val skinTemperatureObservers = AtomicSet<FlowableEmitter<in SkinTemperatureData>>()
     private var pmdFeatureData: ByteArray? = null
     private val controlPointMutex = Object()
     private val mutexFeature = Object()
-    private val previousTimeStampMap: EnumMap<PmdMeasurementType, ULong> = EnumMap(PmdMeasurementType.values().associateWith { 0UL })
+    private var previousTimeStampMap = mutableMapOf<Pair<PmdMeasurementType,PmdDataFrame.PmdDataFrameType?>, ULong>()
 
     @VisibleForTesting
     val currentSettings: MutableMap<PmdMeasurementType, PmdSetting> = mutableMapOf()
@@ -64,7 +65,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
             pmdFeatureData = null
             mutexFeature.notifyAll()
         }
-        previousTimeStampMap.replaceAll { _, _ -> 0uL }
+        previousTimeStampMap = mutableMapOf()
     }
 
     private fun getFactor(type: PmdMeasurementType): Float {
@@ -81,8 +82,8 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
     }
 
     @VisibleForTesting
-    fun getPreviousFrameTimeStamp(type: PmdMeasurementType): ULong {
-        return previousTimeStampMap[type] ?: 0UL
+    fun getPreviousFrameTimeStamp(type: PmdMeasurementType, frameType: PmdDataFrame.PmdDataFrameType): ULong {
+        return previousTimeStampMap[Pair(type, frameType)] ?: 0UL
     }
 
     override fun processServiceData(characteristic: UUID, data: ByteArray, status: Int, notifying: Boolean) {
@@ -122,6 +123,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
                             PmdMeasurementType.LOCATION -> RxUtils.postError(locationObservers, BleOnlineStreamClosed(errorDescription))
                             PmdMeasurementType.PRESSURE -> RxUtils.postError(pressureObservers, BleOnlineStreamClosed(errorDescription))
                             PmdMeasurementType.TEMPERATURE -> RxUtils.postError(temperatureObservers, BleOnlineStreamClosed(errorDescription))
+                            PmdMeasurementType.SKIN_TEMP -> RxUtils.postError(skinTemperatureObservers, BleOnlineStreamClosed(errorDescription))
                             else -> {
                                 BleLogger.e(TAG, "PMD CP, not supported PmdMeasurementType for Measurement stop. Measurement type value $dataType ")
                             }
@@ -140,7 +142,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
     private fun processPmdData(data: ByteArray) {
         BleLogger.d_hex(TAG, "pmd data: ", data)
         val frame = PmdDataFrame(data, this::getPreviousFrameTimeStamp, this::getFactor, this::getSampleRate)
-        previousTimeStampMap[frame.measurementType] = frame.timeStamp
+        previousTimeStampMap[Pair(frame.measurementType, frame.frameType)] = frame.timeStamp
 
         when (frame.measurementType) {
             PmdMeasurementType.ECG -> {
@@ -203,6 +205,13 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
                 RxUtils.emitNext(temperatureObservers) { emitter: FlowableEmitter<in TemperatureData> ->
                     emitter.onNext(
                         TemperatureData.parseDataFromDataFrame(frame)
+                    )
+                }
+            }
+            PmdMeasurementType.SKIN_TEMP -> {
+                RxUtils.emitNext(skinTemperatureObservers) { emitter: FlowableEmitter<in SkinTemperatureData> ->
+                    emitter.onNext(
+                        SkinTemperatureData.parseDataFromDataFrame(frame)
                     )
                 }
             }
@@ -374,6 +383,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
                         PmdMeasurementType.LOCATION -> measurementStatus[PmdMeasurementType.LOCATION] = PmdActiveMeasurement.fromStatusResponse(parameter)
                         PmdMeasurementType.PRESSURE -> measurementStatus[PmdMeasurementType.PRESSURE] = PmdActiveMeasurement.fromStatusResponse(parameter)
                         PmdMeasurementType.TEMPERATURE -> measurementStatus[PmdMeasurementType.TEMPERATURE] = PmdActiveMeasurement.fromStatusResponse(parameter)
+                        PmdMeasurementType.SKIN_TEMP -> measurementStatus[PmdMeasurementType.SKIN_TEMP] = PmdActiveMeasurement.fromStatusResponse(parameter)
                         PmdMeasurementType.OFFLINE_HR -> measurementStatus[PmdMeasurementType.OFFLINE_HR] = PmdActiveMeasurement.fromStatusResponse(parameter)
                         else -> {}
                     }
@@ -509,7 +519,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
     fun stopMeasurement(type: PmdMeasurementType): Completable {
         return sendControlPointCommand(PmdControlPointCommandClientToService.STOP_MEASUREMENT, byteArrayOf(type.numVal.toByte()))
             .toObservable()
-            .doOnComplete { previousTimeStampMap[type] = 0UL }
+            .doOnComplete { previousTimeStampMap = mutableMapOf() }
             .ignoreElements()
     }
 
@@ -581,6 +591,10 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
         return RxUtils.monitorNotifications(temperatureObservers, txInterface, checkConnection)
     }
 
+    internal fun monitorSkinTemperatureNotifications(checkConnection: Boolean): Flowable<SkinTemperatureData> {
+        return RxUtils.monitorNotifications(skinTemperatureObservers, txInterface, checkConnection)
+    }
+
     override fun clientReady(checkConnection: Boolean): Completable {
         return Completable.concatArray(
             waitNotificationEnabled(PMD_CP, checkConnection),
@@ -598,6 +612,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
         RxUtils.postExceptionAndClearList(pressureObservers, throwable)
         RxUtils.postExceptionAndClearList(locationObservers, throwable)
         RxUtils.postExceptionAndClearList(temperatureObservers, throwable)
+        RxUtils.postExceptionAndClearList(skinTemperatureObservers, throwable)
     }
 
     companion object {
@@ -672,6 +687,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
             val samples: MutableList<List<Int>> = ArrayList(setOf(refSamples))
             BleUtils.validate(refSamples.size == channels, "incorrect number of ref channels")
             while (offset < value.size) {
+
                 val deltaSize: Int = value[offset++].toInt() and 0xFF
                 val sampleCount: Int = value[offset++].toInt() and 0xFF
                 val bitLength = sampleCount * deltaSize * channels

@@ -2,6 +2,7 @@ package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
 import androidx.test.espresso.matcher.ViewMatchers
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
 import com.polar.androidcommunications.testrules.BleLoggerTestRule
 import org.hamcrest.Matchers
 import org.junit.Assert
@@ -44,9 +45,9 @@ internal class OfflineHrDataTest {
 
         val dataFrame = PmdDataFrame(
             data = offlineHrDataFrameHeader + offlineHrDataFrameContent,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { 1.0f },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { 1.0f }
+        ) { 0 }
 
 
         // Act
@@ -76,9 +77,9 @@ internal class OfflineHrDataTest {
 
         val dataFrame = PmdDataFrame(
             data = offlineHrDataFrameHeader,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { 1.0f },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { 1.0f }
+        ) { 0 }
 
         var throwingRunnable = ThrowingRunnable { OfflineHrData.parseDataFromDataFrame(dataFrame) }
         val exception = Assert.assertThrows(Exception::class.java, throwingRunnable)
@@ -102,9 +103,9 @@ internal class OfflineHrDataTest {
 
         val dataFrame = PmdDataFrame(
             data = offlineHrDataFrameHeader + offlineHrDataFrameContent,
-            getPreviousTimeStamp = { 0uL },
-            getFactor = { 1.0f },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = {  pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> 0uL },
+            getFactor = { 1.0f }
+        ) { 0 }
 
         val offlineHrData = OfflineHrData.parseDataFromDataFrame(dataFrame)
 
@@ -128,9 +129,9 @@ internal class OfflineHrDataTest {
 
         val dataFrame = PmdDataFrame(
             data = offlineHrDataFrameHeader,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { 1.0f },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { 1.0f }
+        ) { 0 }
 
         var throwingRunnable = ThrowingRunnable { OfflineHrData.parseDataFromDataFrame(dataFrame) }
         val exception = Assert.assertThrows(Exception::class.java, throwingRunnable)

@@ -23,6 +23,8 @@ internal class PolarDataUtils {
             return PmdMeasurementType.offline_hr
         case .temperature:
             return PmdMeasurementType.temperature
+        case .skinTemperature:
+            return PmdMeasurementType.skinTemperature
         case .pressure:
             return PmdMeasurementType.pressure
         }
@@ -48,6 +50,8 @@ internal class PolarDataUtils {
             return PolarDeviceDataType.temperature
         case .pressure:
             return PolarDeviceDataType.pressure
+        case .skinTemperature:
+            return PolarDeviceDataType.skinTemperature
         default:
             throw PolarErrors.polarBleSdkInternalException(description: "Error when map measurement type \(pmdMeasurementType) to Polar feature" )
         }

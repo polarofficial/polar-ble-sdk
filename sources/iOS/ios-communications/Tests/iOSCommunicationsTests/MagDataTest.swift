@@ -49,7 +49,7 @@ final class MagDataTest: XCTestCase {
         let factor:Float = 1.0
         let dataFrame = try PmdDataFrame(
             data: magDataFrameHeader + magDataFrameContent,
-            { _ in previousTimeStamp }  ,
+            { _,_ in previousTimeStamp },
             { _ in factor },
             { _ in 0 })
         
@@ -118,7 +118,7 @@ final class MagDataTest: XCTestCase {
         let factor:Float = 1.0
         let dataFrame = try PmdDataFrame(
             data: magDataFrameHeader + magDataFrameContent,
-            { _ in previousTimeStamp }  ,
+            { _,_ in previousTimeStamp },
             { _ in factor },
             { _ in 0 })
         
@@ -188,7 +188,7 @@ final class MagDataTest: XCTestCase {
         let factor:Float = 1.1
         let dataFrame = try PmdDataFrame(
             data: magDataFrameHeader + magDataFrameContent,
-            { _ in previousTimeStamp }  ,
+            { _,_ in previousTimeStamp },
             { _ in factor },
             { _ in 0 })
         

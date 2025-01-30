@@ -1,6 +1,7 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
 import com.polar.androidcommunications.testrules.BleLoggerTestRule
 import org.junit.Assert
 import org.junit.Rule
@@ -37,9 +38,9 @@ internal class EcgDataTest {
         val factor = 1.0f
         val dataFrame = PmdDataFrame(
             data = ecgDataFrameHeader + ecgDataFrameContent,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { factor },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { factor }
+        ) { 0 }
 
         // Act
         val ecgData = EcgData.parseDataFromDataFrame(dataFrame)
@@ -87,9 +88,9 @@ internal class EcgDataTest {
         val factor = 1.0f
         val dataFrame = PmdDataFrame(
             data = ecgDataFrameHeader + ecgDataFrameContent,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { factor },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { factor }
+        ) { 0 }
 
         // Act
         val ecgData = EcgData.parseDataFromDataFrame(dataFrame)
@@ -143,9 +144,9 @@ internal class EcgDataTest {
         val factor = 1.0f
         val dataFrame = PmdDataFrame(
             data = ecgDataFrameHeader + ecgDataFrameContent,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { factor },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { factor }
+        ) { 0 }
 
         // Act
         val ecgData = EcgData.parseDataFromDataFrame(dataFrame)
@@ -200,9 +201,9 @@ internal class EcgDataTest {
         val factor = 1.0f
         val dataFrame = PmdDataFrame(
             data = ecgDataFrameHeader + ecgDataFrameContent,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { factor },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { factor }
+        ) { 0 }
 
         // Act
         val ecgData = EcgData.parseDataFromDataFrame(dataFrame)

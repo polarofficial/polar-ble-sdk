@@ -1,6 +1,7 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
 import org.junit.Assert
 import org.junit.Test
 import java.lang.Float.intBitsToFloat
@@ -54,9 +55,9 @@ class GyrDataTest {
         val factor = 1.0f
         val dataFrame = PmdDataFrame(
             data = gyroDataFrameHeader + gyroDataFrameContent,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { factor },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { factor }
+        ) { 0 }
 
         // Act
         val gyroData = GyrData.parseDataFromDataFrame(dataFrame)
@@ -125,9 +126,9 @@ class GyrDataTest {
         val factor = 1.0f
         val dataFrame = PmdDataFrame(
             data = gyroDataFrameHeader + gyroDataFrameContent,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { factor },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { factor }
+        ) { 0 }
 
         // Act
         val gyroData = GyrData.parseDataFromDataFrame(dataFrame)
@@ -196,9 +197,9 @@ class GyrDataTest {
         val factor = 0.5f
         val dataFrame = PmdDataFrame(
             data = gyroDataFrameHeader + gyroDataFrameContent,
-            getPreviousTimeStamp = { previousTimeStamp },
-            getFactor = { factor },
-            getSampleRate = { 0 })
+            getPreviousTimeStamp = { pmdMeasurementType: PmdMeasurementType, pmdDataFrameType: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { factor }
+        ) { 0 }
 
         // Act
         val gyroData = GyrData.parseDataFromDataFrame(dataFrame)

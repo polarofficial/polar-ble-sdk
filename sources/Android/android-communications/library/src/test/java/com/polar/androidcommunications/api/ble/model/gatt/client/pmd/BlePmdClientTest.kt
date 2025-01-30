@@ -1,15 +1,31 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd
 
 import com.polar.androidcommunications.api.ble.exceptions.BleNotImplemented
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.errors.BleOnlineStreamClosed
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.*
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.errors.BleOnlineStreamClosed
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.AccData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.EcgData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.GnssLocationData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.GyrData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.MagData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.PpgData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.PpiData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.PressureData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.TemperatureData
 import com.polar.androidcommunications.testrules.BleLoggerTestRule
-import io.mockk.*
+import io.mockk.MockKAnnotations
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.mockkObject
+import io.mockk.slot
+import io.mockk.unmockkAll
 import io.reactivex.rxjava3.subscribers.TestSubscriber
-import org.junit.*
+import org.junit.After
+import org.junit.Assert
 import org.junit.Assert.assertThrows
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
 
 internal class BlePmdClientTest {
 
@@ -762,11 +778,11 @@ internal class BlePmdClientTest {
         }
 
         // Act & Assert
-        val previousTimeStampAtTheBeginning = blePmdClient.getPreviousFrameTimeStamp(PmdMeasurementType.ACC)
+        val previousTimeStampAtTheBeginning = blePmdClient.getPreviousFrameTimeStamp(PmdMeasurementType.ACC, PmdDataFrame.PmdDataFrameType.TYPE_3)
         blePmdClient.processServiceData(BlePMDClient.PMD_DATA, accDataFromService, 0, false)
-        val previousTimeStampAfterProcess = blePmdClient.getPreviousFrameTimeStamp(PmdMeasurementType.ACC)
+        val previousTimeStampAfterProcess = blePmdClient.getPreviousFrameTimeStamp(PmdMeasurementType.ACC, PmdDataFrame.PmdDataFrameType.TYPE_3)
         blePmdClient.reset()
-        val previousTimeStampAfterReset = blePmdClient.getPreviousFrameTimeStamp(PmdMeasurementType.ACC)
+        val previousTimeStampAfterReset = blePmdClient.getPreviousFrameTimeStamp(PmdMeasurementType.ACC, PmdDataFrame.PmdDataFrameType.TYPE_3)
 
         // Assert
         Assert.assertEquals(0uL, previousTimeStampAtTheBeginning)
