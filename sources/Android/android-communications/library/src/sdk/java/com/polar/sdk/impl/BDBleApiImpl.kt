@@ -35,6 +35,7 @@ import com.polar.androidcommunications.http.client.HttpResponseCodes
 import com.polar.androidcommunications.http.client.RetrofitClient
 import com.polar.androidcommunications.http.fwu.FirmwareUpdateApi
 import com.polar.androidcommunications.http.fwu.FirmwareUpdateRequest
+import com.polar.sdk.api.model.PolarFirmwareVersionInfo
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.PolarBleApiCallbackProvider
 import com.polar.sdk.api.PolarH10OfflineExerciseApi
@@ -1290,8 +1291,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     override fun removeOfflineRecord(identifier: String, entry: PolarOfflineRecordingEntry): Completable {
-        val fileDeletionMap: MutableMap<String, Boolean> = mutableMapOf()
-        BleLogger.d(TAG, "Remove offline record from device $identifier path ${entry.path}")
+        BleLogger.d(TAG, "removeOfflineRecord: remove offline record from device $identifier path ${entry.path}")
+        
         val session = try {
             sessionPsFtpClientReady(identifier)
         } catch (error: Throwable) {
@@ -1301,67 +1302,58 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Completable.error(PolarServiceNotAvailable())
         val fsType = getFileSystemType(session.polarDeviceType)
         return if (fsType == FileSystemType.SAGRFC2_FILE_SYSTEM) {
-            getSubRecordingCount(identifier, entry)
-                .flatMap { count ->
-                    if (count == 0 || entry.path.contains(Regex("""(\D+)(\d+)\.REC"""))) {
-                        val builder = PftpRequest.PbPFtpOperation.newBuilder()
-                        builder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
-                        builder.path = entry.path
-                        return@flatMap client.request(builder.build().toByteArray())
-                    } else {
-                        Observable.fromIterable(0 until count)
-                            .flatMap { subRecordingIndex ->
-                                val recordingPath = entry.path.replace(
-                                    Regex("(\\.REC)$"),
-                                    "$subRecordingIndex.REC"
-                                )
+            getSubRecordingCount(identifier, entry).flatMapCompletable { count -> 
+                if (count == 0) {
+                    /// If sub recording count is 0, then it device is using old format (single recording file).
+                    BleLogger.d(TAG, "removeOfflineRecord: removing old format recording file (sub recording count is 0)")
+                    return@flatMapCompletable removeOfflineFilesRecursively(client, entry.path, whileContaining = Regex("/\\d{8}/"))
+                } else {
+                    /// Otherwise, device is using new format (split recording files).
+                    BleLogger.d(TAG, "removeOfflineRecord: removing split recording files (sub recording count is $count)")
 
-                                fileDeletionMap.put(listOf(recordingPath.split("/")
-                                    .subList(0, recordingPath.split("/")
-                                        .lastIndex - 1))[0].joinToString(separator = "/"), false)
-                                val builder = PftpRequest.PbPFtpOperation.newBuilder()
-                                builder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
-                                builder.path = recordingPath
-
-                                client.request(builder.build().toByteArray()).toObservable()
-                            }.ignoreElements().toSingleDefault(count)
-                    }
-                }.doFinally {
-                    val dir = "/U/0"
-                    var fileList: MutableList<String> = mutableListOf()
-                    listFiles(identifier, dir,
-                        condition = { entry: String ->
-                            entry.matches(Regex("^(\\d{8})(/)")) ||
-                                    entry.matches(Regex("^(\\d{6})(/)")) ||
-                                    entry == "R/" ||
-                                    entry.contains(".REC") &&
-                                    !entry.contains(".BPB") &&
-                                    !entry.contains("HIST")
-                        })
-                        .map {
-                            fileList.add(it)
-                        }
-                        .doFinally {
-                            if (fileList.isEmpty()) {
-                                deleteDataDirectories(identifier).subscribe()
-                            }
-                        }
-                        .doOnError { error ->
-                            BleLogger.e(
-                                TAG,
-                                "Failed to list files from directory $dir from device $identifier. Error: $error"
+                    /// First, delete all subrecording files and then cleanup parent directories.
+                    return@flatMapCompletable Observable.fromIterable(0 until count)
+                        .concatMapCompletable { subRecordingIndex ->
+                            val recordingPath = entry.path.replace(
+                                Regex("(\\.REC)$"),
+                                "$subRecordingIndex.REC"
                             )
-                            Completable.error(error)
+
+                            val builder = PftpRequest.PbPFtpOperation.newBuilder()
+                            builder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
+                            builder.path = recordingPath
+
+                            BleLogger.d(TAG, "removeOfflineRecord: removing sub recording file $recordingPath")
+
+                            return@concatMapCompletable client.request(builder.build().toByteArray()).toObservable().ignoreElements()
+                                .doOnComplete {
+                                    BleLogger.d(TAG, "removeOfflineRecord: removed sub recording file $recordingPath")
+                                }
+                                .doOnError { error ->
+                                    BleLogger.e(TAG, "removeOfflineRecord: failed to remove sub recording file $recordingPath, $error")
+                                }
                         }
-                        .subscribe()
-                }.ignoreElement()
+                        .andThen(Completable.defer {
+                            BleLogger.d(TAG, "removeOfflineRecord: removing sub recording files completed, cleaning up parent directories")
+                            return@defer removeOfflineFilesRecursively(client, entry.path, whileContaining = Regex("/\\d{8}/"))
+                                .doOnComplete {
+                                    BleLogger.d(TAG, "removeOfflineRecord: finished cleaning up parent directories")
+                                }
+                                .doOnError { error ->
+                                    BleLogger.e(TAG, "removeOfflineRecord: failed to clean up parent directories, $error")
+                                }
+                        })
+                }
+            }
         } else {
             Completable.error(PolarOperationNotSupported())
         }
     }
 
     private fun removeOfflineFilesRecursively(client: BlePsFtpClient, deletePath: String, whileContaining: Regex? = null): Completable {
+        BleLogger.d(TAG, "removeOfflineFilesRecursively: remove offline files from path $deletePath")
         require(whileContaining?.let { deletePath.contains(it) } ?: true) {
+            BleLogger.e(TAG, "removeOfflineFilesRecursively: not valid offline recording path to delete $deletePath")
             Completable.error(PolarOfflineRecordingError(detailMessage = "Not valid offline recording path to delete $deletePath"))
         }
 
@@ -1370,6 +1362,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         } else {
             deletePath.dropLastWhile { it != '/' }
         }
+
+        BleLogger.d(TAG, "removeOfflineFilesRecursively: parent directory $parentDir")
 
         val builder = PftpRequest.PbPFtpOperation.newBuilder()
         builder.command = PftpRequest.PbPFtpOperation.Command.GET
@@ -1381,15 +1375,29 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 val parentDirEntries = PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray())
                 val isParentDirValid = whileContaining?.let { parentDir.contains(it) } ?: true
 
+                BleLogger.d(TAG, "removeOfflineFilesRecursively: isParentDirValid $isParentDirValid")
+                BleLogger.d(TAG, "removeOfflineFilesRecursively: parentDirEntries count ${parentDirEntries.entriesCount}")
+                
+                parentDirEntries.entriesList.forEach { entry ->
+                    BleLogger.d(TAG, "removeOfflineFilesRecursively: parentDirEntries: ${entry.name}")
+                }
+
                 if (parentDirEntries.entriesCount <= 1 && isParentDirValid) {
                     // the parent directory is valid to be deleted
+                    BleLogger.d(TAG, "removeOfflineFilesRecursively: call removeOfflineFilesRecursively for parent directory $parentDir")
                     return@flatMapCompletable removeOfflineFilesRecursively(client, parentDir, whileContaining)
                 } else {
                     val removeBuilder = PftpRequest.PbPFtpOperation.newBuilder()
                     removeBuilder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
                     removeBuilder.path = deletePath
-                    BleLogger.d(TAG, "Remove offline recording from the path $deletePath")
+                    BleLogger.d(TAG, "removeOfflineFilesRecursively: removing file $deletePath")
                     return@flatMapCompletable client.request(removeBuilder.build().toByteArray()).toObservable().ignoreElements()
+                        .doOnComplete {
+                            BleLogger.d(TAG, "removeOfflineFilesRecursively: removed file $deletePath")
+                        }
+                        .doOnError { error ->
+                            BleLogger.e(TAG, "removeOfflineFilesRecursively: failed to remove file $deletePath, $error")
+                        }
                 }
             }
     }
@@ -1617,6 +1625,18 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
+    override fun dumpAllFiles(identifier: String): Flowable<Pair<String, Long>> {
+        val session = try {
+            sessionPsFtpClientReady(identifier)
+        } catch (error: Throwable) {
+            return Flowable.error(error)
+        }
+
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Flowable.error(PolarServiceNotAvailable())
+        
+        return fetchRecursively(client = client, path = "/", condition = { entry -> true});
+    }
 
     override fun setWareHouseSleep(identifier: String, sleepEnabled: Boolean?): Completable {
         val session = try {
@@ -1963,6 +1983,19 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     })
     }
 
+    override fun getFirmwareInfo(identifier: String): PolarFirmwareVersionInfo? {
+        try {
+            val session = sessionPsFtpClientReady(identifier)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient
+
+            val deviceInfo = PolarFirmwareUpdateUtils.readDeviceFirmwareInfo(client, identifier).blockingGet()
+            return deviceInfo
+        } catch (e: Exception) {
+            BleLogger.e(TAG, "Error reading firmware info. $e")
+            return null
+        }
+    }
+
     override fun updateFirmware(identifier: String): Flowable<FirmwareUpdateStatus> {
         val session = sessionPsFtpClientReady(identifier)
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient
@@ -2005,6 +2038,9 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                 .toFlowable()
                                                 .flatMap {
                                                     backup.addAll(it)
+
+                                                    BleLogger.d(TAG, "Device backup completed: $it, starting firmware update to version ${firmwareUpdateResponse.version}")
+
                                                     firmwareUpdateApi.getFirmwareUpdatePackage(firmwareUpdateResponse.fileUrl)
                                                             .toFlowable()
                                                             .flatMap { firmwareBytes ->
@@ -2040,9 +2076,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                                 }
 
                                                                 doFactoryReset(identifier, true)
-                                                                        .andThen(Completable.timer(30, TimeUnit.SECONDS))
-                                                                        .andThen(waitDeviceSessionToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L))
-                                                                        .andThen(Completable.timer(5, TimeUnit.SECONDS))
+                                                                        .andThen(waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L))
                                                                         .andThen(
                                                                                 Flowable.fromIterable(firmwareFiles)
                                                                                         .concatMap { firmwareFile ->
@@ -2064,28 +2098,28 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                                 if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
                                                                     BleLogger.d(TAG, "Starting finalization of firmware update")
                                                                     BleLogger.d(TAG, "Waiting for device session to open after reboot")
-                                                                    waitDeviceSessionToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 120L)
-                                                                            .andThen(Completable.defer {
-                                                                                BleLogger.d(TAG, "Performing factory reset while preserving pairing information")
-                                                                                return@defer doFactoryReset(identifier, true)
-                                                                            })
-                                                                            .andThen(Completable.defer {
-                                                                                BleLogger.d(TAG, "Waiting for device session to open after factory reset")
-                                                                                return@defer waitDeviceSessionToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L)
-                                                                            })
-                                                                            .andThen(Completable.defer {
-                                                                                BleLogger.d(TAG, "Restoring backup to device after version ${firmwareUpdateResponse.version}")
-                                                                                sendInitializationAndStartSyncNotifications(client)
-                                                                                return@defer backupManager.restoreBackup(backup)
-                                                                            })
-                                                                            .andThen(Flowable.just(status))
+                                                                    waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L)
+                                                                        .andThen(Completable.defer {
+                                                                            BleLogger.d(TAG, "Performing factory reset while preserving pairing information")
+                                                                            return@defer doFactoryReset(identifier, true)
+                                                                        })
+                                                                        .andThen(Completable.defer {
+                                                                            BleLogger.d(TAG, "Waiting for device session to open after factory reset")
+                                                                            return@defer waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L)
+                                                                        })
+                                                                        .andThen(Completable.defer {
+                                                                            BleLogger.d(TAG, "Restoring backup to device after version ${firmwareUpdateResponse.version}")
+                                                                            sendInitializationAndStartSyncNotifications(client)
+                                                                            return@defer backupManager.restoreBackup(backup)
+                                                                        })
+                                                                        .andThen(Flowable.just(status))
                                                                 } else {
                                                                     Flowable.just(status)
                                                                 }
                                                             }
                                                             .concatMap { status ->
                                                                 if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
-                                                                    waitDeviceSessionToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 60L)
+                                                                    waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 60L)
                                                                             .andThen(Flowable.just(FirmwareUpdateStatus.FwUpdateCompletedSuccessfully(firmwareUpdateResponse.version)))
                                                                 } else {
                                                                     Flowable.just(status)
@@ -2537,19 +2571,27 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                     builder.build().toByteArray(),
                                     ByteArrayInputStream(firmwareBytes)
                             )
-                                    .throttleFirst(5, TimeUnit.SECONDS)
+                                    .throttleFirst(1, TimeUnit.SECONDS)
                                     .doOnNext { bytesWritten: Long ->
                                         BleLogger.d(TAG, "Writing firmware update file, bytes written: $bytesWritten/${firmwareBytes.size}")
                                         emitter.onNext(bytesWritten)
                                     }
                                     .ignoreElements()
+                                    .doOnComplete {
+                                        BleLogger.d(TAG, "Writing file $firmwareFilePath completed")
+                                    }
                         }
                         .subscribe({
+                            BleLogger.d(TAG, "Firmware file $firmwareFilePath written")
+
                             if (firmwareFilePath.contains("SYSUPDAT.IMG")) {
                                 BleLogger.d(TAG, "Firmware file is SYSUPDAT.IMG, waiting for reboot")
                             }
+
                             emitter.onComplete()
                         }, { error ->
+                            BleLogger.e(TAG, "Error writing firmware file $firmwareFilePath: $error")
+                            
                             if (error is PftpResponseError && error.error == PbPFtpError.REBOOTING.number) {
                                 BleLogger.d(TAG, "REBOOTING")
                                 emitter.onComplete()
@@ -2564,12 +2606,12 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }, BackpressureStrategy.BUFFER)
     }
 
-    private fun waitDeviceSessionToOpen(
+    private fun waitDeviceSessionWithPftpToOpen(
             deviceId: String,
             timeoutSeconds: Long,
             waitForDeviceDownSeconds: Long = 0L
     ): Completable {
-        BleLogger.d(TAG, "waitDeviceSessionToOpen(), seconds: $timeoutSeconds, waitForDeviceDownSeconds: $waitForDeviceDownSeconds")
+        BleLogger.d(TAG, "waitDeviceSessionWithPftpToOpen(): seconds $timeoutSeconds, waitForDeviceDownSeconds $waitForDeviceDownSeconds")
         val pollIntervalSeconds = 5L
 
         return Observable.timer(waitForDeviceDownSeconds, TimeUnit.SECONDS)
@@ -2580,21 +2622,42 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                             .takeUntil(Observable.timer(timeoutSeconds, TimeUnit.SECONDS))
                             .timeout(timeoutSeconds, TimeUnit.SECONDS)
                             .subscribe({
-                                if (deviceSessionState == DeviceSessionState.SESSION_OPEN) {
-                                    BleLogger.d(TAG, "Session opened, deviceId: $deviceId")
+                                val isSessionOpen = deviceSessionState == DeviceSessionState.SESSION_OPEN
+                                val isPftpClientReady = isPftpClientReady(deviceId)
+
+                                BleLogger.d(TAG, "waitDeviceSessionWithPftpToOpen(): isSessionOpen $isSessionOpen, isPftpClientReady $isPftpClientReady")
+
+                                if (isSessionOpen && isPftpClientReady) {
+                                    BleLogger.d(TAG, "waitDeviceSessionWithPftpToOpen(): completed")
                                     disposable?.dispose()
                                     emitter.onComplete()
                                 } else {
-                                    BleLogger.d(TAG, "Waiting for device session to open, deviceId: $deviceId, current state: $deviceSessionState")
+                                    BleLogger.d(TAG, "waitDeviceSessionWithPftpToOpen(): current state $deviceSessionState")
                                 }
                             }, { error ->
-                                BleLogger.e(TAG, "Timeout reached while waiting for device session to open, deviceId: $deviceId")
+                                BleLogger.e(TAG, "waitDeviceSessionWithPftpToOpen(): error $error")
                                 emitter.onError(error)
                             })
                     emitter.setCancellable {
                         disposable.dispose()
                     }
                 })
+    }
+
+    private fun isPftpClientReady(identifier: String): Boolean {
+        try {
+            val session = sessionPsFtpClientReady(identifier)
+    
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            if (client != null) {
+                return true
+            }
+    
+            return false
+        }
+        catch (error: Throwable) {
+            return false
+        }
     }
 
     override fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Completable {
@@ -2860,7 +2923,9 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }, BackpressureStrategy.BUFFER)
     }
 
-    private fun removeSingleFile(identifier: String, filePath: String): Single<ByteArrayOutputStream> {
+    override fun removeSingleFile(identifier: String, filePath: String): Single<ByteArrayOutputStream> {
+        BleLogger.d(TAG, "removeSingleFile(): Removing file $filePath from device $identifier")
+
         val session = try {
             sessionPsFtpClientReady(identifier)
         } catch (error: Throwable) {
@@ -3032,7 +3097,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         session.previousState == DeviceSessionState.SESSION_OPEN_PARK ||
                         session.previousState == DeviceSessionState.SESSION_CLOSING
                     ) {
-                        Completable.fromAction { it.deviceDisconnected(info) }
+                        Completable.fromAction { it.deviceDisconnected(info, false) }
                             .subscribeOn(AndroidSchedulers.mainThread())
                             .subscribe()
                     }
@@ -3044,6 +3109,15 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     Completable.fromAction { it.deviceConnecting(info) }
                         .subscribeOn(AndroidSchedulers.mainThread())
                         .subscribe()
+                }
+            }
+            DeviceSessionState.SESSION_OPEN_PARK -> {
+                callback?.let {
+                    if (session.previousState == DeviceSessionState.SESSION_OPENING || session.previousState == DeviceSessionState.SESSION_OPEN) {
+                        Completable.fromAction { it.deviceDisconnected(info, true) }
+                            .subscribeOn(AndroidSchedulers.mainThread())
+                            .subscribe()
+                    }
                 }
             }
             else -> {
@@ -3423,6 +3497,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     private fun fetchRecursively(client: BlePsFtpClient, path: String, condition: FetchRecursiveCondition): Flowable<Pair<String, Long>> {
+        BleLogger.d(TAG, "fetchRecursively: fetching files from path $path")
         val builder = PftpRequest.PbPFtpOperation.newBuilder()
         builder.command = PftpRequest.PbPFtpOperation.Command.GET
         builder.path = path
@@ -3433,6 +3508,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 val entries: MutableMap<String, Long> = mutableMapOf()
 
                 for (entry in dir.entriesList) {
+                    BleLogger.d(TAG, "fetchRecursively: entry path: ${path + entry.name}, size: ${entry.size}")
                     if (condition.include(entry.name)) {
                         entries[path + entry.name] = entry.size
                     }

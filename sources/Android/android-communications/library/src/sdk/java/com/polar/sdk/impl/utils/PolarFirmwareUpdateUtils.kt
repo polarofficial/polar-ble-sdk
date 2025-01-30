@@ -12,7 +12,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.zip.ZipInputStream
 
-internal object PolarFirmwareUpdateUtils {
+object PolarFirmwareUpdateUtils {
 
     /**
      * Comparator for sorting FW files so that the order doesn't matter as long as
