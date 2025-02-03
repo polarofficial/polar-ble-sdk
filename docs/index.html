@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Explore SDK Platforms</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #1f1f1f, #3a3a3a);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 10px;
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 30px;
+    }
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    a.button {
+      display: block;
+      text-decoration: none;
+      color: #1f1f1f;
+      background: #fff;
+      padding: 15px 20px;
+      border-radius: 5px;
+      font-size: 1.1rem;
+      font-weight: 500;
+      transition: transform 0.2s, background 0.2s;
+    }
+    a.button:hover {
+      transform: scale(1.03);
+      background: #e0e0e0;
+    }
+    @media (min-width: 600px) {
+      .button-group {
+        flex-direction: row;
+        justify-content: center;
+      }
+      a.button {
+        width: 45%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome!</h1>
+    <p>Choose the SDK platform you want to explore:</p>
+    <div class="button-group">
+      <a class="button" href="polar-sdk-android/index.html">Android SDK</a>
+      <a class="button" href="polar-sdk-ios/index.html">iOS SDK</a>
+    </div>
+  </div>
+</body>
+</html>
