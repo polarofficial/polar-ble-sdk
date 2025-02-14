@@ -165,18 +165,6 @@ public final class <span class="typeNameLabel"><a href=DataDeletionStats.html>Da
                                         </tr>
                                         
                                         <tr class="altColor">
-                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/atomic/AtomicBoolean.html>AtomicBoolean</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=DataDeletionStats.html#deleteOperationCompleteLock>deleteOperationCompleteLock</a></code></th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr class="rowColor">
-                                            <td class="colFirst"><code>private  <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=DataDeletionStats.html#amountOfHandedDeletions>amountOfHandedDeletions</a></code></th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr class="altColor">
                                             <td class="colFirst"><code>private  <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/ConcurrentLinkedQueue.html>ConcurrentLinkedQueue</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt;</code></td>
                                             <th class="colSecond" scope="row"><code><a href=DataDeletionStats.html#deletedDirs>deletedDirs</a></code></th>
                                             <td class="colLast"></td>
@@ -214,7 +202,7 @@ public final class <span class="typeNameLabel"><a href=DataDeletionStats.html>Da
                                         
                                             <tr class="altColor">
                                                 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a
-                                                        href="#DataDeletionStats(AtomicBoolean,Integer,ConcurrentLinkedQueue,ConcurrentHashMap)">DataDeletionStats</a></span>(<a href=https://developer.android.com/reference/kotlin/java/util/concurrent/atomic/AtomicBoolean.html>AtomicBoolean</a> deleteOperationCompleteLock, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> amountOfHandedDeletions, <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/ConcurrentLinkedQueue.html>ConcurrentLinkedQueue</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; deletedDirs, <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/ConcurrentHashMap.html>ConcurrentHashMap</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>&gt; fileDeletionMap)</code></th>
+                                                        href="#DataDeletionStats(ConcurrentLinkedQueue,ConcurrentHashMap)">DataDeletionStats</a></span>(<a href=https://developer.android.com/reference/kotlin/java/util/concurrent/ConcurrentLinkedQueue.html>ConcurrentLinkedQueue</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; deletedDirs, <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/ConcurrentHashMap.html>ConcurrentHashMap</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>&gt; fileDeletionMap)</code></th>
                                                 <td class="colLast"></td>
                                             </tr>
                                         
@@ -268,30 +256,6 @@ public final class <span class="typeNameLabel"><a href=DataDeletionStats.html>Da
                                         </tr>
                                         
                                         <tr id="i0" class="altColor">
-                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/atomic/AtomicBoolean.html>AtomicBoolean</a></code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=DataDeletionStats.html#getDeleteOperationCompleteLock()>getDeleteOperationCompleteLock</a>() </code>
-                                            </th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr id="i1" class="rowColor">
-                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=DataDeletionStats.html#getAmountOfHandedDeletions()>getAmountOfHandedDeletions</a>() </code>
-                                            </th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr id="i2" class="altColor">
-                                            <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
-                                            </td>
-                                            <th class="colSecond" scope="row"><code><a href=DataDeletionStats.html#setAmountOfHandedDeletions(Integer)>setAmountOfHandedDeletions</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> amountOfHandedDeletions) </code>
-                                            </th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr id="i3" class="rowColor">
                                             <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/ConcurrentLinkedQueue.html>ConcurrentLinkedQueue</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=DataDeletionStats.html#getDeletedDirs()>getDeletedDirs</a>() </code>
@@ -299,7 +263,7 @@ public final class <span class="typeNameLabel"><a href=DataDeletionStats.html>Da
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i4" class="altColor">
+                                        <tr id="i1" class="rowColor">
                                             <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=DataDeletionStats.html#setDeletedDirs(ConcurrentLinkedQueue)>setDeletedDirs</a>(<a href=https://developer.android.com/reference/kotlin/java/util/concurrent/ConcurrentLinkedQueue.html>ConcurrentLinkedQueue</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; deletedDirs) </code>
@@ -307,7 +271,7 @@ public final class <span class="typeNameLabel"><a href=DataDeletionStats.html>Da
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i5" class="rowColor">
+                                        <tr id="i2" class="altColor">
                                             <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/ConcurrentHashMap.html>ConcurrentHashMap</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=DataDeletionStats.html#getFileDeletionMap()>getFileDeletionMap</a>() </code>
@@ -346,11 +310,11 @@ public final class <span class="typeNameLabel"><a href=DataDeletionStats.html>Da
                             </a>
                                 <h3>Constructor Detail</h3>
                                 
-                                <a name="DataDeletionStats(AtomicBoolean,Integer,ConcurrentLinkedQueue,ConcurrentHashMap)"></a>
+                                <a name="DataDeletionStats(ConcurrentLinkedQueue,ConcurrentHashMap)"></a>
                                 <ul class="blockList">
                                     <li class="blockList">
                                         <h4>DataDeletionStats</h4>
-                                        <pre>DataDeletionStats(<a href=https://developer.android.com/reference/kotlin/java/util/concurrent/atomic/AtomicBoolean.html>AtomicBoolean</a> deleteOperationCompleteLock, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> amountOfHandedDeletions, <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/ConcurrentLinkedQueue.html>ConcurrentLinkedQueue</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; deletedDirs, <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/ConcurrentHashMap.html>ConcurrentHashMap</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>&gt; fileDeletionMap)</pre>
+                                        <pre>DataDeletionStats(<a href=https://developer.android.com/reference/kotlin/java/util/concurrent/ConcurrentLinkedQueue.html>ConcurrentLinkedQueue</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; deletedDirs, <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/ConcurrentHashMap.html>ConcurrentHashMap</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>&gt; fileDeletionMap)</pre>
                                         <div class="block"></div>
                                         
                                     </li>
@@ -368,51 +332,6 @@ public final class <span class="typeNameLabel"><a href=DataDeletionStats.html>Da
                                 <!--   -->
                             </a>
                                 <h3>Method Detail</h3>
-                                
-                                <a id="getDeleteOperationCompleteLock()">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>getDeleteOperationCompleteLock</h4>
-                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/atomic/AtomicBoolean.html>AtomicBoolean</a> <a href=DataDeletionStats.html#getDeleteOperationCompleteLock()>getDeleteOperationCompleteLock</a>()</pre>
-                                        <div class="block"></div>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="getAmountOfHandedDeletions()">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>getAmountOfHandedDeletions</h4>
-                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> <a href=DataDeletionStats.html#getAmountOfHandedDeletions()>getAmountOfHandedDeletions</a>()</pre>
-                                        <div class="block"></div>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
-                                
-                                <a id="setAmountOfHandedDeletions(Integer)">
-                                    <!--   -->
-                                </a>
-                                <ul class=
-                                              "blockList"
-                                          >
-                                    <li class="blockList">
-                                        <h4>setAmountOfHandedDeletions</h4>
-                                        <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=DataDeletionStats.html#setAmountOfHandedDeletions(Integer)>setAmountOfHandedDeletions</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> amountOfHandedDeletions)</pre>
-                                        <div class="block"></div>
-                                        
-                                        <!-- TODO missing return annotation -->
-                                    </li>
-                                </ul>
                                 
                                 <a id="getDeletedDirs()">
                                     <!--   -->

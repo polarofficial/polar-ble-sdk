@@ -129,13 +129,13 @@
                 <a href="../Enums/AutomaticSampleTriggerType.html">AutomaticSampleTriggerType</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/CaloriesType.html">CaloriesType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/CheckFirmwareUpdateStatus.html">CheckFirmwareUpdateStatus</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/FirmwareUpdateStatus.html">FirmwareUpdateStatus</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Enums/OhrDataType.html">OhrDataType</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/PolarActivityDataType.html">PolarActivityDataType</a>
@@ -205,9 +205,6 @@
                 <a href="../Protocols/PolarBleApiPowerStateObserver.html">PolarBleApiPowerStateObserver</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Protocols/PolarBleApiSdkModeFeatureObserver.html">PolarBleApiSdkModeFeatureObserver</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Protocols/PolarFirmwareUpdateApi.html">PolarFirmwareUpdateApi</a>
               </li>
               <li class="nav-group-task">
@@ -247,6 +244,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/PolarActiveTimeData.html">PolarActiveTimeData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarCaloriesData.html">PolarCaloriesData</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/PolarDeviceRestApiServiceDescription.html">PolarDeviceRestApiServiceDescription</a>
@@ -335,9 +335,6 @@
                 <a href="../Typealiases.html#/s:11PolarBleSdk0A16MagnetometerDataa">PolarMagnetometerData</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/s:11PolarBleSdk0A7OhrDataa">PolarOhrData</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Typealiases.html#/s:11PolarBleSdk0A7PpgDataa">PolarPpgData</a>
               </li>
               <li class="nav-group-task">
@@ -393,8 +390,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"The functionality has changed. Please use the startHrStreaming API to get the heart rate data "</span><span class="p">)</span>
-<span class="kd">func</span> <span class="nf">hrValueReceived</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="p">(</span><span class="nv">hr</span><span class="p">:</span> <span class="kt">UInt8</span><span class="p">,</span> <span class="nv">rrs</span><span class="p">:</span> <span class="p">[</span><span class="kt">Int</span><span class="p">],</span> <span class="nv">rrsMs</span><span class="p">:</span> <span class="p">[</span><span class="kt">Int</span><span class="p">],</span> <span class="nv">contact</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">,</span> <span class="nv">contactSupported</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">))</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">hrValueReceived</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="p">(</span><span class="nv">hr</span><span class="p">:</span> <span class="kt">UInt8</span><span class="p">,</span> <span class="nv">rrs</span><span class="p">:</span> <span class="p">[</span><span class="kt">Int</span><span class="p">],</span> <span class="nv">rrsMs</span><span class="p">:</span> <span class="p">[</span><span class="kt">Int</span><span class="p">],</span> <span class="nv">contact</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">,</span> <span class="nv">contactSupported</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">))</span></code></pre>
 
                         </div>
                       </div>
@@ -425,7 +421,7 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-01-30)</p>
+          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-02-14)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

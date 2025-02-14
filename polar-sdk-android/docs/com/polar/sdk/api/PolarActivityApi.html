@@ -285,6 +285,14 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                             <td class="colLast">Get nightly recharge for a given period.</td>
                                         </tr>
                                         
+                                        <tr id="i6" class="altColor">
+                                            <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/Polar247PPiSamplesData.html>Polar247PPiSamplesData</a>&gt;&gt;</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarActivityApi.html#get247PPiSamples(String,Date,Date)>get247PPiSamples</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate) </code>
+                                            </th>
+                                            <td class="colLast">Load 24/7 PPi data from a device for a given period.</td>
+                                        </tr>
+                                        
                                         </tbody>
                                     </table>
                                 </div>
@@ -497,7 +505,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                     <!--   -->
                                 </a>
                                 <ul class=
-                                              "blockListLast"
+                                              "blockList"
                                           >
                                     <li class="blockList">
                                         <h4>getNightlyRecharge</h4>
@@ -517,6 +525,38 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                             
                                             
                                             <dd><code>toDate</code> - The ending date of the period to retrieve nightly recharge from.</dd>
+                                            
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="get247PPiSamples(String,Date,Date)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>get247PPiSamples</h4>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/Polar247PPiSamplesData.html>Polar247PPiSamplesData</a>&gt;&gt; <a href=PolarActivityApi.html#get247PPiSamples(String,Date,Date)>get247PPiSamples</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate)</pre>
+                                        <div class="block"><p>Load 24/7 PPi data from a device for a given period.</p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - , Polar device ID or BT address</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>fromDate</code> - The starting date of the period to retrieve 24/7 PPi data from.</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>toDate</code> - The ending date of the period to retrieve 24/7 PPi data from.</dd>
                                             
                                             
                                         </dl>

@@ -127,13 +127,13 @@
                 <a href="Enums/AutomaticSampleTriggerType.html">AutomaticSampleTriggerType</a>
               </li>
               <li class="nav-group-task">
+                <a href="Enums/CaloriesType.html">CaloriesType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Enums/CheckFirmwareUpdateStatus.html">CheckFirmwareUpdateStatus</a>
               </li>
               <li class="nav-group-task">
                 <a href="Enums/FirmwareUpdateStatus.html">FirmwareUpdateStatus</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="Enums/OhrDataType.html">OhrDataType</a>
               </li>
               <li class="nav-group-task">
                 <a href="Enums/PolarActivityDataType.html">PolarActivityDataType</a>
@@ -203,9 +203,6 @@
                 <a href="Protocols/PolarBleApiPowerStateObserver.html">PolarBleApiPowerStateObserver</a>
               </li>
               <li class="nav-group-task">
-                <a href="Protocols/PolarBleApiSdkModeFeatureObserver.html">PolarBleApiSdkModeFeatureObserver</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="Protocols/PolarFirmwareUpdateApi.html">PolarFirmwareUpdateApi</a>
               </li>
               <li class="nav-group-task">
@@ -245,6 +242,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="Structs/PolarActiveTimeData.html">PolarActiveTimeData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/PolarCaloriesData.html">PolarCaloriesData</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/PolarDeviceRestApiServiceDescription.html">PolarDeviceRestApiServiceDescription</a>
@@ -331,9 +331,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="Typealiases.html#/s:11PolarBleSdk0A16MagnetometerDataa">PolarMagnetometerData</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="Typealiases.html#/s:11PolarBleSdk0A7OhrDataa">PolarOhrData</a>
               </li>
               <li class="nav-group-task">
                 <a href="Typealiases.html#/s:11PolarBleSdk0A7PpgDataa">PolarPpgData</a>
@@ -563,34 +560,6 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0ab3ApiC19ModeFeatureObserverP"></a>
-                    <a name="//apple_ref/swift/Protocol/PolarBleApiSdkModeFeatureObserver" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0ab3ApiC19ModeFeatureObserverP">PolarBleApiSdkModeFeatureObserver</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>SDK Mode observer</p>
-
-                        <a href="Protocols/PolarBleApiSdkModeFeatureObserver.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">PolarBleApiSdkModeFeatureObserver</span> <span class="p">:</span> <span class="kt">AnyObject</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
                     <a name="/s:11PolarBleSdk0aB9ApiLoggerP"></a>
                     <a name="//apple_ref/swift/Protocol/PolarBleApiLogger" class="dashAnchor"></a>
                     <a class="token" href="#/s:11PolarBleSdk0aB9ApiLoggerP">PolarBleApiLogger</a>
@@ -738,8 +707,6 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
 
 <p>Requires features <code><a href="Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO30feature_polar_online_streamingyA2CmF">PolarBleSdkFeature.feature_polar_online_streaming</a></code></p>
 
-<p>Note, online streaming is supported by VeritySense, H10 and OH1 devices</p>
-
                         <a href="Protocols/PolarOnlineStreamingApi.html" class="slightly-smaller">See more</a>
                       </div>
                       <div class="declaration">
@@ -851,7 +818,7 @@ asked from device using <code>PolarOnlineStreamingApi.requestFullStreamSettings<
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-01-30)</p>
+          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-02-14)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>
