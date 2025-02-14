@@ -22,12 +22,6 @@ class PolarSensorSetting {
         RANGE(2),
 
         /**
-         * range key milliunit. Note Set contains range values from min to max
-         */
-        @Deprecated("This enum is not used anymore to set any settings")
-        RANGE_MILLIUNIT(3),
-
-        /**
          * amount of channels
          */
         CHANNELS(4);

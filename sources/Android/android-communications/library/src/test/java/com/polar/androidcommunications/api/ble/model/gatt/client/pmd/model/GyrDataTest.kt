@@ -73,7 +73,6 @@ class GyrDataTest {
         Assert.assertEquals(sample1channel1, gyroData.gyrSamples[1].y)
         Assert.assertEquals(sample1channel2, gyroData.gyrSamples[1].z)
 
-        Assert.assertEquals(timeStamp, gyroData.timeStamp)
         Assert.assertEquals(timeStamp, gyroData.gyrSamples.last().timeStamp)
     }
 
@@ -144,7 +143,6 @@ class GyrDataTest {
         Assert.assertEquals(sample1channel1, gyroData.gyrSamples[1].y)
         Assert.assertEquals(sample1channel2, gyroData.gyrSamples[1].z)
 
-        Assert.assertEquals(timeStamp, gyroData.timeStamp)
         Assert.assertEquals(timeStamp, gyroData.gyrSamples[1].timeStamp)
     }
 
@@ -214,7 +212,6 @@ class GyrDataTest {
         Assert.assertEquals(factor * sample1channel1, gyroData.gyrSamples[1].y)
         Assert.assertEquals(factor * sample1channel2, gyroData.gyrSamples[1].z)
 
-        Assert.assertEquals(timeStamp, gyroData.timeStamp)
         Assert.assertEquals(timeStamp, gyroData.gyrSamples[1].timeStamp)
     }
 }

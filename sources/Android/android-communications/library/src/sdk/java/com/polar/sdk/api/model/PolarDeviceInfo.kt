@@ -28,5 +28,15 @@ data class PolarDeviceInfo(
     /**
      * true adv type is connectable
      */
-    val isConnectable: Boolean
+    val isConnectable: Boolean,
+
+    /**
+     * true if device has heart rate service available
+     */
+    val hasHeartRateService: Boolean = false,
+
+    /**
+     * true if device has file system service (PSFTP) available
+     */
+    val hasFileSystemService: Boolean = false
 )

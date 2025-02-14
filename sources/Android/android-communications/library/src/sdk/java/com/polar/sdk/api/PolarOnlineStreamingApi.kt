@@ -105,24 +105,6 @@ interface PolarOnlineStreamingApi {
     ): Flowable<PolarAccelerometerData>
 
     /**
-     * Start OHR (Optical heart rate) PPG (Photoplethysmography) stream. PPG stream is stopped if
-     * the connection is closed, error occurs or stream is disposed.
-     *
-     * @param identifier    Polar device id found printed on the sensor/device or bt address
-     * @param sensorSetting settings to be used to start streaming
-     * @return Flowable stream of OHR PPG data.
-     * Produces:
-     * <BR></BR> - onNext [PolarOhrData]
-     * <BR></BR> - onError error for possible errors invoked
-     * <BR></BR> - onComplete non produced unless the stream is further configured
-     */
-    @Deprecated("API is renamed, please use startPpgStreaming()", replaceWith = ReplaceWith("startPpgStreaming"))
-    fun startOhrStreaming(
-        identifier: String,
-        sensorSetting: PolarSensorSetting
-    ): Flowable<PolarOhrData>
-
-    /**
      * Start optical sensor PPG (Photoplethysmography) stream. PPG stream is stopped if
      * the connection is closed, error occurs or stream is disposed.
      *
@@ -152,9 +134,6 @@ interface PolarOnlineStreamingApi {
      * <BR></BR> - onComplete non produced unless the stream is further configured
      */
     fun startPpiStreaming(identifier: String): Flowable<PolarPpiData>
-
-    @Deprecated("API is renamed, please use startPpiStreaming()", replaceWith = ReplaceWith("startPpiStreaming"))
-    fun startOhrPPIStreaming(identifier: String): Flowable<PolarOhrPPIData>
 
     /**
      * Start magnetometer stream. Magnetometer stream is stopped if the connection is closed, error
@@ -189,6 +168,42 @@ interface PolarOnlineStreamingApi {
         identifier: String,
         sensorSetting: PolarSensorSetting
     ): Flowable<PolarGyroData>
+
+    /**
+     * Start Pressure data stream. Pressure data stream is stopped if the connection is closed, error occurs during
+     * start or stream is disposed. Requires feature [.FEATURE_POLAR_ONLINE_STREAMING].
+     * Before starting the stream it is recommended to query the available settings using [.requestStreamSettings]
+     *
+     * @param identifier    Polar device id found printed on the sensor/device or bt address
+     * @param sensorSetting settings to be used to start streaming
+     * @return Flowable stream of barometer data.
+     * Produces:
+     * <BR></BR> - onNext [PolarPressureData]
+     * <BR></BR> - onError error for possible errors invoked
+     * <BR></BR> - onComplete non produced unless the stream is further configured
+     */
+    fun startPressureStreaming(
+        identifier: String,
+        sensorSetting: PolarSensorSetting
+    ): Flowable<PolarPressureData>
+
+    /**
+     * Start Location data stream. Location stream is stopped if the connection is closed, error occurs during
+     * start or stream is disposed. Requires feature [.FEATURE_POLAR_ONLINE_STREAMING].
+     * Before starting the stream it is recommended to query the available settings using [.requestStreamSettings]
+     *
+     * @param identifier    Polar device id found printed on the sensor/device or bt address
+     * @param sensorSetting settings to be used to start streaming
+     * @return Flowable stream of location data.
+     * Produces:
+     * <BR></BR> - onNext [PolarLocationData]
+     * <BR></BR> - onError error for possible errors invoked
+     * <BR></BR> - onComplete non produced unless the stream is further configured
+     */
+    fun startLocationStreaming(
+        identifier: String,
+        sensorSetting: PolarSensorSetting
+    ): Flowable<PolarLocationData>
 
     /**
      * Start Temperature data stream. Temperature stream is stopped if the connection is closed, error occurs during

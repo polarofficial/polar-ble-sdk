@@ -30,6 +30,7 @@ import io.reactivex.rxjava3.core.FlowableOnSubscribe;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.core.SingleOnSubscribe;
+import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import com.polar.androidcommunications.api.ble.model.proto.CommunicationsPftpRequest;
 
@@ -63,6 +64,8 @@ public class BlePsFtpClient extends BleGattBase {
     private final Object pftpOperationMutex = new Object();
     private final Object pftpNotificationMutex = new Object();
     private final Object pftpWaitNotificationMutex = new Object();
+    private final Object pftpWaitNotificationSharedMutex = new Object();
+    private Flowable<BlePsFtpUtils.PftpNotificationMessage> _sharedWaitNotificationFlowable = null;
 
     public BlePsFtpClient(BleGattTxInterface txInterface) {
         super(txInterface, BlePsFtpUtils.RFC77_PFTP_SERVICE, true);
@@ -535,15 +538,28 @@ public class BlePsFtpClient extends BleGattBase {
     }
 
     /**
-     * wait endlessly notifications
+     * Wait endlessly notifications from device using shared Flowable.
      *
-     * @param scheduler context where to run
      * @return Flowable stream
      * Produces: onNext, for each complete notification received
      * onError, @see BlePsFtpUtils
      * onComplete, non produced
      */
     public Flowable<BlePsFtpUtils.PftpNotificationMessage> waitForNotification(Scheduler scheduler) {
+        if (_sharedWaitNotificationFlowable != null) {
+            return _sharedWaitNotificationFlowable.subscribeOn(scheduler, false);
+        }
+        synchronized(pftpWaitNotificationSharedMutex) {
+            _sharedWaitNotificationFlowable =
+                    waitForNotificationFlowable()
+                            .doOnError(
+                                    (error) -> _sharedWaitNotificationFlowable = null
+                            ).share();
+        }
+        return _sharedWaitNotificationFlowable.subscribeOn(scheduler, false);
+    }
+
+    private Flowable<BlePsFtpUtils.PftpNotificationMessage> waitForNotificationFlowable() {
         return Flowable.create((FlowableOnSubscribe<BlePsFtpUtils.PftpNotificationMessage>) subscriber -> {
                     // NOTE no flush as client may be interested in buffered notifications
                     // notificationInputQueue.clear();
@@ -615,7 +631,6 @@ public class BlePsFtpClient extends BleGattBase {
                     }
                 }, BackpressureStrategy.BUFFER)
                 .onBackpressureBuffer(100, () -> BleLogger.w(TAG, "notifications buffer full"), BackpressureOverflowStrategy.DROP_OLDEST)
-                .subscribeOn(scheduler)
                 .serialize();
     }
 

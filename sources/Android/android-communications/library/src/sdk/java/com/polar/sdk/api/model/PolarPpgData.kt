@@ -27,6 +27,13 @@ data class PolarPpgData(
          * Polar ohr led data containing 3 ppg and 1 ambient channel
          */
         PPG3_AMBIENT1,
+        FRAME_TYPE_4,
+        FRAME_TYPE_5,
+        FRAME_TYPE_7,
+        FRAME_TYPE_8,
+        FRAME_TYPE_9,
+        FRAME_TYPE_10,
+        SPORT_ID,
         UNKNOWN
     }
 }

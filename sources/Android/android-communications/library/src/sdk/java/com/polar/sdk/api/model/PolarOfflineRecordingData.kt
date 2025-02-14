@@ -31,8 +31,7 @@ sealed class PolarOfflineRecordingData(val startTime: Calendar, val settings: Po
             mergedSamples.addAll(newData.samples)
             return AccOfflineRecording(
                 PolarAccelerometerData(
-                    mergedSamples,
-                    startTime.timeInMillis
+                    mergedSamples
                 ),
                 startTime,
                 settings
@@ -62,8 +61,7 @@ sealed class PolarOfflineRecordingData(val startTime: Calendar, val settings: Po
             mergedSamples.addAll(newData.samples)
             return GyroOfflineRecording(
                 PolarGyroData(
-                    mergedSamples,
-                    startTime.timeInMillis
+                    mergedSamples
                 ),
                 startTime,
                 settings
@@ -92,8 +90,7 @@ sealed class PolarOfflineRecordingData(val startTime: Calendar, val settings: Po
             mergedSamples.addAll(newData.samples)
             return MagOfflineRecording(
                 PolarMagnetometerData(
-                    mergedSamples,
-                    startTime.timeInMillis
+                    mergedSamples
                 ),
                 startTime,
                 settings

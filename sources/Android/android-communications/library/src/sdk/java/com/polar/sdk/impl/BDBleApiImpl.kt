@@ -2,6 +2,8 @@
 package com.polar.sdk.impl
 
 import android.content.Context
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.polar.androidcommunications.api.ble.BleDeviceListener
 import com.polar.androidcommunications.api.ble.BleDeviceListener.BlePowerStateChangedCallback
 import com.polar.androidcommunications.api.ble.BleDeviceListener.BleSearchPreFilter
@@ -18,11 +20,15 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.*
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Companion.HR_MEASUREMENT
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Companion.HR_SERVICE
+import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Companion.HR_SERVICE_16BIT_UUID
+import com.polar.androidcommunications.api.ble.model.gatt.client.BleHtsClient
+import com.polar.androidcommunications.api.ble.model.gatt.client.HealthThermometer
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.*
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdControlPointResponse.PmdControlPointResponseCode
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.*
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils
+import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils.PFTP_SERVICE_16BIT_UUID
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils.PftpResponseError
 import com.polar.androidcommunications.api.ble.model.offlinerecording.OfflineRecordingData
 import com.polar.androidcommunications.api.ble.model.offlinerecording.OfflineRecordingUtility.mapOfflineRecordingFileNameToMeasurementType
@@ -38,32 +44,36 @@ import com.polar.androidcommunications.http.fwu.FirmwareUpdateRequest
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.PolarBleApiCallbackProvider
 import com.polar.sdk.api.PolarH10OfflineExerciseApi
+import com.polar.sdk.api.RestApiEventPayload
 import com.polar.sdk.api.errors.*
 import com.polar.sdk.api.model.*
+import com.polar.sdk.api.model.activity.Polar247HrSamplesData
 import com.polar.sdk.api.model.activity.PolarActiveTimeData
+import com.polar.sdk.api.model.activity.PolarCaloriesData
 import com.polar.sdk.api.model.activity.PolarDistanceData
 import com.polar.sdk.api.model.activity.PolarStepsData
-import com.polar.sdk.api.model.activity.PolarCaloriesData
-import com.polar.sdk.impl.utils.CaloriesType
+import com.polar.sdk.api.model.restapi.PolarDeviceRestApiServiceDescription
+import com.polar.sdk.api.model.restapi.PolarDeviceRestApiServices
+import com.polar.sdk.api.model.sleep.PolarNightlyRechargeData
 import com.polar.sdk.api.model.sleep.PolarSleepAnalysisResult
 import com.polar.sdk.api.model.sleep.PolarSleepData
-import com.polar.sdk.api.model.PolarUserDeviceSettings
-import com.polar.sdk.api.model.activity.Polar247HrSamplesData
-import com.polar.sdk.api.model.sleep.PolarNightlyRechargeData
+import com.polar.sdk.api.model.sleep.PolarSleepApiServiceEventPayload
+import com.polar.sdk.impl.BDBleApiImpl.FetchRecursiveCondition
+import com.polar.sdk.impl.utils.CaloriesType
 import com.polar.sdk.impl.utils.PolarActivityUtils
 import com.polar.sdk.impl.utils.PolarAutomaticSamplesUtils
 import com.polar.sdk.impl.utils.PolarBackupManager
 import com.polar.sdk.impl.utils.PolarDataUtils
+import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientLocationDataToPolarLocationData
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientOfflineHrDataToPolarHrData
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientOfflineTemperatureDataToPolarTemperatureData
-import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientOhrDataToPolarOhr
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientPpgDataToPolarPpg
-import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientPpiDataToPolarOhrPpiData
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientPpiDataToPolarPpiData
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientAccDataToPolarAcc
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientFeatureToPolarFeature
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientGyroDataToPolarGyro
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientMagDataToPolarMagnetometer
+import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientPressureDataToPolarPressure
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientSkinTemperatureDataToPolarTemperatureData
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientTemperatureDataToPolarTemperature
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdSettingsToPolarSettings
@@ -80,10 +90,12 @@ import com.polar.sdk.impl.utils.PolarTimeUtils
 import com.polar.sdk.impl.utils.PolarTimeUtils.javaCalendarToPbPftpSetLocalTime
 import com.polar.sdk.impl.utils.PolarTimeUtils.javaCalendarToPbPftpSetSystemTime
 import com.polar.sdk.impl.utils.PolarTimeUtils.pbLocalTimeToJavaCalendar
-import com.polar.sdk.impl.utils.PolarTimeUtils.pbDateToLocalDate
+import com.polar.sdk.impl.utils.receiveRestApiEvents
+import com.polar.sdk.impl.utils.toObject
 import fi.polar.remote.representation.protobuf.AutomaticSamples.PbAutomaticSampleSessions
 import fi.polar.remote.representation.protobuf.ExerciseSamples.PbExerciseSamples
 import fi.polar.remote.representation.protobuf.Types.*
+import fi.polar.remote.representation.protobuf.UserIds
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.*
 import io.reactivex.rxjava3.core.Observable
@@ -102,18 +114,18 @@ import protocol.PftpRequest
 import protocol.PftpResponse
 import protocol.PftpResponse.PbPFtpDirectory
 import protocol.PftpResponse.PbRequestRecordingStatusResult
+import com.polar.sdk.api.model.activity.Polar247PPiSamplesData
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.util.*
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicBoolean
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.TimeUnit
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import java.util.zip.ZipEntry
@@ -129,7 +141,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     private val deviceDataMonitorDisposable: MutableMap<String, Disposable> = mutableMapOf()
     private val deviceAvailableFeaturesDisposable: MutableMap<String, Disposable> = mutableMapOf()
     private val stopPmdStreamingDisposable: MutableMap<String, Disposable> = mutableMapOf()
-    private val filter = BleSearchPreFilter { content: BleAdvertisementContent -> content.polarDeviceId.isNotEmpty() && content.polarDeviceType != "mobile" }
+    private val filter =
+        BleSearchPreFilter { content: BleAdvertisementContent -> content.polarDeviceId.isNotEmpty() && content.polarDeviceType != "mobile" }
     private var listener: BleDeviceListener?
     private var devicesStateMonitorDisposable: Disposable? = null
     private var deviceSessionState: DeviceSessionState? = null
@@ -148,13 +161,20 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     clients.add(BleHrClient::class.java)
                     clients.add(BlePMDClient::class.java)
                 }
+
                 PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING -> {
                     clients.add(BlePMDClient::class.java)
                     clients.add(BlePsFtpClient::class.java)
                 }
-                PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING -> clients.add(BlePsFtpClient::class.java)
+
+                PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING -> clients.add(
+                    BlePsFtpClient::class.java
+                )
+
                 PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP -> clients.add(BlePsFtpClient::class.java)
                 PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE -> clients.add(BlePMDClient::class.java)
+                PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER -> clients.add(BlePsFtpClient::class.java)
+                PolarBleSdkFeature.FEATURE_HTS -> clients.add(BleHtsClient::class.java)
                 PolarBleSdkFeature.FEATURE_POLAR_LED_ANIMATION -> clients.add(BlePsFtpClient::class.java)
                 PolarBleSdkFeature.FEATURE_POLAR_FIRMWARE_UPDATE -> clients.add(BlePsFtpClient::class.java)
                 PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA -> clients.add(BlePsFtpClient::class.java)
@@ -196,7 +216,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 return@setErrorHandler
             }
             BleLogger.e(TAG, "Undeliverable exception received, not sure what to do $e")
-            Thread.currentThread().uncaughtExceptionHandler?.uncaughtException(Thread.currentThread(), e)
+            Thread.currentThread().uncaughtExceptionHandler?.uncaughtException(
+                Thread.currentThread(),
+                e
+            )
         }
     }
 
@@ -261,51 +284,73 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     sessionPmdClientReady(deviceId)
                     true
                 }
+
                 PolarBleSdkFeature.FEATURE_HR -> {
                     sessionHrClientReady(deviceId)
                     true
                 }
+
                 PolarBleSdkFeature.FEATURE_DEVICE_INFO -> {
                     sessionServiceReady(deviceId, BleDisClient.DIS_SERVICE)
                     true
                 }
+
                 PolarBleSdkFeature.FEATURE_BATTERY_INFO -> {
                     sessionServiceReady(deviceId, BleBattClient.BATTERY_SERVICE)
                     true
                 }
+
                 PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING -> {
                     sessionPmdClientReady(deviceId)
                     sessionPsFtpClientReady(deviceId)
                     true
                 }
+
                 PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP -> {
                     sessionPsFtpClientReady(deviceId)
                     true
                 }
+
                 PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING -> {
                     val session = sessionPsFtpClientReady(deviceId)
                     FileSystemType.H10_FILE_SYSTEM == getFileSystemType(session.polarDeviceType)
                 }
+
                 PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE -> {
                     sessionPmdClientReady(deviceId)
                     true
                 }
+
+                PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER -> {
+                    sessionPsFtpClientReady(deviceId)
+                    true
+                }
+
+                PolarBleSdkFeature.FEATURE_HTS -> {
+                    sessionServiceReady(deviceId, HealthThermometer.HTS_SERVICE)
+                    true
+                }
+
                 PolarBleSdkFeature.FEATURE_POLAR_LED_ANIMATION -> {
                     sessionPsFtpClientReady(deviceId)
                     true
                 }
+
                 PolarBleSdkFeature.FEATURE_POLAR_FIRMWARE_UPDATE -> {
                     sessionPsFtpClientReady(deviceId)
                     true
                 }
+
                 PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA -> {
                     sessionPsFtpClientReady(deviceId)
                     true
                 }
+
                 PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA -> {
                     sessionPsFtpClientReady(deviceId)
                     true
                 }
+
                 PolarBleSdkFeature.FEATURE_POLAR_TEMPERATURE_DATA -> {
                     sessionPsFtpClientReady(deviceId)
                     true
@@ -337,14 +382,18 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         } catch (error: Throwable) {
             return Completable.error(error)
         }
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Completable.error(PolarServiceNotAvailable())
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Completable.error(PolarServiceNotAvailable())
 
         BleLogger.d(TAG, "set local time to ${calendar.time} device $identifier")
         val pbLocalTime = javaCalendarToPbPftpSetLocalTime(calendar)
         return setSystemTime(client, calendar)
             .onErrorComplete()
             .andThen(
-                client.query(PftpRequest.PbPFtpQuery.SET_LOCAL_TIME_VALUE, pbLocalTime.toByteArray())
+                client.query(
+                    PftpRequest.PbPFtpQuery.SET_LOCAL_TIME_VALUE,
+                    pbLocalTime.toByteArray()
+                )
                     .ignoreElement()
             )
     }
@@ -361,12 +410,14 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         } catch (error: Throwable) {
             return Single.error(error)
         }
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Single.error(PolarServiceNotAvailable())
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Single.error(PolarServiceNotAvailable())
 
         BleLogger.d(TAG, "get local time from device $identifier")
         return client.query(PftpRequest.PbPFtpQuery.GET_LOCAL_TIME_VALUE, null)
             .map {
-                val dateTime: PftpRequest.PbPFtpSetLocalTimeParams = PftpRequest.PbPFtpSetLocalTimeParams.parseFrom(it.toByteArray())
+                val dateTime: PftpRequest.PbPFtpSetLocalTimeParams =
+                    PftpRequest.PbPFtpSetLocalTimeParams.parseFrom(it.toByteArray())
                 pbLocalTimeToJavaCalendar(dateTime)
             }.onErrorResumeNext {
                 if (it is PftpResponseError && it.error == 201) {
@@ -377,84 +428,277 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
     }
 
-    override fun requestStreamSettings(identifier: String, feature: PolarDeviceDataType): Single<PolarSensorSetting> {
+    override fun requestStreamSettings(
+        identifier: String,
+        feature: PolarDeviceDataType
+    ): Single<PolarSensorSetting> {
         BleLogger.d(TAG, "Request online stream settings. Feature: $feature Device: $identifier")
         return when (feature) {
-            PolarDeviceDataType.ECG -> querySettings(identifier, PmdMeasurementType.ECG, PmdRecordingType.ONLINE)
-            PolarDeviceDataType.ACC -> querySettings(identifier, PmdMeasurementType.ACC, PmdRecordingType.ONLINE)
-            PolarDeviceDataType.PPG -> querySettings(identifier, PmdMeasurementType.PPG, PmdRecordingType.ONLINE)
-            PolarDeviceDataType.GYRO -> querySettings(identifier, PmdMeasurementType.GYRO, PmdRecordingType.ONLINE)
-            PolarDeviceDataType.MAGNETOMETER -> querySettings(identifier, PmdMeasurementType.MAGNETOMETER, PmdRecordingType.ONLINE)
-            PolarDeviceDataType.SKIN_TEMPERATURE -> querySettings(identifier, PmdMeasurementType.SKIN_TEMP, PmdRecordingType.ONLINE)
+            PolarDeviceDataType.ECG -> querySettings(
+                identifier,
+                PmdMeasurementType.ECG,
+                PmdRecordingType.ONLINE
+            )
+
+            PolarDeviceDataType.ACC -> querySettings(
+                identifier,
+                PmdMeasurementType.ACC,
+                PmdRecordingType.ONLINE
+            )
+
+            PolarDeviceDataType.PPG -> querySettings(
+                identifier,
+                PmdMeasurementType.PPG,
+                PmdRecordingType.ONLINE
+            )
+
+            PolarDeviceDataType.GYRO -> querySettings(
+                identifier,
+                PmdMeasurementType.GYRO,
+                PmdRecordingType.ONLINE
+            )
+
+            PolarDeviceDataType.MAGNETOMETER -> querySettings(
+                identifier,
+                PmdMeasurementType.MAGNETOMETER,
+                PmdRecordingType.ONLINE
+            )
+
+            PolarDeviceDataType.PRESSURE -> querySettings(
+                identifier,
+                PmdMeasurementType.PRESSURE,
+                PmdRecordingType.ONLINE
+            )
+
+            PolarDeviceDataType.LOCATION -> querySettings(
+                identifier,
+                PmdMeasurementType.LOCATION,
+                PmdRecordingType.ONLINE
+            )
+
+            PolarDeviceDataType.TEMPERATURE -> querySettings(
+                identifier,
+                PmdMeasurementType.TEMPERATURE,
+                PmdRecordingType.ONLINE
+            )
+
+            PolarDeviceDataType.SKIN_TEMPERATURE -> querySettings(
+                identifier,
+                PmdMeasurementType.SKIN_TEMP,
+                PmdRecordingType.ONLINE
+            )
+
             PolarDeviceDataType.HR,
             PolarDeviceDataType.PPI -> Single.error(PolarOperationNotSupported())
+
             else -> Single.error(PolarOperationNotSupported())
 
         }
     }
 
-    override fun requestFullStreamSettings(identifier: String, feature: PolarDeviceDataType): Single<PolarSensorSetting> {
-        BleLogger.d(TAG, "Request full online stream settings. Feature: $feature Device: $identifier")
+    override fun requestFullStreamSettings(
+        identifier: String,
+        feature: PolarDeviceDataType
+    ): Single<PolarSensorSetting> {
+        BleLogger.d(
+            TAG,
+            "Request full online stream settings. Feature: $feature Device: $identifier"
+        )
         return when (feature) {
-            PolarDeviceDataType.ECG -> queryFullSettings(identifier, PmdMeasurementType.ECG, PmdRecordingType.ONLINE)
-            PolarDeviceDataType.ACC -> queryFullSettings(identifier, PmdMeasurementType.ACC, PmdRecordingType.ONLINE)
-            PolarDeviceDataType.PPG -> queryFullSettings(identifier, PmdMeasurementType.PPG, PmdRecordingType.ONLINE)
-            PolarDeviceDataType.GYRO -> queryFullSettings(identifier, PmdMeasurementType.GYRO, PmdRecordingType.ONLINE)
-            PolarDeviceDataType.MAGNETOMETER -> queryFullSettings(identifier, PmdMeasurementType.MAGNETOMETER, PmdRecordingType.ONLINE)
+            PolarDeviceDataType.ECG -> queryFullSettings(
+                identifier,
+                PmdMeasurementType.ECG,
+                PmdRecordingType.ONLINE
+            )
+
+            PolarDeviceDataType.ACC -> queryFullSettings(
+                identifier,
+                PmdMeasurementType.ACC,
+                PmdRecordingType.ONLINE
+            )
+
+            PolarDeviceDataType.PPG -> queryFullSettings(
+                identifier,
+                PmdMeasurementType.PPG,
+                PmdRecordingType.ONLINE
+            )
+
+            PolarDeviceDataType.GYRO -> queryFullSettings(
+                identifier,
+                PmdMeasurementType.GYRO,
+                PmdRecordingType.ONLINE
+            )
+
+            PolarDeviceDataType.MAGNETOMETER -> queryFullSettings(
+                identifier,
+                PmdMeasurementType.MAGNETOMETER,
+                PmdRecordingType.ONLINE
+            )
+
             PolarDeviceDataType.PPI,
-            PolarDeviceDataType.SKIN_TEMPERATURE,
-            PolarDeviceDataType.HR -> Single.error(PolarOperationNotSupported())
-            else -> Single.error(PolarOperationNotSupported())
+            PolarDeviceDataType.HR,
+            PolarDeviceDataType.PRESSURE,
+            PolarDeviceDataType.LOCATION,
+            PolarDeviceDataType.TEMPERATURE,
+            PolarDeviceDataType.SKIN_TEMPERATURE -> Single.error(PolarOperationNotSupported())
         }
     }
 
-    override fun requestOfflineRecordingSettings(identifier: String, feature: PolarDeviceDataType): Single<PolarSensorSetting> {
-        BleLogger.d(TAG, "Request offline recording settings. Feature: $feature Device: $identifier")
+    override fun requestOfflineRecordingSettings(
+        identifier: String,
+        feature: PolarDeviceDataType
+    ): Single<PolarSensorSetting> {
+        BleLogger.d(
+            TAG,
+            "Request offline recording settings. Feature: $feature Device: $identifier"
+        )
         return when (feature) {
-            PolarDeviceDataType.ECG -> querySettings(identifier, PmdMeasurementType.ECG, PmdRecordingType.OFFLINE)
-            PolarDeviceDataType.ACC -> querySettings(identifier, PmdMeasurementType.ACC, PmdRecordingType.OFFLINE)
-            PolarDeviceDataType.PPG -> querySettings(identifier, PmdMeasurementType.PPG, PmdRecordingType.OFFLINE)
-            PolarDeviceDataType.GYRO -> querySettings(identifier, PmdMeasurementType.GYRO, PmdRecordingType.OFFLINE)
-            PolarDeviceDataType.MAGNETOMETER -> querySettings(identifier, PmdMeasurementType.MAGNETOMETER, PmdRecordingType.OFFLINE)
-            PolarDeviceDataType.SKIN_TEMPERATURE -> querySettings(identifier, PmdMeasurementType.SKIN_TEMP, PmdRecordingType.OFFLINE)
+            PolarDeviceDataType.ECG -> querySettings(
+                identifier,
+                PmdMeasurementType.ECG,
+                PmdRecordingType.OFFLINE
+            )
+
+            PolarDeviceDataType.ACC -> querySettings(
+                identifier,
+                PmdMeasurementType.ACC,
+                PmdRecordingType.OFFLINE
+            )
+
+            PolarDeviceDataType.PPG -> querySettings(
+                identifier,
+                PmdMeasurementType.PPG,
+                PmdRecordingType.OFFLINE
+            )
+
+            PolarDeviceDataType.GYRO -> querySettings(
+                identifier,
+                PmdMeasurementType.GYRO,
+                PmdRecordingType.OFFLINE
+            )
+
+            PolarDeviceDataType.MAGNETOMETER -> querySettings(
+                identifier,
+                PmdMeasurementType.MAGNETOMETER,
+                PmdRecordingType.OFFLINE
+            )
+
+            PolarDeviceDataType.PRESSURE -> querySettings(
+                identifier,
+                PmdMeasurementType.PRESSURE,
+                PmdRecordingType.OFFLINE
+            )
+
+            PolarDeviceDataType.LOCATION -> querySettings(
+                identifier,
+                PmdMeasurementType.LOCATION,
+                PmdRecordingType.OFFLINE
+            )
+
+            PolarDeviceDataType.TEMPERATURE -> querySettings(
+                identifier,
+                PmdMeasurementType.TEMPERATURE,
+                PmdRecordingType.OFFLINE
+            )
+
+            PolarDeviceDataType.SKIN_TEMPERATURE -> querySettings(
+                identifier,
+                PmdMeasurementType.SKIN_TEMP,
+                PmdRecordingType.OFFLINE
+            )
+
             PolarDeviceDataType.HR,
             PolarDeviceDataType.PPI -> Single.error(PolarOperationNotSupported())
+
             else -> Single.error(PolarOperationNotSupported())
         }
     }
 
-    override fun requestFullOfflineRecordingSettings(identifier: String, feature: PolarDeviceDataType): Single<PolarSensorSetting> {
-        BleLogger.d(TAG, "Request full offline recording settings. Feature: $feature Device: $identifier")
+    override fun requestFullOfflineRecordingSettings(
+        identifier: String,
+        feature: PolarDeviceDataType
+    ): Single<PolarSensorSetting> {
+        BleLogger.d(
+            TAG,
+            "Request full offline recording settings. Feature: $feature Device: $identifier"
+        )
         return when (feature) {
-            PolarDeviceDataType.ECG -> queryFullSettings(identifier, PmdMeasurementType.ECG, PmdRecordingType.OFFLINE)
-            PolarDeviceDataType.ACC -> queryFullSettings(identifier, PmdMeasurementType.ACC, PmdRecordingType.OFFLINE)
-            PolarDeviceDataType.PPG -> queryFullSettings(identifier, PmdMeasurementType.PPG, PmdRecordingType.OFFLINE)
-            PolarDeviceDataType.GYRO -> queryFullSettings(identifier, PmdMeasurementType.GYRO, PmdRecordingType.OFFLINE)
-            PolarDeviceDataType.MAGNETOMETER -> queryFullSettings(identifier, PmdMeasurementType.MAGNETOMETER, PmdRecordingType.OFFLINE)
+            PolarDeviceDataType.ECG -> queryFullSettings(
+                identifier,
+                PmdMeasurementType.ECG,
+                PmdRecordingType.OFFLINE
+            )
+
+            PolarDeviceDataType.ACC -> queryFullSettings(
+                identifier,
+                PmdMeasurementType.ACC,
+                PmdRecordingType.OFFLINE
+            )
+
+            PolarDeviceDataType.PPG -> queryFullSettings(
+                identifier,
+                PmdMeasurementType.PPG,
+                PmdRecordingType.OFFLINE
+            )
+
+            PolarDeviceDataType.GYRO -> queryFullSettings(
+                identifier,
+                PmdMeasurementType.GYRO,
+                PmdRecordingType.OFFLINE
+            )
+
+            PolarDeviceDataType.MAGNETOMETER -> queryFullSettings(
+                identifier,
+                PmdMeasurementType.MAGNETOMETER,
+                PmdRecordingType.OFFLINE
+            )
+
             PolarDeviceDataType.PPI,
-            PolarDeviceDataType.SKIN_TEMPERATURE,
-            PolarDeviceDataType.HR -> Single.error(PolarOperationNotSupported())
-            else -> Single.error(PolarOperationNotSupported())
+            PolarDeviceDataType.HR,
+            PolarDeviceDataType.PRESSURE,
+            PolarDeviceDataType.LOCATION,
+            PolarDeviceDataType.TEMPERATURE,
+            PolarDeviceDataType.SKIN_TEMPERATURE -> Single.error(PolarOperationNotSupported())
         }
     }
 
-    private fun querySettings(identifier: String, type: PmdMeasurementType, recordingType: PmdRecordingType): Single<PolarSensorSetting> {
+    private fun querySettings(
+        identifier: String,
+        type: PmdMeasurementType,
+        recordingType: PmdRecordingType
+    ): Single<PolarSensorSetting> {
         return try {
             val session = sessionPmdClientReady(identifier)
-            val client = session.fetchClient(BlePMDClient.PMD_SERVICE) as BlePMDClient? ?: return Single.error(PolarServiceNotAvailable())
+            val client = session.fetchClient(BlePMDClient.PMD_SERVICE) as BlePMDClient?
+                ?: return Single.error(PolarServiceNotAvailable())
             client.querySettings(type, recordingType)
-                .map { setting: PmdSetting -> mapPmdSettingsToPolarSettings(setting, fromSelected = false) }
+                .map { setting: PmdSetting ->
+                    mapPmdSettingsToPolarSettings(
+                        setting,
+                        fromSelected = false
+                    )
+                }
         } catch (e: Throwable) {
             Single.error(e)
         }
     }
 
-    private fun queryFullSettings(identifier: String, type: PmdMeasurementType, recordingType: PmdRecordingType): Single<PolarSensorSetting> {
+    private fun queryFullSettings(
+        identifier: String,
+        type: PmdMeasurementType,
+        recordingType: PmdRecordingType
+    ): Single<PolarSensorSetting> {
         return try {
             val session = sessionPmdClientReady(identifier)
-            val client = session.fetchClient(BlePMDClient.PMD_SERVICE) as BlePMDClient? ?: return Single.error(PolarServiceNotAvailable())
+            val client = session.fetchClient(BlePMDClient.PMD_SERVICE) as BlePMDClient?
+                ?: return Single.error(PolarServiceNotAvailable())
             client.queryFullSettings(type, recordingType)
-                .map { setting: PmdSetting -> mapPmdSettingsToPolarSettings(setting, fromSelected = false) }
+                .map { setting: PmdSetting ->
+                    mapPmdSettingsToPolarSettings(
+                        setting,
+                        fromSelected = false
+                    )
+                }
         } catch (e: Throwable) {
             Single.error(e)
         }
@@ -464,7 +708,13 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         listener?.scanRestart()
     }
 
-    override fun autoConnectToDevice(rssiLimit: Int, service: String?, timeout: Int, unit: TimeUnit, polarDeviceType: String?): Completable {
+    override fun autoConnectToDevice(
+        rssiLimit: Int,
+        service: String?,
+        timeout: Int,
+        unit: TimeUnit,
+        polarDeviceType: String?
+    ): Completable {
         var start = 0L
         listener?.let {
             return Completable.create { emitter: CompletableEmitter ->
@@ -478,7 +728,9 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     .filter { bleDeviceSession: BleDeviceSession ->
                         if (bleDeviceSession.medianRssi >= rssiLimit && bleDeviceSession.isConnectableAdvertisement
                             && (polarDeviceType == null || polarDeviceType == bleDeviceSession.polarDeviceType)
-                            && (service == null || bleDeviceSession.advertisementContent.containsService(service))
+                            && (service == null || bleDeviceSession.advertisementContent.containsService(
+                                service
+                            ))
                         ) {
                             if (start == 0L) {
                                 start = System.currentTimeMillis()
@@ -492,10 +744,12 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         val diff = bleDeviceSessionTimed.time(TimeUnit.MILLISECONDS) - start
                         diff >= unit.toMillis(timeout.toLong())
                     }
-                    .reduce(HashSet(), BiFunction { objects: MutableSet<BleDeviceSession>, bleDeviceSessionTimed: Timed<BleDeviceSession> ->
-                        objects.add(bleDeviceSessionTimed.value())
-                        objects
-                    } as BiFunction<MutableSet<BleDeviceSession>, Timed<BleDeviceSession>, MutableSet<BleDeviceSession>>)
+                    .reduce(
+                        HashSet(),
+                        BiFunction { objects: MutableSet<BleDeviceSession>, bleDeviceSessionTimed: Timed<BleDeviceSession> ->
+                            objects.add(bleDeviceSessionTimed.value())
+                            objects
+                        } as BiFunction<MutableSet<BleDeviceSession>, Timed<BleDeviceSession>, MutableSet<BleDeviceSession>>)
                     .doOnSuccess { set: Set<BleDeviceSession> ->
                         val list: MutableList<BleDeviceSession> = ArrayList(set)
                         list.sortWith { s1: BleDeviceSession, s2: BleDeviceSession -> if (s1.rssi > s2.rssi) -1 else 1 }
@@ -508,7 +762,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         return Completable.error(PolarBleSdkInstanceException("PolarBleApi instance is shutdown"))
     }
 
-    override fun autoConnectToDevice(rssiLimit: Int, service: String?, polarDeviceType: String?): Completable {
+    override fun autoConnectToDevice(
+        rssiLimit: Int,
+        service: String?,
+        polarDeviceType: String?
+    ): Completable {
         return autoConnectToDevice(rssiLimit, service, 2, TimeUnit.SECONDS, polarDeviceType)
     }
 
@@ -554,22 +812,34 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
-    override fun startRecording(identifier: String, exerciseId: String, interval: PolarH10OfflineExerciseApi.RecordingInterval?, type: PolarH10OfflineExerciseApi.SampleType): Completable {
+    override fun startRecording(
+        identifier: String,
+        exerciseId: String,
+        interval: PolarH10OfflineExerciseApi.RecordingInterval?,
+        type: PolarH10OfflineExerciseApi.SampleType
+    ): Completable {
         val session = try {
             sessionPsFtpClientReady(identifier)
         } catch (error: Throwable) {
             return Completable.error(error)
         }
         if (isRecordingSupported(session.polarDeviceType)) {
-            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Completable.error(PolarServiceNotAvailable())
-            val pbSampleType = if (type == PolarH10OfflineExerciseApi.SampleType.HR) PbSampleType.SAMPLE_TYPE_HEART_RATE else PbSampleType.SAMPLE_TYPE_RR_INTERVAL
-            val recordingInterval = interval?.value ?: PolarH10OfflineExerciseApi.RecordingInterval.INTERVAL_1S.value
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: return Completable.error(PolarServiceNotAvailable())
+            val pbSampleType =
+                if (type == PolarH10OfflineExerciseApi.SampleType.HR) PbSampleType.SAMPLE_TYPE_HEART_RATE else PbSampleType.SAMPLE_TYPE_RR_INTERVAL
+            val recordingInterval =
+                interval?.value ?: PolarH10OfflineExerciseApi.RecordingInterval.INTERVAL_1S.value
             val duration = PbDuration.newBuilder().setSeconds(recordingInterval).build()
-            val params = PftpRequest.PbPFtpRequestStartRecordingParams.newBuilder().setSampleDataIdentifier(exerciseId)
+            val params = PftpRequest.PbPFtpRequestStartRecordingParams.newBuilder()
+                .setSampleDataIdentifier(exerciseId)
                 .setSampleType(pbSampleType)
                 .setRecordingInterval(duration)
                 .build()
-            return client.query(PftpRequest.PbPFtpQuery.REQUEST_START_RECORDING_VALUE, params.toByteArray())
+            return client.query(
+                PftpRequest.PbPFtpQuery.REQUEST_START_RECORDING_VALUE,
+                params.toByteArray()
+            )
                 .toObservable()
                 .ignoreElements()
                 .onErrorResumeNext { throwable: Throwable -> Completable.error(handleError(throwable)) }
@@ -585,7 +855,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             return Completable.error(error)
         }
         if (isRecordingSupported(session.polarDeviceType)) {
-            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Completable.error(PolarServiceNotAvailable())
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: return Completable.error(PolarServiceNotAvailable())
             return client.query(PftpRequest.PbPFtpQuery.REQUEST_STOP_RECORDING_VALUE, null)
                 .toObservable()
                 .ignoreElements()
@@ -602,11 +873,16 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
 
         if (isRecordingSupported(session.polarDeviceType)) {
-            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Single.error(PolarServiceNotAvailable())
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: return Single.error(PolarServiceNotAvailable())
             return client.query(PftpRequest.PbPFtpQuery.REQUEST_RECORDING_STATUS_VALUE, null)
                 .map { byteArrayOutputStream: ByteArrayOutputStream ->
-                    val result = PbRequestRecordingStatusResult.parseFrom(byteArrayOutputStream.toByteArray())
-                    androidx.core.util.Pair(result.recordingOn, if (result.hasSampleDataIdentifier()) result.sampleDataIdentifier else "")
+                    val result =
+                        PbRequestRecordingStatusResult.parseFrom(byteArrayOutputStream.toByteArray())
+                    androidx.core.util.Pair(
+                        result.recordingOn,
+                        if (result.hasSampleDataIdentifier()) result.sampleDataIdentifier else ""
+                    )
                 }.onErrorResumeNext { throwable: Throwable -> Single.error(handleError(throwable)) }
 
         } else {
@@ -685,6 +961,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                             }
                     }
             }
+
             else -> Flowable.error(PolarServiceNotAvailable())
         }
     }
@@ -695,7 +972,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         } catch (error: Throwable) {
             return Flowable.error(error)
         }
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Flowable.error(PolarServiceNotAvailable())
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Flowable.error(PolarServiceNotAvailable())
 
         when (getFileSystemType(session.polarDeviceType)) {
             FileSystemType.SAGRFC2_FILE_SYSTEM -> {
@@ -714,8 +992,15 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         val date = format.parse(components[3] + " " + components[5])
                         PolarExerciseEntry(entry.first, date, components[3] + components[5])
                     }
-                    .onErrorResumeNext { throwable: Throwable -> Flowable.error(handleError(throwable)) }
+                    .onErrorResumeNext { throwable: Throwable ->
+                        Flowable.error(
+                            handleError(
+                                throwable
+                            )
+                        )
+                    }
             }
+
             FileSystemType.H10_FILE_SYSTEM -> {
                 return fetchRecursively(client = client,
                     path = "/",
@@ -724,32 +1009,58 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         val components = entry.first.split("/").toTypedArray()
                         PolarExerciseEntry(entry.first, Date(), components[1])
                     }
-                    .onErrorResumeNext { throwable: Throwable -> Flowable.error(handleError(throwable)) }
+                    .onErrorResumeNext { throwable: Throwable ->
+                        Flowable.error(
+                            handleError(
+                                throwable
+                            )
+                        )
+                    }
             }
+
             else -> return Flowable.error(PolarOperationNotSupported())
         }
     }
 
-
-    override fun fetchExercise(identifier: String, entry: PolarExerciseEntry): Single<PolarExerciseData> {
+    override fun fetchExercise(
+        identifier: String,
+        entry: PolarExerciseEntry
+    ): Single<PolarExerciseData> {
         val session = try {
             sessionPsFtpClientReady(identifier)
         } catch (error: Throwable) {
             return Single.error(error)
         }
 
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Single.error(PolarServiceNotAvailable())
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Single.error(PolarServiceNotAvailable())
         val fsType = getFileSystemType(session.polarDeviceType)
         val beforeFetch = if (fsType == FileSystemType.H10_FILE_SYSTEM) {
-            client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE, null)
-                .andThen(client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.START_SYNC_VALUE, null))
+            client.sendNotification(
+                PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE,
+                null
+            )
+                .andThen(
+                    client.sendNotification(
+                        PftpNotification.PbPFtpHostToDevNotification.START_SYNC_VALUE,
+                        null
+                    )
+                )
         } else {
             Completable.complete()
         }
 
         val afterFetch = if (fsType == FileSystemType.H10_FILE_SYSTEM) {
-            client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.STOP_SYNC_VALUE, null)
-                .andThen(client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.TERMINATE_SESSION_VALUE, null))
+            client.sendNotification(
+                PftpNotification.PbPFtpHostToDevNotification.STOP_SYNC_VALUE,
+                null
+            )
+                .andThen(
+                    client.sendNotification(
+                        PftpNotification.PbPFtpHostToDevNotification.TERMINATE_SESSION_VALUE,
+                        null
+                    )
+                )
         } else {
             Completable.complete()
         }
@@ -763,9 +1074,15 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             .map { byteArrayOutputStream: ByteArrayOutputStream ->
                 val samples = PbExerciseSamples.parseFrom(byteArrayOutputStream.toByteArray())
                 if (samples.hasRrSamples()) {
-                    return@map PolarExerciseData(samples.recordingInterval.seconds, samples.rrSamples.rrIntervalsList)
+                    return@map PolarExerciseData(
+                        samples.recordingInterval.seconds,
+                        samples.rrSamples.rrIntervalsList
+                    )
                 } else {
-                    return@map PolarExerciseData(samples.recordingInterval.seconds, samples.heartRateSamplesList)
+                    return@map PolarExerciseData(
+                        samples.recordingInterval.seconds,
+                        samples.heartRateSamplesList
+                    )
                 }
             }
             .onErrorResumeNext { throwable: Throwable -> Single.error(handleError(throwable)) }
@@ -807,41 +1124,93 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                             builder.command = PftpRequest.PbPFtpOperation.Command.GET
                             builder.path = entry.path
 
-                            BleLogger.d(TAG, "Offline record get. Device: $identifier Path: ${entry.path} Secret used: ${secret != null}")
-                            client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE, null)
+                            BleLogger.d(
+                                TAG,
+                                "Offline record get. Device: $identifier Path: ${entry.path} Secret used: ${secret != null}"
+                            )
+                            client.sendNotification(
+                                PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE,
+                                null
+                            )
                                 .andThen(client.request(builder.build().toByteArray()))
                                 .map { byteArrayOutputStream: ByteArrayOutputStream ->
                                     val pmdSecret = secret?.let { mapPolarSecretToPmdSecret(it) }
-                                    OfflineRecordingData.parseDataFromOfflineFile(byteArrayOutputStream.toByteArray(), mapPolarFeatureToPmdClientMeasurementType(entry.type), pmdSecret)
+                                    OfflineRecordingData.parseDataFromOfflineFile(
+                                        byteArrayOutputStream.toByteArray(),
+                                        mapPolarFeatureToPmdClientMeasurementType(entry.type),
+                                        pmdSecret
+                                    )
                                 }
                                 .map { offlineRecData ->
-                                    val polarSettings = offlineRecData.recordingSettings?.let { mapPmdSettingsToPolarSettings(it, fromSelected = false) }
+                                    val polarSettings = offlineRecData.recordingSettings?.let {
+                                        mapPmdSettingsToPolarSettings(
+                                            it,
+                                            fromSelected = false
+                                        )
+                                    }
                                     val startTime = offlineRecData.startTime
                                     when (val offlineData = offlineRecData.data) {
                                         is AccData -> {
-                                            polarSettings ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Acc data is missing settings")
-                                            PolarOfflineRecordingData.AccOfflineRecording(mapPmdClientAccDataToPolarAcc(offlineData), startTime, polarSettings)
+                                            polarSettings
+                                                ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Acc data is missing settings")
+                                            PolarOfflineRecordingData.AccOfflineRecording(
+                                                mapPmdClientAccDataToPolarAcc(offlineData),
+                                                startTime,
+                                                polarSettings
+                                            )
                                         }
+
                                         is GyrData -> {
-                                            polarSettings ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Gyro data is missing settings")
-                                            PolarOfflineRecordingData.GyroOfflineRecording(mapPmdClientGyroDataToPolarGyro(offlineData), startTime, polarSettings)
+                                            polarSettings
+                                                ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Gyro data is missing settings")
+                                            PolarOfflineRecordingData.GyroOfflineRecording(
+                                                mapPmdClientGyroDataToPolarGyro(offlineData),
+                                                startTime,
+                                                polarSettings
+                                            )
                                         }
+
                                         is MagData -> {
-                                            polarSettings ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Magnetometer data is missing settings")
-                                            PolarOfflineRecordingData.MagOfflineRecording(mapPmdClientMagDataToPolarMagnetometer(offlineData), startTime, polarSettings)
+                                            polarSettings
+                                                ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Magnetometer data is missing settings")
+                                            PolarOfflineRecordingData.MagOfflineRecording(
+                                                mapPmdClientMagDataToPolarMagnetometer(offlineData),
+                                                startTime,
+                                                polarSettings
+                                            )
                                         }
+
                                         is PpgData -> {
-                                            polarSettings ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Ppg data is missing settings")
-                                            PolarOfflineRecordingData.PpgOfflineRecording(mapPMDClientPpgDataToPolarPpg(offlineData), startTime, polarSettings)
+                                            polarSettings
+                                                ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Ppg data is missing settings")
+                                            PolarOfflineRecordingData.PpgOfflineRecording(
+                                                mapPMDClientPpgDataToPolarPpg(offlineData),
+                                                startTime,
+                                                polarSettings
+                                            )
                                         }
-                                        is PpiData -> PolarOfflineRecordingData.PpiOfflineRecording(mapPMDClientPpiDataToPolarPpiData(offlineData), startTime)
-                                        is OfflineHrData -> PolarOfflineRecordingData.HrOfflineRecording(mapPMDClientOfflineHrDataToPolarHrData(offlineData), startTime)
-                                        is TemperatureData -> PolarOfflineRecordingData.TemperatureOfflineRecording(
-                                            mapPMDClientOfflineTemperatureDataToPolarTemperatureData(offlineData), startTime
+
+                                        is PpiData -> PolarOfflineRecordingData.PpiOfflineRecording(
+                                            mapPMDClientPpiDataToPolarPpiData(offlineData),
+                                            startTime
                                         )
+
+                                        is OfflineHrData -> PolarOfflineRecordingData.HrOfflineRecording(
+                                            mapPMDClientOfflineHrDataToPolarHrData(offlineData),
+                                            startTime
+                                        )
+
+                                        is TemperatureData -> PolarOfflineRecordingData.TemperatureOfflineRecording(
+                                            mapPMDClientOfflineTemperatureDataToPolarTemperatureData(
+                                                offlineData
+                                            ), startTime
+                                        )
+
                                         else -> throw PolarOfflineRecordingError("Data type is not supported.")
                                     }
-                                }.onErrorResumeNext { throwable: Throwable -> Single.error(handleError(throwable)) }
+                                }.onErrorResumeNext { throwable: Throwable ->
+                                    Single.error(handleError(throwable))
+                                }
                                 .doFinally {
                                     client.sendNotification(
                                         PftpNotification.PbPFtpHostToDevNotification.TERMINATE_SESSION_VALUE,
@@ -850,7 +1219,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                         .onErrorComplete()
                                         .subscribe()
                                 }
-                                .subscribe { polarOfflineRecordingData -> emitter.onSuccess(polarOfflineRecordingData) }
+                                .subscribe { polarOfflineRecordingData ->
+                                    emitter.onSuccess(
+                                        polarOfflineRecordingData
+                                    )
+                                }
                         }
                         var lastTimestamp = 0uL
                         Observable.fromIterable(0 until count)
@@ -906,8 +1279,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                     }
                                                         ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Acc data is missing settings")
 
-                                                val polarAcc = mapPmdClientAccDataToPolarAcc(offlineData)
-                                                lastTimestamp = polarAcc.samples.last().timeStamp.toULong()
+                                                val polarAcc =
+                                                    mapPmdClientAccDataToPolarAcc(offlineData)
+                                                lastTimestamp =
+                                                    polarAcc.samples.last().timeStamp.toULong()
                                                 polarAccData?.let { existingData ->
                                                     polarAccData = existingData.appendAccData(
                                                         existingData,
@@ -923,6 +1298,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                         )
                                                 }
                                             }
+
                                             is GyrData -> {
                                                 val polarSettings =
                                                     offlineRecordingData.recordingSettings?.let {
@@ -933,8 +1309,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                     }
                                                         ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Gyro data is missing settings")
 
-                                                val polarGyr = mapPmdClientGyroDataToPolarGyro(offlineData)
-                                                lastTimestamp = polarGyr.samples.last().timeStamp.toULong()
+                                                val polarGyr =
+                                                    mapPmdClientGyroDataToPolarGyro(offlineData)
+                                                lastTimestamp =
+                                                    polarGyr.samples.last().timeStamp.toULong()
                                                 polarGyroData?.let { existingData ->
                                                     polarGyroData = existingData.appendGyroData(
                                                         existingData,
@@ -950,6 +1328,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                         )
                                                 }
                                             }
+
                                             is MagData -> {
                                                 val polarSettings =
                                                     offlineRecordingData.recordingSettings?.let {
@@ -960,8 +1339,12 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                     }
                                                         ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Magnetometer data is missing settings")
 
-                                                val polarMag = mapPmdClientMagDataToPolarMagnetometer(offlineData)
-                                                lastTimestamp = polarMag.samples.last().timeStamp.toULong()
+                                                val polarMag =
+                                                    mapPmdClientMagDataToPolarMagnetometer(
+                                                        offlineData
+                                                    )
+                                                lastTimestamp =
+                                                    polarMag.samples.last().timeStamp.toULong()
                                                 polarMagData?.let { existingData ->
                                                     polarMagData = existingData.appendMagData(
                                                         existingData,
@@ -976,6 +1359,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                         )
                                                 }
                                             }
+
                                             is PpgData -> {
                                                 val polarSettings =
                                                     offlineRecordingData.recordingSettings?.let {
@@ -986,8 +1370,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                     }
                                                         ?: throw PolarOfflineRecordingError("getOfflineRecord failed. Ppg data is missing settings")
 
-                                                val polarPpg = mapPMDClientPpgDataToPolarPpg(offlineData)
-                                                lastTimestamp = polarPpg.samples.last().timeStamp.toULong()
+                                                val polarPpg =
+                                                    mapPMDClientPpgDataToPolarPpg(offlineData)
+                                                lastTimestamp =
+                                                    polarPpg.samples.last().timeStamp.toULong()
                                                 polarPpgData?.let { existingData ->
                                                     polarPpgData = existingData.appendPpgData(
                                                         existingData,
@@ -1002,6 +1388,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                         )
                                                 }
                                             }
+
                                             is PpiData -> {
                                                 if (polarPpiData == null) {
                                                     polarPpiData =
@@ -1025,33 +1412,46 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                     )
                                                 }
                                             }
+
                                             is OfflineHrData -> {
                                                 polarHrData?.let { existingData ->
                                                     polarHrData = existingData.appendHrData(
                                                         existingData,
-                                                        mapPMDClientOfflineHrDataToPolarHrData(offlineData)
+                                                        mapPMDClientOfflineHrDataToPolarHrData(
+                                                            offlineData
+                                                        )
                                                     )
                                                 } ?: run {
                                                     polarHrData =
                                                         PolarOfflineRecordingData.HrOfflineRecording(
-                                                            mapPMDClientOfflineHrDataToPolarHrData(offlineData),
+                                                            mapPMDClientOfflineHrDataToPolarHrData(
+                                                                offlineData
+                                                            ),
                                                             offlineRecordingData.startTime
                                                         )
                                                 }
                                             }
+
                                             is TemperatureData -> {
                                                 polarTemperatureData?.let { existingData ->
-                                                    polarTemperatureData = existingData.appendTemperatureData(
-                                                        existingData,
-                                                        mapPMDClientOfflineTemperatureDataToPolarTemperatureData(offlineData)
-                                                    )
+                                                    polarTemperatureData =
+                                                        existingData.appendTemperatureData(
+                                                            existingData,
+                                                            mapPMDClientOfflineTemperatureDataToPolarTemperatureData(
+                                                                offlineData
+                                                            )
+                                                        )
                                                 } ?: run {
-                                                    polarTemperatureData = PolarOfflineRecordingData.TemperatureOfflineRecording(
-                                                        mapPMDClientOfflineTemperatureDataToPolarTemperatureData(offlineData),
-                                                        offlineRecordingData.startTime
-                                                    )
+                                                    polarTemperatureData =
+                                                        PolarOfflineRecordingData.TemperatureOfflineRecording(
+                                                            mapPMDClientOfflineTemperatureDataToPolarTemperatureData(
+                                                                offlineData
+                                                            ),
+                                                            offlineRecordingData.startTime
+                                                        )
                                                 }
                                             }
+
                                             else -> throw PolarOfflineRecordingError("Data type is not supported.")
                                         }
                                         Single.just(true)
@@ -1134,7 +1534,9 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         val directory =
                             PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray())
                         val prefix = entry.path.substringAfterLast("/").substringBefore(".REC")
-                        val matchingEntries = directory.entriesList.filter { it.name.startsWith(prefix) && Regex("\\d\\.").containsMatchIn(it.name) }
+                        val matchingEntries = directory.entriesList.filter {
+                            it.name.startsWith(prefix) && Regex("\\d\\.").containsMatchIn(it.name)
+                        }
                         matchingEntries.size
                     }
                     .onErrorResumeNext { throwable: Throwable ->
@@ -1152,7 +1554,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         } catch (error: Throwable) {
             return Flowable.error(error)
         }
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Flowable.error(PolarServiceNotAvailable())
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Flowable.error(PolarServiceNotAvailable())
 
         when (getFileSystemType(session.polarDeviceType)) {
             FileSystemType.SAGRFC2_FILE_SYSTEM -> {
@@ -1171,60 +1574,128 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     val format = SimpleDateFormat("yyyyMMdd HHmmss", Locale.getDefault())
                     val date = format.parse(components[3] + " " + components[5])
                         ?: throw PolarInvalidArgument("Listing offline recording failed. Cannot parse create data from date ${components[3]} and time ${components[5]}")
-                    val type = mapPmdClientFeatureToPolarFeature(mapOfflineRecordingFileNameToMeasurementType(components[6]))
-                    PolarOfflineRecordingEntry(path = entry.first, size = entry.second, date = date, type = type)
-                }.onErrorResumeNext { throwable: Throwable -> Flowable.error(handleError(throwable)) }
+                    val type = mapPmdClientFeatureToPolarFeature(
+                        mapOfflineRecordingFileNameToMeasurementType(components[6])
+                    )
+                    PolarOfflineRecordingEntry(
+                        path = entry.first,
+                        size = entry.second,
+                        date = date,
+                        type = type
+                    )
+                }.onErrorResumeNext { throwable: Throwable ->
+                    Flowable.error(
+                        handleError(
+                            throwable
+                        )
+                    )
+                }
             }
+
             else -> return Flowable.error(PolarOperationNotSupported())
         }
     }
 
-
-    override fun getSplitOfflineRecord(identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret?): Single<PolarOfflineRecordingData> {
+    override fun getSplitOfflineRecord(
+        identifier: String,
+        entry: PolarOfflineRecordingEntry,
+        secret: PolarRecordingSecret?
+    ): Single<PolarOfflineRecordingData> {
         val session = try {
             sessionPsFtpClientReady(identifier)
         } catch (e: Exception) {
             return Single.error(e)
         }
 
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Single.error(PolarServiceNotAvailable())
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Single.error(PolarServiceNotAvailable())
         val fsType = getFileSystemType(session.polarDeviceType)
         return if (fsType == FileSystemType.SAGRFC2_FILE_SYSTEM) {
             val builder = PftpRequest.PbPFtpOperation.newBuilder()
             builder.command = PftpRequest.PbPFtpOperation.Command.GET
             builder.path = entry.path
 
-            BleLogger.d(TAG, "Split offline record get. Device: $identifier Path: ${entry.path} Secret used: ${secret != null}")
-            client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE, null)
+            BleLogger.d(
+                TAG,
+                "Split offline record get. Device: $identifier Path: ${entry.path} Secret used: ${secret != null}"
+            )
+            client.sendNotification(
+                PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE,
+                null
+            )
                 .andThen(client.request(builder.build().toByteArray()))
                 .map { byteArrayOutputStream: ByteArrayOutputStream ->
                     val pmdSecret = secret?.let { mapPolarSecretToPmdSecret(it) }
-                    OfflineRecordingData.parseDataFromOfflineFile(byteArrayOutputStream.toByteArray(), mapPolarFeatureToPmdClientMeasurementType(entry.type), pmdSecret)
+                    OfflineRecordingData.parseDataFromOfflineFile(
+                        byteArrayOutputStream.toByteArray(),
+                        mapPolarFeatureToPmdClientMeasurementType(entry.type),
+                        pmdSecret
+                    )
                 }
                 .map { offlineRecData ->
-                    val polarSettings = offlineRecData.recordingSettings?.let { mapPmdSettingsToPolarSettings(it, fromSelected = false) }
+                    val polarSettings = offlineRecData.recordingSettings?.let {
+                        mapPmdSettingsToPolarSettings(
+                            it,
+                            fromSelected = false
+                        )
+                    }
                     val startTime = offlineRecData.startTime
                     when (val offlineData = offlineRecData.data) {
                         is AccData -> {
-                            polarSettings ?: throw PolarOfflineRecordingError("getSplitOfflineRecord failed. Acc data is missing settings")
-                            PolarOfflineRecordingData.AccOfflineRecording(mapPmdClientAccDataToPolarAcc(offlineData), startTime, polarSettings)
+                            polarSettings
+                                ?: throw PolarOfflineRecordingError("getSplitOfflineRecord failed. Acc data is missing settings")
+                            PolarOfflineRecordingData.AccOfflineRecording(
+                                mapPmdClientAccDataToPolarAcc(offlineData),
+                                startTime,
+                                polarSettings
+                            )
                         }
+
                         is GyrData -> {
-                            polarSettings ?: throw PolarOfflineRecordingError("getSplitOfflineRecord failed. Gyro data is missing settings")
-                            PolarOfflineRecordingData.GyroOfflineRecording(mapPmdClientGyroDataToPolarGyro(offlineData), startTime, polarSettings)
+                            polarSettings
+                                ?: throw PolarOfflineRecordingError("getSplitOfflineRecord failed. Gyro data is missing settings")
+                            PolarOfflineRecordingData.GyroOfflineRecording(
+                                mapPmdClientGyroDataToPolarGyro(offlineData),
+                                startTime,
+                                polarSettings
+                            )
                         }
+
                         is MagData -> {
-                            polarSettings ?: throw PolarOfflineRecordingError("getSplitOfflineRecord failed. Magnetometer data is missing settings")
-                            PolarOfflineRecordingData.MagOfflineRecording(mapPmdClientMagDataToPolarMagnetometer(offlineData), startTime, polarSettings)
+                            polarSettings
+                                ?: throw PolarOfflineRecordingError("getSplitOfflineRecord failed. Magnetometer data is missing settings")
+                            PolarOfflineRecordingData.MagOfflineRecording(
+                                mapPmdClientMagDataToPolarMagnetometer(offlineData),
+                                startTime,
+                                polarSettings
+                            )
                         }
+
                         is PpgData -> {
-                            polarSettings ?: throw PolarOfflineRecordingError("getSplitOfflineRecord failed. Ppg data is missing settings")
-                            PolarOfflineRecordingData.PpgOfflineRecording(mapPMDClientPpgDataToPolarPpg(offlineData), startTime, polarSettings)
+                            polarSettings
+                                ?: throw PolarOfflineRecordingError("getSplitOfflineRecord failed. Ppg data is missing settings")
+                            PolarOfflineRecordingData.PpgOfflineRecording(
+                                mapPMDClientPpgDataToPolarPpg(offlineData),
+                                startTime,
+                                polarSettings
+                            )
                         }
-                        is PpiData -> PolarOfflineRecordingData.PpiOfflineRecording(mapPMDClientPpiDataToPolarPpiData(offlineData), startTime)
-                        is OfflineHrData -> PolarOfflineRecordingData.HrOfflineRecording(mapPMDClientOfflineHrDataToPolarHrData(offlineData), startTime)
+
+                        is PpiData -> PolarOfflineRecordingData.PpiOfflineRecording(
+                            mapPMDClientPpiDataToPolarPpiData(offlineData),
+                            startTime
+                        )
+
+                        is OfflineHrData -> PolarOfflineRecordingData.HrOfflineRecording(
+                            mapPMDClientOfflineHrDataToPolarHrData(offlineData),
+                            startTime
+                        )
+
                         is TemperatureData -> PolarOfflineRecordingData.TemperatureOfflineRecording(
-                            mapPMDClientOfflineTemperatureDataToPolarTemperatureData(offlineData), startTime)
+                            mapPMDClientOfflineTemperatureDataToPolarTemperatureData(offlineData),
+                            startTime
+                        )
+
                         else -> throw PolarOfflineRecordingError("getSplitOfflineRecord failed. Data type is not supported.")
                     }
                 }.onErrorResumeNext { throwable: Throwable -> Single.error(handleError(throwable)) }
@@ -1245,7 +1716,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         } catch (error: Throwable) {
             return Completable.error(error)
         }
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Completable.error(PolarServiceNotAvailable())
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Completable.error(PolarServiceNotAvailable())
 
         when (getFileSystemType(session.polarDeviceType)) {
             FileSystemType.SAGRFC2_FILE_SYSTEM -> {
@@ -1257,7 +1729,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
                 return client.request(builder.build().toByteArray())
                     .flatMap { byteArrayOutputStream: ByteArrayOutputStream ->
-                        val directory = PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray())
+                        val directory =
+                            PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray())
                         val removeBuilder = PftpRequest.PbPFtpOperation.newBuilder()
                         removeBuilder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
                         if (directory.entriesCount <= 1) {
@@ -1265,13 +1738,20 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                             removeBuilder.path = "/U/0/" + components[3] + "/"
                         } else {
                             // remove only exercise
-                            removeBuilder.path = "/U/0/" + components[3] + "/E/" + components[5] + "/"
+                            removeBuilder.path =
+                                "/U/0/" + components[3] + "/E/" + components[5] + "/"
                         }
                         client.request(removeBuilder.build().toByteArray())
                     }
                     .toObservable()
                     .ignoreElements()
-                    .onErrorResumeNext { throwable: Throwable -> Completable.error(handleError(throwable)) }
+                    .onErrorResumeNext { throwable: Throwable ->
+                        Completable.error(
+                            handleError(
+                                throwable
+                            )
+                        )
+                    }
             }
 
             FileSystemType.H10_FILE_SYSTEM -> {
@@ -1281,15 +1761,25 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 return client.request(builder.build().toByteArray())
                     .toObservable()
                     .ignoreElements()
-                    .onErrorResumeNext { throwable: Throwable -> Completable.error(handleError(throwable)) }
+                    .onErrorResumeNext { throwable: Throwable ->
+                        Completable.error(
+                            handleError(
+                                throwable
+                            )
+                        )
+                    }
             }
+
             FileSystemType.UNKNOWN_FILE_SYSTEM -> {
                 return Completable.error(PolarOperationNotSupported())
             }
         }
     }
 
-    override fun removeOfflineRecord(identifier: String, entry: PolarOfflineRecordingEntry): Completable {
+    override fun removeOfflineRecord(
+        identifier: String,
+        entry: PolarOfflineRecordingEntry
+    ): Completable {
         val fileDeletionMap: MutableMap<String, Boolean> = mutableMapOf()
         BleLogger.d(TAG, "Remove offline record from device $identifier path ${entry.path}")
         val session = try {
@@ -1298,7 +1788,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             return Completable.error(error)
         }
 
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Completable.error(PolarServiceNotAvailable())
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Completable.error(PolarServiceNotAvailable())
         val fsType = getFileSystemType(session.polarDeviceType)
         return if (fsType == FileSystemType.SAGRFC2_FILE_SYSTEM) {
             getSubRecordingCount(identifier, entry)
@@ -1316,9 +1807,15 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                     "$subRecordingIndex.REC"
                                 )
 
-                                fileDeletionMap.put(listOf(recordingPath.split("/")
-                                    .subList(0, recordingPath.split("/")
-                                        .lastIndex - 1))[0].joinToString(separator = "/"), false)
+                                fileDeletionMap.put(
+                                    listOf(
+                                        recordingPath.split("/")
+                                            .subList(
+                                                0, recordingPath.split("/")
+                                                    .lastIndex - 1
+                                            )
+                                    )[0].joinToString(separator = "/"), false
+                                )
                                 val builder = PftpRequest.PbPFtpOperation.newBuilder()
                                 builder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
                                 builder.path = recordingPath
@@ -1346,7 +1843,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                 deleteDataDirectories(identifier).subscribe()
                             }
                         }
-                        .doOnError { error ->
+                       .doOnError { error ->
                             BleLogger.e(
                                 TAG,
                                 "Failed to list files from directory $dir from device $identifier. Error: $error"
@@ -1360,7 +1857,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
-    private fun removeOfflineFilesRecursively(client: BlePsFtpClient, deletePath: String, whileContaining: Regex? = null): Completable {
+    private fun removeOfflineFilesRecursively(
+        client: BlePsFtpClient,
+        deletePath: String,
+        whileContaining: Regex? = null
+    ): Completable {
         require(whileContaining?.let { deletePath.contains(it) } ?: true) {
             Completable.error(PolarOfflineRecordingError(detailMessage = "Not valid offline recording path to delete $deletePath"))
         }
@@ -1378,18 +1879,24 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         return client.request(builder.build().toByteArray())
             .toFlowable()
             .flatMapCompletable { byteArrayOutputStream: ByteArrayOutputStream ->
-                val parentDirEntries = PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray())
+                val parentDirEntries =
+                    PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray())
                 val isParentDirValid = whileContaining?.let { parentDir.contains(it) } ?: true
 
                 if (parentDirEntries.entriesCount <= 1 && isParentDirValid) {
                     // the parent directory is valid to be deleted
-                    return@flatMapCompletable removeOfflineFilesRecursively(client, parentDir, whileContaining)
+                    return@flatMapCompletable removeOfflineFilesRecursively(
+                        client,
+                        parentDir,
+                        whileContaining
+                    )
                 } else {
                     val removeBuilder = PftpRequest.PbPFtpOperation.newBuilder()
                     removeBuilder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
                     removeBuilder.path = deletePath
                     BleLogger.d(TAG, "Remove offline recording from the path $deletePath")
-                    return@flatMapCompletable client.request(removeBuilder.build().toByteArray()).toObservable().ignoreElements()
+                    return@flatMapCompletable client.request(removeBuilder.build().toByteArray())
+                        .toObservable().ignoreElements()
                 }
             }
     }
@@ -1400,11 +1907,17 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 .distinct()
                 .map { bleDeviceSession: BleDeviceSession ->
                     PolarDeviceInfo(
-                        bleDeviceSession.polarDeviceId,
-                        bleDeviceSession.address,
-                        bleDeviceSession.rssi,
-                        bleDeviceSession.name,
-                        bleDeviceSession.isConnectableAdvertisement
+                        deviceId = bleDeviceSession.polarDeviceId,
+                        address = bleDeviceSession.address,
+                        rssi = bleDeviceSession.rssi,
+                        name = bleDeviceSession.name,
+                        isConnectable = bleDeviceSession.isConnectableAdvertisement,
+                        hasHeartRateService = bleDeviceSession.advertisementContent.containsService(
+                            HR_SERVICE_16BIT_UUID
+                        ),
+                        hasFileSystemService = bleDeviceSession.advertisementContent.containsService(
+                            PFTP_SERVICE_16BIT_UUID
+                        ),
                     )
                 }
         }
@@ -1444,7 +1957,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         } catch (error: Throwable) {
             return Single.error(error)
         }
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Single.error(PolarServiceNotAvailable())
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Single.error(PolarServiceNotAvailable())
         return client.query(PftpRequest.PbPFtpQuery.GET_DISK_SPACE_VALUE, null)
             .map {
                 val proto = PftpResponse.PbPFtpDiskSpaceResult.parseFrom(it.toByteArray())
@@ -1468,8 +1982,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 val builder = PftpRequest.PbPFtpOperation.newBuilder()
                 builder.command = PftpRequest.PbPFtpOperation.Command.PUT
                 builder.path = LedConfig.LED_CONFIG_FILENAME
-                val sdkModeLedByte = if (ledConfig.sdkModeLedEnabled) LedConfig.LED_ANIMATION_ENABLE_BYTE else LedConfig.LED_ANIMATION_DISABLE_BYTE
-                val ppiModeLedByte = if (ledConfig.ppiModeLedEnabled) LedConfig.LED_ANIMATION_ENABLE_BYTE else LedConfig.LED_ANIMATION_DISABLE_BYTE
+                val sdkModeLedByte =
+                    if (ledConfig.sdkModeLedEnabled) LedConfig.LED_ANIMATION_ENABLE_BYTE else LedConfig.LED_ANIMATION_DISABLE_BYTE
+                val ppiModeLedByte =
+                    if (ledConfig.ppiModeLedEnabled) LedConfig.LED_ANIMATION_ENABLE_BYTE else LedConfig.LED_ANIMATION_DISABLE_BYTE
                 val data = ByteArrayInputStream(byteArrayOf(sdkModeLedByte, ppiModeLedByte))
 
                 client.write(builder.build().toByteArray(), data)
@@ -1485,7 +2001,48 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
-    private fun getFile(identifier: String, path: String): Single<ByteArray> {
+    override fun listRestApiServices(identifier: String): Single<PolarDeviceRestApiServices> {
+        val observable: Single<PolarDeviceRestApiServices> =
+            getJSONDecodableFromPath<PolarDeviceRestApiServices>(
+                identifier = identifier,
+                path = "/REST/SERVICE.API",
+                mapper = { jsonString ->
+                    val map: Map<String, Any> = Gson().fromJson(jsonString, object: TypeToken<Map<String,Any>>() {}.type)
+                    val services = PolarDeviceRestApiServices(map)
+                    services
+                }
+            )
+        return observable
+    }
+
+    override fun getRestApiDescription(identifier: String, path: String): Single<PolarDeviceRestApiServiceDescription> {
+        val observable: Single<PolarDeviceRestApiServiceDescription> =
+            getJSONMapFromPath(identifier = identifier, path = path)
+                .map { map ->
+                    val description = PolarDeviceRestApiServiceDescription(map)
+                    description
+                }
+        return observable
+    }
+
+    private fun getJSONMapFromPath(identifier: String, path: String): Single<Map<String,Any>> {
+        return getJSONDecodableFromPath(
+            identifier = identifier,
+            path = path,
+            mapper =  { jsonString ->
+                Gson().fromJson(jsonString, object: TypeToken<Map<String,Any>>() {}.type)
+            }
+        )
+    }
+
+    private fun <T:Any> getJSONDecodableFromPath(identifier: String, path: String, mapper:((jsonString: String) -> T)): Single<T> {
+        return getFile(identifier = identifier, path = path)
+            .map { byteArray ->
+                mapper(byteArray.toString(kotlin.text.Charsets.UTF_8))
+            }
+    }
+
+    override fun getFile(identifier: String, path: String): Single<ByteArray> {
         val session = try {
             sessionPsFtpClientReady(identifier)
         } catch (error: Throwable) {
@@ -1507,6 +2064,70 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     }
             }
             else -> Single.error(PolarOperationNotSupported())
+        }
+    }
+
+    override fun <T : RestApiEventPayload>receiveRestApiEvents (identifier: String, mapper:((jsonString: String) -> T)): Flowable<List<T>> {
+        val session = try {
+            sessionPsFtpClientReady(identifier)
+        } catch (error: Throwable) {
+            return Flowable.error(error)
+        }
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Flowable.error(PolarServiceNotAvailable())
+        return client.receiveRestApiEvents(identifier = identifier).map { list ->
+            list.map(mapper)
+        }
+    }
+
+    override fun putNotification(identifier: String, notification: String, path: String): Completable {
+        return pFtpPutOperation(
+            identifier = identifier,
+            path = path,
+            data = notification.toByteArray()
+        )
+    }
+
+    private fun pFtpPutOperation(identifier: String, path: String, data: ByteArray): Completable {
+        return pFtpWriteOperation(
+            identifier = identifier,
+            command = PftpRequest.PbPFtpOperation.Command.PUT,
+            path = path,
+            data = data
+        )
+    }
+
+    private fun pFtpWriteOperation(identifier: String,
+                                    command: PftpRequest.PbPFtpOperation.Command,
+                                    data: ByteArray,
+                                    path: String): Completable {
+        return Completable.create { emitter ->
+            try {
+                val session = sessionPsFtpClientReady(identifier)
+                val client =
+                    session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                        ?: throw PolarServiceNotAvailable()
+                val builder = PftpRequest.PbPFtpOperation.newBuilder()
+                builder.command = command
+                builder.path = path
+                val dataInputStream = ByteArrayInputStream(data)
+
+                sendInitializationAndStartSyncNotifications(client)
+
+                client.write(builder.build().toByteArray(), dataInputStream)
+                    .subscribe({
+                        BleLogger.d(TAG, "pFtpWriteOperation client write progress $it: $path")
+                    },{ error ->
+                        BleLogger.e(TAG, "pFtpWriteOperation() client write $path error: $error")
+                        emitter.onError(error)
+                    },{
+                        BleLogger.d(TAG, "pFtpWriteOperation client write completed for $path")
+                        emitter.onComplete()
+                    })
+            } catch (error: Throwable) {
+                BleLogger.e(TAG, "pFtpWriteOperation() $path error: $error")
+                emitter.onError(error)
+            }
         }
     }
 
@@ -1617,19 +2238,25 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
-
-    override fun setWareHouseSleep(identifier: String, sleepEnabled: Boolean?): Completable {
-        val session = try {
-            sessionPsFtpClientReady(identifier)
-        } catch (error: Throwable) {
-            return Completable.error(error)
+    override fun isFtuDone(identifier: String): Single<Boolean> {
+        return Single.create { emitter ->
+            val disposable = getFile(identifier, UserIdentifierType.USER_IDENTIFIER_FILENAME)
+                .subscribe(
+                    { byteArray ->
+                        try {
+                            emitter.onSuccess(UserIds.PbUserIdentifier.parseFrom(byteArray).hasMasterIdentifier())
+                        } catch (e: Exception) {
+                            BleLogger.e(TAG, "Failed to check if the first time use has been done: $e")
+                            emitter.onError(e)
+                        }
+                    },
+                    { error ->
+                        BleLogger.e(TAG, "Failed to check if the first time use has been done: $error")
+                        emitter.onError(error)
+                    }
+                )
+            emitter.setCancellable { disposable.dispose() }
         }
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Completable.error(PolarServiceNotAvailable())
-        val params = PftpNotification.PbPFtpFactoryResetParams.newBuilder()
-        params.sleep = sleepEnabled ?: false
-        params.otaFwupdate = true
-        BleLogger.d(TAG, "send factory reset notification to device $identifier and set warehouse sleep setting to $sleepEnabled")
-        return client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.RESET.ordinal, params.build().toByteArray())
     }
 
     override fun setWareHouseSleep(identifier: String): Completable {
@@ -1785,27 +2412,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         })
     }
 
-    override fun startOhrStreaming(identifier: String, sensorSetting: PolarSensorSetting): Flowable<PolarOhrData> {
-        return startStreaming(identifier, PmdMeasurementType.PPG, sensorSetting, observer = { client: BlePMDClient ->
-            client.monitorPpgNotifications(true)
-                .map { ppgData: PpgData -> mapPMDClientOhrDataToPolarOhr(ppgData) }
-        })
-    }
-
     override fun startPpiStreaming(identifier: String): Flowable<PolarPpiData> {
         return startStreaming(identifier, PmdMeasurementType.PPI, PolarSensorSetting(emptyMap())) { client: BlePMDClient ->
             client.monitorPpiNotifications(true)
                 .map { ppiData: PpiData ->
                     mapPMDClientPpiDataToPolarPpiData(ppiData)
-                }
-        }
-    }
-
-    override fun startOhrPPIStreaming(identifier: String): Flowable<PolarOhrPPIData> {
-        return startStreaming(identifier, PmdMeasurementType.PPI, PolarSensorSetting(emptyMap())) { client: BlePMDClient ->
-            client.monitorPpiNotifications(true)
-                .map { ppiData: PpiData ->
-                    mapPMDClientPpiDataToPolarOhrPpiData(ppiData)
                 }
         }
     }
@@ -1826,6 +2437,22 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     mapPmdClientGyroDataToPolarGyro(gyro)
                 }
         })
+    }
+
+    override fun startPressureStreaming(identifier: String, sensorSetting: PolarSensorSetting): Flowable<PolarPressureData> {
+        return startStreaming(identifier, PmdMeasurementType.PRESSURE, sensorSetting) { client: BlePMDClient ->
+            client.monitorPressureNotifications(true)
+                .map { pressure: PressureData ->
+                    mapPmdClientPressureDataToPolarPressure(pressure)
+                }
+        }
+    }
+
+    override fun startLocationStreaming(identifier: String, sensorSetting: PolarSensorSetting): Flowable<PolarLocationData> {
+        return startStreaming(identifier, PmdMeasurementType.LOCATION, sensorSetting) { client: BlePMDClient ->
+            client.monitorLocationNotifications(true)
+                .map { gnssLocationData: GnssLocationData -> mapPMDClientLocationDataToPolarLocationData(gnssLocationData) }
+        }
     }
 
     override fun startTemperatureStreaming(identifier: String, sensorSetting: PolarSensorSetting): Flowable<PolarTemperatureData> {
@@ -1913,6 +2540,9 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 if (pmdFeature.contains(PmdMeasurementType.PPI)) deviceData.add(PolarDeviceDataType.PPI)
                 if (pmdFeature.contains(PmdMeasurementType.GYRO)) deviceData.add(PolarDeviceDataType.GYRO)
                 if (pmdFeature.contains(PmdMeasurementType.MAGNETOMETER)) deviceData.add(PolarDeviceDataType.MAGNETOMETER)
+                if (pmdFeature.contains(PmdMeasurementType.PRESSURE)) deviceData.add(PolarDeviceDataType.PRESSURE)
+                if (pmdFeature.contains(PmdMeasurementType.LOCATION)) deviceData.add(PolarDeviceDataType.LOCATION)
+                if (pmdFeature.contains(PmdMeasurementType.TEMPERATURE)) deviceData.add(PolarDeviceDataType.TEMPERATURE)
                 if (pmdFeature.contains(PmdMeasurementType.OFFLINE_HR)) deviceData.add(PolarDeviceDataType.HR)
                 if (pmdFeature.contains(PmdMeasurementType.SKIN_TEMP)) deviceData.add(PolarDeviceDataType.SKIN_TEMPERATURE)
                 deviceData
@@ -1955,12 +2585,67 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         if (pmdFeature.contains(PmdMeasurementType.MAGNETOMETER)) {
                             deviceData.add(PolarDeviceDataType.MAGNETOMETER)
                         }
+                        if (pmdFeature.contains(PmdMeasurementType.PRESSURE)) {
+                            deviceData.add(PolarDeviceDataType.PRESSURE)
+                        }
+                        if (pmdFeature.contains(PmdMeasurementType.LOCATION)) {
+                            deviceData.add(PolarDeviceDataType.LOCATION)
+                        }
+                        if (pmdFeature.contains(PmdMeasurementType.TEMPERATURE)) {
+                            deviceData.add(PolarDeviceDataType.TEMPERATURE)
+                        }
                         if (pmdFeature.contains(PmdMeasurementType.SKIN_TEMP)) {
                             deviceData.add(PolarDeviceDataType.SKIN_TEMPERATURE)
                         }
 
                         deviceData
                     })
+    }
+
+    override fun getLogConfig(identifier: String): Single<LogConfig> {
+        return Single.create { emitter ->
+            val disposable = getFile(identifier, LogConfig.LOG_CONFIG_FILENAME)
+                .subscribe(
+                    { byteArray ->
+                        try {
+                            val logConfig = LogConfig.fromBytes(byteArray)
+                            emitter.onSuccess(logConfig)
+                        } catch (e: Exception) {
+                            BleLogger.e(TAG, "Failed to get LogConfig: $e")
+                            emitter.onError(e)
+                        }
+                    },
+                    { error ->
+                        BleLogger.e(TAG, "Failed to get file: $error")
+                        emitter.onError(error)
+                    }
+                )
+            emitter.setCancellable { disposable.dispose() }
+        }
+    }
+
+    override fun setLogConfig(identifier: String, logConfig: LogConfig): Completable {
+        return Completable.create { emitter ->
+            try {
+                val session = sessionPsFtpClientReady(identifier)
+                val client =
+                    session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                        ?: throw PolarServiceNotAvailable()
+                val builder = PftpRequest.PbPFtpOperation.newBuilder()
+                builder.command = PftpRequest.PbPFtpOperation.Command.PUT
+                builder.path = LogConfig.LOG_CONFIG_FILENAME
+                val data = ByteArrayInputStream(logConfig.toProto().toByteArray())
+                client.write(builder.build().toByteArray(), data)
+                    .doOnError { error ->
+                        emitter.onError(error)
+                    }
+                    .subscribe()
+                emitter.onComplete()
+            } catch (error: Throwable) {
+                BleLogger.e(TAG, "Failed to set log config: $error")
+                emitter.onError(error)
+            }
+        }
     }
 
     override fun updateFirmware(identifier: String): Flowable<FirmwareUpdateStatus> {
@@ -2075,8 +2760,15 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                                             })
                                                                             .andThen(Completable.defer {
                                                                                 BleLogger.d(TAG, "Restoring backup to device after version ${firmwareUpdateResponse.version}")
-                                                                                sendInitializationAndStartSyncNotifications(client)
-                                                                                return@defer backupManager.restoreBackup(backup)
+                                                                                client.waitPsFtpClientReady(true)
+                                                                                    .andThen(
+                                                                                        Completable.fromAction {
+                                                                                            sendInitializationAndStartSyncNotifications(client)
+                                                                                        }
+                                                                                    )
+                                                                                    .andThen(
+                                                                                        return@defer backupManager.restoreBackup(backup)
+                                                                                    )
                                                                             })
                                                                             .andThen(Flowable.just(status))
                                                                 } else {
@@ -2209,6 +2901,36 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 }
                 distanceDataList.map { PolarDistanceData(it.first, it.second) }
             }
+    }
+
+    override fun getSleepRecordingState(identifier: String): Single<Boolean> {
+        return observeSleepRecordingState(identifier = identifier)
+            .filter {
+                it.isEmpty() == false
+            }
+            .take(1)
+            .map { array -> array.last() }
+            .singleOrError()
+    }
+
+    override fun observeSleepRecordingState(identifier: String):  Flowable<Array<Boolean>> {
+        val receive: Flowable<Array<Boolean>> =
+            receiveRestApiEvents<PolarSleepApiServiceEventPayload>(identifier, mapper = { it.toObject() })
+                .map { array ->
+                    array.map { it.sleep_recording_state.enabled == 1 }
+                    .toTypedArray()
+                }
+        val subscribe = putNotification(identifier = identifier, notification = "{}",
+            path = "/REST/SLEEP.API?cmd=subscribe&event=sleep_recording_state&details=[enabled]")
+        return subscribe.andThen(receive)
+    }
+
+    override fun stopSleepRecording(identifier: String): Completable {
+        return putNotification(
+            identifier = identifier,
+            notification = "{}",
+            path = "/REST/SLEEP.API?cmd=post&endpoint=stop_sleep_recording"
+        )
     }
 
     override fun getSleep(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<PolarSleepData>> {
@@ -2421,6 +3143,18 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         return PolarAutomaticSamplesUtils.read247HrSamples(client, fromDate, toDate)
     }
 
+    override fun get247PPiSamples(identifier: String, fromDate: Date, toDate: Date): Single<List<Polar247PPiSamplesData>> {
+        val session = try {
+            sessionPsFtpClientReady(identifier)
+        } catch (error: Throwable) {
+            return Single.error(error)
+        }
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Single.error(PolarServiceNotAvailable())
+
+        return PolarAutomaticSamplesUtils.read247PPiSamples(client, fromDate, toDate)
+    }
+
     override fun getNightlyRecharge(identifier: String, fromDate: Date, toDate: Date): Single<List<PolarNightlyRechargeData>> {
         val session = try {
             sessionPsFtpClientReady(identifier)
@@ -2507,7 +3241,6 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 null
         ).subscribe()
     }
-
 
     private fun writeFirmwareToDevice(deviceId: String, firmwareFilePath: String, firmwareBytes: ByteArray): Flowable<Long> {
         return Flowable.create({ emitter ->
@@ -2597,9 +3330,9 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 })
     }
 
-    override fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Completable {
+    override fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Flowable<ConcurrentLinkedQueue<String>> {
 
-        var dataDeletionStats = DataDeletionStats(AtomicBoolean(false), 0)
+        var dataDeletionStats = DataDeletionStats()
         var folderPath = "/U/0"
         val entryPattern = dataType.type
         var cond: FetchRecursiveCondition?
@@ -2609,7 +3342,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 folderPath = "/U/0/AUTOS"
                 cond = FetchRecursiveCondition { entry: String ->
                     entry.matches(Regex("^(\\d{8})(/)")) ||
-                            entry.contains(".BPB")
+                            entry.contains( ".BPB")
                 }
             }
 
@@ -2639,30 +3372,32 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 dataDeletionStats.fileDeletionMap[it] = false
             }.doOnError { error ->
                 BleLogger.e(TAG, "Encountered exception while deleting files in device $identifier.. Error: $error")
-                Completable.error(error)
-            }.doOnComplete {
-                if (dataDeletionStats.amountOfHandedDeletions == dataDeletionStats.fileDeletionMap.size) {
-                    dataDeletionStats.deleteOperationCompleteLock.set(true)
-                }
+                Flowable.error<Throwable>(error)
             }.blockingSubscribe()
+
+        if (dataDeletionStats.fileDeletionMap.size == 0) {
+            var emptyQueue = ConcurrentLinkedQueue<String>()
+            emptyQueue.add("No ${dataType.type} files found for deletion.")
+            return Flowable.just(emptyQueue)
+        }
 
         when (dataType.type) {
             PolarStoredDataType.AUTO_SAMPLE.type -> {
                 BleLogger.d(TAG, "Starting to delete files from /U/0/AUTOS/ folder from device $identifier.")
-                deleteAutoSampleFiles(identifier, dataDeletionStats).parallel().runOn(Schedulers.computation()).sequential()
+               return deleteAutoSampleFiles(identifier, dataDeletionStats)
                     .doOnError { error ->
                         BleLogger.e(TAG, "Encountered exception while deleting AUTO_SAMPLE files in device $identifier. Error: $error")
-                        Completable.error(error)
-                    }.subscribe()
+                        Flowable.error<Throwable>(error)
+                    }
             }
 
             PolarStoredDataType.SDLOGS.type -> {
                 BleLogger.d(TAG, "Starting to delete files from SDLOGS folder from device $identifier.")
-                deleteSdLogFiles(identifier, dataDeletionStats)
+                return deleteSdLogFiles(identifier, dataDeletionStats)
                     .doOnError { error ->
                         BleLogger.e(TAG, "Encountered exception while deleting SDLOGS files in device $identifier. Error: $error")
-                        Completable.error(error)
-                    }.subscribe()
+                        Flowable.error<Throwable>(error)
+                    }
             }
 
             else -> {
@@ -2670,26 +3405,16 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     TAG,
                     "Starting to delete files from /U/0 directory, file type: $dataType.name from device $identifier."
                 )
-                deleteDataDirectories(identifier, until, dataDeletionStats).parallel().runOn(Schedulers.computation()).sequential()
+                return deleteDataDirectories(identifier, until, dataDeletionStats)
                     .doOnError { error ->
                         BleLogger.e(TAG, "Encountered exception while deleting ${dataType.type} files in device $identifier. Error: $error")
-                        Completable.error(error)
-                    }.subscribe()
+                        Flowable.error<Throwable>(error)
+                    }
             }
         }
-
-        try {
-            while(!dataDeletionStats.deleteOperationCompleteLock.get()){
-                Thread.sleep(500);
-            }
-        } catch (e: InterruptedException) {
-            BleLogger.e(TAG, "Encountered exception while waiting for deletion process to complete. Error: $e")
-        }
-
-        return Completable.complete()
     }
 
-    private fun deleteAutoSampleFiles(identifier: String, dataDeletionStats: DataDeletionStats): Flowable<Map.Entry<String, Boolean>> {
+    private fun deleteAutoSampleFiles(identifier: String, dataDeletionStats: DataDeletionStats): Flowable<ConcurrentLinkedQueue<String>> {
 
         return Flowable.fromIterable(dataDeletionStats.fileDeletionMap.asIterable()).doOnEach() { item ->
             val file = item.value
@@ -2697,7 +3422,6 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 getFile(identifier, file.key)
                     .subscribe(
                         { byteArray ->
-                            dataDeletionStats.amountOfHandedDeletions++
                             val proto = PbAutomaticSampleSessions.parseFrom(byteArray)
                             val date = PolarTimeUtils.pbDateToLocalDate(proto.day)
                             // Delete all files but leave files from today.
@@ -2706,15 +3430,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                 removeSingleFile(identifier, file.key)
                                     .map { _ ->
                                         dataDeletionStats.fileDeletionMap[file.key] = true
-                                    }.doFinally {
-                                        if (dataDeletionStats.amountOfHandedDeletions == dataDeletionStats.fileDeletionMap.size) {
-                                            dataDeletionStats.deleteOperationCompleteLock.set(true)
-                                        }
                                     }.doOnError { error ->
                                         BleLogger.e(TAG, "Failed to delete autosync file $file.key from device $identifier. Error: $error")
+                                    }.doOnSuccess {
+                                        dataDeletionStats.deletedDirs.add(file.key)
                                     }.subscribe()
-                            } else if (dataDeletionStats.amountOfHandedDeletions == dataDeletionStats.fileDeletionMap.size) {
-                                dataDeletionStats.deleteOperationCompleteLock.set(true)
                             }
                         },
                         { error ->
@@ -2722,85 +3442,84 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         }
                     )
             }
+        }.map { _ ->
+            dataDeletionStats.deletedDirs
         }
     }
 
-    private fun deleteSdLogFiles(identifier: String, dataDeletionStats: DataDeletionStats):Flowable<Map.Entry<String, Boolean>> {
+    private fun deleteSdLogFiles(identifier: String, dataDeletionStats: DataDeletionStats): Flowable<ConcurrentLinkedQueue<String>> {
 
         return Flowable.fromIterable(dataDeletionStats.fileDeletionMap.asIterable()).doOnEach() { item ->
             val file = item.value
             if (file != null && !file.value) {
-                dataDeletionStats.amountOfHandedDeletions++
                 removeSingleFile(identifier, file.key)
+                    .observeOn(Schedulers.io())
                     .map { _ ->
                         dataDeletionStats.fileDeletionMap[file.key] = true
-
-                    }.doFinally {
-                        if (dataDeletionStats.amountOfHandedDeletions == dataDeletionStats.fileDeletionMap.size) {
-                            dataDeletionStats.deleteOperationCompleteLock.set(true)
-                        }
                     }.doOnError { error ->
                         BleLogger.e(
                             TAG,
                             "Failed to delete Log file $file.key from device $identifier. Error: $error"
                         )
+                    }.doOnSuccess {
+                        dataDeletionStats.deletedDirs.add(file.key)
                     }.subscribe()
-            } else if (dataDeletionStats.amountOfHandedDeletions == dataDeletionStats.fileDeletionMap.size) {
-                dataDeletionStats.deleteOperationCompleteLock.set(true)
             }
+        }.map { _ ->
+            dataDeletionStats.deletedDirs
         }
     }
 
-    private fun deleteDataDirectories(identifier: String, until: LocalDate?, dataDeletionStats: DataDeletionStats): Flowable<Unit> {
+    private fun deleteDataDirectories(identifier: String, until: LocalDate?, dataDeletionStats: DataDeletionStats): Flowable<ConcurrentLinkedQueue<String>> {
 
         return Flowable.fromIterable(dataDeletionStats.fileDeletionMap.asIterable())
-            .map { file ->
-                dataDeletionStats.amountOfHandedDeletions++
+            .doOnEach { item ->
+                val file = item.value
                 var fileDateIsBefore = false
                 val pattern: Pattern =
                     Pattern.compile("(?<!\\d)\\d{8}(?!\\d)")
-                val matcher: Matcher = pattern.matcher(file.key)
-                val found = matcher.find()
-                if (found) {
-                    var entryDate = LocalDate.parse(matcher.group(), dateFormatter)
-                    if (until != null && entryDate.isBefore(until)) {
-                        fileDateIsBefore = true
-                    }
-                }
-                if (fileDateIsBefore) {
-                    val path = listOf(file.key.split("/").subList(0, file.key.split("/").lastIndex))[0].joinToString(separator = "/")
-                    var deleteDir = true
-                    for (dir in dataDeletionStats.deletedDirs) {
-                        if (dir.equals(path)) {
-                            deleteDir = false
-                            break
+                if (file != null) {
+                    val matcher: Matcher = pattern.matcher(file.key)
+                    val found = matcher.find()
+                    if (found) {
+                        var entryDate = LocalDate.parse(matcher.group(), dateFormatter)
+                        if (until != null && entryDate.isBefore(until)) {
+                            fileDateIsBefore = true
                         }
                     }
-                    if (deleteDir) {
-                        dataDeletionStats.deletedDirs.add(path)
-                        removeSingleFile(identifier, path)
-                            .doOnError { error ->
-                                BleLogger.e(
-                                    TAG,
-                                    "Failed to delete data directory $path from device $identifier. Error: $error"
-                                )
-                            }.doFinally {
-                                if (dataDeletionStats.amountOfHandedDeletions == dataDeletionStats.fileDeletionMap.size) {
-                                    dataDeletionStats.deleteOperationCompleteLock.set(true)
-                                }
-                            }.doOnSuccess {
-                                deleteDayDirectory(
-                                    identifier,
-                                    listOf(
-                                        file.key.split("/")
-                                            .subList(0, file.key.split("/").lastIndex - 1)
-                                    )[0].joinToString(separator = "/")
-                                ).subscribe()
-                            }.subscribe()
+                    if (fileDateIsBefore) {
+                        val path = listOf(file.key.split("/").subList(0, file.key.split("/").lastIndex))[0].joinToString(separator = "/")
+                        var deleteDir = true
+                        for (dir in dataDeletionStats.deletedDirs) {
+                            if (dir.equals(path)) {
+                                deleteDir = false
+                                break
+                            }
+                        }
+                        if (deleteDir) {
+                            dataDeletionStats.deletedDirs.add(path)
+                            removeSingleFile(identifier, path)
+                                .observeOn(Schedulers.io())
+                                .doOnError { error ->
+                                    dataDeletionStats.deletedDirs.remove(path)
+                                    BleLogger.e(
+                                        TAG,
+                                        "Failed to delete data directory $path from device $identifier. Error: $error"
+                                    )
+                                }.doAfterSuccess() {
+                                    deleteDayDirectory(
+                                        identifier,
+                                        listOf(
+                                            file.key.split("/")
+                                                .subList(0, file.key.split("/").lastIndex - 1)
+                                        )[0].joinToString(separator = "/")
+                                    ).subscribe()
+                                }.subscribe()
+                        }
                     }
-                } else if (dataDeletionStats.amountOfHandedDeletions == dataDeletionStats.fileDeletionMap.size) {
-                    dataDeletionStats.deleteOperationCompleteLock.set(true)
                 }
+            }.map { _ ->
+                dataDeletionStats.deletedDirs
             }
     }
 
@@ -2811,6 +3530,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             .map { file ->
                 val dir = listOf(file.key.split("/").subList(0, file.key.split("/").lastIndex))[0].joinToString(separator = "/")
                 removeSingleFile(identifier, dir)
+                    .observeOn(Schedulers.io())
                     .doOnError { error ->
                         BleLogger.e(
                             TAG,
@@ -2827,12 +3547,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
         var fileList: MutableList<String> = mutableListOf()
 
-        return Flowable.create({ emitter ->
+        return Flowable.create({ _ ->
             listFiles(identifier, dir,
                 condition = { entry ->
                     entry.matches(Regex("^(\\d{8})(/)")) ||
-                            entry.matches(Regex("^([A-Z-0-9]{1,6}[0-9]{0,10000})(/)")) ||
-                            //entry.matches(Regex("^(\\d{6})(/)")) ||
+                            entry.matches(Regex("^([A-Z-0-9]{1,8}[0-9])(/)")) ||
                             entry.contains(".BPB") ||
                             entry.contains(".REC")
                 })
@@ -2842,6 +3561,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 .doFinally {
                     if (fileList.isEmpty()) {
                         removeSingleFile(identifier, dir)
+                            .observeOn(Schedulers.io())
                             .doOnError { error ->
                                 BleLogger.e(
                                     TAG,
@@ -3077,7 +3797,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 if (session.fetchClient(uuid) != null) {
                     when (uuid) {
                         HR_SERVICE -> {
-                            Completable.fromAction { callback?.hrFeatureReady(deviceId) }
+                            Completable.fromAction { callback?.bleSdkFeatureReady(deviceId, PolarBleSdkFeature.FEATURE_HR) }
                                 .subscribeOn(AndroidSchedulers.mainThread())
                                 .subscribe()
 
@@ -3090,8 +3810,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                             deviceId,
                                             PolarHrData.PolarHrSample(
                                                 hrNotificationData.hrValue,
-                                                0,
-                                                0,
+                                                0, 0,
                                                 hrNotificationData.rrsMs,
                                                 hrNotificationData.rrPresent,
                                                 hrNotificationData.sensorContact,
@@ -3122,30 +3841,12 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                         blePMDClient.readFeature(true)
                                             .observeOn(AndroidSchedulers.mainThread())
                                             .doOnSuccess { pmdFeature: Set<PmdMeasurementType> ->
-                                                val deviceData: MutableSet<PolarDeviceDataType> = HashSet()
-                                                if (pmdFeature.contains(PmdMeasurementType.ECG)) {
-                                                    deviceData.add(PolarDeviceDataType.ECG)
-                                                }
-                                                if (pmdFeature.contains(PmdMeasurementType.ACC)) {
-                                                    deviceData.add(PolarDeviceDataType.ACC)
-                                                }
-                                                if (pmdFeature.contains(PmdMeasurementType.PPG)) {
-                                                    deviceData.add(PolarDeviceDataType.PPG)
-                                                }
-                                                if (pmdFeature.contains(PmdMeasurementType.PPI)) {
-                                                    deviceData.add(PolarDeviceDataType.PPI)
-                                                }
-                                                if (pmdFeature.contains(PmdMeasurementType.GYRO)) {
-                                                    deviceData.add(PolarDeviceDataType.GYRO)
-                                                }
-                                                if (pmdFeature.contains(PmdMeasurementType.MAGNETOMETER)) {
-                                                    deviceData.add(PolarDeviceDataType.MAGNETOMETER)
-                                                }
-                                                callback?.streamingFeaturesReady(deviceId, deviceData)
+                                                callback?.bleSdkFeatureReady(deviceId, PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING)
                                                 if (pmdFeature.contains(PmdMeasurementType.SDK_MODE)) {
-                                                    callback?.sdkModeFeatureAvailable(deviceId)
+                                                    callback?.bleSdkFeatureReady(deviceId, PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE)
                                                 }
-                                            })
+                                            }
+                                    )
                                     .toFlowable()
                             }
                         }
@@ -3169,9 +3870,28 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                 return@flatMap blePsftpClient.clientReady(true)
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .doOnComplete {
-                                        callback?.polarFtpFeatureReady(deviceId)
-                                    }.toFlowable<Any>()
+                                        callback?.bleSdkFeatureReady(deviceId, PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER)
+                                    }
+                                    .toFlowable<Any>()
                             }
+                        }
+                        HealthThermometer.HTS_SERVICE -> {
+                            val bleHtsClient = session.fetchClient(HealthThermometer.HTS_SERVICE) as BleHtsClient?
+                            bleHtsClient?.observeHtsNotifications(true)
+                                ?.observeOn(AndroidSchedulers.mainThread())
+                                ?.subscribe(
+                                    { healthThermometerData ->
+                                        callback?.htsNotificationReceived(
+                                            deviceId,
+                                            PolarHealthThermometerData(
+                                                healthThermometerData.temperatureCelsius,
+                                                healthThermometerData.temperatureFahrenheit
+                                            )
+                                        )
+                                    },
+                                    { error: Throwable -> if (error.message != null) logError(error.message!!) },
+                                    {})
+
                         }
                     }
                 }
@@ -3195,10 +3915,9 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP -> isPolarDeviceTimeFeatureAvailable(discoveredServices, session)
             PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE -> isSdkModeFeatureAvailable(discoveredServices, session)
             PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING -> isH10ExerciseFeatureAvailable(discoveredServices, session)
-            PolarBleSdkFeature.FEATURE_POLAR_LED_ANIMATION -> isLedAnimationFeatureAvailable(
-                discoveredServices,
-                session
-            )
+            PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER -> isPsftpServiceAvailable(discoveredServices,session)
+            PolarBleSdkFeature.FEATURE_HTS -> isHealthThermometerFeatureAvailable(discoveredServices,session)
+            PolarBleSdkFeature.FEATURE_POLAR_LED_ANIMATION -> isLedAnimationFeatureAvailable(discoveredServices, session)
             PolarBleSdkFeature.FEATURE_POLAR_FIRMWARE_UPDATE -> isPolarFirmwareUpdateFeatureAvailable(discoveredServices, session)
             PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA -> isActivityDataFeatureAvailable(discoveredServices, session)
             PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA -> isActivityDataFeatureAvailable(discoveredServices, session)
@@ -3213,6 +3932,18 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             } else {
                 Completable.complete()
             }
+        }
+    }
+
+    private fun isHealthThermometerFeatureAvailable(discoveredServices: List<UUID>, session: BleDeviceSession): Single<Boolean> {
+        return if (discoveredServices.contains(HealthThermometer.HTS_SERVICE)) {
+            val bleHtsClient = session.fetchClient(HealthThermometer.HTS_SERVICE) as BleHtsClient? ?: return Single.just(false)
+            bleHtsClient.clientReady(true)
+                .toSingle {
+                    return@toSingle true
+                }
+        } else {
+            Single.just(false)
         }
     }
 
@@ -3307,6 +4038,17 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             isClientReady.andThen(
                 blePMDClient.clientReady(true)
             ).toSingle {
+                return@toSingle true
+            }
+        } else {
+            Single.just(false)
+        }
+    }
+
+    private fun isPsftpServiceAvailable(discoveredServices: List<UUID>, session: BleDeviceSession): Single<Boolean> {
+        return if (discoveredServices.contains(BlePsFtpUtils.RFC77_PFTP_SERVICE)) {
+            val blePsftpClient = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Single.just(false)
+            blePsftpClient.clientReady(true).toSingle {
                 return@toSingle true
             }
         } else {
@@ -3485,8 +4227,6 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 }
 
 data class DataDeletionStats(
-    val deleteOperationCompleteLock: AtomicBoolean = AtomicBoolean(false),
-    var amountOfHandedDeletions: Int,
     var deletedDirs: ConcurrentLinkedQueue<String> = ConcurrentLinkedQueue(),
     val fileDeletionMap: ConcurrentHashMap<String, Boolean> = ConcurrentHashMap()
 )

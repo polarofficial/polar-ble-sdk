@@ -1,8 +1,22 @@
 package com.polar.sdk.impl.utils
 
-import com.polar.androidcommunications.api.ble.BleLogger
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.*
-import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.*
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdOfflineRecTriggerMode
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdOfflineRecTriggerStatus
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdOfflineTrigger
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSecret
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSetting
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.AccData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.EcgData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.GnssLocationData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.GyrData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.MagData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.OfflineHrData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.PpgData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.PpiData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.PressureData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.SkinTemperatureData
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.TemperatureData
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.errors.PolarBleSdkInternalException
 import com.polar.sdk.api.model.*
@@ -10,26 +24,6 @@ import java.util.Collections
 
 internal object PolarDataUtils {
     private const val TAG = "PolarDataUtils"
-
-    fun mapPMDClientOhrDataToPolarOhr(ohrData: PpgData): PolarOhrData {
-        var type: PolarOhrData.OhrDataType = PolarOhrData.OhrDataType.UNKNOWN
-        val listOfSamples = mutableListOf<PolarOhrData.PolarOhrSample>()
-        for (sample in ohrData.ppgSamples) {
-            when (sample) {
-                is PpgData.PpgDataFrameType0 -> {
-                    type = PolarOhrData.OhrDataType.PPG3_AMBIENT1
-                    val channelsData = mutableListOf<Int>()
-                    channelsData.addAll(sample.ppgDataSamples)
-                    channelsData.add(sample.ambientSample)
-                    listOfSamples.add(PolarOhrData.PolarOhrSample(sample.timeStamp.toLong(), channelsData))
-                }
-                else -> {
-                    BleLogger.w(TAG, "Not supported PPG sample type: $sample")
-                }
-            }
-        }
-        return PolarOhrData(listOfSamples, type, ohrData.timeStamp.toLong())
-    }
 
     fun mapPMDClientPpgDataToPolarPpg(ppgData: PpgData): PolarPpgData {
         var type: PolarPpgData.PpgDataType = PolarPpgData.PpgDataType.UNKNOWN
@@ -43,22 +37,69 @@ internal object PolarDataUtils {
                     channelsData.add(sample.ambientSample)
                     listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), channelsData))
                 }
-                else -> {
-                    BleLogger.w(TAG, "Not supported PPG sample type: $sample")
+                is PpgData.PpgDataFrameType7 -> {
+                    type = PolarPpgData.PpgDataType.FRAME_TYPE_7
+                    val channelsData = mutableListOf<Int>()
+                    channelsData.addAll(sample.ppgDataSamples)
+                    channelsData.add(sample.status.toInt())
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), channelsData))
+                }
+                is PpgData.PpgDataFrameType8 -> {
+                    type = PolarPpgData.PpgDataType.FRAME_TYPE_8
+                    val channelsData = mutableListOf<Int>()
+                    channelsData.addAll(sample.ppgDataSamples)
+                    channelsData.add(sample.status.toInt())
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), channelsData))
+                }
+                is PpgData.PpgDataSampleSportId -> {
+                    type = PolarPpgData.PpgDataType.SPORT_ID
+                    val samplesData = mutableListOf<Int>()
+                    samplesData.addAll(listOf(sample.sportId.toInt()))
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData))
+                }
+                is PpgData.PpgDataFrameType4 -> {
+                    type = PolarPpgData.PpgDataType.FRAME_TYPE_4
+                    val samplesData = mutableListOf<Int>()
+                    samplesData.addAll(sample.channel1GainTs.map { it.toInt() })
+                    samplesData.addAll(sample.channel2GainTs.map { it.toInt() })
+                    samplesData.addAll(sample.numIntTs.map { it.toInt() })
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData))
+                }
+                is PpgData.PpgDataFrameType5 -> {
+                    type = PolarPpgData.PpgDataType.FRAME_TYPE_5
+                    val samplesData = mutableListOf<Int>()
+                    samplesData.addAll(listOf((sample.operationMode).toInt()))
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData))
+                }
+                is PpgData.PpgDataFrameType9 -> {
+                    type = PolarPpgData.PpgDataType.FRAME_TYPE_9
+                    val samplesData = mutableListOf<Int>()
+                    samplesData.addAll(sample.channel1GainTs.map { it.toInt() })
+                    samplesData.addAll(sample.channel2GainTs.map { it.toInt() })
+                    samplesData.addAll(sample.numIntTs.map { it.toInt() })
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData))
+                }
+                is PpgData.PpgDataFrameType10 -> {
+                    type = PolarPpgData.PpgDataType.FRAME_TYPE_10
+                    val samplesData = mutableListOf<Int>()
+                    samplesData.addAll(sample.greenSamples.map { it })
+                    samplesData.addAll(sample.redSamples.map { it })
+                    samplesData.addAll(sample.irSamples.map { it })
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData))
                 }
             }
         }
         return PolarPpgData(listOfSamples, type)
     }
 
-    fun mapPMDClientPpiDataToPolarOhrPpiData(ppiData: PpiData): PolarOhrPPIData {
-        val samples: MutableList<PolarOhrPPIData.PolarOhrPPISample> = mutableListOf()
+    fun mapPMDClientPpiDataToPolarOhrPpiData(ppiData: PpiData): PolarPpiData {
+        val samples: MutableList<PolarPpiData.PolarPpiSample> = mutableListOf()
         for ((hr, ppInMs, ppErrorEstimate, blockerBit, skinContactStatus, skinContactSupported) in ppiData.ppiSamples) {
             samples.add(
-                PolarOhrPPIData.PolarOhrPPISample(ppInMs, ppErrorEstimate, hr, blockerBit != 0, skinContactStatus != 0, skinContactSupported != 0)
+                PolarPpiData.PolarPpiSample(ppInMs, ppErrorEstimate, hr, blockerBit != 0, skinContactStatus != 0, skinContactSupported != 0)
             )
         }
-        return PolarOhrPPIData(0L, samples)
+        return PolarPpiData(samples)
     }
 
     fun mapPMDClientPpiDataToPolarPpiData(ppiData: PpiData): PolarPpiData {
@@ -89,19 +130,120 @@ internal object PolarDataUtils {
         return PolarHrData(samples)
     }
 
-    fun mapPmdClientEcgDataToPolarEcg(ecgData: EcgData): PolarEcgData {
-        val ecgDataSamples = mutableListOf<PolarEcgData.PolarEcgDataSample>()
-        for (sample in ecgData.ecgSamples) {
+    fun mapPMDClientLocationDataToPolarLocationData(location: GnssLocationData): PolarLocationData {
+        val locationDataSamples = ArrayList<PolarLocationDataSample>()
+        for (sample in location.gnssLocationDataSamples) {
             when (sample) {
-                is EcgData.EcgSample -> {
-                    ecgDataSamples.add(PolarEcgData.PolarEcgDataSample(timeStamp = sample.timeStamp.toLong(), voltage = sample.microVolts))
+                is GnssLocationData.GnssCoordinateSample -> {
+                    val gpsCoordinatesSample = GpsCoordinatesSample(
+                        timeStamp = sample.timeStamp.toLong(),
+                        latitude = sample.latitude,
+                        longitude = sample.longitude,
+                        time = sample.date,
+                        cumulativeDistance = sample.cumulativeDistance,
+                        speed = sample.speed,
+                        usedAccelerationSpeed = sample.usedAccelerationSpeed,
+                        coordinateSpeed = sample.coordinateSpeed,
+                        accelerationSpeedFactor = sample.accelerationSpeedFactor,
+                        course = sample.course,
+                        gpsChipSpeed = sample.gpsChipSpeed,
+                        fix = sample.fix,
+                        speedFlag = sample.speedFlag,
+                        fusionState = sample.fusionState
+                    )
+                    locationDataSamples.add(gpsCoordinatesSample)
                 }
-                else -> {
-                    BleLogger.w(TAG, "Not supported ECG sample type: $sample")
+                is GnssLocationData.GnssGpsNMEASample -> {
+                    val gpsNMEASample = GpsNMEASample(
+                        timeStamp = sample.timeStamp.toLong(),
+                        measurementPeriod = sample.measurementPeriod,
+                        statusFlags = sample.statusFlags,
+                        nmeaMessage = sample.nmeaMessage
+                    )
+                    locationDataSamples.add(gpsNMEASample)
+                }
+                is GnssLocationData.GnssSatelliteDilutionSample -> {
+                    val gpsCoordinatesSample = GpsSatelliteDilutionSample(
+                        timeStamp = sample.timeStamp.toLong(),
+                        dilution = sample.dilution, altitude = sample.altitude,
+                        numberOfSatellites = sample.numberOfSatellites, fix = sample.fix
+                    )
+                    locationDataSamples.add(gpsCoordinatesSample)
+                }
+                is GnssLocationData.GnssSatelliteSummarySample -> {
+                    val gpsSatelliteSummarySample = GpsSatelliteSummarySample(
+                        timeStamp = sample.timeStamp.toLong(),
+                        seenSatelliteSummaryBand1 = SatelliteSummary(
+                            gpsNbrOfSat = sample.seenGnssSatelliteSummaryBand1.gpsNbrOfSat,
+                            gpsMaxSnr = sample.seenGnssSatelliteSummaryBand1.gpsMaxSnr,
+                            glonassNbrOfSat = sample.seenGnssSatelliteSummaryBand1.glonassNbrOfSat,
+                            glonassMaxSnr = sample.seenGnssSatelliteSummaryBand1.glonassMaxSnr,
+                            galileoNbrOfSat = sample.seenGnssSatelliteSummaryBand1.galileoNbrOfSat,
+                            galileoMaxSnr = sample.seenGnssSatelliteSummaryBand1.galileoMaxSnr,
+                            beidouNbrOfSat = sample.seenGnssSatelliteSummaryBand1.beidouNbrOfSat,
+                            beidouMaxSnr = sample.seenGnssSatelliteSummaryBand1.beidouMaxSnr,
+                            nbrOfSat = sample.seenGnssSatelliteSummaryBand1.nbrOfSat,
+                            snrTop5Avg = sample.seenGnssSatelliteSummaryBand1.snrTop5Avg,
+                        ),
+                        usedSatelliteSummaryBand1 = SatelliteSummary(
+                            gpsNbrOfSat = sample.usedGnssSatelliteSummaryBand1.gpsNbrOfSat,
+                            gpsMaxSnr = sample.usedGnssSatelliteSummaryBand1.gpsMaxSnr,
+                            glonassNbrOfSat = sample.usedGnssSatelliteSummaryBand1.glonassNbrOfSat,
+                            glonassMaxSnr = sample.usedGnssSatelliteSummaryBand1.glonassMaxSnr,
+                            galileoNbrOfSat = sample.usedGnssSatelliteSummaryBand1.galileoNbrOfSat,
+                            galileoMaxSnr = sample.usedGnssSatelliteSummaryBand1.galileoMaxSnr,
+                            beidouNbrOfSat = sample.usedGnssSatelliteSummaryBand1.beidouNbrOfSat,
+                            beidouMaxSnr = sample.usedGnssSatelliteSummaryBand1.beidouMaxSnr,
+                            nbrOfSat = sample.usedGnssSatelliteSummaryBand1.nbrOfSat,
+                            snrTop5Avg = sample.usedGnssSatelliteSummaryBand1.snrTop5Avg,
+                        ),
+                        seenSatelliteSummaryBand2 = SatelliteSummary(
+                            gpsNbrOfSat = sample.seenGnssSatelliteSummaryBand2.gpsNbrOfSat,
+                            gpsMaxSnr = sample.seenGnssSatelliteSummaryBand2.gpsMaxSnr,
+                            glonassNbrOfSat = sample.seenGnssSatelliteSummaryBand2.glonassNbrOfSat,
+                            glonassMaxSnr = sample.seenGnssSatelliteSummaryBand2.glonassMaxSnr,
+                            galileoNbrOfSat = sample.seenGnssSatelliteSummaryBand2.galileoNbrOfSat,
+                            galileoMaxSnr = sample.seenGnssSatelliteSummaryBand2.galileoMaxSnr,
+                            beidouNbrOfSat = sample.seenGnssSatelliteSummaryBand2.beidouNbrOfSat,
+                            beidouMaxSnr = sample.seenGnssSatelliteSummaryBand2.beidouMaxSnr,
+                            nbrOfSat = sample.seenGnssSatelliteSummaryBand2.nbrOfSat,
+                            snrTop5Avg = sample.seenGnssSatelliteSummaryBand2.snrTop5Avg,
+                        ),
+                        usedSatelliteSummaryBand2 = SatelliteSummary(
+                            gpsNbrOfSat = sample.usedGnssSatelliteSummaryBand2.gpsNbrOfSat,
+                            gpsMaxSnr = sample.usedGnssSatelliteSummaryBand2.gpsMaxSnr,
+                            glonassNbrOfSat = sample.usedGnssSatelliteSummaryBand2.glonassNbrOfSat,
+                            glonassMaxSnr = sample.usedGnssSatelliteSummaryBand2.glonassMaxSnr,
+                            galileoNbrOfSat = sample.usedGnssSatelliteSummaryBand2.galileoNbrOfSat,
+                            galileoMaxSnr = sample.usedGnssSatelliteSummaryBand2.galileoMaxSnr,
+                            beidouNbrOfSat = sample.usedGnssSatelliteSummaryBand2.beidouNbrOfSat,
+                            beidouMaxSnr = sample.usedGnssSatelliteSummaryBand2.beidouMaxSnr,
+                            nbrOfSat = sample.usedGnssSatelliteSummaryBand2.nbrOfSat,
+                            snrTop5Avg = sample.usedGnssSatelliteSummaryBand2.snrTop5Avg,
+                        ), maxSnr = sample.maxSnr
+                    )
+                    locationDataSamples.add(gpsSatelliteSummarySample)
                 }
             }
         }
-        return PolarEcgData(ecgDataSamples, ecgData.timeStamp.toLong())
+        return PolarLocationData(samples = locationDataSamples)
+    }
+
+    fun mapPmdClientEcgDataToPolarEcg(ecgData: EcgData): PolarEcgData {
+        val ecgDataSamples = mutableListOf<PolarEcgDataSample>()
+        for (sample in ecgData.ecgSamples) {
+            when (sample) {
+                is EcgData.EcgSample -> {
+                    val ecgSample = EcgSample(timeStamp = sample.timeStamp.toLong(), voltage = sample.microVolts)
+                    ecgDataSamples.add(ecgSample)
+                }
+                is EcgData.EcgSampleFrameType3 -> {
+                    val ecgSample = FecgSample(timeStamp = sample.timeStamp.toLong(), ecg = sample.data0, bioz = sample.data1, status = sample.status)
+                    ecgDataSamples.add(ecgSample)
+                }
+            }
+        }
+        return PolarEcgData(ecgDataSamples)
     }
 
     fun mapPmdClientAccDataToPolarAcc(accData: AccData): PolarAccelerometerData {
@@ -109,7 +251,7 @@ internal object PolarDataUtils {
         for ((timeStamp, x, y, z) in accData.accSamples) {
             samples.add(PolarAccelerometerData.PolarAccelerometerDataSample(timeStamp.toLong(), x, y, z))
         }
-        return PolarAccelerometerData(samples, accData.timeStamp.toLong())
+        return PolarAccelerometerData(samples)
     }
 
     fun mapPmdClientGyroDataToPolarGyro(gyroData: GyrData): PolarGyroData {
@@ -117,7 +259,7 @@ internal object PolarDataUtils {
         for ((timeStamp, x, y, z) in gyroData.gyrSamples) {
             samples.add(PolarGyroData.PolarGyroDataSample(timeStamp.toLong(), x, y, z))
         }
-        return PolarGyroData(samples, gyroData.timeStamp.toLong())
+        return PolarGyroData(samples)
     }
 
     fun mapPmdClientMagDataToPolarMagnetometer(magData: MagData): PolarMagnetometerData {
@@ -125,7 +267,15 @@ internal object PolarDataUtils {
         for ((timeStamp, x, y, z) in magData.magSamples) {
             samples.add(PolarMagnetometerData.PolarMagnetometerDataSample(timeStamp.toLong(), x, y, z))
         }
-        return PolarMagnetometerData(samples, magData.timeStamp.toLong())
+        return PolarMagnetometerData(samples)
+    }
+
+    fun mapPmdClientPressureDataToPolarPressure(pressureData: PressureData): PolarPressureData {
+        val samples: MutableList<PolarPressureData.PolarPressureDataSample> = mutableListOf()
+        for ((timeStamp, pressure) in pressureData.pressureSamples) {
+            samples.add(PolarPressureData.PolarPressureDataSample(timeStamp.toLong(), pressure))
+        }
+        return PolarPressureData(samples)
     }
 
     fun mapPolarFeatureToPmdClientMeasurementType(polarFeature: PolarBleApi.PolarDeviceDataType): PmdMeasurementType {
@@ -136,11 +286,11 @@ internal object PolarDataUtils {
             PolarBleApi.PolarDeviceDataType.PPI -> PmdMeasurementType.PPI
             PolarBleApi.PolarDeviceDataType.GYRO -> PmdMeasurementType.GYRO
             PolarBleApi.PolarDeviceDataType.MAGNETOMETER -> PmdMeasurementType.MAGNETOMETER
-            PolarBleApi.PolarDeviceDataType.HR -> PmdMeasurementType.OFFLINE_HR
+            PolarBleApi.PolarDeviceDataType.PRESSURE -> PmdMeasurementType.PRESSURE
+            PolarBleApi.PolarDeviceDataType.LOCATION -> PmdMeasurementType.LOCATION
             PolarBleApi.PolarDeviceDataType.TEMPERATURE -> PmdMeasurementType.TEMPERATURE
-            else -> {
-                throw PolarBleSdkInternalException("Error when map $polarFeature to PMD measurement type")
-            }
+            PolarBleApi.PolarDeviceDataType.SKIN_TEMPERATURE -> PmdMeasurementType.SKIN_TEMP
+            PolarBleApi.PolarDeviceDataType.HR -> PmdMeasurementType.OFFLINE_HR
         }
     }
 
@@ -152,6 +302,9 @@ internal object PolarDataUtils {
             PmdMeasurementType.PPI -> PolarBleApi.PolarDeviceDataType.PPI
             PmdMeasurementType.GYRO -> PolarBleApi.PolarDeviceDataType.GYRO
             PmdMeasurementType.MAGNETOMETER -> PolarBleApi.PolarDeviceDataType.MAGNETOMETER
+            PmdMeasurementType.LOCATION -> PolarBleApi.PolarDeviceDataType.LOCATION
+            PmdMeasurementType.PRESSURE -> PolarBleApi.PolarDeviceDataType.PRESSURE
+            PmdMeasurementType.TEMPERATURE -> PolarBleApi.PolarDeviceDataType.TEMPERATURE
             PmdMeasurementType.OFFLINE_HR -> PolarBleApi.PolarDeviceDataType.HR
             PmdMeasurementType.OFFLINE_TEMP -> PolarBleApi.PolarDeviceDataType.TEMPERATURE
             else -> throw PolarBleSdkInternalException("Error when map measurement type $pmdMeasurementType to Polar feature")
@@ -202,7 +355,6 @@ internal object PolarDataUtils {
                     PmdSetting.PmdSettingType.SAMPLE_RATE -> settings[PolarSensorSetting.SettingType.SAMPLE_RATE] = value
                     PmdSetting.PmdSettingType.RESOLUTION -> settings[PolarSensorSetting.SettingType.RESOLUTION] = value
                     PmdSetting.PmdSettingType.RANGE -> settings[PolarSensorSetting.SettingType.RANGE] = value
-                    PmdSetting.PmdSettingType.RANGE_MILLIUNIT -> settings[PolarSensorSetting.SettingType.RANGE_MILLIUNIT] = value
                     PmdSetting.PmdSettingType.CHANNELS -> settings[PolarSensorSetting.SettingType.CHANNELS] = value
                     else -> {
                         //nop
@@ -217,7 +369,6 @@ internal object PolarDataUtils {
                     PmdSetting.PmdSettingType.SAMPLE_RATE -> settings[PolarSensorSetting.SettingType.SAMPLE_RATE] = value
                     PmdSetting.PmdSettingType.RESOLUTION -> settings[PolarSensorSetting.SettingType.RESOLUTION] = value
                     PmdSetting.PmdSettingType.RANGE -> settings[PolarSensorSetting.SettingType.RANGE] = value
-                    PmdSetting.PmdSettingType.RANGE_MILLIUNIT -> settings[PolarSensorSetting.SettingType.RANGE_MILLIUNIT] = value
                     PmdSetting.PmdSettingType.CHANNELS -> settings[PolarSensorSetting.SettingType.CHANNELS] = value
                     else -> {
                         //nop

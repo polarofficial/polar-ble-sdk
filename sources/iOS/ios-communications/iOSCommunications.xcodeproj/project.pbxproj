@@ -99,6 +99,9 @@
 		6CD12ACA201F126500F3A417 /* BleGattException.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD12AC9201F126500F3A417 /* BleGattException.swift */; };
 		6CEA10DF2175AA5B00E16FBF /* BlePsFtpUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD381CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift */; };
 		6CEA10E02175AA5B00E16FBF /* BlePsFtpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD391CE5BCEA00A4C6A8 /* BlePsFtpClient.swift */; };
+		8403763D2D50EB080004AB66 /* PolarCaloriesData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8403763C2D50EB080004AB66 /* PolarCaloriesData.swift */; };
+		8403763E2D50EB080004AB66 /* PolarCaloriesData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8403763C2D50EB080004AB66 /* PolarCaloriesData.swift */; };
+		8403763F2D50EB080004AB66 /* PolarCaloriesData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8403763C2D50EB080004AB66 /* PolarCaloriesData.swift */; };
 		840880BC2D072E6900883420 /* PolarNightlyRechargeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840880BB2D072E6900883420 /* PolarNightlyRechargeData.swift */; };
 		840880BD2D072E6900883420 /* PolarNightlyRechargeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840880BB2D072E6900883420 /* PolarNightlyRechargeData.swift */; };
 		840880BF2D07329D00883420 /* PolarNightlyRechargeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840880BE2D07329D00883420 /* PolarNightlyRechargeUtils.swift */; };
@@ -490,6 +493,7 @@
 		6CB9DB982087188E00505269 /* RxUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RxUtils.swift; path = ble/common/RxUtils.swift; sourceTree = "<group>"; };
 		6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePsdClient.swift; path = ble/api/model/gatt/client/BlePsdClient.swift; sourceTree = "<group>"; };
 		6CD12AC9201F126500F3A417 /* BleGattException.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleGattException.swift; path = ble/api/model/gatt/exceptions/BleGattException.swift; sourceTree = "<group>"; };
+		8403763C2D50EB080004AB66 /* PolarCaloriesData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarCaloriesData.swift; sourceTree = "<group>"; };
 		840880BB2D072E6900883420 /* PolarNightlyRechargeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarNightlyRechargeData.swift; sourceTree = "<group>"; };
 		840880BE2D07329D00883420 /* PolarNightlyRechargeUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarNightlyRechargeUtils.swift; sourceTree = "<group>"; };
 		841A37882C7DF53B009194CC /* PolarDeviceUuidTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarDeviceUuidTest.swift; sourceTree = "<group>"; };
@@ -1129,6 +1133,7 @@
 				A5BC3EEC2BF20D39008DD743 /* PolarStepsData.swift */,
 				A5986D282BF7534A0014C5DF /* PolarDistanceData.swift */,
 				84655A8F2C08947F00D49203 /* PolarActiveTimeData.swift */,
+				8403763C2D50EB080004AB66 /* PolarCaloriesData.swift */,
 			);
 			path = activity;
 			sourceTree = "<group>";
@@ -1594,6 +1599,7 @@
 				A57D053B29309B71002824D9 /* PpiData.swift in Sources */,
 				84655A902C08947F00D49203 /* PolarActiveTimeData.swift in Sources */,
 				6C5A44A31CB291790006220D /* AtomicInteger.swift in Sources */,
+				8403763D2D50EB080004AB66 /* PolarCaloriesData.swift in Sources */,
 				A57D05412930A8CA002824D9 /* EcgData.swift in Sources */,
 				6C5A44AC1CB291A40006220D /* CBDeviceListenerImpl.swift in Sources */,
 				A57D051629225991002824D9 /* PmdDataFrame.swift in Sources */,
@@ -1829,6 +1835,7 @@
 				A57728B227CE860600855884 /* nanopb.pb.swift in Sources */,
 				6C770B8E206B77F300F3D51D /* BleRssiFilter.swift in Sources */,
 				6C770B8F206B77F300F3D51D /* BleGattException.swift in Sources */,
+				8403763E2D50EB080004AB66 /* PolarCaloriesData.swift in Sources */,
 				6C770B92206B77F300F3D51D /* BleBasClient.swift in Sources */,
 				A55604C6298B8B2700DB6EDB /* PolarH10OfflineExerciseApi.swift in Sources */,
 				A57D050F29225779002824D9 /* PmdSetting.swift in Sources */,
@@ -1944,6 +1951,7 @@
 				A5A43C662BDFCB830066334F /* PolarSdkModeApi.swift in Sources */,
 				841A37892C7DF53B009194CC /* PolarDeviceUuidTest.swift in Sources */,
 				A57F8B172BE0E3A000F8708F /* RxUtils.swift in Sources */,
+				8403763F2D50EB080004AB66 /* PolarCaloriesData.swift in Sources */,
 				A5BC3EF52BF20FBD008DD743 /* PolarActivityUtils.swift in Sources */,
 				A5A43C602BDFC9500066334F /* PolarBackupManagerTest.swift in Sources */,
 				84D71C9F2D09C19600CE8089 /* PolarNightlyRechargeUtilsTest.swift in Sources */,

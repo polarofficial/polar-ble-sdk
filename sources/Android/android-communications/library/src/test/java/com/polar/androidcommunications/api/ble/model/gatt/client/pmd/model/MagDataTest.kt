@@ -75,7 +75,6 @@ class MagDataTest {
         Assert.assertEquals(sample1channel2, magData.magSamples[1].z)
         Assert.assertEquals(sample1status, magData.magSamples[1].calibrationStatus)
 
-        Assert.assertEquals(timeStamp, magData.timeStamp)
         Assert.assertEquals(timeStamp, magData.magSamples[1].timeStamp)
     }
 
@@ -148,7 +147,6 @@ class MagDataTest {
         Assert.assertEquals(sample1channel2, magData.magSamples[1].z, 0.00001f)
         Assert.assertEquals(sample1status, magData.magSamples[1].calibrationStatus)
 
-        Assert.assertEquals(timeStamp, magData.timeStamp)
         Assert.assertEquals(timeStamp, magData.magSamples[1].timeStamp)
     }
 
@@ -222,7 +220,6 @@ class MagDataTest {
         Assert.assertEquals(factor * sample1channel2, magData.magSamples[1].z, 0.00001f)
         Assert.assertEquals(sample1status, magData.magSamples[1].calibrationStatus)
 
-        Assert.assertEquals(timeStamp, magData.timeStamp)
         Assert.assertEquals(timeStamp, magData.magSamples[1].timeStamp)
     }
 }

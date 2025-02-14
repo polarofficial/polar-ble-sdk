@@ -123,6 +123,16 @@ public protocol PolarOfflineRecordingApi {
     ///   - completed :  offline record is removed
     ///   - error:  offline record removal failed, see `PolarErrors` for possible errors invoked
     func removeOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry) -> Completable
+
+    /// Removes offline recording with all the subrecordings from the device. Empty parent directories are removed up to day directory.
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id
+    ///   - entry: entry with the path to the offline recording
+    /// - Returns: Single
+    ///   - success :  Offline record and its subrecords is/are removed. All empty parent directories up to day directory are removed.
+    ///   - error:  offline record removal failed, see `PolarErrors` for possible errors invoked
+    func removeOfflineRecords(_ identifier: String, entry: PolarOfflineRecordingEntry) -> Single<Bool>
     
     /// Start offline recording.
     ///

@@ -51,7 +51,6 @@ internal class EcgDataTest {
 
         Assert.assertEquals(2, ecgData.ecgSamples.size.toLong())
 
-        Assert.assertEquals(timeStamp, ecgData.timeStamp)
         Assert.assertEquals(timeStamp, (ecgData.ecgSamples[1] as EcgData.EcgSample).timeStamp)
     }
 
@@ -106,7 +105,6 @@ internal class EcgDataTest {
         Assert.assertEquals(ecgValue2.toLong(), (ecgData.ecgSamples[1] as EcgData.EcgSample).microVolts.toLong())
         Assert.assertEquals(2, ecgData.ecgSamples.size.toLong())
 
-        Assert.assertEquals(dataFrame.timeStamp, ecgData.timeStamp)
         Assert.assertEquals(dataFrame.timeStamp, (ecgData.ecgSamples[1] as EcgData.EcgSample).timeStamp)
     }
 
@@ -160,7 +158,6 @@ internal class EcgDataTest {
         Assert.assertEquals(paceDataTag2.toLong(), (ecgData.ecgSamples[1] as EcgData.EcgSample).paceDataTag.toLong())
         Assert.assertEquals(2, ecgData.ecgSamples.size.toLong())
 
-        Assert.assertEquals(timeStamp, ecgData.timeStamp)
         Assert.assertEquals(timeStamp, (ecgData.ecgSamples[1] as EcgData.EcgSample).timeStamp)
     }
 
@@ -217,7 +214,6 @@ internal class EcgDataTest {
         Assert.assertEquals(status2, (ecgData.ecgSamples[1] as EcgData.EcgSampleFrameType3).status)
         Assert.assertEquals(2, ecgData.ecgSamples.size.toLong())
 
-        Assert.assertEquals(dataFrame.timeStamp, ecgData.timeStamp)
         Assert.assertEquals(dataFrame.timeStamp, (ecgData.ecgSamples[1] as EcgData.EcgSampleFrameType3).timeStamp)
     }
 }

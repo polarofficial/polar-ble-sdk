@@ -5,7 +5,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClien
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
 import com.polar.androidcommunications.common.ble.TypeUtils
 
-internal class AccData constructor(@Deprecated("each sample has timestamp") val timeStamp: ULong = 0uL) {
+internal class AccData {
     data class AccSample internal constructor(
         val timeStamp: ULong,
         // Sample contains signed x,y,z axis values in milliG
@@ -47,7 +47,7 @@ internal class AccData constructor(@Deprecated("each sample has timestamp") val 
         }
 
         private fun dataFromRawType0(frame: PmdDataFrame): AccData {
-            val accData = AccData(frame.timeStamp)
+            val accData = AccData()
             var offset = 0
             val step = TYPE_0_SAMPLE_SIZE_IN_BYTES
             val samplesSize = frame.dataContent.size / (step * TYPE_0_CHANNELS_IN_SAMPLE)
@@ -68,7 +68,7 @@ internal class AccData constructor(@Deprecated("each sample has timestamp") val 
         }
 
         private fun dataFromRawType1(frame: PmdDataFrame): AccData {
-            val accData = AccData(frame.timeStamp)
+            val accData = AccData()
             var offset = 0
             val step = TYPE_1_SAMPLE_SIZE_IN_BYTES
             val samplesSize = frame.dataContent.size / (step * TYPE_1_CHANNELS_IN_SAMPLE)
@@ -89,7 +89,7 @@ internal class AccData constructor(@Deprecated("each sample has timestamp") val 
         }
 
         private fun dataFromRawType2(frame: PmdDataFrame): AccData {
-            val accData = AccData(frame.timeStamp)
+            val accData = AccData()
             var offset = 0
 
             val step = TYPE_2_SAMPLE_SIZE_IN_BYTES
@@ -113,7 +113,7 @@ internal class AccData constructor(@Deprecated("each sample has timestamp") val 
 
         private fun dataFromCompressedType0(frame: PmdDataFrame): AccData {
             //Note, special Wolfi type. See SAGRFC85.3
-            val accData = AccData(frame.timeStamp)
+            val accData = AccData()
             val accFactor = frame.factor * 1000 // type 0 data arrives in G units, convert to milliG
             val samples = parseDeltaFramesAll(frame.dataContent, 3, 16, BlePMDClient.PmdDataFieldEncoding.SIGNED_INT)
             val timeStamps = PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp = frame.previousTimeStamp, frameTimeStamp = frame.timeStamp, samplesSize = samples.size, frame.sampleRate)
@@ -127,7 +127,7 @@ internal class AccData constructor(@Deprecated("each sample has timestamp") val 
         }
 
         private fun dataFromCompressedType1(frame: PmdDataFrame): AccData {
-            val accData = AccData(frame.timeStamp)
+            val accData = AccData()
             val samples = parseDeltaFramesAll(frame.dataContent, TYPE_1_CHANNELS_IN_SAMPLE, TYPE_1_SAMPLE_SIZE_IN_BITS, BlePMDClient.PmdDataFieldEncoding.SIGNED_INT)
             val timeStamps = PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp = frame.previousTimeStamp, frameTimeStamp = frame.timeStamp, samplesSize = samples.size, frame.sampleRate)
             for ((index, sample) in samples.withIndex()) {

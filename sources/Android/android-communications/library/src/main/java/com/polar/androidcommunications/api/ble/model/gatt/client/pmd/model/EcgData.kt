@@ -8,7 +8,7 @@ import com.polar.androidcommunications.common.ble.TypeUtils
 
 sealed class EcgDataSample
 
-internal class EcgData constructor(@Deprecated("each sample has timestamp") val timeStamp: ULong = 0uL) {
+internal class EcgData {
 
     data class EcgSample internal constructor(
         val timeStamp: ULong,
@@ -54,7 +54,7 @@ internal class EcgData constructor(@Deprecated("each sample has timestamp") val 
         }
 
         private fun dataFromRawType0(frame: PmdDataFrame): EcgData {
-            val ecgData = EcgData(frame.timeStamp)
+            val ecgData = EcgData()
             var offset = 0
             val step = TYPE_0_SAMPLE_SIZE_IN_BYTES
             val samplesSize = frame.dataContent.size / step
@@ -70,7 +70,7 @@ internal class EcgData constructor(@Deprecated("each sample has timestamp") val 
         }
 
         private fun dataFromRawType1(frame: PmdDataFrame): EcgData {
-            val ecgData = EcgData(frame.timeStamp)
+            val ecgData = EcgData()
             var offset = 0
             val step = TYPE_1_SAMPLE_SIZE_IN_BYTES
 
@@ -98,7 +98,7 @@ internal class EcgData constructor(@Deprecated("each sample has timestamp") val 
         }
 
         private fun dataFromRawType2(frame: PmdDataFrame): EcgData {
-            val ecgData = EcgData(frame.timeStamp)
+            val ecgData = EcgData()
             var offset = 0
             val step = TYPE_2_SAMPLE_SIZE_IN_BYTES
 
@@ -124,7 +124,7 @@ internal class EcgData constructor(@Deprecated("each sample has timestamp") val 
         }
 
         private fun dataFromRawType3(frame: PmdDataFrame): EcgData {
-            val ecgData = EcgData(frame.timeStamp)
+            val ecgData = EcgData()
             var offset = 0
 
             val samplesSize = frame.dataContent.size / TYPE_3_SAMPLE_SIZE_IN_BYTES

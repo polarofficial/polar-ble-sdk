@@ -21,12 +21,6 @@ public protocol BleDeviceListener{
     /// - Returns: true ble powered
     func blePowered() -> Bool
     
-    /// ble power state
-    ///
-    /// - Returns: Observable ble power state
-    @available(*, deprecated, message: "use powerStateObserver instead")
-    func monitorBleState() -> Observable<BleState>
-    
     /// power state observer
     var powerStateObserver: BlePowerStateObserver? {get set}
     
@@ -56,18 +50,8 @@ public protocol BleDeviceListener{
     ///
     /// - Parameter session: session instance
     /// - Returns:
-    func openSessionDirect(_ session: BleDeviceSession) 
-    
-    /// all session state changes, deprecated
-    ///
-    /// - Returns: Observable stream
-    func monitorDeviceSessionState() -> Observable<(session: BleDeviceSession, state: BleDeviceSession.DeviceSessionState)>
+    func openSessionDirect(_ session: BleDeviceSession)
 
-    /// all session state changes
-    ///
-    /// - Returns: Observable stream
-    @available(*, deprecated, message: "use monitorDeviceSessionState instead")
-    var deviceSessionStateObserver: BleDeviceSessionStateObserver? {get set}
     
     /// Start disconnection request for device, callbacks are informed to monitorDeviceSessionState or
     /// deviceSessionStateObserver

@@ -5,9 +5,7 @@ package com.polar.sdk.api.model
  * @property samples from gyroscope. Each sample contains signed 3-axis samples in deg/sec
  */
 data class PolarGyroData(
-    val samples: List<PolarGyroDataSample>,
-    @Deprecated("This field is deprecated as each sample has now own timeStamp")
-    val timeStamp: Long
+    val samples: List<PolarGyroDataSample>
 ) {
     /**
      * Polar gyroscope data sample

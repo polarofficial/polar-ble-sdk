@@ -9,8 +9,6 @@ import RxSwift
 ///
 /// Requires features `PolarBleSdkFeature.feature_polar_online_streaming`
 ///
-/// Note, online streaming is supported by VeritySense, H10 and OH1 devices
-///
 public protocol PolarOnlineStreamingApi {
     ///  Get the data types available in this device for online streaming
     ///
@@ -88,17 +86,6 @@ public protocol PolarOnlineStreamingApi {
     ///   - settings: selected settings to start the stream
     func startMagnetometerStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarMagnetometerData>
     
-    /// Start OHR (Optical heart rate) PPG (Photoplethysmography) stream. PPG stream is stopped if the connection is closed, error occurs or stream is disposed.
-    ///
-    /// - Parameters:
-    ///   - identifier: Polar device id or device address
-    ///   - settings: selected settings to start the stream
-    /// - Returns: Observable stream
-    ///   - onNext: for every air packet received. see `PolarOhrData`
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    @available(*, deprecated, renamed: "startPpgStreaming")
-    func startOhrStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarOhrData>
-    
     /// Start optical sensor PPG (Photoplethysmography) stream. PPG stream is stopped if the connection is closed, error occurs or stream is disposed.
     ///
     /// - Parameters:
@@ -119,9 +106,6 @@ public protocol PolarOnlineStreamingApi {
     ///   - onNext: for every air packet received. see `PolarPpiData`
     ///   - onError: see `PolarErrors` for possible errors invoked
     func startPpiStreaming(_ identifier: String) -> Observable<PolarPpiData>
-    
-    @available(*, deprecated, renamed: "startPpiStreaming")
-    func startOhrPPIStreaming(_ identifier: String) -> Observable<PolarPpiData>
     
     /// Start temperature stream. Temperature stream is stopped if the connection is closed,
     /// error occurs or stream is disposed.

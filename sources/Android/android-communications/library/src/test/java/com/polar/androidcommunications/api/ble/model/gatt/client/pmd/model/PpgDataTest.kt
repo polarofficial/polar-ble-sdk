@@ -70,7 +70,6 @@ class PpgDataTest {
         Assert.assertEquals(ppg2Sample1, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType0).ppgDataSamples[2])
         Assert.assertEquals(ambientSample1, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType0).ambientSample)
 
-        Assert.assertEquals(timeStamp, ppgData.timeStamp)
         Assert.assertEquals(timeStamp, (ppgData.ppgSamples.last() as PpgData.PpgDataFrameType0).timeStamp)
     }
 
@@ -153,7 +152,6 @@ class PpgDataTest {
         Assert.assertEquals(expectedChannel2GainTs11, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType4).channel2GainTs[10])
         Assert.assertEquals(expectedChannel2GainTs12, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType4).channel2GainTs[11])
 
-        Assert.assertEquals(timeStamp, ppgData.timeStamp)
         Assert.assertEquals(timeStamp, (ppgData.ppgSamples.last() as PpgData.PpgDataFrameType4).timeStamp)
     }
 
@@ -194,7 +192,6 @@ class PpgDataTest {
         Assert.assertEquals(1, ppgData.ppgSamples.size)
         Assert.assertEquals(expectedOperationMode, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType5).operationMode)
 
-        Assert.assertEquals(timeStamp, ppgData.timeStamp)
         Assert.assertEquals(timeStamp, (ppgData.ppgSamples.last() as PpgData.PpgDataFrameType5).timeStamp)
 
     }
@@ -278,7 +275,6 @@ class PpgDataTest {
         Assert.assertEquals(expectedChannel2GainTs11, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType9).channel2GainTs[10])
         Assert.assertEquals(expectedChannel2GainTs12, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType9).channel2GainTs[11])
 
-        Assert.assertEquals(timeStamp, ppgData.timeStamp)
         Assert.assertEquals(timeStamp, (ppgData.ppgSamples.last() as PpgData.PpgDataFrameType9).timeStamp)
     }
 
@@ -378,7 +374,6 @@ class PpgDataTest {
         Assert.assertEquals((factor * (refSample0Channel2 + refSample1Channel2)).toInt(), (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType0).ppgDataSamples[2])
         Assert.assertEquals((factor * (refSample0Channel3 + refSample1Channel3)).toInt(), (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType0).ambientSample)
 
-        Assert.assertEquals(timeStamp, ppgData.timeStamp)
         Assert.assertEquals(timeStamp, (ppgData.ppgSamples.last() as PpgData.PpgDataFrameType0).timeStamp)
     }
 
@@ -476,7 +471,6 @@ class PpgDataTest {
         Assert.assertEquals(sample1Channel0, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType7).ppgDataSamples[0])
         Assert.assertEquals(sample1Channel1, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType7).ppgDataSamples[1])
 
-        Assert.assertEquals(timeStamp, ppgData.timeStamp)
         Assert.assertEquals(timeStamp, (ppgData.ppgSamples.last() as PpgData.PpgDataFrameType7).timeStamp)
     }
 
@@ -579,7 +573,6 @@ class PpgDataTest {
         Assert.assertEquals(sample1Channel0, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType8).ppgDataSamples[0])
         Assert.assertEquals(sample1Channel1, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType8).ppgDataSamples[1])
 
-        Assert.assertEquals(timeStamp, ppgData.timeStamp)
         Assert.assertEquals(timeStamp, (ppgData.ppgSamples.last() as PpgData.PpgDataFrameType8).timeStamp)
     }
 

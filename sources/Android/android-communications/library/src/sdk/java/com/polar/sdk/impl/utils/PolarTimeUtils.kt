@@ -9,6 +9,7 @@ import org.joda.time.DateTimeZone
 import java.time.LocalDate
 import java.time.LocalDateTime
 import protocol.PftpRequest
+import java.time.LocalTime
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -86,7 +87,6 @@ internal object PolarTimeUtils {
             pbDateTime.time.seconds,
             pbDateTime.time.millis * 1000000
         )
-
     }
 
     fun pbSystemDateTimeToLocalDateTime(pbSystemDateTime: PbSystemDateTime): LocalDateTime {
@@ -121,5 +121,14 @@ internal object PolarTimeUtils {
         )
 
         return dt.toCalendar(null)
+    }
+
+    fun pbTimeToLocalTime(pbTime: PbTime): LocalTime {
+
+        return LocalTime.of(
+            pbTime.hour,
+            pbTime.minute,
+            pbTime.seconds
+        )
     }
 }

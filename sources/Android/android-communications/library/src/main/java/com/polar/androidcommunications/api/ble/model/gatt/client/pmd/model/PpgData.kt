@@ -11,7 +11,7 @@ import kotlin.experimental.and
  */
 internal sealed class PpgDataSample
 
-internal class PpgData internal constructor(@Deprecated("each sample has timestamp") val timeStamp: ULong = 0uL) {
+internal class PpgData {
     // PPG Data Sample 0
     data class PpgDataFrameType0 internal constructor(
         val timeStamp: ULong,
@@ -126,7 +126,7 @@ internal class PpgData internal constructor(@Deprecated("each sample has timesta
         }
 
         private fun dataFromRawType0(frame: PmdDataFrame): PpgData {
-            val ppgData = PpgData(frame.timeStamp)
+            val ppgData = PpgData()
             val step = TYPE_0_SAMPLE_SIZE_IN_BYTES
 
             val samplesSize = frame.dataContent.size / (step * TYPE_0_CHANNELS_IN_SAMPLE)
@@ -158,7 +158,7 @@ internal class PpgData internal constructor(@Deprecated("each sample has timesta
         }
 
         private fun dataFromRawType4(frame: PmdDataFrame): PpgData {
-            val ppgData = PpgData(frame.timeStamp)
+            val ppgData = PpgData()
 
             val samplesSize = frame.dataContent.size / TYPE_4_SAMPLE_SIZE_IN_BYTES
             val timeStamps = PmdTimeStampUtils.getTimeStamps(
@@ -198,7 +198,7 @@ internal class PpgData internal constructor(@Deprecated("each sample has timesta
         }
 
         private fun dataFromRawType5(frame: PmdDataFrame): PpgData {
-            val ppgData = PpgData(frame.timeStamp)
+            val ppgData = PpgData()
             var offset = 0
 
             val samplesSize = frame.dataContent.size / TYPE_5_SAMPLE_SIZE_IN_BYTES
@@ -228,7 +228,7 @@ internal class PpgData internal constructor(@Deprecated("each sample has timesta
         }
 
         private fun dataFromRawType6(frame: PmdDataFrame): PpgData {
-            val ppgData = PpgData(frame.timeStamp)
+            val ppgData = PpgData()
             val sportId = PmdDataFrameUtils.parseFrameDataField(
                 frame.dataContent.sliceArray(0 until TYPE_6_SAMPLE_SIZE_IN_BYTES),
                 BlePMDClient.PmdDataFieldEncoding.UNSIGNED_LONG
@@ -252,7 +252,7 @@ internal class PpgData internal constructor(@Deprecated("each sample has timesta
         }
 
         private fun dataFromRawType9(frame: PmdDataFrame): PpgData {
-            val ppgData = PpgData(frame.timeStamp)
+            val ppgData = PpgData()
 
             val samplesSize = frame.dataContent.size / TYPE_9_SAMPLE_SIZE_IN_BYTES
             val timeStamps = PmdTimeStampUtils.getTimeStamps(
@@ -292,7 +292,7 @@ internal class PpgData internal constructor(@Deprecated("each sample has timesta
         }
 
         private fun dataFromRawType10(frame: PmdDataFrame): PpgData {
-            val ppgData = PpgData(frame.timeStamp)
+            val ppgData = PpgData()
 
             val samplesSize = frame.dataContent.size / TYPE_10_SAMPLE_SIZE_IN_BYTES
             val timeStamps = PmdTimeStampUtils.getTimeStamps(
@@ -337,7 +337,7 @@ internal class PpgData internal constructor(@Deprecated("each sample has timesta
         }
 
         private fun dataFromCompressedType0(frame: PmdDataFrame): PpgData {
-            val ppgData = PpgData(frame.timeStamp)
+            val ppgData = PpgData()
             val samples = BlePMDClient.parseDeltaFramesAll(
                 frame.dataContent,
                 TYPE_0_CHANNELS_IN_SAMPLE,
@@ -369,7 +369,7 @@ internal class PpgData internal constructor(@Deprecated("each sample has timesta
         }
 
         private fun dataFromCompressedType7(frame: PmdDataFrame): PpgData {
-            val ppgData = PpgData(frame.timeStamp)
+            val ppgData = PpgData()
             val samples = BlePMDClient.parseDeltaFramesAll(
                 frame.dataContent,
                 TYPE_7_CHANNELS_IN_SAMPLE,
@@ -401,7 +401,7 @@ internal class PpgData internal constructor(@Deprecated("each sample has timesta
         }
 
         private fun dataFromCompressedType8(frame: PmdDataFrame): PpgData {
-            val ppgData = PpgData(frame.timeStamp)
+            val ppgData = PpgData()
             val samples = BlePMDClient.parseDeltaFramesAll(
                 frame.dataContent,
                 TYPE_8_CHANNELS_IN_SAMPLE,
@@ -433,7 +433,7 @@ internal class PpgData internal constructor(@Deprecated("each sample has timesta
         }
 
         private fun dataFromCompressedType10(frame: PmdDataFrame): PpgData {
-            val ppgData = PpgData(frame.timeStamp)
+            val ppgData = PpgData()
             val samples = BlePMDClient.parseDeltaFramesAll(
                 frame.dataContent,
                 TYPE_10_CHANNELS_IN_SAMPLE,

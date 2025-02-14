@@ -7,9 +7,9 @@ import com.polar.sdk.api.model.*
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Single
-import java.com.polar.sdk.api.PolarTemperatureApi
 import java.time.LocalDate
 import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
 
 /**
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
  */
 abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineStreamingApi,
     PolarOfflineRecordingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi,
-    PolarActivityApi, PolarSleepApi, PolarTemperatureApi {
+    PolarActivityApi, PolarSleepApi, PolarRestServiceApi, PolarTemperatureApi {
 
     /**
      * Features available in Polar BLE SDK library
@@ -67,8 +67,15 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
         FEATURE_POLAR_SDK_MODE,
 
         /**
-         * Feature to enable or disable SDK mode blinking LED animation.
-         */
+         * Polar PFTP communication is required for Polar applications.
+        */
+        FEATURE_POLAR_FILE_TRANSFER,
+
+        /**
+         * Health Thermometer client
+        */
+        FEATURE_HTS,
+
         FEATURE_POLAR_LED_ANIMATION,
 
         /**
@@ -77,7 +84,7 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
         FEATURE_POLAR_FIRMWARE_UPDATE,
 
         /**
-         * Feature to receive activity data form Polar device.
+         * Feature to receive activity data from Polar device.
          */
         FEATURE_POLAR_ACTIVITY_DATA,
 
@@ -102,7 +109,9 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
         NIGHTLY_RECOVERY("NR"),
         SDLOGS("SDLOGS"),
         SLEEP("SLEEP"),
-        SLEEP_SCORE("SLEEPSCO")
+        SLEEP_SCORE("SLEEPSCO"),
+        SKIN_CONTACT_CHANGES("SKINCONT"),
+        SKIN_TEMP("SKINTEMP")
     }
 
     /**
@@ -128,7 +137,7 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * The activity recording data types available in Polar devices.
      */
     enum class PolarActivityDataType {
-        SLEEP, STEPS, DISTANCE, CALORIES, HR_SAMPLES, NIGHTLY_RECHARGE, SKIN_TEMPERATURE
+        SLEEP, STEPS, DISTANCE, CALORIES, HR_SAMPLES, NIGHTLY_RECHARGE, SKIN_TEMPERATURE, PPI_SAMPLES
     }
 
     /**
@@ -282,6 +291,15 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
     abstract fun startListenForPolarHrBroadcasts(deviceIds: Set<String>?): Flowable<PolarHrBroadcastData>
 
     /**
+     * Get file as [ByteArray] from device.
+     *
+     * @param identifier polar device id or bt address
+     * @param path filesystem file path
+     * @return Single observable which emits file bytes or error
+     */
+    abstract fun getFile(identifier: String, path: String): Single<ByteArray>
+
+    /**
      * Get [PolarDiskSpaceData] from device.
      *
      * @param identifier Polar device ID or BT address
@@ -316,15 +334,21 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
     abstract fun doRestart(identifier: String): Completable
 
     /**
-     * Set warehouse sleep setting to a given device.
+     * Get [LogConfig] from device.
      *
      * @param identifier Polar device ID or BT address
-     * @param sleepEnabled Boolean value for the warehouse sleep setting
-     * @return [Completable] emitting success or error
+    + @return [Single] emitting [LogConfig] or error
      */
-    @Deprecated(level = DeprecationLevel.WARNING,
-        message = "Method signature has changed use 'setWareHouseSleep(identifier: String)' instead.")
-    abstract fun setWareHouseSleep(identifier: String, sleepEnabled: Boolean?): Completable
+    abstract fun getLogConfig(identifier: String): Single<LogConfig>
+
+    /**
+     * Set [LogConfig] for device.
+     *
+     * @param identifier Polar device ID or BT address
+     * @param logConfig new [LogConfig]
+    + @return [Completable] emitting success or error
+     */
+    abstract fun setLogConfig(identifier: String, logConfig: LogConfig): Completable
 
     /**
      * Set warehouse sleep setting to a given device. Warehouse sleep does factory reset to the device
@@ -356,6 +380,15 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
     abstract fun doFirstTimeUse(identifier: String, ftuConfig: PolarFirstTimeUseConfig): Completable
 
     /**
+     * Check if the First Time Use has been done for the given device.
+     *
+     * @param identifier Polar device ID or Bluetooth address.
+     * @return [Single] emitting success with "true" or "false" response, or error.
+     *
+     */
+    abstract fun isFtuDone(identifier: String): Single<Boolean>
+
+    /**
      * Set [PolarUserDeviceSettings] for device. Currently only 'user device location' is supported.
      *
      * @param identifier Polar device ID or BT address.
@@ -373,13 +406,12 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
     abstract fun getUserDeviceSettings(identifier: String): Single<PolarUserDeviceSettings>
 
     /**
-     * Delete data [PolarStoredDataType] from a device.
+     * Delete data [PolarStoredDataType] from a device. Note that you will need to await for completion.
      *
      * @param identifier, Polar device ID or BT address
      * @param dataType, [PolarStoredDataType] A specific data type that shall be deleted
      * @param until, Data will be deleted from device from history until this date.
-     * @return [Completable] emitting success or error
+     * @return [Flowable] success with the paths of the deleted data or error
      */
-    abstract fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Completable
-
+    abstract fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Flowable<ConcurrentLinkedQueue<String>>
 }

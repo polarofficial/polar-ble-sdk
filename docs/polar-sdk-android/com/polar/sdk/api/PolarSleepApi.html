@@ -117,7 +117,7 @@ var pathtoroot = "../../../../";
 public interface <span class="typeNameLabel"><a href=PolarSleepApi.html>PolarSleepApi</a></span>
 
                     </pre>
-                    <div class="block"><p>Polar sleep API. Requires feature FEATURE_POLAR_SLEEP_DATA</p></div>
+                    <div class="block"><p>Polar sleep API. Requires features FEATURE_POLAR_SLEEP_DATA, FEATURE_POLAR_FILE_TRANSFER</p></div>
                 </li>
             </ul>
         </div>
@@ -238,6 +238,30 @@ public interface <span class="typeNameLabel"><a href=PolarSleepApi.html>PolarSle
                                         </tr>
                                         
                                         <tr id="i0" class="altColor">
+                                            <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>&gt;</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarSleepApi.html#getSleepRecordingState(String)>getSleepRecordingState</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">Get sleep recording state</td>
+                                        </tr>
+                                        
+                                        <tr id="i1" class="rowColor">
+                                            <td class="colFirst"><code>abstract Flowable&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-boolean-array/index.html>BooleanArray</a>&gt;</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarSleepApi.html#observeSleepRecordingState(String)>observeSleepRecordingState</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">Observe sleep recording state</td>
+                                        </tr>
+                                        
+                                        <tr id="i2" class="altColor">
+                                            <td class="colFirst"><code>abstract Completable</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarSleepApi.html#stopSleepRecording(String)>stopSleepRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">Stop sleep recording</td>
+                                        </tr>
+                                        
+                                        <tr id="i3" class="rowColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/sleep/PolarSleepData.html>PolarSleepData</a>&gt;&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarSleepApi.html#getSleep(String,LocalDate,LocalDate)>getSleep</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate) </code>
@@ -288,6 +312,78 @@ public interface <span class="typeNameLabel"><a href=PolarSleepApi.html>PolarSle
                                 <!--   -->
                             </a>
                                 <h3>Method Detail</h3>
+                                
+                                <a id="getSleepRecordingState(String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getSleepRecordingState</h4>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>&gt; <a href=PolarSleepApi.html#getSleepRecordingState(String)>getSleepRecordingState</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Get sleep recording state</p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - The Polar device ID or BT address</dd>
+                                            
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="observeSleepRecordingState(String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>observeSleepRecordingState</h4>
+                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-boolean-array/index.html>BooleanArray</a>&gt; <a href=PolarSleepApi.html#observeSleepRecordingState(String)>observeSleepRecordingState</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Observe sleep recording state</p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - The Polar device ID or BT address</dd>
+                                            
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="stopSleepRecording(String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>stopSleepRecording</h4>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarSleepApi.html#stopSleepRecording(String)>stopSleepRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Stop sleep recording</p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - The Polar device ID or BT address</dd>
+                                            
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
                                 
                                 <a id="getSleep(String,LocalDate,LocalDate)">
                                     <!--   -->
