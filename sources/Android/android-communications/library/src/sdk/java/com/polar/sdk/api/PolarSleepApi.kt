@@ -2,13 +2,40 @@ package com.polar.sdk.api
 
 import com.polar.sdk.api.model.sleep.PolarSleepData
 import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.core.Flowable
+import io.reactivex.rxjava3.core.Completable
 import java.time.LocalDate
 
 /**
  * Polar sleep API.
- * Requires feature FEATURE_POLAR_SLEEP_DATA
+ * Requires features FEATURE_POLAR_SLEEP_DATA, FEATURE_POLAR_FILE_TRANSFER
  */
 interface PolarSleepApi {
+
+    /**
+     * Get sleep recording state
+     *
+     * @param identifier The Polar device ID or BT address
+     * @return A [Single] boolean value indicating if sleep recording is ongoing
+     **/
+    fun getSleepRecordingState(identifier: String): Single<Boolean>
+
+    /**
+     * Observe sleep recording state
+     *
+     * @param identifier The Polar device ID or BT address
+     * @return [Flowable] of boolean values indicating if sleep recording is ongoing
+     */
+    fun observeSleepRecordingState(identifier: String):  Flowable<Array<Boolean>>
+
+    /**
+     * Stop sleep recording
+     *
+     * @param identifier The Polar device ID or BT address
+     * @return [Completable] success when sleep recording stop action has been succesfully
+     * sent to device
+     */
+     fun stopSleepRecording(identifier: String): Completable
 
     /**
      * Get sleep stages and duration for a given period.

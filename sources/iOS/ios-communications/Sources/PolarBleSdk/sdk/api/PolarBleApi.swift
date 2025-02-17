@@ -94,41 +94,37 @@ public typealias PolarHrData = [(hr: UInt8, ppgQuality: UInt8, correctedHr: UInt
 
 /// Polar Ecg data
 ///
-///     - Deprecated: Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
 ///     - samples: Acceleration samples
 ///         - timeStamp: moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000
 ///         - voltage value in µVolts
-public typealias PolarEcgData = (timeStamp: UInt64, samples: [(timeStamp: UInt64, voltage: Int32)])
+public typealias PolarEcgData = ([(timeStamp: UInt64, voltage: Int32)])
 
 /// Polar acc data
 ///
-///     - Deprecated: Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
 ///     - samples: Acceleration samples
 ///         - timeStamp: moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000
 ///         - x axis value in millig (including gravity)
 ///         - y axis value in millig (including gravity)
 ///         - z axis value in millig (including gravity)
-public typealias PolarAccData = (timeStamp: UInt64, samples: [(timeStamp: UInt64, x: Int32, y: Int32, z: Int32)])
+public typealias PolarAccData = ([(timeStamp: UInt64, x: Int32, y: Int32, z: Int32)])
 
 /// Polar gyro data
 ///
-///     - Deprecated: Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
 ///     - samples: Gyroscope samples
 ///         - timeStamp: moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000
 ///         - x axis value in deg/sec
 ///         - y axis value in deg/sec
 ///         - z axis value in deg/sec
-public typealias PolarGyroData = (timeStamp: UInt64, samples: [(timeStamp: UInt64, x: Float, y: Float, z: Float)])
+public typealias PolarGyroData = ([(timeStamp: UInt64, x: Float, y: Float, z: Float)])
 
 /// Polar magnetometer data
 ///
-///     - Deprecated: Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
 ///     - samples: Magnetometer samples
 ///         - timeStamp: moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000
 ///         - x axis value in Gauss
 ///         - y axis value in Gauss
 ///         - z axis value in Gauss
-public typealias PolarMagnetometerData = (timeStamp: UInt64, samples: [(timeStamp: UInt64, x: Float, y: Float, z: Float)])
+public typealias PolarMagnetometerData = ([(timeStamp: UInt64, x: Float, y: Float, z: Float)])
 
 /// Polar Temperature data
 ///
@@ -145,25 +141,6 @@ public typealias PolarTemperatureData = (timeStamp: UInt64, samples: [(timeStamp
 ///         - timeStamp: moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000
 ///         - pressure value in bar
 public typealias PolarPressureData = (timeStamp: UInt64, samples: [(timeStamp: UInt64, pressure: Float)])
-
-/// OHR data source enum
-@available(*, deprecated, renamed: "PpgDataType")
-public enum OhrDataType: Int, CaseIterable {
-    /// 3 ppg + 1 ambient
-    case ppg3_ambient1 = 4
-    case unknown = 18
-}
-
-/// Polar Ohr data
-///
-///     - Deprecated: Timestamp: Last sample timestamp in nanoseconds. The epoch of timestamp is 1.1.2000
-///     - type: type of data, which varies based on what is type of optical sensor used in the device
-///     - samples: Photoplethysmography samples
-///         - timeStamp: moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000
-///         - channelSamples is the PPG (Photoplethysmography) raw value received from the optical sensor. Based on [OhrDataType] the amount of channels varies. Typically ppg(n) channel + n ambient(s).
-///
-@available(*, deprecated, renamed: "PolarPpgData")
-public typealias PolarOhrData = (timeStamp: UInt64, type: OhrDataType, samples: [(timeStamp:UInt64, channelSamples: [Int32])])
 
 
 /// PPG data source enum
@@ -376,19 +353,15 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - Typical day: One of [TypicalDay] values
     ///   - Sleep goal: Minutes, valid range [300-660]
     func doFirstTimeUse(_ identifier: String, ftuConfig: PolarFirstTimeUseConfig) -> Completable
-
-    /// Deprecated. Use "func setWarehouseSleep(_ identifier: String)" instead.
-    /// Set warehouse sleep to a device. Factory reset will be performed in order to enable the setting.
-    ///
+    
+    /// Check if the First Time Use has been done for the given Polar device.
     /// - Parameters:
-    ///   - identifier: polar device id or UUID
-    ///   - enableWarehouseSleep: Bool value for the warehouse sleep setting
-    /// - Returns: Completable stream
-    ///   - success: when warehouse sleep has been set together with  factory reset
+    ///   - identifier: Polar device id or UUID
+    /// - Returns: Boolean
+    ///   - success: true when FTU has been done, false otherwise
     ///   - onError: see `PolarErrors` for possible errors invoked
-    @available(*, deprecated, message: "Use setWarehouseSleep(_ identifier: String) instead")
-    func setWarehouseSleep(_ identifier: String, enableWarehouseSleep: Bool?) -> Completable
-  
+    func isFtuDone(_ identifier: String) -> Single<Bool>
+
     func dumpAllFiles(_ identifier: String) -> Observable<(name: String, size:UInt64)>
 
     /// Set the device to warehouse sleep state. Factory reset will be performed in order to enable the setting.
@@ -446,10 +419,7 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     
     /// Device features ready observer
     var deviceFeaturesObserver: PolarBleApiDeviceFeaturesObserver? { get set }
-    
-    /// SDK mode feature available in the device and ready observer
-    @available(*, deprecated, message: "The functionality has changed. Please use the bleSdkFeatureReady to know if sdkModeFeature is available")
-    var sdkModeFeatureObserver: PolarBleApiSdkModeFeatureObserver? { get set }
+
     
     /// Helper to check if Ble is currently powered
     /// - Returns: current power state

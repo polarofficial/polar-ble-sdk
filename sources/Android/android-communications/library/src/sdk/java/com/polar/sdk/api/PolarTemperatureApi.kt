@@ -1,5 +1,5 @@
 // Copyright © 2025 Polar Electro Oy. All rights reserved.
-package java.com.polar.sdk.api
+package com.polar.sdk.api
 
 import com.polar.sdk.api.model.PolarSkinTemperatureData
 import io.reactivex.rxjava3.core.Single

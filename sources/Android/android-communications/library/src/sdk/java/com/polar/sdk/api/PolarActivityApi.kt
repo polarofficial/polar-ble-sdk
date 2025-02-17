@@ -1,12 +1,13 @@
 package com.polar.sdk.api
 
 import com.polar.sdk.api.model.activity.Polar247HrSamplesData
+import com.polar.sdk.api.model.activity.Polar247PPiSamplesData
 import com.polar.sdk.api.model.activity.PolarActiveTimeData
+import com.polar.sdk.api.model.activity.PolarCaloriesData
 import com.polar.sdk.api.model.activity.PolarDistanceData
 import com.polar.sdk.api.model.activity.PolarStepsData
-import com.polar.sdk.api.model.activity.PolarCaloriesData
-import com.polar.sdk.impl.utils.CaloriesType
 import com.polar.sdk.api.model.sleep.PolarNightlyRechargeData
+import com.polar.sdk.impl.utils.CaloriesType
 import io.reactivex.rxjava3.core.Single
 import java.util.Date
 
@@ -76,4 +77,14 @@ interface PolarActivityApi {
      * @return A [Single] emitting a list of [PolarNightlyRechargeData] representing the nightly recharge data for the specified period.
      */
     fun getNightlyRecharge(identifier: String, fromDate: Date, toDate: Date): Single<List<PolarNightlyRechargeData>>
+
+    /**
+     * Load 24/7 PPi data from a device for a given period.
+     *
+     * @param identifier, Polar device ID or BT address
+     * @param fromDate The starting date of the period to retrieve 24/7 PPi data from.
+     * @param toDate The ending date of the period to retrieve 24/7 PPi data from.
+     * @return A [Single] emitting a list of [Polar247PPiSamplesData] representing the 24/7 PPi data for the specified period.
+     */
+    abstract fun get247PPiSamples(identifier: String, fromDate: Date, toDate: Date): Single<List<Polar247PPiSamplesData>>
 }

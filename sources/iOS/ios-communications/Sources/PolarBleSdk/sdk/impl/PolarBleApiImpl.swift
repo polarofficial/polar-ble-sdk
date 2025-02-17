@@ -15,7 +15,6 @@ import UIKit
     
     weak var deviceHrObserver: PolarBleApiDeviceHrObserver?
     weak var deviceFeaturesObserver: PolarBleApiDeviceFeaturesObserver?
-    weak var sdkModeFeatureObserver: PolarBleApiSdkModeFeatureObserver?
     weak var deviceInfoObserver: PolarBleApiDeviceInfoObserver?
     weak var powerStateObserver: PolarBleApiPowerStateObserver? {
         didSet {
@@ -530,7 +529,7 @@ import UIKit
                 if let client = session.fetchGattClient(uuid) {
                     switch uuid {
                     case BleHrClient.HR_SERVICE:
-                        self.deviceFeaturesObserver?.hrFeatureReady(deviceId)
+                        self.deviceFeaturesObserver?.bleSdkFeatureReady(deviceId, feature: PolarBleSdkFeature.feature_hr)
                         let hrClient = client as! BleHrClient
                         self.startHrObserver(hrClient, deviceId: deviceId)
                     case BleBasClient.BATTERY_SERVICE:
@@ -593,10 +592,10 @@ import UIKit
                                         featureSet.insert(.skinTemperature)
                                     }
                                     
-                                    self.deviceFeaturesObserver?.streamingFeaturesReady(deviceId, streamingFeatures: featureSet)
+                                    self.deviceFeaturesObserver?.bleSdkFeatureReady(deviceId, feature: PolarBleSdkFeature.feature_polar_online_streaming)
 
                                     if value.contains(PmdMeasurementType.sdkMode) {
-                                        self.sdkModeFeatureObserver?.sdkModeFeatureAvailable(deviceId)
+                                        self.deviceFeaturesObserver?.bleSdkFeatureReady(deviceId, feature: PolarBleSdkFeature.feature_polar_sdk_mode)
                                     }
                                 }))
                             .asObservable()
@@ -1469,6 +1468,45 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Disposables.create()
         }
     }
+    
+    func getSubRecordings(identifier: String, entry: PolarOfflineRecordingEntry) -> Single<Array<String>> {
+        return Single.create { single in
+            do {
+                let session = try self.sessionFtpClientReady(identifier)
+                guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                    single(.failure(PolarErrors.serviceNotFound))
+                    return Disposables.create()
+                }
+                
+                var operation = Protocol_PbPFtpOperation()
+                operation.command = Protocol_PbPFtpOperation.Command.get
+                let directoryPath = entry.path.components(separatedBy: "/").dropLast().joined(separator: "/") + "/"
+                operation.path = directoryPath
+                
+                _ = client.request(try operation.serializedData())
+                    .subscribe(
+                        onSuccess: { content in
+                            do {
+                                let directory = try Protocol_PbPFtpDirectory(serializedData: content as Data)
+                                var records = [String]()
+                                for entry in directory.entries {
+                                    records.append(entry.name)
+                                }
+                                single(.success(records))
+                            } catch {
+                                single(.failure(error))
+                            }
+                        },
+                        onFailure: { error in
+                            single(.failure(error))
+                        }
+                    )
+            } catch {
+                single(.failure(error))
+            }
+            return Disposables.create()
+        }
+    }
 
     func listSplitOfflineRecordings(_ identifier: String) -> Observable<PolarOfflineRecordingEntry> {
         do {
@@ -1702,6 +1740,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                         }
                         
                         if parentDirEntries.entries.count <= 1 && isParentDirValid {
+                            // It is safe to remove the parent dir
                             BleLogger.trace("removeOfflineFilesRecursively: call removeOfflineFilesRecursively for parent directory \(parentDir)")
                             return self.removeOfflineFilesRecursively(client, parentDir, deleteIfMatchesRegex: deleteIfMatchesRegex)
                         } else {
@@ -1720,8 +1759,6 @@ extension PolarBleApiImpl: PolarBleApi  {
                                     }
                                 )
                         }
-                        
-                        
                     } catch {
                         return Completable.error(PolarErrors.messageDecodeFailed)
                     }
@@ -1731,6 +1768,99 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
+    func removeOfflineRecords(_ identifier: String, entry: PolarOfflineRecordingEntry) -> Single<Bool> {
+        
+        BleLogger.trace("Remove offline record. Device: \(identifier) Path: \(entry.path)")
+        do {
+            let session = try sessionFtpClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Single.error(PolarErrors.serviceNotFound)
+            }
+            guard .sagRfc2FileSystem == BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType) else {
+                return Single.error(PolarErrors.operationNotSupported)
+            }
+            
+            return removeOfflineSubrecordings(identifier, entry: entry)
+        } catch let err {
+            return Single.error(err)
+        }
+    }
+        
+    private func removeOfflineSubrecordings(_ identifier: String, entry: PolarOfflineRecordingEntry) -> Single<Bool> {
+        BleLogger.trace("Completely remove offline record with all its subrecordings. Device: \(identifier). Path: \(entry.path).")
+        do {
+            let session = try sessionFtpClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Single.error(PolarErrors.serviceNotFound)
+            }
+            guard .sagRfc2FileSystem == BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType) else {
+                return Single.error(PolarErrors.operationNotSupported)
+            }
+            
+            return self.getSubRecordings(identifier: identifier, entry: entry).flatMap { subrecords -> Single<Bool> in
+                return Single.create { singleEmitter in
+                    var disposed = false
+                    defer {
+                        if !disposed {
+                            singleEmitter(.success(true))
+                        }
+                    }
+                    var idx = 0
+                    for record in subrecords {
+                        idx+=1
+                        var deviceType = ""
+                        do {
+                            do {
+                                deviceType = try self.mapDeviceDataTypeToOfflineRecordingFileName(type: entry.type)
+                            } catch let err {
+                                BleLogger.error("Error in finding device type for subrecord \(record).")
+                            }
+                            
+                            let matches = record.matches(deviceType)
+                            if (matches) {
+                                let indices = entry.path.findIndices(lookable: "/")
+                                let pathPrefix =  String(entry.path[...indices[indices.count-1]])
+                                let deletePath = pathPrefix + record
+                                self.removeSingleFile(identifier: identifier, filePath: deletePath).subscribe (
+                                    onSuccess: {_ in
+                                        if idx == subrecords.count {
+                                            self.removeOfflineFilesRecursively(client, entry.path, deleteIfMatchesRegex: "/\\d{8}/").subscribe(
+                                                onCompleted: {
+                                                    return singleEmitter(.success(true))
+                                                }
+                                            )
+                                        }
+                                    },
+                                    onError: { error in
+                                        singleEmitter(.failure(error))
+                                    }
+                                )
+                            }
+                        }
+                        
+                    }
+                    return Disposables.create()
+                }
+            }
+        } catch let err {
+            return Single.error(err)
+        }
+    }
+    
+    func mapDeviceDataTypeToOfflineRecordingFileName(type: PolarDeviceDataType) throws -> String {
+         switch type {
+             case .acc: return "ACC"
+             case .gyro: return "GYRO"
+             case .magnetometer  : return "MAG"
+             case .ppg: return "PPG"
+             case .ppi: return "PPI"
+             case .hr: return "HR"
+             case .temperature: return "TEMP"
+             case .skinTemperature: return "SKINTEMP"
+             default: throw BleGattException.gattDataError(description: "Unknown pmd measurement type: \(type)")
+         }
+     }
+
     func startOfflineRecording(_ identifier: String, feature: PolarDeviceDataType, settings: PolarSensorSetting?, secret: PolarRecordingSecret?) -> RxSwift.Completable {
         do {
             let session = try sessionPmdClientReady(identifier)
@@ -1878,15 +2008,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             }
         }
     }
-    
-    func startOhrStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarOhrData> {
-        return startStreaming(identifier, type: .ppg, settings: settings) { (client) -> Observable<PolarOhrData> in
-            return client.observePpg()
-                .map {
-                    $0.mapToPolarOhrData()
-                }
-        }
-    }
+
     
     func startPpgStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarPpgData> {
         return startStreaming(identifier, type: .ppg, settings: settings) { (client) -> Observable<PolarPpgData> in
@@ -1898,15 +2020,6 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
     
     func startPpiStreaming(_ identifier: String) -> Observable<PolarPpiData> {
-        return startStreaming(identifier, type: .ppi, settings: PolarSensorSetting()) { (client) -> Observable<PolarPpiData> in
-            return client.observePpi()
-                .map {
-                    $0.mapToPolarData()
-                }
-        }
-    }
-    
-    func startOhrPPIStreaming(_ identifier: String) -> Observable<PolarPpiData> {
         return startStreaming(identifier, type: .ppi, settings: PolarSensorSetting()) { (client) -> Observable<PolarPpiData> in
             return client.observePpi()
                 .map {
@@ -2296,6 +2409,34 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Disposables.create()
         }
     }
+    
+    func isFtuDone(_ identifier: String) -> Single<Bool> {
+   
+        do {
+            let session = try sessionFtpClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Single.error(PolarErrors.serviceNotFound)
+            }
+            guard .sagRfc2FileSystem == BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType) else {
+                return Single.error(PolarErrors.operationNotSupported)
+            }
+            
+            var operation = Protocol_PbPFtpOperation()
+            operation.command =  Protocol_PbPFtpOperation.Command.get
+            operation.path = UserIdentifierType.USER_IDENTIFIER_FILENAME
+            let request = try operation.serializedData()
+
+            self.logMessage("Check if FTU has been done to device \(identifier)")
+            return client.sendNotification(Protocol_PbPFtpHostToDevNotification.initializeSession.rawValue, parameters: nil)
+                .andThen(client.request(request))
+                .map { data -> Bool in
+                    return try Data_PbUserIdentifier(serializedData: data as Data).hasMasterIdentifier
+                }
+        } catch let err {
+            return Single.error(err)
+        }
+    }
+    
   
     func dumpAllFiles(_ identifier: String) -> Observable<(name: String, size:UInt64)> {
         do {
@@ -2797,6 +2938,44 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Single.error(error)
         }
     }
+    
+    func getCalories(identifier: String, fromDate: Date, toDate: Date, caloriesType: CaloriesType) -> RxSwift.Single<[PolarCaloriesData]> {
+       do {
+           let session = try self.sessionFtpClientReady(identifier)
+           guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+               return Single.error(PolarErrors.serviceNotFound)
+           }
+
+           let calendar = Calendar.current
+           var datesList = [Date]()
+           var currentDate = fromDate
+
+           while currentDate <= toDate {
+               datesList.append(currentDate)
+               if let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) {
+                   currentDate = nextDate
+               } else {
+                   break
+               }
+           }
+
+           return Observable.from(datesList)
+               .flatMap { date -> Single<(Date, Int)> in
+                   return PolarActivityUtils.readCaloriesFromDayDirectory(client: client, date: date, caloriesType: caloriesType)
+                       .map { calories -> (Date, Int) in
+                           return (date, calories)
+                       }
+               }
+               .toArray()
+               .map { pairs -> [PolarCaloriesData] in
+                   return pairs.map { (date, calories) in
+                       PolarCaloriesData(date: date, calories: calories)
+                   }
+               }
+       } catch {
+           return Single.error(error)
+       }
+   }
 
     func getSkinTemperature(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarSkinTemperatureData.PolarSkinTemperatureResult]> {
         do {
@@ -2972,7 +3151,6 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
 
-
     func deleteStoredDeviceData(_ identifier: String, dataType: PolarStoredDataType.StoredDataType, until: Date?) -> Completable {
         
         var dataDeletionStats = DataDeletionStats()
@@ -2999,6 +3177,10 @@ extension PolarBleApiImpl: PolarBleApi  {
         case .NIGHTLY_RECOVERY:
             fallthrough
         case .SLEEP:
+            fallthrough
+        case .SKIN_CONTACT_CHANGES:
+            fallthrough
+        case .SKINTEMP:
             fallthrough
         case .SLEEP_SCORE:
             if (until != nil) {
@@ -3047,6 +3229,10 @@ extension PolarBleApiImpl: PolarBleApi  {
                     case .NIGHTLY_RECOVERY:
                         fallthrough
                     case .SLEEP:
+                        fallthrough
+                    case .SKIN_CONTACT_CHANGES:
+                        fallthrough
+                    case .SKINTEMP:
                         fallthrough
                     case .SLEEP_SCORE:
                         BleLogger.trace("Starting to delete files from /U/0 directory, file type: " + dataType.rawValue)
@@ -3470,9 +3656,11 @@ extension PolarBleApiImpl: PolarBleApi  {
     ) -> PolarOfflineRecordingData {
         switch existingData {
         case let .accOfflineRecordingData(existingData, startTime, existingSettings):
-            let newSamples = existingData.samples + accData.samples.map { (timeStamp: $0.timeStamp, x: $0.x, y: $0.y, z: $0.z) }
+            let newSamples = existingData + accData.samples.map { sample in
+                (timeStamp: sample.timeStamp, x: sample.x, y: sample.y, z: sample.z)
+            }
             return .accOfflineRecordingData(
-                (timeStamp: accData.timeStamp, samples: newSamples),
+                newSamples,
                 startTime: startTime,
                 settings: existingSettings
             )
@@ -3493,9 +3681,9 @@ extension PolarBleApiImpl: PolarBleApi  {
     ) -> PolarOfflineRecordingData {
         switch existingData {
         case let .gyroOfflineRecordingData(existingData, startTime, existingSettings):
-            let newSamples = existingData.samples + gyroData.samples.map { (timeStamp: $0.timeStamp, x: $0.x, y: $0.y, z: $0.z) }
+            let newSamples: PolarGyroData = existingData + gyroData.samples.map { (timeStamp: $0.timeStamp, x: $0.x, y: $0.y, z: $0.z) }
             return .gyroOfflineRecordingData(
-                (timeStamp: gyroData.timeStamp, samples: newSamples),
+                newSamples,
                 startTime: startTime,
                 settings: existingSettings
             )
@@ -3516,9 +3704,9 @@ extension PolarBleApiImpl: PolarBleApi  {
     ) -> PolarOfflineRecordingData {
         switch existingData {
         case let .magOfflineRecordingData(existingData, startTime, existingSettings):
-            let newSamples = existingData.samples + magData.samples.map { (timeStamp: $0.timeStamp, x: $0.x, y: $0.y, z: $0.z) }
+            let newSamples: PolarMagnetometerData = existingData + magData.samples.map { (timeStamp: $0.timeStamp, x: $0.x, y: $0.y, z: $0.z) }
             return .magOfflineRecordingData(
-                (timeStamp: magData.timeStamp, samples: newSamples),
+                newSamples,
                 startTime: startTime,
                 settings: existingSettings
             )
@@ -3850,7 +4038,7 @@ private extension GyrData {
         for sample in self.samples {
             polarSamples.append((timeStamp: sample.timeStamp, x: sample.x, y: sample.y, z: sample.z))
         }
-        return PolarGyroData(timeStamp: self.timeStamp, samples: polarSamples)
+        return PolarGyroData(polarSamples)
     }
 }
 
@@ -3860,7 +4048,7 @@ private extension AccData {
         for sample in self.samples {
             polarSamples.append((timeStamp: sample.timeStamp, x: sample.x, y: sample.y, z: sample.z))
         }
-        return PolarAccData(timeStamp: self.timeStamp, samples: polarSamples)
+        return PolarAccData(polarSamples)
     }
 }
 
@@ -3870,7 +4058,7 @@ private extension MagData {
         for sample in self.samples {
             polarSamples.append((timeStamp: sample.timeStamp, x: sample.x, y: sample.y, z: sample.z))
         }
-        return PolarMagnetometerData(timeStamp: self.timeStamp, samples: polarSamples)
+        return PolarMagnetometerData(polarSamples)
     }
 }
 
@@ -3901,19 +4089,11 @@ private extension EcgData {
         for sample in self.samples {
             polarSamples.append((timeStamp: sample.timeStamp, voltage: sample.microVolts ))
         }
-        return PolarEcgData(timeStamp: self.timeStamp, samples: polarSamples)
+        return PolarEcgData(polarSamples)
     }
 }
 
 private extension PpgData {
-    func mapToPolarOhrData() -> PolarOhrData {
-        var polarSamples: [(timeStamp:UInt64, channelSamples: [Int32])] = []
-        for sample in self.samples {
-            polarSamples.append((timeStamp: sample.timeStamp!, channelSamples: [sample.ppgDataSamples[0], sample.ppgDataSamples[1], sample.ppgDataSamples[2], sample.ambientSample ] ))
-        }
-        return PolarOhrData(timeStamp: self.timeStamp, type: OhrDataType.ppg3_ambient1, samples: polarSamples)
-    }
-
     func mapToPolarData() -> PolarPpgData {
         var polarSamples: [(timeStamp:UInt64, channelSamples: [Int32])] = []
         var dataType: PpgDataType!
@@ -3983,6 +4163,20 @@ private extension Date {
         }
     }
 
+}
+
+private extension String {
+    func findIndices(lookable: Character) -> [String.Index] {
+        var indices: [String.Index] = []
+        var index = 0
+        for letter in self {
+            if letter == lookable {
+                indices.append(String.Index(encodedOffset: index))
+            }
+            index += 1
+        }
+        return indices
+    }
 }
 
 private class DataDeletionStats {

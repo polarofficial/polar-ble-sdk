@@ -19,3 +19,12 @@ message PbPFtpFactoryResetParams {
 message PbPFtpStopSyncParams {
   required bool completed = 1;
 }
+
+enum PbPFtpDevToHostNotification {
+    REST_API_EVENT = 18;
+}
+
+message PbPftpDHRestApiEvent {
+    repeated bytes event = 1;
+    optional bool uncompressed = 2; // If this field is missing or false, the payload is compressed
+}

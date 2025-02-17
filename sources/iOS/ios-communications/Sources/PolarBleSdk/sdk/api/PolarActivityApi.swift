@@ -31,6 +31,16 @@ public protocol PolarActivityApi {
     ///   - toDate: The ending date of the period to retrieve active time from.
     /// - Returns: A Single emitting an array of `PolarActiveTimeData` representing the active time data for the specified period.
     func getActiveTime(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarActiveTimeData]>
+
+    /// Get calories for a given period.
+    ///
+    /// - Parameters:
+    ///   - identifier: The Polar device ID or BT address.
+    ///   - fromDate: The starting date of the period to retrieve calories from.
+    ///   - toDate: The ending date of the period to retrieve calories from.
+    ///   - caloriesType The type of calories data to retrieve (e.g., ACTIVITY, TRAINING, BMR).
+    /// - Returns: A Single emitting an array of `PolarCaloriesData` representing the calories data for the specified period.
+    func getCalories(identifier: String, fromDate: Date, toDate: Date, caloriesType: CaloriesType) -> Single<[PolarCaloriesData]>
     
     /// Get 24/7 heart rate samples for a given period.
     ///

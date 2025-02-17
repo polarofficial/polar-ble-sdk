@@ -123,6 +123,48 @@ internal class PolarActivityUtils {
             })
     }
 
+    /// Read calories for given date.
+    static func readCaloriesFromDayDirectory(client: BlePsFtpClient, date: Date, caloriesType: CaloriesType) -> Single<Int> {
+        BleLogger.trace(TAG, "readCaloriesFromDayDirectory: \(date), type: \(caloriesType)")
+        return sendSyncStart(client)
+          .andThen(Single<Int>.create { emitter in
+              let dailySummaryFilePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(DAILY_SUMMARY_DIRECTORY)\(DAILY_SUMMARY_PROTO)"
+              let operation = Protocol_PbPFtpOperation.with {
+                  $0.command = .get
+                  $0.path = dailySummaryFilePath
+              }
+              
+              let disposable = client.request(try! operation.serializedData()).subscribe(
+                  onSuccess: { response in
+                      do {
+                          let proto = try Data_PbDailySummary(serializedData: Data(response))
+                          let caloriesValue: Int
+                          switch caloriesType {
+                              case .activity:
+                                  caloriesValue = Int(proto.activityCalories)
+                              case .training:
+                                  caloriesValue = Int(proto.trainingCalories)
+                              case .bmr:
+                                  caloriesValue = Int(proto.bmrCalories)
+                              }
+                          emitter(.success(caloriesValue))
+                      } catch {
+                          BleLogger.error("readCaloriesFromDayDirectory() failed for path: \(dailySummaryFilePath), error: \(error)")
+                          emitter(.success(0))
+                      }
+                  },
+                  onFailure: { error in
+                      BleLogger.error("readCaloriesFromDayDirectory() failed for path: \(dailySummaryFilePath), error: \(error)")
+                      emitter(.success(0))
+                  }
+              )
+              
+              return Disposables.create {
+                  disposable.dispose()
+              }
+          })
+      }
+
     // Send sync start to generate daily summary for the current date
     private static func sendSyncStart(_ client: BlePsFtpClient) -> Completable {
         return client.sendNotification(

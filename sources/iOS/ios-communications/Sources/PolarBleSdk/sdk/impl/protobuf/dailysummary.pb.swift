@@ -120,6 +120,33 @@ struct Data_PbDailySummary {
   /// Clears the value of `activityClassTimes`. Subsequent reads from it will return its default value.
   mutating func clearActivityClassTimes() {self._activityClassTimes = nil}
 
+  var activityCalories: UInt32 {
+    get {return _activityCalories ?? 0}
+    set {_activityCalories = newValue}
+  }
+  /// Returns true if `activityCalories` has been explicitly set.
+  var hasActivityCalories: Bool {return self._activityCalories != nil}
+  /// Clears the value of `activityCalories`. Subsequent reads from it will return its default value.
+  mutating func clearActivityCalories() {self._activityCalories = nil}
+
+  var trainingCalories: UInt32 {
+    get {return _trainingCalories ?? 0}
+    set {_trainingCalories = newValue}
+  }
+  /// Returns true if `trainingCalories` has been explicitly set.
+  var hasTrainingCalories: Bool {return self._trainingCalories != nil}
+  /// Clears the value of `trainingCalories`. Subsequent reads from it will return its default value.
+  mutating func clearTrainingCalories() {self._trainingCalories = nil}
+
+  var bmrCalories: UInt32 {
+    get {return _bmrCalories ?? 0}
+    set {_bmrCalories = newValue}
+  }
+  /// Returns true if `bmrCalories` has been explicitly set.
+  var hasBmrCalories: Bool {return self._bmrCalories != nil}
+  /// Clears the value of `bmrCalories`. Subsequent reads from it will return its default value.
+  mutating func clearBmrCalories() {self._bmrCalories = nil}
+
   var activityDistance: Float {
     get {return _activityDistance ?? 0}
     set {_activityDistance = newValue}
@@ -134,6 +161,9 @@ struct Data_PbDailySummary {
   init() {}
 
   fileprivate var _activityClassTimes: Data_PbActivityClassTimes? = nil
+  fileprivate var _activityCalories: UInt32? = nil
+  fileprivate var _trainingCalories: UInt32? = nil
+  fileprivate var _bmrCalories: UInt32? = nil
   fileprivate var _activityDistance: Float? = nil
 }
 
@@ -296,6 +326,9 @@ extension Data_PbDailySummary: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   static let protoMessageName: String = _protobuf_package + ".PbDailySummary"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     7: .standard(proto: "activity_class_times"),
+    3: .standard(proto: "activity_calories"),
+    4: .standard(proto: "training_calories"),
+    5: .standard(proto: "bmr_calories"),
     8: .standard(proto: "activity_distance"),
   ]
 
@@ -310,6 +343,9 @@ extension Data_PbDailySummary: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self._activityCalories) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self._trainingCalories) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self._bmrCalories) }()
       case 7: try { try decoder.decodeSingularMessageField(value: &self._activityClassTimes) }()
       case 8: try { try decoder.decodeSingularFloatField(value: &self._activityDistance) }()
       default: break
@@ -322,6 +358,15 @@ extension Data_PbDailySummary: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
     // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._activityCalories {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._trainingCalories {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._bmrCalories {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 5)
+    } }()
     try { if let v = self._activityClassTimes {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
     } }()
@@ -333,6 +378,9 @@ extension Data_PbDailySummary: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
 
   static func ==(lhs: Data_PbDailySummary, rhs: Data_PbDailySummary) -> Bool {
     if lhs._activityClassTimes != rhs._activityClassTimes {return false}
+    if lhs._activityCalories != rhs._activityCalories {return false}
+    if lhs._trainingCalories != rhs._trainingCalories {return false}
+    if lhs._bmrCalories != rhs._bmrCalories {return false}
     if lhs._activityDistance != rhs._activityDistance {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

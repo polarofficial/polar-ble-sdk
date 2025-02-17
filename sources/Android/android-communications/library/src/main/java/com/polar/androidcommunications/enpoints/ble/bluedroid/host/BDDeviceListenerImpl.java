@@ -532,11 +532,6 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
     }
 
     @Override
-    public void setDeviceSessionStateChangedCallback(@Nullable BleDeviceSessionStateChangedCallback changedCallback) {
-        this.changedCallback = changedCallback;
-    }
-
-    @Override
     public void openSessionDirect(@NonNull BleDeviceSession session) {
         session.setConnectionUuids(new ArrayList<>());
         connectionHandler.connectDevice((BDDeviceSessionImpl) session, bleActive());

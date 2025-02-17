@@ -6,8 +6,6 @@ package com.polar.sdk.api.model
  */
 data class PolarMagnetometerData(
     val samples: List<PolarMagnetometerDataSample>,
-    @Deprecated("This field is deprecated as each sample has now own timeStamp")
-    val timeStamp: Long
 ) {
 
     /**

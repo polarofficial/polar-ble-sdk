@@ -1,0 +1,58 @@
+// SDLOGS.BPB=PbSensorDataLog
+syntax = "proto2";
+
+package data;
+
+import "types.proto";
+
+/*
+ * Sensor data log settings
+ */
+
+message PbSensorDataLog
+{
+    enum PbLogTrigger {
+        LOG_TRIGGER_SYSTEM = 0;    // Log to enabled logs when system produces the required data
+        LOG_TRIGGER_FORCED = 1;    // Log to enabled logs always and force the needed measurements on
+        LOG_TRIGGER_EXERCISE = 2;  // Log to enabled logs in exercise when system produces the required data
+    };
+
+    // Minimum magnetometer frequency during logging. Please note that highest requested frequency is used
+    // in case of multiple requesters
+    enum PbMagnetometerLogFrequency {
+        MAG_LOG_10HZ = 1;
+        MAG_LOG_50HZ = 2;
+        MAG_LOG_100HZ = 3;
+    };
+
+    optional PbLogTrigger log_trigger = 1;
+
+    optional bool acceleration_log_enabled = 2;
+    optional bool calories_log_enabled = 3;
+    optional bool gps_log_enabled = 4;
+    optional bool gps_nmea_log_enabled = 5;
+    optional bool ohr_log_enabled = 6;
+    optional bool magnetometer_log_enabled = 7;
+    optional bool tap_log_enabled = 8;
+    optional bool barometer_log_enabled = 9;
+    optional bool gyroscope_log_enabled = 10;
+    optional bool sleep_log_enabled = 11;
+    optional bool slope_log_enabled = 12;
+    optional bool ambient_light_log_enabled = 13;
+    optional bool tlr_log_enabled = 14;
+    optional bool ppi_log_enabled = 15;
+    optional bool ondemand_log_enabled = 16;
+    optional bool capsense_log_enabled = 17;
+    optional bool fusion_log_enabled = 18;
+    optional bool met_log_enabled = 19;
+    optional bool vertical_acc_log_enabled = 20;
+    /* Altitude movement detection logging */
+    optional bool amd_log_enabled = 21;
+    optional bool skin_temperature_log_enabled = 22;
+    optional bool compass_log_enabled = 23;
+    optional bool speed3d_log_enabled = 24;
+
+    optional PbMagnetometerLogFrequency magnetometer_log_frequency = 50;
+
+    optional bool retain_settings_over_boot = 100;
+}

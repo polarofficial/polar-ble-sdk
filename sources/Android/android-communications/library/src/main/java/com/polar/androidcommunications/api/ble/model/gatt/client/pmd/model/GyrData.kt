@@ -4,9 +4,8 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClien
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient.PmdDataFieldEncoding
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
 import java.lang.Float.intBitsToFloat
-import java.util.*
 
-internal class GyrData constructor(@Deprecated("each sample has timestamp") val timeStamp: ULong = 0uL) {
+internal class GyrData {
 
     internal data class GyrSample internal constructor(
         val timeStamp: ULong,
@@ -41,7 +40,7 @@ internal class GyrData constructor(@Deprecated("each sample has timestamp") val 
 
         private fun dataFromCompressedType0(frame: PmdDataFrame): GyrData {
             val samples = BlePMDClient.parseDeltaFramesAll(frame.dataContent, TYPE_0_CHANNELS_IN_SAMPLE, TYPE_0_SAMPLE_SIZE_IN_BITS, PmdDataFieldEncoding.SIGNED_INT)
-            val gyrData = GyrData(frame.timeStamp)
+            val gyrData = GyrData()
 
             val timeStamps = PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp = frame.previousTimeStamp, frameTimeStamp = frame.timeStamp, samplesSize = samples.size, frame.sampleRate)
 
@@ -57,7 +56,7 @@ internal class GyrData constructor(@Deprecated("each sample has timestamp") val 
 
         private fun dataFromCompressedType1(frame: PmdDataFrame): GyrData {
             val samples = BlePMDClient.parseDeltaFramesAll(frame.dataContent, TYPE_1_CHANNELS_IN_SAMPLE, TYPE_1_SAMPLE_SIZE_IN_BITS, PmdDataFieldEncoding.FLOAT_IEEE754)
-            val gyrData = GyrData(frame.timeStamp)
+            val gyrData = GyrData()
 
             val timeStamps = PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp = frame.previousTimeStamp, frameTimeStamp = frame.timeStamp, samplesSize = samples.size, frame.sampleRate)
 

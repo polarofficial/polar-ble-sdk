@@ -291,4 +291,89 @@ class PolarActivityUtilsTests: XCTestCase {
         wait(for: [expectation], timeout: 5)
         disposable.dispose()
     }
+
+    func testReadCaloriesFromDayDirectory_ActivityCalories() {
+        // Arrange
+        let date = Date()
+        var proto = Data_PbDailySummary()
+        proto.activityCalories = 2000
+        
+        let responseData = try! proto.serializedData()
+        mockClient.requestReturnValue = Single.just(responseData)
+        
+        // Act
+        let expectation = XCTestExpectation(description: "Read activity calories")
+        PolarActivityUtils.readCaloriesFromDayDirectory(client: mockClient, date: date, caloriesType: CaloriesType.activity)
+            .subscribe(onSuccess: { calories in
+                // Assert
+                XCTAssertEqual(calories, 2000)
+                expectation.fulfill()
+            }, onFailure: { error in
+                XCTFail("Error: \(error)")
+            })
+        
+        wait(for: [expectation], timeout: 5)
+    }
+    
+    func testReadCaloriesFromDayDirectory_TrainingCalories() {
+        // Arrange
+        let date = Date()
+        var proto = Data_PbDailySummary()
+        proto.trainingCalories = 1500
+        let responseData = try! proto.serializedData()
+        mockClient.requestReturnValue = Single.just(responseData)
+        
+        // Act
+        let expectation = XCTestExpectation(description: "Read training calories")
+        PolarActivityUtils.readCaloriesFromDayDirectory(client: mockClient, date: date, caloriesType: .training)
+            .subscribe(onSuccess: { calories in
+                // Assert
+                XCTAssertEqual(calories, 1500)
+                expectation.fulfill()
+            }, onFailure: { error in
+                XCTFail("Error: \(error)")
+            })
+        
+        wait(for: [expectation], timeout: 5)
+    }
+
+    func testReadCaloriesFromDayDirectory_BmrCalories() {
+        // Arrange
+        let date = Date()
+        var proto = Data_PbDailySummary()
+        proto.bmrCalories = 1200
+        let responseData = try! proto.serializedData()
+        mockClient.requestReturnValue = Single.just(responseData)
+        
+        // Act
+        let expectation = XCTestExpectation(description: "Read BMR calories")
+        PolarActivityUtils.readCaloriesFromDayDirectory(client: mockClient, date: date, caloriesType: .bmr)
+            .subscribe(onSuccess: { calories in
+                // Assert
+                XCTAssertEqual(calories, 1200)
+                expectation.fulfill()
+            }, onFailure: { error in
+                XCTFail("Error: \(error)")
+            })
+        
+        wait(for: [expectation], timeout: 5)
+    }
+    
+    func testReadCaloriesFromDayDirectory_FileNotFound() {
+        // Arrange
+        mockClient.requestReturnValue = Single.error(NSError(domain: "File not found", code: 103, userInfo: nil))
+        
+        // Act
+        let expectation = XCTestExpectation(description: "Read calories from day directory when file not found")
+        PolarActivityUtils.readCaloriesFromDayDirectory(client: mockClient, date: Date(), caloriesType: .activity)
+            .subscribe(onSuccess: { calories in
+                // Assert
+                XCTAssertEqual(calories, 0)
+                expectation.fulfill()
+            }, onFailure: { error in
+                XCTFail("Error: \(error)")
+            })
+        
+        wait(for: [expectation], timeout: 5)
+    }
 }

@@ -163,16 +163,6 @@ public abstract class BleDeviceListener {
     }
 
     /**
-     * set or null state observer
-     *
-     * @param changedCallback @see BleDeviceSessionStateChangedCallback
-     * @deprecated Use {@link #monitorDeviceSessionState()} instead.
-     */
-
-    @Deprecated
-    public abstract void setDeviceSessionStateChangedCallback(@Nullable BleDeviceSessionStateChangedCallback changedCallback);
-
-    /**
      * Acquires disconnection directly without Observable returned
      *
      * @param session device

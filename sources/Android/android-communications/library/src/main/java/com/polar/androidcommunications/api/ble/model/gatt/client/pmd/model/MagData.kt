@@ -3,7 +3,7 @@ package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
 
-internal class MagData(@Deprecated("each sample has timestamp") val timeStamp: ULong = 0uL) {
+internal class MagData() {
 
     enum class CalibrationStatus(val id: Int) {
         NOT_AVAILABLE(-1),
@@ -57,7 +57,7 @@ internal class MagData(@Deprecated("each sample has timestamp") val timeStamp: U
 
         private fun dataCompressedFromType0(frame: PmdDataFrame): MagData {
             val samples = BlePMDClient.parseDeltaFramesAll(frame.dataContent, TYPE_0_CHANNELS_IN_SAMPLE, TYPE_0_SAMPLE_SIZE_IN_BITS, BlePMDClient.PmdDataFieldEncoding.SIGNED_INT)
-            val magData = MagData(frame.timeStamp)
+            val magData = MagData()
 
             val timeStamps = PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp = frame.previousTimeStamp, frameTimeStamp = frame.timeStamp, samplesSize = samples.size, frame.sampleRate)
 
@@ -72,7 +72,7 @@ internal class MagData(@Deprecated("each sample has timestamp") val timeStamp: U
 
         private fun dataCompressedFromType1(frame: PmdDataFrame): MagData {
             val samples = BlePMDClient.parseDeltaFramesAll(frame.dataContent, TYPE_1_CHANNELS_IN_SAMPLE, TYPE_1_SAMPLE_SIZE_IN_BITS, BlePMDClient.PmdDataFieldEncoding.SIGNED_INT)
-            val magData = MagData(frame.timeStamp)
+            val magData = MagData()
 
             val timeStamps = PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp = frame.previousTimeStamp, frameTimeStamp = frame.timeStamp, samplesSize = samples.size, frame.sampleRate)
 

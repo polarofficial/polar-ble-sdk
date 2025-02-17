@@ -205,7 +205,14 @@ internal class BlePmdClientTest {
                 frame = capture(frame)
             )
         } answers {
-            EcgData(timeStamp = frame.captured.timeStamp)
+            val ecgData = EcgData()
+            ecgData.ecgSamples.add(
+                EcgData.EcgSample(
+                    timeStamp = expectedTimeStamp,
+                    microVolts = 1000
+                )
+            )
+            ecgData
         }
 
         // Act
@@ -216,7 +223,7 @@ internal class BlePmdClientTest {
         testObserver.assertValueCount(1)
         val ecgData = testObserver.values()[0]
 
-        Assert.assertEquals(expectedTimeStamp, ecgData.timeStamp)
+        Assert.assertEquals(expectedTimeStamp, (ecgData.ecgSamples.first() as EcgData.EcgSample).timeStamp)
         Assert.assertEquals(expectedPreviousTimeStamp, frame.captured.previousTimeStamp)
         Assert.assertEquals(expectedSampleRate, frame.captured.sampleRate)
         Assert.assertEquals(expectedIsCompressed, frame.captured.isCompressedFrame)
@@ -263,7 +270,14 @@ internal class BlePmdClientTest {
                 frame = capture(frame)
             )
         } answers {
-            PpgData(timeStamp = frame.captured.timeStamp)
+            val ppgData = PpgData()
+            val ppgDataFrame = PpgData.PpgDataFrameType0(
+                timeStamp = frame.captured.timeStamp,
+                ppgDataSamples = emptyList(),
+                ambientSample = 0
+            )
+            ppgData.ppgSamples.add(ppgDataFrame)
+            ppgData
         }
 
         // Act
@@ -274,7 +288,7 @@ internal class BlePmdClientTest {
         testObserver.assertValueCount(1)
         val ppgData = testObserver.values()[0]
 
-        Assert.assertEquals(expectedTimeStamp, ppgData.timeStamp)
+        Assert.assertEquals(expectedTimeStamp, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType0).timeStamp)
         Assert.assertEquals(expectedPreviousTimeStamp, frame.captured.previousTimeStamp)
         Assert.assertEquals(expectedSampleRate, frame.captured.sampleRate)
         Assert.assertEquals(expectedIsCompressed, frame.captured.isCompressedFrame)
@@ -320,7 +334,16 @@ internal class BlePmdClientTest {
                 frame = capture(frame)
             )
         } answers {
-            AccData(timeStamp = frame.captured.timeStamp)
+            val accData = AccData()
+
+            val accSample = AccData.AccSample(
+                timeStamp = frame.captured.timeStamp,
+                x = 1,
+                y = 2,
+                z = 3
+            )
+            accData.accSamples.add(accSample)
+            accData
         }
 
         // Act
@@ -331,7 +354,7 @@ internal class BlePmdClientTest {
         testObserver.assertValueCount(1)
         val accData = testObserver.values()[0]
 
-        Assert.assertEquals(expectedTimeStamp, accData.timeStamp)
+        Assert.assertEquals(expectedTimeStamp, accData.accSamples[0].timeStamp)
         Assert.assertEquals(expectedPreviousTimeStamp, frame.captured.previousTimeStamp)
         Assert.assertEquals(expectedSampleRate, frame.captured.sampleRate)
         Assert.assertEquals(expectedIsCompressed, frame.captured.isCompressedFrame)
@@ -433,7 +456,16 @@ internal class BlePmdClientTest {
                 frame = capture(frame)
             )
         } answers {
-            GyrData(timeStamp = frame.captured.timeStamp)
+            val gyrSample = GyrData.GyrSample(
+                timeStamp = expectedTimeStamp,
+                x = 1.0f,
+                y = 2.0f,
+                z = 3.0f
+            )
+
+            val gyrData = GyrData()
+            gyrData.gyrSamples.add(gyrSample)
+            gyrData
         }
 
         // Act
@@ -444,7 +476,7 @@ internal class BlePmdClientTest {
         testObserver.assertValueCount(1)
         val gyroData = testObserver.values()[0]
 
-        Assert.assertEquals(expectedTimeStamp, gyroData.timeStamp)
+        Assert.assertEquals(expectedTimeStamp, gyroData.gyrSamples.first().timeStamp)
         Assert.assertEquals(expectedPreviousTimeStamp, frame.captured.previousTimeStamp)
         Assert.assertEquals(expectedSampleRate, frame.captured.sampleRate)
         Assert.assertEquals(expectedIsCompressed, frame.captured.isCompressedFrame)
@@ -492,7 +524,15 @@ internal class BlePmdClientTest {
                 frame = capture(frame)
             )
         } answers {
-            MagData(timeStamp = frame.captured.timeStamp)
+            val magSample = MagData.MagSample(
+                timeStamp = expectedTimeStamp,
+                x = 1.0f,
+                y = 2.0f,
+                z = 3.0f
+            )
+            val magData = MagData()
+            magData.magSamples.add(magSample)
+            magData
         }
 
         // Act
@@ -503,7 +543,7 @@ internal class BlePmdClientTest {
         testObserver.assertValueCount(1)
         val magData = testObserver.values()[0]
 
-        Assert.assertEquals(expectedTimeStamp, magData.timeStamp)
+        Assert.assertEquals(expectedTimeStamp, magData.magSamples.first().timeStamp)
         Assert.assertEquals(expectedPreviousTimeStamp, frame.captured.previousTimeStamp)
         Assert.assertEquals(expectedSampleRate, frame.captured.sampleRate)
         Assert.assertEquals(expectedIsCompressed, frame.captured.isCompressedFrame)
@@ -724,12 +764,24 @@ internal class BlePmdClientTest {
         result.subscribe(testObserver)
 
         val capturedFrames = mutableListOf<PmdDataFrame>()
+        val frame = slot<PmdDataFrame>()
+
         every {
-            AccData.parseDataFromDataFrame(
-                frame = capture(capturedFrames)
-            )
+            AccData.parseDataFromDataFrame(frame = capture(frame))
         } answers {
-            AccData(timeStamp = 0uL)
+            val accData = AccData()
+            val accSample = AccData.AccSample(
+                timeStamp = frame.captured.timeStamp,
+                x = 1,
+                y = 2,
+                z = 3
+            )
+
+            accData.accSamples.add(accSample)
+
+            capturedFrames.add(frame.captured)
+
+            accData
         }
 
         // Act
@@ -769,12 +821,24 @@ internal class BlePmdClientTest {
         result.subscribe(testObserver)
 
         val capturedFrames = mutableListOf<PmdDataFrame>()
+        val frame = slot<PmdDataFrame>()
         every {
             AccData.parseDataFromDataFrame(
-                frame = capture(capturedFrames)
+                frame = capture(frame)
             )
         } answers {
-            AccData(timeStamp = 0uL)
+            val accData = AccData()
+
+            val accSample = AccData.AccSample(
+                timeStamp = frame.captured.timeStamp,
+                x = 1,
+                y = 2,
+                z = 3
+            )
+            accData.accSamples.add(accSample)
+
+            capturedFrames.add(frame.captured)
+            accData
         }
 
         // Act & Assert

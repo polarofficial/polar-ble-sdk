@@ -16,6 +16,8 @@ public class PolarStoredDataType {
         case SDLOGS = "SDLOGS"
         case SLEEP = "SLEEP"
         case SLEEP_SCORE = "SLEEPSCO"
+        case SKIN_CONTACT_CHANGES = "SKINCONT"
+        case SKINTEMP = "SKINTEMP"
         
         public func toInt() -> Int {
             let allValues: NSArray = StoredDataType.allCases as NSArray

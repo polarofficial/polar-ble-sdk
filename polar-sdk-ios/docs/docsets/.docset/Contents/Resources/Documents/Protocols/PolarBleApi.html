@@ -129,13 +129,13 @@
                 <a href="../Enums/AutomaticSampleTriggerType.html">AutomaticSampleTriggerType</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/CaloriesType.html">CaloriesType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/CheckFirmwareUpdateStatus.html">CheckFirmwareUpdateStatus</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/FirmwareUpdateStatus.html">FirmwareUpdateStatus</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Enums/OhrDataType.html">OhrDataType</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/PolarActivityDataType.html">PolarActivityDataType</a>
@@ -205,9 +205,6 @@
                 <a href="../Protocols/PolarBleApiPowerStateObserver.html">PolarBleApiPowerStateObserver</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Protocols/PolarBleApiSdkModeFeatureObserver.html">PolarBleApiSdkModeFeatureObserver</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Protocols/PolarFirmwareUpdateApi.html">PolarFirmwareUpdateApi</a>
               </li>
               <li class="nav-group-task">
@@ -247,6 +244,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/PolarActiveTimeData.html">PolarActiveTimeData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarCaloriesData.html">PolarCaloriesData</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/PolarDeviceRestApiServiceDescription.html">PolarDeviceRestApiServiceDescription</a>
@@ -333,9 +333,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Typealiases.html#/s:11PolarBleSdk0A16MagnetometerDataa">PolarMagnetometerData</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Typealiases.html#/s:11PolarBleSdk0A7OhrDataa">PolarOhrData</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Typealiases.html#/s:11PolarBleSdk0A7PpgDataa">PolarPpgData</a>
@@ -1412,9 +1409,9 @@ from the BLE advertisement</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP17setWarehouseSleep_06enablefG07RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SbSgtF"></a>
-                    <a name="//apple_ref/swift/Method/setWarehouseSleep(_:enableWarehouseSleep:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP17setWarehouseSleep_06enablefG07RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SbSgtF">setWarehouseSleep(_:<wbr>enableWarehouseSleep:<wbr>)</a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP9isFtuDoney7RxSwift17PrimitiveSequenceVyAE11SingleTraitOSbGSSF"></a>
+                    <a name="//apple_ref/swift/Method/isFtuDone(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP9isFtuDoney7RxSwift17PrimitiveSequenceVyAE11SingleTraitOSbGSSF">isFtuDone(_:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1422,16 +1419,14 @@ from the BLE advertisement</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Deprecated. Use &ldquo;func setWarehouseSleep(_ identifier: String)&rdquo; instead.
-Set warehouse sleep to a device. Factory reset will be performed in order to enable the setting.</p>
+                        <p>Check if the First Time Use has been done for the given Polar device.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Use setWarehouseSleep(_ identifier: String﹚ instead"</span><span class="p">)</span>
-<span class="kd">func</span> <span class="nf">setWarehouseSleep</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">enableWarehouseSleep</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">isFtuDone</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt">Bool</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1447,19 +1442,7 @@ Set warehouse sleep to a device. Factory reset will be performed in order to ena
                               </td>
                               <td>
                                 <div>
-                                  <p>polar device id or UUID</p>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>enableWarehouseSleep</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>Bool value for the warehouse sleep setting</p>
+                                  <p>Polar device id or UUID</p>
                                 </div>
                               </td>
                             </tr>
@@ -1468,10 +1451,10 @@ Set warehouse sleep to a device. Factory reset will be performed in order to ena
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Completable stream
+                        <p>Boolean
 
 <ul>
-<li>success: when warehouse sleep has been set together with  factory reset</li>
+<li>success: true when FTU has been done, false otherwise</li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
 </ul></p>
                       </div>
@@ -1826,34 +1809,6 @@ Set warehouse sleep to a device. Factory reset will be performed in order to ena
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP22sdkModeFeatureObserverAA0abdcfgH0_pSgvp"></a>
-                    <a name="//apple_ref/swift/Property/sdkModeFeatureObserver" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP22sdkModeFeatureObserverAA0abdcfgH0_pSgvp">sdkModeFeatureObserver</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>SDK mode feature available in the device and ready observer</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"The functionality has changed. Please use the bleSdkFeatureReady to know if sdkModeFeature is available"</span><span class="p">)</span>
-<span class="k">var</span> <span class="nv">sdkModeFeatureObserver</span><span class="p">:</span> <span class="kt"><a href="../Protocols/PolarBleApiSdkModeFeatureObserver.html">PolarBleApiSdkModeFeatureObserver</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
                     <a name="/s:11PolarBleSdk0aB3ApiP02isB7PoweredSbvp"></a>
                     <a name="//apple_ref/swift/Property/isBlePowered" class="dashAnchor"></a>
                     <a class="token" href="#/s:11PolarBleSdk0aB3ApiP02isB7PoweredSbvp">isBlePowered</a>
@@ -1941,7 +1896,7 @@ Set warehouse sleep to a device. Factory reset will be performed in order to ena
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-01-30)</p>
+          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-02-14)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>
