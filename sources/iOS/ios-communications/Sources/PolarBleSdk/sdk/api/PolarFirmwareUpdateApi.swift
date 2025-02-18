@@ -11,6 +11,15 @@ public protocol PolarFirmwareUpdateApi {
      * - Returns: Observable emitting status of firmware update check
      */
     func checkFirmwareUpdate(_ identifier: String) -> Observable<CheckFirmwareUpdateStatus>
+  
+    /**
+      * Updates firmware to given device.
+      *
+      * - Parameter identifier: Polar device ID or BT address
+      * - Parameter filePath: path to firmware file
+      * - Returns: Observable emitting status of firmware update
+      */
+    func updateFirmwareLocal(_ identifier: String, _ filePath: String) -> Observable<FirmwareUpdateStatus>
     /**
      * Updates firmware to given device.
      *

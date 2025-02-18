@@ -2858,6 +2858,128 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 }
     }
 
+    override fun updateFirmwareLocal(identifier: String, filePath: String): Flowable<FirmwareUpdateStatus> {
+        val session = sessionPsFtpClientReady(identifier)
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient
+        sendInitializationAndStartSyncNotifications(client)
+
+        val deviceInfo = PolarFirmwareUpdateUtils.readDeviceFirmwareInfo(client, identifier).blockingGet()
+        val factoryResetMaxWaitTimeSeconds = 6 * 60L
+        val rebootMaxWaitTimeSeconds = 60L
+        val backupManager = PolarBackupManager(client)
+        val backup: MutableList<PolarBackupManager.BackupFileData> = mutableListOf()
+
+        return Flowable.just<FirmwareUpdateStatus>(
+            FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Preparing device for firmware update")
+        ).concatWith(
+            backupManager.backupDevice()
+                .toFlowable()
+                .flatMap {
+                    backup.addAll(it)
+                    BleLogger.d(TAG, "Device backup completed: $it, starting firmware update")
+
+                    val firmwareBytes = File(filePath).readBytes()
+                    val firmwareFiles = mutableListOf<Pair<String, ByteArray>>()
+                    val zipInputStream = ZipInputStream(ByteArrayInputStream(firmwareBytes))
+                    var entry: ZipEntry?
+                    val buffer = ByteArray(PolarFirmwareUpdateUtils.BUFFER_SIZE)
+                    while (zipInputStream.nextEntry.also { entry = it } != null) {
+                        val entryFileName = entry!!.name
+                        if (entryFileName.equals("readme.txt")) {
+                            BleLogger.d(TAG, "Skipping file $entryFileName")
+                            zipInputStream.closeEntry()
+                            continue
+                        }
+
+                        val byteArrayOutputStream = ByteArrayOutputStream()
+                        var length: Int
+                        while (zipInputStream.read(buffer).also { length = it } != -1) {
+                            byteArrayOutputStream.write(buffer, 0, length)
+                        }
+                        val fileName = entry!!.name
+                        BleLogger.d(TAG, "Extracted firmware file: $fileName")
+                        firmwareFiles.add(Pair(fileName, byteArrayOutputStream.toByteArray()))
+                        zipInputStream.closeEntry()
+                    }
+                    zipInputStream.close()
+
+                    firmwareFiles.sortWith { f1, f2 ->
+                        PolarFirmwareUpdateUtils.FwFileComparator().compare(File(f1.first), File(f2.first))
+                    }
+
+                    doFactoryReset(identifier, true)
+                        .andThen(waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L))
+                        .andThen(
+                            Flowable.fromIterable(firmwareFiles)
+                                .concatMap { firmwareFile ->
+                                    writeFirmwareToDevice(identifier, firmwareFile.first, firmwareFile.second)
+                                        .map<FirmwareUpdateStatus> { bytesWritten ->
+                                            FirmwareUpdateStatus.WritingFwUpdatePackage(
+                                                "Writing firmware update file ${firmwareFile.first}, bytes written: $bytesWritten/${firmwareFile.second.size}"
+                                            )
+                                        }
+                                }
+                        )
+                }
+                .onErrorReturn { error ->
+                    BleLogger.e(TAG, "FW package read failed: $error")
+                    FirmwareUpdateStatus.FwUpdateFailed(error.toString())
+                }
+                .concatWith(Flowable.just<FirmwareUpdateStatus>(FirmwareUpdateStatus.FinalizingFwUpdate()))
+                .concatMap { status ->
+                    if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
+                        BleLogger.d(TAG, "Starting finalization of firmware update")
+                        waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L)
+                            .andThen(Completable.defer {
+                                BleLogger.d(TAG, "Performing factory reset while preserving pairing information")
+                                return@defer doFactoryReset(identifier, true)
+                            })
+                            .andThen(Completable.defer {
+                                BleLogger.d(TAG, "Waiting for device session to open after factory reset")
+                                return@defer waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L)
+                            })
+                            .andThen(Completable.defer {
+                                BleLogger.d(TAG, "Restoring backup to device")
+                                sendInitializationAndStartSyncNotifications(client)
+                                return@defer backupManager.restoreBackup(backup)
+                            })
+                            .andThen(Flowable.just(status))
+                    } else {
+                        Flowable.just(status)
+                    }
+                }
+                .concatMap { status ->
+                    if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
+                        waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, 60L)
+                            .andThen(Flowable.just(FirmwareUpdateStatus.FwUpdateCompletedSuccessfully("Firmware update completed successfully")))
+                    } else {
+                        Flowable.just(status)
+                    }
+                }
+                .onErrorResumeNext { error ->
+                    if (backup.isNotEmpty()) {
+                        BleLogger.e(TAG, "Error during updateFirmwareLocal(), restoring backup, error: $error")
+                        sendInitializationAndStartSyncNotifications(client)
+                        backupManager.restoreBackup(backup)
+                            .andThen(Flowable.error(error))
+                    } else {
+                        BleLogger.e(TAG, "Error during updateFirmwareLocal(), backup not available, error: $error")
+                        Flowable.error(error)
+                    }
+                }
+                .doFinally {
+                    val disposable = setLocalTime(identifier, Calendar.getInstance())
+                        .andThen(Completable.fromAction {
+                            sendTerminateAndStopSyncNotifications(client)
+                        })
+                        .subscribe({
+                        }, { error ->
+                            BleLogger.e(TAG, "Error setting local time for identifier: $identifier, error: ${error.message}")
+                        })
+                }
+        )
+    }
+
     override fun getSteps(identifier: String, fromDate: Date, toDate: Date): Single<List<PolarStepsData>> {
         val session = try {
             sessionPsFtpClientReady(identifier)
