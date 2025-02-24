@@ -209,6 +209,10 @@ internal class PolarTimeUtils {
         return proto
     }
 
+    static func pbTimeToTimeString(_ pbTime: PbTime) -> String {
+        return String(format: "%02d:%02d:%02d.%02d", pbTime.hour, pbTime.minute, pbTime.seconds, pbTime.millis)
+    }
+
     private static func millisToNanos(milliseconds: Int) -> Int {
         return milliseconds * nanoToMillisMultiplier
     }

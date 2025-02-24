@@ -175,6 +175,40 @@ import UIKit
         throw PolarErrors.notificationNotEnabled
     }
     
+    private func waitPmdClientReady(_ identifier: String) -> Observable<BleDeviceSession> {
+        return Observable.create { observer in
+            self.waitForServiceDiscovered(identifier, service: BlePmdClient.PMD_SERVICE)
+                .subscribe(onNext: { session in
+                    Observable.interval(.seconds(1), scheduler: MainScheduler.instance)
+                        .take(10)
+                        .flatMap { (_: Int64) -> Observable<BleDeviceSession> in
+                            do {
+                                let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
+                                if client.isCharacteristicNotificationEnabled(BlePmdClient.PMD_CP) &&
+                                    client.isCharacteristicNotificationEnabled(BlePmdClient.PMD_DATA) {
+                                    observer.onNext(session)
+                                    observer.onCompleted()
+                                    return Observable.just(session)
+                                }
+                                return Observable.empty()
+                            } catch {
+                                observer.onError(error)
+                                return Observable.error(error)
+                            }
+                        }
+                        .subscribe(onError: { error in
+                            observer.onError(error)
+                        }, onCompleted: {
+                            observer.onError(PolarErrors.notificationNotEnabled)
+                        })
+                }, onError: { error in
+                    observer.onError(error)
+                })
+
+            return Disposables.create()
+        }
+    }
+    
     internal func sessionFtpClientReady(_ identifier: String) throws -> BleDeviceSession {
         let session = try sessionServiceReady(identifier, service: BlePsFtpClient.PSFTP_SERVICE)
         let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
@@ -207,6 +241,35 @@ import UIKit
             throw PolarErrors.deviceNotConnected
         }
         throw PolarErrors.deviceNotFound
+    }
+    
+    private func waitForServiceDiscovered(_ identifier: String, service: CBUUID) -> Observable<BleDeviceSession> {
+        return Observable.create { observer in
+            do {
+                if let session = try self.fetchSession(identifier) {
+                    if session.state == BleDeviceSession.DeviceSessionState.sessionOpen {
+                        return Observable.interval(.milliseconds(500), scheduler: MainScheduler.instance)
+                            .takeWhile { (time: Int64) -> Bool in
+                                return !(session.fetchGattClient(service)?.isServiceDiscovered() ?? false)
+                            }
+                            .subscribe(onNext: { _ in
+                            }, onError: { error in
+                                observer.onError(error)
+                            }, onCompleted: {
+                                observer.onNext(session)
+                                observer.onCompleted()
+                            })
+                    } else {
+                        observer.onError(PolarErrors.deviceNotConnected)
+                    }
+                } else {
+                    observer.onError(PolarErrors.deviceNotFound)
+                }
+            } catch {
+                observer.onError(error)
+            }
+            return Disposables.create()
+        }
     }
     
     fileprivate func fetchSession(_ identifier: String) throws -> BleDeviceSession? {
@@ -2159,23 +2222,35 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
 
     func doRestart(_ identifier: String, preservePairingInformation: Bool) -> Completable {
-            do {
-                let session = try sessionFtpClientReady(identifier)
+        do {
+            let session = try sessionFtpClientReady(identifier)
 
-                guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                    return Completable.error(PolarErrors.serviceNotFound)
-                }
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Completable.error(PolarErrors.serviceNotFound)
+            }
 
-                var builder = Protocol_PbPFtpFactoryResetParams()
-                builder.sleep = false
-                builder.doFactoryDefaults = false
-                builder.otaFwupdate = preservePairingInformation
-                BleLogger.trace("Send do restart to device: \(identifier)")
-                return try client.sendNotification(Protocol_PbPFtpHostToDevNotification.reset.rawValue, parameters: builder.serializedData() as NSData)
-                } catch let err {
-                    return Completable.error(err)
-                }
+            var builder = Protocol_PbPFtpFactoryResetParams()
+            builder.sleep = false
+            builder.doFactoryDefaults = false
+            builder.otaFwupdate = preservePairingInformation
+            BleLogger.trace("Send do restart to device: \(identifier)")
+
+            return try client.sendNotification(Protocol_PbPFtpHostToDevNotification.reset.rawValue, parameters: builder.serializedData() as NSData)
+            
+        } catch let err as BleGattException {
+            switch err {
+            case .gattDisconnected:
+                BleLogger.trace("doRestart() gattDisconnected")
+                return Completable.empty()
+            default:
+                BleLogger.error("doRestart() BleGattException error: \(err)" )
+                return Completable.error(err)
+            }
+        } catch let err {
+            BleLogger.error("doRestart() error: \(err)")
+            return Completable.error(err)
         }
+    }
     
     func getSDLogConfiguration(_ identifier: String) -> RxSwift.Single<SDLogConfig> {
           do {
@@ -2455,8 +2530,17 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Observable.just(CheckFirmwareUpdateStatus.checkFwUpdateFailed(details: "Error: \(error.localizedDescription)"))
         }
     }
-
+    
     func updateFirmware(_ identifier: String) -> Observable<FirmwareUpdateStatus> {
+       return updateFirmware(identifier, firmwareURL: nil)
+    }
+    
+    func updateFirmware(_ identifier: String, fromFirmwareURL: URL) -> Observable<FirmwareUpdateStatus> {
+       return updateFirmware(identifier, firmwareURL: fromFirmwareURL)
+    }
+    
+    private func updateFirmware(_ identifier: String, firmwareURL: URL? = nil) -> Observable<FirmwareUpdateStatus> {
+        
         let fwApi = FirmwareUpdateApi()
 
         do {
@@ -2481,9 +2565,18 @@ extension PolarBleApiImpl: PolarBleApi  {
             } catch {
                 return Observable.just(FirmwareUpdateStatus.fwUpdateFailed(details: "Failed to create FirmwareUpdateRequest: \(error.localizedDescription)"))
             }
-
-            return Observable.create { observer in
-                fwApi.checkFirmwareUpdate(firmwareUpdateRequest: firmwareUpdateRequest) { result in
+            
+            let updateCheck: (URL?, FirmwareUpdateRequest?, @escaping (Result<FirmwareUpdateResponse, Error>) -> Void) -> Void = { firmwareURL, firmwareUpdateRequest, completion in
+                if firmwareURL != nil {
+                    fwApi.checkFirmwareUpdateFromFirmwareUrl(firmwareURL!, completion: completion)
+                } else if firmwareUpdateRequest != nil {
+                    fwApi.checkFirmwareUpdate(firmwareUpdateRequest:firmwareUpdateRequest!, completion: completion)
+                }
+            }
+            
+            return Observable<FirmwareUpdateStatus>.create { observer in
+                
+                updateCheck(firmwareURL, firmwareUpdateRequest) { result in
                     switch result {
                     case .success(let apiResponse):
                         guard let statusCode = apiResponse.statusCode else {
@@ -2492,44 +2585,46 @@ extension PolarBleApiImpl: PolarBleApi  {
                             observer.onCompleted()
                             return
                         }
-
+                        
                         if statusCode == 204 {
                             BleLogger.trace("Firmware update not available, status code 204")
                             observer.onNext(FirmwareUpdateStatus.fwUpdateNotAvailable(details: "Firmware update not available"))
                             observer.onCompleted()
                             return
                         }
-
+                        
                         if statusCode == 400 {
                             BleLogger.error("Bad request, status code 400")
                             observer.onNext(FirmwareUpdateStatus.fwUpdateFailed(details: "Bad request to firmware API"))
                             observer.onCompleted()
                             return
                         }
-
+                        
                         guard statusCode == 200 else {
                             BleLogger.error("Unexpected status code: \(statusCode)")
                             observer.onNext(FirmwareUpdateStatus.fwUpdateFailed(details: "Unexpected status code: \(statusCode)"))
                             observer.onCompleted()
                             return
                         }
-
+                        
                         let deviceFwVersion = deviceInfo.deviceFwVersion
-                        if !PolarFirmwareUpdateUtils.isAvailableFirmwareVersionHigher(currentVersion: deviceFwVersion, availableVersion: apiResponse.version!) {
-                            BleLogger.trace("No firmware update available, device firmware version \(deviceFwVersion)")
-                            observer.onNext(FirmwareUpdateStatus.fwUpdateNotAvailable(details: "No firmware update available, device firmware version \(deviceFwVersion)"))
-                            observer.onCompleted()
-                            return
+                        if firmwareURL == nil {
+                            if !PolarFirmwareUpdateUtils.isAvailableFirmwareVersionHigher(currentVersion: deviceFwVersion, availableVersion: apiResponse.version!) {
+                                BleLogger.trace("No firmware update available, device firmware version \(deviceFwVersion)")
+                                observer.onNext(FirmwareUpdateStatus.fwUpdateNotAvailable(details: "No firmware update available, device firmware version \(deviceFwVersion)"))
+                                observer.onCompleted()
+                                return
+                            }
                         }
-
+                       
                         BleLogger.trace("Firmware update available, latest firmware version: \(apiResponse.version!), device firmware version \(deviceFwVersion)")
-
+                        
                         let factoryResetMaxWaitTimeSeconds: TimeInterval = 6 * 60
                         let rebootMaxWaitTimeSeconds: TimeInterval = 3 * 60
-
+                        
                         var backupContent: [PolarBackupManager.BackupFileData]?
                         let backupManager = PolarBackupManager(client: client)
-
+                
                         observer.onNext(FirmwareUpdateStatus.fetchingFwUpdatePackage(details: "Fetching firmware update package..."))
 
                         backupManager.backupDevice()
@@ -2698,7 +2793,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Observable.just(FirmwareUpdateStatus.fwUpdateFailed(details: "Error: \(error.localizedDescription)"))
         }
     }
-
+    
     func getSteps(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarStepsData]> {
         do {
             let session = try self.sessionFtpClientReady(identifier)
@@ -2796,6 +2891,19 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
+    func get247PPiSamples(identifier: String, fromDate: Date, toDate: Date) -> Single<[Polar247PPiSamplesData]> {
+        do {
+            let session = try self.sessionFtpClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Single.error(PolarErrors.serviceNotFound)
+            }
+
+            return PolarAutomaticSamplesUtils.read247PPiSamples(client: client, fromDate: fromDate, toDate: toDate)
+        } catch {
+            return Single.error(error)
+        }
+    }
+
     func getNightlyRecharge(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarNightlyRechargeData]> {
         do {
             let session = try self.sessionFtpClientReady(identifier)
@@ -3889,14 +3997,17 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
     
     func isSDKModeEnabled(_ identifier: String) -> Single<Bool> {
-        do {
-            let session = try sessionPmdClientReady(identifier)
-            guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Single.error(PolarErrors.serviceNotFound) }
-            return client.isSdkModeEnabled()
-                .map { $0 != PmdSdkMode.disabled }
-        } catch let err {
-            return Single.error(err)
-        }
+        return waitPmdClientReady(identifier)
+            .take(1)
+            .flatMap { session -> Observable<Bool> in
+                guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else {
+                    return .error(PolarErrors.serviceNotFound)
+                }
+                return client.isSdkModeEnabled()
+                    .map { $0 != PmdSdkMode.disabled }
+                    .asObservable()
+            }
+            .asSingle()
     }
 }
 

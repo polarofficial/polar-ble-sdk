@@ -322,13 +322,6 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @param identifier Polar device ID or BT address
      * @param preservePairingInformation preserve pairing information during factory reset
      * @return [Completable] emitting success or error
-     *
-     * Polar factory reset behavior:
-     * Feature in all Polar watches and Polar 360.
-     * Device tracks the number of resets. 
-     * Firmware < 1.2.x: Forgets pairing after 5 resets. 
-     * Firmware ≥ 1.2.x: Forgets pairing after 10 resets.
-     * Counter resets to 0 if the device runs for 60 seconds without issues.
      */
     abstract fun doFactoryReset(identifier: String, preservePairingInformation: Boolean): Completable
 

@@ -1,33 +1,47 @@
 //  Copyright © 2024 Polar. All rights reserved.
 
 import Foundation
-import Alamofire
 import RxSwift
 
 class FirmwareUpdateApi {
+
+    enum Failure: Error {
+        case responseParseError
+        case requestFailed
+        var localizedDescription: String {
+            switch self {
+            case .responseParseError:
+                return "Failed to parse firmware update response"
+            case .requestFailed:
+                return "Firmware update request failed"
+            }
+        }
+    }
+    
     let baseURL = "https://firmware-management.polar.com"
 
-    func checkFirmwareUpdate(firmwareUpdateRequest: FirmwareUpdateRequest, completion: @escaping (Result<FirmwareUpdateResponse, AFError>) -> Void) {
+    func checkFirmwareUpdate(firmwareUpdateRequest: FirmwareUpdateRequest, completion: @escaping (Result<FirmwareUpdateResponse, Error>) -> Void) {
+
         let url = "\(baseURL)/api/v1/firmware-update/check"
-
-        let headers: HTTPHeaders = [
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-        ]
-
-        AF.request(url, method: .post, parameters: firmwareUpdateRequest, encoder: JSONParameterEncoder.default, headers: headers)
-            .responseDecodable(of: FirmwareUpdateResponse.self) { response in
-            if let request = response.request {
+        
+        var request = URLRequest(url: URL(string: url)!)
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpMethod = "POST"
+        request.httpBody = try? JSONEncoder().encode(firmwareUpdateRequest)
+        
+        URLSession.shared.dataTask(with: request) { (data, response, error) in
+            Task { @MainActor in
                 BleLogger.error("Request URL: \(String(describing: request.url))")
-                BleLogger.error("Request Method: \(request.method?.rawValue ?? "N/A")")
+                BleLogger.error("Request Method: \(request.httpMethod ?? "N/A")")
                 BleLogger.error("Request Headers: \(request.allHTTPHeaderFields ?? [:])")
                 BleLogger.error("Request Body: \(String(describing: firmwareUpdateRequest))")
-            }
-
-                if let data = response.data {
+                
+                if let data = data {
+                    
                     BleLogger.trace("Response Data: \(String(data: data, encoding: .utf8) ?? "N/A")")
-
-                    if let statusCode = response.response?.statusCode {
+                    
+                    if let statusCode = (response as? HTTPURLResponse)?.statusCode {
                         switch statusCode {
                         case 400..<500:
                             BleLogger.error("Client error: (\(statusCode))")
@@ -41,35 +55,51 @@ class FirmwareUpdateApi {
                         default:
                             BleLogger.error("Response status code: (\(statusCode))")
                         }
+                        
+                        if var fwResponse = try? JSONDecoder().decode(FirmwareUpdateResponse.self, from: data) {
+                            fwResponse.statusCode = statusCode
+                            completion(.success(fwResponse))
+                        } else {
+                            BleLogger.error("Failed to decode client response")
+                            completion(.failure(Failure.responseParseError))
+                        }
+                    } else {
+                        completion(.failure(Failure.requestFailed))
                     }
                 }
-
-            switch response.result {
-            case .success(let firmwareUpdateResponse):
-                var responseWithStatusCode = firmwareUpdateResponse
-                if let statusCode = response.response?.statusCode {
-                    responseWithStatusCode.statusCode = statusCode
-                }
-                completion(.success(responseWithStatusCode))
-            case .failure(let error):
-                BleLogger.error("Request failed with error: \(error)")
-                completion(.failure(error))
             }
+        }.resume()
+    }
+    
+    func checkFirmwareUpdateFromFirmwareUrl(_ url: URL, completion: @escaping (Result<FirmwareUpdateResponse, Error>) -> Void) {
+        let file = url.lastPathComponent
+        if url.isFileURL && FileManager.default.fileExists(atPath: url.path) {
+            let responseWithUrl = FirmwareUpdateResponse(version: "custom(\(file))", fileUrl: url.absoluteString, statusCode: 200)
+            completion(.success(responseWithUrl))
+            return
         }
+        var request = URLRequest(url: url)
+        request.httpMethod = "HEAD"
+        URLSession.shared.dataTask(with: request) { (data, response, error) in
+            Task { @MainActor in
+                let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+                let responseWithUrl = FirmwareUpdateResponse(version: "custom(\(file))", fileUrl: url.absoluteString, statusCode: statusCode)
+                completion(.success(responseWithUrl))
+            }
+        }.resume()
     }
 
     func getFirmwareUpdatePackage(url: String) -> Observable<Data?> {
         return Observable.create { observer in
-            AF.request(url, method: .get).responseData { response in
-                switch response.result {
-                case .success(let data):
+            URLSession.shared.dataTask(with: URLRequest(url: URL(string: url)!)) { (data, _, _) in
+                if let data = data {
                     observer.onNext(data)
                     observer.onCompleted()
-                case .failure:
+                } else {
                     observer.onNext(nil)
                     observer.onCompleted()
                 }
-            }
+            }.resume()
             return Disposables.create()
         }
     }

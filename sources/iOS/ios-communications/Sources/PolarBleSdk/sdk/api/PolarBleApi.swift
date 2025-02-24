@@ -63,7 +63,8 @@ public enum PolarActivityDataType: String, CaseIterable {
     case CALORIES
     case HR_SAMPLES
     case NIGHTLY_RECHARGE
-    case SKIN_TEMPERATURE
+    case SKINTEMPERATURE
+    case PEAKTOPEAKINTERVAL
     case NONE
    }
 

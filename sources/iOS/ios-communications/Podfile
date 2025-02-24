@@ -11,10 +11,6 @@ def swift_protobuf_pod
   pod 'SwiftProtobuf', '~> 1.0'
 end
 
-def alamofire_pod
-  pod 'Alamofire', '~> 5.8.1'
-end
-
 def zip_pod
   pod 'Zip', '~> 2.1.2'
 end
@@ -23,13 +19,11 @@ target 'iOSCommunications' do
   swift_protobuf_pod
   rx_swift_pod
   zip_pod
-  alamofire_pod
 end
 
 target 'PolarBleSdk' do
   swift_protobuf_pod
   rx_swift_pod
-  alamofire_pod
   zip_pod
 end
 
@@ -47,5 +41,4 @@ end
 target 'PolarBleSdkTests' do
   pod 'RxBlocking', '~> 6.5.0'
   pod 'RxTest', '~> 6.5.0'
-  pod 'Alamofire', '~> 5.8.1'
 end
