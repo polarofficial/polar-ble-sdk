@@ -14,7 +14,6 @@ enum class PmdMeasurementType(val numVal: UByte) {
     TEMPERATURE(12u),
     OFFLINE_RECORDING(13u),
     OFFLINE_HR(14u),
-    OFFLINE_TEMP(15u),
     UNKNOWN_TYPE(0x3fu);
 
     fun isDataType(): Boolean {

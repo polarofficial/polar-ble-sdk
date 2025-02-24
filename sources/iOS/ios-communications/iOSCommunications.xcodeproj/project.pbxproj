@@ -375,6 +375,8 @@
 		AA27EF302C995EB30097AF23 /* PolarUserDeviceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA27EF2E2C995EB30097AF23 /* PolarUserDeviceSettings.swift */; };
 		AA27EF342C995EFC0097AF23 /* PolarUserDeviceSettingsUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA27EF332C995EFC0097AF23 /* PolarUserDeviceSettingsUtils.swift */; };
 		AA27EF352C995EFC0097AF23 /* PolarUserDeviceSettingsUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA27EF332C995EFC0097AF23 /* PolarUserDeviceSettingsUtils.swift */; };
+		AA5981772D6318C900267B81 /* Polar247PPiSamplesData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5981762D6318BD00267B81 /* Polar247PPiSamplesData.swift */; };
+		AA5981782D6318C900267B81 /* Polar247PPiSamplesData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5981762D6318BD00267B81 /* Polar247PPiSamplesData.swift */; };
 		AA7DA2842CF9B4FF00275965 /* PolarAutomaticSamplesData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7DA2832CF9B4FF00275965 /* PolarAutomaticSamplesData.swift */; };
 		AA7DA2852CF9B4FF00275965 /* PolarAutomaticSamplesData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7DA2832CF9B4FF00275965 /* PolarAutomaticSamplesData.swift */; };
 		AA7DA2862CF9B4FF00275965 /* PolarAutomaticSamplesData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7DA2832CF9B4FF00275965 /* PolarAutomaticSamplesData.swift */; };
@@ -619,6 +621,7 @@
 		AA27EF2A2C995E690097AF23 /* user_devset.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = user_devset.pb.swift; sourceTree = "<group>"; };
 		AA27EF2E2C995EB30097AF23 /* PolarUserDeviceSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarUserDeviceSettings.swift; sourceTree = "<group>"; };
 		AA27EF332C995EFC0097AF23 /* PolarUserDeviceSettingsUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarUserDeviceSettingsUtils.swift; sourceTree = "<group>"; };
+		AA5981762D6318BD00267B81 /* Polar247PPiSamplesData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Polar247PPiSamplesData.swift; sourceTree = "<group>"; };
 		AA7DA2832CF9B4FF00275965 /* PolarAutomaticSamplesData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarAutomaticSamplesData.swift; sourceTree = "<group>"; };
 		AA818E582C06F8A000D45B3C /* PolarSleepData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarSleepData.swift; sourceTree = "<group>"; };
 		AA818E5C2C06F8B100D45B3C /* PolarSleepUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarSleepUtils.swift; sourceTree = "<group>"; };
@@ -1128,6 +1131,7 @@
 		A5BC3EEB2BF20D16008DD743 /* activity */ = {
 			isa = PBXGroup;
 			children = (
+				AA5981762D6318BD00267B81 /* Polar247PPiSamplesData.swift */,
 				AAEEB2302D3E52F900D2B4A7 /* PolarSkinTemperatureData.swift */,
 				AA7DA2832CF9B4FF00275965 /* PolarAutomaticSamplesData.swift */,
 				A5BC3EEC2BF20D39008DD743 /* PolarStepsData.swift */,
@@ -1866,6 +1870,7 @@
 				A5BC3EEE2BF20D39008DD743 /* PolarStepsData.swift in Sources */,
 				AA27D9C82B88C38600397873 /* TemperatureData.swift in Sources */,
 				A5D04F3B2949BCD600CE93E1 /* PolarDataUtils.swift in Sources */,
+				AA5981772D6318C900267B81 /* Polar247PPiSamplesData.swift in Sources */,
 				A5D04F352948AB4900CE93E1 /* PolarOfflineRecordingEntry.swift in Sources */,
 				6C770B9A206B77F300F3D51D /* BleLogger.swift in Sources */,
 				A54EC6ED29655CBD00E1B910 /* OfflineRecordingUtils.swift in Sources */,
@@ -1928,6 +1933,7 @@
 				A5E416D32B7F7CD300314EEB /* PolarFirmwareUpdateUtilsTest.swift in Sources */,
 				A5BC3EFF2BF34FEA008DD743 /* act_samples.pb.swift in Sources */,
 				A5A5EA382BE0DF3800EDEF87 /* BleGattClientBase.swift in Sources */,
+				AA5981782D6318C900267B81 /* Polar247PPiSamplesData.swift in Sources */,
 				844D99952D083D4600FCE97C /* nightly_recovery.pb.swift in Sources */,
 				A57F8B1B2BE0E66200F8708F /* pftp_request.pb.swift in Sources */,
 				A57F8B182BE0E3AA00F8708F /* BleGattException.swift in Sources */,

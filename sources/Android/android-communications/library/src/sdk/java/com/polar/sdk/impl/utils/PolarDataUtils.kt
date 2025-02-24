@@ -306,7 +306,6 @@ internal object PolarDataUtils {
             PmdMeasurementType.PRESSURE -> PolarBleApi.PolarDeviceDataType.PRESSURE
             PmdMeasurementType.TEMPERATURE -> PolarBleApi.PolarDeviceDataType.TEMPERATURE
             PmdMeasurementType.OFFLINE_HR -> PolarBleApi.PolarDeviceDataType.HR
-            PmdMeasurementType.OFFLINE_TEMP -> PolarBleApi.PolarDeviceDataType.TEMPERATURE
             else -> throw PolarBleSdkInternalException("Error when map measurement type $pmdMeasurementType to Polar feature")
         }
     }
