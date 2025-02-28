@@ -2665,6 +2665,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
     override fun getFirmwareInfo(identifier: String): Single<PolarFirmwareVersionInfo> {
         try {
+            BleLogger.d(TAG, "Getting firmware info for identifier: $identifier")
+            
             val session = sessionPsFtpClientReady(identifier)
             val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient
 
