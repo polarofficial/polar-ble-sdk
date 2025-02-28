@@ -29,5 +29,11 @@ interface PolarFirmwareUpdateApi {
      */
     fun updateFirmware(identifier: String): Flowable<FirmwareUpdateStatus>
 
-    fun getFirmwareInfo(identifier: String): PolarFirmwareVersionInfo?
+    /**
+     * Get firmware info for given device.
+     *
+     * @param identifier Polar device ID or BT address
+     * @return [Single] emitting firmware info
+     */
+    fun getFirmwareInfo(identifier: String): Single<PolarFirmwareVersionInfo>
 }
