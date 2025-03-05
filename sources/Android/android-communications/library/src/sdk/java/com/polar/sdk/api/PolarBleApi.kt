@@ -414,4 +414,14 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @return [Flowable] success with the paths of the deleted data or error
      */
     abstract fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Flowable<ConcurrentLinkedQueue<String>>
+
+    /**
+     * Delete device date folders from a device.
+     *
+     * @param identifier, Polar device ID or BT address
+     * @param fromDate The starting date to delete date folders from
+     * @param toDate The ending date of last date to delete folders from
+     * @return [Completable] emitting success or error
+     */
+    abstract fun deleteDeviceDateFolders(identifier: String, fromDate: LocalDate?, toDate: LocalDate?): Completable
 }

@@ -58,8 +58,13 @@ public class PressureData {
         var offset = 0
         var timeStampIndex = 0
         
-        let timeStamps = try PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp: frame.previousTimeStamp, frameTimeStamp: frame.timeStamp, samplesSize: UInt(samplesSize), sampleRate: (frame.sampleRate != 0) ? 0 : 1 )
-    
+        let timeStamps = try PmdTimeStampUtils.getTimeStamps(
+            previousFrameTimeStamp: frame.previousTimeStamp,
+            frameTimeStamp: frame.timeStamp,
+            samplesSize: UInt(samplesSize),
+            sampleRate: frame.sampleRate
+        )
+
         while (offset < frame.dataContent.count) {
             pressureData.samples.append(PressureSample(timeStamp: timeStamps[timeStampIndex], pressure: Float(bitPattern: UInt32( frame.dataContent[offset ..< (offset + Int(TYPE_0_SAMPLE_SIZE_IN_BYTES))].withUnsafeBytes { $0.load(as: UInt32.self) }))))
             offset += Int(step)

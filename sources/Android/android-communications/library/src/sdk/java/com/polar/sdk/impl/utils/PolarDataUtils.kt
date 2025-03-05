@@ -92,21 +92,11 @@ internal object PolarDataUtils {
         return PolarPpgData(listOfSamples, type)
     }
 
-    fun mapPMDClientPpiDataToPolarOhrPpiData(ppiData: PpiData): PolarPpiData {
-        val samples: MutableList<PolarPpiData.PolarPpiSample> = mutableListOf()
-        for ((hr, ppInMs, ppErrorEstimate, blockerBit, skinContactStatus, skinContactSupported) in ppiData.ppiSamples) {
-            samples.add(
-                PolarPpiData.PolarPpiSample(ppInMs, ppErrorEstimate, hr, blockerBit != 0, skinContactStatus != 0, skinContactSupported != 0)
-            )
-        }
-        return PolarPpiData(samples)
-    }
-
     fun mapPMDClientPpiDataToPolarPpiData(ppiData: PpiData): PolarPpiData {
         val samples: MutableList<PolarPpiData.PolarPpiSample> = mutableListOf()
-        for ((hr, ppInMs, ppErrorEstimate, blockerBit, skinContactStatus, skinContactSupported) in ppiData.ppiSamples) {
+        for ((hr, ppInMs, ppErrorEstimate, blockerBit, skinContactStatus, skinContactSupported, timeStamp) in ppiData.ppiSamples) {
             samples.add(
-                PolarPpiData.PolarPpiSample(ppInMs, ppErrorEstimate, hr, blockerBit != 0, skinContactStatus != 0, skinContactSupported != 0)
+                PolarPpiData.PolarPpiSample(ppInMs, ppErrorEstimate, hr, blockerBit != 0, skinContactStatus != 0, skinContactSupported != 0, timeStamp)
             )
         }
         return PolarPpiData(samples)

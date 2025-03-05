@@ -179,7 +179,7 @@ public typealias PolarPpgData = (type: PpgDataType, samples: [(timeStamp:UInt64,
 ///         - blockerBit = 1 if PP measurement was invalid due to acceleration or other reason
 ///         - skinContactStatus = 0 if the device detects poor or no contact with the skin
 ///         - skinContactSupported = 1 if the Sensor Contact feature is supported.
-public typealias PolarPpiData = (timeStamp: UInt64, samples: [(hr: Int, ppInMs: UInt16, ppErrorEstimate: UInt16, blockerBit: Int, skinContactStatus: Int, skinContactSupported: Int)])
+public typealias PolarPpiData = (timeStamp: UInt64, samples: [(timeStamp: UInt64, hr: Int, ppInMs: UInt16, ppErrorEstimate: UInt16, blockerBit: Int, skinContactStatus: Int, skinContactSupported: Int)])
 
 /// Polar exercise entry
 ///
@@ -394,6 +394,16 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// @param until, Data will be deleted from device from history until this date.
     /// @return [Completable] emitting success or error
     func deleteStoredDeviceData(_ identifier: String, dataType: PolarStoredDataType.StoredDataType, until: Date?) -> Completable
+    
+    /// Delete device date folders from a device.
+    /// - Parameters:
+    ///   - identifier: Polar device id or UUID
+    ///   - fromDate: The starting date to delete date folders from
+    ///   - toDate: The ending date of last date to delete folders from
+    /// - Returns: Completable stream
+    ///   - success: when date folders successfully deleted
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func deleteDeviceDateFolders(_ identifier: String, fromDate: Date?, toDate: Date?) -> Completable
 
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }

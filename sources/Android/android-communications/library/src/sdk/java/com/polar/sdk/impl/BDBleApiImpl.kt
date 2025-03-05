@@ -3531,6 +3531,57 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
+    override fun deleteDeviceDateFolders(identifier: String, fromDate: LocalDate?, toDate: LocalDate?): Completable {
+        val dateFormatter = DateTimeFormatter.BASIC_ISO_DATE
+
+        val deleteCondition = FetchRecursiveCondition { entry: String ->
+            val trimmedPath = entry.trimEnd('/')
+
+            if (!trimmedPath.matches(Regex("\\d{8}"))) {
+                return@FetchRecursiveCondition false
+            }
+
+            return@FetchRecursiveCondition try {
+                val entryDate = LocalDate.parse(trimmedPath, dateFormatter)
+
+                if ((fromDate == null || !entryDate.isBefore(fromDate)) &&
+                    (toDate == null || !entryDate.isAfter(toDate))) {
+
+                    BleLogger.d(TAG, "Date folder: $entryDate is in delete range, deleting")
+
+                    deleteDayDirectory(identifier, "/U/0/$trimmedPath")
+                        .ignoreElements()
+                        .doOnComplete {
+                            BleLogger.d(TAG, "Successfully deleted: $trimmedPath")
+                        }
+                        .doOnError { error ->
+                            BleLogger.e(TAG, "Failed to delete $trimmedPath. Error: ${error.message}")
+                        }
+                        .subscribe()
+
+                    return@FetchRecursiveCondition true
+                }
+                false
+            } catch (e: Exception) {
+                BleLogger.w(TAG, "Failed to parse entry date for: '$trimmedPath'. Error: ${e.message}")
+                false
+            }
+        }
+
+        return listFiles(identifier, "/U/0/", deleteCondition)
+            .doOnNext { folder -> BleLogger.d(TAG, "Remove date folder: $folder") }
+            .ignoreElements()
+            .doOnSubscribe {
+                BleLogger.d(TAG, "Started deleting date folders for device $identifier.")
+            }
+            .doOnComplete {
+                BleLogger.d(TAG, "Successfully completed deletion of date folders for device $identifier.")
+            }
+            .doOnError { error ->
+                BleLogger.e(TAG, "Error deleting date folders from device $identifier. Error: ${error.message}")
+            }
+    }
+
     private fun deleteAutoSampleFiles(identifier: String, dataDeletionStats: DataDeletionStats): Flowable<ConcurrentLinkedQueue<String>> {
 
         return Flowable.fromIterable(dataDeletionStats.fileDeletionMap.asIterable()).doOnEach() { item ->

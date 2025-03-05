@@ -15,6 +15,5 @@ Pod::Spec.new do |s|
 
     s.dependency 'RxSwift', '~> 6.5.0'
     s.dependency 'SwiftProtobuf', '~> 1.0'
-    s.dependency 'Alamofire', '~> 5.8.1'
     s.dependency 'Zip', '~> 2.1.2'
 end

@@ -3199,7 +3199,74 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Completable.empty()
         }
     }
+    
+    func deleteDeviceDateFolders(_ identifier: String, fromDate: Date?, toDate: Date?) -> Completable {
 
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd"
+        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+
+        let path = "/U/0/"
+        let calendar = Calendar.current
+
+        var validDates = Set<Date>()
+        if let fromDate = fromDate, let toDate = toDate {
+            var currentDate = fromDate
+            while currentDate <= toDate {
+                validDates.insert(currentDate)
+                if let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) {
+                    currentDate = nextDate
+                } else {
+                    break
+                }
+            }
+        }
+
+
+        return fetchDirectoryEntries(path, client: try! self.sessionFtpClientReady(identifier).fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient, condition: { folderPath in
+            let trimmedFolderPath = folderPath.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+            let folderName = trimmedFolderPath.components(separatedBy: "/").last ?? ""
+
+            let folderRegex = "^[0-9]{8}$"
+            let folderTest = NSPredicate(format: "SELF MATCHES %@", folderRegex)
+
+            guard folderTest.evaluate(with: folderName) else {
+                BleLogger.trace("Skipping non-date folder: \(folderPath)")
+                return false
+            }
+            
+            let validDateStrings = validDates.map { dateFormatter.string(from: $0) }
+            if validDateStrings.contains(folderName) {
+                BleLogger.trace("Folder \(folderName) is in valid date range, deleting")
+                return true
+            } else {
+                return false
+            }
+        })
+        .flatMap { (folder) -> Observable<Void> in
+            let fileUri = folder.name
+            BleLogger.trace("Deleting date folder: \(fileUri)")
+
+            return self.removeSingleFile(identifier: identifier, filePath: fileUri)
+                .asObservable()
+                .do(onNext: { _ in
+                    BleLogger.trace("Successfully deleted date folder \(fileUri)")
+                }, onError: { error in
+                    BleLogger.error("An error occurred while deleting directory \(fileUri), error: \(error.localizedDescription)")
+                })
+                .map { _ in () }
+        }
+        .ignoreElements()
+        .asCompletable()
+        .do(onError: { error in
+            BleLogger.error("Error deleting date folders from device \(identifier). Error: \(error.localizedDescription)")
+        }, onCompleted: {
+            BleLogger.trace("Successfully completed deletion of date folders for device \(identifier).")
+        }, onSubscribe: {
+            BleLogger.trace("Started deleting date folders for device \(identifier).")
+        })
+    }
+    
     private func deleteListedFilesByType(identifier: String, dataDeletionStats: DataDeletionStats, entryPath: String, until: Date, _ dataType: PolarStoredDataType.StoredDataType, condition: @escaping (_ p: String) -> Bool) -> Completable {
       
         listFiles(identifier: identifier, dataDeletionStats: dataDeletionStats, folderPath: entryPath, condition: condition)
@@ -3753,6 +3820,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         case let .ppiOfflineRecordingData(existingData, startTime):
             let newSamples = existingData.samples + ppiData.samples.map {
                 (
+                    timestamp: $0.timeStamp,
                     hr: $0.hr,
                     ppInMs: $0.ppInMs,
                     ppErrorEstimate: $0.ppErrorEstimate,
@@ -3769,6 +3837,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             return .ppiOfflineRecordingData(
                 (timeStamp: UInt64(offlineRecordingData.startTime.timeIntervalSince1970), samples: ppiData.samples.map {
                     (
+                        timeStamp: $0.timeStamp,
                         hr: $0.hr,
                         ppInMs: $0.ppInMs,
                         ppErrorEstimate: $0.ppErrorEstimate,
@@ -3936,6 +4005,46 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
+    private func fetchDirectoryEntries(_ path: String, client: BlePsFtpClient, condition: @escaping (_ p: String) -> Bool) -> Observable<(name: String, size: UInt64)> {
+        do {
+            var operation = Protocol_PbPFtpOperation()
+            operation.command = Protocol_PbPFtpOperation.Command.get
+            operation.path = path
+            let request = try operation.serializedData()
+
+            return client.request(request)
+                .asObservable()
+                .flatMap { (data) -> Observable<(name: String, size: UInt64)> in
+                    do {
+
+                        let dir = try Protocol_PbPFtpDirectory(serializedData: data as Data)
+
+                        let entries = dir.entries
+                            .compactMap { (entry) -> (name: String, size: UInt64)? in
+                                if condition(entry.name) {
+                                    return (name: path + entry.name, size: entry.size)
+                                }
+                                return nil
+                            }
+
+                        if entries.isEmpty {
+                            BleLogger.trace("No entries found for path: \(path)")
+                            return Observable.empty()
+                        } else {
+                            BleLogger.trace("Found \(entries.count) entries for path: \(path)")
+                            return Observable.from(entries)
+                        }
+                    } catch let err {
+                        BleLogger.error("Error getting directory entries for path: \(path), \(err)")
+                        return Observable.error(PolarErrors.deviceError(description: "\(err)"))
+                    }
+                }
+        } catch let err {
+            BleLogger.error("Error making PFTP-request for path \(path): \(err)")
+            return Observable.error(err)
+        }
+    }
+    
     private func fetchRecursive(_ path: String, client: BlePsFtpClient, condition: @escaping (_ p: String) -> Bool) -> Observable<(name: String, size:UInt64)> {
         do {
             var operation = Protocol_PbPFtpOperation()
@@ -4067,9 +4176,9 @@ private extension MagData {
 
 private extension PpiData {
     func mapToPolarData() -> PolarPpiData {
-        var polarSamples: [(hr: Int, ppInMs: UInt16, ppErrorEstimate: UInt16, blockerBit: Int, skinContactStatus: Int, skinContactSupported: Int)] = []
+        var polarSamples: [(timeStamp: UInt64, hr: Int, ppInMs: UInt16, ppErrorEstimate: UInt16, blockerBit: Int, skinContactStatus: Int, skinContactSupported: Int)] = []
         for sample in self.samples {
-            polarSamples.append((hr: sample.hr, ppInMs: sample.ppInMs, ppErrorEstimate: sample.ppErrorEstimate, blockerBit: sample.blockerBit, skinContactStatus: sample.skinContactStatus, skinContactSupported: sample.skinContactSupported))
+            polarSamples.append((timeStamp: sample.timeStamp, hr: sample.hr, ppInMs: sample.ppInMs, ppErrorEstimate: sample.ppErrorEstimate, blockerBit: sample.blockerBit, skinContactStatus: sample.skinContactStatus, skinContactSupported: sample.skinContactSupported))
         }
         return PolarPpiData(timeStamp: 0, samples: polarSamples)
     }

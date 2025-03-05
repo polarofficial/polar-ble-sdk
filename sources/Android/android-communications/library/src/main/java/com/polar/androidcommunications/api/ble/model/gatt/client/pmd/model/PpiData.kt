@@ -11,6 +11,7 @@ internal class PpiData {
         val blockerBit: Int,
         val skinContactStatus: Int,
         val skinContactSupported: Int,
+        var timeStamp: ULong
     )
 
     val ppiSamples: MutableList<PpiSample> = mutableListOf()
@@ -48,11 +49,23 @@ internal class PpiData {
                         ppErrorEstimate = ppErrorEstimate,
                         blockerBit = blockerBit,
                         skinContactStatus = skinContactStatus,
-                        skinContactSupported = skinContactSupported
+                        skinContactSupported = skinContactSupported,
+                        timeStamp = 0u // Set actual timestamp later.
                     )
                 )
                 offset += 6
             }
+
+            if (frame.timeStamp != 0uL) {
+                var currentTimestamp = frame.timeStamp
+
+                for (i in ppiData.ppiSamples.indices.reversed()) {
+                    val sample = ppiData.ppiSamples[i]
+                    sample.timeStamp = currentTimestamp
+                    currentTimestamp -= (sample.ppInMs.toULong() * 1_000_000UL)
+                }
+            }
+
             return ppiData
         }
     }
