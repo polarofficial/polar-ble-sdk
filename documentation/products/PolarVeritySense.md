@@ -12,18 +12,20 @@ SDK supports streaming and [Offline recording](../SdkOfflineRecordingExplained.m
 * Photoplethysmograpy (PPG) values.
 * [PP interval](./../PPIData.md) (milliseconds) representing cardiac pulse-to-pulse interval extracted from PPG signal.
 * Accelerometer data with sample rate of 52Hz and range of 8G. Axis specific acceleration data in mG.
-* Gyroscope data with sample rate of 52Hz and ranges of 2000dps. Axis specific gyroscope data in dps.
+* Gyroscope data with sample rate of 52Hz and ranges of 2000deg/sec. Axis specific gyroscope data in deg/sec.
 * Magnetometer data with sample rates of 10Hz, 20Hz, 50HZ and 100Hz and range of +/-50 Gauss. Axis specific magnetometer data in Gauss.
-* [SDK mode](../SdkModeExplained.md) from version 1.1.5 onwards.
 
 ## SDK Mode capabilities in Polar Verity Sense
 
+Verity Sense supports [SDK mode](../SdkModeExplained.md) from version firmware version 1.1.5 onwards. SDK mode gives more sampling rate and range options. The defaut option in use without SDK mode is **bolded**.
+
+
 | Data        |Operation mode     | Sampling Rate                   | Range (+-)                                           | Resolution |
 |:-----------:|:-----------------:|:-------------------------------:|:----------------------------------------------------:|:----------:|
-| Acc         | Online streaming  | 26Hz, 52Hz, 104Hz, 208Hz, 416Hz | 2g, 4g, 8g, 16g                                      |16          |
-| Acc         | Offline recording | 13Hz, 26Hz, 52Hz                | 2g, 4g, 8g, 16g                                      |16          |
-| Gyro        | Online streaming  | 26Hz, 52Hz, 104Hz, 208Hz, 416Hz | 250 deg/sec, 500 deg/sec, 1000 deg/sec, 2000 deg/sec |16          |
-| Gyro        | Offline recording | 13Hz, 26Hz, 52Hz                | 250 deg/sec, 500 deg/sec, 1000 deg/sec, 2000 deg/sec |16          |
+| Acc         | Online streaming  | 26Hz, **52Hz**, 104Hz, 208Hz, 416Hz | 2g, 4g, **8g**, 16g                                      |16          |
+| Acc         | Offline recording | 13Hz, 26Hz, **52Hz**                | 2g, 4g, **8g**, 16g                                      |16          |
+| Gyro        | Online streaming  | 26Hz, **52Hz**, 104Hz, 208Hz, 416Hz | 250 deg/sec, 500 deg/sec, 1000 deg/sec, **2000 deg/sec** |16          |
+| Gyro        | Offline recording | 13Hz, 26Hz, **52Hz**                | 250 deg/sec, 500 deg/sec, 1000 deg/sec, **2000 deg/sec** |16          |
 | Magnetometer| Online streaming  | 10Hz, 20Hz, 50Hz, 100Hz         | 50 Gauss                                             |16          |
 | Magnetometer| Offline recording | 10Hz, 20Hz, 50Hz                | 50 Gauss                                             |16          |
 | PPG         | Online streaming  | 28Hz, 44Hz, 55Hz,  135Hz, 176Hz | -                                                    |22          |
