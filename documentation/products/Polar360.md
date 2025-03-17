@@ -33,8 +33,8 @@ It is a device designed to increase general well-being and to make the lives of 
 * 24/7 Steps counting
 * 24/7 HR samples
 * Sleep duration and sleep stages
-* Nightly Recharge data (Android)
-* Calory data (Android)
+* Nightly Recharge data
+* Calory data
 * [Firmware update](../FirmwareUpdate.md)
 * Setting user's physical info
 * Deleting data from device
