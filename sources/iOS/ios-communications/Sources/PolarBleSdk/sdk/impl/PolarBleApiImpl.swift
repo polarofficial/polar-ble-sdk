@@ -1231,6 +1231,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     let components = entry.name.split(separator: "/")
                     let dateFormatter = DateFormatter()
                     dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+                    dateFormatter.isLenient = true
 
                     if components[2].count == 8 && components[4].count == 6 {
                         dateFormatter.dateFormat = "yyyyMMddHHmmss"
