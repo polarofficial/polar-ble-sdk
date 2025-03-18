@@ -1224,37 +1224,50 @@ extension PolarBleApiImpl: PolarBleApi  {
                 entry == "R/" ||
                 entry.contains(".REC")
             })
+            /// If mapping single entry fails, we return empty observable so that 
+            /// we can continue to the next entry.
             .flatMap { entry -> Observable<PolarOfflineRecordingEntry> in
-                let components = entry.name.split(separator: "/")
-                let dateFormatter = DateFormatter()
-                dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+                do {
+                    let components = entry.name.split(separator: "/")
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 
-                if components[2].count == 8 && components[4].count == 6 {
-                    dateFormatter.dateFormat = "yyyyMMddHHmmss"
-                } else {
-                    dateFormatter.dateFormat = "yyyyMMddHHmm"
+                    if components[2].count == 8 && components[4].count == 6 {
+                        dateFormatter.dateFormat = "yyyyMMddHHmmss"
+                    } else {
+                        dateFormatter.dateFormat = "yyyyMMddHHmm"
+                    }
+
+                    guard let date = dateFormatter.date(from: String(components[2] + components[4])) else {
+                        BleLogger.error("Listing offline recording failed. Couldn't parse create data from date \(components[2]) and time \(components[4])")
+                        return Observable.empty()
+                        
+                    }
+
+                    guard let pmdMeasurementType = try? OfflineRecordingUtils.mapOfflineRecordingFileNameToMeasurementType(fileName: String(components[5])) else {
+                        BleLogger.error("Listing offline recording failed. Couldn't parse the pmd type from \(components[5])")
+                        return Observable.empty()
+                    }
+
+                    guard let type = try? PolarDataUtils.mapToPolarFeature(from: pmdMeasurementType) else {
+                        BleLogger.error("Listing offline recording failed. Couldn't parse the polar type from pmd type: \(pmdMeasurementType)")
+                        return Observable.empty()
+                    }
+
+                    let polarEntry = PolarOfflineRecordingEntry(
+                        path: entry.name,
+                        size: UInt(entry.size),
+                        date: date,
+                        type: type
+                    )
+                    BleLogger.trace("Adding entry: \(polarEntry)")
+                    return Observable.just(polarEntry)
+                } catch {
+                    BleLogger.error("Listing offline recording failed. Error \(error)")
+                    return Observable.empty()
                 }
-
-                guard let date = dateFormatter.date(from: String(components[2] + components[4])) else {
-                    return Observable.error(PolarErrors.dateTimeFormatFailed(description: "Listing offline recording failed. Couldn't parse create data from date \(components[2]) and time \(components[4])"))
-                }
-
-                guard let pmdMeasurementType = try? OfflineRecordingUtils.mapOfflineRecordingFileNameToMeasurementType(fileName: String(components[5])) else {
-                    return Observable.error(PolarErrors.polarBleSdkInternalException(description: "Listing offline recording failed. Couldn't parse the pmd type from \(components[5])"))
-                }
-
-                guard let type = try? PolarDataUtils.mapToPolarFeature(from: pmdMeasurementType) else {
-                    return Observable.error(PolarErrors.polarBleSdkInternalException(description: "Listing offline recording failed. Couldn't parse the polar type from pmd type: \(pmdMeasurementType)"))
-                }
-
-                let polarEntry = PolarOfflineRecordingEntry(
-                    path: entry.name,
-                    size: UInt(entry.size),
-                    date: date,
-                    type: type
-                )
-                BleLogger.trace("Adding entry: \(polarEntry)")
-                return Observable.just(polarEntry)
+                
+               
             }
             .groupBy { entry in
                 entry.path.replacingOccurrences(of: "\\d+\\.REC$", with: ".REC", options: .regularExpression)
