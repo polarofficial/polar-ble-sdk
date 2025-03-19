@@ -915,22 +915,30 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                 entry.contains(".REC")
                     }
                 )
-                    .map { entry: Pair<String, Long> ->
-                        val components = entry.first.split("/").toTypedArray()
-                        val format = SimpleDateFormat("yyyyMMdd HHmmss", Locale.getDefault())
-                        val date = format.parse(components[3] + " " + components[5])
-                            ?: throw PolarInvalidArgument(
-                                "Listing offline recording failed. Cannot parse create data from date ${components[3]} and time ${components[5]}"
+                    /// If mapping single entry fails, we return empty flowable so that 
+                    /// we can continue to the next entry.
+                    .flatMap { entry: Pair<String, Long> ->
+                        try {
+                            val components = entry.first.split("/").toTypedArray()
+                            val format = SimpleDateFormat("yyyyMMdd HHmmss", Locale.getDefault())
+                            val date = format.parse(components[3] + " " + components[5])
+                                ?: throw PolarInvalidArgument(
+                                    "Listing offline recording failed. Cannot parse create data from date ${components[3]} and time ${components[5]}"
+                                )
+                            val type = mapPmdClientFeatureToPolarFeature(
+                                mapOfflineRecordingFileNameToMeasurementType(components[6])
                             )
-                        val type = mapPmdClientFeatureToPolarFeature(
-                            mapOfflineRecordingFileNameToMeasurementType(components[6])
-                        )
-                        PolarOfflineRecordingEntry(
-                            path = entry.first,
-                            size = entry.second,
-                            date = date,
-                            type = type
-                        )
+                            val recordingEntry = PolarOfflineRecordingEntry(
+                                path = entry.first,
+                                size = entry.second,
+                                date = date,
+                                type = type
+                            )
+                            Flowable.just(recordingEntry)
+                        } catch (e: Exception) {
+                            BleLogger.e(TAG, "Error processing offline recording entry ${entry.first}: ${e.message}")
+                            Flowable.empty<PolarOfflineRecordingEntry>()
+                        }
                     }
                     .groupBy { entry -> entry.date }
                     .onBackpressureBuffer(2048, null, BackpressureOverflowStrategy.DROP_LATEST)
