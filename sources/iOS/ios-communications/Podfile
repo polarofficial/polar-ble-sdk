@@ -4,7 +4,7 @@ platform :ios, '14.0'
 use_frameworks!
 
 def rx_swift_pod
-  pod 'RxSwift', '~> 6.5.0'
+  pod 'RxSwift', '~> 6.8.0'
 end
 
 def swift_protobuf_pod
@@ -34,11 +34,11 @@ target 'PolarBleSdkWatchOs' do
 end
 
 target 'iOSCommunicationsTests' do
-  pod 'RxBlocking', '~> 6.5.0'
-  pod 'RxTest', '~> 6.5.0'
+  pod 'RxBlocking', '~> 6.8.0'
+  pod 'RxTest', '~> 6.8.0'
 end
 
 target 'PolarBleSdkTests' do
-  pod 'RxBlocking', '~> 6.5.0'
-  pod 'RxTest', '~> 6.5.0'
+  pod 'RxBlocking', '~> 6.8.0'
+  pod 'RxTest', '~> 6.8.0'
 end

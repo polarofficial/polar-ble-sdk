@@ -41,6 +41,13 @@ public protocol PolarBleApiDeviceInfoObserver: AnyObject {
     ///   - identifier: Polar device id
     ///   - batteryLevel: battery level in precentage 0-100%
     func batteryLevelReceived(_ identifier: String, batteryLevel: UInt)
+
+    /// Battery charging status received from device.
+    ///
+    /// - Parameters:
+    ///   - identifier: Polar device id
+    ///   - chargingStatus: Battery charging status
+    func batteryChargingStatusReceived(_ identifier: String, chargingStatus: BleBasClient.ChargeState)
     
     ///  Received DIS info.
     ///

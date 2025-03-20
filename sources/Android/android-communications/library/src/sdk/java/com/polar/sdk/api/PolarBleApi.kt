@@ -219,7 +219,8 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
 
     /**
      * When enabled the reconnection is attempted if device connection is lost. By default automatic reconnection is enabled.
-     *
+     * Note that firmware update (FWU) turns on automatic reconnection automatically, and restores the setting
+     * automatically when operation completes. One should not change this setting during FWU.
      * @param enable true = automatic reconnection is enabled, false = automatic reconnection is disabled
      */
     abstract fun setAutomaticReconnection(enable: Boolean)

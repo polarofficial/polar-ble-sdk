@@ -203,6 +203,11 @@ public abstract class BleDeviceListener {
      */
     public abstract void setAutomaticReconnection(boolean automaticReconnection);
 
+    /**
+     * @return current state of automatic reconnection
+     */
+    public abstract Boolean getAutomaticReconnection();
+
     public static final int POWER_MODE_NORMAL = 0;
     public static final int POWER_MODE_LOW = 1;
 

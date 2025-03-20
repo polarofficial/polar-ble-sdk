@@ -78,6 +78,10 @@ class ConnectionHandler(
         this.automaticReconnection = automaticReconnection
     }
 
+    fun getAutomaticReconnection() : Boolean {
+        return this.automaticReconnection
+    }
+
     fun advertisementHeadReceived(bleDeviceSession: BDDeviceSessionImpl) {
         commandState(bleDeviceSession, ConnectionHandlerAction.ADVERTISEMENT_HEAD_RECEIVED)
     }

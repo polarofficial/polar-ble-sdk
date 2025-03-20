@@ -218,6 +218,40 @@ import UIKit
         throw PolarErrors.notificationNotEnabled
     }
     
+    private func waitFtpClientReady(_ identifier: String) -> Observable<BleDeviceSession> {
+        return Observable.create { observer in
+            self.waitForServiceDiscovered(identifier, service: BlePsFtpClient.PSFTP_SERVICE)
+                .subscribe(onNext: { session in
+                    Observable.interval(.seconds(1), scheduler: MainScheduler.instance)
+                        .take(10)
+                        .flatMap { (_: Int64) -> Observable<BleDeviceSession> in
+                            do {
+                                let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
+                                if client.isCharacteristicNotificationEnabled(BlePsFtpClient.PSFTP_D2H_NOTIFICATION_CHARACTERISTIC) &&
+                                    client.isCharacteristicNotificationEnabled(BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC) {
+                                    observer.onNext(session)
+                                    observer.onCompleted()
+                                    return Observable.just(session)
+                                }
+                                return Observable.empty()
+                            } catch {
+                                observer.onError(error)
+                                return Observable.error(error)
+                            }
+                        }
+                        .subscribe(onError: { error in
+                            observer.onError(error)
+                        }, onCompleted: {
+                            observer.onError(PolarErrors.notificationNotEnabled)
+                        })
+                }, onError: { error in
+                    observer.onError(error)
+                })
+
+            return Disposables.create()
+        }
+    }
+    
     private func sessionHrClientReady(_ identifier: String) throws -> BleDeviceSession {
         let session = try sessionServiceReady(identifier, service: BleHrClient.HR_SERVICE)
         if let client = session.fetchGattClient(BleHrClient.HR_SERVICE) as? BleHrClient,
@@ -595,16 +629,25 @@ import UIKit
                         self.deviceFeaturesObserver?.bleSdkFeatureReady(deviceId, feature: PolarBleSdkFeature.feature_hr)
                         let hrClient = client as! BleHrClient
                         self.startHrObserver(hrClient, deviceId: deviceId)
-                    case BleBasClient.BATTERY_SERVICE:
-                        return (client as! BleBasClient).monitorBatteryStatus(true)
-                            .observe(on: self.scheduler)
-                            .do(onNext: { (level: Int) in
-                                self.deviceInfoObserver?.batteryLevelReceived(
-                                    deviceId, batteryLevel: UInt(level))
-                            })
-                            .map { (_) -> Any in
-                                return Any.self
-                            }
+                case BleBasClient.BATTERY_SERVICE:
+                    let batteryClient = client as! BleBasClient
+                    return Observable
+                        .combineLatest(
+                            batteryClient.monitorBatteryStatus(true),
+                            batteryClient.monitorChargingStatus(true)
+                        )
+                        .observe(on: self.scheduler)
+                        .do(onNext: { (level, chargingStatus) in
+                            self.deviceInfoObserver?.batteryLevelReceived(
+                                deviceId, batteryLevel: UInt(level)
+                            )
+                            self.deviceInfoObserver?.batteryChargingStatusReceived(
+                                deviceId, chargingStatus: chargingStatus
+                            )
+                        })
+                        .map { _ -> Any in
+                            return Any.self
+                        }
                     case BleDisClient.DIS_SERVICE:
                         return (client as! BleDisClient).readDisInfo(true)
                             .observe(on: self.scheduler)
@@ -1384,7 +1427,14 @@ extension PolarBleApiImpl: PolarBleApi  {
 
                   let processingObservable = subRecordingCountObservable
                       .flatMap { count -> Observable<PolarOfflineRecordingData> in
-                          return Observable.range(start: 0, count: count)
+                          let notificationResult = client.sendNotification(
+                              Protocol_PbPFtpHostToDevNotification.initializeSession.rawValue,
+                              parameters: nil
+                          )
+                          
+                          return notificationResult
+                              .andThen(
+                          Observable.range(start: 0, count: count)
                               .flatMap { subRecordingIndex -> Observable<PolarOfflineRecordingData> in
                                   Observable.create { observer in
                                       let subRecordingPath: String
@@ -1402,13 +1452,8 @@ extension PolarBleApiImpl: PolarBleApi  {
 
                                           BleLogger.trace("Offline record get. Device: \(identifier) Path: \(subRecordingPath) Secret used: \(secret != nil)")
 
-                                          let notificationResult = client.sendNotification(
-                                              Protocol_PbPFtpHostToDevNotification.initializeSession.rawValue,
-                                              parameters: nil
-                                          )
-
-                                          let requestResult = notificationResult
-                                              .andThen(Single.deferred { client.request(request) })
+                                          let requestResult =
+                                               Single.deferred { client.request(request) }
                                               .map { dataResult -> OfflineRecordingData<Any> in
                                                   do {
                                                       let pmdSecret = try secret.map { try PolarDataUtils.mapToPmdSecret(from: $0) }
@@ -1469,6 +1514,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                                       return Disposables.create { }
                                   }
                               }
+                          )
                       }
                       .ignoreElements()
                       .asCompletable()
@@ -1509,6 +1555,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 var operation = Protocol_PbPFtpOperation()
                 operation.command = Protocol_PbPFtpOperation.Command.get
                 let directoryPath = entry.path.components(separatedBy: "/").dropLast().joined(separator: "/") + "/"
+                let fileType = try self.mapDeviceDataTypeToOfflineRecordingFileName(type: entry.type)
                 operation.path = directoryPath
                 
                 _ = client.request(try operation.serializedData())
@@ -1516,7 +1563,8 @@ extension PolarBleApiImpl: PolarBleApi  {
                         onSuccess: { content in
                             do {
                                 let directory = try Protocol_PbPFtpDirectory(serializedData: content as Data)
-                                single(.success(directory.entries.count))
+                                let subrecordingCount = directory.entries.filter { $0.name.hasPrefix(fileType) }.count
+                                single(.success(subrecordingCount))
                             } catch {
                                 single(.failure(error))
                             }
@@ -1544,6 +1592,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 var operation = Protocol_PbPFtpOperation()
                 operation.command = Protocol_PbPFtpOperation.Command.get
                 let directoryPath = entry.path.components(separatedBy: "/").dropLast().joined(separator: "/") + "/"
+                let type = entry.path.components(separatedBy: "/").last?.replacingOccurrences(of: "[0-9]+.REC", with: "", options: .regularExpression)
                 operation.path = directoryPath
                 
                 _ = client.request(try operation.serializedData())
@@ -1553,7 +1602,9 @@ extension PolarBleApiImpl: PolarBleApi  {
                                 let directory = try Protocol_PbPFtpDirectory(serializedData: content as Data)
                                 var records = [String]()
                                 for entry in directory.entries {
-                                    records.append(entry.name)
+                                    if entry.name.contains(type ?? "") {
+                                        records.append(entry.name)
+                                    }
                                 }
                                 single(.success(records))
                             } catch {
@@ -1692,26 +1743,13 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Single.error(err)
         }
     }
-
+    
     func removeOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry) -> Completable {
         BleLogger.trace("Remove offline record. Device: \(identifier) Path: \(entry.path)")
-        do {
-            let session = try sessionFtpClientReady(identifier)
-            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                return Completable.error(PolarErrors.serviceNotFound)
-            }
-            guard .sagRfc2FileSystem == BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType) else {
-                return Completable.error(PolarErrors.operationNotSupported)
-            }
-            
-            return removeOfflineFilesRecursively(client, entry.path, deleteIfMatchesRegex: "/\\d{8}/")
-            
-        } catch let err {
-            return Completable.error(err)
-        }
+        return removeOfflineRecords(identifier, entry: entry).asCompletable()
     }
     
-    private func removeOfflineFilesRecursively(_ client: BlePsFtpClient, _ deletePath: String, deleteIfMatchesRegex: String? = nil) -> Completable {
+    private func removeOfflineFilesRecursively(_ client: BlePsFtpClient, _ deletePath: String, fileType: String?, deleteIfMatchesRegex: String? = nil) -> Completable {
         do {
             if(deleteIfMatchesRegex != nil) {
                 guard deletePath.contains(deleteIfMatchesRegex!) else {
@@ -1731,6 +1769,8 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
             }
             
+            let fileName = String(deletePath.split(separator: "/").last ?? "")
+            
             var operation = Protocol_PbPFtpOperation()
             operation.command = .get
             operation.path = parentDir
@@ -1740,15 +1780,16 @@ extension PolarBleApiImpl: PolarBleApi  {
                 .flatMapCompletable { content -> Completable in
                     do {
                         let parentDirEntries = try Protocol_PbPFtpDirectory(serializedData: content as Data)
+                        let cantDeleteDueOtherFiles = fileType == nil || parentDirEntries.entries.contains { $0.name.hasPrefix(fileType!) == false }
                         let isParentDirValid: Bool
                         if let regex = deleteIfMatchesRegex {
                             isParentDirValid = parentDir.contains(regex)
                         } else {
                             isParentDirValid = true
                         }
-                        if parentDirEntries.entries.count <= 1 && isParentDirValid {
+                        if isParentDirValid && false == cantDeleteDueOtherFiles {
                             // It is safe to remove the parent dir
-                            return self.removeOfflineFilesRecursively(client, parentDir, deleteIfMatchesRegex: deleteIfMatchesRegex)
+                            return self.removeOfflineFilesRecursively(client, parentDir, fileType: nil, deleteIfMatchesRegex: deleteIfMatchesRegex)
                         } else {
                             BleLogger.trace(" Remove offline recording from the path \(deletePath)")
                             var removeOperation = Protocol_PbPFtpOperation()
@@ -1794,6 +1835,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             guard .sagRfc2FileSystem == BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType) else {
                 return Single.error(PolarErrors.operationNotSupported)
             }
+            let fileType = try? mapDeviceDataTypeToOfflineRecordingFileName(type: entry.type)
             
             return self.getSubRecordings(identifier: identifier, entry: entry).flatMap { subrecords -> Single<Bool> in
                 return Single.create { singleEmitter in
@@ -1822,7 +1864,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                                 self.removeSingleFile(identifier: identifier, filePath: deletePath).subscribe (
                                     onSuccess: {_ in
                                         if idx == subrecords.count {
-                                            self.removeOfflineFilesRecursively(client, entry.path, deleteIfMatchesRegex: "/\\d{8}/").subscribe(
+                                            self.removeOfflineFilesRecursively(client, entry.path, fileType: fileType, deleteIfMatchesRegex: "/\\d{8}/").subscribe(
                                                 onCompleted: {
                                                     return singleEmitter(.success(true))
                                                 }
@@ -2540,7 +2582,9 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
     
     private func updateFirmware(_ identifier: String, firmwareURL: URL? = nil) -> Observable<FirmwareUpdateStatus> {
-        
+
+        let automaticReconnection = self.automaticReconnection
+
         let fwApi = FirmwareUpdateApi()
 
         do {
@@ -2626,7 +2670,10 @@ extension PolarBleApiImpl: PolarBleApi  {
                         let backupManager = PolarBackupManager(client: client)
                 
                         observer.onNext(FirmwareUpdateStatus.fetchingFwUpdatePackage(details: "Fetching firmware update package..."))
-
+                        
+                        let automaticReconnection = self.automaticReconnection
+                        self.automaticReconnection = true
+                        
                         backupManager.backupDevice()
                             .asObservable()
                             .flatMap { content -> Observable<FirmwareUpdateStatus> in
@@ -2695,13 +2742,17 @@ extension PolarBleApiImpl: PolarBleApi  {
                                             .andThen(Single.just(status))
                                             .flatMap { _ in
                                                 return Single.create { singleObserver in
-                                                    do {
-                                                        let session = try self.sessionFtpClientReady(identifier)
-                                                        singleObserver(.success(session))
-                                                    } catch {
-                                                        BleLogger.trace("Error: \(error). Waiting for FTP client readiness.")
-                                                        singleObserver(.failure(error))
-                                                    }
+                                                    self.waitFtpClientReady(identifier)
+                                                        .subscribe(
+                                                            onNext: { session in
+                                                                singleObserver(.success(session))
+                                                            },
+                                                            onError: { error in
+                                                                BleLogger.trace("FTP-client did not become ready: \(error). ")
+                                                                singleObserver(.failure(error))
+                                                            }
+                                                        )
+
                                                     return Disposables.create()
                                                 }
                                                 .flatMap { _ in
@@ -2760,11 +2811,13 @@ extension PolarBleApiImpl: PolarBleApi  {
                                     observer.onNext(status)
                                 },
                                 onError: { error in
+                                    self.automaticReconnection = automaticReconnection
                                     BleLogger.error("Error during firmware update: \(error)")
                                     observer.onNext(FirmwareUpdateStatus.fwUpdateFailed(details: "Error during firmware update: \(error.localizedDescription)"))
                                     observer.onError(error)
                                 },
                                 onCompleted: {
+                                    self.automaticReconnection = automaticReconnection
                                     _ = self.setLocalTime(identifier, time: Date(), zone: TimeZone.current)
                                         .subscribe(
                                             onCompleted: {

@@ -22,6 +22,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Com
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Companion.HR_SERVICE
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Companion.HR_SERVICE_16BIT_UUID
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHtsClient
+import com.polar.androidcommunications.api.ble.model.gatt.client.ChargeState
 import com.polar.androidcommunications.api.ble.model.gatt.client.HealthThermometer
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.*
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdControlPointResponse.PmdControlPointResponseCode
@@ -374,6 +375,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
     override fun setAutomaticReconnection(enable: Boolean) {
         listener?.setAutomaticReconnection(enable)
+    }
+
+    private fun getAutomaticReconnection() : Boolean? {
+        return listener?.getAutomaticReconnection();
     }
 
     override fun setLocalTime(identifier: String, calendar: Calendar): Completable {
@@ -1115,8 +1120,9 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         var polarHrData: PolarOfflineRecordingData.HrOfflineRecording? = null
         var polarTemperatureData: PolarOfflineRecordingData.TemperatureOfflineRecording? = null
         return if (fsType == FileSystemType.SAGRFC2_FILE_SYSTEM) {
-            getSubRecordingCount(identifier, entry)
-                .flatMap { count ->
+            getSubRecordingAndOtherFilesCount(identifier, entry)
+                .flatMap { pair ->
+                    val count = pair.first
                     Single.create<PolarOfflineRecordingData> { emitter ->
                         // Old format
                         if (count == 0) {
@@ -1513,10 +1519,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
-    private fun getSubRecordingCount(
+    private fun getSubRecordingAndOtherFilesCount(
         identifier: String,
         entry: PolarOfflineRecordingEntry
-    ): Single<Int> {
+    ): Single<Pair<Int, Int>> {
         return Single.defer {
             try {
                 val session = sessionPsFtpClientReady(identifier)
@@ -1537,7 +1543,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         val matchingEntries = directory.entriesList.filter {
                             it.name.startsWith(prefix) && Regex("\\d\\.").containsMatchIn(it.name)
                         }
-                        matchingEntries.size
+                        val nonMatchingEntriesSize = directory.entriesList.size - matchingEntries.size
+                        Pair(matchingEntries.size, nonMatchingEntriesSize)
                     }
                     .onErrorResumeNext { throwable: Throwable ->
                         Single.error(throwable)
@@ -1792,9 +1799,21 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             ?: return Completable.error(PolarServiceNotAvailable())
         val fsType = getFileSystemType(session.polarDeviceType)
         return if (fsType == FileSystemType.SAGRFC2_FILE_SYSTEM) {
-            getSubRecordingCount(identifier, entry)
-                .flatMap { count ->
-                    if (count == 0 || entry.path.contains(Regex("""(\D+)(\d+)\.REC"""))) {
+            getSubRecordingAndOtherFilesCount(identifier, entry)
+                .flatMap { pair ->
+                    val otherFilesCount = pair.second
+                    val count = pair.first
+                    if (otherFilesCount == 0) {
+                        val parentDir = if (entry.path.last() == '/') {
+                            entry.path.substringBeforeLast("/").dropLastWhile { it != '/' }
+                        } else {
+                            entry.path.dropLastWhile { it != '/' }
+                        }
+                        val builder = PftpRequest.PbPFtpOperation.newBuilder()
+                        builder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
+                        builder.path = parentDir
+                        return@flatMap client.request(builder.build().toByteArray())
+                    } else if (count == 0 || entry.path.contains(Regex("""(\D+)(\d+)\.REC"""))) {
                         val builder = PftpRequest.PbPFtpOperation.newBuilder()
                         builder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
                         builder.path = entry.path
@@ -2668,7 +2687,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             hardwareCode = deviceInfo.deviceHardwareCode
         )
 
-        return if (firmwareUrl.isNotBlank()) {
+        val automaticReconnection = listener?.automaticReconnection
+        listener?.automaticReconnection = true
+
+        return (
+        if (firmwareUrl.isNotBlank()) {
             val backupManager = PolarBackupManager(client)
             val backup: MutableList<PolarBackupManager.BackupFileData> = mutableListOf()
 
@@ -2943,6 +2966,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 .onErrorResumeNext { error ->
                     Flowable.just(FirmwareUpdateStatus.FwUpdateFailed(error.toString()))
                 }
+        }).doOnComplete {
+            listener?.automaticReconnection = automaticReconnection
         }
     }
 
@@ -3986,7 +4011,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                             )
                                         )
                                     },
-                                    { error: Throwable -> if (error.message != null) logError(error.message!!) },
+                                    { error: Throwable -> error.message?.let { logError(it) }},
                                     {})
                         }
                         BleBattClient.BATTERY_SERVICE -> {
@@ -3997,8 +4022,19 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                     { batteryLevel: Int? ->
                                         callback?.batteryLevelReceived(deviceId, batteryLevel!!)
                                     },
-                                    { error: Throwable -> if (error.message != null) logError(error.message!!) },
+                                    { error: Throwable -> error.message?.let { logError(it) }},
                                     {}
+                                )
+
+                            bleBattClient?.monitorChargingStatus(true)
+                                ?.observeOn(AndroidSchedulers.mainThread())
+                                ?.subscribe(
+                                    { chargeState: ChargeState? ->
+                                        callback?.batteryChargingStatusReceived(deviceId, chargeState!!)
+                                    },
+                                    { error: Throwable ->
+                                        error.message?.let { logError(it) }
+                                    }
                                 )
                         }
                         BlePMDClient.PMD_SERVICE -> {
@@ -4057,7 +4093,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                             )
                                         )
                                     },
-                                    { error: Throwable -> if (error.message != null) logError(error.message!!) },
+                                    { error: Throwable -> error.message?.let { logError(it) } },
                                     {})
 
                         }

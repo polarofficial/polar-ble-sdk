@@ -2,7 +2,7 @@
 package com.polar.sdk.api
 
 import com.polar.androidcommunications.api.ble.model.DisInfo
-import com.polar.sdk.api.PolarBleApi.PolarDeviceDataType
+import com.polar.androidcommunications.api.ble.model.gatt.client.ChargeState
 import com.polar.sdk.api.model.PolarDeviceInfo
 import com.polar.sdk.api.model.PolarHealthThermometerData
 import com.polar.sdk.api.model.PolarHrData
@@ -72,6 +72,14 @@ interface PolarBleApiCallbackProvider {
      * @param level      battery level (value between 0-100%)
      */
     fun batteryLevelReceived(identifier: String, level: Int)
+
+    /**
+     * Battery charging status received. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_BATTERY_INFO]
+     *
+     * @param identifier Polar device id or bt address
+     * @param chargingStatus Charging status [ChargeState]
+     */
+    fun batteryChargingStatusReceived(identifier: String, chargingStatus: ChargeState)
 
     /**
      * HR notification data received from device. Notice when using OH1
