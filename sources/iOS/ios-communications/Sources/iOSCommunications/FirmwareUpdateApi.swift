@@ -32,9 +32,9 @@ class FirmwareUpdateApi {
         
         URLSession.shared.dataTask(with: request) { (data, response, error) in
             Task { @MainActor in
-                BleLogger.error("Request URL: \(String(describing: request.url))")
-                BleLogger.error("Request Method: \(request.httpMethod ?? "N/A")")
-                BleLogger.error("Request Headers: \(request.allHTTPHeaderFields ?? [:])")
+                ///BleLogger.error("Request URL: \(String(describing: request.url))")
+                ///BleLogger.error("Request Method: \(request.httpMethod ?? "N/A")")
+                ///BleLogger.error("Request Headers: \(request.allHTTPHeaderFields ?? [:])")
                 BleLogger.error("Request Body: \(String(describing: firmwareUpdateRequest))")
                 
                 if let data = data {

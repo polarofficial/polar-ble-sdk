@@ -429,6 +429,9 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// optional logger set to get traces from sdk
     var logger: PolarBleApiLogger? { get set }
     
-    /// optional disable or enable automatic reconnection, by default it is enabled
+    /// optional disable or enable automatic reconnection, by default it is enabled.
+    ///
+    /// Note that firmware update (FWU) turns on automatic reconnection automatically, and restores the setting
+    /// automatically when operation completes. One should not change this setting during FWU.
     var automaticReconnection: Bool { get set }
 }

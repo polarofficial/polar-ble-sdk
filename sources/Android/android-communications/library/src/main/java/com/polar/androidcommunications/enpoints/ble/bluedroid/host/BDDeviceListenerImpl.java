@@ -553,6 +553,10 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
         connectionHandler.setAutomaticReconnection(automaticReconnection);
     }
 
+    public Boolean getAutomaticReconnection() {
+        return connectionHandler.getAutomaticReconnection();
+    }
+
     @NonNull
     @Override
     public Observable<Pair<BleDeviceSession, BleDeviceSession.DeviceSessionState>> monitorDeviceSessionState() {
