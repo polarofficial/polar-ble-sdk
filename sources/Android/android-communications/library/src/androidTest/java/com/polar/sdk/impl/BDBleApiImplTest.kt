@@ -13,14 +13,14 @@ class BDBleApiImplTest {
         val polarBleApiDefaultInstance =
             BDBleApiImpl.getInstance(
                 ApplicationProvider.getApplicationContext(),
-                PolarBleApi.ALL_FEATURES
+                setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO)
             )
 
         // Act
         val polarBleApiSecondInstance =
             BDBleApiImpl.getInstance(
                 ApplicationProvider.getApplicationContext(),
-                PolarBleApi.ALL_FEATURES
+                setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO)
             )
 
         // Assert
@@ -33,14 +33,14 @@ class BDBleApiImplTest {
         // Arrange
         BDBleApiImpl.getInstance(
             ApplicationProvider.getApplicationContext(),
-            PolarBleApi.ALL_FEATURES
+            setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO)
         )
 
         // Act && Assert
         Assert.assertThrows(PolarBleSdkInstanceException::class.java) {
             BDBleApiImpl.getInstance(
                 ApplicationProvider.getApplicationContext(),
-                PolarBleApi.FEATURE_POLAR_FILE_TRANSFER
+                setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER)
             )
         }
     }
