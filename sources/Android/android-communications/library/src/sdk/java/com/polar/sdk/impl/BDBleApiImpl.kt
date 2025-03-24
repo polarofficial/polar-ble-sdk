@@ -1808,7 +1808,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             ?: return Completable.error(PolarServiceNotAvailable())
         val fsType = getFileSystemType(session.polarDeviceType)
         return if (fsType == FileSystemType.SAGRFC2_FILE_SYSTEM) {
-            getSubRecordingCount(identifier, entry).flatMapCompletable { count -> 
+            getSubRecordingAndOtherFilesCount(identifier, entry).flatMapCompletable { pair -> 
+                val count = pair.first
                 if (count == 0) {
                     /// If sub recording count is 0, then it device is using old format (single recording file).
                     BleLogger.d(TAG, "removeOfflineRecord: removing old format recording file (sub recording count is 0)")
@@ -2759,7 +2760,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
                         doFactoryReset(identifier, true)
                             .andThen(Completable.timer(30, TimeUnit.SECONDS))
-                            .andThen(waitDeviceSessionToOpen(identifier, 6 * 60L, waitForDeviceDownSeconds = 10L))
+                            .andThen(waitDeviceSessionWithPftpToOpen(identifier, 6 * 60L, waitForDeviceDownSeconds = 10L))
                             .andThen(Completable.timer(5, TimeUnit.SECONDS))
                             .andThen(
                                 Flowable.fromIterable(firmwareFiles)
@@ -2781,14 +2782,14 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     .concatMap { status ->
                         if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
                             BleLogger.d(TAG, "Starting finalization of firmware update")
-                            waitDeviceSessionToOpen(identifier, 6 * 60L, 60L)
+                            waitDeviceSessionWithPftpToOpen(identifier, 6 * 60L, 60L)
                                 .andThen(Completable.defer {
                                     BleLogger.d(TAG, "Performing factory reset while preserving pairing information")
                                     return@defer doFactoryReset(identifier, true)
                                 })
                                 .andThen(Completable.defer {
                                     BleLogger.d(TAG, "Waiting for device session to open after factory reset")
-                                    return@defer waitDeviceSessionToOpen(identifier, 6 * 60L, 10L)
+                                    return@defer waitDeviceSessionWithPftpToOpen(identifier, 6 * 60L, 10L)
                                 })
                                 .andThen(Completable.defer {
                                     BleLogger.d(TAG, "Restoring backup to device after update")
@@ -2809,7 +2810,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     }
                     .concatMap { status ->
                         if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
-                            waitDeviceSessionToOpen(identifier, 6 * 60L, 60L)
+                            waitDeviceSessionWithPftpToOpen(identifier, 6 * 60L, 60L)
                                 .andThen(Flowable.just(FirmwareUpdateStatus.FwUpdateCompletedSuccessfully("Firmware update completed successfully")))
                         } else {
                             Flowable.just(status)
@@ -2890,7 +2891,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
                                                     doFactoryReset(identifier, true)
                                                         .andThen(Completable.timer(30, TimeUnit.SECONDS))
-                                                        .andThen(waitDeviceSessionToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L))
+                                                        .andThen(waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L))
                                                         .andThen(Completable.timer(5, TimeUnit.SECONDS))
                                                         .andThen(
                                                             Flowable.fromIterable(firmwareFiles)
@@ -2913,14 +2914,14 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                     if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
                                                         BleLogger.d(TAG, "Starting finalization of firmware update")
                                                         BleLogger.d(TAG, "Waiting for device session to open after reboot")
-                                                        waitDeviceSessionToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 120L)
+                                                        waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 120L)
                                                             .andThen(Completable.defer {
                                                                 BleLogger.d(TAG, "Performing factory reset while preserving pairing information")
                                                                 return@defer doFactoryReset(identifier, true)
                                                             })
                                                             .andThen(Completable.defer {
                                                                 BleLogger.d(TAG, "Waiting for device session to open after factory reset")
-                                                                return@defer waitDeviceSessionToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L)
+                                                                return@defer waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L)
                                                             })
                                                             .andThen(Completable.defer {
                                                                 BleLogger.d(TAG, "Restoring backup to device after version ${firmwareUpdateResponse.version}")
@@ -2941,7 +2942,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                 }
                                                 .concatMap { status ->
                                                     if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
-                                                        waitDeviceSessionToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 60L)
+                                                        waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 60L)
                                                             .andThen(Flowable.just(FirmwareUpdateStatus.FwUpdateCompletedSuccessfully(firmwareUpdateResponse.version)))
                                                     } else {
                                                         Flowable.just(status)
@@ -3000,6 +3001,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         val session = sessionPsFtpClientReady(identifier)
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient
         sendInitializationAndStartSyncNotifications(client)
+        val deviceInfo = PolarFirmwareUpdateUtils.readDeviceFirmwareInfo(client, identifier).blockingGet()
 
         val isDeviceSensor = BlePolarDeviceCapabilitiesUtility.isDeviceSensor(deviceInfo.deviceModelName)
         val factoryResetMaxWaitTimeSeconds = 6 * 60L

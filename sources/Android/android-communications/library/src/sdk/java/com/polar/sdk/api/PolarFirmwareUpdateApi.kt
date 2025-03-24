@@ -18,9 +18,10 @@ interface PolarFirmwareUpdateApi {
      *
      * @param identifier Polar device ID or BT address
      * @param filePath path to the file
+     * @param version firmware version
      * @return [Flowable] emitting status of firmware update
      */
-    fun updateFirmwareLocal(identifier: String, filePath: String): Flowable<FirmwareUpdateStatus>
+    fun updateFirmwareLocal(identifier: String, filePath: String, version: String): Flowable<FirmwareUpdateStatus>
 
     /**
      * Updates firmware to given device.
@@ -31,6 +32,7 @@ interface PolarFirmwareUpdateApi {
     fun updateFirmware(identifier: String): Flowable<FirmwareUpdateStatus>
 
 
+    /**
      * Updates firmware to given device from specific URL.
      *
      * @param identifier Polar device ID or BT address
