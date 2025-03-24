@@ -1774,7 +1774,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     if count == 0 {
                         /// If sub recording count is 0, then it device is using old format (single recording file).
                         BleLogger.trace("removeOfflineRecord: removing old format recording file (sub recording count is 0)")
-                        return self.removeOfflineFilesRecursively(client, entry.path, deleteIfMatchesRegex: "/\\d{8}/")
+                        return self.removeOfflineFilesRecursively(client, entry.path, fileType: nil, deleteIfMatchesRegex: "/\\d{8}/")
                     } else {
                         /// Otherwise, device is using new format (split recording files).
                         BleLogger.trace("removeOfflineRecord: removing split recording files (sub recording count is \(count))")
@@ -1802,7 +1802,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                             .asCompletable()
                             .andThen(Completable.deferred {
                                 BleLogger.trace("removeOfflineRecord: removing sub recording files completed, cleaning up parent directories")
-                                return self.removeOfflineFilesRecursively(client, entry.path, deleteIfMatchesRegex: "/\\d{8}/")
+                                return self.removeOfflineFilesRecursively(client, entry.path, fileType: nil, deleteIfMatchesRegex: "/\\d{8}/")
                                     .do(
                                         onError: { error in
                                             BleLogger.error("removeOfflineRecord: failed to clean up parent directories, \(error)")
@@ -1819,7 +1819,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
 
-    private func removeOfflineFilesRecursively(_ client: BlePsFtpClient, _ deletePath: String, deleteIfMatchesRegex: String? = nil) -> Completable {
+    private func removeOfflineFilesRecursively(_ client: BlePsFtpClient, _ deletePath: String, fileType: String?, deleteIfMatchesRegex: String? = nil)
         BleLogger.trace("removeOfflineFilesRecursively: remove offline files from path \(deletePath)")
         do {
             if(deleteIfMatchesRegex != nil) {
@@ -1841,8 +1841,9 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
             }
             
-            BleLogger.trace("removeOfflineFilesRecursively: parent directory \(parentDir)")
-            
+            let fileName = String(deletePath.split(separator: "/").last ?? "")
+            BleLogger.trace("removeOfflineFilesRecursively: parent directory \(parentDir), fileName \(fileName)")
+
             var operation = Protocol_PbPFtpOperation()
             operation.command = .get
             operation.path = parentDir
@@ -1852,6 +1853,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 .flatMapCompletable { content -> Completable in
                     do {
                         let parentDirEntries = try Protocol_PbPFtpDirectory(serializedData: content as Data)
+                        let cantDeleteDueOtherFiles = fileType == nil || parentDirEntries.entries.contains { $0.name.hasPrefix(fileType!) == false }
                         let isParentDirValid: Bool
                         if let regex = deleteIfMatchesRegex {
                             isParentDirValid = parentDir.contains(regex)
@@ -1859,18 +1861,18 @@ extension PolarBleApiImpl: PolarBleApi  {
                             isParentDirValid = true
                         }
                         
-                        BleLogger.trace("removeOfflineFilesRecursively: isParentDirValid \(isParentDirValid)")
-                        BleLogger.trace("removeOfflineFilesRecursively: parentDirEntries count \(parentDirEntries.entries.count)")
+                        BleLogger.trace("removeOfflineFilesRecursively: isParentDirValid \(isParentDirValid), parentDirEntries count \(parentDirEntries.entries.count)")
                         
                         parentDirEntries.entries.forEach { entry in
                             BleLogger.trace("removeOfflineFilesRecursively: parentDirEntries: \(entry.name)")
                         }
-                        
-                        if parentDirEntries.entries.count <= 1 && isParentDirValid {
+
+                        if isParentDirValid && false == cantDeleteDueOtherFiles {
                             // It is safe to remove the parent dir
                             BleLogger.trace("removeOfflineFilesRecursively: call removeOfflineFilesRecursively for parent directory \(parentDir)")
-                            return self.removeOfflineFilesRecursively(client, parentDir, deleteIfMatchesRegex: deleteIfMatchesRegex)
+                            return self.removeOfflineFilesRecursively(client, parentDir, fileType: nil, deleteIfMatchesRegex: deleteIfMatchesRegex)
                         } else {
+                            BleLogger.trace(" Remove offline recording from the path \(deletePath)")
                             var removeOperation = Protocol_PbPFtpOperation()
                             removeOperation.command = .remove
                             removeOperation.path = deletePath
