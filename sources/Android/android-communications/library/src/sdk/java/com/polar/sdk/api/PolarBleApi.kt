@@ -220,7 +220,8 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
 
     /**
      * When enabled the reconnection is attempted if device connection is lost. By default automatic reconnection is enabled.
-     *
+     * Note that firmware update (FWU) turns on automatic reconnection automatically, and restores the setting
+     * automatically when operation completes. One should not change this setting during FWU.
      * @param enable true = automatic reconnection is enabled, false = automatic reconnection is disabled
      */
     abstract fun setAutomaticReconnection(enable: Boolean)
@@ -426,4 +427,13 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      */
     abstract fun removeSingleFile(identifier: String, filePath: String): Single<ByteArrayOutputStream>
 
+    /**
+     * Delete device date folders from a device.
+     *
+     * @param identifier, Polar device ID or BT address
+     * @param fromDate The starting date to delete date folders from
+     * @param toDate The ending date of last date to delete folders from
+     * @return [Completable] emitting success or error
+     */
+    abstract fun deleteDeviceDateFolders(identifier: String, fromDate: LocalDate?, toDate: LocalDate?): Completable
 }

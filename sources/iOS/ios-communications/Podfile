@@ -4,15 +4,11 @@ platform :ios, '14.0'
 use_frameworks!
 
 def rx_swift_pod
-  pod 'RxSwift', '~> 6.5.0'
+  pod 'RxSwift', '~> 6.8.0'
 end
 
 def swift_protobuf_pod
   pod 'SwiftProtobuf', '~> 1.0'
-end
-
-def alamofire_pod
-  pod 'Alamofire', '~> 5.8.1'
 end
 
 def zip_pod
@@ -23,13 +19,11 @@ target 'iOSCommunications' do
   swift_protobuf_pod
   rx_swift_pod
   zip_pod
-  alamofire_pod
 end
 
 target 'PolarBleSdk' do
   swift_protobuf_pod
   rx_swift_pod
-  alamofire_pod
   zip_pod
 end
 
@@ -40,12 +34,11 @@ target 'PolarBleSdkWatchOs' do
 end
 
 target 'iOSCommunicationsTests' do
-  pod 'RxBlocking', '~> 6.5.0'
-  pod 'RxTest', '~> 6.5.0'
+  pod 'RxBlocking', '~> 6.8.0'
+  pod 'RxTest', '~> 6.8.0'
 end
 
 target 'PolarBleSdkTests' do
-  pod 'RxBlocking', '~> 6.5.0'
-  pod 'RxTest', '~> 6.5.0'
-  pod 'Alamofire', '~> 5.8.1'
+  pod 'RxBlocking', '~> 6.8.0'
+  pod 'RxTest', '~> 6.8.0'
 end

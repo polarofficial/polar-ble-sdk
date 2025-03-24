@@ -2,7 +2,11 @@ package com.polar.androidcommunications.api.ble.model.gatt.client.pmd
 
 import com.polar.androidcommunications.common.ble.TypeUtils
 import java.io.ByteArrayOutputStream
-import java.util.*
+import java.util.AbstractMap
+import java.util.Collections
+import java.util.EnumMap
+import java.util.Objects
+import java.util.TreeMap
 
 class PmdSetting {
     enum class PmdSettingType(val numVal: Int) {
@@ -45,9 +49,17 @@ class PmdSetting {
             val items: MutableSet<Int> = HashSet()
             while (count-- > 0) {
                 val fieldSize = typeToFieldSize(type)
-                val item = TypeUtils.convertArrayToSignedInt(data, offset, fieldSize)
+
+                val item: Int? = try {
+                    TypeUtils.convertArrayToSignedInt(data, offset, fieldSize)
+                } catch (e: Exception) {
+                    throw e
+                }
+
                 offset += fieldSize
-                items.add(item)
+                if (item != null) {
+                    items.add(item)
+                }
             }
             parsedSettings[type] = items
         }
@@ -55,9 +67,18 @@ class PmdSetting {
     }
 
     fun updateSelectedFromStartResponse(data: ByteArray) {
-        val settingsFromStartResponse = parsePmdSettingsData(data)
-        if (settingsFromStartResponse.containsKey(PmdSettingType.FACTOR)) {
-            selected[PmdSettingType.FACTOR] = settingsFromStartResponse[PmdSettingType.FACTOR]!!.iterator().next()
+
+        val settingsFromStartResponse:
+                EnumMap<PmdSettingType, Set<Int>>? = try {
+            parsePmdSettingsData(data)
+        } catch (e: Exception) {
+            throw e
+        }
+
+        if (settingsFromStartResponse != null) {
+            if (settingsFromStartResponse.containsKey(PmdSettingType.FACTOR)) {
+                selected[PmdSettingType.FACTOR] = settingsFromStartResponse?.get(PmdSettingType.FACTOR)!!.iterator().next()
+            }
         }
     }
 

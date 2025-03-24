@@ -139,4 +139,92 @@ class BleBattClientTest {
         val batteryData = testObserver.values()[0]
         assertEquals(expectedBatteryLevel, batteryData)
     }
+
+    @Test
+    fun `processServiceData() should emit unknown charge state when battery status notification is received with unknown charge state`() {
+        // Arrange
+        val characteristic: UUID = BleBattClient.BATTERY_LEVEL_STATUS_CHARACTERISTIC
+        val status = 0
+        val notifying = true
+        val batteryStatusData = byteArrayOf(0b00000000, 0b00000000)
+
+        // Act
+        val testObserver = TestSubscriber.create<ChargeState>()
+        bleBattClient.monitorChargingStatus(true)
+                .subscribe(testObserver)
+
+        bleBattClient.processServiceData(characteristic, batteryStatusData, status, notifying)
+
+        // Assert
+        testObserver.assertNoErrors()
+
+        val chargeState = testObserver.values()[1]
+        assertEquals(ChargeState.UNKNOWN, chargeState)
+    }
+
+    @Test
+    fun `processServiceData() should emit discharging inactive charge state when battery status notification is received with discharging inactive charge state`() {
+        // Arrange
+        val characteristic: UUID = BleBattClient.BATTERY_LEVEL_STATUS_CHARACTERISTIC
+        val status = 0
+        val notifying = true
+        val batteryStatusData = byteArrayOf(0b00000000, 0b11000011.toByte())
+
+        // Act
+        val testObserver = TestSubscriber.create<ChargeState>()
+        bleBattClient.monitorChargingStatus(true)
+                .subscribe(testObserver)
+
+        bleBattClient.processServiceData(characteristic, batteryStatusData, status, notifying)
+
+        // Assert
+        testObserver.assertNoErrors()
+
+        val chargeState = testObserver.values()[1]
+        assertEquals(ChargeState.DISCHARGING_INACTIVE, chargeState)
+    }
+
+    @Test
+    fun `processServiceData() should emit discharging active charge state when battery status notification is received with discharging active charge state`() {
+        // Arrange
+        val characteristic: UUID = BleBattClient.BATTERY_LEVEL_STATUS_CHARACTERISTIC
+        val status = 0
+        val notifying = true
+        val batteryStatusData = byteArrayOf(0b00000000, 0b11000001.toByte())
+
+        // Act
+        val testObserver = TestSubscriber.create<ChargeState>()
+        bleBattClient.monitorChargingStatus(true)
+                .subscribe(testObserver)
+
+        bleBattClient.processServiceData(characteristic, batteryStatusData, status, notifying)
+
+        // Assert
+        testObserver.assertNoErrors()
+
+        val chargeState = testObserver.values()[1]
+        assertEquals(ChargeState.DISCHARGING_ACTIVE, chargeState)
+    }
+
+    @Test
+    fun `processServiceData() should emit charging charge state when battery status notification is received with charging charge state`() {
+        // Arrange
+        val characteristic: UUID = BleBattClient.BATTERY_LEVEL_STATUS_CHARACTERISTIC
+        val status = 0
+        val notifying = true
+        val batteryStatusData = byteArrayOf(0b00000000, 0b10100011.toByte())
+
+        // Act
+        val testObserver = TestSubscriber.create<ChargeState>()
+        bleBattClient.monitorChargingStatus(true)
+                .subscribe(testObserver)
+
+        bleBattClient.processServiceData(characteristic, batteryStatusData, status, notifying)
+
+        // Assert
+        testObserver.assertNoErrors()
+
+        val chargeState = testObserver.values()[1]
+        assertEquals(ChargeState.CHARGING, chargeState)
+    }
 }

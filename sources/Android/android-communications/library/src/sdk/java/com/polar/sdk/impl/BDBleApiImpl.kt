@@ -22,6 +22,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Com
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Companion.HR_SERVICE
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Companion.HR_SERVICE_16BIT_UUID
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHtsClient
+import com.polar.androidcommunications.api.ble.model.gatt.client.ChargeState
 import com.polar.androidcommunications.api.ble.model.gatt.client.HealthThermometer
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.*
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdControlPointResponse.PmdControlPointResponseCode
@@ -375,6 +376,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
     override fun setAutomaticReconnection(enable: Boolean) {
         listener?.setAutomaticReconnection(enable)
+    }
+
+    private fun getAutomaticReconnection() : Boolean? {
+        return listener?.getAutomaticReconnection();
     }
 
     override fun setLocalTime(identifier: String, calendar: Calendar): Completable {
@@ -1124,8 +1129,9 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         var polarHrData: PolarOfflineRecordingData.HrOfflineRecording? = null
         var polarTemperatureData: PolarOfflineRecordingData.TemperatureOfflineRecording? = null
         return if (fsType == FileSystemType.SAGRFC2_FILE_SYSTEM) {
-            getSubRecordingCount(identifier, entry)
-                .flatMap { count ->
+            getSubRecordingAndOtherFilesCount(identifier, entry)
+                .flatMap { pair ->
+                    val count = pair.first
                     Single.create<PolarOfflineRecordingData> { emitter ->
                         // Old format
                         if (count == 0) {
@@ -1522,10 +1528,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
-    private fun getSubRecordingCount(
+    private fun getSubRecordingAndOtherFilesCount(
         identifier: String,
         entry: PolarOfflineRecordingEntry
-    ): Single<Int> {
+    ): Single<Pair<Int, Int>> {
         return Single.defer {
             try {
                 val session = sessionPsFtpClientReady(identifier)
@@ -1546,7 +1552,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         val matchingEntries = directory.entriesList.filter {
                             it.name.startsWith(prefix) && Regex("\\d\\.").containsMatchIn(it.name)
                         }
-                        matchingEntries.size
+                        val nonMatchingEntriesSize = directory.entriesList.size - matchingEntries.size
+                        Pair(matchingEntries.size, nonMatchingEntriesSize)
                     }
                     .onErrorResumeNext { throwable: Throwable ->
                         Single.error(throwable)
@@ -2686,6 +2693,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     override fun updateFirmware(identifier: String): Flowable<FirmwareUpdateStatus> {
+        return updateFirmware(identifier, firmwareUrl = "")
+    }
+
+    override fun updateFirmware(identifier: String, firmwareUrl: String): Flowable<FirmwareUpdateStatus> {
         val session = sessionPsFtpClientReady(identifier)
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient
         sendInitializationAndStartSyncNotifications(client)
@@ -2695,13 +2706,129 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         val firmwareUpdateApi = httpClient.create(FirmwareUpdateApi::class.java)
 
         val request = FirmwareUpdateRequest(
-                clientId = "polar-sensor-data-collector-android",
-                uuid = PolarDeviceUuid.fromDeviceId(identifier),
-                firmwareVersion = deviceInfo.deviceFwVersion,
-                hardwareCode = deviceInfo.deviceHardwareCode
+            clientId = "polar-sensor-data-collector-android",
+            uuid = PolarDeviceUuid.fromDeviceId(identifier),
+            firmwareVersion = deviceInfo.deviceFwVersion,
+            hardwareCode = deviceInfo.deviceHardwareCode
         )
 
-        return firmwareUpdateApi.checkFirmwareUpdate(request)
+        val automaticReconnection = listener?.automaticReconnection
+        listener?.automaticReconnection = true
+
+        return (
+        if (firmwareUrl.isNotBlank()) {
+            val backupManager = PolarBackupManager(client)
+            val backup: MutableList<PolarBackupManager.BackupFileData> = mutableListOf()
+
+            Flowable.just<FirmwareUpdateStatus>(
+                FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Preparing device for firmware update")
+            ).concatWith(
+                firmwareUpdateApi.getFirmwareUpdatePackage(firmwareUrl)
+                    .toFlowable()
+                    .flatMap { firmwareBytes ->
+                        val contentLength = firmwareBytes.contentLength()
+                        BleLogger.d(TAG, "FW package downloaded, size: $contentLength bytes")
+                        val firmwareFiles = mutableListOf<Pair<String, ByteArray>>()
+                        val zipInputStream = ZipInputStream(ByteArrayInputStream(firmwareBytes.bytes()))
+                        var entry: ZipEntry?
+                        val buffer = ByteArray(PolarFirmwareUpdateUtils.BUFFER_SIZE)
+                        while (zipInputStream.nextEntry.also { entry = it } != null) {
+                            val entryFileName = entry!!.name
+                            // Polar H10 FW package has this file
+                            if (entryFileName.equals("readme.txt")) {
+                                BleLogger.d(TAG, "Skipping file $entryFileName")
+                                zipInputStream.closeEntry()
+                                continue
+                            }
+
+                            val byteArrayOutputStream = ByteArrayOutputStream()
+                            var length: Int
+                            while (zipInputStream.read(buffer).also { length = it } != -1) {
+                                byteArrayOutputStream.write(buffer, 0, length)
+                            }
+                            val fileName = entry!!.name
+                            BleLogger.d(TAG, "Extracted firmware file: $fileName")
+                            firmwareFiles.add(Pair(fileName, byteArrayOutputStream.toByteArray()))
+                            zipInputStream.closeEntry()
+                        }
+                        zipInputStream.close()
+
+                        firmwareFiles.sortWith { f1, f2 ->
+                            PolarFirmwareUpdateUtils.FwFileComparator().compare(File(f1.first), File(f2.first))
+                        }
+
+                        doFactoryReset(identifier, true)
+                            .andThen(Completable.timer(30, TimeUnit.SECONDS))
+                            .andThen(waitDeviceSessionToOpen(identifier, 6 * 60L, waitForDeviceDownSeconds = 10L))
+                            .andThen(Completable.timer(5, TimeUnit.SECONDS))
+                            .andThen(
+                                Flowable.fromIterable(firmwareFiles)
+                                    .concatMap { firmwareFile ->
+                                        writeFirmwareToDevice(identifier, firmwareFile.first, firmwareFile.second)
+                                            .map<FirmwareUpdateStatus> { bytesWritten ->
+                                                FirmwareUpdateStatus.WritingFwUpdatePackage(
+                                                    "Writing firmware update file ${firmwareFile.first}, bytes written: $bytesWritten/${firmwareFile.second.size}"
+                                                )
+                                            }
+                                    }
+                            )
+                    }
+                    .onErrorReturn { error ->
+                        BleLogger.e(TAG, "FW package download failed for url $firmwareUrl: $error")
+                        FirmwareUpdateStatus.FwUpdateFailed(error.toString())
+                    }
+                    .concatWith(Flowable.just(FirmwareUpdateStatus.FinalizingFwUpdate()))
+                    .concatMap { status ->
+                        if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
+                            BleLogger.d(TAG, "Starting finalization of firmware update")
+                            waitDeviceSessionToOpen(identifier, 6 * 60L, 60L)
+                                .andThen(Completable.defer {
+                                    BleLogger.d(TAG, "Performing factory reset while preserving pairing information")
+                                    return@defer doFactoryReset(identifier, true)
+                                })
+                                .andThen(Completable.defer {
+                                    BleLogger.d(TAG, "Waiting for device session to open after factory reset")
+                                    return@defer waitDeviceSessionToOpen(identifier, 6 * 60L, 10L)
+                                })
+                                .andThen(Completable.defer {
+                                    BleLogger.d(TAG, "Restoring backup to device after update")
+                                    client.waitPsFtpClientReady(true)
+                                        .andThen(
+                                            Completable.fromAction {
+                                                sendInitializationAndStartSyncNotifications(client)
+                                            }
+                                        )
+                                        .andThen(
+                                            backupManager.restoreBackup(backup)
+                                        )
+                                })
+                                .andThen(Flowable.just(status))
+                        } else {
+                            Flowable.just(status)
+                        }
+                    }
+                    .concatMap { status ->
+                        if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
+                            waitDeviceSessionToOpen(identifier, 6 * 60L, 60L)
+                                .andThen(Flowable.just(FirmwareUpdateStatus.FwUpdateCompletedSuccessfully("Firmware update completed successfully")))
+                        } else {
+                            Flowable.just(status)
+                        }
+                    }
+                    .onErrorResumeNext { error ->
+                        if (backup.isNotEmpty()) {
+                            BleLogger.e(TAG, "Error during firmware update, restoring backup: $error")
+                            sendInitializationAndStartSyncNotifications(client)
+                            backupManager.restoreBackup(backup)
+                                .andThen(Flowable.error(error))
+                        } else {
+                            BleLogger.e(TAG, "Error during firmware update, backup not available: $error")
+                            Flowable.error(error)
+                        }
+                    }
+            )
+        } else {
+            firmwareUpdateApi.checkFirmwareUpdate(request)
                 .toFlowable()
                 .flatMap { response ->
                     when (response.code()) {
@@ -2721,128 +2848,127 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                 val backup: MutableList<PolarBackupManager.BackupFileData> = mutableListOf()
 
                                 Flowable.just<FirmwareUpdateStatus>(
-                                        FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Preparing device for firmware update to version ${firmwareUpdateResponse.version}")
+                                    FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Preparing device for firmware update to version ${firmwareUpdateResponse.version}")
                                 ).concatWith(
-                                        backupManager.backupDevice()
+                                    backupManager.backupDevice()
+                                        .toFlowable()
+                                        .flatMap {
+                                            backup.addAll(it)
+                                            firmwareUpdateApi.getFirmwareUpdatePackage(firmwareUpdateResponse.fileUrl)
                                                 .toFlowable()
-                                                .flatMap {
-                                                    backup.addAll(it)
+                                                .flatMap { firmwareBytes ->
+                                                    val contentLength = firmwareBytes.contentLength()
+                                                    BleLogger.d(TAG, "FW package for version ${firmwareUpdateResponse.version} downloaded, size: $contentLength bytes")
+                                                    val firmwareFiles = mutableListOf<Pair<String, ByteArray>>()
+                                                    val zipInputStream = ZipInputStream(ByteArrayInputStream(firmwareBytes.bytes()))
+                                                    var entry: ZipEntry?
+                                                    val buffer = ByteArray(PolarFirmwareUpdateUtils.BUFFER_SIZE)
+                                                    while (zipInputStream.nextEntry.also { entry = it } != null) {
+                                                        val entryFileName = entry!!.name
+                                                        // Polar H10 FW package has this file
+                                                        if (entryFileName.equals("readme.txt")) {
+                                                            BleLogger.d(TAG, "Skipping file $entryFileName")
+                                                            zipInputStream.closeEntry()
+                                                            continue
+                                                        }
 
-                                                    BleLogger.d(TAG, "Device backup completed: $it, starting firmware update to version ${firmwareUpdateResponse.version}")
+                                                        val byteArrayOutputStream = ByteArrayOutputStream()
+                                                        var length: Int
+                                                        while (zipInputStream.read(buffer).also { length = it } != -1) {
+                                                            byteArrayOutputStream.write(buffer, 0, length)
+                                                        }
+                                                        val fileName = entry!!.name
+                                                        BleLogger.d(TAG, "Extracted firmware file: $fileName")
+                                                        firmwareFiles.add(Pair(fileName, byteArrayOutputStream.toByteArray()))
+                                                        zipInputStream.closeEntry()
+                                                    }
+                                                    zipInputStream.close()
 
-                                                    firmwareUpdateApi.getFirmwareUpdatePackage(firmwareUpdateResponse.fileUrl)
-                                                            .toFlowable()
-                                                            .flatMap { firmwareBytes ->
-                                                                val contentLength = firmwareBytes.contentLength()
-                                                                BleLogger.d(TAG, "FW package for version ${firmwareUpdateResponse.version} downloaded, size: $contentLength bytes")
-                                                                val firmwareFiles = mutableListOf<Pair<String, ByteArray>>()
-                                                                val zipInputStream = ZipInputStream(ByteArrayInputStream(firmwareBytes.bytes()))
-                                                                var entry: ZipEntry?
-                                                                val buffer = ByteArray(PolarFirmwareUpdateUtils.BUFFER_SIZE)
-                                                                while (zipInputStream.nextEntry.also { entry = it } != null) {
-                                                                    val entryFileName = entry!!.name
-                                                                    // Polar H10 FW package has this file
-                                                                    if (entryFileName.equals("readme.txt")) {
-                                                                        BleLogger.d(TAG, "Skipping file $entryFileName")
-                                                                        zipInputStream.closeEntry()
-                                                                        continue
-                                                                    }
+                                                    firmwareFiles.sortWith { f1, f2 ->
+                                                        PolarFirmwareUpdateUtils.FwFileComparator().compare(File(f1.first), File(f2.first))
+                                                    }
 
-                                                                    val byteArrayOutputStream = ByteArrayOutputStream()
-                                                                    var length: Int
-                                                                    while (zipInputStream.read(buffer).also { length = it } != -1) {
-                                                                        byteArrayOutputStream.write(buffer, 0, length)
-                                                                    }
-                                                                    val fileName = entry!!.name
-                                                                    BleLogger.d(TAG, "Extracted firmware file: $fileName")
-                                                                    firmwareFiles.add(Pair(fileName, byteArrayOutputStream.toByteArray()))
-                                                                    zipInputStream.closeEntry()
+                                                    doFactoryReset(identifier, true)
+                                                        .andThen(Completable.timer(30, TimeUnit.SECONDS))
+                                                        .andThen(waitDeviceSessionToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L))
+                                                        .andThen(Completable.timer(5, TimeUnit.SECONDS))
+                                                        .andThen(
+                                                            Flowable.fromIterable(firmwareFiles)
+                                                                .concatMap { firmwareFile ->
+                                                                    writeFirmwareToDevice(identifier, firmwareFile.first, firmwareFile.second)
+                                                                        .map<FirmwareUpdateStatus> { bytesWritten ->
+                                                                            FirmwareUpdateStatus.WritingFwUpdatePackage(
+                                                                                "Writing firmware update file ${firmwareFile.first}, bytes written: $bytesWritten/${firmwareFile.second.size}"
+                                                                            )
+                                                                        }
                                                                 }
-                                                                zipInputStream.close()
-
-                                                                firmwareFiles.sortWith { f1, f2 ->
-                                                                    PolarFirmwareUpdateUtils.FwFileComparator().compare(File(f1.first), File(f2.first))
-                                                                }
-
-                                                                doFactoryReset(identifier, true)
-                                                                        .andThen(waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L))
-                                                                        .andThen(
-                                                                                Flowable.fromIterable(firmwareFiles)
-                                                                                        .concatMap { firmwareFile ->
-                                                                                            writeFirmwareToDevice(identifier, firmwareFile.first, firmwareFile.second)
-                                                                                                    .map<FirmwareUpdateStatus> { bytesWritten ->
-                                                                                                        FirmwareUpdateStatus.WritingFwUpdatePackage(
-                                                                                                                "Writing firmware update file ${firmwareFile.first}, bytes written: $bytesWritten/${firmwareFile.second.size}"
-                                                                                                        )
-                                                                                                    }
-                                                                                        }
-                                                                        )
-                                                            }
-                                                            .onErrorReturn { error ->
-                                                                BleLogger.e(TAG, "FW package download fetch failed for version ${firmwareUpdateResponse.version}: $error")
-                                                                FirmwareUpdateStatus.FwUpdateFailed(error.toString())
-                                                            }
-                                                            .concatWith(Flowable.just<FirmwareUpdateStatus>(FirmwareUpdateStatus.FinalizingFwUpdate()))
-                                                            .concatMap { status ->
-                                                                if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
-                                                                    BleLogger.d(TAG, "Starting finalization of firmware update")
-                                                                    BleLogger.d(TAG, "Waiting for device session to open after reboot")
-                                                                    waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 120L)
-                                                                            .andThen(Completable.defer {
-                                                                                BleLogger.d(TAG, "Performing factory reset while preserving pairing information")
-                                                                                return@defer doFactoryReset(identifier, true)
-                                                                            })
-                                                                            .andThen(Completable.defer {
-                                                                                BleLogger.d(TAG, "Waiting for device session to open after factory reset")
-                                                                                return@defer waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L)
-                                                                            })
-                                                                            .andThen(Completable.defer {
-                                                                                BleLogger.d(TAG, "Restoring backup to device after version ${firmwareUpdateResponse.version}")
-                                                                                client.waitPsFtpClientReady(true)
-                                                                                    .andThen(
-                                                                                        Completable.fromAction {
-                                                                                            sendInitializationAndStartSyncNotifications(client)
-                                                                                        }
-                                                                                    )
-                                                                                    .andThen(
-                                                                                        return@defer backupManager.restoreBackup(backup)
-                                                                                    )
-                                                                            })
-                                                                            .andThen(Flowable.just(status))
-                                                                } else {
-                                                                    Flowable.just(status)
-                                                                }
-                                                            }
-                                                            .concatMap { status ->
-                                                                if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
-                                                                    waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 60L)
-                                                                            .andThen(Flowable.just(FirmwareUpdateStatus.FwUpdateCompletedSuccessfully(firmwareUpdateResponse.version)))
-                                                                } else {
-                                                                    Flowable.just(status)
-                                                                }
-                                                            }
-                                                            .onErrorResumeNext { error ->
-                                                                if (backup.isNotEmpty()) {
-                                                                    BleLogger.e(TAG, "Error during updateFirmware() for version ${firmwareUpdateResponse.version}, restoring backup, error: $error")
-                                                                    sendInitializationAndStartSyncNotifications(client)
-                                                                    backupManager.restoreBackup(backup)
-                                                                            .andThen(Flowable.error(error))
-                                                                } else {
-                                                                    BleLogger.e(TAG, "Error during updateFirmware() for version ${firmwareUpdateResponse.version}, backup not available, error: $error")
-                                                                    Flowable.error(error)
-                                                                }
-                                                            }
-                                                            .doFinally {
-                                                                val disposable = setLocalTime(identifier, Calendar.getInstance())
-                                                                        .andThen(Completable.fromAction {
-                                                                            sendTerminateAndStopSyncNotifications(client)
-                                                                        })
-                                                                        .subscribe({
-                                                                        }, { error ->
-                                                                            BleLogger.e(TAG, "Error setting local time for identifier: $identifier, error: ${error.message}")
-                                                                        })
-                                                            }
+                                                        )
                                                 }
+                                                .onErrorReturn { error ->
+                                                    BleLogger.e(TAG, "FW package download fetch failed for version ${firmwareUpdateResponse.version}: $error")
+                                                    FirmwareUpdateStatus.FwUpdateFailed(error.toString())
+                                                }
+                                                .concatWith(Flowable.just<FirmwareUpdateStatus>(FirmwareUpdateStatus.FinalizingFwUpdate()))
+                                                .concatMap { status ->
+                                                    if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
+                                                        BleLogger.d(TAG, "Starting finalization of firmware update")
+                                                        BleLogger.d(TAG, "Waiting for device session to open after reboot")
+                                                        waitDeviceSessionToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 120L)
+                                                            .andThen(Completable.defer {
+                                                                BleLogger.d(TAG, "Performing factory reset while preserving pairing information")
+                                                                return@defer doFactoryReset(identifier, true)
+                                                            })
+                                                            .andThen(Completable.defer {
+                                                                BleLogger.d(TAG, "Waiting for device session to open after factory reset")
+                                                                return@defer waitDeviceSessionToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L)
+                                                            })
+                                                            .andThen(Completable.defer {
+                                                                BleLogger.d(TAG, "Restoring backup to device after version ${firmwareUpdateResponse.version}")
+                                                                client.waitPsFtpClientReady(true)
+                                                                    .andThen(
+                                                                        Completable.fromAction {
+                                                                            sendInitializationAndStartSyncNotifications(client)
+                                                                        }
+                                                                    )
+                                                                    .andThen(
+                                                                        return@defer backupManager.restoreBackup(backup)
+                                                                    )
+                                                            })
+                                                            .andThen(Flowable.just(status))
+                                                    } else {
+                                                        Flowable.just(status)
+                                                    }
+                                                }
+                                                .concatMap { status ->
+                                                    if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
+                                                        waitDeviceSessionToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 60L)
+                                                            .andThen(Flowable.just(FirmwareUpdateStatus.FwUpdateCompletedSuccessfully(firmwareUpdateResponse.version)))
+                                                    } else {
+                                                        Flowable.just(status)
+                                                    }
+                                                }
+                                                .onErrorResumeNext { error ->
+                                                    if (backup.isNotEmpty()) {
+                                                        BleLogger.e(TAG, "Error during updateFirmware() for version ${firmwareUpdateResponse.version}, restoring backup, error: $error")
+                                                        sendInitializationAndStartSyncNotifications(client)
+                                                        backupManager.restoreBackup(backup)
+                                                            .andThen(Flowable.error(error))
+                                                    } else {
+                                                        BleLogger.e(TAG, "Error during updateFirmware() for version ${firmwareUpdateResponse.version}, backup not available, error: $error")
+                                                        Flowable.error(error)
+                                                    }
+                                                }
+                                                .doFinally {
+                                                    val disposable = setLocalTime(identifier, Calendar.getInstance())
+                                                        .andThen(Completable.fromAction {
+                                                            sendTerminateAndStopSyncNotifications(client)
+                                                        })
+                                                        .subscribe({
+                                                        }, { error ->
+                                                            BleLogger.e(TAG, "Error setting local time for identifier: $identifier, error: ${error.message}")
+                                                        })
+                                                }
+                                        }
                                 )
                             } else {
                                 Flowable.just(FirmwareUpdateStatus.FwUpdateNotAvailable("No fw update available, device firmware version ${deviceInfo.deviceFwVersion}"))
@@ -2865,21 +2991,25 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 .onErrorResumeNext { error ->
                     Flowable.just(FirmwareUpdateStatus.FwUpdateFailed(error.toString()))
                 }
+        }).doOnComplete {
+            listener?.automaticReconnection = automaticReconnection
+        }
     }
 
-    override fun updateFirmwareLocal(identifier: String, filePath: String): Flowable<FirmwareUpdateStatus> {
+    override fun updateFirmwareLocal(identifier: String, filePath: String, version: String): Flowable<FirmwareUpdateStatus> {
         val session = sessionPsFtpClientReady(identifier)
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient
         sendInitializationAndStartSyncNotifications(client)
 
-        val deviceInfo = PolarFirmwareUpdateUtils.readDeviceFirmwareInfo(client, identifier).blockingGet()
+        val isDeviceSensor = BlePolarDeviceCapabilitiesUtility.isDeviceSensor(deviceInfo.deviceModelName)
         val factoryResetMaxWaitTimeSeconds = 6 * 60L
         val rebootMaxWaitTimeSeconds = 60L
+        val rebootTriggeredWaitTimeSeconds = if (isDeviceSensor) 5L else 20L
         val backupManager = PolarBackupManager(client)
         val backup: MutableList<PolarBackupManager.BackupFileData> = mutableListOf()
 
         return Flowable.just<FirmwareUpdateStatus>(
-            FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Preparing device for firmware update")
+            FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Preparing device for firmware update to ${version}")
         ).concatWith(
             backupManager.backupDevice()
                 .toFlowable()
@@ -2917,7 +3047,9 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     }
 
                     doFactoryReset(identifier, true)
+                        .andThen(Completable.timer(30, TimeUnit.SECONDS))
                         .andThen(waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L))
+                        .andThen(Completable.timer(5, TimeUnit.SECONDS))
                         .andThen(
                             Flowable.fromIterable(firmwareFiles)
                                 .concatMap { firmwareFile ->
@@ -2938,7 +3070,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 .concatMap { status ->
                     if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
                         BleLogger.d(TAG, "Starting finalization of firmware update")
-                        waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, waitForDeviceDownSeconds = 10L)
+                        BleLogger.d(TAG, "Waiting for device session to open after reboot")
+                        waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds,  if (isDeviceSensor) 0L else 120L)
                             .andThen(Completable.defer {
                                 BleLogger.d(TAG, "Performing factory reset while preserving pairing information")
                                 return@defer doFactoryReset(identifier, true)
@@ -2949,8 +3082,15 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                             })
                             .andThen(Completable.defer {
                                 BleLogger.d(TAG, "Restoring backup to device")
-                                sendInitializationAndStartSyncNotifications(client)
-                                return@defer backupManager.restoreBackup(backup)
+                                client.waitPsFtpClientReady(true)
+                                    .andThen(
+                                        Completable.fromAction {
+                                            sendInitializationAndStartSyncNotifications(client)
+                                        }
+                                    )
+                                    .andThen(
+                                        return@defer backupManager.restoreBackup(backup)
+                                    )
                             })
                             .andThen(Flowable.just(status))
                     } else {
@@ -2959,8 +3099,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 }
                 .concatMap { status ->
                     if (status is FirmwareUpdateStatus.FinalizingFwUpdate) {
-                        waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, 60L)
-                            .andThen(Flowable.just(FirmwareUpdateStatus.FwUpdateCompletedSuccessfully("Firmware update completed successfully")))
+                        waitDeviceSessionWithPftpToOpen(identifier, factoryResetMaxWaitTimeSeconds, if (isDeviceSensor) 0L else 60L)
+                            .andThen(Flowable.just(FirmwareUpdateStatus.FwUpdateCompletedSuccessfully(version)))
                     } else {
                         Flowable.just(status)
                     }
@@ -3604,6 +3744,57 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
+    override fun deleteDeviceDateFolders(identifier: String, fromDate: LocalDate?, toDate: LocalDate?): Completable {
+        val dateFormatter = DateTimeFormatter.BASIC_ISO_DATE
+
+        val deleteCondition = FetchRecursiveCondition { entry: String ->
+            val trimmedPath = entry.trimEnd('/')
+
+            if (!trimmedPath.matches(Regex("\\d{8}"))) {
+                return@FetchRecursiveCondition false
+            }
+
+            return@FetchRecursiveCondition try {
+                val entryDate = LocalDate.parse(trimmedPath, dateFormatter)
+
+                if ((fromDate == null || !entryDate.isBefore(fromDate)) &&
+                    (toDate == null || !entryDate.isAfter(toDate))) {
+
+                    BleLogger.d(TAG, "Date folder: $entryDate is in delete range, deleting")
+
+                    deleteDayDirectory(identifier, "/U/0/$trimmedPath")
+                        .ignoreElements()
+                        .doOnComplete {
+                            BleLogger.d(TAG, "Successfully deleted: $trimmedPath")
+                        }
+                        .doOnError { error ->
+                            BleLogger.e(TAG, "Failed to delete $trimmedPath. Error: ${error.message}")
+                        }
+                        .subscribe()
+
+                    return@FetchRecursiveCondition true
+                }
+                false
+            } catch (e: Exception) {
+                BleLogger.w(TAG, "Failed to parse entry date for: '$trimmedPath'. Error: ${e.message}")
+                false
+            }
+        }
+
+        return listFiles(identifier, "/U/0/", deleteCondition)
+            .doOnNext { folder -> BleLogger.d(TAG, "Remove date folder: $folder") }
+            .ignoreElements()
+            .doOnSubscribe {
+                BleLogger.d(TAG, "Started deleting date folders for device $identifier.")
+            }
+            .doOnComplete {
+                BleLogger.d(TAG, "Successfully completed deletion of date folders for device $identifier.")
+            }
+            .doOnError { error ->
+                BleLogger.e(TAG, "Error deleting date folders from device $identifier. Error: ${error.message}")
+            }
+    }
+
     private fun deleteAutoSampleFiles(identifier: String, dataDeletionStats: DataDeletionStats): Flowable<ConcurrentLinkedQueue<String>> {
 
         return Flowable.fromIterable(dataDeletionStats.fileDeletionMap.asIterable()).doOnEach() { item ->
@@ -4019,7 +4210,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                             )
                                         )
                                     },
-                                    { error: Throwable -> if (error.message != null) logError(error.message!!) },
+                                    { error: Throwable -> error.message?.let { logError(it) }},
                                     {})
                         }
                         BleBattClient.BATTERY_SERVICE -> {
@@ -4030,8 +4221,19 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                     { batteryLevel: Int? ->
                                         callback?.batteryLevelReceived(deviceId, batteryLevel!!)
                                     },
-                                    { error: Throwable -> if (error.message != null) logError(error.message!!) },
+                                    { error: Throwable -> error.message?.let { logError(it) }},
                                     {}
+                                )
+
+                            bleBattClient?.monitorChargingStatus(true)
+                                ?.observeOn(AndroidSchedulers.mainThread())
+                                ?.subscribe(
+                                    { chargeState: ChargeState? ->
+                                        callback?.batteryChargingStatusReceived(deviceId, chargeState!!)
+                                    },
+                                    { error: Throwable ->
+                                        error.message?.let { logError(it) }
+                                    }
                                 )
                         }
                         BlePMDClient.PMD_SERVICE -> {
@@ -4090,7 +4292,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                             )
                                         )
                                     },
-                                    { error: Throwable -> if (error.message != null) logError(error.message!!) },
+                                    { error: Throwable -> error.message?.let { logError(it) } },
                                     {})
 
                         }

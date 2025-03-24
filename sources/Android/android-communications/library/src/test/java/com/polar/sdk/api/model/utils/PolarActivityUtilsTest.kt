@@ -5,7 +5,7 @@ import com.polar.sdk.api.model.activity.PolarActiveTime
 import com.polar.sdk.api.model.activity.PolarActiveTimeData
 import com.polar.sdk.impl.utils.CaloriesType
 import com.polar.sdk.impl.utils.PolarActivityUtils
-import fi.polar.remote.representation.protobuf.ActivitySamples
+import fi.polar.remote.representation.protobuf.ActivitySamples.PbActivitySamples
 import fi.polar.remote.representation.protobuf.DailySummary
 import fi.polar.remote.representation.protobuf.Types
 import io.mockk.confirmVerified
@@ -16,11 +16,14 @@ import io.mockk.verifyOrder
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Single
 import org.junit.Test
-import protocol.PftpRequest
 import protocol.PftpNotification
+import protocol.PftpRequest
+import protocol.PftpResponse.PbPFtpDirectory
+import protocol.PftpResponse.PbPFtpEntry
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 class PolarActivityUtilsTest {
 
@@ -30,20 +33,111 @@ class PolarActivityUtilsTest {
     fun `readStepsFromDayDirectory() should return sum of step samples`() {
         // Arrange
         val client = mockk<BlePsFtpClient>()
+
+        val mockFileContent1 = ByteArrayOutputStream().apply {
+            PbActivitySamples.newBuilder()
+                .addStepsSamples(10000)
+                .addStepsSamples(5000)
+                .addStepsSamples(8000)
+                .build()
+                .writeTo(this)
+        }
+
+        val mockDirectoryContent = ByteArrayOutputStream().apply {
+            PbPFtpDirectory.newBuilder()
+                .addAllEntries(
+                    listOf(
+                        PbPFtpEntry.newBuilder().setName("ASAMPL0.BPB").setSize(333L).build(),
+                    )
+                ).build().writeTo(this)
+        }
+
         val date = Date()
         val expectedSteps = 23000
-        val outputStream = ByteArrayOutputStream()
-        val expectedPath = "/U/0/${dateFormat.format(date)}/ACT/ASAMPL0.BPB"
+        val expectedDirectoryPath = "/U/0/${dateFormat.format(date)}/ACT/"
+        val expectedFilePath = "/U/0/${dateFormat.format(date)}/ACT/ASAMPL0.BPB"
 
-        val proto = ActivitySamples.PbActivitySamples.newBuilder()
-            .addStepsSamples(10000)
-            .addStepsSamples(5000)
-            .addStepsSamples(8000)
-            .build()
+        every { client.request(any<ByteArray>()) } returns Single.just(mockDirectoryContent) andThen Single.just(mockFileContent1)
 
-        proto.writeTo(outputStream)
+        // Act
+        val testObserver = PolarActivityUtils.readStepsFromDayDirectory(client, date).test()
 
-        every { client.request(any()) } returns Single.just(outputStream)
+        // Assert
+        testObserver.assertComplete()
+        testObserver.assertNoErrors()
+        testObserver.assertValue(expectedSteps)
+
+        verify(atLeast = 1) {
+            client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath(expectedFilePath)
+                    .build()
+                    .toByteArray()
+            )
+        }
+
+        verify(atLeast = 1) {
+            client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath(expectedDirectoryPath)
+                    .build()
+                    .toByteArray()
+            )
+        }
+
+        confirmVerified(client)
+    }
+
+    @Test
+    fun `readStepsFromDayDirectory() should return sum of step samples from multiple sample files`() {
+        // Arrange
+        val client = mockk<BlePsFtpClient>()
+
+        val mockFileContent1 = ByteArrayOutputStream().apply {
+            PbActivitySamples.newBuilder()
+                .addStepsSamples(10000)
+                .addStepsSamples(5000)
+                .addStepsSamples(8000)
+                .build()
+                .writeTo(this)
+        }
+
+        val mockFileContent2 = ByteArrayOutputStream().apply {
+            PbActivitySamples.newBuilder()
+                .addStepsSamples(1000)
+                .addStepsSamples(500)
+                .addStepsSamples(800)
+                .build()
+                .writeTo(this)
+        }
+
+        val mockFileContent3 = ByteArrayOutputStream().apply {
+            PbActivitySamples.newBuilder()
+                .addStepsSamples(100)
+                .addStepsSamples(50)
+                .addStepsSamples(80)
+                .build()
+                .writeTo(this)
+        }
+
+        val mockDirectoryContent = ByteArrayOutputStream().apply {
+            PbPFtpDirectory.newBuilder()
+                .addAllEntries(
+                    listOf(
+                        PbPFtpEntry.newBuilder().setName("ASAMPL0.BPB").setSize(333L).build(),
+                        PbPFtpEntry.newBuilder().setName("ASAMPL1.BPB").setSize(333L).build(),
+                        PbPFtpEntry.newBuilder().setName("ASAMPL2.BPB").setSize(333L).build()
+                    )
+                ).build().writeTo(this)
+        }
+
+        val date = Date()
+        val expectedSteps = 23000 + 2300 + 230
+        val expectedDirectoryPath = "/U/0/${dateFormat.format(date)}/ACT/"
+
+        every { client.request(any<ByteArray>()) } returns Single.just(mockDirectoryContent) andThen Single.just(mockFileContent1) andThen Single.just(mockFileContent2) andThen Single.just(mockFileContent3)
 
         // Act
         val testObserver = PolarActivityUtils.readStepsFromDayDirectory(client, date).test()
@@ -57,12 +151,11 @@ class PolarActivityUtilsTest {
             client.request(
                 PftpRequest.PbPFtpOperation.newBuilder()
                     .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                    .setPath(expectedPath)
+                    .setPath(expectedDirectoryPath)
                     .build()
                     .toByteArray()
             )
         }
-        confirmVerified(client)
     }
 
     @Test
@@ -70,8 +163,8 @@ class PolarActivityUtilsTest {
         // Arrange
         val client = mockk<BlePsFtpClient>()
         val date = Date()
-        val expectedPath = "/U/0/${dateFormat.format(date)}/ACT/ASAMPL0.BPB"
-        val expectedError = Throwable("File not found")
+        val expectedDirectoryPath = "/U/0/${dateFormat.format(date)}/ACT/"
+        val expectedError = Throwable("No files found for date $date")
 
         every { client.request(any()) } returns Single.error(expectedError)
 
@@ -83,15 +176,16 @@ class PolarActivityUtilsTest {
         testObserver.assertNoErrors()
         testObserver.assertValue(0)
 
-        verify {
+        verify(atLeast = 1) {
             client.request(
                 PftpRequest.PbPFtpOperation.newBuilder()
                     .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                    .setPath(expectedPath)
+                    .setPath(expectedDirectoryPath)
                     .build()
                     .toByteArray()
             )
         }
+
         confirmVerified(client)
     }
 

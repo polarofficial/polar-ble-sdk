@@ -5,6 +5,7 @@ import Foundation
 public class PpiData {
     
     struct PpiSample {
+        var timeStamp: UInt64
         let hr: Int
         let ppInMs: UInt16
         let ppErrorEstimate: UInt16
@@ -33,7 +34,7 @@ public class PpiData {
     }
     
     private static func dataFromRawType0(frame: PmdDataFrame) throws -> PpiData {
-        return PpiData(samples: stride(from: 0, to: frame.dataContent.count, by: PPI_SAMPLE_CHUNK)
+        let data = PpiData(samples: stride(from: 0, to: frame.dataContent.count, by: PPI_SAMPLE_CHUNK)
             .map { (start) -> Data in
                 return frame.dataContent.subdata(in: start..<start.advanced(by: PPI_SAMPLE_CHUNK))
             }
@@ -45,12 +46,26 @@ public class PpiData {
                 let skinContactStatus = (Int(data[5]) & 0x02) >> 1
                 let skinContactSupported = (Int(data[5]) & 0x04) >> 2
                 return PpiSample(
+                    timeStamp: 0, // time stamp will set below
                     hr: hr,
                     ppInMs: ppInMs,
                     ppErrorEstimate: ppErrorEstimate,
                     blockerBit: blockerBit,
                     skinContactStatus: skinContactStatus,
                     skinContactSupported: skinContactSupported)
-            })
+            }
+        )
+
+        if (frame.timeStamp != 0) {
+            var currentTimeStamp: UInt64 = frame.timeStamp
+            var currentIndex = data.samples.count - 1
+            for (sample) in data.samples.reversed() {
+                data.samples[currentIndex].timeStamp = currentTimeStamp
+                currentIndex -= 1
+                currentTimeStamp -= UInt64(sample.ppInMs) * 1000000
+            }
+        }
+
+        return data
     }
 }

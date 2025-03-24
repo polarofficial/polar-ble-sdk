@@ -26,6 +26,7 @@ data class PolarPpiData(
         val hr: Int,
         val blockerBit: Boolean,
         val skinContactStatus: Boolean,
-        val skinContactSupported: Boolean
+        val skinContactSupported: Boolean,
+        val timeStamp: ULong
     )
 }

@@ -63,7 +63,8 @@ public enum PolarActivityDataType: String, CaseIterable {
     case CALORIES
     case HR_SAMPLES
     case NIGHTLY_RECHARGE
-    case SKIN_TEMPERATURE
+    case SKINTEMPERATURE
+    case PEAKTOPEAKINTERVAL
     case NONE
    }
 
@@ -178,7 +179,7 @@ public typealias PolarPpgData = (type: PpgDataType, samples: [(timeStamp:UInt64,
 ///         - blockerBit = 1 if PP measurement was invalid due to acceleration or other reason
 ///         - skinContactStatus = 0 if the device detects poor or no contact with the skin
 ///         - skinContactSupported = 1 if the Sensor Contact feature is supported.
-public typealias PolarPpiData = (timeStamp: UInt64, samples: [(hr: Int, ppInMs: UInt16, ppErrorEstimate: UInt16, blockerBit: Int, skinContactStatus: Int, skinContactSupported: Int)])
+public typealias PolarPpiData = (timeStamp: UInt64, samples: [(timeStamp: UInt64, hr: Int, ppInMs: UInt16, ppErrorEstimate: UInt16, blockerBit: Int, skinContactStatus: Int, skinContactSupported: Int)])
 
 /// Polar exercise entry
 ///
@@ -404,6 +405,16 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// @param filePath, File path to delete
     func removeSingleFile(identifier: String, filePath: String) -> Single<NSData>
     
+    /// Delete device date folders from a device.
+    /// - Parameters:
+    ///   - identifier: Polar device id or UUID
+    ///   - fromDate: The starting date to delete date folders from
+    ///   - toDate: The ending date of last date to delete folders from
+    /// - Returns: Completable stream
+    ///   - success: when date folders successfully deleted
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func deleteDeviceDateFolders(_ identifier: String, fromDate: Date?, toDate: Date?) -> Completable
+
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }
     
@@ -428,6 +439,9 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// optional logger set to get traces from sdk
     var logger: PolarBleApiLogger? { get set }
     
-    /// optional disable or enable automatic reconnection, by default it is enabled
+    /// optional disable or enable automatic reconnection, by default it is enabled.
+    ///
+    /// Note that firmware update (FWU) turns on automatic reconnection automatically, and restores the setting
+    /// automatically when operation completes. One should not change this setting during FWU.
     var automaticReconnection: Bool { get set }
 }

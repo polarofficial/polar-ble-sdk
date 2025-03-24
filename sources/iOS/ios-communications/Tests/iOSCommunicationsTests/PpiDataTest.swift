@@ -13,9 +13,10 @@ final class PpiDataTest: XCTestCase {
         // 10       frame type                                     00 (raw, type 0)
         let ppiDataFrameHeader = Data([
             0x01,
-            0x00, 0x94, 0x35, 0x77, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x20, 0x4A, 0xA9, 0xD1, 0x01, 0x00, 0x00, // 2*10^12
             0x00,
         ])
+
         let previousTimeStamp:UInt64 = 100
         // HEX:  80 80 80 80 80 FF 00 01 00 01 00 00
         // index    type                                            data:
@@ -64,6 +65,7 @@ final class PpiDataTest: XCTestCase {
         XCTAssertEqual(blockerBit, ppiData.samples[0].blockerBit)
         XCTAssertEqual(skinContactStatus, ppiData.samples[0].skinContactStatus)
         XCTAssertEqual(skinContactSupported, ppiData.samples[0].skinContactSupported)
+        XCTAssertEqual(UInt64(UInt64(2e12) - UInt64(intervalInMs2)*UInt64(1e6)), ppiData.samples[0].timeStamp)
         
         XCTAssertEqual(heartRate2, ppiData.samples[1].hr)
         XCTAssertEqual(intervalInMs2, ppiData.samples[1].ppInMs)
@@ -71,6 +73,7 @@ final class PpiDataTest: XCTestCase {
         XCTAssertEqual(blockerBit2, ppiData.samples[1].blockerBit)
         XCTAssertEqual(skinContactStatus2, ppiData.samples[1].skinContactStatus)
         XCTAssertEqual(skinContactSupported2, ppiData.samples[1].skinContactSupported)
+        XCTAssertEqual(UInt64(UInt64(2e12)), ppiData.samples[1].timeStamp)
         
         XCTAssertEqual(2, ppiData.samples.count)
     }

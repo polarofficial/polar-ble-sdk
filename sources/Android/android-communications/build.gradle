@@ -1,6 +1,6 @@
 buildscript {
-    ext.kotlin_version = '1.8.0'
-    ext.protobuf_version = '0.8.18'
+    ext.kotlin_version = '1.9.22'
+    ext.protobuf_version = '0.9.1'
 
     repositories {
         mavenCentral()
@@ -10,7 +10,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.1'
+        classpath 'com.android.tools.build:gradle:8.7.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.google.protobuf:protobuf-gradle-plugin:$protobuf_version"
     }

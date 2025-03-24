@@ -15,7 +15,7 @@ def getVersion = { ->
         commandLine 'git', 'describe', '--tags'
         standardOutput = stdout
     }
-    def pattern = Pattern.compile("^(\\d*)(\\.)(\\d*)(\\.)(\\d*)")
+    def pattern = Pattern.compile("^([0-9]*)(\\.)([0-9]*)(\\.)([0-9]*)")
     def matcher = pattern.matcher(stdout.toString().trim())
     if (matcher.matches()) {
         String MAJOR = matcher.group(1)
@@ -42,6 +42,10 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes.all { buildType ->
         def version = getVersion()
         buildConfigField 'String', 'GIT_VERSION', "\"$version\""
@@ -64,13 +68,21 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
 
     publishing {
-        singleVariant("sdkRelease") {
+        singleVariant("androidCommunicationsRelease") {
             withSourcesJar()
+            withJavadocJar()
+        }
+    }
+
+    sourceSets {
+        main {
+            java.srcDirs += 'src/sdk'
+            proto.srcDirs += 'src/sdk/proto'
         }
     }
 
@@ -96,7 +108,6 @@ afterEvaluate {
         publications {
             aar(MavenPublication) {
                 from components.sdkRelease
-
                 groupId 'com.polar'
                 version = getVersion()
                 artifactId project.getName()
@@ -134,18 +145,20 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.6.0'
     implementation "androidx.core:core-ktx:1.9.0"
     implementation "joda-time:joda-time:2.12.2"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.10"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
     implementation 'com.google.protobuf:protobuf-javalite:3.20.0'
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.squareup.retrofit2:adapter-rxjava3:2.9.0'
+    sdkImplementation 'com.google.protobuf:protobuf-javalite:3.20.0'
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:5.2.0'
-    testImplementation 'io.mockk:mockk:1.13.4'
+    testImplementation 'org.mockito:mockito-core:5.15.2'
+    testImplementation 'io.mockk:mockk:1.13.6'
     testImplementation 'androidx.test:runner:1.5.2'
     testImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     androidTestImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:core:1.5.0'
     androidTestImplementation 'androidx.test:runner:1.5.2'
     androidTestImplementation 'androidx.test:rules:1.5.0'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
 }

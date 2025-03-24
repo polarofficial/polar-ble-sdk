@@ -363,7 +363,13 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
 
         BleLogger.d(TAG, "start measurement. Measurement type: $type Recording type: $recordingType Secret provided: ${secret != null}")
         return sendControlPointCommand(PmdControlPointCommandClientToService.REQUEST_MEASUREMENT_START, bb.array())
-            .doOnSuccess { pmdControlPointResponse: PmdControlPointResponse -> currentSettings[type]!!.updateSelectedFromStartResponse(pmdControlPointResponse.parameters) }
+            .doOnSuccess { pmdControlPointResponse: PmdControlPointResponse ->
+                try {
+                    currentSettings[type]!!.updateSelectedFromStartResponse(pmdControlPointResponse.parameters)
+                } catch (e: Exception) {
+                    throw BleControlPointResponseError("Failed to parse PMD settings response from device. Measurement type: $type. Exception: $e")
+                }
+            }
             .toObservable()
             .ignoreElements()
     }

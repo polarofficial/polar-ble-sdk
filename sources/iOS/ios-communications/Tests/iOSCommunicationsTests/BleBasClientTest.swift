@@ -120,4 +120,80 @@ class BleBasClientTest: XCTestCase {
             .error(0, BleGattException.gattDisconnected)
         ])
     }
+    
+    func testProcessServiceData_ShouldEmitUnknownChargeState() throws {
+        // Arrange
+        let characteristic: CBUUID = BleBasClient.BATTERY_STATUS_CHARACTERISTIC
+        let status = 0
+        let batteryStatusData = Data([0b00000000, 0b00000000])
+        
+        // Act
+        let observer = scheduler.createObserver(BleBasClient.ChargeState.self)
+        bleBasClient.monitorChargingStatus(true)
+            .subscribe(observer)
+            .disposed(by: disposeBag)
+        
+        bleBasClient.processServiceData(characteristic, data: batteryStatusData, err: status)
+        
+        // Assert
+        let events = observer.events.map { $0.value.element }
+        XCTAssertEqual(events[1], BleBasClient.ChargeState.unknown)
+    }
+    
+    func testProcessServiceData_ShouldEmitDischargingInactiveChargeState() throws {
+        // Arrange
+        let characteristic: CBUUID = BleBasClient.BATTERY_STATUS_CHARACTERISTIC
+        let status = 0
+        let batteryStatusData = Data([0x00, 0xC3])
+        
+        // Act
+        let observer = scheduler.createObserver(BleBasClient.ChargeState.self)
+        bleBasClient.monitorChargingStatus(true)
+            .subscribe(observer)
+            .disposed(by: disposeBag)
+        
+        bleBasClient.processServiceData(characteristic, data: batteryStatusData, err: status)
+        
+        // Assert
+        let events = observer.events.map { $0.value.element }
+        XCTAssertEqual(events[1], BleBasClient.ChargeState.dischargingInactive)
+    }
+    
+    func testProcessServiceData_ShouldEmitDischargingActiveChargeState() throws {
+        // Arrange
+        let characteristic: CBUUID = BleBasClient.BATTERY_STATUS_CHARACTERISTIC
+        let status = 0
+        let batteryStatusData = Data([0x00, 0xC1])
+        
+        // Act
+        let observer = scheduler.createObserver(BleBasClient.ChargeState.self)
+        bleBasClient.monitorChargingStatus(true)
+            .subscribe(observer)
+            .disposed(by: disposeBag)
+        
+        bleBasClient.processServiceData(characteristic, data: batteryStatusData, err: status)
+        
+        // Assert
+        let events = observer.events.map { $0.value.element }
+        XCTAssertEqual(events[1], BleBasClient.ChargeState.dischargingActive)
+    }
+    
+    func testProcessServiceData_ShouldEmitChargingChargeState() throws {
+        // Arrange
+        let characteristic: CBUUID = BleBasClient.BATTERY_STATUS_CHARACTERISTIC
+        let status = 0
+        let batteryStatusData = Data([0x00, 0xA3])
+        
+        // Act
+        let observer = scheduler.createObserver(BleBasClient.ChargeState.self)
+        bleBasClient.monitorChargingStatus(true)
+            .subscribe(observer)
+            .disposed(by: disposeBag)
+        
+        bleBasClient.processServiceData(characteristic, data: batteryStatusData, err: status)
+        
+        // Assert
+        let events = observer.events.map { $0.value.element }
+        XCTAssertEqual(events[1], BleBasClient.ChargeState.charging)
+    }
 }

@@ -68,4 +68,13 @@ public protocol PolarActivityApi {
     ///   - toDate: The ending date of the period to retrieve skin temperature from.
     /// - Returns: A Single emitting an array of `PolarNightlyRechargeData` representing the nightly recharge data for the specified period.
     func getSkinTemperature(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarSkinTemperatureData.PolarSkinTemperatureResult]>
+    
+    /// Load 24/7 PPi data from a device for a given period.
+    ///
+    /// - Parameters:
+    ///   - identifier: Polar device ID or BT address
+    ///   - fromDate: The starting date of the period to retrieve 24/7 PPi data from
+    ///   - toDate: The ending date of the period to retrieve 24/7 PPi data from
+    /// - Returns: A [Single] emitting a list of [Polar247PPiSamplesData] representing the 24/7 PPi data for the specified period.
+    func get247PPiSamples(identifier: String, fromDate: Date, toDate: Date) -> Single<[Polar247PPiSamplesData]>
 }

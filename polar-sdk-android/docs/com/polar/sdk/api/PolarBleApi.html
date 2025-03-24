@@ -575,6 +575,14 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Delete data <a href=PolarBleApi.PolarStoredDataType.html>PolarStoredDataType</a> from a device.</td>
                                         </tr>
                                         
+                                        <tr id="i31" class="rowColor">
+                                            <td class="colFirst"><code>abstract Completable</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#deleteDeviceDateFolders(String,LocalDate,LocalDate)>deleteDeviceDateFolders</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate) </code>
+                                            </th>
+                                            <td class="colLast">Delete device date folders from a device.</td>
+                                        </tr>
+                                        
                                         </tbody>
                                     </table>
                                 </div>
@@ -584,7 +592,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <!--   -->
                                         </a>
                                             <h3>Methods inherited from class&nbsp;com.polar.sdk.api.PolarBleApi</h3>
-                                            <code>disableSDKMode, enableSDKMode, fetchExercise, get247HrSamples, get247PPiSamples, getActiveTime, getAvailableOfflineRecordingDataTypes, getAvailableOnlineStreamDataTypes, getCalories, getDistance, getNightlyRecharge, getOfflineRecord, getOfflineRecordingStatus, getOfflineRecordingTriggerSetup, getRestApiDescription, getSkinTemperature, getSleep, getSleepRecordingState, getSplitOfflineRecord, getSteps, isSDKModeEnabled, listExercises, listOfflineRecordings, listRestApiServices, listSplitOfflineRecordings, observeSleepRecordingState, putNotification, receiveRestApiEvents, removeExercise, removeOfflineRecord, requestFullOfflineRecordingSettings, requestFullStreamSettings, requestOfflineRecordingSettings, requestRecordingStatus, requestStreamSettings, setOfflineRecordingTrigger, startAccStreaming, startEcgStreaming, startGyroStreaming, startHrStreaming, startLocationStreaming, startMagnetometerStreaming, startOfflineRecording, startPpgStreaming, startPpiStreaming, startPressureStreaming, startRecording, startSkinTemperatureStreaming, startTemperatureStreaming, stopOfflineRecording, stopRecording, stopSleepRecording, updateFirmware</code></li>
+                                            <code>disableSDKMode, enableSDKMode, fetchExercise, get247HrSamples, get247PPiSamples, getActiveTime, getAvailableOfflineRecordingDataTypes, getAvailableOnlineStreamDataTypes, getCalories, getDistance, getNightlyRecharge, getOfflineRecord, getOfflineRecordingStatus, getOfflineRecordingTriggerSetup, getRestApiDescription, getSkinTemperature, getSleep, getSleepRecordingState, getSplitOfflineRecord, getSteps, isSDKModeEnabled, listExercises, listOfflineRecordings, listRestApiServices, listSplitOfflineRecordings, observeSleepRecordingState, putNotification, receiveRestApiEvents, removeExercise, removeOfflineRecord, requestFullOfflineRecordingSettings, requestFullStreamSettings, requestOfflineRecordingSettings, requestRecordingStatus, requestStreamSettings, setOfflineRecordingTrigger, startAccStreaming, startEcgStreaming, startGyroStreaming, startHrStreaming, startLocationStreaming, startMagnetometerStreaming, startOfflineRecording, startPpgStreaming, startPpiStreaming, startPressureStreaming, startRecording, startSkinTemperatureStreaming, startTemperatureStreaming, stopOfflineRecording, stopRecording, stopSleepRecording, updateFirmware, updateFirmware</code></li>
                                  
                                     <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
                                         <!--   -->
@@ -1351,7 +1359,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                     <!--   -->
                                 </a>
                                 <ul class=
-                                              "blockListLast"
+                                              "blockList"
                                           >
                                     <li class="blockList">
                                         <h4>deleteStoredDeviceData</h4>
@@ -1371,6 +1379,38 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             
                                             
                                             <dd><code>until</code> - , Data will be deleted from device from history until this date.</dd>
+                                            
+                                            
+                                        </dl>
+                                        
+                                        <!-- TODO missing return annotation -->
+                                    </li>
+                                </ul>
+                                
+                                <a id="deleteDeviceDateFolders(String,LocalDate,LocalDate)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>deleteDeviceDateFolders</h4>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#deleteDeviceDateFolders(String,LocalDate,LocalDate)>deleteDeviceDateFolders</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate)</pre>
+                                        <div class="block"><p>Delete device date folders from a device.</p></div>
+                                        
+                                        <dl>
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - , Polar device ID or BT address</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>fromDate</code> - The starting date to delete date folders from</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>toDate</code> - The ending date of last date to delete folders from</dd>
                                             
                                             
                                         </dl>
