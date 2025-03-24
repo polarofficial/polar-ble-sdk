@@ -3039,7 +3039,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                                         BleLogger.trace("Firmware update is in finalizing stage")
 
                                         BleLogger.trace("Device rebooting")
-                                        self.waitDeviceSessionToOpen(deviceId: identifier, timeoutSeconds: Int(factoryResetMaxWaitTimeSeconds), waitForDeviceDownSeconds: 10)
+                                        self.waitDeviceSessionWithPftpToOpen(deviceId: identifier, timeoutSeconds: Int(factoryResetMaxWaitTimeSeconds), waitForDeviceDownSeconds: 10)
                                             .do(onSubscribe: {
                                                 BleLogger.trace("Waiting for device session to open after reboot with timeout: \(rebootMaxWaitTimeSeconds) seconds")
                                             })
@@ -3070,7 +3070,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                                             }
                                             .flatMap { _ in
                                                 BleLogger.trace("Waiting for device session to open after factory reset with timeout: \(factoryResetMaxWaitTimeSeconds) seconds")
-                                                return self.waitDeviceSessionToOpen(deviceId: identifier, timeoutSeconds: Int(factoryResetMaxWaitTimeSeconds), waitForDeviceDownSeconds: 10)
+                                                return self.waitDeviceSessionWithPftpToOpen(deviceId: identifier, timeoutSeconds: Int(factoryResetMaxWaitTimeSeconds), waitForDeviceDownSeconds: 10)
                                                     .do(onSubscribe: {
                                                         BleLogger.trace("Waiting for device session to open post factory reset")
                                                     })
