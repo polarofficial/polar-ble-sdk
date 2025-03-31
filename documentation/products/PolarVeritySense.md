@@ -28,8 +28,8 @@ Verity Sense supports [SDK mode](../SdkModeExplained.md) from version firmware v
 | Gyro        | Offline recording | 13Hz, 26Hz, **52Hz**                | 250 deg/sec, 500 deg/sec, 1000 deg/sec, **2000 deg/sec** |16          |
 | Magnetometer| Online streaming  | 10Hz, 20Hz, 50Hz, 100Hz         | 50 Gauss                                             |16          |
 | Magnetometer| Offline recording | 10Hz, 20Hz, 50Hz                | 50 Gauss                                             |16          |
-| PPG         | Online streaming  | 28Hz, 44Hz, 55Hz,  135Hz, 176Hz | -                                                    |22          |
-| PPG         | Offline recording | 28Hz, 44Hz, 55Hz                | -                                                    |22          |
+| PPG         | Online streaming  | 28Hz, 44Hz, **55Hz**,  135Hz, 176Hz | -                                                    |22          |
+| PPG         | Offline recording | 28Hz, 44Hz, **55Hz**                | -                                                    |22          |
 | PPI         | PPI online stream or offline recording is not supported in SDK MODE             |
 | HR          | HR online stream or offline recording is not supported in SDK MODE              |
 
