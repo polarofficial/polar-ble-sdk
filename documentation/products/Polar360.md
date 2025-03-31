@@ -81,16 +81,16 @@ Activity and sleep data is passively recorded by the device overtime and will st
 > It is highly recommended to synchronize the data from Polar 360 and to delete it afterwards on a regular basis to avoid the device running out of memory.
 
 > [!TIP]
-> `getDiskSpace()` function can be used at any time to see what is the remaining space inside the device. 
+> `getDiskSpace()` function can be used at any time to see what is the remaining space inside the device. Default values are bolded.
 
 ## SDK Mode available settings
 
 | Data             |Operation mode     | Sampling Rate                         | Range (+-)                                           | Resolution |
 |:----------------:|:-----------------:|:-------------------------------------:|:----------------------------------------------------:|:----------:|
-| Acc              | Online streaming  | 12Hz, 25Hz, 50Hz, 100Hz, 200Hz, 400Hz | 2g, 4g, 8g, 16g                                      |16          |
-| Acc              | Offline recording | 12Hz, 26Hz, 52Hz                      | 2g, 4g, 8g, 16g                                      |16          |
-| Skin temperature | Online streaming  | 1Hz, 2Hz, 4Hz                         | -                                                    |32          |
-| Skin temperature | Offline recording | 1Hz, 2Hz, 4Hz                         | -                                                    |32          |
+| Acc              | Online streaming  | 12Hz, 25Hz, **50Hz**, 100Hz, 200Hz, 400Hz | 2g, 4g, **8g**, 16g                                      |16          |
+| Acc              | Offline recording | 12Hz, 26Hz, **52Hz**                      | 2g, 4g, **8g**, 16g                                      |16          |
+| Skin temperature | Online streaming  | **1Hz**, 2Hz, 4Hz                         | -                                                    |32          |
+| Skin temperature | Offline recording | **1Hz**, 2Hz, 4Hz                         | -                                                    |32          |
 | PPI              | PPI online stream or offline recording is not supported in SDK MODE             |
 | HR               | HR online stream or offline recording is not supported in SDK MODE              |
 
