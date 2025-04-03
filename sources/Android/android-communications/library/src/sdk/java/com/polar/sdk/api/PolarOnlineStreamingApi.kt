@@ -1,8 +1,10 @@
 // Copyright © 2023 Polar Electro Oy. All rights reserved.
 package com.polar.sdk.api
 
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
 import com.polar.sdk.api.PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING
 import com.polar.sdk.api.model.*
+import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Single
 
@@ -69,6 +71,14 @@ interface PolarOnlineStreamingApi {
      * <BR></BR> - onComplete non produced unless the stream is further configured
      */
     fun startHrStreaming(identifier: String): Flowable<PolarHrData>
+
+    /**
+     * Stops heart rate stream.
+     *
+     * @param identifier    Polar device id found printed on the sensor/device or bt address
+     * @return Completable  Returns complete upon successful heart rate measurement stopping or an error
+     */
+    fun stopHrStreaming(identifier: String): Completable
 
     /**
      * Start the ECG (Electrocardiography) stream. ECG stream is stopped if the connection is closed,
@@ -240,4 +250,6 @@ interface PolarOnlineStreamingApi {
         identifier: String,
         sensorSetting: PolarSensorSetting
     ): Flowable<PolarTemperatureData>
+
+    fun stopStreaming(identifier: String, type: PmdMeasurementType)
 }

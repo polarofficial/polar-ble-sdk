@@ -449,11 +449,11 @@ internal class PpgData {
             )
 
             for ((index, sample) in samples.withIndex()) {
-                val greenSamples = sample.subList(0, 8).map {
+                val redSamples = sample.subList(0, 8).map {
                     if (frame.factor != 1.0f) (it.toFloat() * frame.factor).toInt() else it
                 }
 
-                val redSamples = sample.subList(8, 14).map {
+                val greenSamples = sample.subList(8, 14).map {
                     if (frame.factor != 1.0f) (it.toFloat() * frame.factor).toInt() else it
                 }
 

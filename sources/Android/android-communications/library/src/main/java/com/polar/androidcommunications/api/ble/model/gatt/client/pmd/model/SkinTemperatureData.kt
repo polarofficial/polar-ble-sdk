@@ -11,7 +11,7 @@ internal class SkinTemperatureData {
     data class SkinTemperatureSample internal constructor(
         // timeStamp ns since epoch time
         val timeStamp: ULong,
-        // Sample contains signed temperature value in celcius
+        // Sample contains signed temperature value in celsius
         val skinTemperature: Float
     )
 

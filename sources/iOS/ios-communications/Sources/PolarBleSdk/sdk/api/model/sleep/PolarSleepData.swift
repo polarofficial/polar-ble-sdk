@@ -57,7 +57,7 @@ public class PolarSleepData {
         public let deviceId: String?
         public let batteryRanOut: Bool?
         public let sleepCycles: [SleepCycle]!
-        public let sleepResultDate: Date?
+        public let sleepResultDate: String?
         public  let originalSleepRange: OriginalSleepRange?
     }
 

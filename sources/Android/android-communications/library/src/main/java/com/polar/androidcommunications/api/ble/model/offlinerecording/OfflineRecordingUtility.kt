@@ -14,6 +14,7 @@ internal object OfflineRecordingUtility {
             "PPI" -> PmdMeasurementType.PPI
             "HR" -> PmdMeasurementType.OFFLINE_HR
             "TEMP" -> PmdMeasurementType.TEMPERATURE
+            "SKINTEMP" -> PmdMeasurementType.SKIN_TEMP
             else -> throw IllegalArgumentException("Unknown offline file $fileName")
         }
     }

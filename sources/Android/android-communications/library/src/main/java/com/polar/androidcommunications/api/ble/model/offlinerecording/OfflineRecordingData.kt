@@ -338,6 +338,11 @@ internal class OfflineRecordingData<out T>(
                         val offlineTemperatureData = TemperatureData.parseDataFromDataFrame(dataFrame)
                         builder.temperatureSamples.addAll(offlineTemperatureData.temperatureSamples)
                     }
+
+                    is SkinTemperatureData -> {
+                        val offlineTemperatureData = SkinTemperatureData.parseDataFromDataFrame(dataFrame)
+                        builder.skinTemperatureSamples.addAll(offlineTemperatureData.skinTemperatureSamples)
+                    }
                 }
 
                 if (offset < decryptedData.size) {

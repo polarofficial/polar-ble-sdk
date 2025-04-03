@@ -4,13 +4,14 @@ import fi.polar.remote.representation.protobuf.Types.PbSystemDateTime
 import fi.polar.remote.representation.protobuf.Types.PbDate
 import fi.polar.remote.representation.protobuf.Types.PbTime
 import fi.polar.remote.representation.protobuf.Types.PbDeviceLocation
+import fi.polar.remote.representation.protobuf.UserDeviceSettings
 import fi.polar.remote.representation.protobuf.UserDeviceSettings.PbUserDeviceGeneralSettings
 import fi.polar.remote.representation.protobuf.UserDeviceSettings.PbUserDeviceSettings
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import java.util.Calendar
 
-data class PolarUserDeviceSettings(val deviceLocation: Int?) {
+data class PolarUserDeviceSettings(val deviceLocation: Int?, val usbConnectionMode: Boolean? = null) {
 
     enum class DeviceLocation(val value: Int) {
         UNDEFINED(0),
@@ -37,18 +38,35 @@ data class PolarUserDeviceSettings(val deviceLocation: Int?) {
     fun toProto(): PbUserDeviceSettings {
         val pbSettingsWithDeviceLocation = PbUserDeviceGeneralSettings.newBuilder()
             .setDeviceLocation(deviceLocation?.let { PbDeviceLocation.forNumber(it) })
+
+        val pbUsbConnectionSettings = UserDeviceSettings.PbUsbConnectionSettings.newBuilder()
+        usbConnectionMode?.let {
+            pbUsbConnectionSettings.setMode(
+                if (it) UserDeviceSettings.PbUsbConnectionSettings.PbUsbConnectionMode.ON
+                else UserDeviceSettings.PbUsbConnectionSettings.PbUsbConnectionMode.OFF
+            )
+        }
+
         return PbUserDeviceSettings.newBuilder()
             .setGeneralSettings(pbSettingsWithDeviceLocation)
+            .setUsbConnectionSettings(pbUsbConnectionSettings)
             .setLastModified(createTimeStamp())
             .build()
     }
 
     fun fromBytes(bytes: ByteArray): PolarUserDeviceSettings {
         val proto = PbUserDeviceSettings.parseFrom(bytes)
-        if (proto.hasGeneralSettings() && proto.generalSettings.hasDeviceLocation()) {
-            return PolarUserDeviceSettings(proto.generalSettings.deviceLocation.number)
+        val deviceLocation = if (proto.hasGeneralSettings() && proto.generalSettings.hasDeviceLocation()) {
+            proto.generalSettings.deviceLocation.number
+        } else {
+            null
         }
-        return PolarUserDeviceSettings(null)
+        val usbConnectionMode = if (proto.hasUsbConnectionSettings() && proto.usbConnectionSettings.hasMode()) {
+            proto.usbConnectionSettings.mode == UserDeviceSettings.PbUsbConnectionSettings.PbUsbConnectionMode.ON
+        } else {
+            null
+        }
+        return PolarUserDeviceSettings(deviceLocation, usbConnectionMode)
     }
 }
 

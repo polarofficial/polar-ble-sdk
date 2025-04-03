@@ -38,6 +38,10 @@ internal class PolarActivityUtils {
                 },
                 onCompleted: {
                     var index = 0
+                    guard filePaths.count > 0 else {
+                        emitter(.success(Int(0)))
+                        return
+                    }
                     for path in filePaths {
                         let operation = Protocol_PbPFtpOperation.with {
                             $0.command = .get

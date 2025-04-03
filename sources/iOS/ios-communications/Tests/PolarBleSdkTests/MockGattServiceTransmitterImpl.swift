@@ -2,7 +2,7 @@
 
 import Foundation
 import CoreBluetooth
-@testable import iOSCommunications
+@testable import PolarBleSdk
 
 class MockGattServiceTransmitterImpl: BleAttributeTransportProtocol {
     var mockConnectionStatus: Bool = true

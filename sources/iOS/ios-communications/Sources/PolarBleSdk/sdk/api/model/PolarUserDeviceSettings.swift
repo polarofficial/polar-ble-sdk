@@ -31,9 +31,36 @@ public class PolarUserDeviceSettings {
             return result
         }
     }
+
+    public enum UsbConnectionMode: String, Codable {
+        case ON
+        case OFF
+
+        func toProto() -> Data_PbUsbConnectionSettings.PbUsbConnectionMode {
+            switch self {
+            case .ON:
+                return Data_PbUsbConnectionSettings.PbUsbConnectionMode.on
+            case .OFF:
+                return Data_PbUsbConnectionSettings.PbUsbConnectionMode.off
+            }
+        }
+
+        static func fromProto(proto: Data_PbUsbConnectionSettings.PbUsbConnectionMode) -> UsbConnectionMode? {
+            switch proto {
+            case Data_PbUsbConnectionSettings.PbUsbConnectionMode.on:
+                return .ON
+            case Data_PbUsbConnectionSettings.PbUsbConnectionMode.off:
+                return .OFF
+            case Data_PbUsbConnectionSettings.PbUsbConnectionMode.unknown:
+                return nil
+            }
+        }
+    }
+
     public var timestamp: Date = NSDate() as Date
     public var _deviceLocation: DeviceLocation = DeviceLocation.UNDEFINED
-    
+    public var usbConnectionMode: UsbConnectionMode? = nil
+
     public var deviceLocation: DeviceLocation {
         set (newValue) {
             _deviceLocation = newValue
@@ -45,22 +72,34 @@ public class PolarUserDeviceSettings {
     
     public struct PolarUserDeviceSettingsResult: Codable {
         public var deviceLocation: DeviceLocation = .UNDEFINED
+        public var usbConnectionMode: UsbConnectionMode? = nil
     }
-    
-    static func toProto(deviceUserLocation: (DeviceLocation)) -> Data_PbUserDeviceSettings {
-        
+
+    static func toProto(userDeviceSettings: PolarUserDeviceSettings) -> Data_PbUserDeviceSettings {
+
         var proto = Data_PbUserDeviceSettings()
         var generalSettings = Data_PbUserDeviceGeneralSettings()
-        generalSettings.deviceLocation = PbDeviceLocation.init(rawValue: deviceUserLocation.toInt())!
+        generalSettings.deviceLocation = PbDeviceLocation.init(rawValue: userDeviceSettings.deviceLocation.toInt())!
         proto.generalSettings = generalSettings
         proto.lastModified = PolarTimeUtils.dateToPbSystemDateTime(date: Date())
+
+        if let usbConnectionMode = userDeviceSettings.usbConnectionMode {
+            var usbConnectionSettings = Data_PbUsbConnectionSettings()
+            usbConnectionSettings.mode = usbConnectionMode.toProto()
+            proto.usbConnectionSettings = usbConnectionSettings
+        }
+
         return proto
     }
-    
-    static func fromProto(pBDeviceUserLocation: (Data_PbUserDeviceSettings)) -> PolarUserDeviceSettingsResult {
+
+    static func fromProto(pBDeviceUserLocation: Data_PbUserDeviceSettings) -> PolarUserDeviceSettingsResult {
         var result = PolarUserDeviceSettingsResult()
         result.deviceLocation = PolarUserDeviceSettings.DeviceLocation.allCases[pBDeviceUserLocation.generalSettings.deviceLocation.rawValue]
         
+        if pBDeviceUserLocation.hasUsbConnectionSettings {
+            result.usbConnectionMode = UsbConnectionMode.fromProto(proto: pBDeviceUserLocation.usbConnectionSettings.mode)
+        }
+
         return result
     }
     

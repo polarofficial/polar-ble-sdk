@@ -2,6 +2,7 @@
 
 import Foundation
 import XCTest
+@testable import PolarBleSdk
 
 class PolarDeviceUuidTest: XCTestCase {
 

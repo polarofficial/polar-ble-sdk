@@ -12,11 +12,11 @@ open class BlePolarDeviceCapabilitiesUtility {
     public static let OH1 = "oh1"
     public static let SENSE = "sense"
     public static let INW4J = "inw4j"
-    public static let INW5T = "inw5t"
     public static let POLAR_360 = "360"
     public static let IGNITE_3 = "ignite 3"
     public static let GRIT_X2_PRO = "grit x2 pro"
     public static let VANTAGE_V3 = "vantage v3"
+    public static let VANTAGE_M3 = "vantage m3"
 
     /// Get type of filesystem the device supports
     /// - Parameter deviceType:  device type
@@ -27,11 +27,11 @@ open class BlePolarDeviceCapabilitiesUtility {
             return FileSystemType.h10FileSystem
         case OH1: fallthrough
         case SENSE: fallthrough
-        case INW5T: fallthrough
         case POLAR_360: fallthrough
         case IGNITE_3: fallthrough
         case GRIT_X2_PRO: fallthrough
-        case VANTAGE_V3:
+        case VANTAGE_V3: fallthrough
+        case VANTAGE_M3:
             return FileSystemType.sagRfc2FileSystem
         default:
             return FileSystemType.unknownFileSystem

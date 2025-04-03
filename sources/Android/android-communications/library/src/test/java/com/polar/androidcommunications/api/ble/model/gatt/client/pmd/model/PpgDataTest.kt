@@ -580,9 +580,9 @@ class PpgDataTest {
     fun `test compressed PPG frame type 10`() {
 
         // Expected first sample values
-        val expectedGreenSamples =
+        val expectedRedSamples =
             intArrayOf(1575733, 1957739, 1740229, 1761644, 1807181, 1489480, 1577122, 1822779).toList()
-        val expectedRedSamples = intArrayOf(1973554, 1752419, 1569544, 1126395, 256, 1312672).toList()
+        val expectedGreenSamples = intArrayOf(1973554, 1752419, 1569544, 1126395, 256, 1312672).toList()
         val expectedIrSamples = intArrayOf(1671106, 2230896, 1670551, 2230476, 1312672, -5901481).toList()
         val expectedStatus = 249855
         val expectedTimeStamp = 112524943566143712uL

@@ -24,18 +24,20 @@ class FirmwareUpdateApi {
 
         let url = "\(baseURL)/api/v1/firmware-update/check"
         
-        var request = URLRequest(url: URL(string: url)!)
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpMethod = "POST"
-        request.httpBody = try? JSONEncoder().encode(firmwareUpdateRequest)
+        var taskRequest = URLRequest(url: URL(string: url)!)
+        taskRequest.setValue("application/json", forHTTPHeaderField: "Accept")
+        taskRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        taskRequest.httpMethod = "POST"
+        taskRequest.httpBody = try? JSONEncoder().encode(firmwareUpdateRequest)
+        let request = taskRequest
         
         URLSession.shared.dataTask(with: request) { (data, response, error) in
             Task { @MainActor in
-                ///BleLogger.error("Request URL: \(String(describing: request.url))")
-                ///BleLogger.error("Request Method: \(request.httpMethod ?? "N/A")")
-                ///BleLogger.error("Request Headers: \(request.allHTTPHeaderFields ?? [:])")
-                BleLogger.error("Request Body: \(String(describing: firmwareUpdateRequest))")
+
+                BleLogger.trace("Request URL: \(String(describing: request.url))")
+                BleLogger.trace("Request Method: \(request.httpMethod ?? "N/A")")
+                BleLogger.trace("Request Headers: \(request.allHTTPHeaderFields ?? [:])")
+                BleLogger.trace("Request Body: \(String(describing: firmwareUpdateRequest))")
                 
                 if let data = data {
                     

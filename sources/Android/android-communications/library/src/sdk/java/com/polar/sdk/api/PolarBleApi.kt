@@ -361,6 +361,14 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
     abstract fun setWareHouseSleep(identifier: String): Completable
 
     /**
+     * Turn of device by setting the device to sleep state.
+     *
+     * @param identifier Polar device ID or BT address
+     * @return [Completable] emitting success or error
+     */
+    abstract fun turnDeviceOff(identifier: String): Completable
+
+    /**
      * Configure the Polar device with first-time use settings and user identifier.
      *
      * @param identifier Polar device ID or Bluetooth address.
@@ -390,10 +398,10 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
     abstract fun isFtuDone(identifier: String): Single<Boolean>
 
     /**
-     * Set [PolarUserDeviceSettings] for device. Currently only 'user device location' is supported.
+     * Set [PolarUserDeviceSettings] for device.
      *
      * @param identifier Polar device ID or BT address.
-     * @param deviceUserSettings Currently only device location for the user is supported.
+     * @param deviceUserSetting New [PolarUserDeviceSettings]
      * @return [Completable] emitting success or error.
      */
     abstract fun setUserDeviceSettings(identifier: String, deviceUserSetting: PolarUserDeviceSettings): Completable

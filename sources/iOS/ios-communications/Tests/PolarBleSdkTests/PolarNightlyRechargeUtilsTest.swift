@@ -2,11 +2,13 @@ import XCTest
 import RxSwift
 import RxTest
 
+@testable import PolarBleSdk
+
 class PolarNightlyRechargeUtilsTests: XCTestCase {
     
     var mockClient: MockBlePsFtpClient!
     override func setUpWithError() throws {
-        mockClient = MockBlePsFtpClient()
+        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockGattServiceTransmitterImpl())
     }
     
     override func tearDownWithError() throws {

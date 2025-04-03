@@ -1,26 +1,6 @@
 import Foundation
 import RxSwift
-
-
-public struct PsFtpNotification {
-    // notification ID, @see PbPFtpDevToHostNotification
-    public var id: Int32 = 0
-    // notification parameters if any, @see pftp_notification.proto
-    public var parameters = NSMutableData()
-    
-    public func description() -> String {
-        return "Notification with ID: \(id)"
-    }
-}
-
-public protocol BlePsFtpClient {
-    func request(_ data: Data) -> Single<Data>
-    func write(_ header: NSData, data: InputStream) -> Completable
-    func sendNotification(_ id: Int, parameters: Data?) -> Completable
-    func waitNotification() -> Observable<PsFtpNotification>
-    func receiveRestApiEventData(identifier: String) -> Observable<[Data]>
-    func receiveRestApiEvents<T:Decodable>(identifier: String) -> Observable<[T]>
-}
+@testable import PolarBleSdk
 
 class MockBlePsFtpClient: BlePsFtpClient {
     var requestCalls: [Data] = []
@@ -30,44 +10,47 @@ class MockBlePsFtpClient: BlePsFtpClient {
     var directoryContentReturnValue: Single<Data>?
     
     var writeCalls: [(header: NSData, data: InputStream)] = []
-    var writeReturnValue: Completable?
+    var writeReturnValue: Observable<UInt>?
     
-    var sendNotificationCalls: [(notification: Int, parameters: Data?)] = []
+    var sendNotificationCalls: [(notification: Int, parameters: NSData?)] = []
     var sendNotificationReturnValue: Completable?
     
     var receiveNotificationCalls: [(notification: Int, parameters: [Data], compressed: Bool)] = []
     var receiveNotificationReturnValue: Completable?
 
-    func request(_ data: Data) -> Single<Data> {
-        requestCalls.append(data)
+    public override func request(_ header: Data) -> Single<NSData> {
+        requestCalls.append(header)
 
         if !requestReturnValues.isEmpty {
-            return requestReturnValues.removeFirst()
+            return requestReturnValues.removeFirst().map { NSData(data: $0) }
         }
         
         if let returnValue = requestReturnValueClosure {
-            return returnValue(data)
+            return returnValue(header).map { NSData(data: $0) }
         }
-        return requestReturnValue ?? Single.just(Data())
-    }
-
-    func write(_ header: NSData, data: InputStream) -> Completable {
-        writeCalls.append((header, data))
-        return writeReturnValue ?? Completable.empty()
+        return (requestReturnValue ?? Single.just(Data())).map { NSData(data: $0) }
     }
     
-    func sendNotification(_ notification: Int, parameters: Data?) -> Completable {
-        sendNotificationCalls.append((notification, parameters))
+    public override func write(_ header: NSData, data: InputStream) -> Observable<UInt> {
+        writeCalls.append((header, data))
+        return writeReturnValue ?? Observable.empty()
+    }
+    
+    public override func sendNotification(_ id: Int, parameters: NSData?) -> Completable {
+        sendNotificationCalls.append((id, parameters))
         return sendNotificationReturnValue ?? Completable.empty()
     }
     
-    func waitNotification() -> Observable<PsFtpNotification> {
+    override func waitNotification() -> Observable<PsFtpNotification> {
         return Observable.from(receiveNotificationCalls)
             .map { (id, arrayOfData, compressed) in
                 var event: Protocol_PbPftpDHRestApiEvent = Protocol_PbPftpDHRestApiEvent()
                 event.uncompressed = compressed == false
                 event.event = arrayOfData
-                return PsFtpNotification( id: Int32(id), parameters: NSMutableData(data: try! event.serializedData()))
+                let notification = PsFtpNotification()
+                notification.id = Int32(id)
+                notification.parameters = NSMutableData(data: try! event.serializedData())
+                return notification
             }
     }
 }

@@ -2,13 +2,14 @@
 
 import XCTest
 import RxSwift
+@testable import PolarBleSdk
 
 class PolarFirmwareUpdateUtilsTest: XCTestCase {
 
     var mockClient: MockBlePsFtpClient!
 
     override func setUpWithError() throws {
-        mockClient = MockBlePsFtpClient()
+        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockGattServiceTransmitterImpl())
     }
 
     override func tearDownWithError() throws {

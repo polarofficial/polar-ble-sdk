@@ -43,7 +43,7 @@ import CoreBluetooth
     
     // apis to access
     public let address:UUID
-    public let advertisementContent = BleAdvertisementContent()
+    public let advertisementContent: BleAdvertisementContent
     public var state = DeviceSessionState.sessionClosed
     public var previousState = DeviceSessionState.sessionClosed
 
@@ -51,7 +51,8 @@ import CoreBluetooth
     public var connectionType = ConnectionType.connectFromAdvertisementHead
     var gattClients=[BleGattClientBase]()
     
-    public init(_ addr: UUID){
+    public init(_ addr: UUID, advertisementContent: BleAdvertisementContent?=nil){
+        self.advertisementContent = advertisementContent ?? BleAdvertisementContent()
         self.address=addr
     }
     

@@ -2,7 +2,7 @@ import XCTest
 import RxSwift
 import RxTest
 import Foundation
-
+@testable import PolarBleSdk
 
 class PolarBackupManagerTest: XCTestCase {
 
@@ -10,7 +10,7 @@ class PolarBackupManagerTest: XCTestCase {
     var backupManager: PolarBackupManager!
 
     override func setUpWithError() throws {
-        mockClient = MockBlePsFtpClient()
+        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockGattServiceTransmitterImpl())
         backupManager = PolarBackupManager(client: mockClient)
     }
 
@@ -51,14 +51,15 @@ class PolarBackupManagerTest: XCTestCase {
 
         mockClient.requestReturnValueClosure = { requestData in
             let requestDataString = String(data: requestData, encoding: .utf8) ?? ""
+            let request = try! Protocol_PbPFtpOperation(serializedData: requestData, partial: false)
             
-            if requestDataString.contains("/SYS/") {
-                return Single.just(mockDirectoryContent)
-            } else if requestDataString.contains("/SYS/BACKUP.TXT") {
+            if request.path.contains("/SYS/BACKUP.TXT") {
                 return Single.just(mockBackupFileContent.data(using: .utf8)!)
-            } else if requestDataString.contains("/SYS/BT/") {
+            } else if request.path.contains("/SYS/BT/") {
                 return Single.just(mockBTDetailContent)
-            } else {
+            } else if request.path.contains("/SYS/") {
+                return Single.just(mockDirectoryContent)
+            }  else {
                 return Single.just(Data())
             }
         }
@@ -93,7 +94,7 @@ class PolarBackupManagerTest: XCTestCase {
             PolarBackupManager.BackupFileData(data: Data(), directory: "/RANDOM/", fileName: "FILE.TXT")
         ]
 
-        mockClient.writeReturnValue = Completable.empty()
+        mockClient.writeReturnValue = Observable.empty()
 
         // Act
         let expectation = XCTestExpectation(description: "Restore backup")

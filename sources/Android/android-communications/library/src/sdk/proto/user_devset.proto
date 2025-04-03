@@ -18,4 +18,16 @@ message PbUserDeviceSettings {
 
   required PbUserDeviceGeneralSettings general_settings = 1;
   required PbSystemDateTime last_modified = 101;
+  optional PbUsbConnectionSettings usb_connection_settings = 27;
+};
+
+message PbUsbConnectionSettings {
+
+  enum PbUsbConnectionMode {
+    UNKNOWN             = 0;
+    OFF                 = 1;
+    ON                  = 2;
+  };
+
+  optional PbUsbConnectionMode mode = 1;
 };

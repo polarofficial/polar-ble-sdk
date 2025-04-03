@@ -4,13 +4,14 @@ import Foundation
 import XCTest
 import RxSwift
 import RxTest
+@testable import PolarBleSdk
 
 class PolarActivityUtilsTests: XCTestCase {
 
     var mockClient: MockBlePsFtpClient!
     
     override func setUpWithError() throws {
-        mockClient = MockBlePsFtpClient()
+        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockGattServiceTransmitterImpl())
     }
 
     override func tearDownWithError() throws {
@@ -18,7 +19,21 @@ class PolarActivityUtilsTests: XCTestCase {
     }
 
     func testReadStepsFromDayDirectory_SuccessfulResponse() {
+        
         // Arrange
+    
+        mockClient.requestReturnValues = []
+        
+        // Folder listing mock
+        let mockRecordingDirectoryContent = try! Protocol_PbPFtpDirectory.with {
+            $0.entries = [
+                Protocol_PbPFtpEntry.with { $0.name = "ASAMPL.BPB"; $0.size = 123 }
+            ]
+        }.serializedData()
+    
+        mockClient.requestReturnValues.append(Single.just(mockRecordingDirectoryContent))
+        
+        // File mock
         let date = Date()
         let stepSample: UInt32 = 10000
         let stepSample2: UInt32 = 5000
@@ -30,7 +45,7 @@ class PolarActivityUtilsTests: XCTestCase {
         
         let responseData = try! proto.serializedData()
         
-        mockClient.requestReturnValue = Single.just(responseData)
+        mockClient.requestReturnValues.append(Single.just(responseData))
         
         // Act
         let expectation = XCTestExpectation(description: "Read steps from day directory")
@@ -49,8 +64,18 @@ class PolarActivityUtilsTests: XCTestCase {
     }
 
     func testReadStepsFromDayDirectory_ActivityFileNotFound() {
+
         // Arrange
-        mockClient.requestReturnValue = Single.error(NSError(domain: "File not found", code: 103, userInfo: nil))
+        mockClient.requestReturnValues = []
+
+        // Folder listing mock
+        let mockRecordingDirectoryContent = try! Protocol_PbPFtpDirectory.with {
+            $0.entries = []
+        }.serializedData()
+        mockClient.requestReturnValues.append(Single.just(mockRecordingDirectoryContent))
+        
+        // File not found mock
+        mockClient.requestReturnValues.append(Single.error(NSError(domain: "File not found", code: 103, userInfo: nil)))
         
         // Act
         let expectation = XCTestExpectation(description: "Read steps from day directory should return 0 when activity file not found")

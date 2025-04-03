@@ -370,6 +370,15 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - onError: see `PolarErrors` for possible errors invoked
     func setWarehouseSleep(_ identifier: String) -> Completable
     
+    /// Turn of device by setting the device to sleep state.
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id or UUID
+    /// - Returns: Completable stream
+    ///   - success: when device has successfully set to sleep
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func turnDeviceOff(_ identifier: String) -> Completable
+    
     /// Get Device User Settings to a device from proto in device (UDEVSET.BPB)
     /// - Parameters:
     ///   - identifier: polar device id or UUID
@@ -385,7 +394,7 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Returns: Completable stream
     ///   - success: When Device User Settings configuration has been written to the device
     ///   - onError: see `PolarErrors` for possible errors invoked
-    func setPolarUserDeviceSettings(_ identifier: String, polarUserDeviceSettings: PolarUserDeviceSettings?) -> Completable
+    func setPolarUserDeviceSettings(_ identifier: String, polarUserDeviceSettings: PolarUserDeviceSettings) -> Completable
     
     /// Delete data [PolarStoredDataType] from a device.
     ///
