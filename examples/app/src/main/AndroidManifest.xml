@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Polar SDK needs Bluetooth scan permission to search for BLE devices. -->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="s" />
+
+    <!-- Polar SDK needs Bluetooth connect permission to connect for found BLE devices. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!--
+ Allows Polar SDK to connect to paired bluetooth devices. Legacy Bluetooth permission,
+     which is needed on devices with API 30 (Android Q) or older.
+    -->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30" />
+    <!--
+ Allows Polar SDK to discover and pair bluetooth devices. Legacy Bluetooth permission,
+     which is needed on devices with API 30 (Android Q) or older.
+    -->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_ADMIN"
+        android:maxSdkVersion="30" />
+    <!--
+ Polar SDK needs the fine location permission to get results for Bluetooth scan. Request
+    fine location permission on devices with API 30 (Android Q).
+    -->
+    <uses-permission
+        android:name="android.permission.ACCESS_FINE_LOCATION"
+        android:maxSdkVersion="30" />
+    <!--
+ The coarse location permission is needed, if fine location permission is requested. Request
+     coarse location permission on devices with API 30 (Android Q).
+    -->
+    <uses-permission
+        android:name="android.permission.ACCESS_COARSE_LOCATION"
+        android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <!-- Allow Polar SDK to check and download firmware updates. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:name=".PsdcApp"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <activity
+            android:name=".ui.physicalconfig.PhysicalConfigActivity"
+            android:exported="false"
+            android:label="@string/title_activity_physical_config"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".ui.landing.MainActivity"
+            android:configChanges="orientation"
+            android:exported="true"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.polar.polarsensordatacollector.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+</manifest>

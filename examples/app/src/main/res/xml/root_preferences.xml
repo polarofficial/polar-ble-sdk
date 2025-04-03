@@ -1,0 +1,20 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory app:title="@string/storage_header">
+        <SwitchPreferenceCompat
+            app:key="@string/back_up_enabled"
+            app:summaryOff="@string/stream_file_destination_summary_off"
+            app:summaryOn="@string/stream_file_destination_summary_on"
+            app:title="@string/stream_file_destination_title" />
+
+        <Preference
+            app:dependency="@string/back_up_enabled"
+            app:key="@string/back_up_location"
+            app:summary="@string/ext_storage_prefs_summary_not_set"
+            app:title="@string/storage_title" />
+
+        <Preference
+            app:key="export_logs"
+            app:title="@string/export_logs_title"
+            app:summary="@string/export_logs_summary" />
+    </PreferenceCategory>
+</PreferenceScreen>

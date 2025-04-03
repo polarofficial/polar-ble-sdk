@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primaryColor">#212121</color>
+    <color name="primaryDarkColor">#000000</color>
+    <color name="secondaryColor">#d41029</color>
+    <color name="secondaryDarkColor">#9a0000</color>
+    <color name="colorOnPrimary">#ffffff</color>
+
+    <color name="colorButtonConnect">#d41029</color>
+    <color name="colorButtonConnecting">#939725</color>
+    <color name="colorButtonConnected">#287AA9</color>
+
+    <color name="colorButtonRecording">#00af00</color>
+
+    <color name="shrine_pink">#287AA9</color>
+    <color name="shrine_pink_9">#939725</color>
+
+    <color name="color_not_connectable">#F5A9A9</color>
+    <color name="color_connected">#287AA9</color>
+
+    <color name="color_gray">#808080</color>
+
+</resources>

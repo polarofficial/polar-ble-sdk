@@ -1,0 +1,202 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'dagger.hilt.android.plugin'
+apply plugin: 'androidx.navigation.safeargs.kotlin'
+
+if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPassword")) {
+    apply plugin: 'com.jfrog.artifactory'
+    apply plugin: 'maven-publish'
+}
+
+import java.util.regex.Pattern
+
+def getVersion = { ->
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'describe', '--tags'
+        standardOutput = stdout
+    }
+    def pattern = Pattern.compile("^(\\d*)(\\.)(\\d*)(\\.)(\\d*)(-.*)")
+    def matcher = pattern.matcher(stdout.toString().trim())
+    if (matcher.matches()) {
+        String MAJOR = matcher.group(1)
+        String MINOR = matcher.group(3)
+        String PATCH = matcher.group(5)
+        def VERSION = MAJOR + "." + MINOR + "." + PATCH
+        println VERSION
+        return VERSION
+    } else {
+        return stdout.toString().trim()
+    }
+}
+
+android {
+    namespace 'com.polar.polarsensordatacollector'
+    compileSdkVersion 33
+    buildTypes.all { buildType ->
+        def version = getVersion()
+        buildConfigField 'String', 'GIT_VERSION', "\"$version\""
+    }
+
+    defaultConfig {
+        applicationId "com.polar.polarsensordatacollector"
+        minSdkVersion 26
+        targetSdkVersion 33
+        versionCode 72000
+        // version code from semantic version in format [2 digits of major][2 digits of minor][2 digits of batch]
+        versionName "7.20.0"
+        multiDexEnabled true
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+
+        vectorDrawables {
+            useSupportLibrary true
+        }
+
+        if (localSdk.toBoolean()) {
+            missingDimensionStrategy 'library', 'sdk'
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.5.10'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+    kotlinOptions {
+        jvmTarget = "21"
+    }
+
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+}
+
+if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPassword")) {
+    publishing {
+        publications {
+            apk(MavenPublication) {
+                groupId 'com.polar'
+                version = getVersion()
+                artifactId 'polar-sensor-data-collector'
+                artifact("$buildDir/outputs/apk/debug/app-debug.apk")
+            }
+        }
+    }
+
+    artifactory {
+        def artifactory_url = project.getProperty('artifactoryUrl')
+        def artifactory_user = project.getProperty('artifactoryUser')
+        def artifactory_password = project.getProperty('artifactoryPassword')
+        println "USER: " + "${artifactory_user}"
+        println "PASSWD: " + "${artifactory_password}"
+        println "URL: " + "${artifactory_url}"
+        contextUrl = artifactory_url
+        publish {
+            repository {
+                // The Artifactory repository key to publish to
+                repoKey = 'libs-release-local'
+                username = "${artifactory_user}" // The publisher user name
+                password = "${artifactory_password}" // The publisher password
+            }
+            defaults {
+                // Tell the Artifactory Plugin which artifacts should be published to Artifactory.
+                publications('apk')
+                // Properties to be attached to the published artifacts.
+                properties = ['qa.level': 'basic', 'dev.team': 'core']
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation project(":polar-ble-sdk")
+
+    if (leakCanary.toBoolean()) {
+        debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
+    }
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10"
+    implementation 'io.reactivex.rxjava3:rxjava:3.1.6'
+    implementation 'io.reactivex.rxjava3:rxandroid:3.0.2'
+    implementation 'commons-io:commons-io:2.11.0'
+    implementation 'com.google.protobuf:protobuf-javalite:3.20.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava3:2.9.0'
+    implementation "joda-time:joda-time:2.12.2"
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.recyclerview:recyclerview:1.3.0'
+    implementation 'androidx.preference:preference-ktx:1.2.0'
+    implementation 'androidx.documentfile:documentfile:1.0.1'
+    implementation "androidx.viewpager2:viewpager2:1.1.0-beta01"
+
+    // Material
+    implementation 'com.google.android.material:material:1.8.0'
+
+    // Coroutine
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-rx3:1.6.4"
+
+    // Compose
+    implementation 'androidx.activity:activity-compose:1.6.1'
+    implementation 'androidx.compose.material:material:1.3.1'
+    implementation 'androidx.compose.material:material-icons-extended:1.3.1'
+    implementation 'androidx.compose.animation:animation:1.3.3'
+    implementation 'androidx.compose.ui:ui-tooling:1.3.3'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.6.0'
+    implementation "com.google.android.material:compose-theme-adapter:1.2.1"
+    implementation 'com.google.accompanist:accompanist-appcompat-theme:0.23.0'
+    implementation 'com.google.accompanist:accompanist-swiperefresh:0.26.0-alpha'
+
+    // Lifecycle
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.0'
+
+    // Hilt
+    implementation "com.google.dagger:hilt-android:2.55"
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    kapt "com.google.dagger:hilt-compiler:2.55"
+
+    // Navigation
+    def nav_version = "2.5.3"
+    // Navigation - Kotlin
+    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
+    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
+    // Navigation - Feature module Support
+    implementation "androidx.navigation:navigation-dynamic-features-fragment:$nav_version"
+    // Navigation - Testing Navigation
+    androidTestImplementation "androidx.navigation:navigation-testing:$nav_version"
+    // Navigation - Jetpack Compose Integration
+    implementation "androidx.navigation:navigation-compose:$nav_version"
+
+    // Security
+    implementation "androidx.security:security-crypto:1.0.0"
+    implementation "androidx.security:security-identity-credential:1.0.0-alpha03"
+    implementation "androidx.security:security-app-authenticator:1.0.0-alpha02"
+    androidTestImplementation "androidx.security:security-app-authenticator:1.0.0-alpha02"
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}

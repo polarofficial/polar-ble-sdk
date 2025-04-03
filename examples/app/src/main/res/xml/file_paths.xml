@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <paths>
+        <external-files-path
+            name="sensorDataLogs"
+            path="sensorDataLogs/" />
+        <files-path
+            name="files"
+            path="." />
+        <external-path
+            name="external_files"
+            path="." />
+    </paths>
+</resources>

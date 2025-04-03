@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.activity.ActivityRecordingFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/activity_recording_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/activity_rec_loader_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/activity_rec_picker_header"
+                    android:textAppearance="@android:style/TextAppearance.Material.Caption"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/activity_sleep_recording_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
+                    android:textColor="@android:color/white"
+                    android:textStyle="bold"
+                    tools:text="Get measurement"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/activity_rec_loader_header" />
+
+                <Button
+                    android:id="@+id/activity_sleep_button"
+                    style="@style/Widget.App.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:text="@string/activity_recording_button_text"
+                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                    app:layout_constraintTop_toBottomOf="@+id/activity_rec_loader_header"
+                    app:layout_constraintBaseline_toBaselineOf="@id/activity_sleep_recording_header"
+                    app:layout_constraintStart_toEndOf="@id/activity_sleep_recording_header"/>
+
+                <TextView
+                    android:id="@+id/activity_steps_recording_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="25dp"
+                    android:textColor="@android:color/white"
+                    android:textStyle="bold"
+                    tools:text="Get measurement"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/activity_sleep_recording_header" />
+
+                <Button
+                    android:id="@+id/activity_steps_button"
+                    style="@style/Widget.App.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:text="@string/activity_recording_button_text"
+                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                    app:layout_constraintBaseline_toBaselineOf="@id/activity_steps_recording_header"
+                    app:layout_constraintTop_toBottomOf="@+id/activity_sleep_button"
+                    app:layout_constraintStart_toEndOf="@+id/activity_steps_recording_header"/>
+
+                <TextView
+                    android:id="@+id/activity_calories_recording_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="25dp"
+                    android:text="Get measurement"
+                    android:textColor="@android:color/white"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/activity_steps_recording_header" />
+
+                <Button
+                    android:id="@+id/activity_calories_button"
+                    style="@style/Widget.App.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="@string/activity_calories_button_text"
+                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                    app:layout_constraintStart_toEndOf="@id/activity_calories_recording_header"
+                    app:layout_constraintTop_toTopOf="@id/activity_calories_recording_header"
+                    app:layout_constraintBottom_toBottomOf="@id/activity_calories_recording_header" />
+
+                <TextView
+                    android:id="@+id/hr_samples_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="25dp"
+                    android:textColor="@android:color/white"
+                    android:textStyle="bold"
+                    android:text="@string/hr_247_samples"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/activity_calories_recording_header" />
+
+                <Button
+                    android:id="@+id/hr_samples_button"
+                    style="@style/Widget.App.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/activity_recording_button_text"
+                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                    app:layout_constraintBaseline_toBaselineOf="@id/hr_samples_header"
+                    app:layout_constraintStart_toEndOf="@+id/hr_samples_header"
+                    app:layout_constraintTop_toBottomOf="@+id/hr_samples_header" />
+
+                <TextView
+                    android:id="@+id/nightly_recharge_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="25dp"
+                    android:textColor="@android:color/white"
+                    android:textStyle="bold"
+                    android:text="@string/nightly_recharge"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/hr_samples_header" />
+
+                <Button
+                    android:id="@+id/nightly_recharge_button"
+                    style="@style/Widget.App.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/activity_recording_button_text"
+                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                    app:layout_constraintBaseline_toBaselineOf="@id/nightly_recharge_header"
+                    app:layout_constraintStart_toEndOf="@+id/nightly_recharge_header"
+                    app:layout_constraintTop_toBottomOf="@+id/nightly_recharge_header" />
+
+                <TextView
+                    android:id="@+id/activity_skin_temperature_recording_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="25dp"
+                    android:textColor="@android:color/white"
+                    android:textStyle="bold"
+                    android:text="@string/skin_temperature_button_text"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/nightly_recharge_header" />
+
+                <Button
+                    android:id="@+id/activity_skin_temperature_recording_button"
+                    style="@style/Widget.App.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/activity_recording_button_text"
+                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                    app:layout_constraintBaseline_toBaselineOf="@id/activity_skin_temperature_recording_header"
+                    app:layout_constraintStart_toEndOf="@+id/activity_skin_temperature_recording_header"
+                    app:layout_constraintTop_toBottomOf="@+id/activity_skin_temperature_recording_header" />
+
+                <TextView
+                    android:id="@+id/ppi_samples_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="25dp"
+                    android:textColor="@android:color/white"
+                    android:textStyle="bold"
+                    android:text="@string/ppi_247_samples"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/activity_skin_temperature_recording_header" />
+
+                <Button
+                    android:id="@+id/ppi_samples_button"
+                    style="@style/Widget.App.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/activity_recording_button_text"
+                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                    app:layout_constraintBaseline_toBaselineOf="@id/ppi_samples_header"
+                    app:layout_constraintStart_toEndOf="@+id/ppi_samples_header"
+                    app:layout_constraintTop_toBottomOf="@+id/ppi_samples_header" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/sleep_force_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="20dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <TextView
+                    android:id="@+id/force_stop_sleep_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:paddingTop="20dp"
+                    android:text="@string/sleep_recording_state_unavailable"
+                    android:textAppearance="@android:style/TextAppearance.Material.Caption"
+                    app:layout_constraintBaseline_toBaselineOf="@+id/force_stop_sleep_button"
+                    app:layout_constraintEnd_toStartOf="@+id/force_stop_sleep_button"
+                    app:layout_constraintHorizontal_chainStyle="packed"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/sleep_force_group" />
+
+                <Button
+                    android:id="@+id/force_stop_sleep_button"
+                    style="@style/Widget.App.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="@string/stop_button"
+                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                    app:layout_constraintStart_toEndOf="@+id/force_stop_sleep_header"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

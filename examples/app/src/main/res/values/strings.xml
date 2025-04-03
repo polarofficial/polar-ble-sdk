@@ -1,0 +1,137 @@
+<resources>
+    <string name="app_name">PSDC</string>
+    <string name="recording">Recording:</string>
+    <string name="start_recording">Start recording</string>
+    <string name="stop_recording">Stop recording</string>
+    <string name="start_offline_recording">Start offline recording</string>
+    <string name="search">Search</string>
+    <string name="device_settings_header">Settings</string>
+    <string name="ok_button">OK</string>
+    <string name="stop_button">STOP</string>
+    <string name="settings">Settings</string>
+    <string name="sdk_mode_header">SDK mode</string>
+    <string name="sdk_mode_led_header">SDK mode LED animation</string>
+    <string name="ppi_mode_led_header">PPI mode LED animation</string>
+    <string name="stream_settings_header">Data selection and settings</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_about">About</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="do_physical_config_header">Do physical config</string>
+    <string name="do_restart_header">Do restart</string>
+    <string name="get_ftu_header">Get FTU status</string>
+    <string name="do_factory_reset_header">Do factory reset</string>
+    <string name="do_factory_reset_switch_header">Save pairing data?</string>
+    <string name="do_file_delete_header">Delete files</string>
+    <string name="do_date_folder_delete_header">Delete date folders</string>
+    <string name="do_date_folder_delete_button">Select dates to delete folders</string>
+    <string name="set_warehouse_sleep_button_header">Set warehouse sleep</string>
+    <string name="set_warehouse_sleep_switch_header">Enable?</string>
+    <string name="set_turn_device_off_header">Turn device off</string>
+    <string name="set_device_user_location">Set device user location</string>
+    <string name="set_device_user_location_action">Set</string>
+    <string name="ohr_logging_enable">Enable OHR logging</string>
+    <string name="ohr_logging_disable">Disable OHR logging</string>
+    <string name="ppi_logging_enable">Enable PPi logging</string>
+    <string name="ppi_logging_disable">Disable PPi logging</string>
+    <string name="acc_logging_enable">Enable ACC logging</string>
+    <string name="acc_logging_disable">Disable ACC logging</string>
+    <string name="skin_temp_logging_enable">Enable Skin Temperature logging</string>
+    <string name="skin_temp_logging_disable">Disable Skin Temperature logging</string>
+    <string name="calories_logging_enable">Enable Calories logging</string>
+    <string name="calories_logging_disable">Disable Calories logging</string>
+    <string name="met_logging_enable">Enable Metabolic Equivalent logging</string>
+    <string name="met_logging_disable">Disable Metabolic Equivalent logging</string>
+    <string name="sleep_logging_enable">Enable Sleep logging</string>
+    <string name="sleep_logging_disable">Disable Sleep logging</string>
+    <string name="fetch_errorlog">Fetch errorlog</string>
+    <string name="errorlog_exported_mail_subject">Errorlog exported with PSDC</string>
+    <string name="errorlog_exported_mail_text">Hello,\n Errorlog exported as an attachment</string>
+    <string name="choose_email_app">Choose email app</string>
+    <string name="device_id">Device Id: %1$s</string>
+    <string name="activity_rec_picker_header">Choose measurement type</string>
+    <string name="activity_sleep_recording_header">Sleep analysis result</string>
+    <string name="activity_steps_recording_header">Steps data</string>
+    <string name="hr_247_samples">24/7 HR samples</string>
+    <string name="nightly_recharge">Nightly recharge</string>
+    <string name="ppi_247_samples">24/7 PPi samples</string>
+    <string name="activity_recording_button_text">Get</string>
+    <string name="activity_calories_button_text">Get</string>
+    <string name="skin_temperature_button_text">Skin temperature</string>
+    <string name="file_attached_mail_text">Hello,\n see file attachment</string>
+
+    <!-- Phone bluetooth status -->
+    <string name="phone_ble_on">Phone Bluetooth on</string>
+    <string name="phone_ble_off">Phone Bluetooth off</string>
+
+    <!-- Search and connect button -->
+    <string name="search_and_connect_search">Search</string>
+    <string name="search_and_connect_connecting">Connecting</string>
+    <string name="search_and_connect_connections">Connections</string>
+    <string name="search_and_connect_disconnect">Disconnect</string>
+    <string name="search_and_connect_disconnecting">Disconnecting...</string>
+
+    <!-- Preference Titles -->
+    <string name="storage_header">Storage</string>
+
+    <!-- Storage Preferences -->
+    <string name="storage_title">Backup location</string>
+
+    <!-- Sync Preferences -->
+    <string name="stream_file_destination_title">Back up log files</string>
+    <string name="stream_file_destination_summary_on">Save back up on phone storage</string>
+    <string name="stream_file_destination_summary_off">No back up</string>
+    <string name="ext_storage_prefs_summary_not_set">Not set</string>
+
+    <!-- Physical config activity-->
+    <string name="title_activity_physical_config">PhysicalDataConfig</string>
+    <string name="submit_physical_button">Submit</string>
+    <string name="birthday_hint">Select Birthday</string>
+    <string name="typical_day">Typical day</string>
+    <string name="sleep_goal">Sleep goal</string>
+    <string name="hours_label">Hours:</string>
+    <string name="minutes_label">Minutes:</string>
+
+    <!-- Physical config activity-->
+    <string name="title_delete_data">PhysicalDataConfig</string>
+    <string name="submit_delete_button">Submit</string>
+    <string name="delete_until_date_hint">Select until date</string>
+
+    <!-- Preference keys -->
+    <string name="back_up_enabled">PSDC_back_up_enabled</string>
+    <string name="back_up_location">PSDC_back_up_location</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- Export logs -->
+    <string name="export_logs_title">Export logs</string>
+    <string name="export_logs_summary">Export application logs to a file</string>
+    <string name="log_share_subject">PSDC logs</string>
+    <string name="log_share_text">Attached are the PSDC and SDK logs for debugging</string>
+    <string name="share_logs_via">Share logs via</string>
+
+    <!-- Sleep recording state -->
+    <string name="sleep_recording_state_unavailable">Sleep recording</string>
+    <string name="sleep_recording_state_on">Sleep recording on</string>
+    <string name="sleep_recording_state_off">Sleep recording off</string>
+
+    <!-- Firmware update -->
+    <string name="do_firmware_update">Do firmware update</string>
+    <string name="do_firmware_update_custom_url">Custom URL</string>
+    <string name="enter_firmware_url">Enter firmware URL</string>
+    <string name="firmware_update">Firmware update</string>
+    <string name="enter_the_url_for_firmware_update">Enter the URL for firmware update</string>
+    <string name="update">Update</string>
+    <string name="invalid_url">Invalid URL</string>
+    <string name="firmware_update_error_occurred">Error occurred when starting FWU: </string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Battery status -->
+    <string name="charging">Charging</string>
+    <string name="discharging">Discharging</string>
+    <string name="fully_charged">Fully charged</string>
+
+    <!-- USB connection -->
+    <string name="usb_connection">USB Connection</string>
+    <string name="enable">Enable</string>
+    <string name="disable">Disable</string>
+</resources>

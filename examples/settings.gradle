@@ -1,0 +1,7 @@
+include ':polar-ble-sdk'
+include ':app'
+
+if (localSdk.toBoolean()) {
+    println("WARNING LOCAL SDK SOURCE USED IN BUILD")
+    project(':polar-ble-sdk').projectDir = file('../android-communications/library')
+}
