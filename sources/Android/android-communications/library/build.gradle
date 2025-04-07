@@ -4,11 +4,24 @@ plugins {
     id('kotlin-kapt')
     id('com.google.protobuf')
     id("org.jetbrains.dokka") version "1.6.0"
+    id("maven-publish")
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            aar(MavenPublication) {
+                from components.androidCommunicationsRelease
+                groupId = 'com.github.polarofficial'
+                artifactId = 'android-communications'
+                version = getVersion()
+            }
+        }
+    }
 }
 
 if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPassword")) {
     apply plugin: 'com.jfrog.artifactory'
-    apply plugin: 'maven-publish'
 }
 
 import java.util.regex.Pattern
