@@ -3,7 +3,7 @@ plugins {
     id('kotlin-android')
     id('kotlin-kapt')
     id('com.google.protobuf')
-    id("org.jetbrains.dokka") version "1.6.0"
+    id("org.jetbrains.dokka") version "1.9.10"
     id("maven-publish")
 }
 

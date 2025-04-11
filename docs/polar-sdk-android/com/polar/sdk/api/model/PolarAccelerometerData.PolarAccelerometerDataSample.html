@@ -7,8 +7,8 @@
     <link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
     <link rel="stylesheet" type="text/css" href="../../../../../dokka-javadoc-stylesheet.css" title="Style">
     <link rel="stylesheet" type="text/css" href="../../../../../jquery/jquery-ui.css" title="Style">
-    <script type="text/javascript" src="../../../../../jquery/jquery-3.3.1.js"></script>
-    <script type="text/javascript" src="../../../../../jquery/jquery-migrate-3.0.1.js"></script>
+    <script type="text/javascript" src="../../../../../jquery/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="../../../../../jquery/jquery-migrate-3.4.0.min.js"></script>
     <script type="text/javascript" src="../../../../../jquery/jquery-ui.js"></script>
 
     <script type="text/javascript" src="../../../../../search.js"></script>
@@ -88,7 +88,7 @@ var pathtoroot = "../../../../../";
 
 <main role="main">
     <div class="header">
-        <div class="subTitle"><span class="packageLabelInType">Package</span>&nbsp;<a href="package-summary.html"></a></div>
+        <div class="subTitle"><span class="packageLabelInType">Package</span>&nbsp;<a href="package-summary.html">com.polar.sdk.api.model</a></div>
         <h2 title="Class PolarAccelerometerData.PolarAccelerometerDataSample" class="title">Class PolarAccelerometerData.PolarAccelerometerDataSample</h2>
     </div>
     <div class="contentContainer">
@@ -118,6 +118,14 @@ public final class <span class="typeNameLabel"><a href=PolarAccelerometerData.Po
 
                     </pre>
                     <div class="block"><p>Polar accelerometer data sample</p></div>
+
+                    <dl>
+
+                    
+
+                    
+
+                    </dl>
                 </li>
             </ul>
         </div>
@@ -214,7 +222,7 @@ public final class <span class="typeNameLabel"><a href=PolarAccelerometerData.Po
                                         
                                             <tr class="altColor">
                                                 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a
-                                                        href="#PolarAccelerometerData.PolarAccelerometerDataSample(Long,Integer,Integer,Integer)">PolarAccelerometerData.PolarAccelerometerDataSample</a></span>(<a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> timeStamp, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> x, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> y, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> z)</code></th>
+                                                        href="#PolarAccelerometerData.PolarAccelerometerDataSample(java.lang.Long,java.lang.Integer,java.lang.Integer,java.lang.Integer)">PolarAccelerometerData.PolarAccelerometerDataSample</a></span>(<a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> timeStamp, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> x, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> y, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> z)</code></th>
                                                 <td class="colLast"></td>
                                             </tr>
                                         
@@ -272,7 +280,7 @@ public final class <span class="typeNameLabel"><a href=PolarAccelerometerData.Po
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarAccelerometerData.PolarAccelerometerDataSample.html#getTimeStamp()>getTimeStamp</a>() </code>
                                             </th>
-                                            <td class="colLast"></td>
+                                            <td class="colLast">moment sample is taken in nanoseconds.</td>
                                         </tr>
                                         
                                         <tr id="i1" class="rowColor">
@@ -280,7 +288,7 @@ public final class <span class="typeNameLabel"><a href=PolarAccelerometerData.Po
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarAccelerometerData.PolarAccelerometerDataSample.html#getX()>getX</a>() </code>
                                             </th>
-                                            <td class="colLast"></td>
+                                            <td class="colLast">axis value in millig (including gravity)</td>
                                         </tr>
                                         
                                         <tr id="i2" class="altColor">
@@ -288,7 +296,7 @@ public final class <span class="typeNameLabel"><a href=PolarAccelerometerData.Po
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarAccelerometerData.PolarAccelerometerDataSample.html#getY()>getY</a>() </code>
                                             </th>
-                                            <td class="colLast"></td>
+                                            <td class="colLast">axis value in millig (including gravity)</td>
                                         </tr>
                                         
                                         <tr id="i3" class="rowColor">
@@ -296,7 +304,7 @@ public final class <span class="typeNameLabel"><a href=PolarAccelerometerData.Po
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarAccelerometerData.PolarAccelerometerDataSample.html#getZ()>getZ</a>() </code>
                                             </th>
-                                            <td class="colLast"></td>
+                                            <td class="colLast">axis value in millig (including gravity)</td>
                                         </tr>
                                         
                                         </tbody>
@@ -330,7 +338,7 @@ public final class <span class="typeNameLabel"><a href=PolarAccelerometerData.Po
                             </a>
                                 <h3>Constructor Detail</h3>
                                 
-                                <a name="PolarAccelerometerData.PolarAccelerometerDataSample(Long,Integer,Integer,Integer)"></a>
+                                <a name="PolarAccelerometerData.PolarAccelerometerDataSample(java.lang.Long,java.lang.Integer,java.lang.Integer,java.lang.Integer)"></a>
                                 <ul class="blockList">
                                     <li class="blockList">
                                         <h4>PolarAccelerometerData.PolarAccelerometerDataSample</h4>
@@ -362,9 +370,17 @@ public final class <span class="typeNameLabel"><a href=PolarAccelerometerData.Po
                                     <li class="blockList">
                                         <h4>getTimeStamp</h4>
                                         <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> <a href=PolarAccelerometerData.PolarAccelerometerDataSample.html#getTimeStamp()>getTimeStamp</a>()</pre>
-                                        <div class="block"></div>
+                                        <div class="block"><p>moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000</p></div>
+
+                                        <dl>
+
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
@@ -377,9 +393,17 @@ public final class <span class="typeNameLabel"><a href=PolarAccelerometerData.Po
                                     <li class="blockList">
                                         <h4>getX</h4>
                                         <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> <a href=PolarAccelerometerData.PolarAccelerometerDataSample.html#getX()>getX</a>()</pre>
-                                        <div class="block"></div>
+                                        <div class="block"><p>axis value in millig (including gravity)</p></div>
+
+                                        <dl>
+
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
@@ -392,9 +416,17 @@ public final class <span class="typeNameLabel"><a href=PolarAccelerometerData.Po
                                     <li class="blockList">
                                         <h4>getY</h4>
                                         <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> <a href=PolarAccelerometerData.PolarAccelerometerDataSample.html#getY()>getY</a>()</pre>
-                                        <div class="block"></div>
+                                        <div class="block"><p>axis value in millig (including gravity)</p></div>
+
+                                        <dl>
+
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
@@ -407,9 +439,17 @@ public final class <span class="typeNameLabel"><a href=PolarAccelerometerData.Po
                                     <li class="blockList">
                                         <h4>getZ</h4>
                                         <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> <a href=PolarAccelerometerData.PolarAccelerometerDataSample.html#getZ()>getZ</a>()</pre>
-                                        <div class="block"></div>
+                                        <div class="block"><p>axis value in millig (including gravity)</p></div>
+
+                                        <dl>
+
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 

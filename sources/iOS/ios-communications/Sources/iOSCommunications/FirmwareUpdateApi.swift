@@ -33,7 +33,7 @@ class FirmwareUpdateApi {
         
         URLSession.shared.dataTask(with: request) { (data, response, error) in
             Task { @MainActor in
-
+                
                 BleLogger.trace("Request URL: \(String(describing: request.url))")
                 BleLogger.trace("Request Method: \(request.httpMethod ?? "N/A")")
                 BleLogger.trace("Request Headers: \(request.allHTTPHeaderFields ?? [:])")

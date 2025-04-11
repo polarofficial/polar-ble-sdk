@@ -7,8 +7,8 @@
     <link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
     <link rel="stylesheet" type="text/css" href="../../../../dokka-javadoc-stylesheet.css" title="Style">
     <link rel="stylesheet" type="text/css" href="../../../../jquery/jquery-ui.css" title="Style">
-    <script type="text/javascript" src="../../../../jquery/jquery-3.3.1.js"></script>
-    <script type="text/javascript" src="../../../../jquery/jquery-migrate-3.0.1.js"></script>
+    <script type="text/javascript" src="../../../../jquery/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="../../../../jquery/jquery-migrate-3.4.0.min.js"></script>
     <script type="text/javascript" src="../../../../jquery/jquery-ui.js"></script>
 
     <script type="text/javascript" src="../../../../search.js"></script>
@@ -88,7 +88,7 @@ var pathtoroot = "../../../../";
 
 <main role="main">
     <div class="header">
-        <div class="subTitle"><span class="packageLabelInType">Package</span>&nbsp;<a href="package-summary.html"></a></div>
+        <div class="subTitle"><span class="packageLabelInType">Package</span>&nbsp;<a href="package-summary.html">com.polar.sdk.api</a></div>
         <h2 title="Interface PolarOfflineRecordingApi" class="title">Interface PolarOfflineRecordingApi</h2>
     </div>
     <div class="contentContainer">
@@ -117,7 +117,15 @@ var pathtoroot = "../../../../";
 public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.html>PolarOfflineRecordingApi</a></span>
 
                     </pre>
-                    <div class="block"><p>Offline recording API.</p><p>Offline recording makes it possible to record <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> data to device memory. With Offline recording the Polar device and phone don't need to be connected all the time, as offline recording continues in Polar device even the BLE disconnects.</p><p>Offline records saved into the device can be encrypted. The <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> is provided for <a href=PolarOfflineRecordingApi.html#startOfflineRecording(String,PolarBleApi.PolarDeviceDataType,PolarSensorSetting,PolarRecordingSecret)>startOfflineRecording</a> and <a href=PolarOfflineRecordingApi.html#setOfflineRecordingTrigger(String,PolarOfflineRecordingTrigger,PolarRecordingSecret)>setOfflineRecordingTrigger</a> when encryption is wanted. The <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> with same key must be provided in <a href=PolarOfflineRecordingApi.html#getOfflineRecord(String,PolarOfflineRecordingEntry,PolarRecordingSecret)>getOfflineRecord</a> to correctly decrypt the data in the device.</p><p>Requires features <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_OFFLINE_RECORDING>FEATURE_POLAR_OFFLINE_RECORDING</a></p><p>Note, offline recording is supported in Polar Verity Sense device (starting from firmware version 2.1.0)</p></div>
+                    <div class="block"><p>Offline recording API.</p><p>Offline recording makes it possible to record <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> data to device memory. With Offline recording the Polar device and phone don't need to be connected all the time, as offline recording continues in Polar device even the BLE disconnects.</p><p>Offline records saved into the device can be encrypted. The <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> is provided for <a href=PolarOfflineRecordingApi.html#startOfflineRecording(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType,com.polar.sdk.api.model.PolarSensorSetting,com.polar.sdk.api.model.PolarRecordingSecret)>startOfflineRecording</a> and <a href=PolarOfflineRecordingApi.html#setOfflineRecordingTrigger(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingTrigger,com.polar.sdk.api.model.PolarRecordingSecret)>setOfflineRecordingTrigger</a> when encryption is wanted. The <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> with same key must be provided in <a href=PolarOfflineRecordingApi.html#getOfflineRecord(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingEntry,com.polar.sdk.api.model.PolarRecordingSecret)>getOfflineRecord</a> to correctly decrypt the data in the device.</p><p>Requires features <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_OFFLINE_RECORDING>FEATURE_POLAR_OFFLINE_RECORDING</a></p><p>Note, offline recording is supported in Polar Verity Sense device (starting from firmware version 2.1.0)</p></div>
+
+                    <dl>
+
+                    
+
+                    
+
+                    </dl>
                 </li>
             </ul>
         </div>
@@ -240,7 +248,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                         <tr id="i0" class="altColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a>&gt;&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#getAvailableOfflineRecordingDataTypes(String)>getAvailableOfflineRecordingDataTypes</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#getAvailableOfflineRecordingDataTypes(java.lang.String)>getAvailableOfflineRecordingDataTypes</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
                                             <td class="colLast">Get the data types available in this device for offline recording</td>
                                         </tr>
@@ -248,7 +256,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                         <tr id="i1" class="rowColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=model/PolarSensorSetting.html>PolarSensorSetting</a>&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#requestOfflineRecordingSettings(String,PolarBleApi.PolarDeviceDataType)>requestOfflineRecordingSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#requestOfflineRecordingSettings(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType)>requestOfflineRecordingSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature) </code>
                                             </th>
                                             <td class="colLast">Request the offline recording settings available in current operation mode.</td>
                                         </tr>
@@ -256,7 +264,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                         <tr id="i2" class="altColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=model/PolarSensorSetting.html>PolarSensorSetting</a>&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#requestFullOfflineRecordingSettings(String,PolarBleApi.PolarDeviceDataType)>requestFullOfflineRecordingSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#requestFullOfflineRecordingSettings(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType)>requestFullOfflineRecordingSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature) </code>
                                             </th>
                                             <td class="colLast">Request all the settings available in the device.</td>
                                         </tr>
@@ -264,7 +272,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                         <tr id="i3" class="rowColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a>&gt;&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#getOfflineRecordingStatus(String)>getOfflineRecordingStatus</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#getOfflineRecordingStatus(java.lang.String)>getOfflineRecordingStatus</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
                                             <td class="colLast">Get current offline recording status.</td>
                                         </tr>
@@ -272,7 +280,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                         <tr id="i4" class="altColor">
                                             <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a>&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#listOfflineRecordings(String)>listOfflineRecordings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#listOfflineRecordings(java.lang.String)>listOfflineRecordings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
                                             <td class="colLast">List offline recordings stored in the device.</td>
                                         </tr>
@@ -280,7 +288,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                         <tr id="i5" class="rowColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=model/PolarOfflineRecordingData.html>PolarOfflineRecordingData</a>&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#getOfflineRecord(String,PolarOfflineRecordingEntry,PolarRecordingSecret)>getOfflineRecord</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a> entry, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#getOfflineRecord(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingEntry,com.polar.sdk.api.model.PolarRecordingSecret)>getOfflineRecord</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a> entry, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret) </code>
                                             </th>
                                             <td class="colLast">Fetch recording from the Polar device.</td>
                                         </tr>
@@ -288,7 +296,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                         <tr id="i6" class="altColor">
                                             <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a>&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#listSplitOfflineRecordings(String)>listSplitOfflineRecordings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#listSplitOfflineRecordings(java.lang.String)>listSplitOfflineRecordings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
                                             <td class="colLast">List split offline recordings stored in the device.</td>
                                         </tr>
@@ -296,7 +304,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                         <tr id="i7" class="rowColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=model/PolarOfflineRecordingData.html>PolarOfflineRecordingData</a>&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#getSplitOfflineRecord(String,PolarOfflineRecordingEntry,PolarRecordingSecret)>getSplitOfflineRecord</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a> entry, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#getSplitOfflineRecord(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingEntry,com.polar.sdk.api.model.PolarRecordingSecret)>getSplitOfflineRecord</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a> entry, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret) </code>
                                             </th>
                                             <td class="colLast">Fetch split recording from the Polar device.</td>
                                         </tr>
@@ -304,7 +312,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                         <tr id="i8" class="altColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#removeOfflineRecord(String,PolarOfflineRecordingEntry)>removeOfflineRecord</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a> entry) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#removeOfflineRecord(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingEntry)>removeOfflineRecord</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a> entry) </code>
                                             </th>
                                             <td class="colLast">Removes offline recording from the device</td>
                                         </tr>
@@ -312,7 +320,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                         <tr id="i9" class="rowColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#startOfflineRecording(String,PolarBleApi.PolarDeviceDataType,PolarSensorSetting,PolarRecordingSecret)>startOfflineRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> settings, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#startOfflineRecording(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType,com.polar.sdk.api.model.PolarSensorSetting,com.polar.sdk.api.model.PolarRecordingSecret)>startOfflineRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> settings, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret) </code>
                                             </th>
                                             <td class="colLast">Start offline recording.</td>
                                         </tr>
@@ -320,7 +328,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                         <tr id="i10" class="altColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#stopOfflineRecording(String,PolarBleApi.PolarDeviceDataType)>stopOfflineRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#stopOfflineRecording(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType)>stopOfflineRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature) </code>
                                             </th>
                                             <td class="colLast">Request to stop offline recording.</td>
                                         </tr>
@@ -328,7 +336,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                         <tr id="i11" class="rowColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#setOfflineRecordingTrigger(String,PolarOfflineRecordingTrigger,PolarRecordingSecret)>setOfflineRecordingTrigger</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingTrigger.html>PolarOfflineRecordingTrigger</a> trigger, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#setOfflineRecordingTrigger(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingTrigger,com.polar.sdk.api.model.PolarRecordingSecret)>setOfflineRecordingTrigger</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingTrigger.html>PolarOfflineRecordingTrigger</a> trigger, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret) </code>
                                             </th>
                                             <td class="colLast">Sets the offline recording triggers for a given Polar device.</td>
                                         </tr>
@@ -336,7 +344,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                         <tr id="i12" class="altColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=model/PolarOfflineRecordingTrigger.html>PolarOfflineRecordingTrigger</a>&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#getOfflineRecordingTriggerSetup(String)>getOfflineRecordingTriggerSetup</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarOfflineRecordingApi.html#getOfflineRecordingTriggerSetup(java.lang.String)>getOfflineRecordingTriggerSetup</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
                                             <td class="colLast">Retrieves the current offline recording trigger setup in the device.</td>
                                         </tr>
@@ -385,7 +393,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                             </a>
                                 <h3>Method Detail</h3>
                                 
-                                <a id="getAvailableOfflineRecordingDataTypes(String)">
+                                <a id="getAvailableOfflineRecordingDataTypes(java.lang.String)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -393,23 +401,32 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                           >
                                     <li class="blockList">
                                         <h4>getAvailableOfflineRecordingDataTypes</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a>&gt;&gt; <a href=PolarOfflineRecordingApi.html#getAvailableOfflineRecordingDataTypes(String)>getAvailableOfflineRecordingDataTypes</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a>&gt;&gt; <a href=PolarOfflineRecordingApi.html#getAvailableOfflineRecordingDataTypes(java.lang.String)>getAvailableOfflineRecordingDataTypes</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
                                         <div class="block"><p>Get the data types available in this device for offline recording</p></div>
-                                        
+
                                         <dl>
+
+                                        
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
                                             <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address</dd>
                                             
                                             
-                                        </dl>
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Single Produces: &lt;BR&gt;&lt;/BR&gt; - onSuccess the set of available offline recording data types in this device &lt;BR&gt;&lt;/BR&gt; - onError status request failed</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
-                                <a id="requestOfflineRecordingSettings(String,PolarBleApi.PolarDeviceDataType)">
+                                <a id="requestOfflineRecordingSettings(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -417,10 +434,12 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                           >
                                     <li class="blockList">
                                         <h4>requestOfflineRecordingSettings</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarSensorSetting.html>PolarSensorSetting</a>&gt; <a href=PolarOfflineRecordingApi.html#requestOfflineRecordingSettings(String,PolarBleApi.PolarDeviceDataType)>requestOfflineRecordingSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature)</pre>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarSensorSetting.html>PolarSensorSetting</a>&gt; <a href=PolarOfflineRecordingApi.html#requestOfflineRecordingSettings(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType)>requestOfflineRecordingSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature)</pre>
                                         <div class="block"><p>Request the offline recording settings available in current operation mode. This request shall be used before the offline recording is started to decide currently available settings. The available settings depend on the state of the device.</p></div>
-                                        
+
                                         <dl>
+
+                                        
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
@@ -431,13 +450,20 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                             <dd><code>feature</code> - the stream feature of interest</dd>
                                             
                                             
-                                        </dl>
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Single stream</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
-                                <a id="requestFullOfflineRecordingSettings(String,PolarBleApi.PolarDeviceDataType)">
+                                <a id="requestFullOfflineRecordingSettings(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -445,10 +471,12 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                           >
                                     <li class="blockList">
                                         <h4>requestFullOfflineRecordingSettings</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarSensorSetting.html>PolarSensorSetting</a>&gt; <a href=PolarOfflineRecordingApi.html#requestFullOfflineRecordingSettings(String,PolarBleApi.PolarDeviceDataType)>requestFullOfflineRecordingSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature)</pre>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarSensorSetting.html>PolarSensorSetting</a>&gt; <a href=PolarOfflineRecordingApi.html#requestFullOfflineRecordingSettings(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType)>requestFullOfflineRecordingSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature)</pre>
                                         <div class="block"><p>Request all the settings available in the device. The request returns the all capabilities of the requested streaming feature not limited by the current operation mode.</p></div>
-                                        
+
                                         <dl>
+
+                                        
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
@@ -459,13 +487,20 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                             <dd><code>feature</code> - the stream feature of interest</dd>
                                             
                                             
-                                        </dl>
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Single stream</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
-                                <a id="getOfflineRecordingStatus(String)">
+                                <a id="getOfflineRecordingStatus(java.lang.String)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -473,23 +508,32 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                           >
                                     <li class="blockList">
                                         <h4>getOfflineRecordingStatus</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a>&gt;&gt; <a href=PolarOfflineRecordingApi.html#getOfflineRecordingStatus(String)>getOfflineRecordingStatus</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a>&gt;&gt; <a href=PolarOfflineRecordingApi.html#getOfflineRecordingStatus(java.lang.String)>getOfflineRecordingStatus</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
                                         <div class="block"><p>Get current offline recording status.</p></div>
-                                        
+
                                         <dl>
+
+                                        
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
                                             <dd><code>identifier</code> - polar device id or bt address</dd>
                                             
                                             
-                                        </dl>
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Single Produces: &lt;BR&gt;&lt;/BR&gt; - onSuccess the list of currently recording offline recordings, if the list is empty no offline recordings currently recorded &lt;BR&gt;&lt;/BR&gt; - onError status request failed</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
-                                <a id="listOfflineRecordings(String)">
+                                <a id="listOfflineRecordings(java.lang.String)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -497,23 +541,32 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                           >
                                     <li class="blockList">
                                         <h4>listOfflineRecordings</h4>
-                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a>&gt; <a href=PolarOfflineRecordingApi.html#listOfflineRecordings(String)>listOfflineRecordings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a>&gt; <a href=PolarOfflineRecordingApi.html#listOfflineRecordings(java.lang.String)>listOfflineRecordings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
                                         <div class="block"><p>List offline recordings stored in the device.</p></div>
-                                        
+
                                         <dl>
+
+                                        
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
                                             <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address</dd>
                                             
                                             
-                                        </dl>
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Flowable stream &lt;BR&gt;&lt;/BR&gt; - onNext the found offline recording entry in <a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a> &lt;BR&gt;&lt;/BR&gt; - onComplete the listing completed &lt;BR&gt;&lt;/BR&gt; - onError listing request failed</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
-                                <a id="getOfflineRecord(String,PolarOfflineRecordingEntry,PolarRecordingSecret)">
+                                <a id="getOfflineRecord(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingEntry,com.polar.sdk.api.model.PolarRecordingSecret)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -521,10 +574,12 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                           >
                                     <li class="blockList">
                                         <h4>getOfflineRecord</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarOfflineRecordingData.html>PolarOfflineRecordingData</a>&gt; <a href=PolarOfflineRecordingApi.html#getOfflineRecord(String,PolarOfflineRecordingEntry,PolarRecordingSecret)>getOfflineRecord</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a> entry, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret)</pre>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarOfflineRecordingData.html>PolarOfflineRecordingData</a>&gt; <a href=PolarOfflineRecordingApi.html#getOfflineRecord(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingEntry,com.polar.sdk.api.model.PolarRecordingSecret)>getOfflineRecord</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a> entry, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret)</pre>
                                         <div class="block"><p>Fetch recording from the Polar device.</p><p>Note, the fetching of the recording may take several seconds if the recording is big.</p></div>
-                                        
+
                                         <dl>
+
+                                        
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
@@ -536,16 +591,23 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                             
                                             
                                             
-                                            <dd><code>secret</code> - If the secret is provided in <a href=PolarOfflineRecordingApi.html#startOfflineRecording(String,PolarBleApi.PolarDeviceDataType,PolarSensorSetting,PolarRecordingSecret)>startOfflineRecording</a> or <a href=PolarOfflineRecordingApi.html#setOfflineRecordingTrigger(String,PolarOfflineRecordingTrigger,PolarRecordingSecret)>setOfflineRecordingTrigger</a> then the same secret must be provided when fetching the offline record</dd>
+                                            <dd><code>secret</code> - If the secret is provided in <a href=PolarOfflineRecordingApi.html#startOfflineRecording(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType,com.polar.sdk.api.model.PolarSensorSetting,com.polar.sdk.api.model.PolarRecordingSecret)>startOfflineRecording</a> or <a href=PolarOfflineRecordingApi.html#setOfflineRecordingTrigger(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingTrigger,com.polar.sdk.api.model.PolarRecordingSecret)>setOfflineRecordingTrigger</a> then the same secret must be provided when fetching the offline record</dd>
                                             
                                             
-                                        </dl>
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Single Produces: &lt;BR&gt;&lt;/BR&gt; - onSuccess the offline recording data &lt;BR&gt;&lt;/BR&gt; - onError fetch recording request failed</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
-                                <a id="listSplitOfflineRecordings(String)">
+                                <a id="listSplitOfflineRecordings(java.lang.String)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -553,23 +615,32 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                           >
                                     <li class="blockList">
                                         <h4>listSplitOfflineRecordings</h4>
-                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a>&gt; <a href=PolarOfflineRecordingApi.html#listSplitOfflineRecordings(String)>listSplitOfflineRecordings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a>&gt; <a href=PolarOfflineRecordingApi.html#listSplitOfflineRecordings(java.lang.String)>listSplitOfflineRecordings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
                                         <div class="block"><p>List split offline recordings stored in the device.</p></div>
-                                        
+
                                         <dl>
+
+                                        
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
                                             <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address</dd>
                                             
                                             
-                                        </dl>
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Flowable stream &lt;BR&gt;&lt;/BR&gt; - onNext the found offline recording entry in <a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a> &lt;BR&gt;&lt;/BR&gt; - onComplete the listing completed &lt;BR&gt;&lt;/BR&gt; - onError listing request failed</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
-                                <a id="getSplitOfflineRecord(String,PolarOfflineRecordingEntry,PolarRecordingSecret)">
+                                <a id="getSplitOfflineRecord(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingEntry,com.polar.sdk.api.model.PolarRecordingSecret)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -577,10 +648,12 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                           >
                                     <li class="blockList">
                                         <h4>getSplitOfflineRecord</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarOfflineRecordingData.html>PolarOfflineRecordingData</a>&gt; <a href=PolarOfflineRecordingApi.html#getSplitOfflineRecord(String,PolarOfflineRecordingEntry,PolarRecordingSecret)>getSplitOfflineRecord</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a> entry, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret)</pre>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarOfflineRecordingData.html>PolarOfflineRecordingData</a>&gt; <a href=PolarOfflineRecordingApi.html#getSplitOfflineRecord(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingEntry,com.polar.sdk.api.model.PolarRecordingSecret)>getSplitOfflineRecord</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a> entry, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret)</pre>
                                         <div class="block"><p>Fetch split recording from the Polar device.</p><p>Note, the fetching of the recording may take several seconds if the recording is big.</p></div>
-                                        
+
                                         <dl>
+
+                                        
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
@@ -592,16 +665,23 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                             
                                             
                                             
-                                            <dd><code>secret</code> - If the secret is provided in <a href=PolarOfflineRecordingApi.html#startOfflineRecording(String,PolarBleApi.PolarDeviceDataType,PolarSensorSetting,PolarRecordingSecret)>startOfflineRecording</a> or <a href=PolarOfflineRecordingApi.html#setOfflineRecordingTrigger(String,PolarOfflineRecordingTrigger,PolarRecordingSecret)>setOfflineRecordingTrigger</a> then the same secret must be provided when fetching the offline record</dd>
+                                            <dd><code>secret</code> - If the secret is provided in <a href=PolarOfflineRecordingApi.html#startOfflineRecording(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType,com.polar.sdk.api.model.PolarSensorSetting,com.polar.sdk.api.model.PolarRecordingSecret)>startOfflineRecording</a> or <a href=PolarOfflineRecordingApi.html#setOfflineRecordingTrigger(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingTrigger,com.polar.sdk.api.model.PolarRecordingSecret)>setOfflineRecordingTrigger</a> then the same secret must be provided when fetching the offline record</dd>
                                             
                                             
-                                        </dl>
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Single Produces: &lt;BR&gt;&lt;/BR&gt; - onSuccess the offline recording data &lt;BR&gt;&lt;/BR&gt; - onError fetch recording request failed</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
-                                <a id="removeOfflineRecord(String,PolarOfflineRecordingEntry)">
+                                <a id="removeOfflineRecord(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingEntry)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -609,10 +689,12 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                           >
                                     <li class="blockList">
                                         <h4>removeOfflineRecord</h4>
-                                        <pre class="methodSignature"> abstract Completable <a href=PolarOfflineRecordingApi.html#removeOfflineRecord(String,PolarOfflineRecordingEntry)>removeOfflineRecord</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a> entry)</pre>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarOfflineRecordingApi.html#removeOfflineRecord(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingEntry)>removeOfflineRecord</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a> entry)</pre>
                                         <div class="block"><p>Removes offline recording from the device</p></div>
-                                        
+
                                         <dl>
+
+                                        
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
@@ -623,13 +705,20 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                             <dd><code>entry</code> - entry to be removed</dd>
                                             
                                             
-                                        </dl>
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Completable Produces: &lt;BR&gt;&lt;/BR&gt; - onComplete offline record is removed &lt;BR&gt;&lt;/BR&gt; - onError  offline record removal failed</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
-                                <a id="startOfflineRecording(String,PolarBleApi.PolarDeviceDataType,PolarSensorSetting,PolarRecordingSecret)">
+                                <a id="startOfflineRecording(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType,com.polar.sdk.api.model.PolarSensorSetting,com.polar.sdk.api.model.PolarRecordingSecret)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -637,10 +726,12 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                           >
                                     <li class="blockList">
                                         <h4>startOfflineRecording</h4>
-                                        <pre class="methodSignature"> abstract Completable <a href=PolarOfflineRecordingApi.html#startOfflineRecording(String,PolarBleApi.PolarDeviceDataType,PolarSensorSetting,PolarRecordingSecret)>startOfflineRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> settings, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret)</pre>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarOfflineRecordingApi.html#startOfflineRecording(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType,com.polar.sdk.api.model.PolarSensorSetting,com.polar.sdk.api.model.PolarRecordingSecret)>startOfflineRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> settings, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret)</pre>
                                         <div class="block"><p>Start offline recording.</p></div>
-                                        
+
                                         <dl>
+
+                                        
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
@@ -659,13 +750,20 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                             <dd><code>secret</code> - if the secret is provided the offline recordings are encrypted in device</dd>
                                             
                                             
-                                        </dl>
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Completable Produces: &lt;BR&gt;&lt;/BR&gt; - onComplete offline recording is started successfully &lt;BR&gt;&lt;/BR&gt; - onError  offline recording start failed.</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
-                                <a id="stopOfflineRecording(String,PolarBleApi.PolarDeviceDataType)">
+                                <a id="stopOfflineRecording(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -673,10 +771,12 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                           >
                                     <li class="blockList">
                                         <h4>stopOfflineRecording</h4>
-                                        <pre class="methodSignature"> abstract Completable <a href=PolarOfflineRecordingApi.html#stopOfflineRecording(String,PolarBleApi.PolarDeviceDataType)>stopOfflineRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature)</pre>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarOfflineRecordingApi.html#stopOfflineRecording(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType)>stopOfflineRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature)</pre>
                                         <div class="block"><p>Request to stop offline recording.</p></div>
-                                        
+
                                         <dl>
+
+                                        
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
@@ -687,13 +787,20 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                             <dd><code>feature</code> - which is stopped</dd>
                                             
                                             
-                                        </dl>
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Completable Produces: &lt;BR&gt;&lt;/BR&gt; - onComplete offline recording is stop successfully &lt;BR&gt;&lt;/BR&gt; - onError  offline recording stop failed.</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
-                                <a id="setOfflineRecordingTrigger(String,PolarOfflineRecordingTrigger,PolarRecordingSecret)">
+                                <a id="setOfflineRecordingTrigger(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingTrigger,com.polar.sdk.api.model.PolarRecordingSecret)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -701,10 +808,12 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                           >
                                     <li class="blockList">
                                         <h4>setOfflineRecordingTrigger</h4>
-                                        <pre class="methodSignature"> abstract Completable <a href=PolarOfflineRecordingApi.html#setOfflineRecordingTrigger(String,PolarOfflineRecordingTrigger,PolarRecordingSecret)>setOfflineRecordingTrigger</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingTrigger.html>PolarOfflineRecordingTrigger</a> trigger, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret)</pre>
-                                        <div class="block"><p>Sets the offline recording triggers for a given Polar device. The offline recording can be started automatically in the device by setting the triggers. The changes to the trigger settings will take effect on the next device startup.</p><p>Automatically started offline recording can be stopped by <a href=PolarOfflineRecordingApi.html#stopOfflineRecording(String,PolarBleApi.PolarDeviceDataType)>stopOfflineRecording</a>. Also if user switches off the device power, the offline recording is stopped but starts again once power is switched on and the trigger event happens.</p><p>Trigger functionality can be disabled by setting <a href=model/PolarOfflineRecordingTriggerMode.html#TRIGGER_DISABLED>PolarOfflineRecordingTriggerMode.TRIGGER_DISABLED</a>, the already running offline recording is not stopped by disable.</p></div>
-                                        
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarOfflineRecordingApi.html#setOfflineRecordingTrigger(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingTrigger,com.polar.sdk.api.model.PolarRecordingSecret)>setOfflineRecordingTrigger</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingTrigger.html>PolarOfflineRecordingTrigger</a> trigger, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret)</pre>
+                                        <div class="block"><p>Sets the offline recording triggers for a given Polar device. The offline recording can be started automatically in the device by setting the triggers. The changes to the trigger settings will take effect on the next device startup.</p><p>Automatically started offline recording can be stopped by <a href=PolarOfflineRecordingApi.html#stopOfflineRecording(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType)>stopOfflineRecording</a>. Also if user switches off the device power, the offline recording is stopped but starts again once power is switched on and the trigger event happens.</p><p>Trigger functionality can be disabled by setting <a href=model/PolarOfflineRecordingTriggerMode.html#TRIGGER_DISABLED>PolarOfflineRecordingTriggerMode.TRIGGER_DISABLED</a>, the already running offline recording is not stopped by disable.</p></div>
+
                                         <dl>
+
+                                        
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
@@ -719,13 +828,17 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                             <dd><code>secret</code> - if the secret is provided the offline recordings are encrypted in deviceProduces: &lt;BR&gt;&lt;/BR&gt; - onComplete offline recording trigger set successfully &lt;BR&gt;&lt;/BR&gt; - onError  offline recording trigger set failed.</dd>
                                             
                                             
-                                        </dl>
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
-                                <a id="getOfflineRecordingTriggerSetup(String)">
+                                <a id="getOfflineRecordingTriggerSetup(java.lang.String)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -733,19 +846,25 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                           >
                                     <li class="blockList">
                                         <h4>getOfflineRecordingTriggerSetup</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarOfflineRecordingTrigger.html>PolarOfflineRecordingTrigger</a>&gt; <a href=PolarOfflineRecordingApi.html#getOfflineRecordingTriggerSetup(String)>getOfflineRecordingTriggerSetup</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarOfflineRecordingTrigger.html>PolarOfflineRecordingTrigger</a>&gt; <a href=PolarOfflineRecordingApi.html#getOfflineRecordingTriggerSetup(java.lang.String)>getOfflineRecordingTriggerSetup</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
                                         <div class="block"><p>Retrieves the current offline recording trigger setup in the device.</p></div>
-                                        
+
                                         <dl>
+
+                                        
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
                                             <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt addressProduces: &lt;BR&gt;&lt;/BR&gt; - onSuccess the offline recording trigger setup in the device &lt;BR&gt;&lt;/BR&gt; - onError fetch recording request failed</dd>
                                             
                                             
-                                        </dl>
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 

@@ -7,8 +7,8 @@
     <link rel="stylesheet" type="text/css" href="../../../../../../stylesheet.css" title="Style">
     <link rel="stylesheet" type="text/css" href="../../../../../../dokka-javadoc-stylesheet.css" title="Style">
     <link rel="stylesheet" type="text/css" href="../../../../../../jquery/jquery-ui.css" title="Style">
-    <script type="text/javascript" src="../../../../../../jquery/jquery-3.3.1.js"></script>
-    <script type="text/javascript" src="../../../../../../jquery/jquery-migrate-3.0.1.js"></script>
+    <script type="text/javascript" src="../../../../../../jquery/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="../../../../../../jquery/jquery-migrate-3.4.0.min.js"></script>
     <script type="text/javascript" src="../../../../../../jquery/jquery-ui.js"></script>
 
     <script type="text/javascript" src="../../../../../../search.js"></script>
@@ -88,7 +88,7 @@ var pathtoroot = "../../../../../../";
 
 <main role="main">
     <div class="header">
-        <div class="subTitle"><span class="packageLabelInType">Package</span>&nbsp;<a href="package-summary.html"></a></div>
+        <div class="subTitle"><span class="packageLabelInType">Package</span>&nbsp;<a href="package-summary.html">com.polar.sdk.api.model.activity</a></div>
         <h2 title="Class PolarPpiDataSample" class="title">Class PolarPpiDataSample</h2>
     </div>
     <div class="contentContainer">
@@ -118,6 +118,14 @@ public final class <span class="typeNameLabel"><a href=PolarPpiDataSample.html>P
 
                     </pre>
                     <div class="block"><p>Polar 24/7 PPi data sample</p></div>
+
+                    <dl>
+
+                    
+
+                    
+
+                    </dl>
                 </li>
             </ul>
         </div>
@@ -220,7 +228,7 @@ public final class <span class="typeNameLabel"><a href=PolarPpiDataSample.html>P
                                         
                                             <tr class="altColor">
                                                 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a
-                                                        href="#PolarPpiDataSample(LocalTime,PPiSampleTriggerType,List,List,List)">PolarPpiDataSample</a></span>(<a href=https://developer.android.com/reference/kotlin/java/time/LocalTime.html>LocalTime</a> startTime, <a href=PPiSampleTriggerType.html>PPiSampleTriggerType</a> triggerType, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; ppiValueList, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; ppiErrorEstimateList, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PPiSampleStatus.html>PPiSampleStatus</a>&gt; statusList)</code></th>
+                                                        href="#PolarPpiDataSample(java.time.LocalTime,com.polar.sdk.api.model.activity.PPiSampleTriggerType,java.util.List,java.util.List,java.util.List)">PolarPpiDataSample</a></span>(<a href=https://developer.android.com/reference/kotlin/java/time/LocalTime.html>LocalTime</a> startTime, <a href=PPiSampleTriggerType.html>PPiSampleTriggerType</a> triggerType, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; ppiValueList, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; ppiErrorEstimateList, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PPiSampleStatus.html>PPiSampleStatus</a>&gt; statusList)</code></th>
                                                 <td class="colLast"></td>
                                             </tr>
                                         
@@ -278,7 +286,7 @@ public final class <span class="typeNameLabel"><a href=PolarPpiDataSample.html>P
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarPpiDataSample.html#getStartTime()>getStartTime</a>() </code>
                                             </th>
-                                            <td class="colLast"></td>
+                                            <td class="colLast">, start time of the sample session</td>
                                         </tr>
                                         
                                         <tr id="i1" class="rowColor">
@@ -286,7 +294,7 @@ public final class <span class="typeNameLabel"><a href=PolarPpiDataSample.html>P
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarPpiDataSample.html#getTriggerType()>getTriggerType</a>() </code>
                                             </th>
-                                            <td class="colLast"></td>
+                                            <td class="colLast">, describes how the measurement was triggered</td>
                                         </tr>
                                         
                                         <tr id="i2" class="altColor">
@@ -294,7 +302,7 @@ public final class <span class="typeNameLabel"><a href=PolarPpiDataSample.html>P
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarPpiDataSample.html#getPpiValueList()>getPpiValueList</a>() </code>
                                             </th>
-                                            <td class="colLast"></td>
+                                            <td class="colLast">, list of Peak-to-Peak interval values in the sample session</td>
                                         </tr>
                                         
                                         <tr id="i3" class="rowColor">
@@ -302,7 +310,7 @@ public final class <span class="typeNameLabel"><a href=PolarPpiDataSample.html>P
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarPpiDataSample.html#getPpiErrorEstimateList()>getPpiErrorEstimateList</a>() </code>
                                             </th>
-                                            <td class="colLast"></td>
+                                            <td class="colLast">, List of error estimate  values in the sample session</td>
                                         </tr>
                                         
                                         <tr id="i4" class="altColor">
@@ -310,7 +318,7 @@ public final class <span class="typeNameLabel"><a href=PolarPpiDataSample.html>P
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarPpiDataSample.html#getStatusList()>getStatusList</a>() </code>
                                             </th>
-                                            <td class="colLast"></td>
+                                            <td class="colLast">, status values in the sample session</td>
                                         </tr>
                                         
                                         </tbody>
@@ -344,7 +352,7 @@ public final class <span class="typeNameLabel"><a href=PolarPpiDataSample.html>P
                             </a>
                                 <h3>Constructor Detail</h3>
                                 
-                                <a name="PolarPpiDataSample(LocalTime,PPiSampleTriggerType,List,List,List)"></a>
+                                <a name="PolarPpiDataSample(java.time.LocalTime,com.polar.sdk.api.model.activity.PPiSampleTriggerType,java.util.List,java.util.List,java.util.List)"></a>
                                 <ul class="blockList">
                                     <li class="blockList">
                                         <h4>PolarPpiDataSample</h4>
@@ -376,9 +384,17 @@ public final class <span class="typeNameLabel"><a href=PolarPpiDataSample.html>P
                                     <li class="blockList">
                                         <h4>getStartTime</h4>
                                         <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/time/LocalTime.html>LocalTime</a> <a href=PolarPpiDataSample.html#getStartTime()>getStartTime</a>()</pre>
-                                        <div class="block"></div>
+                                        <div class="block"><p>, start time of the sample session</p></div>
+
+                                        <dl>
+
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
@@ -391,9 +407,17 @@ public final class <span class="typeNameLabel"><a href=PolarPpiDataSample.html>P
                                     <li class="blockList">
                                         <h4>getTriggerType</h4>
                                         <pre class="methodSignature"> final <a href=PPiSampleTriggerType.html>PPiSampleTriggerType</a> <a href=PolarPpiDataSample.html#getTriggerType()>getTriggerType</a>()</pre>
-                                        <div class="block"></div>
+                                        <div class="block"><p>, describes how the measurement was triggered</p></div>
+
+                                        <dl>
+
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
@@ -406,9 +430,17 @@ public final class <span class="typeNameLabel"><a href=PolarPpiDataSample.html>P
                                     <li class="blockList">
                                         <h4>getPpiValueList</h4>
                                         <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; <a href=PolarPpiDataSample.html#getPpiValueList()>getPpiValueList</a>()</pre>
-                                        <div class="block"></div>
+                                        <div class="block"><p>, list of Peak-to-Peak interval values in the sample session</p></div>
+
+                                        <dl>
+
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
@@ -421,9 +453,17 @@ public final class <span class="typeNameLabel"><a href=PolarPpiDataSample.html>P
                                     <li class="blockList">
                                         <h4>getPpiErrorEstimateList</h4>
                                         <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; <a href=PolarPpiDataSample.html#getPpiErrorEstimateList()>getPpiErrorEstimateList</a>()</pre>
-                                        <div class="block"></div>
+                                        <div class="block"><p>, List of error estimate  values in the sample session</p></div>
+
+                                        <dl>
+
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 
@@ -436,9 +476,17 @@ public final class <span class="typeNameLabel"><a href=PolarPpiDataSample.html>P
                                     <li class="blockList">
                                         <h4>getStatusList</h4>
                                         <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PPiSampleStatus.html>PPiSampleStatus</a>&gt; <a href=PolarPpiDataSample.html#getStatusList()>getStatusList</a>()</pre>
-                                        <div class="block"></div>
+                                        <div class="block"><p>, status values in the sample session</p></div>
+
+                                        <dl>
+
                                         
-                                        <!-- TODO missing return annotation -->
+
+                                        
+
+                                        
+
+                                        </dl>
                                     </li>
                                 </ul>
                                 

@@ -2712,25 +2712,29 @@ extension PolarBleApiImpl: PolarBleApi  {
                                         let sortedFirmwarePackage = unzippedFirmwarePackage.sorted { (file1, file2) -> Bool in
                                             return PolarFirmwareUpdateUtils.FwFileComparator.compare(file1.key, file2.key) == .orderedAscending
                                         }
-
-                                        return Observable.from(sortedFirmwarePackage)
-                                            .concatMap { fileEntry -> Observable<FirmwareUpdateStatus> in
-                                                let fileName = fileEntry.key
-                                                let firmwareBytes = fileEntry.value
-                                                let filePath = "/\(fileName)"
-                                                
-                                                // Polar H10 FW package has this file
-                                                if fileName.lowercased() == "readme.txt" {
-                                                    BleLogger.trace("Skipping file \(fileName)")
-                                                    return Observable.just(FirmwareUpdateStatus.writingFwUpdatePackage(details: "Skipping file \(fileName)"))
-                                                }
-
-                                                return self.writeFirmwareToDevice(deviceId: identifier, firmwareFilePath: filePath, firmwareBytes: firmwareBytes)
-                                                    .map { bytesWritten -> FirmwareUpdateStatus in
-                                                        BleLogger.trace("Writing firmware update file \(fileName), bytes written: \(bytesWritten)/\(firmwareBytes.count) bytes")
-                                                        return FirmwareUpdateStatus.writingFwUpdatePackage(details: "Writing firmware update file \(fileName), bytes written: \(bytesWritten)/\(firmwareBytes.count) bytes")
+                                        
+                                        return self.doFactoryReset(identifier, preservePairingInformation: true)
+                                            .delay(.seconds(30), scheduler: self.scheduler)
+                                            .andThen(self.waitDeviceSessionToOpen(deviceId: identifier, timeoutSeconds: Int(factoryResetMaxWaitTimeSeconds), waitForDeviceDownSeconds: 10))
+                                            .delay(.seconds(5), scheduler: self.scheduler)
+                                            .andThen(Observable.from(sortedFirmwarePackage)
+                                                .concatMap { fileEntry -> Observable<FirmwareUpdateStatus> in
+                                                    let fileName = fileEntry.key
+                                                    let firmwareBytes = fileEntry.value
+                                                    let filePath = "/\(fileName)"
+                                                    
+                                                    // Polar H10 FW package has this file
+                                                    if fileName.lowercased() == "readme.txt" {
+                                                        BleLogger.trace("Skipping file \(fileName)")
+                                                        return Observable.just(FirmwareUpdateStatus.writingFwUpdatePackage(details: "Skipping file \(fileName)"))
                                                     }
-                                            }
+                                                    return self.writeFirmwareToDevice(deviceId: identifier, firmwareFilePath: filePath, firmwareBytes: firmwareBytes)
+                                                        .map { bytesWritten -> FirmwareUpdateStatus in
+                                                            BleLogger.trace("Writing firmware update file \(fileName), bytes written: \(bytesWritten)/\(firmwareBytes.count) bytes")
+                                                            return FirmwareUpdateStatus.writingFwUpdatePackage(details: "Writing firmware update file \(fileName), bytes written: \(bytesWritten)/\(firmwareBytes.count) bytes")
+                                                        }
+                                                }
+                                            )
                                             .concat(Observable.just(FirmwareUpdateStatus.finalizingFwUpdate(details: "Finalizing firmware update...")))
                                     }
                             }
@@ -3694,75 +3698,73 @@ extension PolarBleApiImpl: PolarBleApi  {
         ).subscribe()
     }
 
+
     private func writeFirmwareToDevice(deviceId: String, firmwareFilePath: String, firmwareBytes: Data) -> Observable<UInt> {
-        let factoryResetMaxWaitTimeSeconds: TimeInterval = 6 * 60
+
         BleLogger.trace("Write FW to device")
-        return doFactoryReset(deviceId, preservePairingInformation: true)
-            .andThen(waitDeviceSessionToOpen(deviceId: deviceId, timeoutSeconds: Int(factoryResetMaxWaitTimeSeconds), waitForDeviceDownSeconds: 10))
-            .andThen(Observable.create { observer in
-                do {
-                    let session = try self.sessionFtpClientReady(deviceId)
-                    guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                        throw PolarErrors.serviceNotFound
-                    }
-
-                    BleLogger.trace("Initialize session")
-                    return self.sendInitializationAndStartSyncNotificationsCompletable(client: client)
-                        .andThen(client.query(Protocol_PbPFtpQuery.prepareFirmwareUpdate.rawValue, parameters: nil).asCompletable())
-                        .andThen(Completable.create { completable in
-                            do {
-                                BleLogger.trace("Start \(firmwareFilePath) write")
-                                var builder = Protocol_PbPFtpOperation()
-                                builder.command = Protocol_PbPFtpOperation.Command.put
-                                builder.path = firmwareFilePath
-                                let proto = try builder.serializedData()
-
-                                _ = client.write(proto as NSData, data: InputStream(data: firmwareBytes))
-                                    .throttle(.seconds(5), scheduler: MainScheduler.instance)
-                                    .do(onNext: { bytesWritten in
-                                        BleLogger.trace("Writing firmware update file, bytes written: \(bytesWritten)/\(firmwareBytes.count)")
-                                        observer.onNext(UInt(bytesWritten))
-                                    })
-                                    .ignoreElements()
-                                    .asCompletable()
-                                    .subscribe(onCompleted: {
-                                        if firmwareFilePath.contains("SYSUPDAT.IMG") {
-                                            BleLogger.trace("Firmware file is SYSUPDAT.IMG, waiting for reboot")
-                                        }
-                                        observer.onCompleted()
-                                        completable(.completed)
-                                    }, onError: { error in
-                                        if let pftpError = Protocol_PbPFtpError(rawValue: error._code) {
-                                            if pftpError == .batteryTooLow {
-                                                observer.onError(PolarErrors.deviceError(description: "Battery too low to perform firmware update"))
-                                            } else {
-                                                BleLogger.error("PFTP error during firmware write: \(error.localizedDescription)")
-                                                observer.onError(error)
-                                            }
-                                        } else {
-                                            BleLogger.error("Error during firmware write: \(error.localizedDescription)")
-                                            observer.onError(error)
-                                        }
-                                        completable(.error(error))
-                                    })
-                            } catch {
-                                completable(.error(error))
-                            }
-                            return Disposables.create()
-                        })
-                        .subscribe(onCompleted: {
-                            observer.onCompleted()
-                        }, onError: { error in
-                            observer.onError(error)
-                        })
-                } catch {
-                    observer.onError(error)
-                }
+        return Observable.create { observer in
+            
+            guard let session = try? self.sessionFtpClientReady(deviceId) else {
+                observer.onError(PolarErrors.deviceNotConnected)
                 return Disposables.create()
-            })
+            }
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                observer.onError(PolarErrors.serviceNotFound)
+                return Disposables.create()
+            }
+            
+            BleLogger.trace("Initialize session")
+            return self.sendInitializationAndStartSyncNotificationsCompletable(client: client)
+                .andThen(client.query(Protocol_PbPFtpQuery.prepareFirmwareUpdate.rawValue, parameters: nil).asCompletable())
+                .andThen(Completable.create { completable in
+                    do {
+                        BleLogger.trace("Start \(firmwareFilePath) write")
+                        var builder = Protocol_PbPFtpOperation()
+                        builder.command = Protocol_PbPFtpOperation.Command.put
+                        builder.path = firmwareFilePath
+                        let proto = try builder.serializedData()
+                        
+                        _ = client.write(proto as NSData, data: InputStream(data: firmwareBytes))
+                            .throttle(.seconds(5), scheduler: MainScheduler.instance)
+                            .do(onNext: { bytesWritten in
+                                BleLogger.trace("Writing firmware update file, bytes written: \(bytesWritten)/\(firmwareBytes.count)")
+                                observer.onNext(UInt(bytesWritten))
+                            })
+                            .ignoreElements()
+                            .asCompletable()
+                            .subscribe(onCompleted: {
+                                if firmwareFilePath.contains("SYSUPDAT.IMG") {
+                                    BleLogger.trace("Firmware file is SYSUPDAT.IMG, waiting for reboot")
+                                }
+                                observer.onCompleted()
+                                completable(.completed)
+                            }, onError: { error in
+                                if let pftpError = Protocol_PbPFtpError(rawValue: error._code) {
+                                    if pftpError == .batteryTooLow {
+                                        observer.onError(PolarErrors.deviceError(description: "Battery too low to perform firmware update"))
+                                    } else {
+                                        BleLogger.error("PFTP error during firmware write: \(error.localizedDescription)")
+                                        observer.onError(error)
+                                    }
+                                } else {
+                                    BleLogger.error("PFTP error during firmware write: \(error.localizedDescription)")
+                                    observer.onError(error)
+                                }
+                                completable(.error(error))
+                            })
+                    } catch {
+                        completable(.error(error))
+                    }
+                    return Disposables.create()
+                })
+                .subscribe(onCompleted: {
+                    observer.onCompleted()
+                }, onError: { error in
+                    observer.onError(error)
+                })
+        }
     }
-
-
+    
     private func waitDeviceSessionToOpen(deviceId: String, timeoutSeconds: Int, waitForDeviceDownSeconds: Int = 0) -> Completable {
         BleLogger.trace("Wait for device session to open, timeoutSeconds: \(timeoutSeconds), waitForDeviceDownSeconds: \(waitForDeviceDownSeconds)")
         let pollIntervalSeconds = 5

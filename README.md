@@ -46,7 +46,7 @@ The SDK API uses ReactiveX. You can read more about ReactiveX from their website
 * [documentation](documentation/) contains documentation related to SDK
 
 ## Android getting started
-Detailed documentation: [Documentation](polar-sdk-android/docs/)
+Detailed documentation: [Documentation](https://polarofficial.github.io/polar-ble-sdk/)
 ### Installation
 
 1.  In `build.gradle` make sure the __minSdk__ is set to __24__ or higher.
@@ -221,7 +221,7 @@ public override fun onDestroy() {
 4.  Connect to a Polar device using  `api.connectToDevice(<DEVICE_ID>)` where <DEVICE_ID> is the deviceID printed to your sensor,  using  `api.autoConnectToDevice(-50, null, null).subscribe()`  to connect nearby device or  `api.searchForDevice()` to scan and then select the device
 
 ## iOS getting started
-Detailed documentation: [Documentation](polar-sdk-ios/docs/). Minimum iOS version is 14.
+Detailed documentation: [Documentation](https://polarofficial.github.io/polar-ble-sdk/). Minimum iOS version is 14.
 ### Requirements
 * Xcode 12.x
 * Swift 5.x
