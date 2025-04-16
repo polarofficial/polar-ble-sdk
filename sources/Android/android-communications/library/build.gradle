@@ -7,23 +7,6 @@ plugins {
     id("maven-publish")
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            aar(MavenPublication) {
-                from components.androidCommunicationsRelease
-                groupId = 'com.github.polarofficial'
-                artifactId = 'android-communications'
-                version = getVersion()
-            }
-        }
-    }
-}
-
-if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPassword")) {
-    apply plugin: 'com.jfrog.artifactory'
-}
-
 import java.util.regex.Pattern
 
 def getVersion = { ->
@@ -76,9 +59,6 @@ android {
 
     flavorDimensions 'library'
     productFlavors {
-        androidCommunications {
-            dimension "library"
-        }
         sdk {
             dimension "library"
         }
@@ -90,7 +70,7 @@ android {
     }
 
     publishing {
-        singleVariant("androidCommunicationsRelease") {
+        singleVariant("sdkRelease") {
             withSourcesJar()
             withJavadocJar()
         }
@@ -101,6 +81,19 @@ android {
     }
 }
 
+afterEvaluate {
+    publishing {
+        publications {
+            aar(MavenPublication) {
+                from components.sdkRelease
+                groupId = 'com.github.polarofficial'
+                artifactId = 'polar-ble-sdk'
+                version = getVersion()
+            }
+        }
+    }
+}
+
 tasks.dokkaJavadoc.configure {
     outputDirectory.set(file("docs/"))
     dokkaSourceSets {
@@ -108,41 +101,6 @@ tasks.dokkaJavadoc.configure {
             perPackageOption {
                 matchingRegex.set(".*\\.androidcommunications.*")
                 suppress.set(true)
-            }
-        }
-    }
-}
-
-if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPassword")) {
-    afterEvaluate {
-        publishing {
-            publications {
-                aar(MavenPublication) {
-                    from components.androidCommunicationsRelease
-                    groupId 'com.polar'
-                    version = getVersion()
-                    artifactId "android-communications"
-                }
-            }
-        }
-    }
-
-    artifactory {
-        def artifactory_user = project.getProperty('artifactoryUser')
-        def artifactory_password = project.getProperty('artifactoryPassword')
-        println "USER: " + "${artifactory_user}"
-        println "PASSWD: " + "${artifactory_password}"
-        publish {
-            repository {
-                // The Artifactory repository key to publish to
-                repoKey = 'libs-release-local'
-                username = "${artifactory_user}" // The publisher user name
-                password = "${artifactory_password}" // The publisher password
-            }
-            defaults {
-                publications('aar')
-                // Properties to be attached to the published artifacts.
-                properties = ['qa.level': 'basic', 'dev.team': 'core']
             }
         }
     }
