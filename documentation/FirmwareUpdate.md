@@ -2,7 +2,7 @@
 
 ## How to
 
-Simply call `updateFirmware()` function. This will update the device will the latest available firmware.
+You can check if there is an update available by using `checkFirmwareUpdate()` method. To update the firmware, simply call `updateFirmware()` method. This will update the device will the latest available firmware.
 
 >[!CAUTION]
 >
