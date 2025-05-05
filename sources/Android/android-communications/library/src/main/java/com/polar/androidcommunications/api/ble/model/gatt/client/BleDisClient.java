@@ -77,7 +77,7 @@ public class BleDisClient extends BleGattBase {
 
     @Override
     public void processServiceData(final UUID characteristic, final byte[] data, int status, boolean notifying) {
-        if (status == 0) {
+        if (status == ATT_SUCCESS) {
             final String asciiRepresentation = new String(data, StandardCharsets.UTF_8);
             synchronized (disInformation) {
                 disInformation.put(characteristic, asciiRepresentation);

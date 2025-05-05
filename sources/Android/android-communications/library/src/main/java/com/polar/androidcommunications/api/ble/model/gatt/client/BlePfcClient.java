@@ -4,6 +4,7 @@ import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
+import com.polar.androidcommunications.api.ble.BleLogger;
 import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError;
 import com.polar.androidcommunications.api.ble.exceptions.BleCharacteristicNotificationNotEnabled;
 import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected;
@@ -178,11 +179,15 @@ public class BlePfcClient extends BleGattBase {
         if (characteristic.equals(PFC_CP)) {
             pfcCpInputQueue.add(new Pair<>(data, status));
         } else if (characteristic.equals(PFC_FEATURE)) {
-            synchronized (mutexFeature) {
-                if (status == 0) {
-                    pfcFeature = new PfcFeature(data);
+            if (status == ATT_SUCCESS) {
+                synchronized (mutexFeature) {
+                    if (status == 0) {
+                        pfcFeature = new PfcFeature(data);
+                    }
+                    mutexFeature.notifyAll();
                 }
-                mutexFeature.notifyAll();
+            } else {
+                BleLogger.w(TAG, "Process service data with status: " + status + ", skipped");
             }
         }
     }

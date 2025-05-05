@@ -8,6 +8,7 @@ import com.polar.androidcommunications.common.ble.RxUtils
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.FlowableEmitter
+import io.reactivex.rxjava3.core.Single
 import java.util.*
 import kotlin.math.roundToInt
 
@@ -69,7 +70,7 @@ class BleHrClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, HR
 
     override fun processServiceData(characteristic: UUID, data: ByteArray, status: Int, notifying: Boolean) {
         BleLogger.d(TAG, "Processing service data. Status: " + status + ".  Data length: " + data.size)
-        if (status == 0 && characteristic == HR_MEASUREMENT) {
+        if (status == ATT_SUCCESS && characteristic == HR_MEASUREMENT) {
             val hrFormat = data[0].toInt() and 0x01
             val sensorContact = data[0].toInt() and 0x06 shr 1 == 0x03
             val contactSupported = data[0].toInt() and 0x04 != 0
@@ -130,5 +131,21 @@ class BleHrClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, HR
                     BleLogger.d(TAG, "HR client is not able to set characteristic notify to false. Reason $e")
                 }
             }
+    }
+
+    /**
+     * @return Completable
+     * onError, if client is not initially connected or removing HR_MEASUREMENT notification fails
+     */
+    fun stopObserveHrNotifications(checkConnection: Boolean): Single<Unit> {
+        BleLogger.d(TAG, "Stop observing HR")
+        removeCharacteristicNotification(HR_MEASUREMENT)
+        try {
+            return Single.create {  getTxInterface().setCharacteristicNotify(HR_SERVICE, HR_MEASUREMENT, false) }
+        } catch (e: Exception) {
+            // this may happen if connection is already closed, no need sent the exception to downstream
+            BleLogger.d(TAG, "HR client is not able to set characteristic notify to false. Reason $e")
+            return Single.error(e)
+        }
     }
 }

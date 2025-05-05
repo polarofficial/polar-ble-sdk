@@ -1,0 +1,122 @@
+// TSESS.BPB=PbTrainingSession
+syntax = "proto2";
+
+package data;
+
+import "types.proto";
+import "structures.proto";
+import "nanopb.proto";
+
+option java_package = "fi.polar.remote.representation.protobuf";
+option java_outer_classname = "TrainingSession";
+
+/*
+  Training session structure definition.
+
+  Domain Data classification: History data.
+*/
+
+message PbSessionHeartRateStatistics {
+
+  // range [0 - 250] (1/min)
+  optional uint32 average = 1 [(type)=HEARTRATE];
+
+  // range [0 - 250] (1/min)
+  optional uint32 maximum = 2 [(type)=HEARTRATE];
+};
+
+message PbTrainingSession {
+
+  // Session start trigger
+  enum PbTrainingStartTrigger {
+    MANUAL = 0;
+    AUTOMATIC_TRAINING_DETECTION = 1;
+  }
+
+  // Session starting date & time
+  // Note: see comments in exercise_base.proto:start
+  required PbLocalDateTime start = 1;
+
+  // range [value should be in the past of current time and after start]
+  // wrist units local time at the time when training session was stopped
+  optional PbLocalDateTime end = 20;
+
+  // Number of exercises
+  // range [1 - 998]
+  required uint32 exercise_count = 2;
+
+  // Device ID for identification purposes.
+  optional string device_id = 3;
+
+  // Human readable model name, like "RCX 5"
+  // Also known as "product name"
+  optional string model_name = 4;
+
+  // Total session duration (does not contain paused times)
+  // Filled by service layer when storing external training session to the file system for week summaries, etc.
+  optional PbDuration duration = 5;
+
+  // Total session distance
+  // Filled by service layer when storing external training session to the file system for week summaries, etc.
+  optional float distance = 6 [(type)=DISTANCE];
+
+  // Total session calories
+  // Filled by service layer when storing external training session to the file system for week summaries, etc.
+  // range [0 - 65535] kcal
+  optional uint32 calories = 7 [(type)=CALORIES];
+
+  // Total session heart rate statistics (avg/max)
+  // Filled by service layer when storing external training session to the file system for week summaries, etc.
+  optional PbSessionHeartRateStatistics heart_rate = 8;
+
+  // Total session heart rate zone durations
+  // Filled by service layer when storing external training session to the file system for week summaries, etc.
+  repeated PbDuration heart_rate_zone_duration = 9 [(nanopb).max_count = 7];
+
+  // Total session training load
+  // Filled by service layer when storing external training session to the file system for week summaries, etc.
+  optional PbTrainingLoad training_load = 10;
+
+  // Name of the session
+  optional PbOneLineText session_name = 11;
+
+  // Feeling of the session
+  optional float feeling = 12;
+
+  // Note for the session
+  optional PbMultiLineText note = 13;
+
+  // Place of the session
+  optional PbOneLineText place = 14;
+
+  // Latitude where session started
+  optional double latitude = 15;
+
+  // Longitude where session started
+  optional double longitude = 16;
+
+  // Training Session feedback
+  optional PbExerciseFeedback benefit = 17;
+
+  // Sport identifier in case the session was based on multisport
+  // Only multisport sport ids should be used here
+  optional PbSportIdentifier sport = 18;
+
+  // Cardio load of the session
+  optional PbCardioLoad cardio_load = 23;
+
+  // "Hardness": comparison of cardio load to 90 day average [ 1...5 = very low...very high ]
+  optional uint32 cardio_load_interpretation = 24;
+
+  // Muscle load of the session, calculated from running or cycling power (kJ)
+  optional float muscle_load = 27;
+
+  // "Hardness": comparison of cardio load to 90 day average [ 1...5 = very low...very high ]
+  optional uint32 muscle_load_interpretation = 28;
+
+  // UUID of the period data for this session (16 bytes in big endian format)
+  optional bytes period_uuid = 29;
+
+  // Training session start trigger
+  optional PbTrainingStartTrigger start_trigger = 30;
+};

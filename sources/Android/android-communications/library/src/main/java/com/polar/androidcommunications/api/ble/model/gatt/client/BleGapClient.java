@@ -42,7 +42,7 @@ public class BleGapClient extends BleGattBase {
 
     @Override
     public void processServiceData(UUID characteristic, byte[] data, int status, boolean notifying) {
-        if (status == 0) {
+        if (status == ATT_SUCCESS) {
             synchronized (gapInformation) {
                 gapInformation.put(characteristic, new String(data));
             }
@@ -62,7 +62,7 @@ public class BleGapClient extends BleGattBase {
 
     @Override
     public void processServiceDataWritten(UUID characteristic, int status) {
-
+        // do nothing
     }
 
     @Override

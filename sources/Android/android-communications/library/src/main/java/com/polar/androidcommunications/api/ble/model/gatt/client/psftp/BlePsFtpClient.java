@@ -130,7 +130,9 @@ public class BlePsFtpClient extends BleGattBase {
 
     @Override
     public void processServiceData(UUID characteristic, byte[] data, int status, boolean notifying) {
-        if (data.length != 0) {
+        if (status != ATT_SUCCESS) {
+            BleLogger.w(TAG, "Process service data with status $status, skipping data");
+        } else if (data.length != 0) {
             if (characteristic.equals(BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC)) {
                 synchronized (mtuInputQueue) {
                     mtuInputQueue.add(new Pair<>(data, status));

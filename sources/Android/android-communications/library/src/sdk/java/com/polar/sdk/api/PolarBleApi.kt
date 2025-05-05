@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
  */
 abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineStreamingApi,
     PolarOfflineRecordingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi,
-    PolarActivityApi, PolarSleepApi, PolarRestServiceApi, PolarTemperatureApi {
+    PolarActivityApi, PolarSleepApi, PolarRestServiceApi, PolarTemperatureApi, PolarTrainingSessionApi {
 
     /**
      * Features available in Polar BLE SDK library
@@ -422,10 +422,12 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @param until, Data will be deleted from device from history until this date.
      * @return [Flowable] success with the paths of the deleted data or error
      */
-    abstract fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Flowable<ConcurrentLinkedQueue<String>>
+    abstract fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Completable
 
     /**
-     * Delete device date folders from a device.
+     * Deletes device day (YYYMMDD) folders from the given date range from a device.
+     * The date range is inclusive.
+     * Deletes the day folder (plus all sub-folders with any contents).
      *
      * @param identifier, Polar device ID or BT address
      * @param fromDate The starting date to delete date folders from

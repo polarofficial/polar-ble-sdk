@@ -1,0 +1,127 @@
+// BASE.BPB=PbExerciseBase
+syntax = "proto2";
+
+package data;
+
+import "types.proto";
+import "structures.proto";
+import "nanopb.proto";
+
+option java_package = "fi.polar.remote.representation.protobuf";
+option java_outer_classname = "Training";
+
+/*
+  Summarized information of an exercise.
+*/
+
+message PbExerciseCounters {
+  // Number of maximal sprints
+  optional uint32 sprint_count = 1;
+};
+
+message PbExerciseBase {
+
+  // range [value should be in the past of current time]
+  // Note: This is in User's Local time, ie. the value
+  // that is shown on wrist units display.
+  required PbLocalDateTime start = 1;
+
+  // range [00:00:00.000 - 99:59:59.999]
+  // Active duration of exercise (does not include paused times)
+  required PbDuration duration = 2;
+
+  // Selected sport for the exercise
+  required PbSportIdentifier sport = 3;
+
+  // Distance covered during the exercise in meters.
+  // range [0 - 9999000] m
+  optional float distance = 4 [(type)=DISTANCE];
+
+  // Calories burned during the exercise.
+  // range [0 - 65535] kcal
+  optional uint32 calories = 5 [(type)=CALORIES];
+
+  // Training load of exercise
+  //
+  optional PbTrainingLoad training_load = 6;
+
+  // Available sensor features during training session
+  // These are ESW internal types so validity checking is a very important thing with these
+  repeated PbFeatureType available_sensor_features = 7 [(nanopb).max_count = 30];
+
+  // Running Index
+  optional PbRunningIndex running_index = 9;
+
+  // Cumulative ascent
+  // range [0 - 99000] m
+  optional float ascent = 10 [(type)=ASCENT];
+
+  // Cumulative descent
+  // range [0 - 99000] m
+  optional float descent = 11 [(type)=DESCENT];
+
+  // Latitude where the exercise started
+  optional double latitude = 12;
+
+  // Longitude where the exercise started
+  optional double longitude = 13;
+
+  // Place of the exercise
+  optional string place = 14;
+
+  // Exercise target result
+  // optional bytes OBSOLETE_exercise_target_result = 15;
+
+  // Countable data of exercise
+  optional PbExerciseCounters exercise_counters = 16;
+
+  // Calibration offset calculated from motion sensor and gps average speed
+  optional float OBSOLETE_speed_calibration_offset = 17 [default = 0, (type)=SPEED_CALIBRATION_OFFSET];
+
+  // Walking distance covered during the exercise in meters.
+  // range [0 - 9999000] m
+  optional float walking_distance = 18 [(type)=DISTANCE];
+
+  // range [00:00:00.000 - 99:59:59.999]
+  optional PbDuration walking_duration = 19;
+
+  //Accumulated torque from cycling power sensor.
+  //Unit is in newton metres with a resolution of 1/32.
+  optional uint32 accumulated_torque = 20;
+
+  //Accumulated energy from cycling power sensor
+  // range [0 - 65535] kcal
+  optional uint32 cycling_power_energy = 21 [(type)=CALORIES];
+
+  // Calibration offset for motion sensor based calculation.
+  repeated PbSensorCalibrationOffset sensor_calibration_offset = 22;
+
+  // The location of the device in the exercise.
+  optional PbDeviceLocation device_location = 23;
+
+  // The source device of power samples in the exercise.
+  repeated PbSampleSourceDevice power_sample_source_device = 24;
+
+  // Cardio load of the exercise
+  optional PbCardioLoad cardio_load = 25;
+
+  // "Hardness": comparison of cardio load to 90 day average [ 1...5 = very low...very high ]
+  optional uint32 cardio_load_interpretation = 26;
+
+  // Perceived load of the exercise
+  optional PbPerceivedLoad perceived_load = 27;
+
+  // "Hardness": comparison of perceived load to 90 day average [ 1...5 = very low...very high ]
+  optional uint32 perceived_load_interpretation = 28;
+
+  // Muscle load of the exercise, calculated from running or cycling power (kJ)
+  optional float muscle_load = 29;
+
+  // "Hardness": comparison of cardio load to 90 day average [ 1...5 = very low...very high ]
+  optional uint32 muscle_load_interpretation = 30;
+
+  // Timestamp of modification of the component fields (especially perceived_load). Needed in case of syncing between several devices.
+  // Currently perceived_load is the only field that can be modified afterwards but in future case of several modifiable fields a separate timestamp for
+  // each needs to be considered.
+  optional PbSystemDateTime last_modified = 100;
+};

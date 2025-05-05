@@ -150,6 +150,11 @@ var pathtoroot = "../../../../";
                             
                             <code>com.polar.sdk.api.PolarTemperatureApi</code>
                             
+                            ,
+                            
+                            
+                            <code>com.polar.sdk.api.PolarTrainingSessionApi</code>
+                            
                             
                         </dd>
                     </dl>
@@ -158,7 +163,7 @@ var pathtoroot = "../../../../";
                     <pre class="wrap-overflow">
 
 public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>PolarBleApi</a></span>
- implements <a href=PolarOnlineStreamingApi.html>PolarOnlineStreamingApi</a>, <a href=PolarOfflineRecordingApi.html>PolarOfflineRecordingApi</a>, <a href=PolarH10OfflineExerciseApi.html>PolarH10OfflineExerciseApi</a>, <a href=PolarSdkModeApi.html>PolarSdkModeApi</a>, <a href=PolarFirmwareUpdateApi.html>PolarFirmwareUpdateApi</a>, <a href=PolarActivityApi.html>PolarActivityApi</a>, <a href=PolarSleepApi.html>PolarSleepApi</a>, <a href=PolarRestServiceApi.html>PolarRestServiceApi</a>, <a href=PolarTemperatureApi.html>PolarTemperatureApi</a>
+ implements <a href=PolarOnlineStreamingApi.html>PolarOnlineStreamingApi</a>, <a href=PolarOfflineRecordingApi.html>PolarOfflineRecordingApi</a>, <a href=PolarH10OfflineExerciseApi.html>PolarH10OfflineExerciseApi</a>, <a href=PolarSdkModeApi.html>PolarSdkModeApi</a>, <a href=PolarFirmwareUpdateApi.html>PolarFirmwareUpdateApi</a>, <a href=PolarActivityApi.html>PolarActivityApi</a>, <a href=PolarSleepApi.html>PolarSleepApi</a>, <a href=PolarRestServiceApi.html>PolarRestServiceApi</a>, <a href=PolarTemperatureApi.html>PolarTemperatureApi</a>, <a href=PolarTrainingSessionApi.html>PolarTrainingSessionApi</a>
                     </pre>
                     <div class="block"><p>Polar BLE API.</p></div>
 
@@ -584,7 +589,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         </tr>
                                         
                                         <tr id="i31" class="rowColor">
-                                            <td class="colFirst"><code>abstract Flowable&lt;<a href=https://developer.android.com/reference/kotlin/java/util/concurrent/ConcurrentLinkedQueue.html>ConcurrentLinkedQueue</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt;&gt;</code>
+                                            <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#deleteStoredDeviceData(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarStoredDataType,java.time.LocalDate)>deleteStoredDeviceData</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarStoredDataType.html>PolarBleApi.PolarStoredDataType</a> dataType, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> until) </code>
                                             </th>
@@ -596,7 +601,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#deleteDeviceDateFolders(java.lang.String,java.time.LocalDate,java.time.LocalDate)>deleteDeviceDateFolders</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate) </code>
                                             </th>
-                                            <td class="colLast">Delete device date folders from a device.</td>
+                                            <td class="colLast">Deletes device day (YYYMMDD) folders from the given date range from a device.</td>
                                         </tr>
                                         
                                         </tbody>
@@ -657,6 +662,12 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         </a>
                                             <h3>Methods inherited from class&nbsp;com.polar.sdk.api.PolarTemperatureApi</h3>
                                             <code>getSkinTemperature</code></li>
+                                 
+                                    <li class="blockList"><a id="methods.inherited.from.class.com.polar.sdk.api.PolarTrainingSessionApi">
+                                            <!--   -->
+                                        </a>
+                                            <h3>Methods inherited from class&nbsp;com.polar.sdk.api.PolarTrainingSessionApi</h3>
+                                            <code>getTrainingSession, getTrainingSessionReferences</code></li>
                                  
                                     <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
                                         <!--   -->
@@ -1696,7 +1707,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                           >
                                     <li class="blockList">
                                         <h4>deleteStoredDeviceData</h4>
-                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=https://developer.android.com/reference/kotlin/java/util/concurrent/ConcurrentLinkedQueue.html>ConcurrentLinkedQueue</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt;&gt; <a href=PolarBleApi.html#deleteStoredDeviceData(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarStoredDataType,java.time.LocalDate)>deleteStoredDeviceData</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarStoredDataType.html>PolarBleApi.PolarStoredDataType</a> dataType, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> until)</pre>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#deleteStoredDeviceData(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarStoredDataType,java.time.LocalDate)>deleteStoredDeviceData</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarStoredDataType.html>PolarBleApi.PolarStoredDataType</a> dataType, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> until)</pre>
                                         <div class="block"><p>Delete data <a href=PolarBleApi.PolarStoredDataType.html>PolarStoredDataType</a> from a device. Note that you will need to await for completion.</p></div>
 
                                         <dl>
@@ -1738,7 +1749,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                     <li class="blockList">
                                         <h4>deleteDeviceDateFolders</h4>
                                         <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#deleteDeviceDateFolders(java.lang.String,java.time.LocalDate,java.time.LocalDate)>deleteDeviceDateFolders</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate)</pre>
-                                        <div class="block"><p>Delete device date folders from a device.</p></div>
+                                        <div class="block"><p>Deletes device day (YYYMMDD) folders from the given date range from a device. The date range is inclusive. Deletes the day folder (plus all sub-folders with any contents).</p></div>
 
                                         <dl>
 

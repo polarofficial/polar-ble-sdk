@@ -61,7 +61,7 @@ public class BleRscClient extends BleGattBase {
 
     @Override
     public void processServiceData(UUID characteristic, byte[] data, int status, boolean notifying) {
-        if (status == 0) {
+        if (status == ATT_SUCCESS) {
             if (characteristic.equals(RSC_MEASUREMENT)) {
                 // stupid java does not have bit fields
                 int index = 0;
@@ -89,6 +89,8 @@ public class BleRscClient extends BleGattBase {
                 long feature = data[0] | data[1] << 8;
                 BleLogger.d(TAG, "RSC Feature Characteristic read: " + feature);
             }
+        } else {
+            BleLogger.w(TAG, "Process service data with status " + status + ", skipped");
         }
     }
 

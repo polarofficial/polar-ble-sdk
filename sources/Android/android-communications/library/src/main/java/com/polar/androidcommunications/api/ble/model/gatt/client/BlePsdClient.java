@@ -4,6 +4,7 @@ import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
+import com.polar.androidcommunications.api.ble.BleLogger;
 import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError;
 import com.polar.androidcommunications.api.ble.exceptions.BleCharacteristicNotificationNotEnabled;
 import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected;
@@ -32,6 +33,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class BlePsdClient extends BleGattBase {
 
+    private static final String TAG = "BlePsdClient";
     public static final byte SUCCESS = 0x01;
     public static final byte OP_CODE_NOT_SUPPORTED = 0x02;
     public static final byte INVALID_PARAMETER = 0x03;
@@ -238,18 +240,22 @@ public class BlePsdClient extends BleGattBase {
             psdCpInputQueue.add(new Pair<>(data, status));
         } else if (characteristic.equals(PSD_FEATURE)) {
             synchronized (mutexFeature) {
-                if (status == 0) {
+                if (status == ATT_SUCCESS) {
                     psdFeature = new PsdFeature(data);
+                } else {
+                    BleLogger.w(TAG,"Process service data for feature characteristics with status " + status + ", skipped");
                 }
                 mutexFeature.notifyAll();
             }
-        } else if (status == 0) {
+        } else if (status == ATT_SUCCESS) {
             if (characteristic.equals(PSD_PP)) {
                 List<byte[]> list = splitPP(data);
                 for (final byte[] packet : list) {
                     RxUtils.emitNext(ppObservers, object -> object.onNext(new PPData(packet)));
                 }
             }
+        } else {
+            BleLogger.w(TAG, "Process service data with status " + status + ", skipped");
         }
     }
 

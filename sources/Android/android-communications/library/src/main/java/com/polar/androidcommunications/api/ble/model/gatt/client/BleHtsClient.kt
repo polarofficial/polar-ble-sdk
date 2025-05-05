@@ -52,7 +52,7 @@ class BleHtsClient(txInterface: BleGattTxInterface?) :
             TAG, "processServiceData uuid=$characteristic status=$status" +
                     "notifying=$notifying len(data)=${data?.size}"
         )
-        if (characteristic != null && status == 0 && data != null) {
+        if (characteristic != null && status == ATT_SUCCESS && data != null) {
             if (characteristic == HealthThermometer.TEMPERATURE_MEASUREMENT) {
                 BleLogger.d(
                     TAG,

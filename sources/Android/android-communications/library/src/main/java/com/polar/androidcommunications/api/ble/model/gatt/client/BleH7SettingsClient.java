@@ -94,7 +94,7 @@ public class BleH7SettingsClient extends BleGattBase {
 
     @Override
     public void processServiceData(UUID characteristic, byte[] data, int status, boolean notifying) {
-        if (status == 0 && characteristic.equals(H7_SETTINGS_CHARACTERISTIC)) {
+        if (status == ATT_SUCCESS && characteristic.equals(H7_SETTINGS_CHARACTERISTIC)) {
             synchronized (h7InputQueue) {
                 h7InputQueue.push(data);
                 h7InputQueue.notifyAll();

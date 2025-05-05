@@ -91,14 +91,18 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
             if (notifying) {
                 processPmdCpCommand(data, status)
             } else {
-                // feature read
-                synchronized(mutexFeature) {
-                    pmdFeatureData = data
-                    mutexFeature.notifyAll()
+                if (status == ATT_SUCCESS) {
+                    // feature read
+                    synchronized(mutexFeature) {
+                        pmdFeatureData = data
+                        mutexFeature.notifyAll()
+                    }
+                } else {
+                    BleLogger.w(TAG, "Process service data with status $status, skipped")
                 }
             }
         } else if (characteristic == PMD_DATA) {
-            if (status == 0) {
+            if (status == ATT_SUCCESS) {
                 processPmdData(data)
             } else {
                 BleLogger.e(TAG, "pmd data attribute error")
@@ -231,13 +235,30 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
 
 
     @Throws(Exception::class)
-    private fun receiveControlPointPacket(): ByteArray {
-        val pair = pmdCpResponseQueue.poll(30, TimeUnit.SECONDS)
-        if (pair != null) {
-            if (pair.second == 0) {
-                return pair.first
+    private fun receiveControlPointPacket(command: Byte): ByteArray {
+
+        var pair: Pair<ByteArray, Int>? = null
+        var dataFetchedFromQueue = false
+
+        do {
+            val headPair = pmdCpResponseQueue.poll(30, TimeUnit.SECONDS)
+            if (headPair == null) {
+                dataFetchedFromQueue = true
+            } else if (headPair.second != 0) {
+                BleLogger.e(TAG, "Received PMD CP packet with nonzero status ${headPair.second}")
+            } else if (headPair.first.size < 2) {
+                BleLogger.e(TAG, "Received PMD CP packet with unexpected byte array size ${headPair.first.size}")
+            } else if (headPair.first[1] != command) {
+                BleLogger.e(TAG, "Received PMD CP packet with unexpected command byte ${headPair.first[1]}, expected ${command}")
+            } else { // valid
+                pair = headPair
+                dataFetchedFromQueue = true
             }
-            throw BleAttributeError("pmd cp attribute error: ", pair.second)
+
+        } while (!dataFetchedFromQueue)
+
+        if (pair != null) {
+            return pair.first
         }
         throw Exception("Pmd response failed to receive in timeline")
     }
@@ -245,11 +266,12 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
     @Throws(Exception::class)
     private fun sendPmdCommand(packet: ByteArray): PmdControlPointResponse {
         txInterface.transmitMessage(PMD_SERVICE, PMD_CP, packet, true)
-        val first = receiveControlPointPacket()
+        val command = packet[0]
+        val first = receiveControlPointPacket(command)
         val response = PmdControlPointResponse(first)
         var more = response.more
         while (more) {
-            val moreParameters = receiveControlPointPacket()
+            val moreParameters = receiveControlPointPacket(command)
             val moreResponse = PmdControlPointResponse(moreParameters)
             more = moreResponse.more
             response.parameters = response.parameters.copyOf() + moreParameters.copyOfRange(5, moreParameters.size)
@@ -367,7 +389,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
                 try {
                     currentSettings[type]!!.updateSelectedFromStartResponse(pmdControlPointResponse.parameters)
                 } catch (e: Exception) {
-                    throw BleControlPointResponseError("Failed to parse PMD settings response from device. Measurement type: $type. Exception: $e")
+                    throw BleControlPointResponseError("Failed to parse PMD control point response from device. Measurement type: $type. Exception: $e \n Response: $pmdControlPointResponse")
                 }
             }
             .toObservable()

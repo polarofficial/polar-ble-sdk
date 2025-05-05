@@ -1,6 +1,7 @@
 // Copyright © 2019 Polar Electro Oy. All rights reserved.
 package com.polar.sdk.impl
 
+import android.annotation.SuppressLint
 import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -116,6 +117,9 @@ import protocol.PftpResponse
 import protocol.PftpResponse.PbPFtpDirectory
 import protocol.PftpResponse.PbRequestRecordingStatusResult
 import com.polar.sdk.api.model.activity.Polar247PPiSamplesData
+import com.polar.sdk.api.model.trainingsession.PolarTrainingSession
+import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference
+import com.polar.sdk.impl.utils.PolarTrainingSessionUtils
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -950,7 +954,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                     entriesList.map {
                                         PolarOfflineRecordingEntry(
                                             path = it.path.replace(
-                                                Regex("\\d+\\.REC$"),
+                                                Regex("\\d*\\.REC$"),
                                                 ".REC"
                                             ),
                                             size = totalSize.toLong(),
@@ -966,7 +970,6 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                             }
                     }
             }
-
             else -> Flowable.error(PolarServiceNotAvailable())
         }
     }
@@ -1623,15 +1626,42 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         date = date,
                         type = type
                     )
-                }.onErrorResumeNext { throwable: Throwable ->
-                    Flowable.error(
-                        handleError(
-                            throwable
+                }.groupBy { entry -> Pair(entry.date.time, entry.type) }
+                    .onBackpressureBuffer(2048, null, BackpressureOverflowStrategy.DROP_LATEST)
+                    .flatMap { groupedEntries ->
+                        groupedEntries
+                            .toList()
+                            .flatMapPublisher { entriesList ->
+                                var totalSize = 0
+                                entriesList.forEach { (_, size) ->
+                                    totalSize += size.toInt()
+                                }
+                                Flowable.fromIterable(
+                                    entriesList.map {
+                                        PolarOfflineRecordingEntry(
+                                            path = it.path.replace(
+                                                Regex("\\d*\\.REC$"),
+                                                ".REC"
+                                            ),
+                                            size = totalSize.toLong(),
+                                            date = it.date,
+                                            type = it.type
+                                        )
+                                    }
+                                )
+                            }
+                            .distinct { entry -> entry.date.time }
+                            .onErrorResumeNext { throwable: Throwable ->
+                                Flowable.error(handleError(throwable))
+                            }
+                    }.onErrorResumeNext { throwable: Throwable ->
+                        Flowable.error(
+                            handleError(
+                                throwable
+                            )
                         )
-                    )
-                }
+                    }
             }
-
             else -> return Flowable.error(PolarOperationNotSupported())
         }
     }
@@ -1820,14 +1850,12 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         identifier: String,
         entry: PolarOfflineRecordingEntry
     ): Completable {
-        val fileDeletionMap: MutableMap<String, Boolean> = mutableMapOf()
         BleLogger.d(TAG, "Remove offline record from device $identifier path ${entry.path}")
         val session = try {
             sessionPsFtpClientReady(identifier)
         } catch (error: Throwable) {
             return Completable.error(error)
         }
-
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
             ?: return Completable.error(PolarServiceNotAvailable())
         val fsType = getFileSystemType(session.polarDeviceType)
@@ -1855,100 +1883,75 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         Observable.fromIterable(0 until count)
                             .flatMap { subRecordingIndex ->
                                 val recordingPath = entry.path.replace(
-                                    Regex("(\\.REC)$"),
+                                    Regex("(\\d*.REC)$"),
                                     "$subRecordingIndex.REC"
-                                )
-
-                                fileDeletionMap.put(
-                                    listOf(
-                                        recordingPath.split("/")
-                                            .subList(
-                                                0, recordingPath.split("/")
-                                                    .lastIndex - 1
-                                            )
-                                    )[0].joinToString(separator = "/"), false
                                 )
                                 val builder = PftpRequest.PbPFtpOperation.newBuilder()
                                 builder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
                                 builder.path = recordingPath
-
                                 client.request(builder.build().toByteArray()).toObservable()
                             }.ignoreElements().toSingleDefault(count)
                     }
-                }.doFinally {
-                    val dir = "/U/0"
-                    var fileList: MutableList<String> = mutableListOf()
-                    listFiles(identifier, dir,
-                        condition = { entry: String ->
-                            entry.matches(Regex("^(\\d{8})(/)")) ||
-                                    entry.matches(Regex("^(\\d{6})(/)")) ||
-                                    entry == "R/" ||
-                                    entry.contains(".REC") &&
-                                    !entry.contains(".BPB") &&
-                                    !entry.contains("HIST")
-                        })
-                        .map {
-                            fileList.add(it)
+                }.flatMap { _ ->
+                    var currentDir = entry.path.substringBeforeLast("/")
+                    var dirs = mutableListOf<String>()
+                    while (currentDir != "/U/0") {
+                        dirs.add(currentDir)
+                        currentDir = currentDir.substringBeforeLast("/")
+                    }
+                    return@flatMap Single.just(dirs)
+                }.flatMapObservable { dirs ->
+                    Observable.fromIterable(dirs)
+                        .concatMap { dir ->
+                            checkIfDirectoryIsEmpty(dir, client).toObservable()
+                                .concatMap { isEmpty ->
+                                    if (isEmpty) {
+                                        val builder = PftpRequest.PbPFtpOperation.newBuilder()
+                                        builder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
+                                        builder.path = dir
+                                        return@concatMap client.request(builder.build().toByteArray()).toObservable()
+                                    } else {
+                                        return@concatMap Observable.just("Directory was not empty")
+                                    }
+                                }.onErrorResumeNext {
+                                        throwable: Throwable -> Observable.error(handleError(throwable))
+                                }
                         }
-                        .doFinally {
-                            if (fileList.isEmpty()) {
-                                deleteDataDirectories(identifier).subscribe()
-                            }
-                        }
-                       .doOnError { error ->
-                            BleLogger.e(
-                                TAG,
-                                "Failed to list files from directory $dir from device $identifier. Error: $error"
-                            )
-                            Completable.error(error)
-                        }
-                        .subscribe()
-                }.ignoreElement()
+                }.ignoreElements().onErrorResumeNext { error ->
+                    BleLogger.e(TAG, "Error while trying to delete offline recordings from device $identifier, error: $error")
+                    Completable.complete()
+                }
         } else {
             Completable.error(PolarOperationNotSupported())
         }
     }
 
-    private fun removeOfflineFilesRecursively(
-        client: BlePsFtpClient,
-        deletePath: String,
-        whileContaining: Regex? = null
-    ): Completable {
-        require(whileContaining?.let { deletePath.contains(it) } ?: true) {
-            Completable.error(PolarOfflineRecordingError(detailMessage = "Not valid offline recording path to delete $deletePath"))
-        }
+    private fun checkIfDirectoryIsEmpty(directoryPath: String, client: BlePsFtpClient): Single<Boolean> {
 
-        val parentDir = if (deletePath.last() == '/') {
-            deletePath.substringBeforeLast("/").dropLastWhile { it != '/' }
-        } else {
-            deletePath.dropLastWhile { it != '/' }
+        var path = directoryPath
+        if(!path.endsWith("/")) {
+            path = path.plus("/")
         }
-
         val builder = PftpRequest.PbPFtpOperation.newBuilder()
         builder.command = PftpRequest.PbPFtpOperation.Command.GET
-        builder.path = parentDir
+        builder.path = path
 
         return client.request(builder.build().toByteArray())
-            .toFlowable()
-            .flatMapCompletable { byteArrayOutputStream: ByteArrayOutputStream ->
-                val parentDirEntries =
+            .flatMap { byteArrayOutputStream ->
+                val directory =
                     PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray())
-                val isParentDirValid = whileContaining?.let { parentDir.contains(it) } ?: true
-
-                if (parentDirEntries.entriesCount <= 1 && isParentDirValid) {
-                    // the parent directory is valid to be deleted
-                    return@flatMapCompletable removeOfflineFilesRecursively(
-                        client,
-                        parentDir,
-                        whileContaining
-                    )
+                Single.just(directory.entriesList.size == 0)
+            }.onErrorResumeNext { throwable: Throwable ->
+                if (throwable is PftpResponseError) {
+                    val errorId = throwable.error
+                    // The file or directory directory was not found.
+                    if (errorId == 103) {
+                        Single.just(false)
+                    } else {
+                        Single.error(throwable)
+                    }
                 } else {
-                    val removeBuilder = PftpRequest.PbPFtpOperation.newBuilder()
-                    removeBuilder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
-                    removeBuilder.path = deletePath
-                    BleLogger.d(TAG, "Remove offline recording from the path $deletePath")
-                    return@flatMapCompletable client.request(removeBuilder.build().toByteArray())
-                        .toObservable().ignoreElements()
+                    Single.error(throwable)
                 }
             }
     }
@@ -2466,7 +2469,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         val bleHrClient = session.fetchClient(HR_SERVICE) as BleHrClient? ?: return Completable.error(PolarServiceNotAvailable())
         BleLogger.d(TAG, "Stop heart rate online streaming. Device: $identifier")
         try {
-            bleHrClient.reset()
+            bleHrClient.stopObserveHrNotifications(true)
         } catch (e: Exception) {
             Completable.error(e)
         }
@@ -3430,6 +3433,67 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
     }
 
+    override fun getTrainingSessionReferences(identifier: String, fromDate: Date?, toDate: Date?): Flowable<PolarTrainingSessionReference> {
+        return Flowable.create({ emitter ->
+            try {
+                val session = sessionPsFtpClientReady(identifier)
+                val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient
+
+                if (client == null) {
+                    emitter.onComplete()
+                    return@create
+                }
+
+                val subscription = PolarTrainingSessionUtils.getTrainingSessionReferences(
+                    client,
+                    fromDate,
+                    toDate
+                )
+                    .subscribe(
+                        { trainingSession ->
+                            emitter.onNext(trainingSession)
+                        },
+                        { error ->
+                            emitter.onError(error)
+                        },
+                        {
+                            emitter.onComplete()
+                        }
+                    )
+                emitter.setCancellable{ subscription.dispose() }
+            } catch (error: Throwable) {
+                emitter.onError(error)
+            }
+        }, BackpressureStrategy.BUFFER)
+    }
+
+    override fun getTrainingSession(
+        identifier: String,
+        trainingSessionReference: PolarTrainingSessionReference
+    ): Single<PolarTrainingSession> {
+        return Single.create { emitter ->
+            try {
+                val session = sessionPsFtpClientReady(identifier)
+                val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                    ?: throw PolarServiceNotAvailable()
+
+                sendInitializationAndStartSyncNotifications(client)
+
+                PolarTrainingSessionUtils.readTrainingSession(client, trainingSessionReference)
+                    .subscribe(
+                        { result -> emitter.onSuccess(result) },
+                        { error -> emitter.onError(error) }
+                    ).also { subscription ->
+                        emitter.setCancellable { subscription.dispose() }
+                    }
+
+            } catch (error: Throwable) {
+                BleLogger.e(TAG, "Failed to initiate training session read: $error")
+                emitter.onError(error)
+            }
+        }
+    }
+
     private fun sendInitializationAndStartSyncNotifications(client: BlePsFtpClient) {
         BleLogger.d(TAG, "Sending initialize session and start sync notifications")
         client.sendNotification(
@@ -3542,19 +3606,26 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 })
     }
 
-    override fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Flowable<ConcurrentLinkedQueue<String>> {
+    override fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Completable {
 
-        var dataDeletionStats = DataDeletionStats()
         var folderPath = "/U/0"
         val entryPattern = dataType.type
         var cond: FetchRecursiveCondition?
+
+        val session = try {
+            sessionPsFtpClientReady(identifier)
+        } catch (error: Throwable) {
+            return Completable.error(error)
+        }
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Completable.error(PolarServiceNotAvailable())
 
         when (dataType.type) {
             PolarStoredDataType.AUTO_SAMPLE.type -> {
                 folderPath = "/U/0/AUTOS"
                 cond = FetchRecursiveCondition { entry: String ->
                     entry.matches(Regex("^(\\d{8})(/)")) ||
-                            entry.contains( ".BPB")
+                            entry.contains(".BPB")
                 }
             }
 
@@ -3579,268 +3650,108 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
         }
 
-        listFiles(identifier, folderPath, condition = cond)
-            .map {
-                dataDeletionStats.fileDeletionMap[it] = false
-            }.doOnError { error ->
-                BleLogger.e(TAG, "Encountered exception while deleting files in device $identifier.. Error: $error")
-                Flowable.error<Throwable>(error)
-            }.blockingSubscribe()
-
-        if (dataDeletionStats.fileDeletionMap.size == 0) {
-            var emptyQueue = ConcurrentLinkedQueue<String>()
-            emptyQueue.add("No ${dataType.type} files found for deletion.")
-            return Flowable.just(emptyQueue)
-        }
-
-        when (dataType.type) {
-            PolarStoredDataType.AUTO_SAMPLE.type -> {
-                BleLogger.d(TAG, "Starting to delete files from /U/0/AUTOS/ folder from device $identifier.")
-               return deleteAutoSampleFiles(identifier, dataDeletionStats)
-                    .doOnError { error ->
-                        BleLogger.e(TAG, "Encountered exception while deleting AUTO_SAMPLE files in device $identifier. Error: $error")
-                        Flowable.error<Throwable>(error)
+        return listFiles(identifier, folderPath, condition = cond)
+            .flatMap { filename ->
+                if (dataType.type != PolarStoredDataType.AUTO_SAMPLE.type && dataType.type != PolarStoredDataType.SDLOGS.type) {
+                    return@flatMap removeSingleFile(
+                        identifier,
+                        filename
+                    ).flatMapPublisher { _: ByteArrayOutputStream ->
+                        Flowable.just(filename)
                     }
-            }
-
-            PolarStoredDataType.SDLOGS.type -> {
-                BleLogger.d(TAG, "Starting to delete files from SDLOGS folder from device $identifier.")
-                return deleteSdLogFiles(identifier, dataDeletionStats)
-                    .doOnError { error ->
-                        BleLogger.e(TAG, "Encountered exception while deleting SDLOGS files in device $identifier. Error: $error")
-                        Flowable.error<Throwable>(error)
+                } else if (dataType.type == PolarStoredDataType.AUTO_SAMPLE.type) {
+                    return@flatMap getFile(identifier, filename)
+                        .flatMapPublisher { byteArray ->
+                            val proto = PbAutomaticSampleSessions.parseFrom(byteArray)
+                            val date = PolarTimeUtils.pbDateToLocalDate(proto.day)
+                            if (date.isBefore(until) || date == until) {
+                                return@flatMapPublisher removeSingleFile(
+                                    identifier,
+                                    filename
+                                ).flatMapPublisher { _: ByteArrayOutputStream ->
+                                    Flowable.just(filename)
+                                }
+                            } else {
+                                return@flatMapPublisher Flowable.empty()
+                            }
+                        }
+                } else if (dataType.type == PolarStoredDataType.SDLOGS.type) {
+                    return@flatMap removeSingleFile(
+                        identifier,
+                        filename
+                    ).flatMapPublisher { _: ByteArrayOutputStream ->
+                        Flowable.empty()
                     }
-            }
-
-            else -> {
-                BleLogger.d(
-                    TAG,
-                    "Starting to delete files from /U/0 directory, file type: $dataType.name from device $identifier."
-                )
-                return deleteDataDirectories(identifier, until, dataDeletionStats)
-                    .doOnError { error ->
-                        BleLogger.e(TAG, "Encountered exception while deleting ${dataType.type} files in device $identifier. Error: $error")
-                        Flowable.error<Throwable>(error)
+                } else {
+                    Flowable.empty()
+                }
+            }.toList()
+            .flatMap { fileList ->
+                var dirs = mutableListOf<String>()
+                if (dataType.type != PolarStoredDataType.AUTO_SAMPLE.type && dataType.type != PolarStoredDataType.SDLOGS.type) {
+                    for (file in fileList) {
+                        var currentDir = file.substringBeforeLast("/")
+                        while (currentDir != "/U/0") {
+                            dirs.add(currentDir)
+                            currentDir = currentDir.substringBeforeLast("/")
+                        }
                     }
+                }
+                return@flatMap Single.just(dirs)
+            }.flatMapObservable { dirs ->
+                Observable.fromIterable(dirs)
+                    .concatMap { dir ->
+                        checkIfDirectoryIsEmpty(dir, client).toObservable()
+                            .concatMap { isEmpty ->
+                                if (isEmpty) {
+                                    return@concatMap removeSingleFile(identifier, dir).toObservable()
+                                } else {
+                                    return@concatMap Observable.just("Directory was not empty")
+                                }
+                            }
+                    }
+            }.ignoreElements().onErrorResumeNext { error ->
+                BleLogger.e(TAG, "Error while trying to delete offline recordings from device $identifier, error: $error")
+                Completable.complete()
             }
-        }
     }
 
     override fun deleteDeviceDateFolders(identifier: String, fromDate: LocalDate?, toDate: LocalDate?): Completable {
+
+        BleLogger.d(TAG, "Delete empty day folders between: $fromDate to $toDate.")
         val dateFormatter = DateTimeFormatter.BASIC_ISO_DATE
-
-        val deleteCondition = FetchRecursiveCondition { entry: String ->
-            val trimmedPath = entry.trimEnd('/')
-
-            if (!trimmedPath.matches(Regex("\\d{8}"))) {
-                return@FetchRecursiveCondition false
-            }
-
-            return@FetchRecursiveCondition try {
-                val entryDate = LocalDate.parse(trimmedPath, dateFormatter)
-
-                if ((fromDate == null || !entryDate.isBefore(fromDate)) &&
-                    (toDate == null || !entryDate.isAfter(toDate))) {
-
-                    BleLogger.d(TAG, "Date folder: $entryDate is in delete range, deleting")
-
-                    deleteDayDirectory(identifier, "/U/0/$trimmedPath")
-                        .ignoreElements()
-                        .doOnComplete {
-                            BleLogger.d(TAG, "Successfully deleted: $trimmedPath")
-                        }
-                        .doOnError { error ->
-                            BleLogger.e(TAG, "Failed to delete $trimmedPath. Error: ${error.message}")
-                        }
-                        .subscribe()
-
-                    return@FetchRecursiveCondition true
-                }
-                false
-            } catch (e: Exception) {
-                BleLogger.w(TAG, "Failed to parse entry date for: '$trimmedPath'. Error: ${e.message}")
-                false
-            }
+        val session = try {
+            sessionPsFtpClientReady(identifier)
+        } catch (error: Throwable) {
+            return Completable.error(error)
         }
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+        ?: return Completable.error(PolarServiceNotAvailable())
 
-        return listFiles(identifier, "/U/0/", deleteCondition)
-            .doOnNext { folder -> BleLogger.d(TAG, "Remove date folder: $folder") }
-            .ignoreElements()
-            .doOnSubscribe {
-                BleLogger.d(TAG, "Started deleting date folders for device $identifier.")
-            }
-            .doOnComplete {
-                BleLogger.d(TAG, "Successfully completed deletion of date folders for device $identifier.")
-            }
-            .doOnError { error ->
-                BleLogger.e(TAG, "Error deleting date folders from device $identifier. Error: ${error.message}")
-            }
-    }
-
-    private fun deleteAutoSampleFiles(identifier: String, dataDeletionStats: DataDeletionStats): Flowable<ConcurrentLinkedQueue<String>> {
-
-        return Flowable.fromIterable(dataDeletionStats.fileDeletionMap.asIterable()).doOnEach() { item ->
-            val file = item.value
-            if (file != null && !file.value) {
-                getFile(identifier, file.key)
-                    .subscribe(
-                        { byteArray ->
-                            val proto = PbAutomaticSampleSessions.parseFrom(byteArray)
-                            val date = PolarTimeUtils.pbDateToLocalDate(proto.day)
-                            // Delete all files but leave files from today.
-                            if (date.isBefore(LocalDate.now())) {
-                                dataDeletionStats.fileDeletionMap[file.key] = true
-                                removeSingleFile(identifier, file.key)
-                                    .map { _ ->
-                                        dataDeletionStats.fileDeletionMap[file.key] = true
-                                    }.doOnError { error ->
-                                        BleLogger.e(TAG, "Failed to delete autosync file $file.key from device $identifier. Error: $error")
-                                    }.doOnSuccess {
-                                        dataDeletionStats.deletedDirs.add(file.key)
-                                    }.subscribe()
-                            }
-                        },
-                        { error ->
-                            BleLogger.e(TAG, "Failed to load file ${file.key} from device $identifier. Error: $error")
-                        }
-                    )
-            }
-        }.map { _ ->
-            dataDeletionStats.deletedDirs
-        }
-    }
-
-    private fun deleteSdLogFiles(identifier: String, dataDeletionStats: DataDeletionStats): Flowable<ConcurrentLinkedQueue<String>> {
-
-        return Flowable.fromIterable(dataDeletionStats.fileDeletionMap.asIterable()).doOnEach() { item ->
-            val file = item.value
-            if (file != null && !file.value) {
-                removeSingleFile(identifier, file.key)
-                    .observeOn(Schedulers.io())
-                    .map { _ ->
-                        dataDeletionStats.fileDeletionMap[file.key] = true
-                    }.doOnError { error ->
-                        BleLogger.e(
-                            TAG,
-                            "Failed to delete Log file $file.key from device $identifier. Error: $error"
-                        )
-                    }.doOnSuccess {
-                        dataDeletionStats.deletedDirs.add(file.key)
-                    }.subscribe()
-            }
-        }.map { _ ->
-            dataDeletionStats.deletedDirs
-        }
-    }
-
-    private fun deleteDataDirectories(identifier: String, until: LocalDate?, dataDeletionStats: DataDeletionStats): Flowable<ConcurrentLinkedQueue<String>> {
-
-        return Flowable.fromIterable(dataDeletionStats.fileDeletionMap.asIterable())
-            .doOnEach { item ->
-                val file = item.value
-                var fileDateIsBefore = false
-                val pattern: Pattern =
-                    Pattern.compile("(?<!\\d)\\d{8}(?!\\d)")
-                if (file != null) {
-                    val matcher: Matcher = pattern.matcher(file.key)
-                    val found = matcher.find()
-                    if (found) {
-                        var entryDate = LocalDate.parse(matcher.group(), dateFormatter)
-                        if (until != null && entryDate.isBefore(until)) {
-                            fileDateIsBefore = true
-                        }
-                    }
-                    if (fileDateIsBefore) {
-                        val path = listOf(file.key.split("/").subList(0, file.key.split("/").lastIndex))[0].joinToString(separator = "/")
-                        var deleteDir = true
-                        for (dir in dataDeletionStats.deletedDirs) {
-                            if (dir.equals(path)) {
-                                deleteDir = false
-                                break
+        if ((fromDate == null || !fromDate.isBefore(fromDate)) &&
+            (toDate == null || !toDate.isAfter(toDate))
+        ) {
+            var dates = getDatesBetween(fromDate!!, toDate!!)
+            return Observable.fromIterable(dates)
+                .flatMap { date ->
+                    val path = "/U/0/${dateFormatter.format(date).plus("/")}"
+                    val builder = PftpRequest.PbPFtpOperation.newBuilder()
+                    builder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
+                    builder.path = path.trimEnd('/')
+                    return@flatMap client.request(builder.build().toByteArray())
+                        .toObservable()
+                        .onErrorResumeNext { throwable: Throwable ->
+                            if (throwable.message == "NO_SUCH_FILE_OR_DIRECTORY") {
+                                BleLogger.d(TAG, "Day directory for date $date was not found.")
+                                Observable.just(ByteArrayOutputStream())
+                            } else {
+                                Observable.error(throwable)
                             }
                         }
-                        if (deleteDir) {
-                            dataDeletionStats.deletedDirs.add(path)
-                            removeSingleFile(identifier, path)
-                                .observeOn(Schedulers.io())
-                                .doOnError { error ->
-                                    dataDeletionStats.deletedDirs.remove(path)
-                                    BleLogger.e(
-                                        TAG,
-                                        "Failed to delete data directory $path from device $identifier. Error: $error"
-                                    )
-                                }.doAfterSuccess() {
-                                    deleteDayDirectory(
-                                        identifier,
-                                        listOf(
-                                            file.key.split("/")
-                                                .subList(0, file.key.split("/").lastIndex - 1)
-                                        )[0].joinToString(separator = "/")
-                                    ).subscribe()
-                                }.subscribe()
-                        }
-                    }
-                }
-            }.map { _ ->
-                dataDeletionStats.deletedDirs
-            }
-    }
-
-    private fun deleteDataDirectories(identifier: String): Flowable<Unit> {
-
-        val fileDeletionMap: MutableMap<String, Boolean> = mutableMapOf()
-        return Flowable.fromIterable(fileDeletionMap.asIterable())
-            .map { file ->
-                val dir = listOf(file.key.split("/").subList(0, file.key.split("/").lastIndex))[0].joinToString(separator = "/")
-                removeSingleFile(identifier, dir)
-                    .observeOn(Schedulers.io())
-                    .doOnError { error ->
-                        BleLogger.e(
-                            TAG,
-                            "Failed to delete data directory $dir from device $identifier. Error: $error"
-                        )
-                    }
-                    .doOnSuccess {
-                        deleteDayDirectory(identifier, listOf(file.key.split("/").subList(0,file.key.split("/").lastIndex - 1))[0].joinToString(separator = "/")).subscribe()
-                    }.subscribe()
-            }
-    }
-
-    private fun deleteDayDirectory(identifier: String, dir: String): Flowable<String> {
-
-        var fileList: MutableList<String> = mutableListOf()
-
-        return Flowable.create({ _ ->
-            listFiles(identifier, dir,
-                condition = { entry ->
-                    entry.matches(Regex("^(\\d{8})(/)")) ||
-                            entry.matches(Regex("^([A-Z-0-9]{1,8}[0-9])(/)")) ||
-                            entry.contains(".BPB") ||
-                            entry.contains(".REC")
-                })
-                .map {
-                    fileList.add(it)
-                }
-                .doFinally {
-                    if (fileList.isEmpty()) {
-                        removeSingleFile(identifier, dir)
-                            .observeOn(Schedulers.io())
-                            .doOnError { error ->
-                                BleLogger.e(
-                                    TAG,
-                                    "Failed to delete day directory $dir from device $identifier. Error: $error"
-                                )
-                            }.subscribe()
-                    }
-                }
-                .doOnError { error ->
-                    BleLogger.e(
-                        TAG,
-                        "Failed to list files from day directory $dir from device $identifier. Error: $error"
-                    )
-                    throw PolarBleSdkInstanceException("Failed to delete day directory $dir from device $identifier. Error: $error")
-                }.subscribe()
-        }, BackpressureStrategy.BUFFER)
+                }.ignoreElements()
+        } else {
+            return Completable.complete()
+        }
     }
 
     private fun removeSingleFile(identifier: String, filePath: String): Single<ByteArrayOutputStream> {
@@ -4499,8 +4410,3 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 }
-
-data class DataDeletionStats(
-    var deletedDirs: ConcurrentLinkedQueue<String> = ConcurrentLinkedQueue(),
-    val fileDeletionMap: ConcurrentHashMap<String, Boolean> = ConcurrentHashMap()
-)
