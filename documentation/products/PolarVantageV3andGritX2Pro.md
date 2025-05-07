@@ -1,6 +1,6 @@
 [Back to main page](../../README.md)
 
-# Polar Vantage V3 watch and Polar Grit X2 Pro watch
+# Polar Vantage V3, Vantage M3 and Grit X2 Pro watches
 
 Polar Vantage V3 is a premium fitness and wellness watch.
 [Store page](https://www.polar.com/en/vantage/v3)
