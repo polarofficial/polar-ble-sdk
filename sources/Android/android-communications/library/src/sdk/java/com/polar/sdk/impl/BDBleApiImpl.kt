@@ -3641,7 +3641,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
             else -> {
                 cond = FetchRecursiveCondition { entry: String ->
-                    entry.matches(Regex("^(\\d{8})(/)")) ||
+                    entry.matches(Regex("^(\\d{8})(/)")) &&
+                            entry == "${dateFormatter.format(until).toString().replace("-", "")}/" ||
                             entry == "${entryPattern}/" ||
                             entry.contains(".BPB") &&
                             !entry.contains("USERID.BPB") &&
