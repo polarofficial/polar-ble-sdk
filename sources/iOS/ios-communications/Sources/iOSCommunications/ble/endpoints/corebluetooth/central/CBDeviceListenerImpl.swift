@@ -160,6 +160,8 @@ public class CBDeviceListenerImpl: NSObject, CBCentralManagerDelegate {
         if session == nil {
             self.sessions.append(CBDeviceSessionImpl(peripheral: peripheral, central: self.manager, scanner: self, factory: self.factory, queueBle: self.queueBle, queue: self.queue))
             BleLogger.trace("new peripheral discovered: ", peripheral.description)
+        } else {
+            BleLogger.trace("peripheral with session discovered: ", peripheral.description)
         }
         
         guard let sess = self.session(peripheral) else {
@@ -282,42 +284,48 @@ extension CBDeviceListenerImpl: BleDeviceListener {
     
     public func search(_ uuids: [CBUUID]?, identifiers: [UUID]?, fetchKnownDevices: Bool) -> Observable<BleDeviceSession> {
         var object: RxObserver<BleDeviceSession>!
-        return Observable.create{ observer in
-            object = RxObserver<BleDeviceSession>(obs: observer)
-            self.scanner.addClient(object)
-            
-            var foundPeripherals = [CBPeripheral]()
-            
-            if uuids != nil {
-                foundPeripherals = self.manager.retrieveConnectedPeripherals(withServices: uuids!)
-                    .filter {
-                        return identifiers?.contains($0.identifier) ?? true
-                    }
-            } else if identifiers != nil {
-                foundPeripherals = self.manager.retrievePeripherals(withIdentifiers: (identifiers)!)
-            }
-            
-            for device in foundPeripherals {
-                if self.session(device) == nil {
-                    var advData = [String : Any]()
-                    if device.name != nil {
-                        advData[CBAdvertisementDataLocalNameKey] = device.name as Any?
-                    }
-                    
-                    if uuids != nil {
-                        advData[CBAdvertisementDataServiceUUIDsKey] = uuids as Any?
-                    }
-                    self.centralManager(self.manager, didDiscover: device, advertisementData: advData, rssi: -20)
+    
+        return monitorBleState().filter { $0 == .poweredOn }
+            .take(1)
+            .flatMap { _ -> Observable<BleDeviceSession> in
+            Observable.create{ observer in
+                object = RxObserver<BleDeviceSession>(obs: observer)
+                self.scanner.addClient(object)
+                
+                var foundPeripherals = [CBPeripheral]()
+        
+                if uuids != nil {
+                    foundPeripherals = self.manager.retrieveConnectedPeripherals(withServices: uuids!)
+                        .filter {
+                            return identifiers?.contains($0.identifier) ?? true
+                        }
+                } else if identifiers != nil {
+                    foundPeripherals = self.manager.retrievePeripherals(withIdentifiers: (identifiers)!)
                 }
-            }
-            if fetchKnownDevices {
-                self.sessions.items.forEach { (sess) in
-                    observer.onNext(sess)
+                
+                for device in foundPeripherals {
+                    if self.session(device) == nil {
+                        var advData = [String : Any]()
+                        if device.name != nil {
+                            advData[CBAdvertisementDataLocalNameKey] = device.name as Any?
+                        }
+                        
+                        if uuids != nil {
+                            advData[CBAdvertisementDataServiceUUIDsKey] = uuids as Any?
+                        }
+                        self.centralManager(self.manager, didDiscover: device, advertisementData: advData, rssi: -20)
+                    }
                 }
-            }
-            
-            return Disposables.create {
-                self.scanner.removeClient(object)
+                if fetchKnownDevices {
+                    self.sessions.items.forEach { (sess) in
+                        NSLog("search returning session \(sess.peripheral)")
+                        observer.onNext(sess)
+                    }
+                }
+                
+                return Disposables.create {
+                    self.scanner.removeClient(object)
+                }
             }
         }
     }

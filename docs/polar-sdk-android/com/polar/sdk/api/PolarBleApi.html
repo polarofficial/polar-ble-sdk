@@ -604,6 +604,14 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Deletes device day (YYYMMDD) folders from the given date range from a device.</td>
                                         </tr>
                                         
+                                        <tr id="i33" class="rowColor">
+                                            <td class="colFirst"><code>abstract Completable</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#waitForConnection(java.lang.String)>waitForConnection</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">Waits for a connection to the specified device.</td>
+                                        </tr>
+                                        
                                         </tbody>
                                     </table>
                                 </div>
@@ -613,7 +621,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <!--   -->
                                         </a>
                                             <h3>Methods inherited from class&nbsp;com.polar.sdk.api.PolarOnlineStreamingApi</h3>
-                                            <code>getAvailableOnlineStreamDataTypes, requestFullStreamSettings, requestStreamSettings, startAccStreaming, startEcgStreaming, startGyroStreaming, startHrStreaming, startLocationStreaming, startMagnetometerStreaming, startPpgStreaming, startPpiStreaming, startPressureStreaming, startSkinTemperatureStreaming, startTemperatureStreaming, stopHrStreaming, stopStreaming</code></li>
+                                            <code>getAvailableHRServiceDataTypes, getAvailableOnlineStreamDataTypes, requestFullStreamSettings, requestStreamSettings, startAccStreaming, startEcgStreaming, startGyroStreaming, startHrStreaming, startLocationStreaming, startMagnetometerStreaming, startPpgStreaming, startPpiStreaming, startPressureStreaming, startSkinTemperatureStreaming, startTemperatureStreaming, stopHrStreaming, stopStreaming</code></li>
                                  
                                     <li class="blockList"><a id="methods.inherited.from.class.com.polar.sdk.api.PolarOfflineRecordingApi">
                                             <!--   -->
@@ -1744,7 +1752,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                     <!--   -->
                                 </a>
                                 <ul class=
-                                              "blockListLast"
+                                              "blockList"
                                           >
                                     <li class="blockList">
                                         <h4>deleteDeviceDateFolders</h4>
@@ -1773,6 +1781,39 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
                                             <dd><p>Completable emitting success or error</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="waitForConnection(java.lang.String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>waitForConnection</h4>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#waitForConnection(java.lang.String)>waitForConnection</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Waits for a connection to the specified device. Emits success when the connection is established or an error if the connection fails.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device ID or Bluetooth address</dd>
+                                            
+                                            
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Completable emitting success when connected or error if the connection fails</p></dd>
                                         
 
                                         

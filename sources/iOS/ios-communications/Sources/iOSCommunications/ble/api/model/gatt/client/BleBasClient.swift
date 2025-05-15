@@ -65,7 +65,11 @@ public class BleBasClient: BleGattClientBase {
     private func parseChargeState(from data: Data) -> ChargeState {
         let dataHex = data.map { String(format: "%02X", $0) }.joined(separator: " ")
         BleLogger.trace("Parsing charge state from data: \(dataHex)")
-
+        guard data.count > 0 else {
+            BleLogger.error("Charge state: data is empty?")
+            BleLogger.trace("Charge state: Unknown")
+            return .unknown
+        }
         let chargeStateValue = data[1] & 0xF3
 
         switch chargeStateValue {

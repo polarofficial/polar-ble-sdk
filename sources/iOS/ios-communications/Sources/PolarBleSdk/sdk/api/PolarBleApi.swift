@@ -199,7 +199,7 @@ public typealias PolarExerciseData = (interval: UInt32, samples: [UInt32])
 public typealias PolarRecordingStatus = (ongoing: Bool, entryId: String)
 
 /// API.
-public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi, PolarActivityApi, PolarSleepApi {
+public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi, PolarActivityApi, PolarSleepApi, PolarTrainingSessionApi {
     
     /// remove all known devices, which are not in use
     func cleanup()
@@ -413,6 +413,14 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - success: when date folders successfully deleted
     ///   - onError: see `PolarErrors` for possible errors invoked
     func deleteDeviceDateFolders(_ identifier: String, fromDate: Date?, toDate: Date?) -> Completable
+
+    /// Waits for the device to establish a connection.
+    /// - Parameters:
+    ///  - identifier: Polar device ID or Bluetooth UUID
+    /// - Returns: Completable stream
+    ///   - success: When connection is established
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func waitForConnection(_ identifier: String) -> Completable
 
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }

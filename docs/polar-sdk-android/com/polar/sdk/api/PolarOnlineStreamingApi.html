@@ -254,6 +254,14 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                         </tr>
                                         
                                         <tr id="i1" class="rowColor">
+                                            <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a>&gt;&gt;</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarOnlineStreamingApi.html#getAvailableHRServiceDataTypes(java.lang.String)>getAvailableHRServiceDataTypes</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">Find out if the HR service is available in the device.</td>
+                                        </tr>
+                                        
+                                        <tr id="i2" class="altColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=model/PolarSensorSetting.html>PolarSensorSetting</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarOnlineStreamingApi.html#requestStreamSettings(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType)>requestStreamSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature) </code>
@@ -261,7 +269,7 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                             <td class="colLast">Request the online stream settings available in current operation mode.</td>
                                         </tr>
                                         
-                                        <tr id="i2" class="altColor">
+                                        <tr id="i3" class="rowColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=model/PolarSensorSetting.html>PolarSensorSetting</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarOnlineStreamingApi.html#requestFullStreamSettings(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarDeviceDataType)>requestFullStreamSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a> feature) </code>
@@ -269,7 +277,7 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                             <td class="colLast">Request the settings available in the device.</td>
                                         </tr>
                                         
-                                        <tr id="i3" class="rowColor">
+                                        <tr id="i4" class="altColor">
                                             <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarHrData.html>PolarHrData</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarOnlineStreamingApi.html#startHrStreaming(java.lang.String)>startHrStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -277,7 +285,7 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                             <td class="colLast">Start heart rate stream.</td>
                                         </tr>
                                         
-                                        <tr id="i4" class="altColor">
+                                        <tr id="i5" class="rowColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarOnlineStreamingApi.html#stopHrStreaming(java.lang.String)>stopHrStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -285,7 +293,7 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                             <td class="colLast">Stops heart rate stream.</td>
                                         </tr>
                                         
-                                        <tr id="i5" class="rowColor">
+                                        <tr id="i6" class="altColor">
                                             <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarEcgData.html>PolarEcgData</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarOnlineStreamingApi.html#startEcgStreaming(java.lang.String,com.polar.sdk.api.model.PolarSensorSetting)>startEcgStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting) </code>
@@ -293,7 +301,7 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                             <td class="colLast">Start the ECG (Electrocardiography) stream.</td>
                                         </tr>
                                         
-                                        <tr id="i6" class="altColor">
+                                        <tr id="i7" class="rowColor">
                                             <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarAccelerometerData.html>PolarAccelerometerData</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarOnlineStreamingApi.html#startAccStreaming(java.lang.String,com.polar.sdk.api.model.PolarSensorSetting)>startAccStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting) </code>
@@ -301,7 +309,7 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                             <td class="colLast">Start ACC (Accelerometer) stream.</td>
                                         </tr>
                                         
-                                        <tr id="i7" class="rowColor">
+                                        <tr id="i8" class="altColor">
                                             <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarPpgData.html>PolarPpgData</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarOnlineStreamingApi.html#startPpgStreaming(java.lang.String,com.polar.sdk.api.model.PolarSensorSetting)>startPpgStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting) </code>
@@ -309,7 +317,7 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                             <td class="colLast">Start optical sensor PPG (Photoplethysmography) stream.</td>
                                         </tr>
                                         
-                                        <tr id="i8" class="altColor">
+                                        <tr id="i9" class="rowColor">
                                             <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarPpiData.html>PolarPpiData</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarOnlineStreamingApi.html#startPpiStreaming(java.lang.String)>startPpiStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -317,7 +325,7 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                             <td class="colLast">Start PPI (Pulse to Pulse interval) stream.</td>
                                         </tr>
                                         
-                                        <tr id="i9" class="rowColor">
+                                        <tr id="i10" class="altColor">
                                             <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarMagnetometerData.html>PolarMagnetometerData</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarOnlineStreamingApi.html#startMagnetometerStreaming(java.lang.String,com.polar.sdk.api.model.PolarSensorSetting)>startMagnetometerStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting) </code>
@@ -325,7 +333,7 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                             <td class="colLast">Start magnetometer stream.</td>
                                         </tr>
                                         
-                                        <tr id="i10" class="altColor">
+                                        <tr id="i11" class="rowColor">
                                             <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarGyroData.html>PolarGyroData</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarOnlineStreamingApi.html#startGyroStreaming(java.lang.String,com.polar.sdk.api.model.PolarSensorSetting)>startGyroStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting) </code>
@@ -333,7 +341,7 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                             <td class="colLast">Start Gyro stream.</td>
                                         </tr>
                                         
-                                        <tr id="i11" class="rowColor">
+                                        <tr id="i12" class="altColor">
                                             <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarPressureData.html>PolarPressureData</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarOnlineStreamingApi.html#startPressureStreaming(java.lang.String,com.polar.sdk.api.model.PolarSensorSetting)>startPressureStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting) </code>
@@ -341,7 +349,7 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                             <td class="colLast">Start Pressure data stream.</td>
                                         </tr>
                                         
-                                        <tr id="i12" class="altColor">
+                                        <tr id="i13" class="rowColor">
                                             <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarLocationData.html>PolarLocationData</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarOnlineStreamingApi.html#startLocationStreaming(java.lang.String,com.polar.sdk.api.model.PolarSensorSetting)>startLocationStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting) </code>
@@ -349,7 +357,7 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                             <td class="colLast">Start Location data stream.</td>
                                         </tr>
                                         
-                                        <tr id="i13" class="rowColor">
+                                        <tr id="i14" class="altColor">
                                             <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarTemperatureData.html>PolarTemperatureData</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarOnlineStreamingApi.html#startTemperatureStreaming(java.lang.String,com.polar.sdk.api.model.PolarSensorSetting)>startTemperatureStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting) </code>
@@ -357,7 +365,7 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                             <td class="colLast">Start Temperature data stream.</td>
                                         </tr>
                                         
-                                        <tr id="i14" class="altColor">
+                                        <tr id="i15" class="rowColor">
                                             <td class="colFirst"><code>abstract Flowable&lt;<a href=model/PolarTemperatureData.html>PolarTemperatureData</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarOnlineStreamingApi.html#startSkinTemperatureStreaming(java.lang.String,com.polar.sdk.api.model.PolarSensorSetting)>startSkinTemperatureStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarSensorSetting.html>PolarSensorSetting</a> sensorSetting) </code>
@@ -365,7 +373,7 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                             <td class="colLast">Start Skin Temperature data stream.</td>
                                         </tr>
                                         
-                                        <tr id="i15" class="rowColor">
+                                        <tr id="i16" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarOnlineStreamingApi.html#stopStreaming(java.lang.String,.<Error class: unknown class>)>stopStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, &lt;Error class: unknown class&gt; type) </code>
@@ -442,6 +450,39 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
                                             <dd><p>Single Produces: &lt;BR&gt;&lt;/BR&gt; - onSuccess the set of available online streaming data types in this device &lt;BR&gt;&lt;/BR&gt; - onError status request failed</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="getAvailableHRServiceDataTypes(java.lang.String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getAvailableHRServiceDataTypes</h4>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a>&gt;&gt; <a href=PolarOnlineStreamingApi.html#getAvailableHRServiceDataTypes(java.lang.String)>getAvailableHRServiceDataTypes</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Find out if the HR service is available in the device. Use this API method in a case where the device does not support Polar Measurement Data service. In such a case using 'getAvailableOnlineStreamDataTypes' will return error; use this method instead.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device id found printed on the sensor/device or bt address</dd>
+                                            
+                                            
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Single Produces: &lt;BR&gt;&lt;/BR&gt; - onSuccess the set with HR service, if available &lt;BR&gt;&lt;/BR&gt; - onError status request failed</p></dd>
                                         
 
                                         

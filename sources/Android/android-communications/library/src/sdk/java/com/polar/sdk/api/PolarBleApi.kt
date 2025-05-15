@@ -435,4 +435,13 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @return [Completable] emitting success or error
      */
     abstract fun deleteDeviceDateFolders(identifier: String, fromDate: LocalDate?, toDate: LocalDate?): Completable
+
+    /**
+     * Waits for a connection to the specified device.
+     * Emits success when the connection is established or an error if the connection fails.
+     *
+     * @param identifier Polar device ID or Bluetooth address
+     * @return [Completable] emitting success when connected or error if the connection fails
+     */
+    abstract fun waitForConnection(identifier: String): Completable
 }

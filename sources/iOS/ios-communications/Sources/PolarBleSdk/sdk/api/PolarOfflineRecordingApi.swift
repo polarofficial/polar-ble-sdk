@@ -123,7 +123,7 @@ public protocol PolarOfflineRecordingApi {
     ///   - identifier: polar device id
     ///   - entry: entry to be removed
     /// - Returns: Completable
-    ///   - completed :  offline record is removed
+    ///   - completed :  offline record or record with subrecords is removed
     ///   - error:  offline record removal failed, see `PolarErrors` for possible errors invoked
     func removeOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry) -> Completable
 
@@ -137,7 +137,7 @@ public protocol PolarOfflineRecordingApi {
     ///   - error:  offline record removal failed, see `PolarErrors` for possible errors invoked
     @available(*, deprecated, message:  "Use removeOfflineRecord to remove recording including subrecords instead.")
     func removeOfflineRecords(_ identifier: String, entry: PolarOfflineRecordingEntry) -> Single<Bool>
-    
+
     /// Start offline recording.
     ///
     /// - Parameters:

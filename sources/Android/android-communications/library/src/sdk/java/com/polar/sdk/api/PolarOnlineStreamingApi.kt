@@ -3,6 +3,7 @@ package com.polar.sdk.api
 
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
 import com.polar.sdk.api.PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING
+import com.polar.sdk.api.PolarBleApi.PolarDeviceDataType
 import com.polar.sdk.api.model.*
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
@@ -28,6 +29,19 @@ interface PolarOnlineStreamingApi {
      * <BR></BR> - onError status request failed
      */
     fun getAvailableOnlineStreamDataTypes(identifier: String): Single<Set<PolarBleApi.PolarDeviceDataType>>
+
+    /**
+     * Find out if the HR service is available in the device.
+     * Use this API method in a case where the device does not support Polar Measurement Data service.
+     * In such a case using 'getAvailableOnlineStreamDataTypes' will return error; use this method instead.
+     *
+     * @param identifier Polar device id found printed on the sensor/device or bt address
+     * @return [Single]
+     * Produces:
+     * <BR></BR> - onSuccess the set with HR service, if available
+     * <BR></BR> - onError status request failed
+     */
+    fun getAvailableHRServiceDataTypes(identifier: String): Single<Set<PolarDeviceDataType>>
 
     /**
      * Request the online stream settings available in current operation mode. This request shall be used before the stream is started

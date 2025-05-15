@@ -10,14 +10,24 @@ import RxSwift
 /// Requires features `PolarBleSdkFeature.feature_polar_online_streaming`
 ///
 public protocol PolarOnlineStreamingApi {
+    
     ///  Get the data types available in this device for online streaming
-    ///
     /// - Parameters:
     ///   - identifier: polar device id
     /// - Returns: Single stream
     ///   - success: set of available online streaming data types in this device
     ///   - onError: see `PolarErrors` for possible errors invoked
     func getAvailableOnlineStreamDataTypes(_ identifier: String) -> Single<Set<PolarDeviceDataType>>
+
+    ///  Find out if the HR service is available in the device. Use this API method in a case where the device does not support Polar Measurement Data service.
+    ///  In such a case using 'getAvailableOnlineStreamDataTypes' will return error; use this method instead.
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id
+    /// - Returns: Single stream
+    ///   - success: onSuccess the set with HR service, if available
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func getAvailableHRServiceDataTypes(identifier: String) -> Single<Set<PolarDeviceDataType>>
     
     ///  Request the stream settings available in current operation mode. This request shall be used before the stream is started
     ///  to decide currently available settings. The available settings depend on the state of the device. For example, if any stream(s)
