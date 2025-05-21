@@ -1942,15 +1942,16 @@ extension PolarBleApiImpl: PolarBleApi  {
             let session = try sessionServiceReady(identifier, service: BleHrClient.HR_SERVICE)
             let bleHrClient = session.fetchGattClient(BleHrClient.HR_SERVICE) as? BleHrClient
             
-            return Single.create {
+            return Single.create { observer in
                 var deviceData: Set<PolarDeviceDataType> = Set()
-                        if (bleHrClient != nil) {
-                            if (!deviceData.contains(PolarDeviceDataType.hr) && bleHrClient?.isServiceDiscovered() != nil) {
-                                deviceData.insert(PolarDeviceDataType.hr)
-                            }
-                        }
-                        return deviceData
+                if (bleHrClient != nil) {
+                    if (!deviceData.contains(PolarDeviceDataType.hr) && bleHrClient?.isServiceDiscovered() != nil) {
+                        deviceData.insert(PolarDeviceDataType.hr)
                     }
+                }
+                observer(.success(deviceData))
+                return Disposables.create()
+            }
             
         } catch let err {
             return Single.error(err)
