@@ -52,6 +52,8 @@ enum PmdDataFrameType: UInt8, CaseIterable {
     case type_8 = 8
     case type_9 = 9
     case type_10 = 10
+    case type_13 = 13
+    case type_14 = 14
     
     private static let DATA_FRAME_BIT_MASK: UInt8 = 0x7F
     

@@ -11,7 +11,9 @@ import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import java.util.Calendar
 
-data class PolarUserDeviceSettings(val deviceLocation: Int?, val usbConnectionMode: Boolean? = null) {
+data class PolarUserDeviceSettings(val deviceLocation: Int? = null,
+                                   val usbConnectionMode: Boolean? = null
+) {
 
     enum class DeviceLocation(val value: Int) {
         UNDEFINED(0),
@@ -48,8 +50,8 @@ data class PolarUserDeviceSettings(val deviceLocation: Int?, val usbConnectionMo
         }
 
         return PbUserDeviceSettings.newBuilder()
-            .setGeneralSettings(pbSettingsWithDeviceLocation)
-            .setUsbConnectionSettings(pbUsbConnectionSettings)
+            .setGeneralSettings(pbSettingsWithDeviceLocation.build())
+            .setUsbConnectionSettings(pbUsbConnectionSettings.build())
             .setLastModified(createTimeStamp())
             .build()
     }
@@ -66,7 +68,11 @@ data class PolarUserDeviceSettings(val deviceLocation: Int?, val usbConnectionMo
         } else {
             null
         }
-        return PolarUserDeviceSettings(deviceLocation, usbConnectionMode)
+
+        return PolarUserDeviceSettings(
+            deviceLocation,
+            usbConnectionMode
+        )
     }
 }
 

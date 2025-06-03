@@ -46,6 +46,15 @@ public class PpgData {
     private static let TYPE_10_STATUS_SIZE: UInt8 = 20
     private static let TYPE_10_CHANNELS_IN_SAMPLE: UInt8 = 21
     
+    private static let TYPE_13_SAMPLE_SIZE_IN_BYTES: UInt8 = 3
+    private static let TYPE_13_SAMPLE_SIZE_IN_BITS: UInt8 = TYPE_13_SAMPLE_SIZE_IN_BYTES * 8
+    private static let TYPE_13_CHANNELS_IN_SAMPLE: UInt8 = 3
+
+    private static let TYPE_14_NUM_INTS_SIZE = 1
+    private static let TYPE_14_CHANNEL_0_AND_1_SIZE = 2
+    private static let TYPE_14_SAMPLE_SIZE_IN_BYTES =
+        TYPE_14_NUM_INTS_SIZE + TYPE_14_CHANNEL_0_AND_1_SIZE
+    
     static func parseDataFromDataFrame(frame: PmdDataFrame) throws -> PpgData {
         if (frame.isCompressedFrame) {
             switch (frame.frameType) {
@@ -53,6 +62,7 @@ public class PpgData {
             case PmdDataFrameType.type_7: return try dataFromCompressedType7(frame: frame)
             case PmdDataFrameType.type_8: return try dataFromCompressedType8(frame: frame)
             case PmdDataFrameType.type_10: return try dataFromCompressedType10(frame: frame)
+            case PmdDataFrameType.type_13: return try dataFromCompressedType13(frame: frame)
             default: throw BleGattException.gattDataError(description: "Compressed FrameType: \(frame.frameType) is not supported by PPG data parser")
             }
         } else {
@@ -62,11 +72,12 @@ public class PpgData {
             case PmdDataFrameType.type_5: return try dataFromRawType5(frame: frame)
             case PmdDataFrameType.type_6: return try dataFromRawType6(frame: frame)
             case PmdDataFrameType.type_9: return try dataFromRawType9(frame: frame)
+            case PmdDataFrameType.type_14: return try dataFromRawType14(frame: frame)
             default: throw BleGattException.gattDataError(description: "Raw FrameType: \(frame.frameType) is not supported by PPG data parser")
             }
         }
     }
-    
+
     private static func dataFromRawType0(frame: PmdDataFrame) throws -> PpgData {
         var offset = 0
         let step = TYPE_0_SAMPLE_SIZE_IN_BYTES
@@ -204,7 +215,45 @@ public class PpgData {
         
         return PpgData(timeStamp: frame.timeStamp, samples: ppgSamples)
     }
-    
+
+    private static func dataFromRawType14(frame: PmdDataFrame) throws -> PpgData {
+
+        let samplesSize = Int(Double(frame.dataContent.count) / Double(TYPE_14_SAMPLE_SIZE_IN_BYTES))
+        let timeStamps = try PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp: frame.previousTimeStamp, frameTimeStamp: frame.timeStamp, samplesSize: UInt(samplesSize), sampleRate: frame.sampleRate)
+        var ppgSamples = [PpgSample]()
+        var timeStampIndex = 0
+
+        var offset = 0
+        var channelSamples: [Int32] = []
+        while offset < frame.dataContent.count {
+            let numIntTs = frame.dataContent[offset..<(offset + TYPE_14_NUM_INTS_SIZE)].map(Int32.init)
+            channelSamples.append(contentsOf: numIntTs)
+            offset += TYPE_14_NUM_INTS_SIZE
+            var channel1GainTs = [Int32]()
+            for (index, value) in frame.dataContent[offset..<(offset + TYPE_14_CHANNEL_0_AND_1_SIZE)]
+                .enumerated() {
+                if (index % 2 == 0) {
+                    channel1GainTs.append(Int32(value & 0x07))
+                }
+            }
+            channelSamples.append(contentsOf: channel1GainTs)
+            var channel2GainTs = [Int32]()
+            for (index, value) in frame.dataContent[offset..<(offset + TYPE_14_CHANNEL_0_AND_1_SIZE)]
+                .enumerated() {
+                if (index % 2 == 1) {
+                    channel2GainTs.append(Int32(value & 0x07))
+                }
+            }
+            channelSamples.append(contentsOf: channel2GainTs)
+            offset += TYPE_14_CHANNEL_0_AND_1_SIZE
+
+            ppgSamples.append( PpgSample( timeStamp: timeStamps[timeStampIndex], ppgDataSamples: channelSamples, ambientSample: nil, status: nil, frameType: frame.frameType, operationMode: nil))
+            timeStampIndex += 1
+        }
+
+        return PpgData(timeStamp: frame.timeStamp, samples: ppgSamples)
+    }
+
     private static func dataFromCompressedType0(frame: PmdDataFrame) throws -> PpgData {
         let samples = Pmd.parseDeltaFramesToSamples(frame.dataContent, channels: TYPE_0_CHANNELS_IN_SAMPLE, resolution: TYPE_0_SAMPLE_SIZE_IN_BITS)
         let timeStamps = try PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp: frame.previousTimeStamp, frameTimeStamp: frame.timeStamp, samplesSize: UInt(samples.count), sampleRate: frame.sampleRate)
@@ -313,5 +362,34 @@ public class PpgData {
             timeStampIndex+=1
         }
         return PpgData(timeStamp: frame.timeStamp, samples: ppgSamples)
+    }
+    
+    private static func dataFromCompressedType13(frame: PmdDataFrame) throws -> PpgData {
+
+        let samples = Pmd.parseDeltaFramesToSamples(frame.dataContent, channels: TYPE_13_CHANNELS_IN_SAMPLE, resolution: TYPE_13_SAMPLE_SIZE_IN_BITS)
+
+        let timeStamps = try PmdTimeStampUtils.getTimeStamps(
+            previousFrameTimeStamp: frame.previousTimeStamp,
+            frameTimeStamp: frame.timeStamp,
+            samplesSize: UInt(samples.count),
+            sampleRate: frame.sampleRate
+        )
+
+        var timeStampIndex = 0
+        var ppgSamplesFrameType13 = [PpgSample]()
+
+        for (index, sample) in samples.enumerated() {
+            let channelSamples = sample[0..<2].map{ item in
+                if (frame.factor != 1.0) {
+                    return Int32(Float(item) * frame.factor)
+                }
+                else {
+                    return item
+                }
+            }
+            let status = Int32(sample[2] & 0xFFFFFF)
+            ppgSamplesFrameType13.append( PpgSample( timeStamp: timeStamps[index], ppgDataSamples: channelSamples, ambientSample: nil, status: status, frameType: frame.frameType, operationMode: nil))
+        }
+        return PpgData(timeStamp: frame.timeStamp, samples: ppgSamplesFrameType13)
     }
 }

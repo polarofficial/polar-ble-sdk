@@ -447,6 +447,21 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
         return Completable.concat(commands)
     }
 
+    fun waitForMeasurementInactive(
+        type: PmdMeasurementType,
+        pollIntervalMs: Long = 200L,
+        timeoutMs: Long = 5000L
+    ): Completable {
+        return Flowable.interval(0, pollIntervalMs, TimeUnit.MILLISECONDS)
+            .onBackpressureDrop()
+            .flatMapSingle { readMeasurementStatus() }
+            .map { statusMap -> statusMap[type] ?: PmdActiveMeasurement.NO_ACTIVE_MEASUREMENT }
+            .filter { it == PmdActiveMeasurement.NO_ACTIVE_MEASUREMENT }
+            .take(1)
+            .timeout(timeoutMs, TimeUnit.MILLISECONDS)
+            .ignoreElements()
+    }
+
     private fun setOfflineRecordingTriggerMode(triggerMode: PmdOfflineRecTriggerMode): Completable {
         val parameter = byteArrayOf(triggerMode.value.toByte())
         return sendControlPointCommand(PmdControlPointCommandClientToService.SET_OFFLINE_RECORDING_TRIGGER_MODE, parameter)

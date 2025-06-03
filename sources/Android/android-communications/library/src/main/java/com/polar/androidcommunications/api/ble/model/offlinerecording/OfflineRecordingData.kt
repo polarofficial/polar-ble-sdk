@@ -62,11 +62,6 @@ internal class OfflineRecordingData<out T>(
 
             val payloadDataBytes = fileData.drop(metaDataLength)
 
-            // guard
-            if (payloadDataBytes.isEmpty()) {
-                throw OfflineRecordingError.OfflineRecordingNoPayloadData
-            }
-
             val parsedData = parseData(
                 dataBytes = payloadDataBytes,
                 metaData = metaData,
@@ -138,9 +133,6 @@ internal class OfflineRecordingData<out T>(
                 parsePacketSize(metaDataBytes.slice(metaDataOffset until metaDataOffset + PACKET_SIZE_LENGTH)).toInt()
             } catch (e: Exception) {
                 0
-            }
-            require(dataPayloadSize > 0) {
-                throw OfflineRecordingError.OfflineRecordingErrorMetaDataParseFailed(detailMessage = "Data payload size parse failed. The size of the file is ${fileBytes.size}, accessing the index ${metaDataOffset + PACKET_SIZE_LENGTH}  ")
             }
 
             metaDataOffset += PACKET_SIZE_LENGTH
@@ -283,6 +275,10 @@ internal class OfflineRecordingData<out T>(
                 java.lang.Float.intBitsToFloat(ieee754)
             } ?: 1.0f
 
+            // guard
+            if (dataBytes.isEmpty()) {
+                return builder
+            }
             var offset = 0
             val decryptedData = metaData.securityInfo.decryptArray(dataBytes.toByteArray())
             do {

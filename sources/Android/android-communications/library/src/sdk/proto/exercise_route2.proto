@@ -1,0 +1,138 @@
+// ROUTE2.BPB=PbExerciseRouteSamples2
+syntax = "proto2";
+
+package data;
+
+import "types.proto";
+import "structures.proto";
+
+option java_package = "fi.polar.remote.representation.protobuf";
+option java_outer_classname = "ExerciseRouteSamples2";
+
+/*
+   Synchronization point for location.
+
+*/
+message PbLocationSyncPoint
+{
+    // Sync Point Latitude, value is positive on northern hemisphere
+    required double latitude = 1;
+
+    // Sync Point Longitude, value is positive on eastern hemisphere
+    required double longitude = 2;
+}
+
+
+/*
+    Route samples sync point.
+
+    Sync points can be inserted in the data multiple times to synchronize the sample stream
+    and reconfigure the granularity and other parameters of the delta stream.
+*/
+message PbExerciseRouteSyncPoint {
+
+    // Sync point index.
+    // Determines the sample index starting from which
+    // this sync info is valid.
+    // For example index = 0 is the starting sync point.
+    // index [n] refers to [n]:th index in the delta data
+    required uint32 index = 1;
+
+    // If exists, this sync point also synchronizes location
+    optional PbLocationSyncPoint location = 2;
+
+    // If exists, this sync point also synchronizes time
+    // date and time in GPS time
+    optional PbSystemDateTime gps_date_time = 3;
+
+    // If exists, this sync point also synchronizes
+    // Altitude [centimeters from sea level]
+    optional sint32 altitude = 4 [default=0];
+
+    // Granularity of coordinate (lat,lon) deltas starting
+    // from this Sync Point [nanodegrees]
+    // Example: 100 nanodegrees granularity
+    //  Latitude:  64.9430667
+    //  Longitude: 25.4468517
+    //              0.0000001 (100 nanodegrees granularity, 7 decimals)
+    // If not defined, the default value is used starting
+    // from this point onwards.
+    optional uint32 coordinate_granularity = 5 [default=100];
+
+    // Granularity of timestamp deltas starting from
+    // this Sync Point [milliseconds]. If not defined, the default
+    // value is used starting from this point onwards.
+    optional uint32 timestamp_granularity =  6 [default=1000];
+
+    // Granularity of altitude deltas starting from
+    // this Sync Point [millimeters]. If not defined, the default
+    // value is used starting from this point onwards.
+    optional uint32 altitude_granularity =  7 [default=1000];
+}
+
+/*
+  Route samples of the exercise.
+  Route is encoded in delta-format, that is, by using reference points ("Sync points")
+  and number of incremental changes to those points.
+
+  The data format is optimized to give as small as possible changes for each new coordinate
+  so that the Google Protocol Buffers delta coding can squeeze the data as small as possible.
+
+  The usage of Sync Points gives possibility and flexibility to reconfigure the stream during
+  the packing if the conditions change.
+
+  Real data at point x since given sync point can be calculated by:
+  -----------------------------------------------------------------------------
+  latitude[x]  = sync_point->latitude  +
+                 SUM n=0..x ((sync_point->coordinate_granularity * latitude(n))* .000000001)
+  longitude[x] = sync_point->longitude +
+                 SUM n=0..x ((sync_point->coordinate_granularity * longitude(n))* .000000001)
+  timestamp[x] = sync_point->gps_date_time +
+                 SUM n=0..x (sync_point->timestamp_granularity * timestamp(n))
+  altitude[x]  = sync_point->altitude  +
+                 SUM n=0..x (sync_point->altitude_granularity * altitude(n))
+
+  To get data for any arbitrary point you need to iterate with given formula over all
+  previous synchronization points.
+
+  For the sample indexes which have also sync points, the result values are calculated
+  using the NEW sync point.
+
+  Datapoints without GPS FIX are not saved. The fixless-time can be seen from the timestamps
+  moving forward.
+
+*/
+message PbExerciseRouteSamples2 {
+
+    // Points to which incrementally the deltas are accumulated
+    repeated PbExerciseRouteSyncPoint sync_point = 1;
+
+    //
+    // Non-delta data, inserted for every sample index
+    //
+
+    // Number of satellites
+    repeated uint32 satellite_amount = 2 [packed = true];
+
+    //
+    // Delta data
+    //
+
+    // Delta coded latitude values, in granularity-units defined in previous syncpoint,
+    // relative to previous latitude value. One value per sample index.
+    // Accuracy 7 decimals.
+    repeated sint64 latitude = 3 [packed = true];
+
+    // Delta coded longitude values, in granularity-units defined in previous syncpoint,
+    // relative to previous longitude value. One value per sample index.
+    // Accuracy 7 decimals.
+    repeated sint64 longitude = 4 [packed = true];
+
+    // Delta coded timestamp values, in granularity-units defined in previous syncpoint,
+    // relative to previous timestamp. One value per sample index.
+    repeated sint32 timestamp = 5 [packed = true];
+
+    // Delta coded altitude values, in granularity-units defined in previous syncpoint,
+    // relative to previous altitude. One value per sample index, if data available.
+    repeated sint64 altitude = 6 [packed = true];
+};

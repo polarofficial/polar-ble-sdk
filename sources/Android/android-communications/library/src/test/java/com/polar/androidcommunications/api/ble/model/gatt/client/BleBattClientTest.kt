@@ -168,7 +168,7 @@ class BleBattClientTest {
         val characteristic: UUID = BleBattClient.BATTERY_LEVEL_STATUS_CHARACTERISTIC
         val status = 0
         val notifying = true
-        val batteryStatusData = byteArrayOf(0b00000000, 0b11000011.toByte())
+        val batteryStatusData = byteArrayOf(0b00000000, 0b11100011.toByte()) // bit6=1, bit5=1 → 0x60 = value 3
 
         // Act
         val testObserver = TestSubscriber.create<ChargeState>()

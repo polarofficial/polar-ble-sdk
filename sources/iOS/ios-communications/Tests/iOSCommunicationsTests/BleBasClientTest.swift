@@ -144,7 +144,7 @@ class BleBasClientTest: XCTestCase {
         // Arrange
         let characteristic: CBUUID = BleBasClient.BATTERY_STATUS_CHARACTERISTIC
         let status = 0
-        let batteryStatusData = Data([0x00, 0xC3])
+        let batteryStatusData = Data([0x00, 0b11100011])
         
         // Act
         let observer = scheduler.createObserver(BleBasClient.ChargeState.self)
@@ -163,7 +163,7 @@ class BleBasClientTest: XCTestCase {
         // Arrange
         let characteristic: CBUUID = BleBasClient.BATTERY_STATUS_CHARACTERISTIC
         let status = 0
-        let batteryStatusData = Data([0x00, 0xC1])
+        let batteryStatusData = Data([0x00, 0b11000001])
         
         // Act
         let observer = scheduler.createObserver(BleBasClient.ChargeState.self)
@@ -182,7 +182,7 @@ class BleBasClientTest: XCTestCase {
         // Arrange
         let characteristic: CBUUID = BleBasClient.BATTERY_STATUS_CHARACTERISTIC
         let status = 0
-        let batteryStatusData = Data([0x00, 0xA3])
+        let batteryStatusData = Data([0x00, 0b10100011])
         
         // Act
         let observer = scheduler.createObserver(BleBasClient.ChargeState.self)

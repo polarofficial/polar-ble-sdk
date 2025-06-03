@@ -4,21 +4,417 @@ syntax = "proto2";
 package data;
 
 import "types.proto";
+import "structures.proto";
+import "nanopb.proto";
 
 option java_package = "fi.polar.remote.representation.protobuf";
 option java_outer_classname = "UserDeviceSettings";
 
+/*
+  Preferences for the user related to device operational modes.
+  These settings can be overwritten in sport profiles, bikes, etc.
+
+*/
+
+message PbUserDashboardSettings {
+  enum PbDashboard {
+    BASIC              = 1;
+    ACTIVITY           = 2;
+    TRAINING_LOAD      = 3;
+    HEART_RATE         = 4;
+    SLEEP              = 5;
+    LAST_TRAINING      = 6;
+    ON_DEMAND_TRAINING = 7;
+    WEATHER            = 8;
+    WEEKLY_SUMMARY     = 9;
+  };
+
+  // Selected dashboard
+  optional PbDashboard dashboard = 1;
+
+  // List of available dashboards
+  repeated PbDashboard available_dashboards = 2;
+}
+
 message PbUserDeviceGeneralSettings {
+
+  optional PbTimeSelection OBSOLETE_time_selection = 1;
+
+  // Offset of time 2, in minutes
+  // range [-1440..1440] (+- 24 hours)
+  //
+  optional int32 OBSOLETE_time2_offset = 2;
+
+  enum PbWatchFace {
+    BASIC          = 1;
+    AWARD          = 2;
+    USER_NAME      = 3;
+    EVENT          = 4;
+    ANALOG         = 5;
+    BIG            = 6;
+    ACTIVITY       = 7;
+    BIG_ANALOG     = 8;
+    WHITE_ANALOG   = 9;
+    JUMBO          = 10;
+    BIG_DIGITS     = 11;
+    ACTIVITY_CIRCLE= 12;
+  };
+  optional PbWatchFace watch_face = 3;
+
+  enum PbButtonLockMode {
+    MANUAL = 1;
+    AUTO = 2;
+  };
+  optional PbButtonLockMode button_lock_mode = 4;
+  optional PbVolume button_sound_volume = 5;
+
+  // Boolean toggle: is vibra enabled or not
+  optional bool vibration_mode = 7;
+
+  optional PbHandedness OBSOLETE_handedness = 8;
+  optional bool exeview_inverted = 9;
+
+  // Tap sensitivity
+  // OFF - tap function off
+  // VERY LOW - very hard tap required
+  // LOW - hard tap required
+  // MEDIUM - moderately hard tap required
+  // HIGH - light tap required
+  //
+  enum PbTapButtonSensitivity {
+    TAP_BUTTON_SENSITIVITY_OFF = 1;
+    TAP_BUTTON_SENSITIVITY_VERY_LOW = 5; // Note the enum value!
+    TAP_BUTTON_SENSITIVITY_LOW = 2;
+    TAP_BUTTON_SENSITIVITY_MEDIUM = 3;
+    TAP_BUTTON_SENSITIVITY_HIGH = 4;
+  };
+  optional PbTapButtonSensitivity tap_button_sensitivity = 10;
+
+  enum PbInactivityAlert {
+    INACTIVITY_ALERT_OFF = 1;
+    INACTIVITY_ALERT_ON = 2;
+  };
+  optional PbInactivityAlert inactivity_alert = 11;
+
+  // enabling means that ble connections are possible
+  optional bool ble_connect_mode_enable = 12;
+
+  optional PbWatchFace backup_watch_face = 13;
+
+  enum PbFlightMode {
+    FLIGHTMODE_OFF = 1;
+    FLIGHTMODE_ON = 2;
+  };
+
+  optional PbFlightMode flightmode = 14;
 
   // Device location on user
   optional PbDeviceLocation device_location = 15;
+
+  // Watch face color in format 0xBBGGRR
+  optional uint32 watch_face_color = 16;
+
+  optional PbUserDashboardSettings dashboard_settings = 17;
+
+  // Vibration feedback mode
+  // Defined how/if WU provides feedback based on user interaction
+  // such as button presses & touch gestures.
+  enum PbVibrationFeedbackMode {
+    VIBRATION_FEEDBACK_DISABLED = 0;
+    VIBRATION_FEEDBACK_ENABLED  = 2;
+  };
+
+  optional PbVibrationFeedbackMode vibration_feedback_mode = 18;
 };
 
-message PbUserDeviceSettings {
+message PbUserDeviceAlarmSettings {
 
-  required PbUserDeviceGeneralSettings general_settings = 1;
-  required PbSystemDateTime last_modified = 101;
-  optional PbUsbConnectionSettings usb_connection_settings = 27;
+  enum PbAlarmMode {
+    ALARM_MODE_OFF = 1;
+    ALARM_MODE_ONCE = 2;
+    ALARM_MODE_MON_TO_FRI = 3;
+    ALARM_MODE_EVERY_DAY = 4;
+  };
+  required PbAlarmMode alarm_mode = 1;
+  required PbTime alarm_time = 2;
+};
+
+message PbOrthostaticTestSchedule {
+
+  /*
+    Scheduled orthostatic test weekdays,
+    TRUE = scheduled,  FALSE = Not scheduled
+  */
+  optional bool monday_scheduled = 1;
+
+  optional bool tuesday_scheduled = 2;
+
+  optional bool wednesday_scheduled = 3;
+
+  optional bool thursday_scheduled = 4;
+
+  optional bool friday_scheduled = 5;
+
+  optional bool saturday_scheduled = 6;
+
+  optional bool sunday_scheduled = 7;
+};
+
+message PbUserDeviceCountdownSettings {
+
+  required PbDuration countdown_time = 1;
+};
+
+message PbUserDeviceJumpTestSettings {
+
+  required PbDuration cont_jump_duration = 1;
+};
+
+message PbIntervalTimerValue {
+
+  enum PbIntervalTimerType {
+    INTERVAL_TIMER_TYPE_DURATION = 1;
+    INTERVAL_TIMER_TYPE_DISTANCE = 2;
+  };
+
+  required PbIntervalTimerType interval_timer_type = 1;
+  optional PbDuration interval_timer_duration = 2;
+  optional float interval_timer_distance = 3 [(type)=DISTANCE];
+};
+
+message PbUserIntervalTimerSettings {
+
+  repeated PbIntervalTimerValue interval_timer_value = 1 [(nanopb).max_count = 2];
+};
+
+message PbUserEndTimeEstimatorSettings {
+
+  optional float end_time_estimator_target = 1 [(type)=DISTANCE];
+};
+
+message PbUserDeviceResearchSettings {
+
+  optional bool accelerometer_raw_data_enable = 1;
+  optional bool gyroscope_raw_data_enable = 2;
+  optional bool magnetometer_raw_data_enable = 3;
+  optional bool linear_acceleration_data_enable = 4;
+  optional bool gps_data_enable = 5;
+}
+
+
+
+message PbUserSafetyLightSettings {
+
+  enum PbSafetyLightMode {
+    SAFETY_LIGHT_MANUAL = 1;
+    SAFETY_LIGHT_AUTOMATIC = 2;
+  };
+  required PbSafetyLightMode mode = 1;
+
+  enum PbSafetyLightActivationLevel {
+    ACTIVATION_LEVEL_DARK = 1;
+    ACTIVATION_LEVEL_DUSK = 2;
+    ACTIVATION_LEVEL_LIGHT = 3;
+  };
+  optional PbSafetyLightActivationLevel activation_level = 2;
+
+  enum PbSafetyLightBlinkRate {
+    BLINK_RATE_OFF = 1;
+    BLINK_RATE_SLOW = 2;
+    BLINK_RATE_FAST = 3;
+    BLINK_RATE_VERY_FAST = 4;
+  };
+  optional PbSafetyLightBlinkRate blink_rate = 3;
+}
+
+
+message PbDoNotDisturbSettings {
+
+  required bool enabled = 1;
+  optional PbTime start = 2;
+  optional PbTime end = 3;
+}
+
+
+message PbUserSmartWatchNotificationSettings {
+
+  required bool enabled = 1;
+  optional bool preview_enabled = 2;
+  optional PbDoNotDisturbSettings do_not_disturb_settings = 3;
+  optional bool sounds_enabled = 4;
+  optional bool on_during_training = 5;
+  optional bool on_when_not_training = 6;
+};
+
+
+message PbUserMapSettings {
+
+  enum PbMapTopDirection {
+
+    // Top of the map points to north
+    TOP_DIRECTION_NORTH = 1;
+
+    // Top of the map points to driving direction
+    TOP_DIRECTION_HEADING = 2;
+  };
+  required PbMapTopDirection map_top_direction = 1;
+  optional bool altitude_data_enabled = 2;
+  optional bool bike_route_data_enabled = 3;
+};
+
+
+message PbUserDeviceRinseDryMessageSettings {
+
+  required uint32 message_count = 1;
+  required PbSystemDateTime last_modified = 2;
+};
+
+// Setting written to device for device mass storage mode.
+// True when mass storage mode is activated on device.
+message PbUserDeviceMassStorageSettings
+{
+  required bool enabled = 1;
+};
+
+message PbTimedDoNotDisturbSettings {
+  optional PbTime start = 1;
+  optional PbTime end = 2;
+};
+
+message PbUserDeviceDoNotDisturbSettings {
+
+  required bool do_not_disturb_on = 1;
+
+  enum PbDoNotDisturbSettingSource {
+    SOURCE_USER     = 0;
+    SOURCE_TIMED    = 1;
+  };
+  optional PbDoNotDisturbSettingSource setting_source = 2;
+};
+
+message PbUserDeviceDoNotDisturbSettings_v2 {
+
+  enum PbDoNotDisturbState {
+    OFF   = 0;
+    ON    = 1;
+    TIMED = 2;
+  };
+
+  optional PbDoNotDisturbState state = 1;
+
+  optional PbTimedDoNotDisturbSettings timed_settings = 2;
+};
+
+message PbUserDeviceAutoSyncSettings {
+
+  // This setting only affects syncing between WU and mobile app.
+  // When enabled syncing can be done without user action.
+  required bool enabled = 1;
+};
+
+message PbUserDeviceAutomaticSampleSettings {
+  required bool ohr_247_enabled = 1;
+};
+
+message PbTimedMeasurementSettings {
+
+  // Clock times for measurement start and end. End time can be bigger than start time.
+  // For example start time 16:00 and end time 13:00 means that measurement is off between 13:00 and 16:00.
+  optional PbTime start_time = 1;
+  optional PbTime end_time = 2;
+};
+
+message PbIntelligentTimedMeasurementSettings {
+
+  // Clock time for measurement start. Measurement is stopped "intelligently".
+  optional PbTime start_time = 1;
+};
+
+message PbAutomaticMeasurementSettings {
+
+  enum PbAutomaticMeasurementState {
+    OFF               = 0;
+    ALWAYS_ON         = 1;
+    INTELLIGENT_TIMED = 2;
+    TIMED             = 3;
+  };
+
+  optional PbAutomaticMeasurementState state = 1;
+
+  // This field is used to provide settings for measurements when state is TIMED.
+  optional PbTimedMeasurementSettings timed_settings = 2;
+
+  // This field is used to provide settings for measurements when state is INTELLIGENT_TIMED.
+  optional PbIntelligentTimedMeasurementSettings intelligent_timed_settings = 3;
+}
+
+message PbUserAutomaticMeasurementSettings {
+  optional PbAutomaticMeasurementSettings automatic_ohr_measurement = 1;
+};
+
+message PbUserDeviceStravaSegmentsSettings {
+  required bool enabled = 1;
+};
+
+message PbUserDeviceDaylightSaving {
+  required PbSystemDateTime next_daylight_saving_time = 1;
+  // Seconds. Can be negative or positive.
+  required sint32 offset = 2;
+};
+
+message PbUserDeviceRecoveryProSettings {
+  required bool recovery_pro_enabled = 1;
+};
+
+message PbSatelliteSystemSettings {
+  optional bool gps_enabled = 1;
+  optional bool glonass_enabled = 2;
+  optional bool galileo_enabled = 3;
+  optional bool sbas_enabled = 4;
+  optional bool beidou_enabled = 5;
+  optional bool qzss_enabled = 6;
+}
+
+message PbGnssSettings {
+  optional PbSatelliteSystemSettings satellite_system_settings = 1;
+};
+
+message PbBreathingExerciseSettings {
+
+  // Breathing exercise target duration
+  optional PbDuration duration = 1;
+
+  // Target inhale duration in milliseconds
+  optional uint32 target_inhale_duration = 2;
+
+  // Target exhale duration in milliseconds
+  optional uint32 target_exhale_duration = 3;
+
+};
+
+message PbRunningTestSettings {
+
+  // Running test initial speed in km/h, default is 6 km/h
+  optional float initial_speed = 1 [(type)=SPEED];
+
+};
+
+message PbMediaControlSettings {
+
+  enum PbMediaControlMode {
+    ALWAYS_OFF           = 0;
+    ALWAYS_ON            = 1;
+    ON_WHEN_TRAINING     = 2;
+    ON_WHEN_NOT_TRAINING = 3;
+  };
+
+  optional PbMediaControlMode mode = 1;
+
+}
+
+message PbUserDeviceTelemetrySettings {
+
+  optional bool telemetry_enabled = 1;
 };
 
 message PbUsbConnectionSettings {
@@ -30,4 +426,42 @@ message PbUsbConnectionSettings {
   };
 
   optional PbUsbConnectionMode mode = 1;
+};
+
+message PbUserDeviceSettings {
+
+  required PbUserDeviceGeneralSettings general_settings = 1;
+  optional PbUserDeviceAlarmSettings alarm_settings = 2;
+  optional PbUserDeviceCountdownSettings countdown_settings = 3;
+  optional PbUserDeviceJumpTestSettings jumptest_settings = 4;
+  optional PbUserIntervalTimerSettings interval_timer_settings = 5;
+  optional PbUserEndTimeEstimatorSettings end_time_estimator_settings = 6;
+  optional PbUserDeviceResearchSettings research_settings = 7;
+  optional PbUserSafetyLightSettings safety_light_settings = 8;
+  optional PbUserSmartWatchNotificationSettings smart_watch_notification_settings = 9;
+  optional PbUserMapSettings map_settings = 10;
+  optional PbUserDeviceRinseDryMessageSettings rinse_dry_message_settings = 11;
+  optional PbUserDeviceMassStorageSettings mass_storage_settings = 12;
+  optional PbUserDeviceDoNotDisturbSettings do_not_disturb_settings = 13;
+  optional PbUserDeviceAutoSyncSettings auto_sync_settings = 14;
+  optional PbUserDeviceAutomaticSampleSettings automatic_sample_settings = 15;
+  optional PbUserDeviceStravaSegmentsSettings strava_segments_settings = 16;
+  optional PbUserDeviceDaylightSaving daylight_saving = 17;
+  optional PbUserDeviceRecoveryProSettings recovery_pro_settings = 18;
+  optional PbOrthostaticTestSchedule orthostatic_test_schedule = 19;
+
+  // "do_not_disturb_settings_v2" field excludes the "do_not_distrub_settings" field when set
+  optional PbUserDeviceDoNotDisturbSettings_v2 do_not_disturb_settings_v2 = 20;
+
+  // "automatic_measurement_settings" field excludes the "automatic_sample_settings" field when set
+  optional PbUserAutomaticMeasurementSettings automatic_measurement_settings = 21;
+
+  optional PbGnssSettings gnss_settings = 22;
+  optional PbBreathingExerciseSettings breathing_exercise_settings = 23;
+  optional PbRunningTestSettings running_test_settings = 24;
+  optional PbMediaControlSettings media_control_settings = 25;
+  optional PbUserDeviceTelemetrySettings telemetry_settings = 26;
+  optional PbUsbConnectionSettings usb_connection_settings = 27;
+
+  required PbSystemDateTime last_modified = 101;
 };

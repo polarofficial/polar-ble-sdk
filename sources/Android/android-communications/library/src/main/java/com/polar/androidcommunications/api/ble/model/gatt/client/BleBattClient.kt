@@ -1,5 +1,6 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client
 
+import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
 import com.polar.androidcommunications.common.ble.AtomicSet
@@ -10,6 +11,7 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
 private const val UNDEFINED_BATTERY_PERCENTAGE = -1
+private const val TAG = "BleBattClient"
 
 enum class ChargeState {
     UNKNOWN, CHARGING, DISCHARGING_ACTIVE, DISCHARGING_INACTIVE
@@ -103,13 +105,14 @@ class BleBattClient(txInterface: BleGattTxInterface?) : BleGattBase(txInterface,
     }
 
     private fun parseBatteryStatus(data: ByteArray): ChargeState {
-        val chargeStateValue = data[1].toInt() and 0xF3
-
-        return when (chargeStateValue) {
-            0xA3 -> ChargeState.CHARGING
-            0xC3 -> ChargeState.DISCHARGING_INACTIVE
-            0xC1 -> ChargeState.DISCHARGING_ACTIVE
-            else -> ChargeState.UNKNOWN
+        return when (val chargeStateValue = (data[1].toInt() and 0x60) shr 5) {
+            1 -> ChargeState.CHARGING
+            2 -> ChargeState.DISCHARGING_ACTIVE
+            3 -> ChargeState.DISCHARGING_INACTIVE
+            else -> {
+                BleLogger.e(TAG, "Unknown charge state value: $chargeStateValue")
+                ChargeState.UNKNOWN
+            }
         }
     }
 

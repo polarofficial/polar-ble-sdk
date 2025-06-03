@@ -4,6 +4,7 @@ package com.polar.sdk.api
 import androidx.annotation.IntRange
 import com.polar.sdk.api.errors.PolarInvalidArgument
 import com.polar.sdk.api.model.*
+import fi.polar.remote.representation.protobuf.UserDeviceSettings.*
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Single
@@ -404,6 +405,7 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @param deviceUserSetting New [PolarUserDeviceSettings]
      * @return [Completable] emitting success or error.
      */
+    @Deprecated("Use setting specific methods instead, e.g. setUserDeviceLocation()")
     abstract fun setUserDeviceSettings(identifier: String, deviceUserSetting: PolarUserDeviceSettings): Completable
 
     /**
@@ -413,6 +415,24 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
     + @return [Single] emitting [PolarUserDeviceSettings] or error
      */
     abstract fun getUserDeviceSettings(identifier: String): Single<PolarUserDeviceSettings>
+
+    /**
+     * Set the user device location on the device.
+     *
+     * @param identifier Polar device ID or BT address.
+     * @param location The location to be set (usually an enum value representing the location).
+     * @return [Completable] emitting success or error.
+     */
+    abstract fun setUserDeviceLocation(identifier: String, location: Int): Completable
+
+    /**
+     * Set the USB connection mode on the device.
+     *
+     * @param identifier Polar device ID or BT address.
+     * @param enabled Whether to enable or disable USB connection mode.
+     * @return [Completable] emitting success or error.
+     */
+    abstract fun setUsbConnectionMode(identifier: String, enabled: Boolean): Completable
 
     /**
      * Delete data [PolarStoredDataType] from a device. Note that you will need to await for completion.

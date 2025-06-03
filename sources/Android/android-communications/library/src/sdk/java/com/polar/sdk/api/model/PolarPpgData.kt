@@ -33,6 +33,8 @@ data class PolarPpgData(
         FRAME_TYPE_8,
         FRAME_TYPE_9,
         FRAME_TYPE_10,
+        FRAME_TYPE_13,
+        FRAME_TYPE_14,
         SPORT_ID,
         UNKNOWN
     }

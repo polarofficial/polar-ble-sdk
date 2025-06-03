@@ -110,6 +110,9 @@
                 <a href="../Classes/PolarUserDeviceSettings/DeviceLocation.html">– DeviceLocation</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Classes/PolarUserDeviceSettings/UsbConnectionMode.html">– UsbConnectionMode</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Classes/PolarUserDeviceSettings/PolarUserDeviceSettingsResult.html">– PolarUserDeviceSettingsResult</a>
               </li>
             </ul>
@@ -150,10 +153,16 @@
                 <a href="../Enums/PolarErrors.html">PolarErrors</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/PolarExerciseDataTypes.html">PolarExerciseDataTypes</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/PolarOfflineRecordingTriggerMode.html">PolarOfflineRecordingTriggerMode</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarTrainingSessionDataTypes.html">PolarTrainingSessionDataTypes</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/PpgDataType.html">PpgDataType</a>
@@ -225,6 +234,9 @@
               <li class="nav-group-task">
                 <a href="../Protocols/PolarSleepApi.html">PolarSleepApi</a>
               </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -282,6 +294,9 @@
                 <a href="../Structs/PolarDistanceData.html">PolarDistanceData</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Structs/PolarExercise.html">PolarExercise</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Structs/PolarFirstTimeUseConfig.html">PolarFirstTimeUseConfig</a>
               </li>
               <li class="nav-group-task">
@@ -303,6 +318,9 @@
                 <a href="../Structs/PolarOfflineRecordingTrigger.html">PolarOfflineRecordingTrigger</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Structs/PolarPlainDate.html">PolarPlainDate</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a>
               </li>
               <li class="nav-group-task">
@@ -313,6 +331,12 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/PolarStepsData.html">PolarStepsData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarTrainingSession.html">PolarTrainingSession</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarTrainingSessionReference.html">PolarTrainingSessionReference</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/PolarUserDeviceSettingsData.html">PolarUserDeviceSettingsData</a>
@@ -724,7 +748,8 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getSubRecordingCount</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt">Int</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Getting subrecordings has been deprecated. Use getOfflineRecord to get full recording instead."</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">getSubRecordingCount</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt">Int</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -791,7 +816,8 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">listSplitOfflineRecordings</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Listing split offline recordings has been deprecated. Use getOfflineRecord to get full recording instead."</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">listSplitOfflineRecordings</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -849,7 +875,8 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getSplitOfflineRecord</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">,</span> <span class="nv">secret</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a></span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Getting split offline records has been deprecated. Use getOfflineRecord to get full recording instead."</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">getSplitOfflineRecord</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">,</span> <span class="nv">secret</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a></span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a></span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -921,7 +948,7 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Removes offline recording from the device</p>
+                        <p>Removes offline recording from the device. Empty parent directories are removed up to day directory.</p>
 
                       </div>
                       <div class="declaration">
@@ -968,7 +995,7 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                         <p>Completable
 
 <ul>
-<li>completed :  offline record is removed</li>
+<li>completed :  offline record or record with subrecords is removed</li>
 <li>error:  offline record removal failed, see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
 </ul></p>
                       </div>
@@ -995,7 +1022,8 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">removeOfflineRecords</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt">Bool</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Use removeOfflineRecord to remove recording including subrecords instead."</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">removeOfflineRecords</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt">Bool</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1338,8 +1366,8 @@ recording is not stopped by disable.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-03-05)</p>
-          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
+          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-06-04)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>
     </div>

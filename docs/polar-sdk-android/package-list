@@ -7,10 +7,6 @@ $dokka.location:com.polar.sdk.api.model.activity/PPiSampleTriggerType.Companion/
 $dokka.location:com.polar.sdk.api.model.activity/SkinContact.Companion///PointingToDeclaration/com/polar/sdk/api/model/activity/SkinContact.Companion.html
 $dokka.location:com.polar.sdk.api.model.sleep/SleepRating.Companion///PointingToDeclaration/com/polar/sdk/api/model/sleep/SleepRating.Companion.html
 $dokka.location:com.polar.sdk.api.model.sleep/SleepWakeState.Companion///PointingToDeclaration/com/polar/sdk/api/model/sleep/SleepWakeState.Companion.html
-$dokka.location:com.polar.sdk.api.model.trainingsession/PolarDuration.Companion///PointingToDeclaration/com/polar/sdk/api/model/trainingsession/PolarDuration.Companion.html
-$dokka.location:com.polar.sdk.api.model.trainingsession/PolarExerciseSummary.Companion///PointingToDeclaration/com/polar/sdk/api/model/trainingsession/PolarExerciseSummary.Companion.html
-$dokka.location:com.polar.sdk.api.model.trainingsession/PolarTrainingSessionSummary.Companion///PointingToDeclaration/com/polar/sdk/api/model/trainingsession/PolarTrainingSessionSummary.Companion.html
-$dokka.location:com.polar.sdk.api.model.trainingsession/PolarTrainingSessionSummary.TrainingStartTrigger///PointingToDeclaration/com/polar/sdk/api/model/trainingsession/PolarTrainingSessionSummary.TrainingStartTrigger.html
 $dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.FetchingFwUpdatePackage///PointingToDeclaration/com/polar/sdk/api/model/FirmwareUpdateStatus.FetchingFwUpdatePackage.html
 $dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.FinalizingFwUpdate///PointingToDeclaration/com/polar/sdk/api/model/FirmwareUpdateStatus.FinalizingFwUpdate.html
 $dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.FwUpdateCompletedSuccessfully///PointingToDeclaration/com/polar/sdk/api/model/FirmwareUpdateStatus.FwUpdateCompletedSuccessfully.html

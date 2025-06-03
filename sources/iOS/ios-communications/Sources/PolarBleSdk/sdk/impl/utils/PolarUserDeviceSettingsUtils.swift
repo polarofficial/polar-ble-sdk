@@ -20,20 +20,20 @@ internal class PolarUserDeviceSettingsUtils {
                 onSuccess: { response in
                     do {
                         let proto = try Data_PbUserDeviceSettings(serializedData: Data(response))
-                        
+                        var result: PolarUserDeviceSettings.PolarUserDeviceSettingsResult
                         if (proto.hasGeneralSettings && proto.generalSettings.hasDeviceLocation) {
-                            let result = PolarUserDeviceSettings.fromProto(pBDeviceUserLocation: proto)
+                            result = PolarUserDeviceSettings.fromProto(pbUserDeviceSettings: proto)
                             emitter(.success(result))
                         } else {
                             emitter(.success(PolarUserDeviceSettings.PolarUserDeviceSettingsResult.init(deviceLocation: PolarUserDeviceSettings.DeviceLocation.UNDEFINED)))
                         }
                     } catch {
-                        BleLogger.error("getDeviceUserLocation() failed for device: \(client), error: \(error).")
+                        BleLogger.error("getUserDeviceSettings() failed for device: \(client), error: \(error).")
                         emitter(.failure(error))
                     }
                 },
                 onFailure: { error in
-                    BleLogger.error("getDeviceUserLocation() failed for device: \(client), error: \(error).")
+                    BleLogger.error("getUserDeviceSettings() failed for device: \(client), error: \(error).")
                     emitter(.success(PolarUserDeviceSettings.PolarUserDeviceSettingsResult(deviceLocation: .UNDEFINED)))
                 }
             )

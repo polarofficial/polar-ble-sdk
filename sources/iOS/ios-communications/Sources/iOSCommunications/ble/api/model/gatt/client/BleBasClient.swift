@@ -70,20 +70,20 @@ public class BleBasClient: BleGattClientBase {
             BleLogger.trace("Charge state: Unknown")
             return .unknown
         }
-        let chargeStateValue = data[1] & 0xF3
+        let chargeStateValue = (data[1] & 0x60) >> 5
 
         switch chargeStateValue {
-        case 0xA3:
+        case 1:
             BleLogger.trace("Charge state: Charging")
             return .charging
-        case 0xC3:
-            BleLogger.trace("Charge state: Discharging Inactive")
-            return .dischargingInactive
-        case 0xC1:
+        case 2:
             BleLogger.trace("Charge state: Discharging Active")
             return .dischargingActive
+        case 3:
+            BleLogger.trace("Charge state: Discharging Inactive")
+            return .dischargingInactive
         default:
-            BleLogger.trace("Charge state: Unknown")
+            BleLogger.trace("Charge state: Unknown (value: \(chargeStateValue))")
             return .unknown
         }
     }

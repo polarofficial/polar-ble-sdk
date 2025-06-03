@@ -213,10 +213,6 @@ class PolarActivityUtilsTest {
         testObserver.assertValue(expectedDistance)
 
         verifyOrder {
-            client.sendNotification(
-                PftpNotification.PbPFtpHostToDevNotification.START_SYNC.number,
-                null
-            )
             client.request(
                 PftpRequest.PbPFtpOperation.newBuilder()
                     .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
@@ -248,10 +244,6 @@ class PolarActivityUtilsTest {
         testObserver.assertValue(0f)
 
         verifyOrder {
-            client.sendNotification(
-                PftpNotification.PbPFtpHostToDevNotification.START_SYNC.number,
-                null
-            )
             client.request(
                 PftpRequest.PbPFtpOperation.newBuilder()
                     .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
@@ -294,10 +286,6 @@ class PolarActivityUtilsTest {
         testObserver.assertValue(expectedCalories)
 
         verifyOrder {
-            client.sendNotification(
-                PftpNotification.PbPFtpHostToDevNotification.START_SYNC.number,
-                null
-            )
             client.request(
                 PftpRequest.PbPFtpOperation.newBuilder()
                     .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
@@ -330,10 +318,6 @@ class PolarActivityUtilsTest {
         testObserver.assertValue(0)
 
         verifyOrder {
-            client.sendNotification(
-                PftpNotification.PbPFtpHostToDevNotification.START_SYNC.number,
-                null
-            )
             client.request(
                 PftpRequest.PbPFtpOperation.newBuilder()
                     .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
@@ -418,10 +402,6 @@ class PolarActivityUtilsTest {
         )
 
         verifyOrder {
-            client.sendNotification(
-                PftpNotification.PbPFtpHostToDevNotification.START_SYNC.number,
-                null
-            )
             client.request(
                 PftpRequest.PbPFtpOperation.newBuilder()
                     .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
@@ -465,10 +445,6 @@ class PolarActivityUtilsTest {
         )
 
         verifyOrder {
-            client.sendNotification(
-                PftpNotification.PbPFtpHostToDevNotification.START_SYNC.number,
-                null
-            )
             client.request(
                 PftpRequest.PbPFtpOperation.newBuilder()
                     .setCommand(PftpRequest.PbPFtpOperation.Command.GET)

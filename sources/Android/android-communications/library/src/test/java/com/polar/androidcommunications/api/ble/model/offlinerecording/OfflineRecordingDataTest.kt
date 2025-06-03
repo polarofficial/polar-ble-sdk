@@ -9,7 +9,6 @@ import org.joda.time.DateTime
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -167,9 +166,8 @@ internal class OfflineRecordingDataTest {
     @Test
     fun `parse offline recording data containing only header`() {
         // Arrange & Act & Assert
-        assertThrows(OfflineRecordingError.OfflineRecordingErrorMetaDataParseFailed::class.java) {
-            OfflineRecordingData.parseDataFromOfflineFile(offlineFrameWithoutData, PmdMeasurementType.MAGNETOMETER)
-        }
+        val offlineHrData = OfflineRecordingData.parseDataFromOfflineFile(offlineFrameWithoutData, PmdMeasurementType.OFFLINE_HR)
+        assertEquals(0, (offlineHrData.data as OfflineHrData).hrSamples.size)
     }
 
     @Test

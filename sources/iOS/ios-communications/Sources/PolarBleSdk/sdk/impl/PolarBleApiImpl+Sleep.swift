@@ -72,12 +72,12 @@ extension PolarBleApiImpl: PolarSleepApi {
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
                 return Single.error(PolarErrors.serviceNotFound)
             }
-
+            
             var sleepDataList = [PolarSleepData.PolarSleepAnalysisResult]()
             let calendar = Calendar.current
             var datesList = [Date]()
             var currentDate = fromDate
-
+            
             if (fromDate == toDate) {
                 datesList.append(fromDate)
             } else {
@@ -90,31 +90,62 @@ extension PolarBleApiImpl: PolarSleepApi {
                     }
                 }
             }
-
-            return Observable.from(datesList)
-                .flatMap { date -> Single<(PolarSleepData.PolarSleepAnalysisResult)> in
-                    return PolarSleepUtils.readSleepFromDayDirectory(client: client, date: date)
-                        .map { sleepData -> (PolarSleepData.PolarSleepAnalysisResult) in
-                            return sleepData
-                        }
-                }
-                .toArray()
-                .map { sleepAnalysisResult -> [PolarSleepData.PolarSleepAnalysisResult] in
-                    // Create an unwrapped copy of sleepDataList to allow removal of nil PolarSleepAnalysisResults from the list.
-                    var sleepDataList = [PolarSleepData.PolarSleepAnalysisResult]()
-                    sleepDataList.append(contentsOf: sleepAnalysisResult)
-                    for sleepData in sleepDataList {
-                        if (sleepData.sleepStartTime == nil) {
-                            if let index = sleepDataList.firstIndex(where: { $0.lastModified == sleepData.lastModified }) {
-                                sleepDataList.remove(at: index)
+            
+            return sendInitializationAndStartSyncNotifications(client: client).andThen(
+                Observable.from(datesList)
+                    .flatMap { date -> Single<(PolarSleepData.PolarSleepAnalysisResult)> in
+                        return PolarSleepUtils.readSleepFromDayDirectory(client: client, date: date)
+                            .map { sleepData -> (PolarSleepData.PolarSleepAnalysisResult) in
+                                return sleepData
+                            }
+                    }
+                    .toArray()
+                    .map { sleepAnalysisResult -> [PolarSleepData.PolarSleepAnalysisResult] in
+                        // Create an unwrapped copy of sleepDataList to allow removal of nil PolarSleepAnalysisResults from the list.
+                        var sleepDataList = [PolarSleepData.PolarSleepAnalysisResult]()
+                        sleepDataList.append(contentsOf: sleepAnalysisResult)
+                        for sleepData in sleepDataList {
+                            if (sleepData.sleepStartTime == nil) {
+                                if let index = sleepDataList.firstIndex(where: { $0.lastModified == sleepData.lastModified }) {
+                                    sleepDataList.remove(at: index)
+                                }
                             }
                         }
-                    }
-                    return sleepDataList
-                }
+                        return sleepDataList
+                    }.do(onDispose: {
+                        self.sendTerminateAndStopSyncNotifications(client: client)
+                    })
+            )
         } catch {
             return Single.error(error)
         }
     }
-    
+
+    private func sendInitializationAndStartSyncNotifications(client: BlePsFtpClient) -> Completable {
+
+        return client.query(Protocol_PbPFtpQuery.requestSynchronization.rawValue, parameters: nil)
+            .asCompletable()
+            .andThen(client.sendNotification(Protocol_PbPFtpHostToDevNotification.initializeSession.rawValue, parameters: nil))
+            .andThen(client.sendNotification(Protocol_PbPFtpHostToDevNotification.startSync.rawValue, parameters: nil))
+    }
+
+    private func sendTerminateAndStopSyncNotifications(client: BlePsFtpClient) -> Completable {
+        var params = Protocol_PbPFtpStopSyncParams()
+        var parameters: NSData
+        params.completed = true
+        do {
+            parameters = try params.serializedData() as NSData
+        } catch let error {
+            BleLogger.error("Failed to serialize stop sync parameters: \(error)")
+            return Completable.error(error)
+        }
+            return client.sendNotification(
+                Protocol_PbPFtpHostToDevNotification.stopSync.rawValue,
+                parameters: parameters
+            ).andThen(client.sendNotification(
+                Protocol_PbPFtpHostToDevNotification.terminateSession.rawValue,parameters: nil
+            ))
+
+    }
+
 }

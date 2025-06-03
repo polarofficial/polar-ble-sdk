@@ -110,6 +110,9 @@
                 <a href="../Classes/PolarUserDeviceSettings/DeviceLocation.html">– DeviceLocation</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Classes/PolarUserDeviceSettings/UsbConnectionMode.html">– UsbConnectionMode</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Classes/PolarUserDeviceSettings/PolarUserDeviceSettingsResult.html">– PolarUserDeviceSettingsResult</a>
               </li>
             </ul>
@@ -150,10 +153,16 @@
                 <a href="../Enums/PolarErrors.html">PolarErrors</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/PolarExerciseDataTypes.html">PolarExerciseDataTypes</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/PolarOfflineRecordingTriggerMode.html">PolarOfflineRecordingTriggerMode</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarTrainingSessionDataTypes.html">PolarTrainingSessionDataTypes</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Enums/PpgDataType.html">PpgDataType</a>
@@ -225,6 +234,9 @@
               <li class="nav-group-task">
                 <a href="../Protocols/PolarSleepApi.html">PolarSleepApi</a>
               </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -282,6 +294,9 @@
                 <a href="../Structs/PolarDistanceData.html">PolarDistanceData</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Structs/PolarExercise.html">PolarExercise</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Structs/PolarFirstTimeUseConfig.html">PolarFirstTimeUseConfig</a>
               </li>
               <li class="nav-group-task">
@@ -303,6 +318,9 @@
                 <a href="../Structs/PolarOfflineRecordingTrigger.html">PolarOfflineRecordingTrigger</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Structs/PolarPlainDate.html">PolarPlainDate</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a>
               </li>
               <li class="nav-group-task">
@@ -313,6 +331,12 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/PolarStepsData.html">PolarStepsData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarTrainingSession.html">PolarTrainingSession</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarTrainingSessionReference.html">PolarTrainingSessionReference</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/PolarUserDeviceSettingsData.html">PolarUserDeviceSettingsData</a>
@@ -425,6 +449,43 @@
 
 <ul>
 <li>success: set of available online streaming data types in this device</li>
+<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0A18OnlineStreamingApiP30getAvailableHRServiceDataTypes10identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOShyAA0a6DeviceJ4TypeOGGSS_tF"></a>
+                    <a name="//apple_ref/swift/Method/getAvailableHRServiceDataTypes(identifier:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A18OnlineStreamingApiP30getAvailableHRServiceDataTypes10identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOShyAA0a6DeviceJ4TypeOGGSS_tF">getAvailableHRServiceDataTypes(identifier:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Find out if the HR service is available in the device. Use this API method in a case where the device does not support Polar Measurement Data service.
+ In such a case using &lsquo;getAvailableOnlineStreamDataTypes&rsquo; will return error; use this method instead.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getAvailableHRServiceDataTypes</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt">Set</span><span class="o">&lt;</span><span class="kt"><a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a></span><span class="o">&gt;&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Single stream
+
+<ul>
+<li>success: onSuccess the set with HR service, if available</li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
 </ul></p>
                       </div>
@@ -1146,8 +1207,8 @@ error occurs or stream is disposed.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-03-05)</p>
-          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
+          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-06-04)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>
     </div>

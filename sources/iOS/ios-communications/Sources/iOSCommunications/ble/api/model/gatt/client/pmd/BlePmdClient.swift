@@ -135,7 +135,7 @@ public class BlePmdClient: BleGattClientBase {
         if let value = factor {
             return Float(bitPattern: value)
         }
-        BleLogger.error("factor not stored to settings")
+        BleLogger.error("Factor not stored to settings. Using 1.0f as default.")
         return 1.0
     }
     

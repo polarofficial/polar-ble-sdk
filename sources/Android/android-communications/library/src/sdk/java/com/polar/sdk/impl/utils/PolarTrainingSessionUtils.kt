@@ -2,24 +2,24 @@ package com.polar.sdk.impl.utils
 
 import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
+import fi.polar.remote.representation.protobuf.ExerciseRouteSamples
+import fi.polar.remote.representation.protobuf.ExerciseRouteSamples2
 import com.polar.sdk.api.model.trainingsession.PolarExercise
 import com.polar.sdk.api.model.trainingsession.PolarExerciseDataTypes
-import com.polar.sdk.api.model.trainingsession.PolarExerciseSummary
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSession
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionDataTypes
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference
-import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionSummary
 import fi.polar.remote.representation.protobuf.Training
 import fi.polar.remote.representation.protobuf.TrainingSession
-import fi.polar.remote.representation.protobuf.Types
 import io.reactivex.rxjava3.core.Flowable
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import protocol.PftpRequest
 import protocol.PftpResponse
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.zip.GZIPInputStream
 
 private const val ARABICA_USER_ROOT_FOLDER = "/U/0/"
 private const val TAG = "PolarTrainingSessionUtils"
@@ -50,6 +50,7 @@ internal object PolarTrainingSessionUtils {
                             name.matches(Regex("^\\d{6}/$")) ||
                             name.matches(Regex("^\\d+/$")) ||
                             name.endsWith(".BPB") ||
+                            name.endsWith(".GZB") ||
                             name == "E/"
                 }
             }
@@ -62,7 +63,7 @@ internal object PolarTrainingSessionUtils {
 
                 if (dataType != null) {
                     BleLogger.d(TAG, "Data type matched: $dataType")
-                    val match = Regex("/U/0/(\\d{8})/E/(\\d{6})(?:/(\\d+)/)?/").find(path)
+                    val match = Regex("/U/0/(\\d{8})/E/(\\d{6})(?:/(\\d+))?/[^/]+$").find(path)
                     val dateStr = match?.groups?.get(1)?.value
                     val timeStr = match?.groups?.get(2)?.value
                     val exerciseIndex = match?.groups?.get(3)?.value?.toIntOrNull()
@@ -76,42 +77,62 @@ internal object PolarTrainingSessionUtils {
 
                         if (dataType is PolarTrainingSessionDataTypes) {
                             if (existingReference != null) {
-                                val updatedReference = existingReference.copy(
-                                    trainingDataTypes = existingReference.trainingDataTypes + dataType
-                                )
-                                refs[refs.indexOf(existingReference)] = updatedReference
+                                if (!existingReference.trainingDataTypes.contains(dataType)) {
+                                    val updatedReference = existingReference.copy(
+                                        trainingDataTypes = existingReference.trainingDataTypes + dataType
+                                    )
+                                    refs[refs.indexOf(existingReference)] = updatedReference
+                                }
                             } else {
-                                val newReference = PolarTrainingSessionReference(
-                                    date = date,
-                                    path = path,
-                                    trainingDataTypes = listOf(dataType),
-                                    exercises = emptyList()
+                                refs.add(
+                                    PolarTrainingSessionReference(
+                                        date = date,
+                                        path = path,
+                                        trainingDataTypes = listOf(dataType),
+                                        exercises = emptyList()
+                                    )
                                 )
-                                refs.add(newReference)
                             }
                         } else if (dataType is PolarExerciseDataTypes) {
-                            val exercise = PolarExercise(
-                                index = exerciseIndex ?: 0,
+                            val exIndex = exerciseIndex ?: 0
+                            val newExercise = PolarExercise(
+                                index = exIndex,
                                 path = path,
                                 exerciseDataTypes = listOf(dataType)
                             )
 
                             if (existingReference != null) {
-                                val updatedReference = existingReference.copy(
-                                    exercises = existingReference.exercises + exercise
-                                )
-                                references[references.indexOf(existingReference)] = updatedReference
+                                val updatedExercises = existingReference.exercises.toMutableList()
+                                val existingExercise = updatedExercises.find { it.index == exIndex }
+
+                                if (existingExercise != null) {
+                                    val mergedDataTypes = (existingExercise.exerciseDataTypes + dataType).distinct()
+                                    val mergedExercise = existingExercise.copy(exerciseDataTypes = mergedDataTypes)
+                                    updatedExercises[updatedExercises.indexOf(existingExercise)] = mergedExercise
+                                } else {
+                                    updatedExercises.add(newExercise)
+                                }
+
+                                val updatedReference = existingReference.copy(exercises = updatedExercises)
+                                refs[refs.indexOf(existingReference)] = updatedReference
                             } else {
-                                val newReference = PolarTrainingSessionReference(
-                                    date = date,
-                                    path = path,
-                                    trainingDataTypes = emptyList(),
-                                    exercises = listOf(exercise)
+                                refs.add(
+                                    PolarTrainingSessionReference(
+                                        date = date,
+                                        path = path,
+                                        trainingDataTypes = emptyList(),
+                                        exercises = listOf(newExercise)
+                                    )
                                 )
-                                references.add(newReference)
                             }
                         }
                     }
+                }
+            }
+            .doOnSuccess { refs ->
+                BleLogger.d(TAG, "Collected ${refs.size} training session references:")
+                refs.forEachIndexed { index, ref ->
+                    BleLogger.d(TAG, "[$index] $ref")
                 }
             }
             .flatMapPublisher { refs ->
@@ -119,77 +140,140 @@ internal object PolarTrainingSessionUtils {
             }
     }
 
-    fun readTrainingSession(client: BlePsFtpClient, reference: PolarTrainingSessionReference): Single<PolarTrainingSession> {
+
+    fun readTrainingSession(
+        client: BlePsFtpClient,
+        reference: PolarTrainingSessionReference
+    ): Single<PolarTrainingSession> {
         BleLogger.d(TAG, "readTrainingSession: reading from $reference.path")
 
-        return Single.create { emitter ->
-            val disposable = client.request(
-                PftpRequest.PbPFtpOperation.newBuilder()
-                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                    .setPath(reference.path)
-                    .build()
-                    .toByteArray()
-            ).flatMap { response ->
-                try {
-                    val proto = TrainingSession.PbTrainingSession.parseFrom(response.toByteArray())
-                    val summary = PolarTrainingSessionSummary.fromProto(proto)
+        val sessionSummarySingle: Single<TrainingSession.PbTrainingSession> =
+            if (reference.trainingDataTypes.contains(PolarTrainingSessionDataTypes.TRAINING_SESSION_SUMMARY)) {
+                client.request(
+                    PftpRequest.PbPFtpOperation.newBuilder()
+                        .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                        .setPath(reference.path)
+                        .build()
+                        .toByteArray()
+                ).map { response ->
+                    TrainingSession.PbTrainingSession.parseFrom(response.toByteArray())
+                }.onErrorReturn { error ->
+                    BleLogger.e(TAG, "Failed to load session summary: ${error.message}")
+                    TrainingSession.PbTrainingSession.getDefaultInstance()
+                }
+            } else {
+                Single.just(TrainingSession.PbTrainingSession.getDefaultInstance())
+            }
 
-                    Flowable.fromIterable(reference.exercises)
-                        .flatMapSingle { exercise ->
+        val exercisesSingle = Observable.fromIterable(reference.exercises)
+            .concatMapSingle { exercise ->
+                val basePath = exercise.path.substringBeforeLast("/")
+                val dataTypeSingles = exercise.exerciseDataTypes.mapNotNull { dataType ->
+                    when (dataType) {
+                        PolarExerciseDataTypes.EXERCISE_SUMMARY -> {
+                            val path = "$basePath/${dataType.deviceFileName}"
                             client.request(
                                 PftpRequest.PbPFtpOperation.newBuilder()
                                     .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                                    .setPath(exercise.path)
+                                    .setPath(path)
                                     .build()
                                     .toByteArray()
-                            ).map { exerciseResponse ->
-                                val exerciseProto = Training.PbExerciseBase.parseFrom(exerciseResponse.toByteArray())
-                                val exerciseSummary = PolarExerciseSummary.fromProto(exerciseProto)
+                            ).map { resp ->
+                                Training.PbExerciseBase.parseFrom(resp.toByteArray())
+                            }.onErrorReturn { error ->
+                                BleLogger.e(TAG, "Error loading ${dataType.deviceFileName}: ${error.message}")
+                                Training.PbExerciseBase.getDefaultInstance()
+                            }.map { dataType to it }
+                        }
 
-                                PolarExercise(
-                                    index = exercise.index,
-                                    path = exercise.path,
-                                    exerciseDataTypes = exercise.exerciseDataTypes,
-                                    exerciseSummary = exerciseSummary
-                                ).also {
-                                    BleLogger.d(TAG, "Parsed PolarExerciseSummary: $exerciseSummary")
-                                }
+                        PolarExerciseDataTypes.ROUTE, PolarExerciseDataTypes.ROUTE_GZIP -> {
+                            val path = "$basePath/${dataType.deviceFileName}"
+                            client.request(
+                                PftpRequest.PbPFtpOperation.newBuilder()
+                                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                                    .setPath(path)
+                                    .build()
+                                    .toByteArray()
+                            ).map { resp ->
+                                val bytes = if (dataType == PolarExerciseDataTypes.ROUTE_GZIP)
+                                    GZIPInputStream(resp.toByteArray().inputStream()).readBytes()
+                                else resp.toByteArray()
+                                ExerciseRouteSamples.PbExerciseRouteSamples.parseFrom(bytes)
+                            }.onErrorReturn { error ->
+                                BleLogger.e(TAG, "Error loading ${dataType.deviceFileName}: ${error.message}")
+                                ExerciseRouteSamples.PbExerciseRouteSamples.getDefaultInstance()
+                            }.map { dataType to it }
+                        }
+
+                        PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT, PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT_GZIP -> {
+                            val path = "$basePath/${dataType.deviceFileName}"
+                            client.request(
+                                PftpRequest.PbPFtpOperation.newBuilder()
+                                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                                    .setPath(path)
+                                    .build()
+                                    .toByteArray()
+                            ).map { resp ->
+                                val bytes = if (dataType == PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT_GZIP)
+                                    GZIPInputStream(resp.toByteArray().inputStream()).readBytes()
+                                else resp.toByteArray()
+                                ExerciseRouteSamples2.PbExerciseRouteSamples2.parseFrom(bytes)
+                            }.onErrorReturn { error ->
+                                BleLogger.e(TAG, "Error loading ${dataType.deviceFileName}: ${error.message}")
+                                ExerciseRouteSamples2.PbExerciseRouteSamples2.getDefaultInstance()
+                            }.map { dataType to it }
+                        }
+                    }
+                }
+
+                Single.zip(dataTypeSingles) { results ->
+                    var summary: Training.PbExerciseBase? = null
+                    var route: ExerciseRouteSamples.PbExerciseRouteSamples? = null
+                    var routeAdv: ExerciseRouteSamples2.PbExerciseRouteSamples2? = null
+
+                    for (result in results.filterIsInstance<Pair<*, *>>()) {
+                        when (result.first) {
+                            PolarExerciseDataTypes.EXERCISE_SUMMARY -> {
+                                val s = result.second as Training.PbExerciseBase
+                                summary = if (s == Training.PbExerciseBase.getDefaultInstance()) null else s
+                            }
+                            PolarExerciseDataTypes.ROUTE,
+                            PolarExerciseDataTypes.ROUTE_GZIP -> {
+                                val r = result.second as ExerciseRouteSamples.PbExerciseRouteSamples
+                                route = if (r == ExerciseRouteSamples.PbExerciseRouteSamples.getDefaultInstance()) null else r
+                            }
+                            PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT,
+                            PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT_GZIP -> {
+                                val rAdv = result.second as ExerciseRouteSamples2.PbExerciseRouteSamples2
+                                routeAdv = if (rAdv == ExerciseRouteSamples2.PbExerciseRouteSamples2.getDefaultInstance()) null else rAdv
                             }
                         }
-                        .toList()
-                        .map { exercises ->
-                            PolarTrainingSession(
-                                reference = reference,
-                                sessionSummary = summary,
-                                exercises = exercises
-                            )
-                        }
-                } catch (e: Exception) {
-                    Single.error<PolarTrainingSession>(e)
+                    }
+
+                    PolarExercise(
+                        index = exercise.index,
+                        path = exercise.path,
+                        exerciseDataTypes = exercise.exerciseDataTypes,
+                        exerciseSummary = summary,
+                        route = route,
+                        routeAdvanced = routeAdv
+                    )
                 }
-            }.subscribe(
-                { polarTrainingSession ->
-                    emitter.onSuccess(polarTrainingSession)
-                },
-                { error ->
-                    emitter.onError(error)
-                }
+            }
+            .toList()
+
+        return Single.zip(
+            sessionSummarySingle,
+            exercisesSingle
+        ) { sessionSummary, exercises ->
+            val sessionSummaryNullable = if (sessionSummary == TrainingSession.PbTrainingSession.getDefaultInstance()) null else sessionSummary
+
+            PolarTrainingSession(
+                reference = reference,
+                sessionSummary = sessionSummaryNullable,
+                exercises = exercises
             )
-            emitter.setDisposable(disposable)
         }
-    }
-
-    fun parseDateTime(dateTime: Types.PbLocalDateTime): Date {
-        val calendar = Calendar.getInstance()
-
-        calendar.set(Calendar.YEAR, dateTime.date.year)
-        calendar.set(Calendar.MONTH, dateTime.date.month - 1)
-        calendar.set(Calendar.DAY_OF_MONTH, dateTime.date.day)
-        calendar.set(Calendar.HOUR_OF_DAY, dateTime.time.hour)
-        calendar.set(Calendar.MINUTE, dateTime.time.minute)
-        calendar.set(Calendar.SECOND, dateTime.time.seconds)
-        calendar.set(Calendar.MILLISECOND, dateTime.time.millis)
-        return calendar.time
     }
 
     private fun fetchRecursively(

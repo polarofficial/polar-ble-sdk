@@ -103,7 +103,9 @@ interface PolarOfflineRecordingApi {
     fun getOfflineRecord(identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret? = null): Single<PolarOfflineRecordingData>
 
     /**
-     * List split offline recordings stored in the device.
+     * Lists all parts of all offline recordings (split and non-split) stored in the device.
+     * Use this method to list all parts of a recording when you need to read long offline
+     * recordings one file part at a time.
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
      * @return [Flowable] stream

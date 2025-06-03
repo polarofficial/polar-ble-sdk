@@ -22,7 +22,7 @@ public class PolarUserDeviceSettings {
         case LOWER_ARM_LEFT
         case LOWER_ARM_RIGHT
         case UPPER_ARM_LEFT
-        case UPPER_ARM_RIGHTs
+        case UPPER_ARM_RIGHT
         case BIKE_MOUNT
 
         public func toInt() -> Int {
@@ -60,7 +60,7 @@ public class PolarUserDeviceSettings {
     public var timestamp: Date = NSDate() as Date
     public var _deviceLocation: DeviceLocation = DeviceLocation.UNDEFINED
     public var usbConnectionMode: UsbConnectionMode? = nil
-
+    
     public var deviceLocation: DeviceLocation {
         set (newValue) {
             _deviceLocation = newValue
@@ -92,14 +92,14 @@ public class PolarUserDeviceSettings {
         return proto
     }
 
-    static func fromProto(pBDeviceUserLocation: Data_PbUserDeviceSettings) -> PolarUserDeviceSettingsResult {
+    static func fromProto(pbUserDeviceSettings: Data_PbUserDeviceSettings) -> PolarUserDeviceSettingsResult {
         var result = PolarUserDeviceSettingsResult()
-        result.deviceLocation = PolarUserDeviceSettings.DeviceLocation.allCases[pBDeviceUserLocation.generalSettings.deviceLocation.rawValue]
+        result.deviceLocation = PolarUserDeviceSettings.DeviceLocation.allCases[pbUserDeviceSettings.generalSettings.deviceLocation.rawValue]
         
-        if pBDeviceUserLocation.hasUsbConnectionSettings {
-            result.usbConnectionMode = UsbConnectionMode.fromProto(proto: pBDeviceUserLocation.usbConnectionSettings.mode)
+        if pbUserDeviceSettings.hasUsbConnectionSettings {
+            result.usbConnectionMode = UsbConnectionMode.fromProto(proto: pbUserDeviceSettings.usbConnectionSettings.mode)
         }
-
+        
         return result
     }
     

@@ -150,6 +150,8 @@ public enum PpgDataType: Int, CaseIterable {
     case ppg1 = 1
     /// 3 ppg + 1 ambient
     case ppg3_ambient1 = 4
+    /// 2 ppg  + status channel
+    case ppg2 = 3
     /// 3 ppg (NUMINT_TSx, TIA_GAIN_CH1_TSx, TIA_GAIN_CH2_TSx)
     case ppg3 = 7
     /// 16 ppg + 1 status
@@ -395,7 +397,9 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - success: When Device User Settings configuration has been written to the device
     ///   - onError: see `PolarErrors` for possible errors invoked
     func setPolarUserDeviceSettings(_ identifier: String, polarUserDeviceSettings: PolarUserDeviceSettings) -> Completable
-    
+
+
+
     /// Delete data [PolarStoredDataType] from a device.
     ///
     /// @param identifier, Polar device ID or BT address
@@ -421,6 +425,24 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - success: When connection is established
     ///   - onError: see `PolarErrors` for possible errors invoked
     func waitForConnection(_ identifier: String) -> Completable
+    
+    /// Set user device location on a device.
+     /// - Parameters:
+     ///   - identifier: Polar device id or UUID
+     ///   - location: Device location as an integer value (see `PolarUserDeviceSettings.DeviceLocation`)
+     /// - Returns: Completable stream
+     ///   - success: when location is set successfully
+     ///   - onError: see `PolarErrors` for possible errors invoked
+     func setUserDeviceLocation(_ identifier: String, location: Int) -> Completable
+
+     /// Set USB connection mode on a device.
+     /// - Parameters:
+     ///   - identifier: Polar device id or UUID
+     ///   - enabled: Boolean flag to enable or disable USB connection mode
+     /// - Returns: Completable stream
+     ///   - success: when USB mode is set successfully
+     ///   - onError: see `PolarErrors` for possible errors invoked
+     func setUsbConnectionMode(_ identifier: String, enabled: Bool) -> Completable
 
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }

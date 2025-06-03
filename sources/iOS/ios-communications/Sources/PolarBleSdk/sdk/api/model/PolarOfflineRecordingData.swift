@@ -11,4 +11,5 @@ public enum PolarOfflineRecordingData  {
     case hrOfflineRecordingData(PolarHrData, startTime:Date)
     case temperatureOfflineRecordingData(PolarTemperatureData, startTime:Date)
     case skinTemperatureOfflineRecordingData(PolarTemperatureData, startTime:Date)
+    case emptyData(startTime:Date)
 }

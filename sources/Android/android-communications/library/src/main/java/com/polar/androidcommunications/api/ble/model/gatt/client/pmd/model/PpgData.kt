@@ -62,6 +62,20 @@ internal class PpgData {
         val status: Int
     ) : PpgDataSample()
 
+    data class PpgDataFrameType13 internal constructor(
+        val timeStamp: ULong,
+        val ppgChannel0: List<Int>,
+        val ppgChannel1: List<Int>,
+        val status: Int
+    ) : PpgDataSample()
+
+    data class PpgDataFrameType14 internal constructor(
+        val timeStamp: ULong,
+        val numIntTs1: List<UInt>,
+        val channel1GainTs1: List<UInt>,
+        val channel2GainTs1: List<UInt>
+    ) : PpgDataSample()
+
     // PPG Data Sport Id
     data class PpgDataSampleSportId internal constructor(
         val timeStamp: ULong,
@@ -104,6 +118,15 @@ internal class PpgData {
         private const val TYPE_10_STATUS_SIZE = 20
         private const val TYPE_10_CHANNELS_IN_SAMPLE = 21
 
+        private const val TYPE_13_SAMPLE_SIZE_IN_BYTES = 3
+        private const val TYPE_13_SAMPLE_SIZE_IN_BITS = TYPE_13_SAMPLE_SIZE_IN_BYTES * 8
+        private const val TYPE_13_CHANNELS_IN_SAMPLE = 3
+
+        private const val TYPE_14_NUM_INTS_SIZE = 1
+        private const val TYPE_14_CHANNEL_0_AND_1_SIZE = 2
+        private const val TYPE_14_SAMPLE_SIZE_IN_BYTES =
+            TYPE_14_NUM_INTS_SIZE + TYPE_14_CHANNEL_0_AND_1_SIZE
+
         fun parseDataFromDataFrame(frame: PmdDataFrame): PpgData {
             return if (frame.isCompressedFrame) {
                 when (frame.frameType) {
@@ -111,6 +134,7 @@ internal class PpgData {
                     PmdDataFrame.PmdDataFrameType.TYPE_7 -> dataFromCompressedType7(frame)
                     PmdDataFrame.PmdDataFrameType.TYPE_8 -> dataFromCompressedType8(frame)
                     PmdDataFrame.PmdDataFrameType.TYPE_10 -> dataFromCompressedType10(frame)
+                    PmdDataFrame.PmdDataFrameType.TYPE_13 -> dataFromCompressedType13(frame)
                     else -> throw java.lang.Exception("Compressed FrameType: ${frame.frameType} is not supported by PPG data parser")
                 }
             } else {
@@ -120,6 +144,7 @@ internal class PpgData {
                     PmdDataFrame.PmdDataFrameType.TYPE_5 -> dataFromRawType5(frame)
                     PmdDataFrame.PmdDataFrameType.TYPE_6 -> dataFromRawType6(frame)
                     PmdDataFrame.PmdDataFrameType.TYPE_9 -> dataFromRawType9(frame)
+                    PmdDataFrame.PmdDataFrameType.TYPE_14 -> dataFromRawType14(frame)
                     else -> throw java.lang.Exception("Raw FrameType: ${frame.frameType} is not supported by PPG data parser")
                 }
             }
@@ -336,6 +361,46 @@ internal class PpgData {
             return ppgData
         }
 
+        private fun dataFromRawType14(frame: PmdDataFrame): PpgData {
+            val ppgData = PpgData()
+
+            val samplesSize = frame.dataContent.size / TYPE_14_SAMPLE_SIZE_IN_BYTES
+            val timeStamps = PmdTimeStampUtils.getTimeStamps(
+                previousFrameTimeStamp = frame.previousTimeStamp,
+                frameTimeStamp = frame.timeStamp,
+                samplesSize = samplesSize,
+                frame.sampleRate
+            )
+            var timeStampIndex = 0
+
+            var offset = 0
+            while (offset < frame.dataContent.size) {
+                val numIntTs =
+                    frame.dataContent.sliceArray(offset until (offset + TYPE_14_NUM_INTS_SIZE))
+                        .map { it.toUByte().toUInt() }
+                offset += TYPE_14_NUM_INTS_SIZE
+                val channel1GainTs =
+                    frame.dataContent.sliceArray(offset until (offset + TYPE_14_CHANNEL_0_AND_1_SIZE))
+                        .toList()
+                        .mapIndexedNotNull { idx, v -> if (idx % 2 == 0) (v and 0x07).toUInt() else null }
+                val channel2GainTs =
+                    frame.dataContent.sliceArray(offset until (offset + TYPE_14_CHANNEL_0_AND_1_SIZE))
+                        .toList()
+                        .mapIndexedNotNull { idx, v -> if (idx % 2 == 1) (v and 0x07).toUInt() else null }
+                offset += TYPE_14_CHANNEL_0_AND_1_SIZE
+                ppgData.ppgSamples.add(
+                    PpgDataFrameType14(
+                        timeStamp = timeStamps[timeStampIndex],
+                        numIntTs1 = numIntTs,
+                        channel1GainTs1 = channel1GainTs,
+                        channel2GainTs1 = channel2GainTs
+                    )
+                )
+                timeStampIndex++
+            }
+            return ppgData
+        }
+
         private fun dataFromCompressedType0(frame: PmdDataFrame): PpgData {
             val ppgData = PpgData()
             val samples = BlePMDClient.parseDeltaFramesAll(
@@ -470,6 +535,44 @@ internal class PpgData {
                         redSamples = redSamples,
                         irSamples = irSamples,
                         status
+                    )
+                )
+            }
+            return ppgData
+        }
+
+        private fun dataFromCompressedType13(frame: PmdDataFrame): PpgData {
+            val ppgData = PpgData()
+            val samples = BlePMDClient.parseDeltaFramesAll(
+                frame.dataContent,
+                TYPE_13_CHANNELS_IN_SAMPLE,
+                TYPE_13_SAMPLE_SIZE_IN_BITS,
+                BlePMDClient.PmdDataFieldEncoding.SIGNED_INT
+            )
+
+            val timeStamps = PmdTimeStampUtils.getTimeStamps(
+                previousFrameTimeStamp = frame.previousTimeStamp,
+                frameTimeStamp = frame.timeStamp,
+                samplesSize = samples.size,
+                frame.sampleRate
+            )
+
+            for ((index, sample) in samples.withIndex()) {
+                val ppgChannel0Sample = sample.subList(0, 1).map {
+                    if (frame.factor != 1.0f) (it.toFloat() * frame.factor).toInt() else it
+                }
+
+                val ppgChannel1Sample = sample.subList(1, 2).map {
+                    if (frame.factor != 1.0f) (it.toFloat() * frame.factor).toInt() else it
+                }
+                val status = (sample[2] and 0xFFFFFF).toUInt()
+
+                ppgData.ppgSamples.add(
+                    PpgDataFrameType13(
+                        timeStamp = timeStamps[index],
+                        ppgChannel0 = ppgChannel0Sample,
+                        ppgChannel1 = ppgChannel1Sample,
+                        status = status.toInt()
                     )
                 )
             }

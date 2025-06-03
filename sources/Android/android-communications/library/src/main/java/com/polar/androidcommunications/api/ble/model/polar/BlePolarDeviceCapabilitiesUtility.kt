@@ -29,8 +29,6 @@ class BlePolarDeviceCapabilitiesUtility {
         @JvmStatic
         fun getFileSystemType(deviceType: String): FileSystemType {
             return when (deviceType.lowercase(Locale.getDefault())) {
-                "sense" -> FileSystemType.SAGRFC2_FILE_SYSTEM
-                "oh1" -> FileSystemType.SAGRFC2_FILE_SYSTEM
                 "h10" -> FileSystemType.H10_FILE_SYSTEM
                 else -> FileSystemType.SAGRFC2_FILE_SYSTEM
             }

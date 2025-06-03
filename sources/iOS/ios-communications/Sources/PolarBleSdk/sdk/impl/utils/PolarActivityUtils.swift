@@ -75,8 +75,7 @@ internal class PolarActivityUtils {
     /// Read distance in meters for given date.
     static func readDistanceFromDayDirectory(client: BlePsFtpClient, date: Date) -> Single<Float> {
         BleLogger.trace(TAG, "readDistanceFromDayDirectory: \(date)")
-        return sendSyncStart(client)
-            .andThen(Single<Float>.create { emitter in
+        return Single<Float>.create { emitter in
                 let dailySummaryFilePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(DAILY_SUMMARY_DIRECTORY)\(DAILY_SUMMARY_PROTO)"
                 let operation = Protocol_PbPFtpOperation.with {
                     $0.command = .get
@@ -101,14 +100,13 @@ internal class PolarActivityUtils {
                 return Disposables.create {
                     disposable.dispose()
                 }
-            })
+            }
     }
     
     /// Read active time for given date.
     static func readActiveTimeFromDayDirectory(client: BlePsFtpClient, date: Date) -> Single<PolarActiveTimeData> {
         BleLogger.trace(TAG, "readActiveTimeFromDayDirectory: \(date)")
-        return sendSyncStart(client)
-            .andThen(Single<PolarActiveTimeData>.create { emitter in
+        return Single<PolarActiveTimeData>.create { emitter in
                 let dailySummaryFilePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(DAILY_SUMMARY_DIRECTORY)\(DAILY_SUMMARY_PROTO)"
                 let operation = Protocol_PbPFtpOperation.with {
                     $0.command = .get
@@ -143,14 +141,13 @@ internal class PolarActivityUtils {
                 return Disposables.create {
                     disposable.dispose()
                 }
-            })
+            }
     }
     
     /// Read calories for given date.
     static func readCaloriesFromDayDirectory(client: BlePsFtpClient, date: Date, caloriesType: CaloriesType) -> Single<Int> {
         BleLogger.trace(TAG, "readCaloriesFromDayDirectory: \(date), type: \(caloriesType)")
-        return sendSyncStart(client)
-            .andThen(Single<Int>.create { emitter in
+        return Single<Int>.create { emitter in
                 let dailySummaryFilePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(DAILY_SUMMARY_DIRECTORY)\(DAILY_SUMMARY_PROTO)"
                 let operation = Protocol_PbPFtpOperation.with {
                     $0.command = .get
@@ -185,15 +182,7 @@ internal class PolarActivityUtils {
                 return Disposables.create {
                     disposable.dispose()
                 }
-            })
-    }
-    
-    // Send sync start to generate daily summary for the current date
-    private static func sendSyncStart(_ client: BlePsFtpClient) -> Completable {
-        return client.sendNotification(
-            Protocol_PbPFtpHostToDevNotification.startSync.rawValue,
-            parameters: nil
-        )
+            }
     }
     
     private static func polarActiveTimeFromProto(_ proto: PbDuration) -> PolarActiveTime {

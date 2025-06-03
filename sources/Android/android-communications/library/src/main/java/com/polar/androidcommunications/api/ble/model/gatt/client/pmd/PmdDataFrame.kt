@@ -52,7 +52,9 @@ class PmdDataFrame(
         TYPE_7(7u),
         TYPE_8(8u),
         TYPE_9(9u),
-        TYPE_10(10u);
+        TYPE_10(10u),
+        TYPE_13(13u),
+        TYPE_14(14u);
 
         companion object {
             fun getTypeFromFrameDataByte(byte: UByte): PmdDataFrameType {

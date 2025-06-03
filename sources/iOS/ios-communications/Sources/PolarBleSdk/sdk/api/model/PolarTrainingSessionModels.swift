@@ -38,20 +38,30 @@ public struct PolarTrainingSession {
 public struct PolarExercise: Equatable {
     public let index: Int
     public let path: String
-    public let exerciseDataTypes: [PolarExerciseDataTypes]
+    public var exerciseDataTypes: [PolarExerciseDataTypes]
     public let exerciseSummary: Data_PbExerciseBase?
+    public let route: Data_PbExerciseRouteSamples?
+    public let routeAdvanced: Data_PbExerciseRouteSamples2?
 
     init(index: Int,
          path: String,
          exerciseDataTypes: [PolarExerciseDataTypes] = [],
-         exerciseSummary: Data_PbExerciseBase? = nil) {
+         exerciseSummary: Data_PbExerciseBase? = nil,
+         route: Data_PbExerciseRouteSamples? = nil,
+         routeAdvanced: Data_PbExerciseRouteSamples2? = nil) {
         self.index = index
         self.path = path
         self.exerciseDataTypes = exerciseDataTypes
         self.exerciseSummary = exerciseSummary
+        self.route = route
+        self.routeAdvanced = routeAdvanced
     }
 }
 
 public enum PolarExerciseDataTypes: String {
     case exerciseSummary = "BASE.BPB"
+    case route = "ROUTE.BPB"
+    case routeGzip = "ROUTE.GZB"
+    case routeAdvancedFormat = "ROUTE2.BPB"
+    case routeAdvancedFormatGzip = "ROUTE2.GZB"
 }

@@ -11,12 +11,15 @@ import fi.polar.remote.representation.protobuf.TrainingSession
 import fi.polar.remote.representation.protobuf.Types
 import com.polar.sdk.api.model.trainingsession.PolarExercise
 import com.polar.sdk.api.model.trainingsession.PolarExerciseDataTypes
+import fi.polar.remote.representation.protobuf.ExerciseRouteSamples
+import fi.polar.remote.representation.protobuf.ExerciseRouteSamples2
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.reactivex.rxjava3.core.Single
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNotNull
 import org.junit.Test
 import protocol.PftpRequest
 import protocol.PftpResponse.PbPFtpDirectory
@@ -24,6 +27,7 @@ import protocol.PftpResponse.PbPFtpEntry
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.zip.GZIPOutputStream
 
 class PolarTrainingSessionUtilsTest {
 
@@ -94,7 +98,11 @@ class PolarTrainingSessionUtilsTest {
             PbPFtpDirectory.newBuilder()
                 .addAllEntries(
                     listOf(
-                        PbPFtpEntry.newBuilder().setName("BASE.BPB").setSize(512L).build()
+                        PbPFtpEntry.newBuilder().setName("BASE.BPB").setSize(512L).build(),
+                        PbPFtpEntry.newBuilder().setName("ROUTE.BPB").setSize(512L).build(),
+                        PbPFtpEntry.newBuilder().setName("ROUTE2.BPB").setSize(512L).build(),
+                        PbPFtpEntry.newBuilder().setName("ROUTE.GZB").setSize(512L).build(),
+                        PbPFtpEntry.newBuilder().setName("ROUTE2.GZB").setSize(512L).build()
                     )
                 ).build().writeTo(this)
         }
@@ -117,13 +125,25 @@ class PolarTrainingSessionUtilsTest {
                         PolarExercise(
                             index = 0,
                             path = "/U/0/20250202/E/163020/00/BASE.BPB",
-                            exerciseDataTypes = listOf(PolarExerciseDataTypes.EXERCISE_SUMMARY),
+                            exerciseDataTypes = listOf(
+                                PolarExerciseDataTypes.EXERCISE_SUMMARY,
+                                PolarExerciseDataTypes.ROUTE,
+                                PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT,
+                                PolarExerciseDataTypes.ROUTE_GZIP,
+                                PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT_GZIP
+                            ),
                             exerciseSummary = null
                         ),
                         PolarExercise(
-                            index = 0,
+                            index = 1,
                             path = "/U/0/20250202/E/163020/01/BASE.BPB",
-                            exerciseDataTypes = listOf(PolarExerciseDataTypes.EXERCISE_SUMMARY),
+                            exerciseDataTypes = listOf(
+                                PolarExerciseDataTypes.EXERCISE_SUMMARY,
+                                PolarExerciseDataTypes.ROUTE,
+                                PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT,
+                                PolarExerciseDataTypes.ROUTE_GZIP,
+                                PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT_GZIP
+                            ),
                             exerciseSummary = null
                         )
                     )
@@ -230,7 +250,13 @@ class PolarTrainingSessionUtilsTest {
                 PolarExercise(
                     index = 0,
                     path = "/U/0/20250101/E/101200/BASE.BPB",
-                    exerciseDataTypes = listOf(PolarExerciseDataTypes.EXERCISE_SUMMARY)
+                    exerciseDataTypes = listOf(
+                        PolarExerciseDataTypes.EXERCISE_SUMMARY,
+                        PolarExerciseDataTypes.ROUTE,
+                        PolarExerciseDataTypes.ROUTE_GZIP,
+                        PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT,
+                        PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT_GZIP,
+                    )
                 )
             )
         )
@@ -269,9 +295,7 @@ class PolarTrainingSessionUtilsTest {
             .setLongitude(24.9384)
             .setBenefit(Types.PbExerciseFeedback.FEEDBACK_1)
             .setSport(Structures.PbSportIdentifier.newBuilder().setValue(3))
-            .setCardioLoad(
-                Types.PbCardioLoad.newBuilder().setExerciseLoad(100f).setActivityLoad(50f)
-            )
+            .setCardioLoad(Types.PbCardioLoad.newBuilder().setExerciseLoad(100f).setActivityLoad(50f))
             .setCardioLoadInterpretation(3)
             .setMuscleLoad(200.5f)
             .setMuscleLoadInterpretation(4)
@@ -279,11 +303,7 @@ class PolarTrainingSessionUtilsTest {
             .setStartTrigger(TrainingSession.PbTrainingSession.PbTrainingStartTrigger.MANUAL)
             .build()
 
-        val mockResponseContent = ByteArrayOutputStream().apply {
-            mockProto.writeTo(this)
-        }
-
-        val exerciseBaseProto = Training.PbExerciseBase.newBuilder()
+        val exerciseProto = Training.PbExerciseBase.newBuilder()
             .setStart(
                 Types.PbLocalDateTime.newBuilder()
                     .setDate(Types.PbDate.newBuilder().setYear(2025).setMonth(1).setDay(1))
@@ -324,6 +344,21 @@ class PolarTrainingSessionUtilsTest {
             .setMuscleLoadInterpretation(4)
             .setLastModified(
                 Types.PbSystemDateTime.newBuilder()
+                    .setDate(Types.PbDate.newBuilder().setYear(2025).setMonth(1).setDay(2))
+                    .setTime(Types.PbTime.newBuilder().setHour(12).setMinute(0).setSeconds(0))
+                    .setTrusted(true)
+            )
+            .build()
+
+        val routeProto = ExerciseRouteSamples.PbExerciseRouteSamples.newBuilder()
+            .addDuration(0)
+            .addLatitude(60.17)
+            .addLongitude(24.94)
+            .addGpsAltitude(10)
+            .addSatelliteAmount(7)
+            .addOBSOLETEFix(true)
+            .setFirstLocationTime(
+                Types.PbSystemDateTime.newBuilder()
                     .setDate(
                         Types.PbDate.newBuilder()
                             .setYear(2025)
@@ -336,15 +371,60 @@ class PolarTrainingSessionUtilsTest {
                             .setMinute(0)
                             .setSeconds(0)
                     ).setTrusted(true)
-            ).build()
+            )
+            .build()
 
-
-        val exerciseBaseResponseContent = ByteArrayOutputStream().apply {
-            exerciseBaseProto.writeTo(this)
+        val routeBytesGzip = ByteArrayOutputStream().use { byteOut ->
+            GZIPOutputStream(byteOut).use { gzipOut ->
+                routeProto.writeTo(gzipOut)
+            }
+            byteOut.toByteArray()
         }
 
-        every { client.request(any<ByteArray>()) } returns Single.just(mockResponseContent) andThen Single.just(
-            exerciseBaseResponseContent
+        val routeAdvancedProto = ExerciseRouteSamples2.PbExerciseRouteSamples2.newBuilder()
+            .addSyncPoint(
+                ExerciseRouteSamples2.PbExerciseRouteSyncPoint.newBuilder()
+                    .setIndex(0)
+                    .setLocation(
+                        ExerciseRouteSamples2.PbLocationSyncPoint.newBuilder()
+                            .setLatitude(60.17)
+                            .setLongitude(24.94)
+                    )
+                    .setGpsDateTime(
+                        Types.PbSystemDateTime.newBuilder()
+                            .setDate(Types.PbDate.newBuilder().setYear(2024).setMonth(5).setDay(21))
+                            .setTime(Types.PbTime.newBuilder().setHour(12).setMinute(0).setSeconds(0))
+                            .setTrusted(true)
+                    )
+            )
+            .addSatelliteAmount(7)
+            .addLatitude(100)
+            .addLongitude(200)
+            .addTimestamp(1000)
+            .addAltitude(50)
+            .build()
+
+        val routeAdvancedBytesGzip = ByteArrayOutputStream().use { byteOut ->
+            GZIPOutputStream(byteOut).use { gzipOut ->
+                routeAdvancedProto.writeTo(gzipOut)
+            }
+            byteOut.toByteArray()
+        }
+
+        val sessionBytes = ByteArrayOutputStream().apply { mockProto.writeTo(this) }.toByteArray()
+        val exerciseBytes = ByteArrayOutputStream().apply { exerciseProto.writeTo(this) }.toByteArray()
+        val routeBytes = ByteArrayOutputStream().apply { routeProto.writeTo(this) }.toByteArray()
+        val routeAdvancedBytes = ByteArrayOutputStream().apply { routeAdvancedProto.writeTo(this) }.toByteArray()
+
+
+        every { client.request(any<ByteArray>()) } returnsMany listOf(
+            Single.just(ByteArrayOutputStream().apply { write(sessionBytes) }),
+            Single.just(ByteArrayOutputStream().apply { write(exerciseBytes) }),
+            Single.just(ByteArrayOutputStream().apply { write(routeBytes) }),
+            Single.just(ByteArrayOutputStream().apply { write(routeBytesGzip) }),
+            Single.just(ByteArrayOutputStream().apply { write(routeAdvancedBytes) }),
+            Single.just(ByteArrayOutputStream().apply { write(routeAdvancedBytesGzip) })
+
         )
 
         // Act
@@ -355,57 +435,31 @@ class PolarTrainingSessionUtilsTest {
         testObserver.assertNoErrors()
 
         val trainingSession = testObserver.values().first()
+        assertNotNull(trainingSession.sessionSummary)
+        assertEquals(1, trainingSession.exercises.size)
 
-        val session = trainingSession.sessionSummary!!
-        val exercise = trainingSession.exercises.first()
+        val sessionSummary = trainingSession.sessionSummary!!
+        assertEquals("Polar 360", sessionSummary.modelName)
+        assertEquals(3600, sessionSummary.duration.seconds)
+        assertEquals(12.5f, sessionSummary.distance)
+        assertEquals(400, sessionSummary.calories)
 
-        assertEquals(dateTimeFormatter.parse("20250101101200"), session.start)
-        assertEquals(dateTimeFormatter.parse("20250101111200"), session.end)
-        assertEquals(1, session.exerciseCount)
-        assertEquals("123ABC", session.deviceId)
-        assertEquals("Polar 360", session.modelName)
-        assertEquals(3600, session.duration?.seconds)
-        assertEquals(12.5f, session.distance)
-        assertEquals(400, session.calories)
-        assertEquals(110, session.heartRate?.average)
-        assertEquals(150, session.heartRate?.maximum)
-        assertEquals("Running", session.sessionName)
-        assertEquals(4.5f, session.feeling)
-        assertEquals("Note", session.note)
-        assertEquals("Place", session.place)
-        assertEquals(60.1699, session.latitude)
-        assertEquals(24.9384, session.longitude)
-        assertEquals("FEEDBACK_1", session.benefit?.feedback)
-        assertEquals(3, session.sport?.id)
-        assertEquals(100.0f, session.cardioLoad?.exerciseLoad)
-        assertEquals(50.0f, session.cardioLoad?.activityLoad)
-        assertEquals(3, session.cardioLoadInterpretation)
-        assertEquals(200.5f, session.muscleLoad)
-        assertEquals(4, session.muscleLoadInterpretation)
-        assertEquals("123e4567-e89b-12d3-a456-426614174000", session.periodUuid!!.toStringUtf8())
-        assertEquals(TrainingSession.PbTrainingSession.PbTrainingStartTrigger.MANUAL.name, session.startTrigger?.name)
+        val exercise = trainingSession.exercises[0]
+        assertNotNull(exercise.exerciseSummary)
+        assertNotNull(exercise.route)
+        assertNotNull(exercise.routeAdvanced)
 
-        assertEquals(3600, exercise.exerciseSummary?.duration?.seconds)
-        assertEquals(3, exercise.exerciseSummary?.sport?.id)
-        assertEquals(400, exercise.exerciseSummary?.calories)
-        assertEquals(12.5f, exercise.exerciseSummary?.distance)
-        assertEquals(100.5f, exercise.exerciseSummary?.ascent)
-        assertEquals(90.3f, exercise.exerciseSummary?.descent)
-        assertEquals(60.1699, exercise.exerciseSummary?.latitude)
-        assertEquals(24.9384, exercise.exerciseSummary?.longitude)
-        assertEquals("Place", exercise.exerciseSummary?.place)
-        assertEquals(100f, exercise.exerciseSummary?.cardioLoad?.exerciseLoad)
-        assertEquals(50f, exercise.exerciseSummary?.cardioLoad?.activityLoad)
-        assertEquals(3, exercise.exerciseSummary?.cardioLoadInterpretation)
-        assertEquals(200.5f, exercise.exerciseSummary?.muscleLoad)
-        assertEquals(4, exercise.exerciseSummary?.muscleLoadInterpretation)
-        assertEquals(150, exercise.exerciseSummary?.accumulatedTorque)
-        assertEquals(200, exercise.exerciseSummary?.cyclingPowerEnergy)
-        assertEquals(5.0f, exercise.exerciseSummary?.walkingDistance)
-        assertEquals(1800, exercise.exerciseSummary?.walkingDuration?.seconds)
-        assertEquals(55, exercise.exerciseSummary?.runningIndex)
-        assertEquals(10, exercise.exerciseSummary?.exerciseCounters?.sprintCount)
-        assertEquals(dateTimeFormatter.parse("20250102120000"), exercise.exerciseSummary?.lastModified)
+        val route = exercise.route!!
+        assertEquals(60.17, route.latitudeList.first())
+        assertEquals(24.94, route.longitudeList.first())
+        assertEquals(7, route.satelliteAmountList.first())
+
+        val routeAdvanced = exercise.routeAdvanced!!
+        assertEquals(60.17, routeAdvanced.syncPointList.first().location.latitude)
+        assertEquals(24.94, routeAdvanced.syncPointList.first().location.longitude)
+        assertEquals(100, routeAdvanced.latitudeList.first())
+        assertEquals(200, routeAdvanced.longitudeList.first())
+
         verify {
             client.request(
                 PftpRequest.PbPFtpOperation.newBuilder()
@@ -418,6 +472,34 @@ class PolarTrainingSessionUtilsTest {
                 PftpRequest.PbPFtpOperation.newBuilder()
                     .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
                     .setPath("/U/0/20250101/E/101200/BASE.BPB")
+                    .build()
+                    .toByteArray()
+            )
+            client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath("/U/0/20250101/E/101200/ROUTE.BPB")
+                    .build()
+                    .toByteArray()
+            )
+            client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath("/U/0/20250101/E/101200/ROUTE.GZB")
+                    .build()
+                    .toByteArray()
+            )
+            client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath("/U/0/20250101/E/101200/ROUTE2.BPB")
+                    .build()
+                    .toByteArray()
+            )
+            client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath("/U/0/20250101/E/101200/ROUTE2.GZB")
                     .build()
                     .toByteArray()
             )

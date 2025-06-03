@@ -87,6 +87,23 @@ internal object PolarDataUtils {
                     samplesData.addAll(sample.irSamples.map { it })
                     listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData))
                 }
+                is PpgData.PpgDataFrameType13 -> {
+                    type = PolarPpgData.PpgDataType.FRAME_TYPE_13
+                    val samplesData = mutableListOf<Int>()
+                    samplesData.addAll(sample.ppgChannel0.map { it })
+                    samplesData.addAll(sample.ppgChannel1.map { it })
+                    samplesData.add(sample.status)
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData))
+                }
+
+                is PpgData.PpgDataFrameType14 -> {
+                    type = PolarPpgData.PpgDataType.FRAME_TYPE_14
+                    val samplesData = mutableListOf<Int>()
+                    samplesData.addAll(sample.channel1GainTs1.map { it.toInt() })
+                    samplesData.addAll(sample.channel2GainTs1.map { it.toInt() })
+                    samplesData.addAll(sample.numIntTs1.map { it.toInt() })
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData))
+                }
             }
         }
         return PolarPpgData(listOfSamples, type)

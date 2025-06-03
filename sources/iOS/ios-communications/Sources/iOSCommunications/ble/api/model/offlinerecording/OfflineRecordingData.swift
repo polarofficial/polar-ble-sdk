@@ -46,21 +46,22 @@ public struct OfflineRecordingData<DataType> {
         } catch {
             throw OfflineRecordingError.offlineRecordingErrorMetaDataParseFailed(description: "\(error)")
         }
+
+        var payloadDataBytes: Data = Data()
         
-        let payloadDataBytes = fileData.subdata(in: metaDataLength..<fileData.count)
-        
-        guard !payloadDataBytes.isEmpty else {
-            throw OfflineRecordingError.offlineRecordingNoPayloadData
+        if (metaDataLength < fileData.count) {
+            payloadDataBytes = fileData.subdata(in: metaDataLength..<fileData.count)
+            let parsedData = try parseData(
+                dataBytes: payloadDataBytes,
+                metaData: metaData,
+                builder: try getDataBuilder(type: type),
+                lastTimestamp: lastTimestamp
+            )
+
+            return OfflineRecordingData<Any>(offlineRecordingHeader: metaData.offlineRecordingHeader, startTime: metaData.startTime, recordingSettings: metaData.recordingSettings,  data: parsedData)
         }
         
-        let parsedData = try parseData(
-            dataBytes: payloadDataBytes,
-            metaData: metaData,
-            builder: try getDataBuilder(type: type),
-            lastTimestamp: lastTimestamp
-        )
-        
-        return OfflineRecordingData<Any>(offlineRecordingHeader: metaData.offlineRecordingHeader, startTime: metaData.startTime, recordingSettings: metaData.recordingSettings,  data: parsedData)
+        return OfflineRecordingData<Any>(offlineRecordingHeader: metaData.offlineRecordingHeader, startTime: metaData.startTime, recordingSettings: metaData.recordingSettings,  data: EmptyData())
     }
     
     private static func getDataBuilder(type: PmdMeasurementType) throws -> Any {
@@ -115,9 +116,14 @@ public struct OfflineRecordingData<DataType> {
         // padding bytes
         let paddingBytes1Length = parsePaddingBytes(metaDataOffset: metaDataOffset, offlineRecordingSecurityStrategy: offlineRecordingSecurityStrategy)
         metaDataOffset += paddingBytes1Length
-        
-        let dataPayloadSize = try parsePacketSize(packetSize: metaDataBytes.subdataSafe(in: metaDataOffset..<(metaDataOffset + PACKET_SIZE_LENGTH)))
-        metaDataOffset += PACKET_SIZE_LENGTH
+
+        var dataPayloadSize: Int
+        if (metaDataOffset >= metaDataBytes.count ) {
+            dataPayloadSize = 0
+        } else {
+            dataPayloadSize = try parsePacketSize(packetSize: metaDataBytes.subdataSafe(in: metaDataOffset..<(metaDataOffset + PACKET_SIZE_LENGTH)))
+            metaDataOffset += PACKET_SIZE_LENGTH
+        }
         
         let paddingBytes2Length = parsePaddingBytes(metaDataOffset: metaDataOffset, offlineRecordingSecurityStrategy: offlineRecordingSecurityStrategy)
         metaDataOffset += paddingBytes2Length
