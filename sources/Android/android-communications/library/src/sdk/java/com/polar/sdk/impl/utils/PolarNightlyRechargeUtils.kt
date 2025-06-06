@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.time.LocalDate
 
 private const val ARABICA_USER_ROOT_FOLDER = "/U/0/"
 private const val NIGHTLY_RECOVERY_DIRECTORY = "NR/"
@@ -22,7 +23,7 @@ internal object PolarNightlyRechargeUtils {
     /**
      * Read nightly recharge data for given date range.
      */
-    fun readNightlyRechargeData(client: BlePsFtpClient, date: Date): Maybe<PolarNightlyRechargeData> {
+    fun readNightlyRechargeData(client: BlePsFtpClient, date: LocalDate): Maybe<PolarNightlyRechargeData> {
         BleLogger.d(TAG, "readNightlyRechargeData: $date")
         return Maybe.create { emitter ->
             val nightlyRecoveryFilePath = "$ARABICA_USER_ROOT_FOLDER${dateFormat.format(date)}/$NIGHTLY_RECOVERY_DIRECTORY$NIGHTLY_RECOVERY_PROTO"

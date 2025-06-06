@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.time.LocalDate
 
 private const val ARABICA_USER_ROOT_FOLDER = "/U/0/"
 private const val ACTIVITY_DIRECTORY = "ACT/"
@@ -37,7 +38,7 @@ internal object PolarActivityUtils {
     /**
      * Read step count for given [date].
      */
-    fun readStepsFromDayDirectory(client: BlePsFtpClient, date: Date): Single<Int> {//: Disposable {
+    fun readStepsFromDayDirectory(client: BlePsFtpClient, date: LocalDate): Single<Int> {//: Disposable {
         BleLogger.d(TAG, "readStepsFromDayDirectory: $date")
         return Single.create { emitter ->
             val activityFileDir = "$ARABICA_USER_ROOT_FOLDER${dateFormat.format(date)}/${ACTIVITY_DIRECTORY}"
@@ -88,7 +89,7 @@ internal object PolarActivityUtils {
         }
     }
 
-    fun readDistanceFromDayDirectory(client: BlePsFtpClient, date: Date): Single<Float> {
+    fun readDistanceFromDayDirectory(client: BlePsFtpClient, date: LocalDate): Single<Float> {
         BleLogger.d(TAG, "readDistanceFromDayDirectory: $date")
         return Single.create { emitter ->
                 val dailySummaryFilePath = "$ARABICA_USER_ROOT_FOLDER${dateFormat.format(date)}/${DAILY_SUMMARY_DIRECTORY}${DAILY_SUMMARY_PROTO}"
@@ -114,7 +115,7 @@ internal object PolarActivityUtils {
             }
     }
 
-    fun readActiveTimeFromDayDirectory(client: BlePsFtpClient, date: Date): Single<PolarActiveTimeData> {
+    fun readActiveTimeFromDayDirectory(client: BlePsFtpClient, date: LocalDate): Single<PolarActiveTimeData> {
         BleLogger.d(TAG, "readActiveTimeFromDayDirectory: $date")
         return Single.create { emitter ->
                 val dailySummaryFilePath = "$ARABICA_USER_ROOT_FOLDER${dateFormat.format(date)}/${DAILY_SUMMARY_DIRECTORY}${DAILY_SUMMARY_PROTO}"
@@ -151,7 +152,7 @@ internal object PolarActivityUtils {
             }
     }
 
-    fun readSpecificCaloriesFromDayDirectory(client: BlePsFtpClient, date: Date, caloriesType: CaloriesType): Single<Int> {
+    fun readSpecificCaloriesFromDayDirectory(client: BlePsFtpClient, date: LocalDate, caloriesType: CaloriesType): Single<Int> {
         BleLogger.d(TAG, "readSpecificCaloriesFromDayDirectory: $date, type: $caloriesType")
         return Single.create { emitter ->
                 val dailySummaryFilePath = "$ARABICA_USER_ROOT_FOLDER${dateFormat.format(date)}/${DAILY_SUMMARY_DIRECTORY}${DAILY_SUMMARY_PROTO}"
