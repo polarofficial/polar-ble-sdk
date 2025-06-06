@@ -6,7 +6,7 @@ import com.polar.sdk.api.model.sleep.PolarNightlyRechargeData
 import fi.polar.remote.representation.protobuf.NightlyRecovery.PbNightlyRecoveryStatus
 import io.reactivex.rxjava3.core.Maybe
 import protocol.PftpRequest
-import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -15,7 +15,8 @@ import java.time.LocalDate
 private const val ARABICA_USER_ROOT_FOLDER = "/U/0/"
 private const val NIGHTLY_RECOVERY_DIRECTORY = "NR/"
 private const val NIGHTLY_RECOVERY_PROTO = "NR.BPB"
-private val dateFormat = SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
+
+private val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd", Locale.ENGLISH)
 private const val TAG = "PolarNightlyRechargeUtils"
 
 internal object PolarNightlyRechargeUtils {
@@ -26,7 +27,7 @@ internal object PolarNightlyRechargeUtils {
     fun readNightlyRechargeData(client: BlePsFtpClient, date: LocalDate): Maybe<PolarNightlyRechargeData> {
         BleLogger.d(TAG, "readNightlyRechargeData: $date")
         return Maybe.create { emitter ->
-            val nightlyRecoveryFilePath = "$ARABICA_USER_ROOT_FOLDER${dateFormat.format(date)}/$NIGHTLY_RECOVERY_DIRECTORY$NIGHTLY_RECOVERY_PROTO"
+            val nightlyRecoveryFilePath = "$ARABICA_USER_ROOT_FOLDER${dateFormatter.format(date)}/$NIGHTLY_RECOVERY_DIRECTORY$NIGHTLY_RECOVERY_PROTO"
             val disposable = client.request(PftpRequest.PbPFtpOperation.newBuilder()
                     .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
                     .setPath(nightlyRecoveryFilePath)
