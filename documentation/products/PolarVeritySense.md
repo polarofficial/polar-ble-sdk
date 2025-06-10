@@ -31,6 +31,8 @@ Device management
 * Turn off device
 * Restart device
 * Factory reset
+* [Firmware update](../FirmwareUpdate.md)
+* [SDK mode](../SdkModeExplained.md)
 * Set physical data (gender,birth date, height, weight, max HR, resting HR, VO2max, training background level, typical daily activity level, sleep goal)
 * Delete data from device
 
