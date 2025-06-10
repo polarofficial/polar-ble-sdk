@@ -8,12 +8,31 @@ Optical heart rate sensor is a rechargeable device that measures user’s heart 
 ## Polar Verity Sense features available by the SDK
 SDK supports streaming and [Offline recording](../SdkOfflineRecordingExplained.md) (from version 2.1.0 onwards) of following data.
 
+Online streaming and offline recording
 * Heart rate as beats per minute. 
 * Photoplethysmograpy (PPG) values.
 * [PP interval](./../PPIData.md) (milliseconds) representing cardiac pulse-to-pulse interval extracted from PPG signal.
 * Accelerometer data with sample rate of 52Hz and range of 8G. Axis specific acceleration data in mG.
 * Gyroscope data with sample rate of 52Hz and ranges of 2000deg/sec. Axis specific gyroscope data in deg/sec.
 * Magnetometer data with sample rates of 10Hz, 20Hz, 50HZ and 100Hz and range of +/-50 Gauss. Axis specific magnetometer data in Gauss.
+
+Data export
+* Sleep data
+* Steps data
+* Nightly recharge data
+* 24/7 HR samples
+* 24/7 PPi samples
+* Skin temperature data
+* Calory data (activity/training/BMR)
+
+Device management
+* Get/set time
+* Get Disc space
+* Turn off device
+* Restart device
+* Factory reset
+* Set physical data (gender,birth date, height, weight, max HR, resting HR, VO2max, training background level, typical daily activity level, sleep goal)
+* Delete data from device
 
 ## SDK Mode capabilities in Polar Verity Sense
 
