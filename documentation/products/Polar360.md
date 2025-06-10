@@ -23,21 +23,35 @@ It is a device designed to increase general well-being and to make the lives of 
 
 ## Polar 360 features available by the SDK
 
+Online streaming and offline recording
 * Heart rate as beats per minute.
 * Acceleration: 50Hz, 16bit resolution, Range 8G
 * [PP interval](./../PPIData.md)  representing cardiac pulse-to-pulse interval extracted from PPG signal.
 * Skin temperature: 1Hz, 2Hz, 4Hz options, 32 bit resolution
-* Battery level
-* [SDK mode](../SdkModeExplained.md)
-* [Offline recording](../SdkOfflineRecordingExplained.md)
-* 24/7 Steps counting
+
+[Offline recording](../SdkOfflineRecordingExplained.md)
+
+Data export
+* Sleep data
+* Steps data
+* Nightly recharge data
 * 24/7 HR samples
-* Sleep duration and sleep stages
-* Nightly Recharge data
-* Calory data
+* 24/7 PPi samples
+* Skin temperature data
+* Calory data (activity/training/BMR)
+
+Device management
+* get battery level
+* Get/set time
+* Get Disc space
+* Turn off device
+* Restart device
+* Factory reset
 * [Firmware update](../FirmwareUpdate.md)
-* Setting user's physical info
-* Deleting data from device
+* [SDK mode](../SdkModeExplained.md)
+* Set physical data (gender,birth date, height, weight, max HR, resting HR, VO2max, training background level, typical daily activity level, sleep goal)
+* Delete data from device
+
 
 ## Important considerations
 
