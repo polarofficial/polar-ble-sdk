@@ -16,15 +16,6 @@ Online streaming and offline recording
 * Gyroscope data with sample rate of 52Hz and ranges of 2000deg/sec. Axis specific gyroscope data in deg/sec.
 * Magnetometer data with sample rates of 10Hz, 20Hz, 50HZ and 100Hz and range of +/-50 Gauss. Axis specific magnetometer data in Gauss.
 
-Data export
-* Sleep data
-* Steps data
-* Nightly recharge data
-* 24/7 HR samples
-* 24/7 PPi samples
-* Skin temperature data
-* Calory data (activity/training/BMR)
-
 Device management
 * Get/set time
 * Get Disc space
