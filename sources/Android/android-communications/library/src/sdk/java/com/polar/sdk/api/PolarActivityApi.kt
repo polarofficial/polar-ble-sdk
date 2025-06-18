@@ -9,6 +9,7 @@ import com.polar.sdk.api.model.activity.PolarStepsData
 import com.polar.sdk.api.model.sleep.PolarNightlyRechargeData
 import com.polar.sdk.impl.utils.CaloriesType
 import io.reactivex.rxjava3.core.Single
+import java.time.LocalDate
 import java.util.Date
 
 /**
@@ -25,7 +26,7 @@ interface PolarActivityApi {
      * @param toDate The ending date of the period to retrieve steps from.
      * @return A [Single] emitting a list of [PolarStepsData] representing the steps data for the specified period.
      */
-    fun getSteps(identifier: String, fromDate: Date, toDate: Date): Single<List<PolarStepsData>>
+    fun getSteps(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<PolarStepsData>>
 
     /**
      * Get distance for a given period.
@@ -35,7 +36,7 @@ interface PolarActivityApi {
      * @param toDate The ending date of the period to retrieve distance from.
      * @return A [Single] emitting a list of [PolarDistanceData] representing the distance data for the specified period.
      */
-    fun getDistance(identifier: String, fromDate: Date, toDate: Date): Single<List<PolarDistanceData>>
+    fun getDistance(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<PolarDistanceData>>
 
     /**
      * Get active time for a given period.
@@ -45,7 +46,7 @@ interface PolarActivityApi {
      * @param toDate The ending date of the period to retrieve active time from.
      * @return A [Single] emitting a list of [PolarActiveTimeData] representing the active time data for the specified period.
      */
-    fun getActiveTime(identifier: String, fromDate: Date, toDate: Date): Single<List<PolarActiveTimeData>>
+    fun getActiveTime(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<PolarActiveTimeData>>
 
     /**
      * Get specific calories type for a given period.
@@ -56,7 +57,7 @@ interface PolarActivityApi {
      * @param caloriesType The type of calories data to retrieve (e.g., ACTIVITY, TRAINING, BMR).
      * @return A [Single] emitting a list of [PolarCaloriesData] representing the calories data for the specified period.
      */
-    fun getCalories(identifier: String, fromDate: Date, toDate: Date, caloriesType: CaloriesType): Single<List<PolarCaloriesData>>
+    fun getCalories(identifier: String, fromDate: LocalDate, toDate: LocalDate, caloriesType: CaloriesType): Single<List<PolarCaloriesData>>
 
     /**
      * Get 24/7 heart rate samples for a given period.
@@ -76,7 +77,7 @@ interface PolarActivityApi {
      * @param toDate The ending date of the period to retrieve nightly recharge from.
      * @return A [Single] emitting a list of [PolarNightlyRechargeData] representing the nightly recharge data for the specified period.
      */
-    fun getNightlyRecharge(identifier: String, fromDate: Date, toDate: Date): Single<List<PolarNightlyRechargeData>>
+    fun getNightlyRecharge(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<PolarNightlyRechargeData>>
 
     /**
      * Load 24/7 PPi data from a device for a given period.
