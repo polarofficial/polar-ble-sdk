@@ -1,6 +1,6 @@
 //  Copyright © 2025 Polar. All rights reserved.
 
-/// From https://bootstragram.com/blog/date-with-no-time-operations-swift
+/// From https://www.mickf.net/tech/date-with-no-time-operations-swift
 /// A string that represents dates using their ISO 8601 representations.
 ///
 /// `PolarPlainDate` is a way to handle dates with no time — such as `2022-03-02` for March 2nd of 2022 — to
