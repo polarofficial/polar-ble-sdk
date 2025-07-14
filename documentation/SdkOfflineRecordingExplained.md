@@ -58,7 +58,7 @@ To anticipate this scenario, the disk space can be queried to the device by call
 | Device             | From ver. onwards | Offline recording triggers | Security | Memory limit 1 | Memory limit 2 |
 |:-------------------|:-----------------:|:--------------------------:|:--------:|:--------------:|:--------------:|
 | Polar Verity Sense |2.1.0              | Yes                        | Yes      | 2 MB           | 300 KB
-| Polar 360          |1.0                | No                         | No       | 2 MB           | 2 MB
+| Polar 360          |1.0                | Yes (> 2.0.8)              | No       | 2 MB           | 2 MB
 
 ## Considerations
 
