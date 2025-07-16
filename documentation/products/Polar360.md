@@ -4,6 +4,11 @@
 
 - [Polar 360](#polar-360)
   - [Polar 360 features available by the SDK](#polar-360-features-available-by-the-sdk)
+    - [Online streaming and offline recording](#online-streaming-and-offline-recording)
+    - [Data export](#data-export)
+    - [Device management](#device-management)
+    - [Battery management](#battery-management)
+    - [PPG description](#ppg-description)
   - [Important considerations](#important-considerations)
     - [First time use](#first-time-use)
     - [BLE functionnality](#ble-functionnality)
@@ -23,15 +28,15 @@ It is a device designed to increase general well-being and to make the lives of 
 
 ## Polar 360 features available by the SDK
 
-Online streaming and offline recording
+### Online streaming and offline recording
 * Heart rate as beats per minute.
 * Acceleration: 50Hz, 16bit resolution, Range 8G
 * [PP interval](./../PPIData.md)  representing cardiac pulse-to-pulse interval extracted from PPG signal.
 * Skin temperature: 1Hz, 2Hz, 4Hz options, 32 bit resolution
+* Photoplethysmograpy (PPG): 22Hz, 24bit resolution, Green channels
+* [Offline recording](../SdkOfflineRecordingExplained.md)
 
-[Offline recording](../SdkOfflineRecordingExplained.md)
-
-Data export
+### Data export
 * Sleep data
 * Steps data
 * Nightly recharge data
@@ -40,7 +45,7 @@ Data export
 * Skin temperature data
 * Calory data (activity/training/BMR)
 
-Device management
+### Device management
 * get battery level
 * Get/set time
 * Get Disc space
@@ -51,6 +56,47 @@ Device management
 * [SDK mode](../SdkModeExplained.md)
 * Set physical data (gender,birth date, height, weight, max HR, resting HR, VO2max, training background level, typical daily activity level, sleep goal)
 * Delete data from device
+
+### Battery management
+
+Through the SDK, it is possible to retrieve the **Polar 360** battery level and charging status.
+
+The device operates in three battery modes:
+
+| Mode        | Battery Level | Operations                                                                 |
+|-------------|----------------|----------------------------------------------------------------------------|
+| **Normal**    | 100% – 5%        | All functionalities are available.                                        |
+| **Critical**  | 5% – 2%          | All functionalities are disabled. Only BLE remains active to indicate low battery. |
+| **Hibernate** | 2% – 0%          | BLE is turned off. The device maintains timekeeping for approximately one week before full discharge. |
+
+> [!NOTE]  
+> When Polar 360 is turned off, it enters a mode known as **storage mode**, where the battery circuit is disconnected to prevent discharge.  
+> In this mode, **timekeeping is disabled**.  
+> It is recommended to **sync with the app and reset the time** when the device is turned back on.
+
+Starting from **firmware version 2.0.8**, Polar 360 can notify changes in charging status.
+
+With **SDK version 6.4.0**, the following charging events are available:
+- **CHARGING** → Device is connected to a power source and charging.
+- **DISCHARGING ACTIVE** → Device is operating and discharging the battery.
+
+
+### PPG description
+Starting from **firmware version 2.0.8**, Polar 360 supports streaming of raw PPG data.
+
+The PPG signal consists of two channels, both derived from the **central green LED** in the optical interface, sampled  simultaneously from two different photodiodes. 
+For this initial version of PPG streaming, only the central green LED is used because it remains active even when the device enters low-power mode.  
+This ensures that whether you're streaming or recording PPG data, you’ll consistently receive a signal.
+
+<img src="./../images/Polar360/Central_LEDs.svg" alt="Central LEDs" width="100"/>
+
+> [!IMPORTANT]  
+> Firmware version 2.0.8 provides raw data directly from the optics analog front end, without any processing.  
+> Due to internal clock drift in the AFE (Analog Front End), you may experience a higher offset in the sampling rate.  
+> It is therefore recommended to resample the data before feeding it into your own algorithm.
+
+> [!NOTE]  
+> The PPG streaming feature is subject to change without notice in future firmware releases
 
 
 ## Important considerations
@@ -103,11 +149,15 @@ Activity and sleep data is passively recorded by the device overtime and will st
 |:----------------:|:-----------------:|:-------------------------------------:|:----------------------------------------------------:|:----------:|
 | Acc              | Online streaming  | 12Hz, 25Hz, **50Hz**, 100Hz, 200Hz, 400Hz | 2g, 4g, **8g**, 16g                                      |16          |
 | Acc              | Offline recording | 12Hz, 26Hz, **52Hz**                      | 2g, 4g, **8g**, 16g                                      |16          |
+| PPG              | Online streaming  | **22Hz**, 50Hz, [1] 100Hz                 | -                                                        |24          |
+| PPG              | Offline recording | **22Hz**, 50Hz, [1] 100Hz                 | -                                                        |24          |
 | Skin temperature | Online streaming  | **1Hz**, 2Hz, 4Hz                         | -                                                    |32          |
 | Skin temperature | Offline recording | **1Hz**, 2Hz, 4Hz                         | -                                                    |32          |
 | PPI              | PPI online stream or offline recording is not supported in SDK MODE             |
 | HR               | HR online stream or offline recording is not supported in SDK MODE              |
 
+[1] Sampling rate of 100Hz in PPG is not confirmed yet (FW. 2.0.8)
+   
 ## Polar 360 UI animations 
 
 As a headless device, Polar 360 uses the optical heart rate sensor LEDs to communicate information back to the user : 
