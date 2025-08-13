@@ -13,6 +13,9 @@ assignees: ''
 - [ ] Other
 - [ ] Platform is not relevant for this bug
 
+**Platform version:**
+
+
 **SDK version:**
 
 
