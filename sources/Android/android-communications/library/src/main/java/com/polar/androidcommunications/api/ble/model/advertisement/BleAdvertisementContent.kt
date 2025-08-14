@@ -2,16 +2,18 @@ package com.polar.androidcommunications.api.ble.model.advertisement
 
 import androidx.annotation.VisibleForTesting
 import com.polar.androidcommunications.api.ble.model.polar.BlePolarDeviceIdUtility
-import com.polar.androidcommunications.api.ble.model.polar.PolarAdvDataUtility.getPolarModelNameFromAdvLocalName
-import com.polar.androidcommunications.api.ble.model.polar.PolarAdvDataUtility.isPolarDevice
+import com.polar.androidcommunications.api.ble.model.polar.PolarAdvDataUtility.getDeviceModelNameFromAdvLocalName
+import com.polar.androidcommunications.api.ble.model.polar.PolarAdvDataUtility.isValidDevice
 import com.polar.androidcommunications.common.ble.BleUtils.AD_TYPE
 import com.polar.androidcommunications.common.ble.BleUtils.EVENT_TYPE
 import java.util.*
 
 class BleAdvertisementContent {
-    companion object {
-        const val BLE_ADV_POLAR_PREFIX_IN_LOCAL_NAME = "Polar"
-    }
+
+    /**
+     * Name prefix used to detect compatible devices based on advertised name
+     */
+    var advertisementDeviceNamePrefix = "Polar"
 
     /**
      * The latest received advertisement data. Old data is cleared when
@@ -171,8 +173,8 @@ class BleAdvertisementContent {
     fun processName(name: String) {
         if (name.isNotEmpty() && this.name != name) {
             this.name = name
-            if (isPolarDevice(name)) {
-                polarDeviceType = getPolarModelNameFromAdvLocalName(name)
+            if (isValidDevice(name, advertisementDeviceNamePrefix)) {
+                polarDeviceType = getDeviceModelNameFromAdvLocalName(name, advertisementDeviceNamePrefix)
                 val nameSplit = name.split(" ").toTypedArray()
                 polarDeviceId = nameSplit[nameSplit.size - 1]
                 if (polarDeviceId.length == 7) {

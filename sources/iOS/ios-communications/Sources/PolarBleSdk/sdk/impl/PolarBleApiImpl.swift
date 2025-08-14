@@ -88,6 +88,11 @@ import UIKit
             serviceList.append(CBUUID.init(string: "FEEE"))
         }
         
+        // BlePsPFCClient
+        if (features.contains(PolarBleSdkFeature.feature_polar_features_configuration_service)) {
+            clientList.append(BlePfcClient.init)
+        }
+        
         self.queue = queue
         self.listener = CBDeviceListenerImpl(queue, clients: clientList, identifier: 0)
         self.listener.automaticH10Mapping = true
@@ -139,9 +144,11 @@ import UIKit
         case .sessionOpenPark where session.previousState == .sessionOpen: fallthrough
         case .sessionClosed where session.previousState == .sessionOpen: fallthrough
         case .sessionClosed where session.previousState == .sessionClosing:
-            self.observer?.deviceDisconnected(info, pairingError: false)
+            self.observer?.deviceDisconnected(info, pairingError: session.error?.indicatesBLEPairingProblem ?? false)
         case .sessionOpenPark where session.previousState == .sessionOpening:
-            self.observer?.deviceDisconnected(info, pairingError: true)
+            self.observer?.deviceDisconnected(info, pairingError: false)
+        case .sessionClosed where session.disconnectedDueRemovedPairing:
+            self.observer?.deviceDisconnected(info, pairingError: session.error?.indicatesBLEPairingProblem ?? false)
         case .sessionOpening:
             self.observer?.deviceConnecting(info)
         case .sessionClosed: fallthrough
@@ -175,6 +182,49 @@ import UIKit
         throw PolarErrors.notificationNotEnabled
     }
     
+    private func sessionPfcClientReady(_ identifier: String) throws -> BleDeviceSession {
+        let session = try sessionServiceReady(identifier, service: BlePfcClient.PFC_SERVICE)
+        let client = session.fetchGattClient(BlePfcClient.PFC_SERVICE) as! BlePfcClient
+        
+        if client.isServiceDiscovered() {
+            return session
+        }
+        throw PolarErrors.notificationNotEnabled
+    }
+    
+    private func waitPfcClientReady(_ identifier: String) -> Observable<BleDeviceSession> {
+        return Observable.create { observer in
+            _ = self.waitForServiceDiscovered(identifier, service: BlePfcClient.PFC_SERVICE)
+                .subscribe(onNext: { session in
+                    Observable.interval(.seconds(1), scheduler: MainScheduler.instance)
+                        .take(10)
+                        .flatMap { (_: Int64) -> Observable<BleDeviceSession> in
+                            do {
+                                let client = session.fetchGattClient(BlePfcClient.PFC_SERVICE) as! BlePfcClient
+                                if client.isServiceDiscovered() {
+                                    observer.onNext(session)
+                                    observer.onCompleted()
+                                    return Observable.just(session)
+                                }
+                                return Observable.empty()
+                            } catch {
+                                observer.onError(error)
+                                return Observable.error(error)
+                            }
+                        }
+                        .subscribe(onError: { error in
+                            observer.onError(error)
+                        }, onCompleted: {
+                            observer.onError(PolarErrors.notificationNotEnabled)
+                        })
+                }, onError: { error in
+                    observer.onError(error)
+                })
+
+            return Disposables.create()
+        }
+    }
+
     private func waitPmdClientReady(_ identifier: String) -> Observable<BleDeviceSession> {
         return Observable.create { observer in
             self.waitForServiceDiscovered(identifier, service: BlePmdClient.PMD_SERVICE)
@@ -362,7 +412,19 @@ import UIKit
             return Single.just(false)
         }
     }
-    
+
+    private func isFeatureConfigurationServiceFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
+        if (discoveredServices.contains(BlePfcClient.PFC_SERVICE)) {
+            guard let client = session.fetchGattClient(BlePfcClient.PFC_SERVICE) as? BlePfcClient else {
+                return Single.just(false)
+            }
+            return client.clientReady(true)
+                .andThen(Single.just(true))
+        } else {
+            return Single.just(false)
+        }
+    }
+
     private func isH10ExerciseFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
         if (discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE) && BlePolarDeviceCapabilitiesUtility.isRecordingSupported(session.advertisementContent.polarDeviceType)) {
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -569,6 +631,8 @@ import UIKit
             isFeatureAvailable = isPolarActivityDataFeatureAvailable(session, discoveredServices)
         case .feature_polar_firmware_update:
             isFeatureAvailable = isPolarFirmwareUpdateFeatureAvailable(session, discoveredServices)
+        case .feature_polar_features_configuration_service:
+            isFeatureAvailable = isFeatureConfigurationServiceFeatureAvailable(session, discoveredServices)
         }
         
         return isFeatureAvailable.flatMapCompletable { (isReady: Bool) -> Completable in
@@ -749,7 +813,7 @@ extension PolarBleApiImpl: BleLoggerProtocol {
 }
 
 extension PolarBleApiImpl: PolarBleApi  {
-    
+
     func cleanup() {
         _ = listener.removeAllSessions(
             Set(CollectionOfOne(BleDeviceSession.DeviceSessionState.sessionClosed)))
@@ -760,7 +824,15 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
     
     func searchForDevice() -> Observable<PolarDeviceInfo> {
+        searchForDevice(withRequiredDeviceNamePrefix: nil)
+    }
+    
+    func searchForDevice(withRequiredDeviceNamePrefix requiredDeviceNamePrefix: String? = "Polar") -> Observable<PolarDeviceInfo> {
         return listener.search(serviceList, identifiers: nil, fetchKnownDevices: true)
+            .filter { (sess: BleDeviceSession) -> Bool in
+                let name = sess.advertisementContent.name
+                return requiredDeviceNamePrefix == nil || name.hasPrefix(requiredDeviceNamePrefix!)
+            }
             .distinct()
             .map({ value -> PolarDeviceInfo in
                 return (value.advertisementContent.polarDeviceIdUntouched,
@@ -792,14 +864,17 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
     
     func connectToDevice(_ identifier: String) throws {
-        let session = try fetchSession(identifier)
+        var session = try fetchSession(identifier)
         if  session == nil ||
             session?.state == BleDeviceSession.DeviceSessionState.sessionClosed  ||
-            session?.state == BleDeviceSession.DeviceSessionState.sessionClosing {
+                session?.state == BleDeviceSession.DeviceSessionState.sessionClosing {
             
             if let sub = connectSubscriptions[identifier] {
                 sub.dispose()
             }
+            
+            session = nil
+        }
             if session != nil {
 #if os(watchOS)
                 session!.connectionType = .directConnection
@@ -826,7 +901,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                         }
                     }
             }
-        }
+        
     }
     
     func disconnectFromDevice(_ identifier: String) throws {
@@ -927,6 +1002,13 @@ extension PolarBleApiImpl: PolarBleApi  {
                 _ = try sessionFtpClientReady(identifier)
                 return true
             } catch _ {
+                // do nothing
+            }
+        case .feature_polar_features_configuration_service:
+            do {
+                _ = try sessionPfcClientReady(identifier)
+                return true
+            } catch {
                 // do nothing
             }
         }
@@ -1432,11 +1514,8 @@ extension PolarBleApiImpl: PolarBleApi  {
 
                   let processingObservable = subRecordingCountObservable
                       .flatMap { count -> Observable<PolarOfflineRecordingData> in
-                          let notificationResult = self.sendInitializationAndStartSyncNotifications(client: client)
                           
-                          return notificationResult
-                              .andThen(
-                          Observable.range(start: 0, count: count)
+                          return Observable.range(start: 0, count: count)
                               .flatMap { subRecordingIndex -> Observable<PolarOfflineRecordingData> in
                                   Observable.create { observer in
                                       let subRecordingPath: String
@@ -1499,7 +1578,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                                                   case let skinTemperatureData as SkinTemperatureData:
                                                       polarSkinTemperatureData = self.processSkinTemperatureData(skinTemperatureData, polarSkinTemperatureData, offlineRecordingData)
                                                       observer.onNext(polarSkinTemperatureData!)
-                                                  case let emptyData as EmptyData:
+                                                  case _ as EmptyData:
                                                       polarEmptyData = self.processEmptyData(offlineRecordingData)
                                                       observer.onNext(polarEmptyData!)
                                                   default:
@@ -1519,7 +1598,6 @@ extension PolarBleApiImpl: PolarBleApi  {
                                       return Disposables.create { }
                                   }
                               }
-                          )
                       }
                       .ignoreElements()
                       .asCompletable()
@@ -1536,23 +1614,10 @@ extension PolarBleApiImpl: PolarBleApi  {
                   })
                   .subscribe(
                       onSuccess: { data in
-                          client.sendNotification(
-                            Protocol_PbPFtpHostToDevNotification.terminateSession.rawValue,
-                            parameters: nil
-                          ).subscribe()
-                          
                           single(.success(data))
                       },
                       onFailure: { error in
-                          client.sendNotification(
-                            Protocol_PbPFtpHostToDevNotification.terminateSession.rawValue,
-                            parameters: nil
-                          ).subscribe()
-                          
                           single(.failure(error))
-                      },
-                      onDisposed: {
-                          self.sendTerminateAndStopSyncNotifications(client: client)
                       }
                   )
 
@@ -1577,7 +1642,6 @@ extension PolarBleApiImpl: PolarBleApi  {
                 let directoryPath = entry.path.components(separatedBy: "/").dropLast().joined(separator: "/") + "/"
                 let fileType = try self.mapDeviceDataTypeToOfflineRecordingFileName(type: entry.type)
                 operation.path = directoryPath
-                self.sendInitializationAndStartSyncNotifications(client: client).subscribe()
                 _ = client.request(try operation.serializedData())
                     .subscribe(
                         onSuccess: { content in
@@ -1591,9 +1655,6 @@ extension PolarBleApiImpl: PolarBleApi  {
                         },
                         onFailure: { error in
                             single(.failure(error))
-                        },
-                        onDisposed: {
-                            self.sendTerminateAndStopSyncNotifications(client: client)
                         }
                     )
             } catch {
@@ -1622,7 +1683,6 @@ extension PolarBleApiImpl: PolarBleApi  {
                 if let lastSlashIndex = entry.path.dropLast().lastIndex(of: "/") {
                     parentDir = String(entry.path[...lastSlashIndex])
                 }
-                self.sendInitializationAndStartSyncNotifications(client: client).subscribe()
                 _ = client.request(try operation.serializedData())
                     .subscribe(
                         onSuccess: { content in
@@ -1641,9 +1701,6 @@ extension PolarBleApiImpl: PolarBleApi  {
                         },
                         onFailure: { error in
                             single(.failure(error))
-                        },
-                        onDisposed: {
-                            self.sendTerminateAndStopSyncNotifications(client: client)
                         }
                     )
             } catch {
@@ -1717,8 +1774,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             let request = try operation.serializedData()
 
             BleLogger.trace("Offline record get. Device: $identifier Path: \(entry.path) Secret used: \(secret != nil)")
-            return sendInitializationAndStartSyncNotifications(client: client)
-                .andThen(client.request(request))
+            return client.request(request)
                 .map { data -> OfflineRecordingData<Any> in
                     var pmdSecret: PmdSecret? = nil
                     if let s = secret {
@@ -1770,8 +1826,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     }
                 }
                 .flatMap { polarOfflineData -> Single<PolarOfflineRecordingData> in
-                    return self.sendTerminateAndStopSyncNotifications(client: client)
-                        .andThen(Single.just(polarOfflineData))
+                    return Single.just(polarOfflineData)
                 }
         } catch let err {
             return Single.error(err)
@@ -2092,23 +2147,12 @@ extension PolarBleApiImpl: PolarBleApi  {
             }
             
             let fsType = BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType)
-            
-            let beforeFetch = (fsType == .h10FileSystem) ?
-            client.sendNotification(Protocol_PbPFtpHostToDevNotification.initializeSession.rawValue, parameters: nil)
-                .andThen(client.sendNotification(Protocol_PbPFtpHostToDevNotification.startSync.rawValue, parameters: nil))
-            : Completable.empty()
-            
-            let afterFetch = (fsType == .h10FileSystem) ?
-            client.sendNotification(Protocol_PbPFtpHostToDevNotification.stopSync.rawValue, parameters: nil)
-                .andThen(client.sendNotification(Protocol_PbPFtpHostToDevNotification.terminateSession.rawValue, parameters: nil))
-            : Completable.empty()
-            
+                      
             var operation = Protocol_PbPFtpOperation()
             operation.command =  Protocol_PbPFtpOperation.Command.get
             operation.path = entry.path
             let request = try operation.serializedData()
-            return beforeFetch
-                .andThen(client.request(request))
+            return client.request(request)
                 .map { (data) -> PolarExerciseData in
                     let samples = try Data_PbExerciseSamples(serializedData: data as Data)
                     var exSamples = [UInt32]()
@@ -2128,12 +2172,6 @@ extension PolarBleApiImpl: PolarBleApi  {
                         return Single.error(PolarErrors.deviceError(description: "\(err)"))
                     }
                 )
-                .do(
-                    onDispose: {
-                        _ = afterFetch
-                            .subscribe()
-                    }
-                )
         } catch let err {
             return Single.error(err)
         }
@@ -2144,42 +2182,40 @@ extension PolarBleApiImpl: PolarBleApi  {
             let session = try sessionFtpClientReady(identifier)
             let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
             let fsType = BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType)
-            self.sendInitializationAndStartSyncNotifications(client: client).subscribe()
             if fsType == .sagRfc2FileSystem {
                 return fetchRecursive("/U/0/", client: client, condition: { (entry) -> Bool in
-                    return entry.matches("^([0-9]{8})(\\/)") ||
-                    entry.matches("^([0-9]{6})(\\/)") ||
-                    entry == "E/" ||
-                    entry == "SAMPLES.BPB" ||
-                    entry == "00/"
-                })
-                .map { (entry) -> (path: String, date: Date, entryId: String) in
-                    let components = entry.name.split(separator: "/")
-                    let dateFormatter = DateFormatter()
-                    dateFormatter.calendar = .init(identifier: .iso8601)
-                    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-                    dateFormatter.dateFormat = "yyyyMMddHHmmss"
-                    if let date = dateFormatter.date(from: String(components[2] + components[4])) {
-                        return (entry.name, date: date, entryId: String(components[2] + components[4]))
-                    }
-                    throw PolarErrors.dateTimeFormatFailed()
-                }
-                .catch({ (err) -> Observable<PolarExerciseEntry> in
-                    return Observable.error(PolarErrors.deviceError(description: "\(err)"))
-                })
+                            return entry.matches("^([0-9]{8})(\\/)") ||
+                            entry.matches("^([0-9]{6})(\\/)") ||
+                            entry == "E/" ||
+                            entry == "SAMPLES.BPB" ||
+                            entry == "00/"
+                        })
+                        .map { (entry) -> (path: String, date: Date, entryId: String) in
+                            let components = entry.name.split(separator: "/")
+                            let dateFormatter = DateFormatter()
+                            dateFormatter.calendar = .init(identifier: .iso8601)
+                            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+                            dateFormatter.dateFormat = "yyyyMMddHHmmss"
+                            if let date = dateFormatter.date(from: String(components[2] + components[4])) {
+                                return (entry.name, date: date, entryId: String(components[2] + components[4]))
+                            }
+                            throw PolarErrors.dateTimeFormatFailed()
+                        }
+                            .catch({ (err) -> Observable<PolarExerciseEntry> in
+                                return Observable.error(PolarErrors.deviceError(description: "\(err)"))
+                            })
             } else if fsType == .h10FileSystem {
                 return fetchRecursive("/", client: client, condition: { (entry) -> Bool in
-                    return entry.hasSuffix("/") || entry == "SAMPLES.BPB"
-                })
-                .map { (entry) -> (path: String, date: Date, entryId: String) in
-                    let components = entry.name.split(separator: "/")
-                    return (entry.name, date: Date(), entryId: String(components[0]))
-                }
-                .catch( { (err) -> Observable<PolarExerciseEntry> in
-                    return Observable.error(PolarErrors.deviceError(description: "\(err)"))
-                })
+                            return entry.hasSuffix("/") || entry == "SAMPLES.BPB"
+                        })
+                        .map { (entry) -> (path: String, date: Date, entryId: String) in
+                            let components = entry.name.split(separator: "/")
+                            return (entry.name, date: Date(), entryId: String(components[0]))
+                        }
+                            .catch( { (err) -> Observable<PolarExerciseEntry> in
+                                return Observable.error(PolarErrors.deviceError(description: "\(err)"))
+                            })
             }
-            self.sendTerminateAndStopSyncNotifications(client: client).subscribe()
             throw PolarErrors.operationNotSupported
         } catch let err {
             return Observable.error(err)
@@ -2204,15 +2240,12 @@ extension PolarBleApiImpl: PolarBleApi  {
                 let data = Data([sdkModeLedByte, ppiModeLedByte])
                 let inputStream = InputStream(data: data)
 
-                self.sendInitializationAndStartSyncNotifications(client: client).subscribe()
-                client.write(proto as NSData, data: inputStream)
+                _ = client.write(proto as NSData, data: inputStream)
                     .subscribe(
                         onError: { error in
                             completable(.error(error))
                         }, onCompleted: {
                             completable(.completed)
-                        }, onDisposed: {
-                            self.sendTerminateAndStopSyncNotifications(client: client)
                         }
                     )
                 completable(.completed)
@@ -2324,15 +2357,12 @@ extension PolarBleApiImpl: PolarBleApi  {
                 let inputStream = InputStream(data: data)
 
                 BleLogger.trace("Sensor datalog set. Device: \(identifier) Path: \(operation.path)")
-                self.sendTerminateAndStopSyncNotifications(client: client).subscribe()
-                client.write(proto as NSData, data: inputStream)
+                _ = client.write(proto as NSData, data: inputStream)
                     .subscribe(
                         onError: { error in
                           completable(.error(error))
                       }, onCompleted: {
                           completable(.completed)
-                      }, onDisposed: {
-                          self.sendTerminateAndStopSyncNotifications(client: client)
                       }
                     )
                 completable(.completed)
@@ -2345,108 +2375,107 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
 
     func doFirstTimeUse(_ identifier: String, ftuConfig: PolarFirstTimeUseConfig) -> Completable {
-        return Completable.create { completable in
-            do {
-                let session = try self.sessionFtpClientReady(identifier)
-                guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                    completable(.error(PolarErrors.deviceError(description: "Failed to fetch GATT client.")))
-                    return Disposables.create()
+            return Completable.create { completable in
+                do {
+                    let session = try self.sessionFtpClientReady(identifier)
+                    guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                        completable(.error(PolarErrors.deviceError(description: "Failed to fetch GATT client.")))
+                        return Disposables.create()
+                    }
+
+                    let ftuConfigProto = try ftuConfig.toProto()?.serializedData() ?? {
+                        throw PolarErrors.deviceError(description: "Serialization of FTU Config failed.")
+                    }()
+
+                    var ftuOperation = Protocol_PbPFtpOperation()
+                    ftuOperation.command = Protocol_PbPFtpOperation.Command.put
+                    ftuOperation.path = PolarFirstTimeUseConfig.FTU_CONFIG_FILEPATH
+                    let ftuProto = try ftuOperation.serializedData()
+
+                    let ftuData = Data(ftuConfigProto)
+                    let ftuInputStream = InputStream(data: ftuData)
+
+                    _ = self.sendInitializationAndStartSyncNotifications(identifier: identifier)
+                        .andThen(client.write(ftuProto as NSData, data: ftuInputStream))
+                        .subscribe(
+                            onError: { error in
+                                BleLogger.error("Failed to write FTU configuration to device: \(identifier) - \(error.localizedDescription)")
+                                completable(.error(error))
+                            },
+                            onCompleted: {
+                                do {
+                                    var userIdOperation = Protocol_PbPFtpOperation()
+                                    userIdOperation.command = Protocol_PbPFtpOperation.Command.put
+                                    userIdOperation.path = UserIdentifierType.USER_IDENTIFIER_FILENAME
+
+                                    let userIdentifier = UserIdentifierType.create()
+                                    let userIdProto = try userIdentifier.toProto().serializedData()
+
+                                    let userIdData = Data(userIdProto)
+                                    let userIdInputStream = InputStream(data: userIdData)
+
+                                    _ = client.write(try userIdOperation.serializedData() as NSData, data: userIdInputStream)
+                                        .subscribe(
+                                            onError: { error in
+                                                BleLogger.error("Failed to write User ID to device: \(identifier) - \(error.localizedDescription)")
+                                                completable(.error(error))
+                                            },
+                                            onCompleted: {
+                                                let setTimeCompletable = Completable.create { setTimeCompletable in
+                                                    do {
+                                                        let isoFormatter = ISO8601DateFormatter()
+                                                        isoFormatter.timeZone = TimeZone.current
+
+                                                        guard let date = isoFormatter.date(from: ftuConfig.deviceTime) else {
+                                                            setTimeCompletable(.error(PolarErrors.deviceError(description: "Invalid deviceTime format: \(ftuConfig.deviceTime)")))
+                                                            return Disposables.create()
+                                                        }
+
+                                                        _ = self.setLocalTime(identifier, time: date, zone: TimeZone.current)
+                                                            .subscribe(
+                                                                onCompleted: {
+                                                                    setTimeCompletable(.completed)
+                                                                },
+                                                                onError: { error in
+                                                                    setTimeCompletable(.error(error))
+                                                                }
+                                                            )
+                                                    } catch let error {
+                                                        BleLogger.error("Error setting time for device: \(identifier) - \(error.localizedDescription)")
+                                                        setTimeCompletable(.error(error))
+                                                    }
+                                                    return Disposables.create()
+                                                }
+
+                                                _ = setTimeCompletable
+                                                    .subscribe(
+                                                        onCompleted: {
+                                                            _ = self.sendTerminateAndStopSyncNotifications(identifier: identifier)
+                                                            completable(.completed)
+                                                        },
+                                                        onError: { error in
+                                                            completable(.error(error))
+                                                        }
+                                                    )
+                                            }
+                                        )
+                                } catch let error {
+                                    BleLogger.error("Error processing User ID for device: \(identifier) - \(error.localizedDescription)")
+                                    completable(.error(error))
+                                }
+                            },
+                            onDisposed: {
+                                _ = self.sendTerminateAndStopSyncNotifications(identifier: identifier)
+                            }
+                        )
+                } catch let error {
+                    BleLogger.error("Error processing FTU configuration for device: \(identifier) - \(error.localizedDescription)")
+                    completable(.error(error))
                 }
 
-                let ftuConfigProto = try ftuConfig.toProto()?.serializedData() ?? {
-                    throw PolarErrors.deviceError(description: "Serialization of FTU Config failed.")
-                }()
-
-                var ftuOperation = Protocol_PbPFtpOperation()
-                ftuOperation.command = Protocol_PbPFtpOperation.Command.put
-                ftuOperation.path = PolarFirstTimeUseConfig.FTU_CONFIG_FILEPATH
-                let ftuProto = try ftuOperation.serializedData()
-
-                let ftuData = Data(ftuConfigProto)
-                let ftuInputStream = InputStream(data: ftuData)
-
-                self.sendInitializationAndStartSyncNotifications(client: client).subscribe()
-                client.write(ftuProto as NSData, data: ftuInputStream)
-                    .subscribe(
-                        onError: { error in
-                            BleLogger.error("Failed to write FTU configuration to device: \(identifier) - \(error.localizedDescription)")
-                            completable(.error(error))
-                        },
-                        onCompleted: {
-                            do {
-                                var userIdOperation = Protocol_PbPFtpOperation()
-                                userIdOperation.command = Protocol_PbPFtpOperation.Command.put
-                                userIdOperation.path = UserIdentifierType.USER_IDENTIFIER_FILENAME
-
-                                let userIdentifier = UserIdentifierType.create()
-                                let userIdProto = try userIdentifier.toProto().serializedData()
-
-                                let userIdData = Data(userIdProto)
-                                let userIdInputStream = InputStream(data: userIdData)
-
-                                client.write(try userIdOperation.serializedData() as NSData, data: userIdInputStream)
-                                    .subscribe(
-                                        onError: { error in
-                                            BleLogger.error("Failed to write User ID to device: \(identifier) - \(error.localizedDescription)")
-                                            completable(.error(error))
-                                        },
-                                        onCompleted: {
-                                            let setTimeCompletable = Completable.create { setTimeCompletable in
-                                                do {
-                                                    let isoFormatter = ISO8601DateFormatter()
-                                                    isoFormatter.timeZone = TimeZone.current
-
-                                                    guard let date = isoFormatter.date(from: ftuConfig.deviceTime) else {
-                                                        setTimeCompletable(.error(PolarErrors.deviceError(description: "Invalid deviceTime format: \(ftuConfig.deviceTime)")))
-                                                        return Disposables.create()
-                                                    }
-
-                                                    self.setLocalTime(identifier, time: date, zone: TimeZone.current)
-                                                        .subscribe(
-                                                            onCompleted: {
-                                                                setTimeCompletable(.completed)
-                                                            },
-                                                            onError: { error in
-                                                                setTimeCompletable(.error(error))
-                                                            }
-                                                        )
-                                                } catch let error {
-                                                    BleLogger.error("Error setting time for device: \(identifier) - \(error.localizedDescription)")
-                                                    setTimeCompletable(.error(error))
-                                                }
-                                                return Disposables.create()
-                                            }
-
-                                            setTimeCompletable
-                                                .subscribe(
-                                                    onCompleted: {
-                                                        self.sendTerminateAndStopSyncNotifications(client: client)
-                                                        completable(.completed)
-                                                    },
-                                                    onError: { error in
-                                                        completable(.error(error))
-                                                    }
-                                                )
-                                        }
-                                    )
-                            } catch let error {
-                                BleLogger.error("Error processing User ID for device: \(identifier) - \(error.localizedDescription)")
-                                completable(.error(error))
-                            }
-                        },
-                        onDisposed: {
-                            self.sendTerminateAndStopSyncNotifications(client: client)
-                        }
-                    )
-
-            } catch let error {
-                BleLogger.error("Error processing FTU configuration for device: \(identifier) - \(error.localizedDescription)")
-                completable(.error(error))
+                return Disposables.create()
             }
-
-            return Disposables.create()
         }
-    }
     
     func isFtuDone(_ identifier: String) -> Single<Bool> {
    
@@ -2465,13 +2494,10 @@ extension PolarBleApiImpl: PolarBleApi  {
             let request = try operation.serializedData()
 
             self.logMessage("Check if FTU has been done to device \(identifier)")
-            return self.sendInitializationAndStartSyncNotifications(client: client)
-                .andThen(client.request(request))
+            return client.request(request)
                 .map { data -> Bool in
                     return try Data_PbUserIdentifier(serializedData: data as Data).hasMasterIdentifier
-                }.do(onDispose: {
-                    self.sendTerminateAndStopSyncNotifications(client: client)
-                })
+                }
         } catch let err {
             return Single.error(err)
         }
@@ -2485,7 +2511,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
                 return Observable.just(CheckFirmwareUpdateStatus.checkFwUpdateFailed(details: "No BlePsFtpClient available"))
             }
-            self.sendInitializationAndStartSyncNotifications(client: client)
+            _ = self.sendInitializationAndStartSyncNotifications(identifier: identifier)
             
             guard let deviceInfo = PolarFirmwareUpdateUtils.readDeviceFirmwareInfo(client: client, deviceId: identifier) else {
                 return Observable.just(CheckFirmwareUpdateStatus.checkFwUpdateFailed(details: "Failed to read device firmware info"))
@@ -2555,7 +2581,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
                 return Disposables.create()
             }.do(onDispose: {
-                self.sendTerminateAndStopSyncNotifications(client: client).subscribe()
+                _ = self.sendTerminateAndStopSyncNotifications(identifier: identifier).subscribe()
             })
         } catch {
             BleLogger.error("Error during firmware update check: \(error)")
@@ -2570,274 +2596,230 @@ extension PolarBleApiImpl: PolarBleApi  {
     func updateFirmware(_ identifier: String, fromFirmwareURL: URL) -> Observable<FirmwareUpdateStatus> {
        return updateFirmware(identifier, firmwareURL: fromFirmwareURL)
     }
-    
+        
     private func updateFirmware(_ identifier: String, firmwareURL: URL? = nil) -> Observable<FirmwareUpdateStatus> {
+        
+        
+        let session = try? self.sessionFtpClientReady(identifier)
+        guard let client = session?.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+            return Observable.just(FirmwareUpdateStatus.fwUpdateFailed(details: "No BlePsFtpClient available"))
+        }
 
+        let backupManager = PolarBackupManager(client: client)
+        var backupList:[PolarBackupManager.BackupFileData] = []
+        
         let automaticReconnection = self.automaticReconnection
-
-        let fwApi = FirmwareUpdateApi()
-
-        do {
-            let session = try self.sessionFtpClientReady(identifier)
-            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                return Observable.just(FirmwareUpdateStatus.fwUpdateFailed(details: "No BlePsFtpClient available"))
-            }
-
-            guard let deviceInfo = PolarFirmwareUpdateUtils.readDeviceFirmwareInfo(client: client, deviceId: identifier) else {
-                return Observable.just(FirmwareUpdateStatus.fwUpdateFailed(details: "Failed to read device firmware info"))
-            }
-
-            let firmwareUpdateRequest: FirmwareUpdateRequest
-            do {
-                firmwareUpdateRequest = try FirmwareUpdateRequest(
-                    clientId: "polar-sensor-data-collector-ios",
-                    uuid: PolarDeviceUuid.fromDeviceId(identifier),
-                    firmwareVersion: deviceInfo.deviceFwVersion,
-                    hardwareCode: deviceInfo.deviceHardwareCode
-                )
-            } catch {
-                return Observable.just(FirmwareUpdateStatus.fwUpdateFailed(details: "Failed to create FirmwareUpdateRequest: \(error.localizedDescription)"))
-            }
+        var firmwareVersionInfo: String = ""
+        
+        let fwUrlProvider = firmwareURL != nil ?
+        Single.just((firmwareURL!.lastPathComponent,
+                     firmwareURL!.absoluteString,
+                     FirmwareUpdateStatus.preparingDeviceForFwUpdate(details: "Preparing for firmware update")))
+        :
+        checkFirmwareUrlAvailability(identifier)
+        
+        return Observable.create { observer in
             
-            let updateCheck: (URL?, FirmwareUpdateRequest?, @escaping (Result<FirmwareUpdateResponse, Error>) -> Void) -> Void = { firmwareURL, firmwareUpdateRequest, completion in
-                if firmwareURL != nil {
-                    fwApi.checkFirmwareUpdateFromFirmwareUrl(firmwareURL!, completion: completion)
-                } else if firmwareUpdateRequest != nil {
-                    fwApi.checkFirmwareUpdate(firmwareUpdateRequest:firmwareUpdateRequest!, completion: completion)
-                }
-            }
+            let task = Task {
             
-            return Observable<FirmwareUpdateStatus>.create { observer in
-                
-                updateCheck(firmwareURL, firmwareUpdateRequest) { result in
-                    switch result {
-                    case .success(let apiResponse):
-                        guard let statusCode = apiResponse.statusCode else {
-                            BleLogger.error("No status code received")
-                            observer.onNext(FirmwareUpdateStatus.fwUpdateFailed(details: "No status code received"))
-                            observer.onCompleted()
-                            return
-                        }
-                        
-                        if statusCode == 204 {
-                            BleLogger.trace("Firmware update not available, status code 204")
-                            observer.onNext(FirmwareUpdateStatus.fwUpdateNotAvailable(details: "Firmware update not available"))
-                            observer.onCompleted()
-                            return
-                        }
-                        
-                        if statusCode == 400 {
-                            BleLogger.error("Bad request, status code 400")
-                            observer.onNext(FirmwareUpdateStatus.fwUpdateFailed(details: "Bad request to firmware API"))
-                            observer.onCompleted()
-                            return
-                        }
-                        
-                        guard statusCode == 200 else {
-                            BleLogger.error("Unexpected status code: \(statusCode)")
-                            observer.onNext(FirmwareUpdateStatus.fwUpdateFailed(details: "Unexpected status code: \(statusCode)"))
-                            observer.onCompleted()
-                            return
-                        }
-                        
-                        let deviceFwVersion = deviceInfo.deviceFwVersion
-                        if firmwareURL == nil {
-                            if !PolarFirmwareUpdateUtils.isAvailableFirmwareVersionHigher(currentVersion: deviceFwVersion, availableVersion: apiResponse.version!) {
-                                BleLogger.trace("No firmware update available, device firmware version \(deviceFwVersion)")
-                                observer.onNext(FirmwareUpdateStatus.fwUpdateNotAvailable(details: "No firmware update available, device firmware version \(deviceFwVersion)"))
-                                observer.onCompleted()
-                                return
-                            }
-                        }
-                       
-                        BleLogger.trace("Firmware update available, latest firmware version: \(apiResponse.version!), device firmware version \(deviceFwVersion)")
-                        
-                        let factoryResetMaxWaitTimeSeconds: TimeInterval = 6 * 60
-                        let rebootMaxWaitTimeSeconds: TimeInterval = 3 * 60
-                        
-                        var backupContent: [PolarBackupManager.BackupFileData]?
-                        let backupManager = PolarBackupManager(client: client)
-                
-                        observer.onNext(FirmwareUpdateStatus.fetchingFwUpdatePackage(details: "Fetching firmware update package..."))
-                        
-                        let automaticReconnection = self.automaticReconnection
-                        self.automaticReconnection = true
-                        
-                        self.sendInitializationAndStartSyncNotifications(client: client).subscribe()
-                        backupManager.backupDevice()
-                            .asObservable()
-                            .flatMap { content -> Observable<FirmwareUpdateStatus> in
-                                backupContent = content
-                                BleLogger.trace("Device backup completed with \(content.count) files")
-                                observer.onNext(FirmwareUpdateStatus.fetchingFwUpdatePackage(details: "Backup completed, downloading firmware..."))
-
-                                return fwApi.getFirmwareUpdatePackage(url: apiResponse.fileUrl!)
-                                    .flatMap { firmwarePackage -> Observable<FirmwareUpdateStatus> in
-                                        guard let firmwarePackage = firmwarePackage else {
-                                            BleLogger.error("Firmware package download fetch failed")
-                                            observer.onNext(FirmwareUpdateStatus.fwUpdateFailed(details: "Firmware package fetch failed"))
-                                            observer.onCompleted()
-                                            return Observable.empty()
-                                        }
-
-                                        let contentLength = firmwarePackage.count
-                                        BleLogger.trace("Firmware package downloaded, zipped size: \(contentLength) bytes")
-                                        observer.onNext(FirmwareUpdateStatus.writingFwUpdatePackage(details: "Writing firmware package..."))
-
-                                        guard let unzippedFirmwarePackage = PolarFirmwareUpdateUtils.unzipFirmwarePackage(zippedData: firmwarePackage) else {
-                                            BleLogger.error("Failed to unzip firmware package")
-                                            observer.onNext(FirmwareUpdateStatus.fwUpdateFailed(details: "Failed to unzip firmware package"))
-                                            observer.onCompleted()
-                                            return Observable.empty()
-                                        }
-
-                                        let unzippedContentLength = unzippedFirmwarePackage.reduce(0) { $0 + $1.value.count }
-                                        BleLogger.trace("Firmware package unzipped, total size: \(unzippedContentLength) bytes")
-
-                                        let sortedFirmwarePackage = unzippedFirmwarePackage.sorted { (file1, file2) -> Bool in
-                                            return PolarFirmwareUpdateUtils.FwFileComparator.compare(file1.key, file2.key) == .orderedAscending
-                                        }
-                                        
-                                        return self.doFactoryReset(identifier, preservePairingInformation: true)
-                                            .delay(.seconds(30), scheduler: self.scheduler)
-                                            .andThen(self.waitDeviceSessionToOpen(deviceId: identifier, timeoutSeconds: Int(factoryResetMaxWaitTimeSeconds), waitForDeviceDownSeconds: 10))
-                                            .delay(.seconds(5), scheduler: self.scheduler)
-                                            .andThen(Observable.from(sortedFirmwarePackage)
-                                                .concatMap { fileEntry -> Observable<FirmwareUpdateStatus> in
-                                                    let fileName = fileEntry.key
-                                                    let firmwareBytes = fileEntry.value
-                                                    let filePath = "/\(fileName)"
-                                                    
-                                                    // Polar H10 FW package has this file
-                                                    if fileName.lowercased() == "readme.txt" {
-                                                        BleLogger.trace("Skipping file \(fileName)")
-                                                        return Observable.just(FirmwareUpdateStatus.writingFwUpdatePackage(details: "Skipping file \(fileName)"))
-                                                    }
-                                                    return self.writeFirmwareToDevice(deviceId: identifier, firmwareFilePath: filePath, firmwareBytes: firmwareBytes)
-                                                        .map { bytesWritten -> FirmwareUpdateStatus in
-                                                            BleLogger.trace("Writing firmware update file \(fileName), bytes written: \(bytesWritten)/\(firmwareBytes.count) bytes")
-                                                            return FirmwareUpdateStatus.writingFwUpdatePackage(details: "Writing firmware update file \(fileName), bytes written: \(bytesWritten)/\(firmwareBytes.count) bytes")
-                                                        }
-                                                }
-                                            )
-                                            .concat(Observable.just(FirmwareUpdateStatus.finalizingFwUpdate(details: "Finalizing firmware update...")))
-                                    }
-                            }
-                            .flatMap { status -> Observable<FirmwareUpdateStatus> in
-                                if case FirmwareUpdateStatus.finalizingFwUpdate = status {
-                                    return Observable.create { observer in
-                                        BleLogger.trace("Firmware update is in finalizing stage")
-
-                                        BleLogger.trace("Device rebooting")
-                                        self.waitDeviceSessionToOpen(deviceId: identifier, timeoutSeconds: Int(factoryResetMaxWaitTimeSeconds), waitForDeviceDownSeconds: 10)
-                                            .do(onSubscribe: {
-                                                BleLogger.trace("Waiting for device session to open after reboot with timeout: \(rebootMaxWaitTimeSeconds) seconds")
-                                            })
-                                            .andThen(Single.just(status))
-                                            .flatMap { _ in
-                                                return Single.create { singleObserver in
-                                                    self.waitFtpClientReady(identifier)
-                                                        .subscribe(
-                                                            onNext: { session in
-                                                                singleObserver(.success(session))
-                                                            },
-                                                            onError: { error in
-                                                                BleLogger.trace("FTP-client did not become ready: \(error). ")
-                                                                singleObserver(.failure(error))
-                                                            }
-                                                        )
-
-                                                    return Disposables.create()
-                                                }
-                                                .flatMap { _ in
-                                                    BleLogger.trace("Performing factory reset while preserving pairing information")
-                                                    return self.doFactoryReset(identifier, preservePairingInformation: true)
-                                                        .do(onSubscribe: {
-                                                            BleLogger.trace("Factory reset initiated")
-                                                        })
-                                                        .andThen(Single.just(()))
-                                                }
-                                            }
-                                            .flatMap { _ in
-                                                BleLogger.trace("Waiting for device session to open after factory reset with timeout: \(factoryResetMaxWaitTimeSeconds) seconds")
-                                                return self.waitDeviceSessionToOpen(deviceId: identifier, timeoutSeconds: Int(factoryResetMaxWaitTimeSeconds), waitForDeviceDownSeconds: 10)
-                                                    .do(onSubscribe: {
-                                                        BleLogger.trace("Waiting for device session to open post factory reset")
-                                                    })
-                                                    .andThen(Single.just(()))
-                                            }
-                                            .flatMap { _ in
-                                                if let backupContent = backupContent {
-                                                    BleLogger.trace("Restoring backup after firmware update")
-                                                    return backupManager.restoreBackup(backupFiles: backupContent)
-                                                        .do(onSubscribe: {
-                                                            BleLogger.trace("Backup restoration initiated")
-                                                        })
-                                                        .andThen(Single.just(FirmwareUpdateStatus.fwUpdateCompletedSuccessfully(details: apiResponse.version!)))
-                                                } else {
-                                                    BleLogger.trace("No backup available to restore, proceeding with completion")
-                                                    return Single.just(FirmwareUpdateStatus.fwUpdateCompletedSuccessfully(details: apiResponse.version!))
-                                                }
-                                            }
-                                            .asObservable()
-                                            .subscribe(
-                                                onNext: { status in
-                                                    BleLogger.trace("Emitting next status: \(status)")
-                                                    observer.onNext(status)
-                                                },
-                                                onError: { error in
-                                                    BleLogger.trace("Error during device reboot or factory reset: \(error)")
-                                                    observer.onError(error)
-                                                },
-                                                onCompleted: {
-                                                    BleLogger.trace("Device reboot and factory reset completed successfully")
-                                                    observer.onCompleted()
-                                                }
-                                            )
-                                        return Disposables.create()
-                                    }
-                                } else {
-                                    return Observable.just(status)
-                                }
-                            }
-                            .subscribe(
-                                onNext: { status in
-                                    observer.onNext(status)
-                                },
-                                onError: { error in
-                                    self.automaticReconnection = automaticReconnection
-                                    BleLogger.error("Error during firmware update: \(error)")
-                                    observer.onNext(FirmwareUpdateStatus.fwUpdateFailed(details: "Error during firmware update: \(error.localizedDescription)"))
-                                    observer.onError(error)
-                                },
-                                onCompleted: {
-                                    self.automaticReconnection = automaticReconnection
-                                    _ = self.setLocalTime(identifier, time: Date(), zone: TimeZone.current)
-                                        .subscribe(
-                                            onCompleted: {
-                                               BleLogger.trace("Local time set successfully")
-                                            },
-                                            onError: { error in
-                                               BleLogger.error("Error setting local time: \(error)")
-                                            },
-                                            onDisposed: {
-                                                self.sendTerminateAndStopSyncNotifications(client: client)
-                                               observer.onCompleted()
-                                           }
-                                       )
-                                }
-                            )
-                    case .failure(let error):
-                        BleLogger.error("Error checking firmware update: \(error)")
-                        observer.onNext(FirmwareUpdateStatus.fwUpdateFailed(details: "Error checking firmware update: \(error.localizedDescription)"))
+                do {
+                    
+                    // Resolve Firmware URL
+                    let (availableVersionInfo, url, updateStatus) = try await fwUrlProvider.value
+                    firmwareVersionInfo = availableVersionInfo ?? "new version"
+                    
+                    guard let url = url else {
+                        BleLogger.trace("Did not receive url for firmware package, can not update")
+                        observer.onNext(FirmwareUpdateStatus.fwUpdateNotAvailable(details: "Firmware update not available"))
                         observer.onCompleted()
+                        return
                     }
+
+                    // Fetch firmware package
+                    observer.onNext(.fetchingFwUpdatePackage(details: "Fetching firmware packagte to \(firmwareVersionInfo)"))
+                    let firmwareFiles = try await self.getFirmwareUpdatePackage(firmwareUrl: url).value
+                    guard firmwareFiles.count > 0 else {
+                        BleLogger.error("No firmware files available, can not update")
+                        observer.onNext(.fwUpdateNotAvailable(details: "Can not update, firmware files were not available"))
+                        observer.onCompleted()
+                        return
+                    }
+                    
+                    // Prepare device: backup
+                    observer.onNext(FirmwareUpdateStatus.preparingDeviceForFwUpdate(details: "Backing up"))
+                    backupList = try await backupManager.backupDevice().value
+                    
+                    // Prepare device: factory reset
+                    observer.onNext(.preparingDeviceForFwUpdate(details: "Performing factory reset"))
+                    try await self.doFactoryReset(identifier, preservePairingInformation: true).value
+
+                    // Wait for reconnection after factory reset
+                    observer.onNext(.preparingDeviceForFwUpdate(details: "Reconnecting after factory reset"))
+                    try await self.waitDeviceSessionWithPftpToOpen(deviceId: identifier, timeoutSeconds: 6*60, waitForDeviceDownSeconds: 10).value
+
+                    // Speed up for file transfer by sending sync signal
+                    try await self.sendInitializationAndStartSyncNotifications(identifier: identifier).value
+                    
+                    // Write FW files
+                    observer.onNext(.writingFwUpdatePackage(details: "Writing firmware files \(firmwareVersionInfo)"))
+                    try await self.writeFirmwareFilesToDevice(identifier, firmwareFiles: firmwareFiles)
+                        .do { status in
+                            observer.onNext(status)
+                        }.takeLast(1).asSingle().asCompletable().value
+                    
+                    // Wait for reconnection after device reboot
+                    observer.onNext(.finalizingFwUpdate(details: "Waiting for device to update to \(firmwareVersionInfo)"))
+                    try await self.waitDeviceSessionWithPftpToOpen(deviceId: identifier, timeoutSeconds: 6*60, waitForDeviceDownSeconds: 10).value
+                    
+                    // Speed up for file transfer by sending sync signal
+                    try await self.sendInitializationAndStartSyncNotifications(identifier: identifier).value
+                    
+                    // Finalize: Restore backup
+                    observer.onNext(.finalizingFwUpdate(details: "Restoring backup to device"))
+                    try await backupManager.restoreBackup(backupFiles: backupList).value
+                    backupList = []
+                    
+                    // Terminate session, back to normal speed
+                    try await self.sendTerminateSessionNotification(identifier: identifier).value
+                    
+                    // Finalize: Set local time
+                    observer.onNext(.finalizingFwUpdate(details: "Setting device time"))
+                    try await self.setLocalTime(identifier, time: Date(), zone: TimeZone.current).value
+                
+                    if BlePolarDeviceCapabilitiesUtility.isDeviceSensor(session!.advertisementContent.polarDeviceType) {
+                        // Complete for sensors - stop sync
+                        observer.onNext(.finalizingFwUpdate(details: "Stopping sync"))
+                        do {
+                            try await self.sendStopSyncNotification(identifier: identifier).value
+                        } catch let error {
+                            throw error
+                        }
+                    } else {
+                        // Do final restart to reset Wrist Unit from FW UI
+                        observer.onNext(.finalizingFwUpdate(details: "Restarting device"))
+                        try await self.doRestart(identifier, preservePairingInformation: true).value
+
+                        // Wait for reconnection after device restart
+                        observer.onNext(.finalizingFwUpdate(details: "Reconnecting after restart"))
+                        try await self.waitDeviceSessionWithPftpToOpen(deviceId: identifier, timeoutSeconds: 6*60, waitForDeviceDownSeconds: 10).value
+                    }
+                                        
+                    observer.onNext(FirmwareUpdateStatus.fwUpdateCompletedSuccessfully(details: "Firmware update to \(firmwareVersionInfo) completed successfully"))
+                    observer.onCompleted()
+                    
+                } catch let error {
+                    
+                    BleLogger.error("Error during updateFirmware() to \(firmwareVersionInfo), error: \(error)")
+                    observer.onNext(FirmwareUpdateStatus.fwUpdateFailed(details: "Error: \(error.localizedDescription)"))
+                    observer.onError(error)
+                    
                 }
-                return Disposables.create()
             }
-        } catch {
-            BleLogger.error("Error during firmware update: \(error)")
-            return Observable.just(FirmwareUpdateStatus.fwUpdateFailed(details: "Error: \(error.localizedDescription)"))
+            
+            return Disposables.create {
+                task.cancel()
+            }
+            
+        }
+        .do(onError: { error in
+            self.automaticReconnection = automaticReconnection
+        },onCompleted: {
+            self.automaticReconnection = automaticReconnection
+        })
+    }
+        
+    // Returns (availableVersion, firmwareURL, FirmwareUpdateStatus)
+    private func checkFirmwareUrlAvailability(_ identifier: String) -> Single<(String?, String?, FirmwareUpdateStatus)> {
+        
+        guard let session = try? self.sessionFtpClientReady(identifier) else {
+            return Single.just((nil, nil, FirmwareUpdateStatus.fwUpdateFailed(details: "No BleDeviceSession available")))
+        }
+        
+        guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+            return Single.just((nil, nil, FirmwareUpdateStatus.fwUpdateFailed(details: "No BlePsFtpClient available")))
+        }
+
+        guard let deviceInfo = PolarFirmwareUpdateUtils.readDeviceFirmwareInfo(client: client, deviceId: identifier) else {
+            return Single.just((nil, nil, FirmwareUpdateStatus.fwUpdateFailed(details: "Failed to read device firmware info")))
+        }
+
+        guard let firmwareUpdateRequest = try? FirmwareUpdateRequest(
+                clientId: "polar-sensor-data-collector-ios",
+                uuid: PolarDeviceUuid.fromDeviceId(identifier),
+                firmwareVersion: deviceInfo.deviceFwVersion,
+                hardwareCode: deviceInfo.deviceHardwareCode) else {
+            return Single.just((nil, nil, FirmwareUpdateStatus.fwUpdateFailed(details: "Failed to create FirmwareUpdateRequest")))
+        }
+        
+        return Single.create { singleObserver in
+            let fwApi = FirmwareUpdateApi()
+            fwApi.checkFirmwareUpdate(firmwareUpdateRequest: firmwareUpdateRequest) { response in
+                switch response {
+                case .success(let result):
+                    singleObserver(.success((result.version, result.fileUrl, .preparingDeviceForFwUpdate(details: "Preparing for firmware update"))))
+                case .failure(let error):
+                    singleObserver(.success((nil, nil, .fwUpdateFailed(details: error.localizedDescription))))
+                }
+            }
+            return Disposables.create()
+        }
+    }
+    
+    private func getFirmwareUpdatePackage(firmwareUrl: String) -> Single<[(String, Data)]> {
+        return FirmwareUpdateApi().getFirmwareUpdatePackage(url: firmwareUrl)
+            .flatMap { firmwarePackage in
+                guard let firmwarePackage = firmwarePackage else {
+                    BleLogger.error("Firmware package download fetch failed")
+                    return Single.just([(String, Data)]())
+                }
+                
+                let contentLength = firmwarePackage.count
+                BleLogger.trace("Firmware package downloaded, zipped size: \(contentLength) bytes")
+                
+                guard let unzippedFirmwarePackage = PolarFirmwareUpdateUtils.unzipFirmwarePackage(zippedData: firmwarePackage) else {
+                    BleLogger.error("Failed to unzip firmware package")
+                    return Single.just([(String, Data)]())
+                }
+                
+                let unzippedContentLength = unzippedFirmwarePackage.reduce(0) { $0 + $1.value.count }
+                BleLogger.trace("Firmware package unzipped, total size: \(unzippedContentLength) bytes")
+                
+                let sortedFirmwarePackage =
+                unzippedFirmwarePackage.filter({ (filename: String, data: Data) in
+                    if filename == "readme.txt" { // Polar H10 FW package has this file
+                        BleLogger.trace("Skipping file \(filename)")
+                        return false
+                    }
+                    return true
+                })
+                .sorted { (file1, file2) -> Bool in
+                    return PolarFirmwareUpdateUtils.FwFileComparator.compare(file1.key, file2.key) == .orderedAscending
+                }
+                return Single.just(Array(sortedFirmwarePackage))
+            }
+    }
+    
+    private func writeFirmwareFilesToDevice(_ identifier: String, firmwareFiles:[(String, Data)], minPercentageIncrement: Int = 0) -> Observable<FirmwareUpdateStatus> {
+        return Observable.from(firmwareFiles).flatMap { firmwareFile in
+            var lastBytesWritten: Int = 0
+            let firmwareFilePath = "/\(firmwareFile.0)"
+            let firmwareFileBytes = firmwareFile.1
+            return self.writeFirmwareToDevice(deviceId: identifier, firmwareFilePath: firmwareFilePath, firmwareBytes: firmwareFileBytes)
+                .filter { bytesWritten in
+                    let delta = Int(bytesWritten) - lastBytesWritten
+                    let deltaPercentage = delta * 100 / firmwareFileBytes.count
+                    let updateDownstream = lastBytesWritten == 0
+                    || bytesWritten >= firmwareFileBytes.count
+                    || deltaPercentage >= minPercentageIncrement
+                    if (updateDownstream) { lastBytesWritten = Int(bytesWritten) }
+                    return updateDownstream
+                }
+                .compactMap { bytesWritten in
+                    let percentage = Int(bytesWritten) * 100 / firmwareFileBytes.count
+                    return FirmwareUpdateStatus.writingFwUpdatePackage(
+                        details:"Writing firmware update file \(firmwareFile.0), (\(percentage)%) bytes written: \(bytesWritten)/\(firmwareFileBytes.count)"
+                    )
+                }
         }
     }
     
@@ -2864,8 +2846,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
             }
 
-            return sendInitializationAndStartSyncNotifications(client: client)
-                .andThen(Observable.from(datesList)
+            return Observable.from(datesList)
                 .flatMap { date -> Single<(Date, Int)> in
                     return PolarActivityUtils.readStepsFromDayDirectory(client: client, date: date)
                         .map { steps -> (Date, Int) in
@@ -2879,9 +2860,6 @@ extension PolarBleApiImpl: PolarBleApi  {
                     }
                     return stepsDataList.map { PolarStepsData(date: $0.0, steps: $0.1) }
                 }
-            ).do(onDispose: {
-                    self.sendTerminateAndStopSyncNotifications(client: client)
-                })
         } catch {
             return Single.error(error)
         }
@@ -2910,8 +2888,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
             }
 
-            return sendInitializationAndStartSyncNotifications(client: client)
-                .andThen(Observable.from(datesList)
+            return Observable.from(datesList)
                 .flatMap { date -> Single<(Date, Float)> in
                     return PolarActivityUtils.readDistanceFromDayDirectory(client: client, date: date)
                         .map { distance -> (Date, Float) in
@@ -2924,9 +2901,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                         distanceDataList.append(pair)
                     }
                     return distanceDataList.map { PolarDistanceData(date: $0.0, distanceMeters: $0.1) }
-                }).do(onDispose: {
-                    self.sendTerminateAndStopSyncNotifications(client: client)
-                })
+                }
         } catch {
             return Single.error(error)
         }
@@ -2939,11 +2914,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 return Single.error(PolarErrors.serviceNotFound)
             }
 
-            return sendInitializationAndStartSyncNotifications(client: client)
-                .andThen(PolarAutomaticSamplesUtils.read247HrSamples(client: client, fromDate: fromDate, toDate: toDate))
-                .do(onDispose: {
-                    self.sendTerminateAndStopSyncNotifications(client: client)
-                    })
+            return PolarAutomaticSamplesUtils.read247HrSamples(client: client, fromDate: fromDate, toDate: toDate)
         } catch {
             return Single.error(error)
         }
@@ -2956,11 +2927,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 return Single.error(PolarErrors.serviceNotFound)
             }
 
-            return sendInitializationAndStartSyncNotifications(client: client)
-                .andThen(PolarAutomaticSamplesUtils.read247PPiSamples(client: client, fromDate: fromDate, toDate: toDate))
-                .do(onDispose: {
-                    self.sendTerminateAndStopSyncNotifications(client: client)
-                })
+            return PolarAutomaticSamplesUtils.read247PPiSamples(client: client, fromDate: fromDate, toDate: toDate)
         } catch {
             return Single.error(error)
         }
@@ -2985,8 +2952,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
             }
 
-            return sendInitializationAndStartSyncNotifications(client: client)
-                .andThen(Observable.from(datesList)
+            return Observable.from(datesList)
                 .flatMap { date in
                     PolarNightlyRechargeUtils.readNightlyRechargeData(client: client, date: date)
                         .asObservable()
@@ -2997,9 +2963,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 .toArray()
                 .flatMap { _ in
                     Single.just(nightlyRechargeDataList)
-                }).do(onDispose: {
-                    self.sendTerminateAndStopSyncNotifications(client: client)
-                })
+                }
         } catch {
             return Single.error(error)
         }
@@ -3025,8 +2989,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                }
            }
 
-           return sendInitializationAndStartSyncNotifications(client: client)
-               .andThen(Observable.from(datesList)
+           return Observable.from(datesList)
                .flatMap { date -> Single<(Date, Int)> in
                    return PolarActivityUtils.readCaloriesFromDayDirectory(client: client, date: date, caloriesType: caloriesType)
                        .map { calories -> (Date, Int) in
@@ -3038,9 +3001,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                    return pairs.map { (date, calories) in
                        PolarCaloriesData(date: date, calories: calories)
                    }
-               }).do(onDispose: {
-                   self.sendTerminateAndStopSyncNotifications(client: client)
-               })
+               }
        } catch {
            return Single.error(error)
        }
@@ -3065,8 +3026,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
             }
 
-            return sendInitializationAndStartSyncNotifications(client: client)
-                .andThen(Observable.from(datesList)
+            return Observable.from(datesList)
                 .flatMap { date in
                     PolarSkinTemperatureUtils.readSkinTemperatureData(client: client, date: date)
                         .asObservable()
@@ -3077,9 +3037,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 .toArray()
                 .flatMap { _ in
                     Single.just(skinTemperatureDataList)
-                }).do(onDispose: {
-                    self.sendTerminateAndStopSyncNotifications(client: client).subscribe()
-                })
+                }
         } catch {
             return Single.error(error)
         }
@@ -3160,8 +3118,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
             }
 
-            return sendInitializationAndStartSyncNotifications(client: client)
-                .andThen(Observable.from(datesList)
+            return Observable.from(datesList)
                 .flatMap { date -> Single<(Date, PolarActiveTimeData)> in
                     return PolarActivityUtils.readActiveTimeFromDayDirectory(client: client, date: date)
                         .map { activeTime -> (Date, PolarActiveTimeData) in
@@ -3183,10 +3140,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                             timeIntermittentVigorousActivity: activeTimeData.timeIntermittentVigorousActivity
                         )
                     }
-                }.do(onDispose: {
-                    self.sendTerminateAndStopSyncNotifications(client: client).subscribe()
-                })
-            )
+                }
         } catch {
             return Single.error(error)
         }
@@ -3212,15 +3166,12 @@ extension PolarBleApiImpl: PolarBleApi  {
                 let inputStream = InputStream(data: data)
 
                 BleLogger.trace("Polar user device settings set. Device: \(identifier) Path: \(operation.path)")
-                self.sendInitializationAndStartSyncNotifications(client: client).subscribe()
-                client.write(proto as NSData, data: inputStream)
+                _ = client.write(proto as NSData, data: inputStream)
                     .subscribe(
                         onError: { error in
                             completable(.error(error))
                       }, onCompleted: {
                           completable(.completed)
-                      }, onDisposed: {
-                          self.sendTerminateAndStopSyncNotifications(client: client)
                       }
                     )
                 completable(.completed)
@@ -3240,15 +3191,10 @@ extension PolarBleApiImpl: PolarBleApi  {
                 return Single.error(PolarErrors.serviceNotFound)
             }
 
-            return self.sendInitializationAndStartSyncNotifications(client: client)
-                .andThen(
-                    PolarUserDeviceSettingsUtils.getUserDeviceSettings(client: client)
+            return PolarUserDeviceSettingsUtils.getUserDeviceSettings(client: client)
                     .map { settings -> PolarUserDeviceSettings.PolarUserDeviceSettingsResult in
                         return settings
                     }
-                ).do(onDispose: {
-                    self.sendTerminateAndStopSyncNotifications(client: client).subscribe()
-                })
         } catch {
             return Single.error(error)
         }
@@ -3258,6 +3204,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyyMMdd"
+        
         let entryPattern = dataType.rawValue
         var condition: (_ p: String) -> Bool
         var folderPath: String = "/U/0"
@@ -3293,7 +3240,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         case .SLEEP_SCORE:
             folderPath = "/U/0/"
             condition = { (entry) -> Bool in
-                return entry.matches("^([0-9]{8})(\\/)") &&
+                return entry.matches("^([0-9]{8})(\\/)") ||
                 entry == "\(formatter.string(from: (until!)))/" ||
                 entry == "\(entryPattern)/" ||
                 entry.contains(".BPB") &&
@@ -3333,25 +3280,31 @@ extension PolarBleApiImpl: PolarBleApi  {
                 case .SKINTEMP:
                     fallthrough
                 case .SLEEP_SCORE:
-                    BleLogger.trace("Delete file \(file) from /U/0 directory , file type: \(dataType.rawValue) from device \(identifier).")
+                    if ( formatter.string(from: (until!)) >= String(file.split(separator: "/")[2]) ) {
+                        BleLogger.trace("Delete file \(file) from /U/0 directory , file type: \(dataType.rawValue) from device \(identifier).")
                         return removeSingleFile(identifier: identifier, filePath: file).asCompletable().andThen(Single.just(file))
+                    } else {
+                        return Single.just("")
+                    }
                 case .UNDEFINED:
                     BleLogger.trace("User selected \(dataType.rawValue). Do nothing.")
                     return Single.just("")
                 }
             }.toArray()
             .flatMap({ files in
-                var deletedfiles = files
-                deletedfiles.removeAll { $0 == "" }
+                var deletedFiles = files
+                deletedFiles.removeAll { $0 == "" }
                 var directories: [String] = []
-                if (!deletedfiles.isEmpty) {
-                    let indices = deletedfiles.first!.findIndices(lookable: "/")
-                    var indexCount = 1
-                    var currentDir = String(deletedfiles.first![...indices[indices.count-indexCount]])
-                    while (currentDir != "/U/0/") {
-                        directories.append(currentDir)
-                        indexCount+=1
-                        currentDir = String(deletedfiles.first![...indices[indices.count-indexCount]])
+                if (!deletedFiles.isEmpty) {
+                    for path in deletedFiles {
+                        let indices = path.findIndices(lookable: "/")
+                        var indexCount = 1
+                        var currentDir = String(path[...indices[indices.count-indexCount]])
+                        while (currentDir != "/U/0/") {
+                            directories.append(currentDir)
+                            indexCount+=1
+                            currentDir = String(path[...indices[indices.count-indexCount]])
+                        }
                     }
                 }
                 return Single.just(directories)
@@ -3386,7 +3339,6 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
             }
         }
-
 
         return fetchDirectoryEntries(path, client: try! self.sessionFtpClientReady(identifier).fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient, condition: { folderPath in
             let trimmedFolderPath = folderPath.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
@@ -3478,15 +3430,10 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Single<PolarTrainingSession>.error(error)
         }
         
-        return self.sendInitializationAndStartSyncNotifications(client: bleClient)
-            .andThen(
-                PolarTrainingSessionUtils.readTrainingSession(
+        return PolarTrainingSessionUtils.readTrainingSession(
                     client: bleClient,
                     reference: trainingSessionReference
-                ).do(onDispose: {
-                    self.sendTerminateAndStopSyncNotifications(client: bleClient).subscribe()
-                })
-            )
+                )
     }
 
     func waitForConnection(_ identifier: String) -> Completable {
@@ -3547,27 +3494,137 @@ extension PolarBleApiImpl: PolarBleApi  {
                 return Completable.error(PolarErrors.serviceNotFound)
             }
 
-            sendInitializationAndStartSyncNotifications(client: client).subscribe()
             return getUserDeviceSettingsProto(client: client)
-                .flatMapCompletable { currentSettings in
-                    let mode: Data_PbUsbConnectionSettings.PbUsbConnectionMode = enabled ? .on : .off
-
-                    var usbSettings = Data_PbUsbConnectionSettings()
-                    usbSettings.mode = mode
-
-                    var updatedSettings = currentSettings
-                    updatedSettings.usbConnectionSettings = usbSettings
-
-                    return self.setUserDeviceSettingsProto(client: client, polarUserDeviceSettings: updatedSettings)
-                }.do(onError: { error in
-                    BleLogger.error("Failed to set USB connection mode: \(error)")
-                }
-            )
+                    .flatMapCompletable { currentSettings in
+                        let mode: Data_PbUsbConnectionSettings.PbUsbConnectionMode = enabled ? .on : .off
+                        
+                        var usbSettings = Data_PbUsbConnectionSettings()
+                        usbSettings.mode = mode
+                        
+                        var updatedSettings = currentSettings
+                        updatedSettings.usbConnectionSettings = usbSettings
+                        
+                        return self.setUserDeviceSettingsProto(client: client, polarUserDeviceSettings: updatedSettings)
+                    }.do(onError: { error in
+                        BleLogger.error("Failed to set USB connection mode: \(error)")
+                    })
         } catch {
             return Completable.error(error)
         }
     }
 
+    func setMultiBLEConnectionMode(identifier: String, enable: Bool) -> Completable {
+        return Completable.create { completable in
+            do {
+                let session = try self.sessionPfcClientReady(identifier)
+                guard let client = session.fetchGattClient(BlePfcClient.PFC_SERVICE) as? BlePfcClient else {
+                    completable(.error(PolarErrors.serviceNotFound))
+                    return Disposables.create()
+                }
+                
+                let enableValue: UInt8 = enable ? 1 : 0
+                _ = client.sendControlPointCommand(BlePfcClient.PfcMessage.pfcConfigureMultiConnection, value: enableValue)
+                    .subscribe(
+                        onSuccess: { pfcResponse in
+                            if pfcResponse.status != .success {
+                                completable(.error(PolarErrors.operationNotSupported))
+                            } else {
+                                completable(.completed)
+                            }
+                        }
+                    )
+            } catch {
+                completable(.error(error))
+            }
+            return Disposables.create()
+        }
+    }
+    
+    func getMultiBLEConnectionMode(identifier: String) -> Single<Bool> {
+        return waitPfcClientReady(identifier)
+            .take(1)
+            .flatMap { session -> Observable<Bool> in
+                guard let client = session.fetchGattClient(BlePfcClient.PFC_SERVICE) as? BlePfcClient else {
+                    return .error(PolarErrors.serviceNotFound)
+                }
+                return client.sendControlPointCommand(BlePfcClient.PfcMessage.pfcRequestMultiConnectionSetting, value: 0)
+                    .map { $0.payload[0] == 1 }
+                    .asObservable()
+            }
+            .asSingle()
+    }
+    
+    func sendInitializationAndStartSyncNotifications(identifier: String) -> Completable {
+        do {
+            let session = try sessionFtpClientReady(identifier)
+            let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
+            return client.query(Protocol_PbPFtpQuery.requestSynchronization.rawValue, parameters: nil)
+                .asCompletable()
+                .andThen(client.sendNotification(Protocol_PbPFtpHostToDevNotification.initializeSession.rawValue, parameters: nil))
+                .andThen(client.sendNotification(Protocol_PbPFtpHostToDevNotification.startSync.rawValue, parameters: nil))
+        } catch let err {
+            return Completable.error(err)
+        }
+    }
+
+    func sendTerminateAndStopSyncNotifications(identifier: String) -> Completable {
+        do {
+            let session = try sessionFtpClientReady(identifier)
+            let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
+            var params = Protocol_PbPFtpStopSyncParams()
+            var parameters: NSData
+            params.completed = true
+            do {
+                parameters = try params.serializedData() as NSData
+            } catch let error {
+                BleLogger.error("Failed to serialize stop sync parameters: \(error)")
+                return Completable.error(error)
+            }
+            return client.sendNotification(
+                Protocol_PbPFtpHostToDevNotification.stopSync.rawValue,
+                parameters: parameters
+            ).andThen(client.sendNotification(
+                Protocol_PbPFtpHostToDevNotification.terminateSession.rawValue,parameters: nil
+            ))
+        } catch let err {
+            return Completable.error(err)
+        }
+    }
+    
+    func sendTerminateSessionNotification(identifier: String) -> Completable {
+        do {
+            let session = try sessionFtpClientReady(identifier)
+            let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
+            return client.sendNotification(
+                Protocol_PbPFtpHostToDevNotification.terminateSession.rawValue,parameters: nil
+            )
+        } catch let err {
+            return Completable.error(err)
+        }
+    }
+    
+    func sendStopSyncNotification(identifier: String) -> Completable {
+        do {
+            let session = try sessionFtpClientReady(identifier)
+            let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
+            var params = Protocol_PbPFtpStopSyncParams()
+            var parameters: NSData
+            params.completed = true
+            do {
+                parameters = try params.serializedData() as NSData
+            } catch let error {
+                BleLogger.error("Failed to serialize stop sync parameters: \(error)")
+                return Completable.error(error)
+            }
+            return client.sendNotification(
+                Protocol_PbPFtpHostToDevNotification.stopSync.rawValue,
+                parameters: parameters
+            )
+        } catch let err {
+            return Completable.error(err)
+        }
+    }
+    
     private func setUserDeviceSettingsProto(client: BlePsFtpClient, polarUserDeviceSettings: Data_PbUserDeviceSettings) -> Completable {
         return Completable.create { completable in
             do {
@@ -3579,7 +3636,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 let settingsData = try polarUserDeviceSettings.serializedData()
                 let inputStream = InputStream(data: settingsData)
 
-                client.write(proto as NSData, data: inputStream)
+                _ = client.write(proto as NSData, data: inputStream)
                     .subscribe(
                         onError: { error in
                             completable(.error(error))
@@ -3666,56 +3723,56 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
 
     private func deleteDataDirectory(identifier: String, directoryPath: String) -> Completable {
+        
+        do {
+            let session = try self.sessionFtpClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Completable.error(PolarErrors.serviceNotFound)
+            }
+            
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyyMMdd"
+            dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+            
+            return checkIfDirectoryIsEmpty(directoryPath: directoryPath, client: client)
+                .flatMapCompletable( { isEmpty in
+                    if (isEmpty) {
+                        return self.removeSingleFile(identifier: identifier, filePath: directoryPath).asCompletable()
+                    } else {
+                        return Completable.empty()
+                    }
+                })
+        } catch {
+            BleLogger.error("Error while getting session \(error)")
+            return Completable.error(PolarErrors.serviceNotFound)
+        }
+    }
 
-           do {
-               let session = try self.sessionFtpClientReady(identifier)
-               guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                   return Completable.error(PolarErrors.serviceNotFound)
-               }
-
-               let dateFormatter = DateFormatter()
-               dateFormatter.dateFormat = "yyyyMMdd"
-               dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
-
-               return checkIfDirectoryIsEmpty(directoryPath: directoryPath, client: client)
-                   .flatMapCompletable( { isEmpty in
-                       if (isEmpty) {
-                           return self.removeSingleFile(identifier: identifier, filePath: directoryPath).asCompletable()
-                       } else {
-                           return Completable.empty()
-                       }
-                   })
-           } catch {
-               BleLogger.error("Error while getting session \(error)")
-               return Completable.error(PolarErrors.serviceNotFound)
-           }
-       }
-
-       private func checkIfDirectoryIsEmpty(directoryPath: String, client: BlePsFtpClient) -> Single<Bool> {
-
-           var path = directoryPath
-           if(!path.hasSuffix("/")) {
-               path = path + "/"
-           }
-
-           var operation = Protocol_PbPFtpOperation()
-           operation.command = Protocol_PbPFtpOperation.Command.get
-           operation.path = path
-           var request: Data!
-           do {
-               request = try operation.serializedData()
-           } catch {
-               return Single.error(PolarErrors.deviceError(description: "Error in getting files \(directoryPath) path."))
-           }
-           return client.request(request)
-               .flatMap({ data in
-                   let directory = try Protocol_PbPFtpDirectory(serializedData: data as Data)
-                   return Single.just(directory.entries.count == 0)
-               })
-               .do(onError: { error in
-                   BleLogger.error("Failed to get data from directory \(directoryPath).  Error: \(error.localizedDescription)")
-               })
-       }
+    private func checkIfDirectoryIsEmpty(directoryPath: String, client: BlePsFtpClient) -> Single<Bool> {
+        
+        var path = directoryPath
+        if(!path.hasSuffix("/")) {
+            path = path + "/"
+        }
+        
+        var operation = Protocol_PbPFtpOperation()
+        operation.command = Protocol_PbPFtpOperation.Command.get
+        operation.path = path
+        var request: Data!
+        do {
+            request = try operation.serializedData()
+        } catch {
+            return Single.error(PolarErrors.deviceError(description: "Error in getting files \(directoryPath) path."))
+        }
+        return client.request(request)
+            .flatMap({ data in
+                let directory = try Protocol_PbPFtpDirectory(serializedData: data as Data)
+                return Single.just(directory.entries.count == 0)
+            })
+            .do(onError: { error in
+                BleLogger.error("Failed to get data from directory \(directoryPath).  Error: \(error.localizedDescription)")
+            })
+    }
 
     private func removeSingleFile(identifier: String, filePath: String) -> Single<NSData> {
         
@@ -3792,32 +3849,6 @@ extension PolarBleApiImpl: PolarBleApi  {
         return calendar.date(from: datecomponents)!
     }
 
-    private func sendInitializationAndStartSyncNotifications(client: BlePsFtpClient) -> Completable {
-
-        return client.query(Protocol_PbPFtpQuery.requestSynchronization.rawValue, parameters: nil)
-            .asCompletable()
-            .andThen(client.sendNotification(Protocol_PbPFtpHostToDevNotification.initializeSession.rawValue, parameters: nil))
-            .andThen(client.sendNotification(Protocol_PbPFtpHostToDevNotification.startSync.rawValue, parameters: nil))
-    }
-
-    private func sendTerminateAndStopSyncNotifications(client: BlePsFtpClient) -> Completable {
-        var params = Protocol_PbPFtpStopSyncParams()
-        var parameters: NSData
-        params.completed = true
-        do {
-            parameters = try params.serializedData() as NSData
-        } catch let error {
-            BleLogger.error("Failed to serialize stop sync parameters: \(error)")
-            return Completable.error(error)
-        }
-        return client.sendNotification(
-            Protocol_PbPFtpHostToDevNotification.stopSync.rawValue,
-            parameters: parameters
-        ).andThen(client.sendNotification(
-            Protocol_PbPFtpHostToDevNotification.terminateSession.rawValue,parameters: nil
-        ))
-    }
-
     private func writeFirmwareToDevice(deviceId: String, firmwareFilePath: String, firmwareBytes: Data) -> Observable<UInt> {
 
         BleLogger.trace("Write FW to device")
@@ -3860,6 +3891,10 @@ extension PolarBleApiImpl: PolarBleApi  {
                                 if let pftpError = Protocol_PbPFtpError(rawValue: error._code) {
                                     if pftpError == .batteryTooLow {
                                         observer.onError(PolarErrors.deviceError(description: "Battery too low to perform firmware update"))
+                                    } else if pftpError == .rebooting && firmwareFilePath.contains("SYSUPDAT.IMG") {
+                                        BleLogger.trace("PFTP firmware file write success - device is rebooting")
+                                        observer.onCompleted()
+                                        completable(.completed)
                                     } else {
                                         BleLogger.error("PFTP error during firmware write: \(error.localizedDescription)")
                                         observer.onError(error)
@@ -3883,30 +3918,47 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
 
-    private func waitDeviceSessionToOpen(deviceId: String, timeoutSeconds: Int, waitForDeviceDownSeconds: Int = 0) -> Completable {
+    private func waitDeviceSessionWithPftpToOpen(deviceId: String, timeoutSeconds: Int, waitForDeviceDownSeconds: Int = 0) -> Completable {
         BleLogger.trace("Wait for device session to open, timeoutSeconds: \(timeoutSeconds), waitForDeviceDownSeconds: \(waitForDeviceDownSeconds)")
         let pollIntervalSeconds = 5
 
         return Completable.create { emitter in
+            
             var disposable: Disposable?
+            
+            // waitForDeviceDownSeconds to allow previous session to become unavailable in case device was restarted before calling
+            
             disposable = Observable<Int>.timer(RxTimeInterval.seconds(waitForDeviceDownSeconds), scheduler: MainScheduler.instance)
                 .flatMap { _ in
                     Observable<Int>.interval(RxTimeInterval.seconds(pollIntervalSeconds), scheduler: MainScheduler.instance)
                         .take(until: Observable<Int>.timer(RxTimeInterval.seconds(timeoutSeconds), scheduler: MainScheduler.instance))
                 }
-                .timeout(RxTimeInterval.seconds(timeoutSeconds), scheduler: MainScheduler.instance)
                 .subscribe(onNext: { _ in
-                    if self.deviceSessionState == BleDeviceSession.DeviceSessionState.sessionOpen {
+                    
+                    do {
+                        let session = try self.sessionFtpClientReady(deviceId)
                         BleLogger.trace("Session opened, deviceId: \(deviceId)")
                         disposable?.dispose()
                         emitter(.completed)
-                    } else {
-                        BleLogger.trace("Waiting for device session to open, deviceId: \(deviceId), current state: \(String(describing: self.deviceSessionState))")
+                    } catch let error {
+                        BleLogger.trace("Waiting for session with PsFtpClient, deviceId \(deviceId), error (ignored) \(error)")
                     }
+                    BleLogger.trace("Continuing to wait for device session PsFtpClient to open, deviceId: \(deviceId) ...")
+                    
                 }, onError: { error in
-                    BleLogger.trace("Timeout reached while waiting for device session to open, deviceId: \(deviceId)")
-                    emitter(.error(error))
+                    
+                    BleLogger.trace("Error thrown while waiting for device session with PsFtpClient to open, deviceId: \(deviceId)")
+                    if case RxSwift.RxError.timeout = error { // in case timeout() is used upstream
+                        emitter(.error(PolarErrors.timeout(description: "Timeoutwhile waiting for device session with PsFtpClient to open, deviceId: \(deviceId)")))
+                    } else {
+                        emitter(.error(error))
+                    }
+                    
+                }, onCompleted: {
+                    BleLogger.trace("Timeout reached while waiting for device session with PsFtpClient to open, deviceId: \(deviceId)")
+                    emitter(.error(PolarErrors.timeout(description: "Timeout while waiting for device session with PsFtpClient to open, deviceId: \(deviceId)")))
                 })
+            
             return Disposables.create {
                 disposable?.dispose()
             }
@@ -3992,7 +4044,7 @@ extension PolarBleApiImpl: PolarBleApi  {
     ) -> PolarOfflineRecordingData {
         switch existingData {
         case let .ppgOfflineRecordingData(existingData, startTime, existingSettings):
-            let newSamples = existingData.samples + ppgData.samples.map { (timeStamp: $0.timeStamp!, channelSamples: $0.ppgDataSamples!) }
+            let newSamples = existingData.samples + ppgData.mapToPolarData().samples
             return .ppgOfflineRecordingData(
                 (type: existingData.type, samples: newSamples),
                 startTime: startTime,
@@ -4478,7 +4530,6 @@ private extension Date {
             return calender.date(from: dateComponents)
         }
     }
-
 }
 
 private extension String {

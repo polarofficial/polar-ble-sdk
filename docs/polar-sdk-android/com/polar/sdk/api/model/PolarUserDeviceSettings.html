@@ -205,6 +205,24 @@ public final class <span class="typeNameLabel"><a href=PolarUserDeviceSettings.h
                                         </tr>
                                         
                                         <tr class="rowColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarUserDeviceSettings.html#automaticTrainingDetectionMode>automaticTrainingDetectionMode</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="altColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarUserDeviceSettings.html#automaticTrainingDetectionSensitivity>automaticTrainingDetectionSensitivity</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="rowColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarUserDeviceSettings.html#minimumTrainingDurationSeconds>minimumTrainingDurationSeconds</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="altColor">
                                             <td class="colFirst"><code>public final static <a href=PolarUserDeviceSettings.Companion.html>PolarUserDeviceSettings.Companion</a></code></td>
                                             <th class="colSecond" scope="row"><code><a href=PolarUserDeviceSettings.html#Companion>Companion</a></code></th>
                                             <td class="colLast"></td>
@@ -236,7 +254,7 @@ public final class <span class="typeNameLabel"><a href=PolarUserDeviceSettings.h
                                         
                                             <tr class="altColor">
                                                 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a
-                                                        href="#PolarUserDeviceSettings(java.lang.Integer,java.lang.Boolean)">PolarUserDeviceSettings</a></span>(<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> deviceLocation, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> usbConnectionMode)</code></th>
+                                                        href="#PolarUserDeviceSettings(java.lang.Integer,java.lang.Boolean,java.lang.Boolean,java.lang.Integer,java.lang.Integer)">PolarUserDeviceSettings</a></span>(<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> deviceLocation, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> usbConnectionMode, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> automaticTrainingDetectionMode, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> automaticTrainingDetectionSensitivity, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> minimumTrainingDurationSeconds)</code></th>
                                                 <td class="colLast"></td>
                                             </tr>
                                         
@@ -306,6 +324,30 @@ public final class <span class="typeNameLabel"><a href=PolarUserDeviceSettings.h
                                         </tr>
                                         
                                         <tr id="i2" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarUserDeviceSettings.html#getAutomaticTrainingDetectionMode()>getAutomaticTrainingDetectionMode</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i3" class="rowColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarUserDeviceSettings.html#getAutomaticTrainingDetectionSensitivity()>getAutomaticTrainingDetectionSensitivity</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i4" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarUserDeviceSettings.html#getMinimumTrainingDurationSeconds()>getMinimumTrainingDurationSeconds</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i5" class="rowColor">
                                             <td class="colFirst"><code>final &lt;Error class: unknown class&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarUserDeviceSettings.html#toProto()>toProto</a>() </code>
@@ -313,7 +355,7 @@ public final class <span class="typeNameLabel"><a href=PolarUserDeviceSettings.h
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i3" class="rowColor">
+                                        <tr id="i6" class="altColor">
                                             <td class="colFirst"><code>final <a href=PolarUserDeviceSettings.html>PolarUserDeviceSettings</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarUserDeviceSettings.html#fromBytes(kotlin.ByteArray)>fromBytes</a>(<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-byte-array/index.html>ByteArray</a> bytes) </code>
@@ -352,11 +394,11 @@ public final class <span class="typeNameLabel"><a href=PolarUserDeviceSettings.h
                             </a>
                                 <h3>Constructor Detail</h3>
                                 
-                                <a name="PolarUserDeviceSettings(java.lang.Integer,java.lang.Boolean)"></a>
+                                <a name="PolarUserDeviceSettings(java.lang.Integer,java.lang.Boolean,java.lang.Boolean,java.lang.Integer,java.lang.Integer)"></a>
                                 <ul class="blockList">
                                     <li class="blockList">
                                         <h4>PolarUserDeviceSettings</h4>
-                                        <pre>PolarUserDeviceSettings(<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> deviceLocation, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> usbConnectionMode)</pre>
+                                        <pre>PolarUserDeviceSettings(<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> deviceLocation, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> usbConnectionMode, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> automaticTrainingDetectionMode, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> automaticTrainingDetectionSensitivity, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> minimumTrainingDurationSeconds)</pre>
                                         <div class="block"></div>
                                         
                                     </li>
@@ -407,6 +449,75 @@ public final class <span class="typeNameLabel"><a href=PolarUserDeviceSettings.h
                                     <li class="blockList">
                                         <h4>getUsbConnectionMode</h4>
                                         <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarUserDeviceSettings.html#getUsbConnectionMode()>getUsbConnectionMode</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="getAutomaticTrainingDetectionMode()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getAutomaticTrainingDetectionMode</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarUserDeviceSettings.html#getAutomaticTrainingDetectionMode()>getAutomaticTrainingDetectionMode</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="getAutomaticTrainingDetectionSensitivity()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getAutomaticTrainingDetectionSensitivity</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> <a href=PolarUserDeviceSettings.html#getAutomaticTrainingDetectionSensitivity()>getAutomaticTrainingDetectionSensitivity</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="getMinimumTrainingDurationSeconds()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getMinimumTrainingDurationSeconds</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> <a href=PolarUserDeviceSettings.html#getMinimumTrainingDurationSeconds()>getMinimumTrainingDurationSeconds</a>()</pre>
                                         <div class="block"></div>
 
                                         <dl>

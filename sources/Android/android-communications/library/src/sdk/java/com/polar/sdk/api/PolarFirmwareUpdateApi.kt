@@ -1,8 +1,10 @@
 // Copyright © 2024 Polar Electro Oy. All rights reserved.
 package com.polar.sdk.api
 
+import com.polar.sdk.api.model.CheckFirmwareUpdateStatus
 import com.polar.sdk.api.model.FirmwareUpdateStatus
 import io.reactivex.rxjava3.core.Flowable
+import io.reactivex.rxjava3.core.Observable
 
 /**
  * Polar firmware update API.
@@ -11,6 +13,15 @@ import io.reactivex.rxjava3.core.Flowable
  *
  */
 interface PolarFirmwareUpdateApi {
+
+    /**
+     * Checks if a firmware update is available for the given device identifier.
+     *
+     * @param identifier Polar device ID or Bluetooth address
+     * @return [Observable] emitting [CheckFirmwareUpdateStatus]
+     */
+    fun checkFirmwareUpdate(identifier: String): Observable<CheckFirmwareUpdateStatus>
+
     /**
      * Updates firmware to given device.
      *

@@ -1,13 +1,11 @@
 package com.polar.androidcommunications.api.ble.model.polar
 
-import com.polar.androidcommunications.api.ble.model.advertisement.BleAdvertisementContent.Companion.BLE_ADV_POLAR_PREFIX_IN_LOCAL_NAME
-
 object PolarAdvDataUtility {
 
-    fun getPolarModelNameFromAdvLocalName(advLocalName: String): String {
-        return if (isPolarDevice(advLocalName)) {
+    fun getDeviceModelNameFromAdvLocalName(advLocalName: String, withPrefixToTrim: String = "Polar"): String {
+        return if (isValidDevice(advLocalName, withPrefixToTrim)) {
             val modelName = advLocalName.trim()
-                .replaceFirst(("$BLE_ADV_POLAR_PREFIX_IN_LOCAL_NAME "), "")
+                .replaceFirst((if (withPrefixToTrim != "") "$withPrefixToTrim " else ""), "")
             val endIndex = modelName.lastIndexOf(" ")
             modelName.substring(0, endIndex)
         } else {
@@ -15,8 +13,8 @@ object PolarAdvDataUtility {
         }
     }
 
-    fun isPolarDevice(name: String): Boolean {
-        return name.trim().startsWith(BLE_ADV_POLAR_PREFIX_IN_LOCAL_NAME) && name.trim()
+    fun isValidDevice(name: String, requiredPrefix: String = "Polar"): Boolean {
+        return name.trim().startsWith(requiredPrefix) && name.trim()
             .split(" ").size > 2
     }
 }

@@ -11,7 +11,7 @@ class PolarAdvDataUtilityTest: XCTestCase {
         let modelNameExpected = "OneWord1234"
         
         // Act
-        let modelName = PolarAdvDataUtility.getPolarModelNameFromAdvLocalName(advLocalName: advName)
+        let modelName = PolarAdvDataUtility.getDeviceNameFromAdvLocalName(advLocalName: advName)
         
         // Assert
         XCTAssertEqual(modelNameExpected, modelName)
@@ -23,7 +23,7 @@ class PolarAdvDataUtilityTest: XCTestCase {
         let modelNameExpected = "two woRds"
         
         // Act
-        let modelName = PolarAdvDataUtility.getPolarModelNameFromAdvLocalName(advLocalName: advName)
+        let modelName = PolarAdvDataUtility.getDeviceNameFromAdvLocalName(advLocalName: advName)
         
         // Assert
         XCTAssertEqual(modelNameExpected, modelName)
@@ -35,7 +35,7 @@ class PolarAdvDataUtilityTest: XCTestCase {
         let modelNameExpected = "Some m x name"
         
         // Act
-        let modelName = PolarAdvDataUtility.getPolarModelNameFromAdvLocalName(advLocalName: advName)
+        let modelName = PolarAdvDataUtility.getDeviceNameFromAdvLocalName(advLocalName: advName)
         
         // Assert
         XCTAssertEqual(modelNameExpected, modelName)
@@ -47,7 +47,7 @@ class PolarAdvDataUtilityTest: XCTestCase {
         let modelNameExpected = ""
         
         // Act
-        let modelName = PolarAdvDataUtility.getPolarModelNameFromAdvLocalName(advLocalName: advNameMultiWords)
+        let modelName = PolarAdvDataUtility.getDeviceNameFromAdvLocalName(advLocalName: advNameMultiWords)
         
         // Assert
         XCTAssertEqual(modelNameExpected, modelName)
@@ -59,7 +59,7 @@ class PolarAdvDataUtilityTest: XCTestCase {
         let modelNameExpected = ""
 
         // Act
-        let modelName = PolarAdvDataUtility.getPolarModelNameFromAdvLocalName(advLocalName: advNameMultiWords)
+        let modelName = PolarAdvDataUtility.getDeviceNameFromAdvLocalName(advLocalName: advNameMultiWords)
 
         // Assert
         XCTAssertEqual(modelNameExpected, modelName)
@@ -70,7 +70,7 @@ class PolarAdvDataUtilityTest: XCTestCase {
         let advName = " Polar Some m x name 12345678"
         
         // Act
-        let isPolarDevice = PolarAdvDataUtility.isPolarDevice(advLocalName: advName)
+        let isPolarDevice = PolarAdvDataUtility.isValidDevice(advLocalName: advName)
         
         // Assert
         XCTAssertTrue(isPolarDevice)
@@ -81,7 +81,7 @@ class PolarAdvDataUtilityTest: XCTestCase {
         let advName = "Some m x name Polar 12345678"
         
         // Act
-        let isPolarDevice = PolarAdvDataUtility.isPolarDevice(advLocalName: advName)
+        let isPolarDevice = PolarAdvDataUtility.isValidDevice(advLocalName: advName)
         
         // Assert
         XCTAssertFalse(isPolarDevice)
@@ -92,7 +92,7 @@ class PolarAdvDataUtilityTest: XCTestCase {
         let advName = "Polar"
         
         // Act
-        let isPolarDevice = PolarAdvDataUtility.isPolarDevice(advLocalName: advName)
+        let isPolarDevice = PolarAdvDataUtility.isValidDevice(advLocalName: advName)
         
         // Assert
         XCTAssertFalse(isPolarDevice)

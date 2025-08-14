@@ -42,19 +42,25 @@ public struct PolarExercise: Equatable {
     public let exerciseSummary: Data_PbExerciseBase?
     public let route: Data_PbExerciseRouteSamples?
     public let routeAdvanced: Data_PbExerciseRouteSamples2?
+    public let samples: Data_PbExerciseSamples?
+    public let samplesAdvanced: Data_PbExerciseSamples2?
 
     init(index: Int,
          path: String,
          exerciseDataTypes: [PolarExerciseDataTypes] = [],
          exerciseSummary: Data_PbExerciseBase? = nil,
          route: Data_PbExerciseRouteSamples? = nil,
-         routeAdvanced: Data_PbExerciseRouteSamples2? = nil) {
+         routeAdvanced: Data_PbExerciseRouteSamples2? = nil,
+         samples: Data_PbExerciseSamples? = nil,
+         samplesAdvanced: Data_PbExerciseSamples2? = nil) {
         self.index = index
         self.path = path
         self.exerciseDataTypes = exerciseDataTypes
         self.exerciseSummary = exerciseSummary
         self.route = route
         self.routeAdvanced = routeAdvanced
+        self.samples = samples
+        self.samplesAdvanced = samplesAdvanced
     }
 }
 
@@ -64,4 +70,7 @@ public enum PolarExerciseDataTypes: String {
     case routeGzip = "ROUTE.GZB"
     case routeAdvancedFormat = "ROUTE2.BPB"
     case routeAdvancedFormatGzip = "ROUTE2.GZB"
+    case samples = "SAMPLES.BPB"
+    case samplesGzip = "SAMPLES.GZB"
+    case samplesAdvancedFormatGzip = "SAMPLES2.GZB"
 }

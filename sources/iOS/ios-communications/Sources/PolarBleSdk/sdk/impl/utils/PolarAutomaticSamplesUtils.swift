@@ -167,7 +167,7 @@ internal class PolarAutomaticSamplesUtils {
                                     sampleSessions.ppiSamples.forEach { sample in
                                         ppiSamplesDataList.append(Polar247PPiSamplesData.fromPbPPiDataSamples(ppiData: sample))
                                     }
-                                    polar247PpiSamplesDataList.append(Polar247PPiSamplesData(date: sampleDate, ppiSamples: ppiSamplesDataList))
+                                    polar247PpiSamplesDataList.append(Polar247PPiSamplesData(date: sampleDate, samples: ppiSamplesDataList))
                                 } else {
                                     BleLogger.trace(TAG, "Sample date \(sampleDate) is out of range: \(fromDate) to \(toDate)")
                                 }

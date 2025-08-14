@@ -22,6 +22,7 @@ public class BleAdvertisementContent {
     public private(set) var polarDeviceIdUntouched = ""
     public private(set) var polarDeviceType = ""
     
+    public var advertisingDeviceNamePrefix: String = "Polar"
     
     func processAdvertisementData(_ rssi: Int32, advertisementData: [String : Any]){
         advData = advertisementData
@@ -42,15 +43,13 @@ public class BleAdvertisementContent {
         if let localName = advertisementData[CBAdvertisementDataLocalNameKey] as? String{
             if !(localName == name) {
                 name = localName
-                if PolarAdvDataUtility.isPolarDevice(advLocalName: name) {
-                    polarDeviceType = PolarAdvDataUtility.getPolarModelNameFromAdvLocalName(advLocalName: name)
-                    if let devId = name.split(separator: " ").map(String.init).last {
-                        polarDeviceIdUntouched = devId
-                        if let deviceId = UInt32(devId, radix: 16) {
-                            polarDeviceId = BlePolarDeviceIdUtility.assemblyFullPolarDeviceId(deviceId, width: devId.count)
-                            polarDeviceIdInt = BlePolarDeviceIdUtility.polarDeviceIdToInt(polarDeviceId)
-                            polarDeviceIdIntUntouched = BlePolarDeviceIdUtility.polarDeviceIdToInt(polarDeviceIdUntouched)
-                        }
+                polarDeviceType = PolarAdvDataUtility.getDeviceNameFromAdvLocalName(advLocalName: name, withPrefixToTrim: advertisingDeviceNamePrefix)
+                if let devId = name.split(separator: " ").map(String.init).last {
+                    polarDeviceIdUntouched = devId
+                    if let deviceId = UInt32(devId, radix: 16) {
+                        polarDeviceId = BlePolarDeviceIdUtility.assemblyFullPolarDeviceId(deviceId, width: devId.count)
+                        polarDeviceIdInt = BlePolarDeviceIdUtility.polarDeviceIdToInt(polarDeviceId)
+                        polarDeviceIdIntUntouched = BlePolarDeviceIdUtility.polarDeviceIdToInt(polarDeviceIdUntouched)
                     }
                 }
             }

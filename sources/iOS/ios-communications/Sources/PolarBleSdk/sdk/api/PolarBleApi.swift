@@ -52,6 +52,9 @@ public enum PolarBleSdkFeature: CaseIterable {
 
     /// Feature to receive activity data from Polar device.
     case feature_polar_activity_data
+    
+    /// Feature to read and set device configuration through Polar Features Configuration Service.
+    case feature_polar_features_configuration_service
 }
 
 ///
@@ -65,6 +68,7 @@ public enum PolarActivityDataType: String, CaseIterable {
     case NIGHTLY_RECHARGE
     case SKINTEMPERATURE
     case PEAKTOPEAKINTERVAL
+    case ACTIVE_TIME
     case NONE
    }
 
@@ -234,9 +238,17 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///
     /// - Parameter onNext: Invoked once for each device
     /// - Returns: Observable stream
-    ///  - onNext: for every new polar device found
+    ///  - onNext: for every new Polar device found
     func searchForDevice() -> Observable<PolarDeviceInfo>
-    
+
+    /// Start searching for compatible device(s) with given device  name prefix
+    ///
+    /// - Parameter requiredDeviceNamePrefix:returned devices are filtered based on given device name prefix string. Default: "Polar"
+    /// - Returns: Observable stream
+    ///  - onNext: for every new device found
+    func searchForDevice(withRequiredDeviceNamePrefix: String?) -> Observable<PolarDeviceInfo>
+
+
     /// Start listening the heart rate from Polar devices when subscribed.
     /// This observable listens BLE broadcast and parses heart rate from BLE broadcast. The
     /// BLE device don't need to be connected when using this function, the heart rate is parsed
@@ -443,6 +455,44 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
      ///   - success: when USB mode is set successfully
      ///   - onError: see `PolarErrors` for possible errors invoked
      func setUsbConnectionMode(_ identifier: String, enabled: Bool) -> Completable
+
+    /// Request multi BLE connection mode status from device.
+    /// - Parameters:
+    ///   - identifier: Polar device id or UUID
+    /// - Returns: Single stream
+    ///   - success: Boolean: true if multi BLE connection has been enabled, false otherwise.
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func getMultiBLEConnectionMode(identifier: String) -> Single<Bool>
+    
+    /// Enable multi BLE connection mode on a given device.
+    /// - Parameters:
+    ///   - identifier: Polar device id or UUID
+    ///   - enable: Boolean flag to enable or disable multi BLE connection mode
+    /// - Returns: Completable stream
+    ///   - success: when multi BLE connection mode has been successfully set
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func setMultiBLEConnectionMode(identifier: String, enable: Bool) -> Completable
+    
+    /// Notify device of the incoming data transfer operation(s). By using this method the device will handle data transfer operations more efficiently by setting it to faster data transfer mode.
+    /// It also will cause the device to flush the latest data to files giving you the most up-to-date data.
+    ///
+    /// - Parameters:
+    ///   - identifier: Polar device id or UUID
+    /// - Returns: Completable stream
+    ///   - success: Initialization and synchronization start nofifications have been successfully sent
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    ///
+    func sendInitializationAndStartSyncNotifications(identifier: String) -> Completable
+
+    /// Notify device that data transfer operations are completed. By calling this API device will set itself back to normal data transfer mode that will use less battery.
+    ///
+    /// - Parameters:
+    ///   - identifier: Polar device id or UUID
+    /// - Returns: Completable stream
+    ///   - success: Initialization and synchronization stop nofifications have been successfully sent
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    ///
+    func sendTerminateAndStopSyncNotifications(identifier: String) -> Completable
 
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }

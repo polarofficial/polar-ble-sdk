@@ -45,6 +45,7 @@ import CoreBluetooth
     public let address:UUID
     public let advertisementContent: BleAdvertisementContent
     public var state = DeviceSessionState.sessionClosed
+    public var error: Error? = nil
     public var previousState = DeviceSessionState.sessionClosed
 
     /// by default connect only from adv head
@@ -104,5 +105,9 @@ import CoreBluetooth
                     return Observable.empty()
                 }
             }
+    }
+    
+    public var disconnectedDueRemovedPairing: Bool {
+        return self.error?.indicatesBLEPairingProblem ?? false
     }
 }

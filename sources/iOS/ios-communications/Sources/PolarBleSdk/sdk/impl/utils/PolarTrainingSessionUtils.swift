@@ -182,6 +182,8 @@ internal class PolarTrainingSessionUtils {
                                         var summary: Data_PbExerciseBase?
                                         var route: Data_PbExerciseRouteSamples?
                                         var route2: Data_PbExerciseRouteSamples2?
+                                        var samples: Data_PbExerciseSamples?
+                                        var samples2: Data_PbExerciseSamples2?
 
                                         for (type, data) in results {
                                             switch type {
@@ -191,6 +193,10 @@ internal class PolarTrainingSessionUtils {
                                                 route = try? Data_PbExerciseRouteSamples(serializedData: data)
                                             case .routeAdvancedFormat, .routeAdvancedFormatGzip:
                                                 route2 = try? Data_PbExerciseRouteSamples2(serializedData: data)
+                                            case .samples, .samplesGzip:
+                                                samples = try? Data_PbExerciseSamples(serializedData: data)
+                                            case .samplesAdvancedFormatGzip:
+                                                samples2 = try? Data_PbExerciseSamples2(serializedData: data)
                                             }
                                         }
 
@@ -200,7 +206,9 @@ internal class PolarTrainingSessionUtils {
                                             exerciseDataTypes: exercise.exerciseDataTypes,
                                             exerciseSummary: summary,
                                             route: route,
-                                            routeAdvanced: route2
+                                            routeAdvanced: route2,
+                                            samples: samples,
+                                            samplesAdvanced: samples2
                                         )
                                     }
                             }

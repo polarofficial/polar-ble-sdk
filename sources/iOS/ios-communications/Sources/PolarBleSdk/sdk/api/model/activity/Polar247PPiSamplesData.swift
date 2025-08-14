@@ -5,10 +5,10 @@ import Foundation
 /// Polar Peak-to-peak interval data
 /// - Parameters:
 /// - date: date of the PPi activity data
-/// - ppiSamples: PPi samples from sensor as PolarPpiDataSample object
+/// - samples: PPi samples from sensor as PolarPpiDataSample object
 public struct Polar247PPiSamplesData: Codable {
     public let date: Date
-    public let ppiSamples: [PolarPpiDataSample]
+    public let samples: [PolarPpiDataSample]
     
     /// Polar 24/7 PPi data sample
     /// - Parameters:

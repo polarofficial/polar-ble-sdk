@@ -38,27 +38,38 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
         let routeGzipFile00 = Protocol_PbPFtpEntry.with { $0.name = "ROUTE.GZB"; $0.size = 2048 }
         let routeAdvancedFile00 = Protocol_PbPFtpEntry.with { $0.name = "ROUTE2.BPB"; $0.size = 2048 }
         let routeAdvancedGzipFile00 = Protocol_PbPFtpEntry.with { $0.name = "ROUTE2.GZB"; $0.size = 2048 }
-        
+        let samplesFile00 = Protocol_PbPFtpEntry.with { $0.name = "SAMPLES.BPB"; $0.size = 2048 }
+        let samplesGzipFile00 = Protocol_PbPFtpEntry.with { $0.name = "SAMPLES.GZB"; $0.size = 2048 }
+        let samplesAdvancedGzipFile00 = Protocol_PbPFtpEntry.with { $0.name = "SAMPLES2.GZB"; $0.size = 2048 }
+
         let exerciseFolder01 = Protocol_PbPFtpEntry.with { $0.name = "01/"; $0.size = 0 }
         let exerciseFile01 = Protocol_PbPFtpEntry.with { $0.name = "BASE.BPB"; $0.size = 4096 }
         let routeFile01 = Protocol_PbPFtpEntry.with { $0.name = "ROUTE.BPB"; $0.size = 2048 }
         let routeGzipFile01 = Protocol_PbPFtpEntry.with { $0.name = "ROUTE.GZB"; $0.size = 2048 }
         let routeAdvancedFile01 = Protocol_PbPFtpEntry.with { $0.name = "ROUTE2.BPB"; $0.size = 2048 }
         let routeAdvancedGzipFile01 = Protocol_PbPFtpEntry.with { $0.name = "ROUTE2.GZB"; $0.size = 2048 }
-        
+        let samplesFile01 = Protocol_PbPFtpEntry.with { $0.name = "SAMPLES.BPB"; $0.size = 2048 }
+        let samplesGzipFile01 = Protocol_PbPFtpEntry.with { $0.name = "SAMPLES.GZB"; $0.size = 2048 }
+        let samplesAdvancedGzipFile01 = Protocol_PbPFtpEntry.with { $0.name = "SAMPLES2.GZB"; $0.size = 2048 }
+
         let entry5 = Protocol_PbPFtpEntry.with { $0.name = "20250201/"; $0.size = 0 }
         let entry6 = Protocol_PbPFtpEntry.with { $0.name = "E/"; $0.size = 0 }
         let entry7 = Protocol_PbPFtpEntry.with { $0.name = "134500/"; $0.size = 0 }
         let entry8 = Protocol_PbPFtpEntry.with { $0.name = "TSESS.BPB"; $0.size = 1024 }
-        
+
         let responses: [String: [Protocol_PbPFtpEntry]] = [
             "/U/0/": [entry1, entry5],
             "/U/0/20250101/": [entry2],
             "/U/0/20250101/E/": [entry3],
             "/U/0/20250101/E/123000/": [entry4, exerciseFolder00, exerciseFolder01],
-            "/U/0/20250101/E/123000/00/": [exerciseFile00, routeFile00, routeGzipFile00, routeAdvancedFile00, routeAdvancedGzipFile00],
-            "/U/0/20250101/E/123000/01/": [exerciseFile01, routeFile01, routeGzipFile01, routeAdvancedFile01, routeAdvancedGzipFile01],
-            
+            "/U/0/20250101/E/123000/00/": [
+                exerciseFile00, routeFile00, routeGzipFile00, routeAdvancedFile00, routeAdvancedGzipFile00,
+                samplesFile00, samplesGzipFile00, samplesAdvancedGzipFile00
+            ],
+            "/U/0/20250101/E/123000/01/": [
+                exerciseFile01, routeFile01, routeGzipFile01, routeAdvancedFile01, routeAdvancedGzipFile01,
+                samplesFile01, samplesGzipFile01, samplesAdvancedGzipFile01
+            ],
             "/U/0/20250201/": [entry6],
             "/U/0/20250201/E/": [entry7],
             "/U/0/20250201/E/134500/": [entry8]
@@ -81,23 +92,42 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
 
         // Assert
         XCTAssertEqual(references.count, 2)
-        
+
         let session1 = references[0]
         XCTAssertEqual(session1.path, path1)
-        XCTAssertEqual(session1.trainingDataTypes, [.trainingSessionSummary])
+        XCTAssertEqual(session1.trainingDataTypes, [PolarTrainingSessionDataTypes.trainingSessionSummary])
         XCTAssertEqual(session1.exercises.count, 2)
-        
+
         XCTAssertEqual(session1.exercises[0].path, "/U/0/20250101/E/123000/00")
-        XCTAssertEqual(session1.exercises[0].exerciseDataTypes, [.exerciseSummary, .route, .routeGzip, .routeAdvancedFormat, .routeAdvancedFormatGzip])
-        
+        XCTAssertEqual(session1.exercises[0].exerciseDataTypes, [
+            PolarExerciseDataTypes.exerciseSummary,
+            .route,
+            .routeGzip,
+            .routeAdvancedFormat,
+            .routeAdvancedFormatGzip,
+            .samples,
+            .samplesGzip,
+            .samplesAdvancedFormatGzip
+        ])
+
         XCTAssertEqual(session1.exercises[1].path, "/U/0/20250101/E/123000/01")
-        XCTAssertEqual(session1.exercises[1].exerciseDataTypes, [.exerciseSummary, .route, .routeGzip, .routeAdvancedFormat, .routeAdvancedFormatGzip])
-        
+        XCTAssertEqual(session1.exercises[1].exerciseDataTypes, [
+            PolarExerciseDataTypes.exerciseSummary,
+            .route,
+            .routeGzip,
+            .routeAdvancedFormat,
+            .routeAdvancedFormatGzip,
+            .samples,
+            .samplesGzip,
+            .samplesAdvancedFormatGzip
+        ])
+
         let session2 = references[1]
         XCTAssertEqual(session2.path, path2)
-        XCTAssertEqual(session2.trainingDataTypes, [.trainingSessionSummary])
+        XCTAssertEqual(session2.trainingDataTypes, [PolarTrainingSessionDataTypes.trainingSessionSummary])
         XCTAssertTrue(session2.exercises.isEmpty)
     }
+
     
     func test_readTrainingSession_shouldReturnTrainingSessionDataWithExercises() throws {
         // Arrange
@@ -113,7 +143,7 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
             $0.time.millis = 888
             $0.obsoleteTrusted = true
         }
-        
+
         let dateTime2 = PbLocalDateTime.with {
             $0.date.year = 2025
             $0.date.month = 1
@@ -124,27 +154,28 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
             $0.time.millis = 400
             $0.obsoleteTrusted = true
         }
-        
+
         let duration1 = PbDuration.with {
             $0.hours = 1
             $0.minutes = 30
             $0.seconds = 45
             $0.millis = 400
         }
-        
+
         let duration2 = PbDuration.with {
             $0.hours = 0
             $0.minutes = 55
             $0.seconds = 11
             $0.millis = 111
         }
-        
+
         let sport1 = PbSportIdentifier.with { $0.value = 5 }
         let sport2 = PbSportIdentifier.with { $0.value = 25 }
 
         let exerciseProto1 = Data_PbExerciseBase.with {
             $0.start = dateTime1; $0.duration = duration1; $0.sport = sport1; $0.walkingDistance = 10000
         }
+
         let exerciseProto2 = Data_PbExerciseBase.with {
             $0.start = dateTime2; $0.duration = duration2; $0.sport = sport2; $0.walkingDistance = 12000
         }
@@ -163,6 +194,23 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
             $0.time.hour = 12; $0.time.minute = 30; $0.time.seconds = 45; $0.time.millis = 0
             $0.trusted = true
         }
+
+
+
+        var sampleProto = Data_PbExerciseSamples()
+        sampleProto.recordingInterval = PbDuration.with {
+            $0.seconds = 1
+        }
+        sampleProto.heartRateSamples = [120, 125, 130]
+        sampleProto.speedSamples = [2000, 2100]
+        sampleProto.altitudeSamples = [300]
+
+        var sampleProto2 = Data_PbExerciseSamples2()
+        var intervalledSample = Data_PbExerciseIntervalledSample2List()
+        intervalledSample.sampleType = PbSampleType.sampleTypeHeartRate
+        intervalledSample.recordingIntervalMs = 1000
+        intervalledSample.heartRateSamples = [131, 132, 133]
+        sampleProto2.exerciseIntervalledSample2List = [intervalledSample]
 
         func gzipCompress(_ data: Data) throws -> Data {
             var stream = z_stream()
@@ -193,19 +241,17 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
                 stream.avail_out = uInt(bufferSize)
 
                 status = deflate(&stream, stream.avail_in == 0 ? Z_FINISH : Z_NO_FLUSH)
-
                 if status == Z_STREAM_ERROR {
                     throw NSError(domain: "CompressionError", code: Int(status), userInfo: [NSLocalizedDescriptionKey: "Compression failed with zlib error"])
                 }
 
                 let have = bufferSize - Int(stream.avail_out)
                 output.append(buffer, count: have)
-
             } while status != Z_STREAM_END
 
             return output
         }
-        
+
         let routeGzipData = try gzipCompress(try routeProto.serializedData())
         
         var syncPoint = Data_PbExerciseRouteSyncPoint()
@@ -224,24 +270,8 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
         route2Proto.satelliteAmount = [3]
 
         let route2GzipData = try gzipCompress(try route2Proto.serializedData())
-
-        let polarExercise1 = PolarExercise(
-            index: 0,
-            path: "/U/0/20250101/E/123000/00",
-            exerciseDataTypes: [.exerciseSummary, .route, .routeGzip, .routeAdvancedFormat, .routeAdvancedFormatGzip]
-        )
-        let polarExercise2 = PolarExercise(
-            index: 1,
-            path: "/U/0/20250101/E/123000/01",
-            exerciseDataTypes: [.exerciseSummary, .route, .routeGzip, .routeAdvancedFormat, .routeAdvancedFormatGzip]
-        )
-
-        let referenceBase = PolarTrainingSessionReference(
-            date: Date(),
-            path: basePath,
-            trainingDataTypes: [.trainingSessionSummary],
-            exercises: [polarExercise1, polarExercise2]
-        )
+        let samplesGzipData = try gzipCompress(try sampleProto.serializedData())
+        let samples2GzipData = try gzipCompress(try sampleProto2.serializedData())
 
         let sessionProto = Data_PbTrainingSession.with {
             $0.start = dateTime1
@@ -261,7 +291,6 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
                 return Single.error(NSError(domain: "Test", code: -1))
             }
             let path = op.path
-
             switch path {
             case basePath:
                 return Single.just(try! sessionProto.serializedData())
@@ -284,7 +313,13 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
             case "/U/0/20250101/E/123000/00/ROUTE2.GZB":
                 return Single.just(route2GzipData)
             case "/U/0/20250101/E/123000/01/ROUTE2.GZB":
-                return Single.just(route2GzipData)
+                  return Single.just(route2GzipData)
+            case "/U/0/20250101/E/123000/00/SAMPLES.BPB", "/U/0/20250101/E/123000/01/SAMPLES.BPB":
+                return Single.just(try! sampleProto.serializedData())
+            case "/U/0/20250101/E/123000/00/SAMPLES.GZB", "/U/0/20250101/E/123000/01/SAMPLES.GZB":
+                return Single.just(samplesGzipData)
+            case "/U/0/20250101/E/123000/00/SAMPLES2.GZB", "/U/0/20250101/E/123000/01/SAMPLES2.GZB":
+                return Single.just(samples2GzipData)
             default:
                 XCTFail("Unexpected path: \(path)")
                 return Single.error(NSError(domain: "Unexpected path", code: 2))
@@ -296,12 +331,12 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
                 PolarExercise(
                     index: 0,
                     path: "/U/0/20250101/E/123000/00",
-                    exerciseDataTypes: [.exerciseSummary, .route, .routeGzip, .routeAdvancedFormat, .routeAdvancedFormatGzip]
+                    exerciseDataTypes: [.exerciseSummary, .route, .routeGzip, .routeAdvancedFormat, .routeAdvancedFormatGzip, .samples, .samplesGzip, .samplesAdvancedFormatGzip]
                 ),
                 PolarExercise(
                     index: 1,
                     path: "/U/0/20250101/E/123000/01",
-                    exerciseDataTypes: [.exerciseSummary, .route, .routeGzip, .routeAdvancedFormat, .routeAdvancedFormatGzip]
+                    exerciseDataTypes: [.exerciseSummary, .route, .routeGzip, .routeAdvancedFormat, .routeAdvancedFormatGzip, .samples, .samplesGzip, .samplesAdvancedFormatGzip]
                 )
             ]
 
@@ -317,7 +352,7 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
                 .readTrainingSession(client: mockClient, reference: reference)
                 .toBlocking()
                 .first()
-            
+
             // Assert
             XCTAssertNotNil(session, "Session should not be nil for route file \(routeFile)")
             XCTAssertEqual(session?.exercises.count, 2, "Expected 2 exercises for route file \(routeFile)")
@@ -332,11 +367,16 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
             XCTAssertEqual(firstExercise?.exerciseSummary?.start.time.hour, 12)
             XCTAssertEqual(firstExercise?.exerciseSummary?.walkingDistance, 10000)
             XCTAssertEqual(firstExercise?.exerciseSummary?.sport.value, 5)
+            XCTAssertEqual(firstExercise?.samples?.heartRateSamples, [120, 125, 130])
+            XCTAssertEqual(firstExercise?.samplesAdvanced?.exerciseIntervalledSample2List.map { $0.heartRateSamples }, [[131, 132, 133]])
             
             let secondExercise: PolarExercise? = session?.exercises[1]
             XCTAssertEqual(secondExercise?.exerciseSummary?.start.time.hour, 14)
             XCTAssertEqual(secondExercise?.exerciseSummary?.walkingDistance, 12000)
             XCTAssertEqual(secondExercise?.exerciseSummary?.sport.value, 25)
+            XCTAssertEqual(secondExercise?.samples?.heartRateSamples, [120, 125, 130])
+            XCTAssertEqual(secondExercise?.samplesAdvanced?.exerciseIntervalledSample2List.map { $0.heartRateSamples }, [[131, 132, 133]])
+
             
             let firstRoute = firstExercise?.route
             XCTAssertNotNil(firstRoute, "First route should not be nil for route file \(routeFile)")

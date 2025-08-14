@@ -2,6 +2,7 @@
 package com.polar.sdk.api
 
 import androidx.annotation.IntRange
+import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
 import com.polar.sdk.api.errors.PolarInvalidArgument
 import com.polar.sdk.api.model.*
 import fi.polar.remote.representation.protobuf.UserDeviceSettings.*
@@ -10,7 +11,6 @@ import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Single
 import java.time.LocalDate
 import java.util.*
-import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
 
 /**
@@ -97,7 +97,12 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
         /**
          * Feature to receive temperature data from Polar device.
          */
-        FEATURE_POLAR_TEMPERATURE_DATA
+        FEATURE_POLAR_TEMPERATURE_DATA,
+
+        /**
+         * Feature to read and set device configuration through Polar Features Configuration Service.
+         */
+        FEATURE_POLAR_FEATURES_CONFIGURATION_SERVICE
     }
 
     /**
@@ -138,7 +143,7 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * The activity recording data types available in Polar devices.
      */
     enum class PolarActivityDataType {
-        SLEEP, STEPS, DISTANCE, CALORIES, HR_SAMPLES, NIGHTLY_RECHARGE, SKIN_TEMPERATURE, PPI_SAMPLES
+        SLEEP, STEPS, DISTANCE, CALORIES, HR_SAMPLES, NIGHTLY_RECHARGE, SKIN_TEMPERATURE, PPI_SAMPLES, ACTIVE_TIME
     }
 
     /**
@@ -217,6 +222,20 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * <BR></BR> - onComplete non produced unless stream is further configured
      */
     abstract fun searchForDevice(): Flowable<PolarDeviceInfo>
+
+    /**
+     * Starts searching for BLE devices when subscribed. Search continues as long as observable is
+     * subscribed or error. Each found device is emitted only once. By default searches only for Polar devices,
+     * but can be controlled by [.setPolarFilter]. If [.setPolarFilter] is false
+     * then searches for any BLE heart rate capable devices
+     * @param requiredDeviceNamePrefix - returned devices are filtered on given device name prefix string. Default: "Polar"
+     * @return Flowable stream of [PolarDeviceInfo]
+     * Produces:
+     * <BR></BR> - onNext for any new Polar (or BLE) device detected
+     * <BR></BR> - onError if scan start fails
+     * <BR></BR> - onComplete non produced unless stream is further configured
+     */
+    abstract fun searchForDevice(withRequiredDeviceNamePrefix: String? = "Polar"): Flowable<PolarDeviceInfo>
 
     /**
      * When enabled the reconnection is attempted if device connection is lost. By default automatic reconnection is enabled.
@@ -435,6 +454,22 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
     abstract fun setUsbConnectionMode(identifier: String, enabled: Boolean): Completable
 
     /**
+     * Set the automatic training detection settings on the device.
+     *
+     * @param identifier Polar device ID or BT address.
+     * @param automaticTrainingDetectionMode Whether the automatic training detection should be enabled or disabled.
+     * @param automaticTrainingDetectionSensitivity The sensitivity for automatic training detection.
+     * @param minimumTrainingDurationSeconds The minimum duration in seconds required for automatic training detection.
+     * @return [Completable] emitting success or error.
+     */
+    abstract fun setAutomaticTrainingDetectionSettings(
+        identifier: String,
+        automaticTrainingDetectionMode: Boolean,
+        automaticTrainingDetectionSensitivity: Int,
+        minimumTrainingDurationSeconds: Int
+    ): Completable
+
+    /**
      * Delete data [PolarStoredDataType] from a device. Note that you will need to await for completion.
      *
      * @param identifier, Polar device ID or BT address
@@ -464,4 +499,41 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @return [Completable] emitting success when connected or error if the connection fails
      */
     abstract fun waitForConnection(identifier: String): Completable
+
+    /**
+     * Enable multi BLE connection mode on a given device.
+     *
+     * @param identifier Polar device ID or BT address
+     * @param enable, set to true to enable, false to disable multi BLE connection mode.
+     * @return [Completable] emitting success or error
+     */
+    abstract fun setMultiBLEConnectionMode(identifier: String, enable: Boolean): Completable
+
+    /**
+     * Request multi BLE connection mode status from device.
+     *
+     * @param identifier Polar device ID or BT address
+     * @return [Single], true if multi BLE connection has been enabled, false otherwise.
+     */
+    abstract fun getMultiBLEConnectionMode(identifier: String): Single<Boolean>
+
+    /**
+     * Notify device of the incoming data transfer operation(s). By using this method the device will
+     * handle data transfer operations more efficiently by setting it to faster data transfer mode.
+     * It also will cause the device to flush the latest data to files giving you the most up-to-date data.
+     *
+     * @param identifier Polar device ID or BT address
+     * @return [Single], true if start sync notifications sending was successful, false otherwise.
+     */
+    abstract fun sendInitializationAndStartSyncNotifications(identifier: String): Single<Boolean>
+
+    /**
+     * Notify device that data transfer operations are completed.
+     * By calling this API device will set itself back to normal data transfer mode that will use
+     * less battery.
+     *
+     * @param identifier Polar device ID or BT address
+     * @return [Completable], true if stop sync notifications sending was successful, false otherwise.
+     */
+    abstract fun sendTerminateAndStopSyncNotifications(identifier: String): Completable
 }

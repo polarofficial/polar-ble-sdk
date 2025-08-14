@@ -49,10 +49,11 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
         self.peripheral.delegate = nil
     }
     
-    func updateSessionState(_ newState: BleDeviceSession.DeviceSessionState){
+    func updateSessionState(_ newState: BleDeviceSession.DeviceSessionState, error: Error? = nil){
         BleLogger.trace("default session state update from: ", state.description() , " to: ", newState.description())
         previousState = state
         state = newState
+        self.error = error
     }
     
     fileprivate func fetchService(_ serviceUuid: CBUUID) -> CBService? {
@@ -268,10 +269,12 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     
     func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
         // implement if needed
+        handlePeripheralError(error)
     }
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         BleLogger.trace_if_error("didDiscoverServices: ", error: error)
+        handlePeripheralError(error)
         if error == nil {
             // BIG NOTE peripheral.maximumWriteValueLengthForType(CBCharacteristicWriteType.WithResponse) returns incorrect mtu!
             let mtu = peripheral.maximumWriteValueLength(for: CBCharacteristicWriteType.withoutResponse)
@@ -298,11 +301,13 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverIncludedServicesFor service: CBService, error: Error?) {
         // implement if needed
+        handlePeripheralError(error)
         BleLogger.trace("didDiscoverIncludedServicesForService")
     }
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         BleLogger.trace_if_error("didDiscoverCharacteristicsForService: ", error: error)
+        handlePeripheralError(error)
         if error == nil {
             ++serviceCount
             if let client = fetchGattClient(service.uuid) {
@@ -338,6 +343,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         BleLogger.trace_if_error("didUpdateValueFor \(characteristic.uuid): ", error: error)
+        handlePeripheralError(error)
         if let serviceUuid = characteristic.service?.uuid, let client = fetchGattClient(serviceUuid) {
             if client.containsCharacteristic(characteristic.uuid) {
                 let errorCode = (error as NSError?)?.code ?? 0
@@ -349,6 +355,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
         BleLogger.trace_if_error("didWriteValueForCharacteristic: ", error: error)
+        handlePeripheralError(error)
         if let serviceUuid = characteristic.service?.uuid, let client = fetchGattClient(serviceUuid) {
             if client.containsCharacteristic(characteristic.uuid) {
                 let errorCode = (error as NSError?)?.code ?? 0
@@ -359,14 +366,8 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
         BleLogger.trace_if_error("didUpdateNotificationStateForCharacteristic \(characteristic.uuid.uuidString): ", error: error)
+        handlePeripheralError(error)
         let errorCode = (error as NSError?)?.code ?? 0
-        if errorCode == CBError.Code.uuidNotAllowed.rawValue {
-            BleLogger.trace("Special handling needed for security re-establish")
-            attNotifyQueue.removeAll()
-            serviceCount.set(0)
-            peripheral.discoverServices(nil)
-            return
-        }
         if let serviceUuid = characteristic.service?.uuid, let client = fetchGattClient(serviceUuid) {
             if client.containsCharacteristic(characteristic.uuid) {
                 let isNotifying = errorCode == 0 ? characteristic.isNotifying : false
@@ -378,17 +379,57 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverDescriptorsFor characteristic: CBCharacteristic, error: Error?) {
         // implement if needed
+        handlePeripheralError(error)
         BleLogger.trace("didDiscoverDescriptorsForCharacteristic")
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor descriptor: CBDescriptor, error: Error?) {
         // implement if needed
+        handlePeripheralError(error)
         BleLogger.trace("didUpdateValueForDescriptor")
     }
     
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor descriptor: CBDescriptor, error: Error?) {
         // implement if needed
+        handlePeripheralError(error)
         BleLogger.trace("didWriteValueForDescriptor")
+    }
+    
+    private func handlePeripheralError(_ error: Error?) {
+        
+        guard let error = error else { return }
+        
+        if let error = error as? NSError, error.domain == CBATTError.errorDomain {
+            let cbAttError = CBATTError(_nsError: error)
+            if cbAttError.code == .insufficientEncryption { // pairing removed from iOS
+                BleLogger.trace("Special handling needed for security re-establish")
+                attNotifyQueue.removeAll()
+                serviceCount.set(0)
+                central.cancelPeripheralConnection(peripheral)
+                central.delegate?.centralManager?(central, didDisconnectPeripheral: peripheral, error: cbAttError)
+                return
+            }
+        }
+        if let error = error as? NSError, error.domain == CBError.errorDomain{
+            let cbError = CBError(_nsError: error)
+            
+            if cbError.code == .encryptionTimedOut {
+                BleLogger.trace("Special handling needed for security re-establish")
+                attNotifyQueue.removeAll()
+                serviceCount.set(0)
+                central.cancelPeripheralConnection(peripheral)
+                central.delegate?.centralManager?(central, didDisconnectPeripheral: peripheral, error: cbError)
+                return
+            }
+            if cbError.code == .uuidNotAllowed {
+                BleLogger.trace("Special handling needed for security re-establish")
+                attNotifyQueue.removeAll()
+                serviceCount.set(0)
+                peripheral.discoverServices(nil)
+                return
+            }
+        }
+        
     }
     
     func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheral) {
@@ -400,4 +441,31 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
 
 func == (lhs: CBDeviceSessionImpl, rhs: CBDeviceSessionImpl) -> Bool {
     return lhs === rhs
+}
+
+
+extension Error {
+    
+    var indicatesBLEPairingProblem: Bool {
+        
+        if (self as NSError).domain == CBATTError.errorDomain {
+            let cbAttError = CBATTError(_nsError: self as NSError)
+            if cbAttError.code == .insufficientEncryption {
+                return true
+            }
+        }
+        if (self as NSError).domain == CBError.errorDomain{
+            let cbError = CBError(_nsError: self as NSError)
+            if cbError.code == .encryptionTimedOut {
+                return true
+            }
+            
+            if cbError.code == .peerRemovedPairingInformation {
+                return true
+            }
+        }
+        // Add more conditions indicating need to re-pair(bond) BLE devices ...
+        
+        return false
+    }
 }

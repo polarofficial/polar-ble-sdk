@@ -60,6 +60,7 @@ public class PolarUserDeviceSettings {
     public var timestamp: Date = NSDate() as Date
     public var _deviceLocation: DeviceLocation = DeviceLocation.UNDEFINED
     public var usbConnectionMode: UsbConnectionMode? = nil
+    public var minimumTrainingDurationSeconds: UInt32? = nil
     
     public var deviceLocation: DeviceLocation {
         set (newValue) {
@@ -73,6 +74,7 @@ public class PolarUserDeviceSettings {
     public struct PolarUserDeviceSettingsResult: Codable {
         public var deviceLocation: DeviceLocation = .UNDEFINED
         public var usbConnectionMode: UsbConnectionMode? = nil
+        public var minimumTrainingDurationSeconds: UInt32? = nil
     }
 
     static func toProto(userDeviceSettings: PolarUserDeviceSettings) -> Data_PbUserDeviceSettings {

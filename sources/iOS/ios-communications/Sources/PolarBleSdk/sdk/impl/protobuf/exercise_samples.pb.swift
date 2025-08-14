@@ -25,145 +25,145 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 ///
 ///Power data from crank based power sensors
 ///See: https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.cycling_power_measurement.xml
-public struct Data_PbPowerMeasurements {
+struct Data_PbPowerMeasurements {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   /// Instantaneous power
-  public var currentPower: Int32 {
+  var currentPower: Int32 {
     get {return _currentPower ?? 0}
     set {_currentPower = newValue}
   }
   /// Returns true if `currentPower` has been explicitly set.
-  public var hasCurrentPower: Bool {return self._currentPower != nil}
+  var hasCurrentPower: Bool {return self._currentPower != nil}
   /// Clears the value of `currentPower`. Subsequent reads from it will return its default value.
-  public mutating func clearCurrentPower() {self._currentPower = nil}
+  mutating func clearCurrentPower() {self._currentPower = nil}
 
   /// Cumulative crank revolutions starting from the first stored sample data
   /// This is originally overflowing 16 bit unsigned int value
   /// This value do not necessarily change for every vector data set
   /// This value is not necessarily provided for every vector data set
-  public var cumulativeCrankRevolutions: UInt32 {
+  var cumulativeCrankRevolutions: UInt32 {
     get {return _cumulativeCrankRevolutions ?? 0}
     set {_cumulativeCrankRevolutions = newValue}
   }
   /// Returns true if `cumulativeCrankRevolutions` has been explicitly set.
-  public var hasCumulativeCrankRevolutions: Bool {return self._cumulativeCrankRevolutions != nil}
+  var hasCumulativeCrankRevolutions: Bool {return self._cumulativeCrankRevolutions != nil}
   /// Clears the value of `cumulativeCrankRevolutions`. Subsequent reads from it will return its default value.
-  public mutating func clearCumulativeCrankRevolutions() {self._cumulativeCrankRevolutions = nil}
+  mutating func clearCumulativeCrankRevolutions() {self._cumulativeCrankRevolutions = nil}
 
   /// Cumulative timestamp in milliseconds starting from the first stored sample data
   /// Originally overflowing uint16 value, [1/1024 of second]
   /// This value do not necessarily change for every vector data set
   /// This value is not necessarily provided for every vector data set
-  public var cumulativeTimestamp: UInt32 {
+  var cumulativeTimestamp: UInt32 {
     get {return _cumulativeTimestamp ?? 0}
     set {_cumulativeTimestamp = newValue}
   }
   /// Returns true if `cumulativeTimestamp` has been explicitly set.
-  public var hasCumulativeTimestamp: Bool {return self._cumulativeTimestamp != nil}
+  var hasCumulativeTimestamp: Bool {return self._cumulativeTimestamp != nil}
   /// Clears the value of `cumulativeTimestamp`. Subsequent reads from it will return its default value.
-  public mutating func clearCumulativeTimestamp() {self._cumulativeTimestamp = nil}
+  mutating func clearCumulativeTimestamp() {self._cumulativeTimestamp = nil}
 
   /// Minimum force magnitude power
-  public var forceMagnitudeMin: Int32 {
+  var forceMagnitudeMin: Int32 {
     get {return _forceMagnitudeMin ?? 0}
     set {_forceMagnitudeMin = newValue}
   }
   /// Returns true if `forceMagnitudeMin` has been explicitly set.
-  public var hasForceMagnitudeMin: Bool {return self._forceMagnitudeMin != nil}
+  var hasForceMagnitudeMin: Bool {return self._forceMagnitudeMin != nil}
   /// Clears the value of `forceMagnitudeMin`. Subsequent reads from it will return its default value.
-  public mutating func clearForceMagnitudeMin() {self._forceMagnitudeMin = nil}
+  mutating func clearForceMagnitudeMin() {self._forceMagnitudeMin = nil}
 
   /// Maximum force magnitude power
-  public var forceMagnitudeMax: Int32 {
+  var forceMagnitudeMax: Int32 {
     get {return _forceMagnitudeMax ?? 0}
     set {_forceMagnitudeMax = newValue}
   }
   /// Returns true if `forceMagnitudeMax` has been explicitly set.
-  public var hasForceMagnitudeMax: Bool {return self._forceMagnitudeMax != nil}
+  var hasForceMagnitudeMax: Bool {return self._forceMagnitudeMax != nil}
   /// Clears the value of `forceMagnitudeMax`. Subsequent reads from it will return its default value.
-  public mutating func clearForceMagnitudeMax() {self._forceMagnitudeMax = nil}
+  mutating func clearForceMagnitudeMax() {self._forceMagnitudeMax = nil}
 
   /// Minimum force magnitude angle
   /// Counted clockwise, topmost position is 0 degrees, view point is right side of the bike for both pedals
-  public var forceMagnitudeMinAngle: UInt32 {
+  var forceMagnitudeMinAngle: UInt32 {
     get {return _forceMagnitudeMinAngle ?? 0}
     set {_forceMagnitudeMinAngle = newValue}
   }
   /// Returns true if `forceMagnitudeMinAngle` has been explicitly set.
-  public var hasForceMagnitudeMinAngle: Bool {return self._forceMagnitudeMinAngle != nil}
+  var hasForceMagnitudeMinAngle: Bool {return self._forceMagnitudeMinAngle != nil}
   /// Clears the value of `forceMagnitudeMinAngle`. Subsequent reads from it will return its default value.
-  public mutating func clearForceMagnitudeMinAngle() {self._forceMagnitudeMinAngle = nil}
+  mutating func clearForceMagnitudeMinAngle() {self._forceMagnitudeMinAngle = nil}
 
   /// Maximum force magnitude angle
   /// Counted clockwise, topmost position is 0 degrees, view point is right side of the bike for both pedals
-  public var forceMagnitudeMaxAngle: UInt32 {
+  var forceMagnitudeMaxAngle: UInt32 {
     get {return _forceMagnitudeMaxAngle ?? 0}
     set {_forceMagnitudeMaxAngle = newValue}
   }
   /// Returns true if `forceMagnitudeMaxAngle` has been explicitly set.
-  public var hasForceMagnitudeMaxAngle: Bool {return self._forceMagnitudeMaxAngle != nil}
+  var hasForceMagnitudeMaxAngle: Bool {return self._forceMagnitudeMaxAngle != nil}
   /// Clears the value of `forceMagnitudeMaxAngle`. Subsequent reads from it will return its default value.
-  public mutating func clearForceMagnitudeMaxAngle() {self._forceMagnitudeMaxAngle = nil}
+  mutating func clearForceMagnitudeMaxAngle() {self._forceMagnitudeMaxAngle = nil}
 
   /// Dead spot bottom angle
   /// Counted clockwise, topmost position is 0 degrees, view point is right side of the bike for both pedals
-  public var bottomDeadSpotAngle: UInt32 {
+  var bottomDeadSpotAngle: UInt32 {
     get {return _bottomDeadSpotAngle ?? 0}
     set {_bottomDeadSpotAngle = newValue}
   }
   /// Returns true if `bottomDeadSpotAngle` has been explicitly set.
-  public var hasBottomDeadSpotAngle: Bool {return self._bottomDeadSpotAngle != nil}
+  var hasBottomDeadSpotAngle: Bool {return self._bottomDeadSpotAngle != nil}
   /// Clears the value of `bottomDeadSpotAngle`. Subsequent reads from it will return its default value.
-  public mutating func clearBottomDeadSpotAngle() {self._bottomDeadSpotAngle = nil}
+  mutating func clearBottomDeadSpotAngle() {self._bottomDeadSpotAngle = nil}
 
   /// Dead spot top angle
   /// Counted clockwise, topmost position is 0 degrees, view point is right side of the bike for both pedals
-  public var topDeadSpotAngle: UInt32 {
+  var topDeadSpotAngle: UInt32 {
     get {return _topDeadSpotAngle ?? 0}
     set {_topDeadSpotAngle = newValue}
   }
   /// Returns true if `topDeadSpotAngle` has been explicitly set.
-  public var hasTopDeadSpotAngle: Bool {return self._topDeadSpotAngle != nil}
+  var hasTopDeadSpotAngle: Bool {return self._topDeadSpotAngle != nil}
   /// Clears the value of `topDeadSpotAngle`. Subsequent reads from it will return its default value.
-  public mutating func clearTopDeadSpotAngle() {self._topDeadSpotAngle = nil}
+  mutating func clearTopDeadSpotAngle() {self._topDeadSpotAngle = nil}
 
-  ///Unit is in percentage with a resolution of 1/2. Left foot power percentage of total power. 
+  ///Unit is in percentage with a resolution of 1/2. Left foot power percentage of total power.
   ///pedal_power_balance = [LeftPower/(LeftPower + RightPower)]*100
-  public var pedalPowerBalance: UInt32 {
+  var pedalPowerBalance: UInt32 {
     get {return _pedalPowerBalance ?? 0}
     set {_pedalPowerBalance = newValue}
   }
   /// Returns true if `pedalPowerBalance` has been explicitly set.
-  public var hasPedalPowerBalance: Bool {return self._pedalPowerBalance != nil}
+  var hasPedalPowerBalance: Bool {return self._pedalPowerBalance != nil}
   /// Clears the value of `pedalPowerBalance`. Subsequent reads from it will return its default value.
-  public mutating func clearPedalPowerBalance() {self._pedalPowerBalance = nil}
+  mutating func clearPedalPowerBalance() {self._pedalPowerBalance = nil}
 
   ///Unit is in newton metres with a resolution of 1/32.
-  public var torqueMagnitudeMin: Int32 {
+  var torqueMagnitudeMin: Int32 {
     get {return _torqueMagnitudeMin ?? 0}
     set {_torqueMagnitudeMin = newValue}
   }
   /// Returns true if `torqueMagnitudeMin` has been explicitly set.
-  public var hasTorqueMagnitudeMin: Bool {return self._torqueMagnitudeMin != nil}
+  var hasTorqueMagnitudeMin: Bool {return self._torqueMagnitudeMin != nil}
   /// Clears the value of `torqueMagnitudeMin`. Subsequent reads from it will return its default value.
-  public mutating func clearTorqueMagnitudeMin() {self._torqueMagnitudeMin = nil}
+  mutating func clearTorqueMagnitudeMin() {self._torqueMagnitudeMin = nil}
 
   ///Unit is in newton metres with a resolution of 1/32.
-  public var torqueMagnitudeMax: Int32 {
+  var torqueMagnitudeMax: Int32 {
     get {return _torqueMagnitudeMax ?? 0}
     set {_torqueMagnitudeMax = newValue}
   }
   /// Returns true if `torqueMagnitudeMax` has been explicitly set.
-  public var hasTorqueMagnitudeMax: Bool {return self._torqueMagnitudeMax != nil}
+  var hasTorqueMagnitudeMax: Bool {return self._torqueMagnitudeMax != nil}
   /// Clears the value of `torqueMagnitudeMax`. Subsequent reads from it will return its default value.
-  public mutating func clearTorqueMagnitudeMax() {self._torqueMagnitudeMax = nil}
+  mutating func clearTorqueMagnitudeMax() {self._torqueMagnitudeMax = nil}
 
-  public var unknownFields = SwiftProtobuf.UnknownStorage()
+  var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public init() {}
+  init() {}
 
   fileprivate var _currentPower: Int32? = nil
   fileprivate var _cumulativeCrankRevolutions: UInt32? = nil
@@ -181,54 +181,54 @@ public struct Data_PbPowerMeasurements {
 
 ///
 ///Sample data calibration value of the exercise
-public struct Data_PbCalibrationValue {
+struct Data_PbCalibrationValue {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   /// index of first sample using calibration value "value"
-  public var startIndex: UInt32 {
+  var startIndex: UInt32 {
     get {return _startIndex ?? 0}
     set {_startIndex = newValue}
   }
   /// Returns true if `startIndex` has been explicitly set.
-  public var hasStartIndex: Bool {return self._startIndex != nil}
+  var hasStartIndex: Bool {return self._startIndex != nil}
   /// Clears the value of `startIndex`. Subsequent reads from it will return its default value.
-  public mutating func clearStartIndex() {self._startIndex = nil}
+  mutating func clearStartIndex() {self._startIndex = nil}
 
   /// used calibaration value
-  public var value: Float {
+  var value: Float {
     get {return _value ?? 0}
     set {_value = newValue}
   }
   /// Returns true if `value` has been explicitly set.
-  public var hasValue: Bool {return self._value != nil}
+  var hasValue: Bool {return self._value != nil}
   /// Clears the value of `value`. Subsequent reads from it will return its default value.
-  public mutating func clearValue() {self._value = nil}
+  mutating func clearValue() {self._value = nil}
 
   /// used operation type of calibration (multiply/sum)
-  public var operation: PbOperationType {
+  var operation: PbOperationType {
     get {return _operation ?? .multiply}
     set {_operation = newValue}
   }
   /// Returns true if `operation` has been explicitly set.
-  public var hasOperation: Bool {return self._operation != nil}
+  var hasOperation: Bool {return self._operation != nil}
   /// Clears the value of `operation`. Subsequent reads from it will return its default value.
-  public mutating func clearOperation() {self._operation = nil}
+  mutating func clearOperation() {self._operation = nil}
 
   /// explaines the cause for calibration change (walking/running)
-  public var cause: PbMovingType {
+  var cause: PbMovingType {
     get {return _cause ?? .walking}
     set {_cause = newValue}
   }
   /// Returns true if `cause` has been explicitly set.
-  public var hasCause: Bool {return self._cause != nil}
+  var hasCause: Bool {return self._cause != nil}
   /// Clears the value of `cause`. Subsequent reads from it will return its default value.
-  public mutating func clearCause() {self._cause = nil}
+  mutating func clearCause() {self._cause = nil}
 
-  public var unknownFields = SwiftProtobuf.UnknownStorage()
+  var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public init() {}
+  init() {}
 
   fileprivate var _startIndex: UInt32? = nil
   fileprivate var _value: Float? = nil
@@ -238,154 +238,154 @@ public struct Data_PbCalibrationValue {
 
 ///
 ///Exercise samples with sample type specific recording intervals
-public struct Data_PbExerciseIntervalledSampleList {
+struct Data_PbExerciseIntervalledSampleList {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   /// Sample Type, SPEED, DISTANCE etc.
-  public var sampleType: PbSampleType {
+  var sampleType: PbSampleType {
     get {return _storage._sampleType ?? .sampleTypeUndefined}
     set {_uniqueStorage()._sampleType = newValue}
   }
   /// Returns true if `sampleType` has been explicitly set.
-  public var hasSampleType: Bool {return _storage._sampleType != nil}
+  var hasSampleType: Bool {return _storage._sampleType != nil}
   /// Clears the value of `sampleType`. Subsequent reads from it will return its default value.
-  public mutating func clearSampleType() {_uniqueStorage()._sampleType = nil}
+  mutating func clearSampleType() {_uniqueStorage()._sampleType = nil}
 
   /// Recording interval of samples in milliseconds
   /// Note: When this field is set, it will override the default recording interval
-  ///       (PbDuration recording_interval) given in the PbExerciseSamples message   
-  public var recordingIntervalMs: UInt32 {
+  ///       (PbDuration recording_interval) given in the PbExerciseSamples message
+  var recordingIntervalMs: UInt32 {
     get {return _storage._recordingIntervalMs ?? 0}
     set {_uniqueStorage()._recordingIntervalMs = newValue}
   }
   /// Returns true if `recordingIntervalMs` has been explicitly set.
-  public var hasRecordingIntervalMs: Bool {return _storage._recordingIntervalMs != nil}
+  var hasRecordingIntervalMs: Bool {return _storage._recordingIntervalMs != nil}
   /// Clears the value of `recordingIntervalMs`. Subsequent reads from it will return its default value.
-  public mutating func clearRecordingIntervalMs() {_uniqueStorage()._recordingIntervalMs = nil}
+  mutating func clearRecordingIntervalMs() {_uniqueStorage()._recordingIntervalMs = nil}
 
   /// Indicates the source of certain sample: source and start / stop indexes for the given source
-  public var sampleSource: [PbSampleSource] {
+  var sampleSource: [PbSampleSource] {
     get {return _storage._sampleSource}
     set {_uniqueStorage()._sampleSource = newValue}
   }
 
   /// heart rate samples
-  public var heartRateSamples: [UInt32] {
+  var heartRateSamples: [UInt32] {
     get {return _storage._heartRateSamples}
     set {_uniqueStorage()._heartRateSamples = newValue}
   }
 
   /// cadence samples
-  public var cadenceSamples: [UInt32] {
+  var cadenceSamples: [UInt32] {
     get {return _storage._cadenceSamples}
     set {_uniqueStorage()._cadenceSamples = newValue}
   }
 
   /// speed samples
   /// Note: Samples are already calibrated samples
-  public var speedSamples: [Float] {
+  var speedSamples: [Float] {
     get {return _storage._speedSamples}
     set {_uniqueStorage()._speedSamples = newValue}
   }
 
   /// distance samples: total distance from the beginning of the exercise
   /// Note: Samples are already calibrated samples
-  public var distanceSamples: [Float] {
+  var distanceSamples: [Float] {
     get {return _storage._distanceSamples}
     set {_uniqueStorage()._distanceSamples = newValue}
   }
 
   /// User 1d acceleration samples as m/s2
-  public var forwardAcceleration: [Float] {
+  var forwardAcceleration: [Float] {
     get {return _storage._forwardAcceleration}
     set {_uniqueStorage()._forwardAcceleration = newValue}
   }
 
   /// User walking/running/standing status samples
-  public var movingTypeSamples: [PbMovingType] {
+  var movingTypeSamples: [PbMovingType] {
     get {return _storage._movingTypeSamples}
     set {_uniqueStorage()._movingTypeSamples = newValue}
   }
 
   /// altitude samples
   /// Note: Samples are already calibrated samples
-  public var altitudeSamples: [Float] {
+  var altitudeSamples: [Float] {
     get {return _storage._altitudeSamples}
     set {_uniqueStorage()._altitudeSamples = newValue}
   }
 
   /// indicate start and stop indexes, used calibration value and operation type of calibration
-  public var altitudeCalibration: [Data_PbCalibrationValue] {
+  var altitudeCalibration: [Data_PbCalibrationValue] {
     get {return _storage._altitudeCalibration}
     set {_uniqueStorage()._altitudeCalibration = newValue}
   }
 
   /// temperature samples
-  public var temperatureSamples: [Float] {
+  var temperatureSamples: [Float] {
     get {return _storage._temperatureSamples}
     set {_uniqueStorage()._temperatureSamples = newValue}
   }
 
   /// stride length samples
   /// Note: Samples are already calibrated samples
-  public var strideLengthSamples: [UInt32] {
+  var strideLengthSamples: [UInt32] {
     get {return _storage._strideLengthSamples}
     set {_uniqueStorage()._strideLengthSamples = newValue}
   }
 
   /// indicate the information of the stride sensor calibration
-  public var strideCalibration: [Data_PbCalibrationValue] {
+  var strideCalibration: [Data_PbCalibrationValue] {
     get {return _storage._strideCalibration}
     set {_uniqueStorage()._strideCalibration = newValue}
   }
 
   /// Crank based power samples from left pedal
-  public var leftPedalPowerSamples: [Data_PbPowerMeasurements] {
+  var leftPedalPowerSamples: [Data_PbPowerMeasurements] {
     get {return _storage._leftPedalPowerSamples}
     set {_uniqueStorage()._leftPedalPowerSamples = newValue}
   }
 
   /// Crank based power samples from right pedal
-  public var rightPedalPowerSamples: [Data_PbPowerMeasurements] {
+  var rightPedalPowerSamples: [Data_PbPowerMeasurements] {
     get {return _storage._rightPedalPowerSamples}
     set {_uniqueStorage()._rightPedalPowerSamples = newValue}
   }
 
   /// Indicate the information of the bike power sensor calibration
   /// This field is most likely used only for testing purposes
-  public var leftPowerCalibration: [Data_PbCalibrationValue] {
+  var leftPowerCalibration: [Data_PbCalibrationValue] {
     get {return _storage._leftPowerCalibration}
     set {_uniqueStorage()._leftPowerCalibration = newValue}
   }
 
-  /// Indicate the information of the bike power sensor calibration 
+  /// Indicate the information of the bike power sensor calibration
   /// This field is most likely used only for testing purposes
-  public var rightPowerCalibration: [Data_PbCalibrationValue] {
+  var rightPowerCalibration: [Data_PbCalibrationValue] {
     get {return _storage._rightPowerCalibration}
     set {_uniqueStorage()._rightPowerCalibration = newValue}
   }
 
   /// Heart Rate R-R sample data.
-  public var rrSamples: Data_PbExerciseRRIntervals {
+  var rrSamples: Data_PbExerciseRRIntervals {
     get {return _storage._rrSamples ?? Data_PbExerciseRRIntervals()}
     set {_uniqueStorage()._rrSamples = newValue}
   }
   /// Returns true if `rrSamples` has been explicitly set.
-  public var hasRrSamples: Bool {return _storage._rrSamples != nil}
+  var hasRrSamples: Bool {return _storage._rrSamples != nil}
   /// Clears the value of `rrSamples`. Subsequent reads from it will return its default value.
-  public mutating func clearRrSamples() {_uniqueStorage()._rrSamples = nil}
+  mutating func clearRrSamples() {_uniqueStorage()._rrSamples = nil}
 
   /// Acceleration based Mean Amplitude Deviation (MAD) samples
-  public var accelerationMadSamples: [Float] {
+  var accelerationMadSamples: [Float] {
     get {return _storage._accelerationMadSamples}
     set {_uniqueStorage()._accelerationMadSamples = newValue}
   }
 
-  public var unknownFields = SwiftProtobuf.UnknownStorage()
+  var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public init() {}
+  init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
 }
@@ -401,214 +401,234 @@ public struct Data_PbExerciseSamples {
   /// Default recording interval of samples
   /// Note: Samples listed in the root of the PbExerciseSamples will use this interval
   /// Note: Samples in the exercise_intervalled_sample_list will use this interval unless
-  ///       otherwise specified inside the exercise_intervalled_sample_list    
-  public var recordingInterval: PbDuration {
+  ///       otherwise specified inside the exercise_intervalled_sample_list
+  var recordingInterval: PbDuration {
     get {return _storage._recordingInterval ?? PbDuration()}
     set {_uniqueStorage()._recordingInterval = newValue}
   }
   /// Returns true if `recordingInterval` has been explicitly set.
-  public var hasRecordingInterval: Bool {return _storage._recordingInterval != nil}
+  var hasRecordingInterval: Bool {return _storage._recordingInterval != nil}
   /// Clears the value of `recordingInterval`. Subsequent reads from it will return its default value.
-  public mutating func clearRecordingInterval() {_uniqueStorage()._recordingInterval = nil}
+  mutating func clearRecordingInterval() {_uniqueStorage()._recordingInterval = nil}
 
   /// heart rate samples
-  public var heartRateSamples: [UInt32] {
+  var heartRateSamples: [UInt32] {
     get {return _storage._heartRateSamples}
     set {_uniqueStorage()._heartRateSamples = newValue}
   }
 
   /// indicate start and stop indexes when there has not been connection to heart rate sensor
-  public var heartRateOffline: [PbSensorOffline] {
+  var heartRateOffline: [PbSensorOffline] {
     get {return _storage._heartRateOffline}
     set {_uniqueStorage()._heartRateOffline = newValue}
   }
 
   /// cadence samples
-  public var cadenceSamples: [UInt32] {
+  var cadenceSamples: [UInt32] {
     get {return _storage._cadenceSamples}
     set {_uniqueStorage()._cadenceSamples = newValue}
   }
 
   /// indicate start and stop indexes when there has not been connection to a sensor providing cadence
-  public var cadenceOffline: [PbSensorOffline] {
+  var cadenceOffline: [PbSensorOffline] {
     get {return _storage._cadenceOffline}
     set {_uniqueStorage()._cadenceOffline = newValue}
   }
 
   /// altitude samples
   /// Note: Samples are already calibrated samples
-  public var altitudeSamples: [Float] {
+  var altitudeSamples: [Float] {
     get {return _storage._altitudeSamples}
     set {_uniqueStorage()._altitudeSamples = newValue}
   }
 
   /// Altitude sensor offline status
-  public var altitudeOffline: [PbSensorOffline] {
+  var altitudeOffline: [PbSensorOffline] {
     get {return _storage._altitudeOffline}
     set {_uniqueStorage()._altitudeOffline = newValue}
   }
 
   /// indicate start and stop indexes, used calibration value and operation type of calibration
-  public var altitudeCalibration: [Data_PbCalibrationValue] {
+  var altitudeCalibration: [Data_PbCalibrationValue] {
     get {return _storage._altitudeCalibration}
     set {_uniqueStorage()._altitudeCalibration = newValue}
   }
 
   /// temperature samples
-  public var temperatureSamples: [Float] {
+  var temperatureSamples: [Float] {
     get {return _storage._temperatureSamples}
     set {_uniqueStorage()._temperatureSamples = newValue}
   }
 
   /// Temperature sensor offline status
-  public var temperatureOffline: [PbSensorOffline] {
+  var temperatureOffline: [PbSensorOffline] {
     get {return _storage._temperatureOffline}
     set {_uniqueStorage()._temperatureOffline = newValue}
   }
 
   /// speed samples
   /// Note: Samples are already calibrated samples
-  public var speedSamples: [Float] {
+  var speedSamples: [Float] {
     get {return _storage._speedSamples}
     set {_uniqueStorage()._speedSamples = newValue}
   }
 
   /// indicate start and stop indexes when there has not been connection to speed sensor
-  public var speedOffline: [PbSensorOffline] {
+  var speedOffline: [PbSensorOffline] {
     get {return _storage._speedOffline}
     set {_uniqueStorage()._speedOffline = newValue}
   }
 
   /// distance samples: total distance from the beginning of the exercise
   /// Note: Samples are already calibrated samples
-  public var distanceSamples: [Float] {
+  var distanceSamples: [Float] {
     get {return _storage._distanceSamples}
     set {_uniqueStorage()._distanceSamples = newValue}
   }
 
   /// indicate start and stop indexes when there has not been connection to distance measure sensor
-  public var distanceOffline: [PbSensorOffline] {
+  var distanceOffline: [PbSensorOffline] {
     get {return _storage._distanceOffline}
     set {_uniqueStorage()._distanceOffline = newValue}
   }
 
   /// stride length samples
   /// Note: Samples are already calibrated samples
-  public var strideLengthSamples: [UInt32] {
+  var strideLengthSamples: [UInt32] {
     get {return _storage._strideLengthSamples}
     set {_uniqueStorage()._strideLengthSamples = newValue}
   }
 
   /// indicate start and stop indexes when there has not been connection to stride sensor
-  public var strideLengthOffline: [PbSensorOffline] {
+  var strideLengthOffline: [PbSensorOffline] {
     get {return _storage._strideLengthOffline}
     set {_uniqueStorage()._strideLengthOffline = newValue}
   }
 
   /// indicate the information of the stride sensor calibration
-  public var strideCalibration: [Data_PbCalibrationValue] {
+  var strideCalibration: [Data_PbCalibrationValue] {
     get {return _storage._strideCalibration}
     set {_uniqueStorage()._strideCalibration = newValue}
   }
 
   /// User 1d acceleration samples as m/s2
-  public var forwardAcceleration: [Float] {
+  var forwardAcceleration: [Float] {
     get {return _storage._forwardAcceleration}
     set {_uniqueStorage()._forwardAcceleration = newValue}
   }
 
   /// indicate start and stop indexes when there has not been connection to sensor that produces forward acceleration
-  public var forwardAccelerationOffline: [PbSensorOffline] {
+  var forwardAccelerationOffline: [PbSensorOffline] {
     get {return _storage._forwardAccelerationOffline}
     set {_uniqueStorage()._forwardAccelerationOffline = newValue}
   }
 
   /// User walking/running/standing status samples
-  public var movingTypeSamples: [PbMovingType] {
+  var movingTypeSamples: [PbMovingType] {
     get {return _storage._movingTypeSamples}
     set {_uniqueStorage()._movingTypeSamples = newValue}
   }
 
   /// indicate start and stop indexes when there has not been connection to sensor that produces moving_type
-  public var movingTypeOffline: [PbSensorOffline] {
+  var movingTypeOffline: [PbSensorOffline] {
     get {return _storage._movingTypeOffline}
     set {_uniqueStorage()._movingTypeOffline = newValue}
   }
 
   /// Crank based power samples from left pedal
-  public var leftPedalPowerSamples: [Data_PbPowerMeasurements] {
+  var leftPedalPowerSamples: [Data_PbPowerMeasurements] {
     get {return _storage._leftPedalPowerSamples}
     set {_uniqueStorage()._leftPedalPowerSamples = newValue}
   }
 
   /// Indicate start and stop indexes when there has not been connection to sensor that produces left_pedal_power_samples
-  public var leftPedalPowerOffline: [PbSensorOffline] {
+  var leftPedalPowerOffline: [PbSensorOffline] {
     get {return _storage._leftPedalPowerOffline}
     set {_uniqueStorage()._leftPedalPowerOffline = newValue}
   }
 
   /// Crank based power samples from right pedal
-  public var rightPedalPowerSamples: [Data_PbPowerMeasurements] {
+  var rightPedalPowerSamples: [Data_PbPowerMeasurements] {
     get {return _storage._rightPedalPowerSamples}
     set {_uniqueStorage()._rightPedalPowerSamples = newValue}
   }
 
   /// Indicate start and stop indexes when there has not been connection to sensor that produces right_pedal_power_samples
-  public var rightPedalPowerOffline: [PbSensorOffline] {
+  var rightPedalPowerOffline: [PbSensorOffline] {
     get {return _storage._rightPedalPowerOffline}
     set {_uniqueStorage()._rightPedalPowerOffline = newValue}
   }
 
   /// Indicate the information of the bike power sensor calibration
   /// This field is most likely used only for testing purposes
-  public var leftPowerCalibration: [Data_PbCalibrationValue] {
+  var leftPowerCalibration: [Data_PbCalibrationValue] {
     get {return _storage._leftPowerCalibration}
     set {_uniqueStorage()._leftPowerCalibration = newValue}
   }
 
-  /// Indicate the information of the bike power sensor calibration 
+  /// Indicate the information of the bike power sensor calibration
   /// This field is most likely used only for testing purposes
-  public var rightPowerCalibration: [Data_PbCalibrationValue] {
+  var rightPowerCalibration: [Data_PbCalibrationValue] {
     get {return _storage._rightPowerCalibration}
     set {_uniqueStorage()._rightPowerCalibration = newValue}
   }
 
   /// Heart Rate R-R sample data.
-  public var rrSamples: Data_PbExerciseRRIntervals {
+  var rrSamples: Data_PbExerciseRRIntervals {
     get {return _storage._rrSamples ?? Data_PbExerciseRRIntervals()}
     set {_uniqueStorage()._rrSamples = newValue}
   }
   /// Returns true if `rrSamples` has been explicitly set.
-  public var hasRrSamples: Bool {return _storage._rrSamples != nil}
+  var hasRrSamples: Bool {return _storage._rrSamples != nil}
   /// Clears the value of `rrSamples`. Subsequent reads from it will return its default value.
-  public mutating func clearRrSamples() {_uniqueStorage()._rrSamples = nil}
+  mutating func clearRrSamples() {_uniqueStorage()._rrSamples = nil}
 
   /// Exercise samples with sample type specific recording intervals
-  public var exerciseIntervalledSampleList: [Data_PbExerciseIntervalledSampleList] {
+  var exerciseIntervalledSampleList: [Data_PbExerciseIntervalledSampleList] {
     get {return _storage._exerciseIntervalledSampleList}
     set {_uniqueStorage()._exerciseIntervalledSampleList = newValue}
   }
 
   /// Exercise pause times
-  public var pauseTimes: [PbPauseTime] {
+  var pauseTimes: [PbPauseTime] {
     get {return _storage._pauseTimes}
     set {_uniqueStorage()._pauseTimes = newValue}
   }
 
-  public var unknownFields = SwiftProtobuf.UnknownStorage()
+  /// Body temperature samples as Celsius,
+  /// see BODY_TEMPERATURE unit at https://wiki.polar.grp/x/I2DFAw for valid range.
+  var bodyTemperature: [Float] {
+    get {return _storage._bodyTemperature}
+    set {_uniqueStorage()._bodyTemperature = newValue}
+  }
 
-  public init() {}
+  /// indicate start and stop indexes when there has not been connection to body temperaure sensor
+  var bodyTemperatureOffline: [PbSensorOffline] {
+    get {return _storage._bodyTemperatureOffline}
+    set {_uniqueStorage()._bodyTemperatureOffline = newValue}
+  }
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
 }
+
+#if swift(>=5.5) && canImport(_Concurrency)
+extension Data_PbPowerMeasurements: @unchecked Sendable {}
+extension Data_PbCalibrationValue: @unchecked Sendable {}
+extension Data_PbExerciseIntervalledSampleList: @unchecked Sendable {}
+extension Data_PbExerciseSamples: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate let _protobuf_package = "data"
 
 extension Data_PbPowerMeasurements: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".PbPowerMeasurements"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  static let protoMessageName: String = _protobuf_package + ".PbPowerMeasurements"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "current_power"),
     2: .standard(proto: "cumulative_crank_revolutions"),
     3: .standard(proto: "cumulative_timestamp"),
@@ -628,7 +648,7 @@ extension Data_PbPowerMeasurements: SwiftProtobuf.Message, SwiftProtobuf._Messag
     return true
   }
 
-  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -651,7 +671,7 @@ extension Data_PbPowerMeasurements: SwiftProtobuf.Message, SwiftProtobuf._Messag
     }
   }
 
-  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -695,7 +715,7 @@ extension Data_PbPowerMeasurements: SwiftProtobuf.Message, SwiftProtobuf._Messag
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: Data_PbPowerMeasurements, rhs: Data_PbPowerMeasurements) -> Bool {
+  static func ==(lhs: Data_PbPowerMeasurements, rhs: Data_PbPowerMeasurements) -> Bool {
     if lhs._currentPower != rhs._currentPower {return false}
     if lhs._cumulativeCrankRevolutions != rhs._cumulativeCrankRevolutions {return false}
     if lhs._cumulativeTimestamp != rhs._cumulativeTimestamp {return false}
@@ -714,8 +734,8 @@ extension Data_PbPowerMeasurements: SwiftProtobuf.Message, SwiftProtobuf._Messag
 }
 
 extension Data_PbCalibrationValue: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".PbCalibrationValue"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  static let protoMessageName: String = _protobuf_package + ".PbCalibrationValue"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "start_index"),
     2: .same(proto: "value"),
     3: .same(proto: "operation"),
@@ -729,7 +749,7 @@ extension Data_PbCalibrationValue: SwiftProtobuf.Message, SwiftProtobuf._Message
     return true
   }
 
-  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -744,7 +764,7 @@ extension Data_PbCalibrationValue: SwiftProtobuf.Message, SwiftProtobuf._Message
     }
   }
 
-  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -764,7 +784,7 @@ extension Data_PbCalibrationValue: SwiftProtobuf.Message, SwiftProtobuf._Message
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: Data_PbCalibrationValue, rhs: Data_PbCalibrationValue) -> Bool {
+  static func ==(lhs: Data_PbCalibrationValue, rhs: Data_PbCalibrationValue) -> Bool {
     if lhs._startIndex != rhs._startIndex {return false}
     if lhs._value != rhs._value {return false}
     if lhs._operation != rhs._operation {return false}
@@ -775,8 +795,8 @@ extension Data_PbCalibrationValue: SwiftProtobuf.Message, SwiftProtobuf._Message
 }
 
 extension Data_PbExerciseIntervalledSampleList: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".PbExerciseIntervalledSampleList"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  static let protoMessageName: String = _protobuf_package + ".PbExerciseIntervalledSampleList"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "sample_type"),
     2: .standard(proto: "recording_interval_ms"),
     3: .standard(proto: "sample_source"),
@@ -821,7 +841,15 @@ extension Data_PbExerciseIntervalledSampleList: SwiftProtobuf.Message, SwiftProt
     var _rrSamples: Data_PbExerciseRRIntervals? = nil
     var _accelerationMadSamples: [Float] = []
 
-    static let defaultInstance = _StorageClass()
+    #if swift(>=5.10)
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
 
     private init() {}
 
@@ -871,7 +899,7 @@ extension Data_PbExerciseIntervalledSampleList: SwiftProtobuf.Message, SwiftProt
     }
   }
 
-  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     _ = _uniqueStorage()
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
       while let fieldNumber = try decoder.nextFieldNumber() {
@@ -905,7 +933,7 @@ extension Data_PbExerciseIntervalledSampleList: SwiftProtobuf.Message, SwiftProt
     }
   }
 
-  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every if/case branch local when no optimizations
@@ -975,7 +1003,7 @@ extension Data_PbExerciseIntervalledSampleList: SwiftProtobuf.Message, SwiftProt
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: Data_PbExerciseIntervalledSampleList, rhs: Data_PbExerciseIntervalledSampleList) -> Bool {
+  static func ==(lhs: Data_PbExerciseIntervalledSampleList, rhs: Data_PbExerciseIntervalledSampleList) -> Bool {
     if lhs._storage !== rhs._storage {
       let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
         let _storage = _args.0
@@ -1010,8 +1038,8 @@ extension Data_PbExerciseIntervalledSampleList: SwiftProtobuf.Message, SwiftProt
 }
 
 extension Data_PbExerciseSamples: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".PbExerciseSamples"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    public static let protoMessageName: String = _protobuf_package + ".PbExerciseSamples"
+    public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "recording_interval"),
     2: .standard(proto: "heart_rate_samples"),
     3: .standard(proto: "heart_rate_offline"),
@@ -1042,6 +1070,8 @@ extension Data_PbExerciseSamples: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     28: .standard(proto: "rr_samples"),
     29: .standard(proto: "exercise_intervalled_sample_list"),
     30: .standard(proto: "pause_times"),
+    31: .standard(proto: "body_temperature"),
+    32: .standard(proto: "body_temperature_offline"),
   ]
 
   fileprivate class _StorageClass {
@@ -1075,8 +1105,18 @@ extension Data_PbExerciseSamples: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     var _rrSamples: Data_PbExerciseRRIntervals? = nil
     var _exerciseIntervalledSampleList: [Data_PbExerciseIntervalledSampleList] = []
     var _pauseTimes: [PbPauseTime] = []
+    var _bodyTemperature: [Float] = []
+    var _bodyTemperatureOffline: [PbSensorOffline] = []
 
-    static let defaultInstance = _StorageClass()
+    #if swift(>=5.10)
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
 
     private init() {}
 
@@ -1111,6 +1151,8 @@ extension Data_PbExerciseSamples: SwiftProtobuf.Message, SwiftProtobuf._MessageI
       _rrSamples = source._rrSamples
       _exerciseIntervalledSampleList = source._exerciseIntervalledSampleList
       _pauseTimes = source._pauseTimes
+      _bodyTemperature = source._bodyTemperature
+      _bodyTemperatureOffline = source._bodyTemperatureOffline
     }
   }
 
@@ -1144,11 +1186,12 @@ extension Data_PbExerciseSamples: SwiftProtobuf.Message, SwiftProtobuf._MessageI
       if let v = _storage._rrSamples, !v.isInitialized {return false}
       if !SwiftProtobuf.Internal.areAllInitialized(_storage._exerciseIntervalledSampleList) {return false}
       if !SwiftProtobuf.Internal.areAllInitialized(_storage._pauseTimes) {return false}
+      if !SwiftProtobuf.Internal.areAllInitialized(_storage._bodyTemperatureOffline) {return false}
       return true
     }
   }
 
-  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    mutating public func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     _ = _uniqueStorage()
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
       while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1186,13 +1229,15 @@ extension Data_PbExerciseSamples: SwiftProtobuf.Message, SwiftProtobuf._MessageI
         case 28: try { try decoder.decodeSingularMessageField(value: &_storage._rrSamples) }()
         case 29: try { try decoder.decodeRepeatedMessageField(value: &_storage._exerciseIntervalledSampleList) }()
         case 30: try { try decoder.decodeRepeatedMessageField(value: &_storage._pauseTimes) }()
+        case 31: try { try decoder.decodeRepeatedFloatField(value: &_storage._bodyTemperature) }()
+        case 32: try { try decoder.decodeRepeatedMessageField(value: &_storage._bodyTemperatureOffline) }()
         default: break
         }
       }
     }
   }
 
-  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every if/case branch local when no optimizations
@@ -1288,11 +1333,17 @@ extension Data_PbExerciseSamples: SwiftProtobuf.Message, SwiftProtobuf._MessageI
       if !_storage._pauseTimes.isEmpty {
         try visitor.visitRepeatedMessageField(value: _storage._pauseTimes, fieldNumber: 30)
       }
+      if !_storage._bodyTemperature.isEmpty {
+        try visitor.visitRepeatedFloatField(value: _storage._bodyTemperature, fieldNumber: 31)
+      }
+      if !_storage._bodyTemperatureOffline.isEmpty {
+        try visitor.visitRepeatedMessageField(value: _storage._bodyTemperatureOffline, fieldNumber: 32)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: Data_PbExerciseSamples, rhs: Data_PbExerciseSamples) -> Bool {
+    public static func ==(lhs: Data_PbExerciseSamples, rhs: Data_PbExerciseSamples) -> Bool {
     if lhs._storage !== rhs._storage {
       let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
         let _storage = _args.0
@@ -1327,6 +1378,8 @@ extension Data_PbExerciseSamples: SwiftProtobuf.Message, SwiftProtobuf._MessageI
         if _storage._rrSamples != rhs_storage._rrSamples {return false}
         if _storage._exerciseIntervalledSampleList != rhs_storage._exerciseIntervalledSampleList {return false}
         if _storage._pauseTimes != rhs_storage._pauseTimes {return false}
+        if _storage._bodyTemperature != rhs_storage._bodyTemperature {return false}
+        if _storage._bodyTemperatureOffline != rhs_storage._bodyTemperatureOffline {return false}
         return true
       }
       if !storagesAreEqual {return false}

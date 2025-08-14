@@ -91,7 +91,7 @@ class FirmwareUpdateApi {
         }.resume()
     }
 
-    func getFirmwareUpdatePackage(url: String) -> Observable<Data?> {
+    func getFirmwareUpdatePackage(url: String) -> Single<Data?> {
         return Observable.create { observer in
             URLSession.shared.dataTask(with: URLRequest(url: URL(string: url)!)) { (data, _, _) in
                 if let data = data {
@@ -103,6 +103,6 @@ class FirmwareUpdateApi {
                 }
             }.resume()
             return Disposables.create()
-        }
+        }.asSingle()
     }
 }
