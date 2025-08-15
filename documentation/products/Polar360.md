@@ -37,13 +37,15 @@ It is a device designed to increase general well-being and to make the lives of 
 * [Offline recording](../SdkOfflineRecordingExplained.md)
 
 ### Data export
-* Sleep data
-* Steps data
-* Nightly recharge data
-* 24/7 HR samples
-* 24/7 PPi samples
-* Skin temperature data
-* Calory data (activity/training/BMR)
+* Sleep data [iOS](https://polarofficial.github.io/polar-ble-sdk/polar-sdk-ios/Protocols/PolarSleepApi.html), [Android](https://polarofficial.github.io/polar-ble-sdk/polar-sdk-android/com/polar/sdk/api/PolarSleepApi.html), 
+* Activity data [iOS](https://polarofficial.github.io/polar-ble-sdk/polar-sdk-ios/Protocols/PolarActivityApi.html), [Android](https://polarofficial.github.io/polar-ble-sdk/polar-sdk-android/com/polar/sdk/api/PolarActivityApi.html)
+  * Steps
+  * Active time
+  * Calory data (activity/training/BMR)
+  * 24/7 HR samples
+  * Nightly recharge data
+  * Skin temperature data
+  * 24/7 PPi samples
 
 ### Device management
 * get battery level
