@@ -39,8 +39,8 @@ The SDK API uses ReactiveX. You can read more about ReactiveX from their website
 - [Polar Pacer and Polar Pacer Pro](./documentation/products/PolarPacerAndPacerPro.md)
 
 ## Project structure
-* [polar-sdk-ios](polar-sdk-ios/) contains source documentation for the iOS SDK source
-* [polar-sdk-android](polar-sdk-android/) contains source documentation for the Android SDK source
+* [polar-sdk-ios](.sources/iOS/ios-communications) contains source documentation for the iOS SDK source
+* [polar-sdk-android](.Android/android-communications) contains source documentation for the Android SDK source
 * [demos](demos/) contains Android ecg demo application 
 * [examples](examples/) contains both android and ios example app utilizing most of the features from sdk 
 * [documentation](documentation/) contains documentation related to SDK
