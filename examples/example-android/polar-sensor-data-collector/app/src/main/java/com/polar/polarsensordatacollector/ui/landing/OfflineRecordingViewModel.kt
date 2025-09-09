@@ -242,8 +242,13 @@ class OfflineRecordingViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             for (feature in features) {
                 when (val result = polarDeviceStreamingRepository.stopOfflineRecording(deviceId, feature)) {
-                    is ResultOfRequest.Success -> offlineRecDisabledUpdateUiState(disabledFeature = feature)
-                    is ResultOfRequest.Failure -> showError(result.message, result.throwable)
+                    is ResultOfRequest.Success -> {
+                        offlineRecDisabledUpdateUiState(disabledFeature = feature)
+                    }
+                    is ResultOfRequest.Failure -> {
+                        offlineRecDisabledUpdateUiState(disabledFeature = feature)
+                        showError(result.message, result.throwable)
+                    }
                 }
             }
         }

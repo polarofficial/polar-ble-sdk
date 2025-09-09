@@ -17,6 +17,7 @@ import com.polar.sdk.api.model.sleep.PolarSleepData
 import com.polar.sdk.impl.BDBleApiImpl
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.exceptions.UndeliverableException
 import io.reactivex.rxjava3.plugins.RxJavaPlugins
@@ -32,9 +33,13 @@ import com.polar.sdk.impl.utils.CaloriesType
 import com.polar.sdk.api.model.activity.Polar247HrSamplesData
 import com.polar.sdk.api.model.sleep.PolarNightlyRechargeData
 import com.polar.sdk.api.model.PolarSkinTemperatureData
-import kotlinx.coroutines.reactive.awaitLast
 import com.polar.sdk.api.model.activity.Polar247PPiSamplesData
+import com.polar.sdk.api.model.activity.PolarActiveTimeData
+import com.polar.sdk.api.model.trainingsession.PolarTrainingSession
+import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference
+import com.polar.sdk.api.model.activity.PolarActivitySamplesDayData
 import java.time.LocalDate
+import java.time.ZoneId
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -101,7 +106,6 @@ class PolarDeviceRepository @Inject constructor(
     private val api: BDBleApiImpl,
     private val collector: DataCollector,
     private val security: SecretKeyManager
-    //private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : PolarBleApiCallback() {
     companion object {
         private const val TAG = "PhoneStatusRepository"
@@ -132,6 +136,10 @@ class PolarDeviceRepository @Inject constructor(
     val isOfflineRecordingSecurityEnabled: StateFlow<Boolean> = _isOfflineRecordingSecurityEnabled.asStateFlow()
 
     private val offlineEntryCache: MutableMap<String, MutableList<PolarOfflineRecordingEntry>> = mutableMapOf()
+    private val trainingSessionReferenceCache: MutableMap<String, MutableList<PolarTrainingSessionReference>> = mutableMapOf()
+
+    private val _isMultiBleModeEnabled: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    var isMultiBleModeEnabled: StateFlow<Boolean> = _isMultiBleModeEnabled.asStateFlow()
 
     init {
         RxJavaPlugins.setErrorHandler { e ->
@@ -154,7 +162,6 @@ class PolarDeviceRepository @Inject constructor(
                 offlineEntryCache[deviceId] = mutableListOf()
             }
             .map {
-
                 offlineEntryCache[deviceId]?.add(it)
                 it
             }
@@ -262,6 +269,11 @@ class PolarDeviceRepository @Inject constructor(
                             ppgs = sample.channelSamples.subList(0, 16)
                             val status = sample.channelSamples[16].toUInt().toLong()
                             collector.logPpgData16Channels(sample.timeStamp, ppgs, status)
+                        }
+                        3 -> {
+                            ppgs = sample.channelSamples.subList(0, 2)
+                            val status = sample.channelSamples[2].toUInt().toLong()
+                            collector.logPpg2Channels(sample.timeStamp, ppgs, status.toInt())
                         }
                         else -> {
                             ppgs = sample.channelSamples.subList(0, 3)
@@ -374,17 +386,28 @@ class PolarDeviceRepository @Inject constructor(
 
     override fun bleSdkFeatureReady(identifier: String, feature: PolarBleApi.PolarBleSdkFeature) {
         Log.d(TAG, "feature ready $feature")
-
         when (feature) {
             PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING,
-            PolarBleApi.PolarBleSdkFeature.FEATURE_HR,
             PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO,
             PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP,
             PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER,
             PolarBleApi.PolarBleSdkFeature.FEATURE_BATTERY_INFO,
             PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA,
+            PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FEATURES_CONFIGURATION_SERVICE,
             PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA -> {
                 // do nothing
+            }
+            PolarBleApi.PolarBleSdkFeature.FEATURE_HR -> {
+                api.getAvailableHRServiceDataTypes(identifier)
+                    .subscribe(
+                        { types ->
+                            Log.d(TAG, "Available online streaming data: $types")
+                            updateOnlineStreamDataTypes(identifier, types)
+                        },
+                        { exception: Throwable ->
+                            Log.d(TAG, "Failed to check if HR service is available. Reason $exception")
+                        },
+                    )
             }
             PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING -> {
                 api.getAvailableOnlineStreamDataTypes(identifier)
@@ -603,7 +626,6 @@ class PolarDeviceRepository @Inject constructor(
 
     fun doFirmwareUpdate(deviceId: String, firmwareUrl: String = ""): Flowable<FirmwareUpdateStatus> {
         return api.updateFirmware(deviceId, firmwareUrl)
-                .subscribeOn(Schedulers.io())
                 .doOnSubscribe {
                     Log.d(TAG, "Firmware update started for device: $deviceId")
                 }
@@ -616,6 +638,13 @@ class PolarDeviceRepository @Inject constructor(
                 .doOnComplete {
                     Log.d(TAG, "Firmware update completed for device: $deviceId")
                 }
+    }
+
+    fun checkFirmwareUpdate(deviceId: String): Observable<CheckFirmwareUpdateStatus> {
+        return api.checkFirmwareUpdate(deviceId)
+            .doOnError { throwable ->
+                Log.e(TAG, "Error checking firmware update for device: $deviceId", throwable)
+            }
     }
 
     fun getAvailableStreamSettings(deviceId: String, feature: PolarBleApi.PolarDeviceDataType): Single<PolarSensorSetting> {
@@ -651,8 +680,8 @@ class PolarDeviceRepository @Inject constructor(
         return api.disconnectFromDevice(deviceId)
     }
 
-    fun searchForDevice(): Flowable<PolarDeviceInfo> {
-        return api.searchForDevice()
+    fun searchForDevice(withPrefix: String?): Flowable<PolarDeviceInfo> {
+        return api.searchForDevice(withPrefix)
     }
 
     fun connectToDevice(deviceId: String) {
@@ -774,6 +803,10 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun isSecurityEnabled(deviceId: String) = withContext(Dispatchers.IO) {
         _isOfflineRecordingSecurityEnabled.update { security.hasKey(deviceId) }
+    }
+
+    suspend fun getMultiBleModeEnabled(deviceId: String) = withContext(Dispatchers.IO) {
+        _isMultiBleModeEnabled.update { getBleMultiConnectionMode(deviceId) }
     }
 
     suspend fun toggleSecurity(deviceId: String, enable: Boolean) = withContext(Dispatchers.IO) {
@@ -911,26 +944,13 @@ class PolarDeviceRepository @Inject constructor(
         }
     }
 
-    suspend fun setDeviceUserSettings(deviceId: String, settings: PolarUserDeviceSettings): ResultOfRequest<Int> = withContext(Dispatchers.IO) {
-        return@withContext try {
-            Log.d(TAG, "Setting user device settings to $settings")
-            api.setUserDeviceSettings(deviceId, settings).await()
-            Log.d(TAG, "Successfully set device user settings")
-            ResultOfRequest.Success()
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to set user device settings", e)
-            ResultOfRequest.Failure("Failed to set Device User Settings", e)
-        }
-    }
-
-
     suspend fun deleteDeviceData(
         deviceId: String,
         storedDeviceDataType: PolarBleApi.PolarStoredDataType,
         until: LocalDate
     ): ResultOfRequest<Int> = withContext(Dispatchers.IO) {
         return@withContext try {
-            api.deleteStoredDeviceData(deviceId, storedDeviceDataType, until).awaitLast()
+            api.deleteStoredDeviceData(deviceId, storedDeviceDataType, until).await()
             ResultOfRequest.Success()
         } catch (e: Exception) {
             ResultOfRequest.Failure("Failed to delete $storedDeviceDataType files from device", e)
@@ -945,7 +965,7 @@ class PolarDeviceRepository @Inject constructor(
         try {
             api.deleteDeviceDateFolders(deviceId, fromDate, toDate)
                 .subscribeOn(Schedulers.io())
-                .blockingAwait()
+                .await()
             ResultOfRequest.Success()
         } catch (e: Exception) {
             ResultOfRequest.Failure("Failed to delete date folders from device", e)
@@ -962,6 +982,96 @@ class PolarDeviceRepository @Inject constructor(
             ResultOfRequest.Success(result)
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
+        }
+    }
+
+    fun getTrainingSessionReferences(deviceId: String): Flow<PolarTrainingSessionReference> {
+        Log.d(TAG, "getTrainingSessionReferences from device $deviceId")
+        return api.getTrainingSessionReferences(deviceId)
+            .doOnSubscribe {
+                trainingSessionReferenceCache[deviceId] = mutableListOf()
+            }
+            .map {
+                trainingSessionReferenceCache[deviceId]?.add(it)
+                it
+            }
+            .asFlow()
+    }
+
+    suspend fun getTrainingSession(deviceId: String, path: String): ResultOfRequest<PolarTrainingSession> {
+        Log.d(TAG, "getTrainingSession from device $deviceId in $path")
+
+        val trainingSessionReference = trainingSessionReferenceCache[deviceId]?.find { it.path == path }
+
+        trainingSessionReference?.let { offlineEntry ->
+            return try {
+                    return ResultOfRequest.Success(api.getTrainingSession(deviceId, offlineEntry).await())
+            } catch (e: Exception) {
+                Log.e(TAG, "getTrainingSession failed on path $path error $e")
+                ResultOfRequest.Failure("getTrainingSession failed on path $path", e)
+            }
+        }
+
+        return ResultOfRequest.Failure("getTrainingSession failed on path $path", null)
+    }
+
+    suspend fun getActiveTimeData(
+        deviceId: String,
+        from: Date,
+        to: Date
+    ): ResultOfRequest<List<PolarActiveTimeData>> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val result = api.getActiveTime(deviceId, from, to).await()
+            ResultOfRequest.Success(result)
+        } catch (e: Exception) {
+            ResultOfRequest.Failure(e.message.toString(), e)
+        }
+    }
+
+    fun waitForConnection(deviceId: String): Completable {
+        return api.waitForConnection(deviceId)
+    }
+
+    suspend fun getDiskSpace(
+        deviceId: String
+    ): ResultOfRequest<PolarDiskSpaceData> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val result = api.getDiskSpace(deviceId).await()
+            ResultOfRequest.Success(result)
+        } catch (e: Exception) {
+            ResultOfRequest.Failure(e.message.toString(), e)
+        }
+    }
+
+    fun setBleMultiConnectionMode(deviceId: String, enable: Boolean): Completable {
+        return api.setMultiBLEConnectionMode(deviceId, enable)
+    }
+
+    suspend fun getActivitySamplesData(deviceId: String, from: Date, to: Date): ResultOfRequest<List<PolarActivitySamplesDayData>> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            var result = api.getActivitySampleData(deviceId,
+                from.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                to.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+            ).await()
+            ResultOfRequest.Success(result)
+        } catch (e: Exception) {
+            ResultOfRequest.Failure(e.message.toString(), e)
+        }
+    }
+
+    private suspend fun getBleMultiConnectionMode(deviceId: String): Boolean {
+
+        return try {
+            val result = api.getMultiBLEConnectionMode(deviceId).await()
+
+            (result as? Boolean)?.let { res ->
+                _isMultiBleModeEnabled.update { res }
+            }
+            return result
+
+        } catch (e: Exception) {
+            Log.e(TAG, "getBleMultiConnectionMode failed. Error $e")
+            return  false
         }
     }
 }

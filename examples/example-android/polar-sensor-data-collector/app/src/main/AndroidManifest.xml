@@ -42,6 +42,14 @@
     <!-- Allow Polar SDK to check and download firmware updates. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Allows the app to run a foreground service. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- Android 13+ -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Foreground service -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <application
         android:name=".PsdcApp"
         android:allowBackup="true"
@@ -52,9 +60,20 @@
         android:theme="@style/AppTheme">
 
         <activity
+            android:name=".ui.exercise.ExerciseActivity"
+            android:exported="false"
+            android:foregroundServiceType="dataSync|connectedDevice"
+            android:label="@string/title_activity_exercise_activity"
+            android:theme="@style/AppTheme" />
+        <activity
             android:name=".ui.physicalconfig.PhysicalConfigActivity"
             android:exported="false"
             android:label="@string/title_activity_physical_config"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".ui.devicesettings.UserDeviceSettingsActivity"
+            android:exported="false"
+            android:label="@string/title_activity_user_device_settings"
             android:theme="@style/AppTheme" />
         <activity
             android:name=".ui.landing.MainActivity"
@@ -76,5 +95,10 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <service
+            android:name=".service.OnlineStreamService"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 </manifest>

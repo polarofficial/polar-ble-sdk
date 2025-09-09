@@ -9,7 +9,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     private let scanner: CBScanningProtocol
     private var serviceMonitors = AtomicList<RxObserver<CBUUID>>()
     private var serviceCount = AtomicInteger.init(initialValue: 0)
-    private var attNotifyQueue = [CBCharacteristic]()
+    private var attNotifyQueue = AtomicList<CBCharacteristic>()
     private let queueBle: DispatchQueue
     private let queue: DispatchQueue
     
@@ -154,7 +154,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
             if let service = fetchService(serviceUuid) {
                 if let characteristic = fetchCharacteristic(service, characteristicUuid: characteristicUuid) {
                     attNotifyQueue.append(characteristic)
-                    if attNotifyQueue.count == 1 {
+                    if attNotifyQueue.size() == 1 {
                         self.sendNextAttNotify(false, enableNotify: notify)
                     }
                     return
@@ -230,10 +230,12 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     }
     
     func sendNextAttNotify(_ remove: Bool, enableNotify enabled: Bool = true) {
-        if(remove){
-            attNotifyQueue.removeFirst()
+        if(remove && attNotifyQueue.size() > 0){
+            attNotifyQueue.remove({ (item) -> Bool in
+                return item === attNotifyQueue.items[0]
+            })
         }
-        if let chr = attNotifyQueue.first {
+        if let chr = attNotifyQueue.items.first {
             BleLogger.trace("send next att notify: \(chr.description)")
             peripheral.setNotifyValue(enabled, for: chr)
         }
@@ -317,7 +319,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
                             client.processCharacteristicDiscovered(chr.uuid, properties: chr.properties.rawValue)
                             if client.containsNotifyCharacteristic(chr.uuid) {
                                 attNotifyQueue.append(chr)
-                                if attNotifyQueue.count == 1 {
+                                if attNotifyQueue.size() == 1 {
                                     self.sendNextAttNotify(false)
                                 }
                             }

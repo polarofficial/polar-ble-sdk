@@ -15,10 +15,12 @@ class BlePolarDeviceCapabilitiesUtility {
         private const val DEVICE_TYPE_OH1 = "oh1"
         private const val DEVICE_TYPE_H10 = "h10"
         private const val DEVICE_TYPE_360 = "360"
+        private const val DEVICE_TYPE_LOOP_GEN_2 = "loop gen 2"
         private const val DEVICE_TYPE_INW5T = "polar_inw5t"
-        private const val DEVICE_TYPE_IGNITE_3 = "Ignite 3"
-        private const val DEVICE_TYPE_GRIT_X2_PRO = "Grit X2 Pro"
-        private const val DEVICE_TYPE_VANTAGE_V3 = "Vantage V3"
+        private const val DEVICE_TYPE_IGNITE_3 = "ignite 3"
+        private const val DEVICE_TYPE_GRIT_X2_PRO = "grit x2 pro"
+        private const val DEVICE_TYPE_VANTAGE_V3 = "vantage v3"
+        private const val DEVICE_TYPE_VANTAGE_M3 = "vantage m3"
 
         /**
          * Get type of filesystem the device supports
@@ -63,6 +65,7 @@ class BlePolarDeviceCapabilitiesUtility {
                 DEVICE_TYPE_H10 -> true
                 DEVICE_TYPE_SENSE -> true
                 DEVICE_TYPE_360 -> true
+                DEVICE_TYPE_LOOP_GEN_2 -> true
                 DEVICE_TYPE_INW5T -> true
                 else -> false
             }
@@ -72,10 +75,12 @@ class BlePolarDeviceCapabilitiesUtility {
         fun isActivityDataSupported(deviceType: String): Boolean {
             return when (deviceType.lowercase(Locale.getDefault())) {
                 DEVICE_TYPE_360 -> true
+                DEVICE_TYPE_LOOP_GEN_2 -> true
                 DEVICE_TYPE_INW5T -> true
                 DEVICE_TYPE_IGNITE_3 -> true
                 DEVICE_TYPE_GRIT_X2_PRO -> true
                 DEVICE_TYPE_VANTAGE_V3 -> true
+                DEVICE_TYPE_VANTAGE_M3 -> true
                 else -> false
             }
         }

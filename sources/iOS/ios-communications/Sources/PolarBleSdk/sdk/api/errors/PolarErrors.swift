@@ -45,4 +45,7 @@ public enum PolarErrors: Error {
     
     /// Error due timeout
     case timeout(description: String)
+    
+    /// Invalid sensor setting value
+    case invalidSensorSettingValue(setting: PolarSensorSetting.SettingType, value: UInt32)
 }

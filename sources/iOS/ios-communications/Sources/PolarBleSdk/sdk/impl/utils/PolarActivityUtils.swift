@@ -185,6 +185,76 @@ internal class PolarActivityUtils {
             }
     }
     
+    /// Read and return activity samples data for a given date.
+    static func readActivitySamplesDataFromDayDirectory(client: BlePsFtpClient, date: Date) -> Single<PolarActivityDayData> {
+        BleLogger.trace(TAG, "readActivitySamplesDataFromDayDirectory: \(date)")
+        return Single<PolarActivityDayData>.create { emitter in
+            let activityFileDir = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(ACTIVITY_DIRECTORY)"
+            var filePaths: [String] = []
+            let activityData: PolarActivityData = PolarActivityData()
+            var polarActivityDataList: [PolarActivityData] = []
+            return listFiles(client: client, folderPath: activityFileDir, condition: { (entry) -> Bool in
+                return entry.matches("^\(activityFileDir)") ||
+                entry == "ASAMPL" ||
+                entry.contains(".BPB")})
+            .map { path -> () in
+                filePaths.append(path)
+            }.asObservable()
+                .subscribe(
+                    onError: { error in
+                        if error.localizedDescription.contains("103") { // Not found. Return empty list.
+                            BleLogger.error("No activity files found for date: \(dateFormat.string(from: date))")
+                            emitter(.success(PolarActivityDayData(polarActivityDataList: polarActivityDataList)))
+                        } else {
+                            BleLogger.error("Failed to list activity sample files.")
+                            emitter(.failure(error))
+                        }
+                    },
+                    onCompleted: {
+                        var index = 0
+                        guard filePaths.count > 0 else {
+                            emitter(.success(PolarActivityDayData(polarActivityDataList: polarActivityDataList)))
+                            return
+                        }
+                        for path in filePaths {
+                            let operation = Protocol_PbPFtpOperation.with {
+                                $0.command = .get
+                                $0.path = path
+                            }
+                            _ = client.request(try! operation.serializedData()).subscribe(
+                                onSuccess: { response in
+                                    do {
+                                        index += 1
+                                        let proto = try Data_PbActivitySamples(serializedData: Data(response))
+                                        let activitySamplesData = PolarActivityData.PolarActivitySamples.init(
+                                            startTime: try PolarTimeUtils.pbLocalDateTimeToDate(pbLocalDateTime: proto.startTime),
+                                            metRecordingInterval: PolarTimeUtils.pbDurationToMillis(pbDuration: proto.metRecordingInterval)/1000,
+                                            metSamples: proto.metSamples,
+                                            stepRecordingInterval: PolarTimeUtils.pbDurationToMillis(pbDuration: proto.stepsRecordingInterval)/1000,
+                                            stepSamples: proto.stepsSamples,
+                                            activityInfoList: try PolarActivityData.parsePbActivityInfoList(activityInfoList: proto.activityInfo)
+                                        )
+                                        activityData.samples = activitySamplesData
+                                        polarActivityDataList.append(activityData)
+                                        if (index == filePaths.count) {
+                                            emitter(.success(PolarActivityDayData(polarActivityDataList: polarActivityDataList)))
+                                        }
+                                    } catch {
+                                        BleLogger.error("readActivitySamplesDataFromDayDirectory() failed for path: \(activityFileDir), error: \(error)")
+                                        emitter(.failure(error))
+                                    }
+                                },
+                                onFailure: { error in
+                                    BleLogger.error("readActivitySamplesDataFromDayDirectory() failed for path: \(activityFileDir), error: \(error)")
+                                    emitter(.failure(error))
+                                }
+                            )
+                        }
+                    }
+                )
+        }
+    }
+    
     private static func polarActiveTimeFromProto(_ proto: PbDuration) -> PolarActiveTime {
         return PolarActiveTime(
             hours: Int(proto.hours),

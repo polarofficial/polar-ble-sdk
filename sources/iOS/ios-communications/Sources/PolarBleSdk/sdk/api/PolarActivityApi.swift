@@ -77,4 +77,13 @@ public protocol PolarActivityApi {
     ///   - toDate: The ending date of the period to retrieve 24/7 PPi data from
     /// - Returns: A [Single] emitting a list of [Polar247PPiSamplesData] representing the 24/7 PPi data for the specified period.
     func get247PPiSamples(identifier: String, fromDate: Date, toDate: Date) -> Single<[Polar247PPiSamplesData]>
+
+    /// Load activity sample data from a device for a given period.
+    ///
+    /// - Parameters:
+    ///   - identifier: Polar device ID or BT address
+    ///   - fromDate: The starting date of the period to retrieve activity sample data from
+    ///   - toDate: The ending date of the period to retrieve activity sample data from
+    /// - Returns: A [Single] emitting a list of [PolarActivityDayData] representing the activity samplei data for the specified period.
+    func getActivitySampleData(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarActivityDayData]>
 }

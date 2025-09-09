@@ -192,37 +192,36 @@ import UIKit
         throw PolarErrors.notificationNotEnabled
     }
     
-    private func waitPfcClientReady(_ identifier: String) -> Observable<BleDeviceSession> {
+    private func waitPfcClientReady(_ identifier: String) -> Single<BleDeviceSession> {
         return Observable.create { observer in
             _ = self.waitForServiceDiscovered(identifier, service: BlePfcClient.PFC_SERVICE)
                 .subscribe(onNext: { session in
-                    Observable.interval(.seconds(1), scheduler: MainScheduler.instance)
+                    Observable.interval(.milliseconds(100), scheduler: MainScheduler.instance)
                         .take(10)
                         .flatMap { (_: Int64) -> Observable<BleDeviceSession> in
                             do {
                                 let client = session.fetchGattClient(BlePfcClient.PFC_SERVICE) as! BlePfcClient
-                                if client.isServiceDiscovered() {
+                                if client.isServiceDiscovered() && client.pfcEnabled.get() == 0 {
                                     observer.onNext(session)
                                     observer.onCompleted()
                                     return Observable.just(session)
                                 }
                                 return Observable.empty()
                             } catch {
-                                observer.onError(error)
-                                return Observable.error(error)
+                                observer.onError(self.handleError(error))
+                                return Observable.error(self.handleError(error))
                             }
                         }
                         .subscribe(onError: { error in
-                            observer.onError(error)
+                            observer.onError(self.handleError(error))
                         }, onCompleted: {
-                            observer.onError(PolarErrors.notificationNotEnabled)
+                            observer.onError(self.handleError(PolarErrors.notificationNotEnabled))
                         })
                 }, onError: { error in
-                    observer.onError(error)
+                    observer.onError(self.handleError(error))
                 })
-
             return Disposables.create()
-        }
+        }.asSingle()
     }
 
     private func waitPmdClientReady(_ identifier: String) -> Observable<BleDeviceSession> {
@@ -242,17 +241,17 @@ import UIKit
                                 }
                                 return Observable.empty()
                             } catch {
-                                observer.onError(error)
-                                return Observable.error(error)
+                                observer.onError(self.handleError(error))
+                                return Observable.error(self.handleError(error))
                             }
                         }
                         .subscribe(onError: { error in
-                            observer.onError(error)
+                            observer.onError(self.handleError(error))
                         }, onCompleted: {
-                            observer.onError(PolarErrors.notificationNotEnabled)
+                            observer.onError(self.handleError(PolarErrors.notificationNotEnabled))
                         })
                 }, onError: { error in
-                    observer.onError(error)
+                    observer.onError(self.handleError(error))
                 })
 
             return Disposables.create()
@@ -285,17 +284,17 @@ import UIKit
                                 }
                                 return Observable.empty()
                             } catch {
-                                observer.onError(error)
-                                return Observable.error(error)
+                                observer.onError(self.handleError(error))
+                                return Observable.error(self.handleError(error))
                             }
                         }
                         .subscribe(onError: { error in
-                            observer.onError(error)
+                            observer.onError(self.handleError(error))
                         }, onCompleted: {
-                            observer.onError(PolarErrors.notificationNotEnabled)
+                            observer.onError(self.handleError(PolarErrors.notificationNotEnabled))
                         })
                 }, onError: { error in
-                    observer.onError(error)
+                    observer.onError(self.handleError(error))
                 })
 
             return Disposables.create()
@@ -353,7 +352,7 @@ import UIKit
                 observer.onError(error)
             }
             return Disposables.create()
-        }
+        }.timeout(.seconds(10), scheduler: MainScheduler.instance)
     }
     
     fileprivate func fetchSession(_ identifier: String) throws -> BleDeviceSession? {
@@ -698,15 +697,19 @@ import UIKit
                     return Observable
                         .combineLatest(
                             batteryClient.monitorBatteryStatus(true),
-                            batteryClient.monitorChargingStatus(true)
+                            batteryClient.monitorChargingStatus(true),
+                            batteryClient.monitorPowerSourcesState(true)
                         )
                         .observe(on: self.scheduler)
-                        .do(onNext: { (level, chargingStatus) in
+                        .do(onNext: { (level, chargingStatus, powerSourcesState) in
                             self.deviceInfoObserver?.batteryLevelReceived(
                                 deviceId, batteryLevel: UInt(level)
                             )
                             self.deviceInfoObserver?.batteryChargingStatusReceived(
                                 deviceId, chargingStatus: chargingStatus
+                            )
+                            self.deviceInfoObserver?.batteryPowerSourcesStateReceived(
+                                deviceId, powerSourcesState: powerSourcesState
                             )
                         })
                         .map { _ -> Any in
@@ -1052,7 +1055,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 .asCompletable()
             }
         } catch let err {
-            return Completable.error(err)
+            return Completable.error(handleError(err))
         }
     }
     
@@ -1077,7 +1080,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     }
             }
         } catch let err {
-            return Single.error(err)
+            return Single.error(handleError(err))
         }
     }
     
@@ -1116,7 +1119,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 let queryParams = try params.serializedData()
                 return client.query(Protocol_PbPFtpQuery.requestStartRecording.rawValue, parameters: queryParams as NSData)
                     .catch { (err) -> Single<NSData> in
-                        return Single.error(err)
+                        return Single.error(self.handleError(err))
                     }
                     .asCompletable()
                 
@@ -1124,7 +1127,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             }
             throw PolarErrors.operationNotSupported
         } catch let err {
-            return Completable.error(err)
+            return Completable.error(handleError(err))
         }
     }
     
@@ -1143,7 +1146,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             }
             throw PolarErrors.operationNotSupported
         } catch let err {
-            return Completable.error(err)
+            return Completable.error(handleError(err))
         }
     }
     
@@ -1163,7 +1166,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             }
             throw PolarErrors.operationNotSupported
         } catch let err {
-            return Single.error(err)
+            return Single.error(handleError(err))
         }
     }
     
@@ -1214,7 +1217,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 throw PolarErrors.operationNotSupported
             }
         } catch let err {
-            return Completable.error(err)
+            return Completable.error(handleError(err))
         }
     }
     
@@ -1363,7 +1366,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     return deviceData
                 }
         } catch let err {
-            return Single.error(err)
+            return Single.error(handleError(err))
         }
     }
     
@@ -1393,7 +1396,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     return activeOfflineRecordings
                 }
         } catch let err {
-            return Single.error(err)
+            return Single.error(handleError(err))
         }
     }
     
@@ -1588,11 +1591,11 @@ extension PolarBleApiImpl: PolarBleApi  {
                                                   observer.onCompleted()
                                               },
                                               onFailure: { error in
-                                                  observer.onError(error)
+                                                  observer.onError(self.handleError(error))
                                               }
                                           )
                                       } catch {
-                                          observer.onError(error)
+                                          observer.onError(self.handleError(error))
                                       }
 
                                       return Disposables.create { }
@@ -1617,14 +1620,14 @@ extension PolarBleApiImpl: PolarBleApi  {
                           single(.success(data))
                       },
                       onFailure: { error in
-                          single(.failure(error))
+                          single(.failure(self.handleError(error)))
                       }
                   )
 
                   return Disposables.create { }
               }
           } catch {
-              return Single.error(error)
+              return Single.error(self.handleError(error))
           }
     }
 
@@ -1650,15 +1653,15 @@ extension PolarBleApiImpl: PolarBleApi  {
                                 let subrecordingCount = directory.entries.filter { $0.name.hasPrefix(fileType) }.count
                                 single(.success(subrecordingCount))
                             } catch {
-                                single(.failure(error))
+                                single(.failure(self.handleError(error)))
                             }
                         },
                         onFailure: { error in
-                            single(.failure(error))
+                            single(.failure(self.handleError(error)))
                         }
                     )
             } catch {
-                single(.failure(error))
+                single(.failure(self.handleError(error)))
             }
             return Disposables.create()
         }
@@ -1696,15 +1699,15 @@ extension PolarBleApiImpl: PolarBleApi  {
                                 }
                                 single(.success(records))
                             } catch {
-                                single(.failure(error))
+                                single(.failure(self.handleError(error)))
                             }
                         },
                         onFailure: { error in
-                            single(.failure(error))
+                            single(.failure(self.handleError(error)))
                         }
                     )
             } catch {
-                single(.failure(error))
+                single(.failure(self.handleError(error)))
             }
             return Disposables.create()
         }
@@ -1754,7 +1757,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             })
 
         } catch let err {
-            return Observable.error(err)
+            return Observable.error(handleError(err))
         }
     }
     
@@ -1829,7 +1832,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     return Single.just(polarOfflineData)
                 }
         } catch let err {
-            return Single.error(err)
+            return Single.error(handleError(err))
         }
     }
     
@@ -1866,7 +1869,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     })
             }
         } catch let err {
-            return Completable.error(err)
+            return Completable.error(handleError(err))
         }
     }
     
@@ -1904,7 +1907,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             return client.startMeasurement(
                 PolarDataUtils.mapToPmdClientMeasurementType(from:feature), settings: (settings ?? PolarSensorSetting()) .map2PmdSetting(), PmdRecordingType.offline, pmdSecret)
         } catch let err {
-            return Completable.error(err)
+            return Completable.error(handleError(err))
         }
     }
     
@@ -1953,7 +1956,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             
             return client.setOfflineRecordingTrigger(offlineRecordingTrigger: pmdOfflineTrigger, secret: pmdSecret)
         } catch let err {
-            return Completable.error(err)
+            return Completable.error(handleError(err))
         }
     }
     
@@ -1965,7 +1968,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             return client.getOfflineRecordingTriggerStatus()
                 .map { try PolarDataUtils.mapToPolarOfflineTrigger(from: $0) }
         } catch let err {
-            return Single.error(err)
+            return Single.error(handleError(err))
         }
     }
     
@@ -2019,7 +2022,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     return deviceData
                 }
         } catch let err {
-            return Single.error(err)
+            return Single.error(handleError(err))
         }
     }
     
@@ -2038,7 +2041,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                             }
             
         } catch let err {
-            return Single.error(err)
+            return Single.error(handleError(err))
         }
     }
     
@@ -2108,7 +2111,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     return [(hr: UInt8($0.hr), 0, 0, rrsMs: $0.rrsMs, rrAvailable: $0.rrPresent, contactStatus: $0.sensorContact, contactStatusSupported: $0.sensorContactSupported)]
                 }
         } catch let err {
-            return Observable.error(err)
+            return Observable.error(handleError(err))
         }
     }
 
@@ -2173,7 +2176,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     }
                 )
         } catch let err {
-            return Single.error(err)
+            return Single.error(handleError(err))
         }
     }
     
@@ -2218,7 +2221,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             }
             throw PolarErrors.operationNotSupported
         } catch let err {
-            return Observable.error(err)
+            return Observable.error(handleError(err))
         }
     }
 
@@ -2271,7 +2274,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             BleLogger.trace("Send do factory reset to device: \(identifier)")
             return try client.sendNotification(Protocol_PbPFtpHostToDevNotification.reset.rawValue, parameters: builder.serializedData() as NSData)
         } catch let err {
-            return Completable.error(err)
+            return Completable.error(handleError(err))
         }
     }
 
@@ -2298,11 +2301,11 @@ extension PolarBleApiImpl: PolarBleApi  {
                 return Completable.empty()
             default:
                 BleLogger.error("doRestart() BleGattException error: \(err)" )
-                return Completable.error(err)
+                return Completable.error(handleError(err))
             }
         } catch let err {
             BleLogger.error("doRestart() error: \(err)")
-            return Completable.error(err)
+            return Completable.error(handleError(err))
         }
     }
     
@@ -2333,7 +2336,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                           .andThen(Single.just(logConfig))
                   }
           } catch let err {
-              return Single.error(err)
+              return Single.error(handleError(err))
           }
     }
 
@@ -2367,7 +2370,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     )
                 completable(.completed)
             } catch let err {
-                completable(.error(err))
+                completable(.error(self.handleError(err)))
             }
 
             return Disposables.create()
@@ -2422,28 +2425,23 @@ extension PolarBleApiImpl: PolarBleApi  {
                                             },
                                             onCompleted: {
                                                 let setTimeCompletable = Completable.create { setTimeCompletable in
-                                                    do {
-                                                        let isoFormatter = ISO8601DateFormatter()
-                                                        isoFormatter.timeZone = TimeZone.current
+                                                    let isoFormatter = ISO8601DateFormatter()
+                                                    isoFormatter.timeZone = TimeZone.current
 
-                                                        guard let date = isoFormatter.date(from: ftuConfig.deviceTime) else {
-                                                            setTimeCompletable(.error(PolarErrors.deviceError(description: "Invalid deviceTime format: \(ftuConfig.deviceTime)")))
-                                                            return Disposables.create()
-                                                        }
-
-                                                        _ = self.setLocalTime(identifier, time: date, zone: TimeZone.current)
-                                                            .subscribe(
-                                                                onCompleted: {
-                                                                    setTimeCompletable(.completed)
-                                                                },
-                                                                onError: { error in
-                                                                    setTimeCompletable(.error(error))
-                                                                }
-                                                            )
-                                                    } catch let error {
-                                                        BleLogger.error("Error setting time for device: \(identifier) - \(error.localizedDescription)")
-                                                        setTimeCompletable(.error(error))
+                                                    guard let date = isoFormatter.date(from: ftuConfig.deviceTime) else {
+                                                        setTimeCompletable(.error(PolarErrors.deviceError(description: "Invalid deviceTime format: \(ftuConfig.deviceTime)")))
+                                                        return Disposables.create()
                                                     }
+
+                                                    _ = self.setLocalTime(identifier, time: date, zone: TimeZone.current)
+                                                        .subscribe(
+                                                            onCompleted: {
+                                                                setTimeCompletable(.completed)
+                                                            },
+                                                            onError: { error in
+                                                                setTimeCompletable(.error(error))
+                                                            }
+                                                        )
                                                     return Disposables.create()
                                                 }
 
@@ -2451,17 +2449,23 @@ extension PolarBleApiImpl: PolarBleApi  {
                                                     .subscribe(
                                                         onCompleted: {
                                                             _ = self.sendTerminateAndStopSyncNotifications(identifier: identifier)
-                                                            completable(.completed)
+                                                                .subscribe(
+                                                                    onCompleted: {
+                                                                        completable(.completed)
+                                                                    },
+                                                                    onError: { error in
+                                                                        completable(.error(error))
+                                                                })
                                                         },
                                                         onError: { error in
-                                                            completable(.error(error))
+                                                            completable(.error(self.handleError(error)))
                                                         }
                                                     )
                                             }
                                         )
                                 } catch let error {
                                     BleLogger.error("Error processing User ID for device: \(identifier) - \(error.localizedDescription)")
-                                    completable(.error(error))
+                                    completable(.error(self.handleError(error)))
                                 }
                             },
                             onDisposed: {
@@ -2499,7 +2503,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     return try Data_PbUserIdentifier(serializedData: data as Data).hasMasterIdentifier
                 }
         } catch let err {
-            return Single.error(err)
+            return Single.error(handleError(err))
         }
     }
     
@@ -2711,7 +2715,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     
                     BleLogger.error("Error during updateFirmware() to \(firmwareVersionInfo), error: \(error)")
                     observer.onNext(FirmwareUpdateStatus.fwUpdateFailed(details: "Error: \(error.localizedDescription)"))
-                    observer.onError(error)
+                    observer.onError(self.handleError(error))
                     
                 }
             }
@@ -2861,7 +2865,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     return stepsDataList.map { PolarStepsData(date: $0.0, steps: $0.1) }
                 }
         } catch {
-            return Single.error(error)
+            return Single.error(handleError(error))
         }
     }
 
@@ -2903,7 +2907,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     return distanceDataList.map { PolarDistanceData(date: $0.0, distanceMeters: $0.1) }
                 }
         } catch {
-            return Single.error(error)
+            return Single.error(handleError(error))
         }
     }
 
@@ -2916,7 +2920,7 @@ extension PolarBleApiImpl: PolarBleApi  {
 
             return PolarAutomaticSamplesUtils.read247HrSamples(client: client, fromDate: fromDate, toDate: toDate)
         } catch {
-            return Single.error(error)
+            return Single.error(handleError(error))
         }
     }
     
@@ -2929,7 +2933,7 @@ extension PolarBleApiImpl: PolarBleApi  {
 
             return PolarAutomaticSamplesUtils.read247PPiSamples(client: client, fromDate: fromDate, toDate: toDate)
         } catch {
-            return Single.error(error)
+            return Single.error(handleError(error))
         }
     }
 
@@ -2965,7 +2969,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     Single.just(nightlyRechargeDataList)
                 }
         } catch {
-            return Single.error(error)
+            return Single.error(handleError(error))
         }
     }
     
@@ -3003,7 +3007,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                    }
                }
        } catch {
-           return Single.error(error)
+           return Single.error(handleError(error))
        }
    }
 
@@ -3039,6 +3043,174 @@ extension PolarBleApiImpl: PolarBleApi  {
                     Single.just(skinTemperatureDataList)
                 }
         } catch {
+            return Single.error(handleError(error))
+        }
+    }
+
+    func getActivitySampleData(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarActivityDayData]> {
+        do {
+            let session = try self.sessionFtpClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Single.error(PolarErrors.serviceNotFound)
+            }
+
+            var dayDataList = [PolarActivityDayData]()
+
+            let calendar = Calendar.current
+
+            var datesList = [Date]()
+            var currentDate = fromDate
+
+            while currentDate <= toDate {
+                datesList.append(currentDate)
+                if let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) {
+                    currentDate = nextDate
+                } else {
+                    break
+                }
+            }
+
+            return Observable.from(datesList)
+                .flatMap { date -> Single<(PolarActivityDayData)> in
+                    return PolarActivityUtils.readActivitySamplesDataFromDayDirectory(client: client, date: date)
+                }
+                .toArray()
+        } catch {
+            return Single.error(error)
+        }
+    }
+    
+    public func startExercise(identifier: String, profile: PolarExerciseSession.SportProfile) -> Completable {
+            BleLogger.trace("Start exercise pressed for \(identifier) with profile=\(profile)")
+            do {
+                let session = try sessionFtpClientReady(identifier)
+                guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                    return Completable.error(PolarErrors.serviceNotFound)
+                }
+
+                var sportId = PbSportIdentifier()
+                sportId.value = UInt64(profile.rawValue)
+
+                var params = Protocol_PbPFtpStartExerciseParams()
+                params.sportIdentifier = sportId
+
+                let payloadData = try params.serializedData()
+
+                return client.query(Protocol_PbPFtpQuery.startExercise.rawValue,
+                                    parameters: payloadData as NSData)
+                    .asCompletable()
+                    .do(
+                        onError: { e in
+                            BleLogger.error("Start exercise failed for \(identifier): \(e.localizedDescription)")
+                        },
+                        onCompleted: {
+                            BleLogger.trace("Start exercise succeeded for \(identifier)")
+                        }
+                    )
+            } catch {
+                return Completable.error(error)
+            }
+        }
+
+        public func pauseExercise(identifier: String) -> Completable {
+            BleLogger.trace("Pause exercise pressed for \(identifier)")
+            do {
+                let session = try sessionFtpClientReady(identifier)
+                guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                    return Completable.error(PolarErrors.serviceNotFound)
+                }
+
+                return client.query(Protocol_PbPFtpQuery.pauseExercise.rawValue,
+                                    parameters: nil)
+                    .asCompletable()
+                    .do(
+                        onError: { e in
+                            BleLogger.error("Pause exercise failed for \(identifier): \(e.localizedDescription)")
+                        },
+                        onCompleted: {
+                            BleLogger.trace("Pause exercise succeeded for \(identifier)")
+                        }
+                    )
+            } catch {
+                return Completable.error(error)
+            }
+        }
+
+        public func resumeExercise(identifier: String) -> Completable {
+            BleLogger.trace("Resume exercise pressed for \(identifier)")
+            do {
+                let session = try sessionFtpClientReady(identifier)
+                guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                    return Completable.error(PolarErrors.serviceNotFound)
+                }
+
+                return client.query(Protocol_PbPFtpQuery.resumeExercise.rawValue,
+                                    parameters: nil)
+                    .asCompletable()
+                    .do(
+                        onError: { e in
+                            BleLogger.error("Resume exercise failed for \(identifier): \(e.localizedDescription)")
+                        },
+                        onCompleted: {
+                            BleLogger.trace("Resume exercise succeeded for \(identifier)")
+                        }
+                    )
+            } catch {
+                return Completable.error(error)
+            }
+        }
+
+        public func stopExercise(identifier: String) -> Completable {
+            BleLogger.trace("Stop exercise pressed for \(identifier)")
+            do {
+                let session = try sessionFtpClientReady(identifier)
+                guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                    return Completable.error(PolarErrors.serviceNotFound)
+                }
+
+                var params = Protocol_PbPFtpStopExerciseParams()
+                params.save = true
+
+                let payloadData = try params.serializedData()
+
+                return client.query(Protocol_PbPFtpQuery.stopExercise.rawValue,
+                                    parameters: payloadData as NSData)
+                    .asCompletable()
+                    .do(
+                        onError: { e in
+                            BleLogger.error("Stop exercise failed for \(identifier): \(e.localizedDescription)")
+                        },
+                        onCompleted: {
+                            BleLogger.trace("Stop exercise succeeded for \(identifier)")
+                        }
+                    )
+            } catch {
+                return Completable.error(error)
+            }
+        }
+
+    public func getExerciseStatus(identifier: String) -> Single<PolarExerciseSession.ExerciseInfo> {
+        BleLogger.trace("Get exercise status pressed for \(identifier)")
+        do {
+            let session = try sessionFtpClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Single.error(PolarErrors.serviceNotFound)
+            }
+
+            return client.query(Protocol_PbPFtpQuery.getExerciseStatus.rawValue,
+                                parameters: nil)
+                .map { data -> PolarExerciseSession.ExerciseInfo in
+                    try PolarExerciseSession.ExerciseInfo.parse(from: data as Data)
+                }
+                .do(
+                    onSuccess: { info in
+                        BleLogger.trace("Get exercise status succeeded for \(identifier): \(info)")
+                    },
+                    onError: { e in
+                        BleLogger.error("Get exercise status failed for \(identifier): \(e.localizedDescription)")
+                    }
+                )
+        } catch {
             return Single.error(error)
         }
     }
@@ -3057,9 +3229,9 @@ extension PolarBleApiImpl: PolarBleApi  {
             builder.otaFwupdate = true
             BleLogger.trace("Setting warehouse sleep to: \(String(describing: enableWarehouseSleep)), and do a required factory reset to the device: \(identifier).")
             return try client.sendNotification(Protocol_PbPFtpHostToDevNotification.reset.rawValue, parameters: builder.serializedData() as NSData)
-            } catch let err {
-                return Completable.error(err)
-            }
+        } catch let err {
+            return Completable.error(handleError(err))
+        }
     }
 
     func setWarehouseSleep(_ identifier: String) -> Completable {
@@ -3075,9 +3247,9 @@ extension PolarBleApiImpl: PolarBleApi  {
             builder.doFactoryDefaults = true
             BleLogger.trace("Setting warehouse sleep to true, and do a required factory reset to the device: \(identifier).")
             return try client.sendNotification(Protocol_PbPFtpHostToDevNotification.reset.rawValue, parameters: builder.serializedData() as NSData)
-            } catch let err {
-                return Completable.error(err)
-            }
+        } catch let err {
+            return Completable.error(handleError(err))
+        }
     }
     
     func turnDeviceOff(_ identifier: String) -> Completable {
@@ -3094,7 +3266,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             BleLogger.trace("Turn off device device \(identifier) by setting sleep setting to true.")
             return try client.sendNotification(Protocol_PbPFtpHostToDevNotification.reset.rawValue, parameters: builder.serializedData() as NSData)
         } catch let err {
-            return Completable.error(err)
+            return Completable.error(handleError(err))
         }
     }
 
@@ -3142,7 +3314,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     }
                 }
         } catch {
-            return Single.error(error)
+            return Single.error(handleError(error))
         }
     }
     
@@ -3177,7 +3349,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 completable(.completed)
             } catch let err {
                 
-                completable(.error(err))
+                completable(.error(self.handleError(err)))
             }
 
             return Disposables.create()
@@ -3196,7 +3368,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                         return settings
                     }
         } catch {
-            return Single.error(error)
+            return Single.error(handleError(error))
         }
     }
 
@@ -3409,7 +3581,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 )
 
             } catch {
-                emitter.onError(error)
+                emitter.onError(self.handleError(error))
             }
 
             return Disposables.create()
@@ -3427,7 +3599,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             bleClient = (session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient)!
         } catch let error {
             BleLogger.error("Failed to fetch training session: \(error)")
-            return Single<PolarTrainingSession>.error(error)
+            return Single<PolarTrainingSession>.error(handleError(error))
         }
         
         return PolarTrainingSessionUtils.readTrainingSession(
@@ -3449,7 +3621,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 .take(1)
                 .subscribe(
                     onNext: { _ in emitter(.completed) },
-                    onError: { error in emitter(.error(error)) }
+                    onError: { error in emitter(.error(self.handleError(error))) }
                 )
 
             return Disposables.create {
@@ -3483,7 +3655,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     BleLogger.error("Failed to set user device location: \(error)")
                 })
         } catch {
-            return Completable.error(error)
+            return Completable.error(self.handleError(error))
         }
     }
 
@@ -3509,10 +3681,50 @@ extension PolarBleApiImpl: PolarBleApi  {
                         BleLogger.error("Failed to set USB connection mode: \(error)")
                     })
         } catch {
-            return Completable.error(error)
+            return Completable.error(self.handleError(error))
         }
     }
 
+    func setAutomaticTrainingDetectionSettings(
+        _ identifier: String,
+        mode: Bool,
+        sensitivity: Int,
+        minimumDuration: Int
+    ) -> Completable {
+
+        do {
+            let session = try self.sessionFtpClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Completable.error(PolarErrors.serviceNotFound)
+            }
+
+            return getUserDeviceSettingsProto(client: client)
+                    .flatMapCompletable { currentSettings in
+                        let atdState: Data_PbAutomaticTrainingDetectionSettings.PbAutomaticTrainingDetectionState = mode ? .on : .off
+
+                        var atdSettings = Data_PbAutomaticTrainingDetectionSettings()
+                        atdSettings.state = atdState
+                        atdSettings.sensitivity = UInt32(Int32(sensitivity))
+                        atdSettings.minimumTrainingDurationSeconds = UInt32(Int32(minimumDuration))
+
+                        var updatedMeasurementSettings = currentSettings.automaticMeasurementSettings
+                        updatedMeasurementSettings.automaticTrainingDetectionSettings = atdSettings
+
+                        var updatedSettings = currentSettings
+                        updatedSettings.automaticMeasurementSettings = updatedMeasurementSettings
+
+                        return self.setUserDeviceSettingsProto(client: client, polarUserDeviceSettings: updatedSettings)
+                    }
+                    .do(
+                        onError: { error in
+                            BleLogger.error("Failed to set automatic training detection settings: \(error)")
+                        }
+                    )
+        } catch {
+            return Completable.error(self.handleError(error))
+        }
+    }
+    
     func setMultiBLEConnectionMode(identifier: String, enable: Bool) -> Completable {
         return Completable.create { completable in
             do {
@@ -3534,7 +3746,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                         }
                     )
             } catch {
-                completable(.error(error))
+                completable(.error(self.handleError(error)))
             }
             return Disposables.create()
         }
@@ -3542,16 +3754,13 @@ extension PolarBleApiImpl: PolarBleApi  {
     
     func getMultiBLEConnectionMode(identifier: String) -> Single<Bool> {
         return waitPfcClientReady(identifier)
-            .take(1)
-            .flatMap { session -> Observable<Bool> in
+            .flatMap { session -> Single<Bool> in
                 guard let client = session.fetchGattClient(BlePfcClient.PFC_SERVICE) as? BlePfcClient else {
                     return .error(PolarErrors.serviceNotFound)
                 }
                 return client.sendControlPointCommand(BlePfcClient.PfcMessage.pfcRequestMultiConnectionSetting, value: 0)
                     .map { $0.payload[0] == 1 }
-                    .asObservable()
             }
-            .asSingle()
     }
     
     func sendInitializationAndStartSyncNotifications(identifier: String) -> Completable {
@@ -3563,7 +3772,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 .andThen(client.sendNotification(Protocol_PbPFtpHostToDevNotification.initializeSession.rawValue, parameters: nil))
                 .andThen(client.sendNotification(Protocol_PbPFtpHostToDevNotification.startSync.rawValue, parameters: nil))
         } catch let err {
-            return Completable.error(err)
+            return Completable.error(handleError(err))
         }
     }
 
@@ -3578,7 +3787,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 parameters = try params.serializedData() as NSData
             } catch let error {
                 BleLogger.error("Failed to serialize stop sync parameters: \(error)")
-                return Completable.error(error)
+                return Completable.error(handleError(error))
             }
             return client.sendNotification(
                 Protocol_PbPFtpHostToDevNotification.stopSync.rawValue,
@@ -3587,7 +3796,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 Protocol_PbPFtpHostToDevNotification.terminateSession.rawValue,parameters: nil
             ))
         } catch let err {
-            return Completable.error(err)
+            return Completable.error(handleError(err))
         }
     }
     
@@ -3599,7 +3808,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 Protocol_PbPFtpHostToDevNotification.terminateSession.rawValue,parameters: nil
             )
         } catch let err {
-            return Completable.error(err)
+            return Completable.error(handleError(err))
         }
     }
     
@@ -3614,14 +3823,14 @@ extension PolarBleApiImpl: PolarBleApi  {
                 parameters = try params.serializedData() as NSData
             } catch let error {
                 BleLogger.error("Failed to serialize stop sync parameters: \(error)")
-                return Completable.error(error)
+                return Completable.error(handleError(error))
             }
             return client.sendNotification(
                 Protocol_PbPFtpHostToDevNotification.stopSync.rawValue,
                 parameters: parameters
             )
         } catch let err {
-            return Completable.error(err)
+            return Completable.error(handleError(err))
         }
     }
     
@@ -3639,13 +3848,13 @@ extension PolarBleApiImpl: PolarBleApi  {
                 _ = client.write(proto as NSData, data: inputStream)
                     .subscribe(
                         onError: { error in
-                            completable(.error(error))
+                            completable(.error(self.handleError(error)))
                         }, onCompleted: {
                             completable(.completed)
                         }
                     )
             } catch {
-                completable(.error(error))
+                completable(.error(self.handleError(error)))
             }
 
             return Disposables.create()
@@ -3665,7 +3874,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     try Data_PbUserDeviceSettings(serializedData: Data(responseData))
                 }
         } catch let error {
-            return Single.error(error)
+            return Single.error(handleError(error))
         }
     }
 
@@ -3796,7 +4005,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         do{
             let session = try self.sessionFtpClientReady(identifier)
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                return Completable.error(PolarErrors.serviceNotFound)
+                return Completable.error(handleError(PolarErrors.serviceNotFound))
             }
             return Observable.from(filePaths)
                 .enumerated()
@@ -3897,11 +4106,11 @@ extension PolarBleApiImpl: PolarBleApi  {
                                         completable(.completed)
                                     } else {
                                         BleLogger.error("PFTP error during firmware write: \(error.localizedDescription)")
-                                        observer.onError(error)
+                                        observer.onError(self.handleError(error))
                                     }
                                 } else {
                                     BleLogger.error("PFTP error during firmware write: \(error.localizedDescription)")
-                                    observer.onError(error)
+                                    observer.onError(self.handleError(error))
                                 }
                                 completable(.error(error))
                             })
@@ -3913,7 +4122,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 .subscribe(onCompleted: {
                     observer.onCompleted()
                 }, onError: { error in
-                    observer.onError(error)
+                    observer.onError(self.handleError(error))
                 })
         }
     }
@@ -3951,7 +4160,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     if case RxSwift.RxError.timeout = error { // in case timeout() is used upstream
                         emitter(.error(PolarErrors.timeout(description: "Timeoutwhile waiting for device session with PsFtpClient to open, deviceId: \(deviceId)")))
                     } else {
-                        emitter(.error(error))
+                        emitter(.error(self.handleError(error)))
                     }
                     
                 }, onCompleted: {
@@ -4216,7 +4425,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     return Single.error(PolarErrors.deviceError(description: "\(err)"))
                 }
         } catch let err {
-            return Single.error(err)
+            return Single.error(handleError(err))
         }
     }
     
@@ -4233,7 +4442,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     return Single.error(PolarErrors.deviceError(description: "\(err)"))
                 }
         } catch let err {
-            return Single.error(err)
+            return Single.error(handleError(err))
         }
     }
     
@@ -4254,7 +4463,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     return Observable.error(PolarErrors.deviceError(description: "\(err)"))
                 }
         } catch let err {
-            return Observable.error(err)
+            return Observable.error(handleError(err))
         }
     }
     
@@ -4294,7 +4503,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
         } catch let err {
             BleLogger.error("Error making PFTP-request for path \(path): \(err)")
-            return Observable.error(err)
+            return Observable.error(handleError(err))
         }
     }
     
@@ -4333,7 +4542,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     }
                 }
         } catch let err {
-            return Observable.error(err)
+            return Observable.error(handleError(err))
         }
     }
     
@@ -4344,7 +4553,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             
             return client.startSdkMode()
         } catch let err {
-            return Completable.error(err)
+            return Completable.error(handleError(err))
         }
     }
     
@@ -4354,7 +4563,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Completable.error(PolarErrors.serviceNotFound) }
             return client.stopSdkMode()
         } catch let err {
-            return Completable.error(err)
+            return Completable.error(handleError(err))
         }
     }
     
@@ -4371,6 +4580,21 @@ extension PolarBleApiImpl: PolarBleApi  {
             }
             .asSingle()
     }
+    
+    private func handleError(_ error: Error) -> Error {
+        let nsError = error as NSError
+
+        if let mapped = Protocol_PbPFtpError(rawValue: nsError.code) {
+            return NSError(
+                domain: nsError.domain,
+                code: nsError.code,
+                userInfo: [NSLocalizedDescriptionKey: "\(mapped) (\(nsError.localizedDescription))"]
+            )
+        }
+
+        return error
+    }
+
 }
 
 extension String {

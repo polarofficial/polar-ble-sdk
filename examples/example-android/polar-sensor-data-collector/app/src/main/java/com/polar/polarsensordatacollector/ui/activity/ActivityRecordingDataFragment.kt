@@ -31,6 +31,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.polar.polarsensordatacollector.ui.theme.PolarsensordatacollectorTheme
+import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.model.PolarSensorSetting
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -79,9 +80,10 @@ fun ShowActivityData(viewModel: ActivityRecordingDataViewModel = viewModel(), on
     when (val uiState = viewModel.activityDataUiState) {
         is ActivityDataUiState.FetchedData -> {
             val context = LocalContext.current
+            val dataTypeString = uiState.data.dataType.toString()
             val intent = Intent().apply {
                 action = Intent.ACTION_SEND_MULTIPLE
-                putExtra(Intent.EXTRA_SUBJECT, "Recorded activity data")
+                putExtra(Intent.EXTRA_SUBJECT, "Recorded $dataTypeString data")
                 type = "plain/text"
                 putParcelableArrayListExtra(Intent.EXTRA_STREAM, arrayListOf(uiState.data.uri))
             }
@@ -201,7 +203,8 @@ private fun ShowDataPreview() {
                     data = ActivityRecordingData(
                         startDate = "** not implemented yet **",
                         endDate = "** not implemented yet **",
-                        uri = Uri.EMPTY
+                        uri = Uri.EMPTY,
+                        dataType = PolarBleApi.PolarActivityDataType.HR_SAMPLES
                     )
                 )
             )
@@ -220,7 +223,8 @@ private fun ShowDataWithOutSettingsPreview() {
                     data = ActivityRecordingData(
                         startDate = "** not implemented yet **",
                         endDate = "** not implemented yet **",
-                        uri = Uri.EMPTY
+                        uri = Uri.EMPTY,
+                        dataType = PolarBleApi.PolarActivityDataType.HR_SAMPLES
                     )
                 )
             )
@@ -241,6 +245,5 @@ private fun RecordingFetchFailedPreview() {
                 )
             )
         }
-    }
-    )
+    })
 }

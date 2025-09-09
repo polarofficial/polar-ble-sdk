@@ -9,6 +9,8 @@ import com.polar.sdk.api.model.activity.PolarStepsData
 import com.polar.sdk.api.model.sleep.PolarNightlyRechargeData
 import com.polar.sdk.impl.utils.CaloriesType
 import io.reactivex.rxjava3.core.Single
+import com.polar.sdk.api.model.activity.PolarActivitySamplesDayData
+import java.time.LocalDate
 import java.util.Date
 
 /**
@@ -26,6 +28,17 @@ interface PolarActivityApi {
      * @return A [Single] emitting a list of [PolarStepsData] representing the steps data for the specified period.
      */
     fun getSteps(identifier: String, fromDate: Date, toDate: Date): Single<List<PolarStepsData>>
+
+    /**
+     * Get activity sample data for a given period.
+     *
+     * @param identifier The Polar device ID or BT address.
+     * @param fromDate The starting date of the period to retrieve activity sample data from.
+     * @param toDate The ending date of the period to retrieve activity sample data from.
+     * @return A [Single] emitting a list of [PolarActivitySamplesDayData] containing all
+     * activity sample data for the given date range.
+     */
+    fun getActivitySampleData(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<PolarActivitySamplesDayData>>
 
     /**
      * Get distance for a given period.

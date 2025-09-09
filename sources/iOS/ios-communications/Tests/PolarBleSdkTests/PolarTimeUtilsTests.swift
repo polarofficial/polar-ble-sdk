@@ -483,7 +483,23 @@ class PolarTimeUtilsTests: XCTestCase {
         XCTAssertEqual(components.month, 1)
         XCTAssertEqual(components.day, 2)
     }
-    
+
+    func testPbDurationToMillis () throws {
+
+        // Arrange
+        var pbDuration = PbDuration()
+        pbDuration.hours = 23
+        pbDuration.minutes = 59
+        pbDuration.seconds = 59
+        pbDuration.millis = 999
+
+        //Act
+        let result = PolarTimeUtils.pbDurationToMillis(pbDuration: pbDuration)
+
+        // Assert
+        XCTAssertEqual(result, 23*60*60*1000 + 59*60*1000 + 59*1000 + 999)
+    }
+
     private func getDateComponentsInUTC(_ iso8061: String) throws -> DateComponents {
         var calendar = Calendar(identifier: Calendar.Identifier.iso8601)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!

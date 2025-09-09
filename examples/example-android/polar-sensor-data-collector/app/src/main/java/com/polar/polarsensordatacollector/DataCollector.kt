@@ -337,6 +337,42 @@ class DataCollector(private val context: Context) {
     }
 
     @Throws(IOException::class)
+    fun logPpg2Channels(timeStamp: Long, ppgs: List<Int>, status: Int) {
+        latestTimeStamp = timeStamp
+        ppgTimeStamp = timeStamp
+        logStreams[StreamType.PPG]?.let { stream ->
+            if (!stream.isStarted()) {
+                val ppgChannels = mutableListOf<String>()
+                for (index in ppgs.indices) {
+                    ppgChannels.add("PPG$index")
+                }
+                val headerLine = "TIMESTAMP ${ppgChannels.joinToString(separator = " ")} Status\n"
+                stream.write(headerLine)
+            }
+            val logLine = "$timeStamp ${ppgs.joinToString(separator = " ")} $status\n"
+            stream.write(logLine)
+        }
+    }
+
+    @Throws(IOException::class)
+    fun logPpg2ChannelsAutoGain(timeStamp: Long, ppgs: List<Int>, numints: Int) {
+        latestTimeStamp = timeStamp
+        ppgTimeStamp = timeStamp
+        logStreams[StreamType.PPG]?.let { stream ->
+            if (!stream.isStarted()) {
+                val ppgChannels = mutableListOf<String>()
+                for (index in ppgs.indices) {
+                    ppgChannels.add("TIA_GAIN_CH${index}_TS1")
+                }
+                val headerLine = "TIMESTAMP ${ppgChannels.joinToString(separator = " ")} NUMINT_TS1\n"
+                stream.write(headerLine)
+            }
+            val logLine = "$timeStamp ${ppgs.joinToString(separator = " ")} $numints\n"
+            stream.write(logLine)
+        }
+    }
+
+    @Throws(IOException::class)
     fun logPpgData16Channels(timeStamp: Long, ppgs: List<Int>, status: Long) {
         latestTimeStamp = timeStamp
         logStreams[StreamType.PPG_DATA_16]?.let { stream ->
@@ -711,11 +747,7 @@ class DataCollector(private val context: Context) {
         for (value in logStreams.values) {
             try {
                 value.close()
-                if (value.length() > 0) {
-                    fileUris.add(value.getUri())
-                } else {
-                    value.delete()
-                }
+                fileUris.add(value.getUri())
             } catch (e: IOException) {
                 Log.e(TAG, "Closing the file ${value.fileName} failed")
             } catch (e: SecurityException) {

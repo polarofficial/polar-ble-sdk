@@ -8,6 +8,7 @@ import org.junit.Test
 import protocol.PftpRequest
 import java.time.LocalDateTime
 import fi.polar.remote.representation.protobuf.Types.PbDate
+import fi.polar.remote.representation.protobuf.Types.PbDuration
 import fi.polar.remote.representation.protobuf.Types.PbLocalDateTime
 import fi.polar.remote.representation.protobuf.Types.PbSystemDateTime
 import fi.polar.remote.representation.protobuf.Types.PbTime
@@ -750,5 +751,33 @@ internal class PolarTimeUtilsTest {
         Assert.assertEquals(2525, localDate.year)
         Assert.assertEquals(java.time.Month.DECEMBER, localDate.month)
         Assert.assertEquals(30, localDate.dayOfMonth)
+    }
+
+    @Test
+    fun `test conversion maximum daily duration from pbDuration to int value`() {
+        val pbDuration = PbDuration.newBuilder()
+            .setHours(23)
+            .setMinutes(59)
+            .setSeconds(59)
+            .setMillis(999)
+            .build()
+
+        val expectedMilliseconds = 23*60*60*1000+59*60*1000+59*1000+999
+
+        Assert.assertEquals(expectedMilliseconds, PolarTimeUtils.pbDurationToInt(pbDuration))
+    }
+
+    @Test
+    fun `test conversion minimum duration from pbDuration to int value`() {
+        val pbDuration = PbDuration.newBuilder()
+            .setHours(0)
+            .setMinutes(0)
+            .setSeconds(0)
+            .setMillis(0)
+            .build()
+
+        val expectedMilliseconds = 0
+
+        Assert.assertEquals(expectedMilliseconds, PolarTimeUtils.pbDurationToInt(pbDuration))
     }
 }

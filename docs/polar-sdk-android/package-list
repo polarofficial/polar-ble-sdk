@@ -4,6 +4,7 @@ $dokka.location:com.polar.sdk.api.model.activity/IntervalStatus.Companion///Poin
 $dokka.location:com.polar.sdk.api.model.activity/Movement.Companion///PointingToDeclaration/com/polar/sdk/api/model/activity/Movement.Companion.html
 $dokka.location:com.polar.sdk.api.model.activity/PPiSampleStatus.Companion///PointingToDeclaration/com/polar/sdk/api/model/activity/PPiSampleStatus.Companion.html
 $dokka.location:com.polar.sdk.api.model.activity/PPiSampleTriggerType.Companion///PointingToDeclaration/com/polar/sdk/api/model/activity/PPiSampleTriggerType.Companion.html
+$dokka.location:com.polar.sdk.api.model.activity/PolarActivityClass.Companion///PointingToDeclaration/com/polar/sdk/api/model/activity/PolarActivityClass.Companion.html
 $dokka.location:com.polar.sdk.api.model.activity/SkinContact.Companion///PointingToDeclaration/com/polar/sdk/api/model/activity/SkinContact.Companion.html
 $dokka.location:com.polar.sdk.api.model.sleep/SleepRating.Companion///PointingToDeclaration/com/polar/sdk/api/model/sleep/SleepRating.Companion.html
 $dokka.location:com.polar.sdk.api.model.sleep/SleepWakeState.Companion///PointingToDeclaration/com/polar/sdk/api/model/sleep/SleepWakeState.Companion.html
@@ -20,6 +21,10 @@ $dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.WritingFwUpdatePack
 $dokka.location:com.polar.sdk.api.model/LogConfig.Companion///PointingToDeclaration/com/polar/sdk/api/model/LogConfig.Companion.html
 $dokka.location:com.polar.sdk.api.model/PolarAccelerometerData.PolarAccelerometerDataSample///PointingToDeclaration/com/polar/sdk/api/model/PolarAccelerometerData.PolarAccelerometerDataSample.html
 $dokka.location:com.polar.sdk.api.model/PolarDiskSpaceData.Companion///PointingToDeclaration/com/polar/sdk/api/model/PolarDiskSpaceData.Companion.html
+$dokka.location:com.polar.sdk.api.model/PolarExerciseSession.ExerciseInfo///PointingToDeclaration/com/polar/sdk/api/model/PolarExerciseSession.ExerciseInfo.html
+$dokka.location:com.polar.sdk.api.model/PolarExerciseSession.ExerciseStatus///PointingToDeclaration/com/polar/sdk/api/model/PolarExerciseSession.ExerciseStatus.html
+$dokka.location:com.polar.sdk.api.model/PolarExerciseSession.SportProfile.Companion///PointingToDeclaration/com/polar/sdk/api/model/PolarExerciseSession.SportProfile.Companion.html
+$dokka.location:com.polar.sdk.api.model/PolarExerciseSession.SportProfile///PointingToDeclaration/com/polar/sdk/api/model/PolarExerciseSession.SportProfile.html
 $dokka.location:com.polar.sdk.api.model/PolarFirstTimeUseConfig.Companion///PointingToDeclaration/com/polar/sdk/api/model/PolarFirstTimeUseConfig.Companion.html
 $dokka.location:com.polar.sdk.api.model/PolarFirstTimeUseConfig.Gender///PointingToDeclaration/com/polar/sdk/api/model/PolarFirstTimeUseConfig.Gender.html
 $dokka.location:com.polar.sdk.api.model/PolarFirstTimeUseConfig.TypicalDay///PointingToDeclaration/com/polar/sdk/api/model/PolarFirstTimeUseConfig.TypicalDay.html

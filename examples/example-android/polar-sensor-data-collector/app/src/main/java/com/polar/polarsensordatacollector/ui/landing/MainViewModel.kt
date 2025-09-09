@@ -141,8 +141,12 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun searchForDevice(): Flowable<PolarDeviceInfo> {
-        return polarDeviceStreamingRepository.searchForDevice()
+    fun searchForDevice(withPrefix: String?): Flowable<PolarDeviceInfo> {
+        return polarDeviceStreamingRepository.searchForDevice(withPrefix)
+    }
+
+    fun isBluetoothEnabled(): Boolean {
+        return polarDeviceStreamingRepository.isPhoneBlePowerOn.value
     }
 
     private fun deviceDisconnected(deviceId: String) {

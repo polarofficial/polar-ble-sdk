@@ -1,5 +1,6 @@
 package com.polar.polarsensordatacollector.ui.devicesettings
 
+import android.app.Application
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -11,6 +12,7 @@ import com.polar.polarsensordatacollector.ui.landing.ONLINE_OFFLINE_KEY_DEVICE_I
 import com.polar.polarsensordatacollector.ui.physicalconfig.PhysicalConfigActivity
 import com.polar.polarsensordatacollector.ui.utils.MessageUiState
 import com.polar.sdk.api.model.FirmwareUpdateStatus
+import com.polar.sdk.api.model.CheckFirmwareUpdateStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -21,12 +23,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.polar.sdk.api.model.PolarUserDeviceSettings
 import java.util.*
 import javax.inject.Inject
 import android.content.Context
 import android.content.Intent
+import com.polar.polarsensordatacollector.R
 import com.polar.sdk.api.PolarBleApi
+import com.polar.sdk.api.model.PolarDiskSpaceData
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -55,12 +58,19 @@ data class SecurityUiState(
     val isEnabled: Boolean = false,
 )
 
-var deviceUserLocation: PolarUserDeviceSettings.DeviceLocation? = null
+data class BleMultiConnectionUiState(
+    val isEnabled: Boolean = false
+)
+
+data class SleepRecordingState(
+    val enabled: Boolean?
+)
 
 @HiltViewModel
 internal class DeviceSettingsViewModel @Inject constructor(
     private val polarDeviceStreamingRepository: PolarDeviceRepository,
-    private val state: SavedStateHandle
+    private val state: SavedStateHandle,
+    private val application: Application
 ) : ViewModel() {
 
     companion object {
@@ -87,11 +97,24 @@ internal class DeviceSettingsViewModel @Inject constructor(
     private val _uiWriteTimeStatus = MutableStateFlow<StatusWriteTime>(StatusWriteTime.Completed)
     val uiWriteTimeStatus: StateFlow<StatusWriteTime> = _uiWriteTimeStatus.asStateFlow()
 
-    private val _uiFirmwareUpdateStatus = MutableStateFlow<FirmwareUpdateStatus>(FirmwareUpdateStatus.FwUpdateNotAvailable())
-    val uiFirmwareUpdateStatus: StateFlow<FirmwareUpdateStatus> = _uiFirmwareUpdateStatus.asStateFlow()
+    private val _uiFirmwareUpdateStatus = MutableStateFlow<String>("")
+    val uiFirmwareUpdateStatus: StateFlow<String> = _uiFirmwareUpdateStatus.asStateFlow()
+
+    private val _uiCheckFirmwareUpdateStatus = MutableStateFlow<CheckFirmwareUpdateStatus>(
+        CheckFirmwareUpdateStatus.CheckFwUpdateNotAvailable("Initial state")
+    )
+    val uiCheckFirmwareUpdateStatus: StateFlow<CheckFirmwareUpdateStatus> = _uiCheckFirmwareUpdateStatus.asStateFlow()
 
     private var _currentDeviceUserLocationIndex = MutableStateFlow<Int>(0)
-    val currentDeviceUserLocationIndex: StateFlow<Int> = _currentDeviceUserLocationIndex.asStateFlow()
+
+    private val _connectionStatus = MutableStateFlow(false)
+    val connectionStatus: StateFlow<Boolean> get() = _connectionStatus.asStateFlow()
+
+    private var _uiMultiBleModeState = MutableStateFlow(BleMultiConnectionUiState())
+    val uiMultiBleModeState: StateFlow<BleMultiConnectionUiState> = _uiMultiBleModeState.asStateFlow()
+
+    private val _sleepRecordingState = MutableStateFlow(SleepRecordingState(enabled = null))
+    val sleepRecordingState: StateFlow<SleepRecordingState> = _sleepRecordingState.asStateFlow()
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -105,7 +128,8 @@ internal class DeviceSettingsViewModel @Inject constructor(
                         isAvailable = sdkMode.isAvailable,
                         isEnabled = sdkMode.sdkModeState,
                         sdkModeLedState = sdkMode.sdkModeLedAnimation,
-                        ppiModeLedState = sdkMode.ppiModeLedAnimation)
+                        ppiModeLedState = sdkMode.ppiModeLedAnimation
+                    )
                 }
         }
 
@@ -127,9 +151,19 @@ internal class DeviceSettingsViewModel @Inject constructor(
                 }
         }
 
+        viewModelScope.launch {
+            polarDeviceStreamingRepository.isMultiBleModeEnabled
+                .collect { isEnabled ->
+                    _uiMultiBleModeState.update { BleMultiConnectionUiState(isEnabled) }
+                }
+        }
+
         getSdkModeStatus()
         getSecurityStatus()
+        getBleMultiConnectionModeStatus()
         setDeviceUserLocationDefault()
+        observeSleepRecordingState()
+        checkFirmwareUpdate()
     }
 
     override fun onCleared() {
@@ -194,10 +228,6 @@ internal class DeviceSettingsViewModel @Inject constructor(
         compositeDisposable.add(disposable)
     }
 
-    fun setDeviceUserLocation(deviceLocation: PolarUserDeviceSettings.DeviceLocation) {
-        deviceUserLocation = deviceLocation
-    }
-
     fun doFactoryReset(savePairing: Boolean = false) {
         val disposable = polarDeviceStreamingRepository.doFactoryReset(deviceId, savePairing)
             .subscribeOn(Schedulers.io())
@@ -210,19 +240,63 @@ internal class DeviceSettingsViewModel @Inject constructor(
     }
 
     fun doFirmwareUpdate(firmwareUrl: String = "") {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Main) {
             polarDeviceStreamingRepository.doFirmwareUpdate(deviceId, firmwareUrl)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             { status ->
-                                _uiFirmwareUpdateStatus.value = status
+                                _uiFirmwareUpdateStatus.value = status.details
+                               if (status is FirmwareUpdateStatus.FwUpdateFailed) {
+                                   showError("Firmware update failed", errorDescription = status.details)
+                               } else {
+                                   showInfo("Firmware update", description = status.details)
+                               }
                             },
                             { throwable ->
-                                _uiFirmwareUpdateStatus.value = FirmwareUpdateStatus.FwUpdateFailed("${throwable.message}")
+                                _uiFirmwareUpdateStatus.value = FirmwareUpdateStatus.FwUpdateFailed("${throwable.message}").toString()
+                                showError("Firmware update failed", errorDescription = throwable.message.toString())
                             }
                     )
         }
+    }
+
+    private fun checkFirmwareUpdate() {
+        viewModelScope.launch(Dispatchers.Main) {
+            polarDeviceStreamingRepository.checkFirmwareUpdate(deviceId)
+                .subscribe(
+                    { status ->
+                        _uiCheckFirmwareUpdateStatus.value = status
+
+                        when (status) {
+                            is CheckFirmwareUpdateStatus.CheckFwUpdateAvailable -> {
+                                _uiFirmwareUpdateStatus.value = application.getString(
+                                    R.string.firmware_update_available,
+                                    status.version
+                                )
+                            }
+
+                            is CheckFirmwareUpdateStatus.CheckFwUpdateNotAvailable -> {
+                                _uiFirmwareUpdateStatus.value = status.details
+                            }
+
+                            is CheckFirmwareUpdateStatus.CheckFwUpdateFailed -> {
+                                _uiFirmwareUpdateStatus.value =
+                                    FirmwareUpdateStatus.FwUpdateFailed(status.details).toString()
+                                showError(application.getString(R.string.firmware_update_check_failed), errorDescription = status.details)
+                            }
+                        }
+                    },
+                    { throwable ->
+                        _uiCheckFirmwareUpdateStatus.value = CheckFirmwareUpdateStatus.CheckFwUpdateFailed(application.getString(R.string.firmware_update_check_failed))
+                        showError(application.getString(R.string.firmware_update_check_failed), errorDescription = throwable.message ?: "")
+                    }
+                )
+        }
+    }
+
+    fun openUserDeviceSettingsActivity(context: Context) {
+        val intent = Intent(context, UserDeviceSettingsActivity::class.java)
+        intent.putExtra("DEVICE_ID", deviceId)
+        context.startActivity(intent)
     }
 
     private fun setDeviceUserLocationDefault() = viewModelScope.launch {
@@ -334,13 +408,6 @@ internal class DeviceSettingsViewModel @Inject constructor(
         compositeDisposable.add(disposable)
     }
 
-    fun setUserDeviceSettings(index: Int, usbConnectionEnabled: Boolean? = null) {
-        viewModelScope.launch {
-            polarDeviceStreamingRepository.setDeviceUserSettings(
-                deviceId, PolarUserDeviceSettings(index, usbConnectionEnabled))
-        }
-    }
-
     fun setTurnDeviceOff() {
         val disposable = polarDeviceStreamingRepository.turnDeviceOff(deviceId)
             .subscribeOn(Schedulers.io())
@@ -354,6 +421,84 @@ internal class DeviceSettingsViewModel @Inject constructor(
         compositeDisposable.add(disposable)
     }
 
+    fun waitForConnection() {
+        polarDeviceStreamingRepository.waitForConnection(deviceId)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                _connectionStatus.value = true
+            }, { error ->
+                _connectionStatus.value = false
+                Log.e(TAG, "Error while waiting for connection: ${error.message}")
+            })
+    }
+
+    fun getDiskSpace(onSuccess: (PolarDiskSpaceData) -> Unit, onError: (String) -> Unit) {
+        val disposable = rxSingle { polarDeviceStreamingRepository.getDiskSpace(deviceId) }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { resultOfRequest ->
+                    when (resultOfRequest) {
+                        is ResultOfRequest.Success -> {
+                            resultOfRequest.value?.let { onSuccess(it) }
+                        }
+                        is ResultOfRequest.Failure -> {
+                            onError(resultOfRequest.message)
+                        }
+                    }
+                },
+                { error ->
+                    onError(error.toString())
+                }
+            )
+        compositeDisposable.add(disposable)
+    }
+
+    fun setBleMultiConnection(enabled: Boolean = false) {
+        val disposable = polarDeviceStreamingRepository.setBleMultiConnectionMode(deviceId, enabled)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { Log.d(TAG, "Set BLE dual connection mode to $enabled on device $deviceId.") },
+                { error -> Log.e(TAG, "Setting BLE dual connection mode to $enabled failed: $error") }
+            )
+        compositeDisposable.add(disposable)
+    }
+
+    fun forceStopSleep() = viewModelScope.launch {
+        withContext(Dispatchers.IO) {
+            when (val result = polarDeviceStreamingRepository.forceStopSleep(deviceId)) {
+                is ResultOfRequest.Success -> {
+                    result.value?.let {
+                        showInfo("Sleep recording successfully stopped.")
+                    } ?: kotlin.run {
+                        showError("Failed to stop sleep recording.")
+                    }
+                }
+                is ResultOfRequest.Failure -> {
+                    showError(result.message, result.throwable?.toString() ?: "")
+                }
+            }
+        }
+    }
+
+    private fun observeSleepRecordingState() {
+        val disposable = polarDeviceStreamingRepository.observeSleepRecordingState(deviceId)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { value ->
+                    _sleepRecordingState.value  = SleepRecordingState(enabled = value)
+                },
+                { error ->
+                    Log.w(TAG, "Observing sleep recording state failed: ${error.message ?: error.toString()}")
+                }
+            )
+        compositeDisposable.add(disposable)
+    }
+
+
     private fun getSdkModeStatus() {
         Log.d(TAG, "getSdkModeStatus()")
         viewModelScope.launch(Dispatchers.IO) {
@@ -365,6 +510,13 @@ internal class DeviceSettingsViewModel @Inject constructor(
         Log.d(TAG, "getSdkModeStatus()")
         viewModelScope.launch(Dispatchers.IO) {
             polarDeviceStreamingRepository.isSecurityEnabled(deviceId)
+        }
+    }
+
+    private fun getBleMultiConnectionModeStatus() {
+        Log.d(TAG, "getBleMultiConnectionMode()")
+        viewModelScope.launch(Dispatchers.IO) {
+            polarDeviceStreamingRepository.getMultiBleModeEnabled(deviceId)
         }
     }
 

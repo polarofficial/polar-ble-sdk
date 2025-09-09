@@ -1,6 +1,7 @@
 package com.polar.polarsensordatacollector.ui.devicesettings
 
 import android.app.AlertDialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
@@ -8,7 +9,6 @@ import android.util.Patterns
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -16,9 +16,9 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -29,14 +29,16 @@ import com.google.android.material.datepicker.CalendarConstraints.DateValidator
 import com.google.android.material.datepicker.CompositeDateValidator
 import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.repository.SdkMode
 import com.polar.polarsensordatacollector.ui.activity.ActivityRecordingFragmentDirections
-import com.polar.polarsensordatacollector.ui.landing.MainViewModel
 import com.polar.polarsensordatacollector.ui.utils.showSnackBar
 import com.polar.sdk.api.PolarBleApi
+import com.polar.sdk.api.model.CheckFirmwareUpdateStatus
 import com.polar.sdk.api.model.FirmwareUpdateStatus
+import com.polar.sdk.api.model.PolarDiskSpaceData
 import com.polar.sdk.api.model.PolarUserDeviceSettings
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -44,6 +46,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
+import com.polar.polarsensordatacollector.ui.exercise.ExerciseActivity
 
 @AndroidEntryPoint
 class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
@@ -54,7 +57,6 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
     }
 
     private val viewModel: DeviceSettingsViewModel by viewModels()
-    private val mainViewModel: MainViewModel by activityViewModels()
 
     private lateinit var sdkModeGroup: ConstraintLayout
     private lateinit var sdkModeToggleButton: Button
@@ -94,6 +96,10 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
     private lateinit var dofactoryResetEnabledSwitch: SwitchMaterial
     private lateinit var dofactoryResetSwitchHeader: TextView
 
+    private lateinit var setExerciseGroup: ConstraintLayout
+    private lateinit var setExerciseButton: Button
+    private lateinit var setExerciseHeader: TextView
+
     private lateinit var setWareHouseSleepGroup: ConstraintLayout
     private lateinit var setWareHouseSleepButton: Button
     private lateinit var setWareHouseSleepHeader: TextView
@@ -108,16 +114,25 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
     private lateinit var doFirmwareUpdateCustomUrlButton: Button
     private lateinit var firmwareUpdateStatusText: TextView
 
-    private lateinit var setDeviceUserLocationSpinner: Spinner
-
-    private lateinit var usbConnectionEnableButton: Button
-    private lateinit var usbConnectionDisableButton: Button
-
     private lateinit var userDataSelectionSpinner: Spinner
     private lateinit var userDataDeletionSelectButton: Button
     private lateinit var deviceDataType: PolarBleApi.PolarStoredDataType
 
+    private lateinit var doUserDeviceSettingsButton: Button
+
     private lateinit var deleteDateFoldersButton: Button
+
+    private lateinit var waitForConnectionButton: Button
+    private lateinit var waitForConnectionStatusText: TextView
+
+    private lateinit var getDiskSpaceButton: Button
+    private lateinit var bleMultiConnectionEnableGroup: ConstraintLayout
+    private lateinit var bleMultiConnectionEnableHeader: TextView
+    private lateinit var bleMultiConnectionEnableButton: Button
+    private lateinit var bleMultiConnectionEnabledSwitch: SwitchMaterial
+
+    private lateinit var sleepRecordingStateHeader: TextView
+    private lateinit var forceStopSleepButton: Button
 
     interface DateRangeSelectedListener {
         fun onDateRangeSelected(fromDate: LocalDate?, toDate: LocalDate?)
@@ -162,7 +177,12 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiShowError.collect {
                     if (it.header.isNotEmpty()) {
-                        showSnackBar(rootView = requireView(), it.header, it.description ?: "", showAsError = true)
+                        showSnackBar(
+                            rootView = requireView(),
+                            it.header,
+                            it.description ?: "",
+                            showAsError = true
+                        )
                     }
                 }
             }
@@ -188,8 +208,26 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
 
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.currentDeviceUserLocationIndex.collect {
-                    deviceUserLocationDefault(it)
+                viewModel.uiCheckFirmwareUpdateStatus.collect { status ->
+                    doFirmwareUpdateButton.isEnabled = when (status) {
+                        is CheckFirmwareUpdateStatus.CheckFwUpdateAvailable -> true
+                        else -> false
+                    }
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiMultiBleModeState.collect { bleMultiConnectionStateChange(it)
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.sleepRecordingState.collect {
+                    updateSleepRecordingStateUi(it)
                 }
             }
         }
@@ -206,12 +244,20 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
             viewModel.ppiModeLedAnimation()
         }
 
+        setExerciseButton.setOnClickListener {
+            ExerciseActivity.launch(requireContext())
+        }
+
         offlineRecSecuritySettingsEnabled.setOnCheckedChangeListener { _, isChecked ->
             viewModel.toggleSecurity(isChecked)
         }
 
         doPhysicalConfigButton.setOnClickListener {
             viewModel.openPhysicalConfigActivity(requireContext())
+        }
+
+        doUserDeviceSettingsButton.setOnClickListener {
+            viewModel.openUserDeviceSettingsActivity(requireContext())
         }
 
         getFtuButton.setOnClickListener {
@@ -223,8 +269,15 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         }
 
         dofactoryResetButton.setOnClickListener {
-            val savePairing = dofactoryResetEnabledSwitch.isChecked
-            viewModel.doFactoryReset(savePairing = savePairing)
+            AlertDialog.Builder(requireContext())
+                .setTitle(getString(R.string.do_factory_reset_header))
+                .setMessage(getString(R.string.confirm_factory_reset))
+                .setPositiveButton(getString(R.string.confirm)) { _, _ ->
+                    val savePairing = dofactoryResetEnabledSwitch.isChecked
+                    viewModel.doFactoryReset(savePairing = savePairing)
+                }
+                .setNegativeButton(getString(R.string.cancel), null)
+                .show()
         }
 
         setWareHouseSleepButton.setOnClickListener {
@@ -240,7 +293,11 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
                 viewModel.doFirmwareUpdate()
             } catch (e: Exception) {
                 Log.e(TAG, "Error occurred when starting FWU: ", e)
-                Toast.makeText(this.context, "Error occurred when starting FWU: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    this.context,
+                    "Error occurred when starting FWU: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
 
@@ -262,13 +319,17 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
                         ) {
                             viewModel.doFirmwareUpdate(firmwareUrl)
                         } else {
-                            Toast.makeText(context, getText(R.string.invalid_url), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                getText(R.string.invalid_url),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     } catch (e: Exception) {
-                        Log.e(TAG, "Error occurred when starting FWU:" , e)
+                        Log.e(TAG, "Error occurred when starting FWU:", e)
                         Toast.makeText(
                             this.context,
-                            getText(R.string.firmware_update_error_occurred).toString() + {e.message},
+                            getText(R.string.firmware_update_error_occurred).toString() + { e.message },
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -277,52 +338,9 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
                 .show()
         }
 
-        setDeviceUserLocationSpinner.onItemSelectedListener = object :
-            AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                viewModel.setUserDeviceSettings(setDeviceUserLocationSpinner.selectedItemPosition, )
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-            }
-        }
-
-        usbConnectionEnableButton.setOnClickListener {
-            viewModel.setUserDeviceSettings(
-                index = setDeviceUserLocationSpinner.selectedItemPosition,
-                usbConnectionEnabled = true
-            )
-        }
-
-        usbConnectionDisableButton.setOnClickListener {
-            viewModel.setUserDeviceSettings(
-                index = setDeviceUserLocationSpinner.selectedItemPosition,
-                usbConnectionEnabled = false
-            )
-        }
-
-        userDataSelectionSpinner.onItemSelectedListener = object :
-            AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                viewModel.setUserDeviceSettings(userDataSelectionSpinner.selectedItemPosition)
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-            }
-        }
-
         userDataDeletionSelectButton.setOnClickListener {
-            deviceDataType = PolarBleApi.PolarStoredDataType.values()[userDataSelectionSpinner.selectedItemPosition]
+            deviceDataType =
+                PolarBleApi.PolarStoredDataType.values()[userDataSelectionSpinner.selectedItemPosition]
 
             showDataDeleteDatePicker()
         }
@@ -333,6 +351,52 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
                     viewModel.deleteDateFolders(fromDate, toDate)
                 }
             })
+        }
+
+        waitForConnectionButton.setOnClickListener() {
+            viewModel.waitForConnection()
+        }
+
+        getDiskSpaceButton.setOnClickListener {
+            viewModel.getDiskSpace(
+                onSuccess = { diskSpace ->
+                    showDiskSpaceDialog(diskSpace)
+                },
+                onError = { error ->
+                    showSnackBar(
+                        rootView = requireView(),
+                        header = getString(R.string.get_disk_space_error),
+                        error,
+                        showAsError = true
+                    )
+                }
+            )
+        }
+
+        forceStopSleepButton.setOnClickListener {
+            try {
+                viewModel.forceStopSleep()
+            } catch (e: Exception) {
+                Log.e(TAG, "An error occurred while forcing sleep recording to stop: ", e)
+                Toast.makeText(this.context, "An error occurred while forcing sleep recording to stop. Error: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.connectionStatus.collect { isConnected ->
+                    waitForConnectionStatusText.text = if (isConnected) {
+                        getString(R.string.connected)
+                    } else {
+                        getString(R.string.waiting_connection)
+                    }
+                }
+            }
+        }
+
+        bleMultiConnectionEnableButton.setOnClickListener {
+            val enableDisableBleMultiConnection = bleMultiConnectionEnabledSwitch.isChecked
+            viewModel.setBleMultiConnection(enabled = enableDisableBleMultiConnection)
         }
     }
 
@@ -377,6 +441,10 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         dofactoryResetEnabledSwitch = view.findViewById(R.id.do_factory_reset_switch)
         dofactoryResetSwitchHeader = view.findViewById(R.id.do_factory_reset_switch_header)
 
+        setExerciseGroup = view.findViewById(R.id.set_exercise_group)
+        setExerciseButton = view.findViewById(R.id.set_exercise_button)
+        setExerciseHeader = view.findViewById(R.id.set_exercise_header)
+
         setWareHouseSleepGroup = view.findViewById(R.id.set_warehouse_sleep_group)
         setWareHouseSleepButton = view.findViewById(R.id.set_warehouse_sleep_button)
         setWareHouseSleepHeader = view.findViewById(R.id.set_warehouse_sleep_button_header)
@@ -391,7 +459,9 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         doFirmwareUpdateCustomUrlButton = view.findViewById(R.id.do_firmware_update_custom_url_button)
         firmwareUpdateStatusText = view.findViewById(R.id.firmware_update_status)
 
-        setDeviceUserLocationSpinner = view.findViewById(R.id.set_device_user_location_drop_down)
+        sleepRecordingStateHeader = view.findViewById(R.id.force_stop_sleep_header)
+        forceStopSleepButton = view.findViewById(R.id.force_stop_sleep_button)
+
         val adapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_spinner_dropdown_item,
@@ -399,10 +469,6 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         )
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        setDeviceUserLocationSpinner.adapter = adapter
-
-        usbConnectionEnableButton = view.findViewById(R.id.usb_connection_enable_button)
-        usbConnectionDisableButton = view.findViewById(R.id.usb_connection_disable_button)
 
         userDataSelectionSpinner = view.findViewById(R.id.set_file_type_selection_drop_down)
         val userDataSelectionSpinnerAdapter = ArrayAdapter(
@@ -414,8 +480,21 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         userDataSelectionSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         userDataSelectionSpinner.adapter = userDataSelectionSpinnerAdapter
         userDataDeletionSelectButton = view.findViewById(R.id.do_file_delete_button)
-
+        doUserDeviceSettingsButton = view.findViewById(R.id.do_device_user_settings_button)
         deleteDateFoldersButton = view.findViewById(R.id.do_date_folder_delete_button)
+
+        waitForConnectionButton = view.findViewById(R.id.wait_connection_button)
+        waitForConnectionStatusText = view.findViewById(R.id.wait_connection_status_text)
+
+        getDiskSpaceButton = view.findViewById(R.id.get_disk_space_button)
+        bleMultiConnectionEnableGroup = view.findViewById(R.id.multi_ble_settings_group)
+        bleMultiConnectionEnableButton = view.findViewById(R.id.multi_ble_settings_button)
+        bleMultiConnectionEnableHeader =
+            view.findViewById(R.id.multi_ble_settings_header)
+        bleMultiConnectionEnabledSwitch =
+            view.findViewById(R.id.multi_ble_settings_enabled)
+
+        forceStopSleepButton = view.findViewById(R.id.force_stop_sleep_button)
     }
 
     private fun sdkModeStateChange(sdkModeUiState: SdkModeUiState) {
@@ -505,18 +584,13 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         }
     }
 
-    private fun firmwareUpdateStateChange(status: FirmwareUpdateStatus) {
-        val message = if (status.details.isNotEmpty()) {
-            "${status::class.simpleName}, details: ${status.details}"
-        } else {
-            "${status::class.simpleName}"
-        }
-        Log.d(TAG, message)
-        firmwareUpdateStatusText.text = message
+    private fun firmwareUpdateStateChange(status: String) {
+        Log.d(TAG, status)
+        firmwareUpdateStatusText.text = status
     }
 
-    private fun deviceUserLocationDefault(deviceUserLocationIndex: Int?) {
-        deviceUserLocationIndex?.let { setDeviceUserLocationSpinner.setSelection(it) }
+    private fun bleMultiConnectionStateChange(status: BleMultiConnectionUiState) {
+        bleMultiConnectionEnabledSwitch.isChecked = status.isEnabled
     }
 
     private fun showDataDeleteDatePicker() {
@@ -566,4 +640,34 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
             findNavController().navigate(ActivityRecordingFragmentDirections.activityToHome())
         }
     }
+
+    private fun showDiskSpaceDialog(diskSpace: PolarDiskSpaceData) {
+        val freeFormatted = android.text.format.Formatter.formatFileSize(context, diskSpace.freeSpace)
+        val totalFormatted = android.text.format.Formatter.formatFileSize(context, diskSpace.totalSpace)
+
+        val message = getString(R.string.free_disk_space) + " $freeFormatted\n" +
+                getString(R.string.total_disk_space) + " $totalFormatted"
+
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.get_disk_space)
+            .setMessage(message)
+            .setPositiveButton(R.string.ok_button, null)
+            .show()
+
+        dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setTextColor(
+            ContextCompat.getColor(requireContext(), R.color.secondaryColor)
+        )
+    }
+
+    private fun updateSleepRecordingStateUi(state: SleepRecordingState) {
+        val stringKey =
+            when (state.enabled) {
+                true -> R.string.sleep_recording_state_on
+                false -> R.string.sleep_recording_state_off
+                null -> R.string.sleep_recording_state_unavailable
+            }
+        sleepRecordingStateHeader.text = getString(stringKey)
+        forceStopSleepButton.isEnabled = state.enabled != null && state.enabled == true
+    }
+
 }

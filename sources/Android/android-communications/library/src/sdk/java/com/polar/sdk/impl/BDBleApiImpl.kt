@@ -46,6 +46,7 @@ import com.polar.androidcommunications.http.client.HttpResponseCodes
 import com.polar.androidcommunications.http.client.RetrofitClient
 import com.polar.androidcommunications.http.fwu.FirmwareUpdateApi
 import com.polar.androidcommunications.http.fwu.FirmwareUpdateRequest
+import com.polar.sdk.api.model.PolarExerciseSession
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.PolarBleApiCallbackProvider
 import com.polar.sdk.api.PolarH10OfflineExerciseApi
@@ -122,27 +123,36 @@ import protocol.PftpResponse.PbRequestRecordingStatusResult
 import com.polar.sdk.api.model.activity.Polar247PPiSamplesData
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSession
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference
+import com.polar.sdk.api.PolarTrainingSessionApi
 import com.polar.sdk.impl.utils.PolarTrainingSessionUtils
 import fi.polar.remote.representation.protobuf.UserDeviceSettings
 import fi.polar.remote.representation.protobuf.UserDeviceSettings.PbUserDeviceSettings
+import com.polar.sdk.api.model.activity.PolarActivitySamplesData
+import com.polar.sdk.api.model.activity.PolarActivitySamplesDayData
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
+import fi.polar.remote.representation.protobuf.Structures
+import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Single
+
 
 
 /**
  * The default implementation of the Polar API
  * @Suppress
  */
-class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleSdkFeature>) : PolarBleApi(features), BlePowerStateChangedCallback {
+class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleSdkFeature>) : PolarBleApi(features), BlePowerStateChangedCallback, PolarTrainingSessionApi {
     private val connectSubscriptions: MutableMap<String, Disposable> = mutableMapOf()
     private val deviceDataMonitorDisposable: MutableMap<String, Disposable> = mutableMapOf()
     private val deviceAvailableFeaturesDisposable: MutableMap<String, Disposable> = mutableMapOf()
@@ -1193,11 +1203,14 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                     }.onErrorResumeNext { throwable: Throwable ->
                                         Single.error(handleError(throwable))
                                     }
-                                    .subscribe { polarOfflineRecordingData ->
+                                    .subscribe( { polarOfflineRecordingData ->
                                         emitter.onSuccess(
                                             polarOfflineRecordingData
                                         )
-                                    }
+                                    }, { error ->
+                                        BleLogger.d(TAG, "Error while loading offline recording data. Error ${error.message}")
+                                        }
+                                    )
                             }
                             var lastTimestamp = 0uL
                             Observable.fromIterable(0 until count)
@@ -2075,7 +2088,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     private fun pFtpPutOperation(identifier: String, path: String, data: ByteArray): Completable {
-        return PFtpWriteOperationWithSyncStartStop(
+        return pFtpWriteOperation(
             identifier = identifier,
             command = PftpRequest.PbPFtpOperation.Command.PUT,
             path = path,
@@ -2083,7 +2096,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         )
     }
 
-    private fun PFtpWriteOperationWithSyncStartStop(identifier: String,
+    private fun pFtpWriteOperation(identifier: String,
                                    command: PftpRequest.PbPFtpOperation.Command,
                                    data: ByteArray,
                                    path: String): Completable {
@@ -2098,22 +2111,16 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 builder.path = path
                 val dataInputStream = ByteArrayInputStream(data)
 
-                sendInitializationAndStartSyncNotifications(identifier)
-                    .ignoreElement()
-                    .andThen {
-                        client.write(builder.build().toByteArray(), dataInputStream)
-                            .subscribe({
-                                BleLogger.d(TAG, "pFtpWriteOperation client write progress $it: $path")
-                            },{ error ->
-                                BleLogger.e(TAG, "pFtpWriteOperation() client write $path error: $error")
-                                emitter.onError(error)
-                            },{
-                                BleLogger.d(TAG, "pFtpWriteOperation client write completed for $path")
-                                emitter.onComplete()
-                            })
-                    }.doFinally {
-                        sendTerminateAndStopSyncNotifications(identifier)
-                    }
+                client.write(builder.build().toByteArray(), dataInputStream)
+                    .subscribe({
+                        BleLogger.d(TAG, "pFtpWriteOperation client write progress $it: $path")
+                    },{ error ->
+                        BleLogger.e(TAG, "pFtpWriteOperation() client write $path error: $error")
+                        emitter.onError(error)
+                    },{
+                        BleLogger.d(TAG, "pFtpWriteOperation client write completed for $path")
+                        emitter.onComplete()
+                    })
             } catch (error: Throwable) {
                 BleLogger.e(TAG, "pFtpWriteOperation() $path error: $error")
                 emitter.onError(error)
@@ -2252,6 +2259,148 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 )
             emitter.setCancellable { disposable.dispose() }
         }
+    }
+
+    override fun startExercise(identifier: String, profile: PolarExerciseSession.SportProfile): Completable {
+        BleLogger.d(TAG, "Start exercise pressed for $identifier with profile=$profile")
+        return Single.fromCallable {
+            val session = sessionPsFtpClientReady(identifier)
+            (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
+                ?: throw PolarServiceNotAvailable()
+        }
+            .subscribeOn(Schedulers.io())
+            .flatMapCompletable { client ->
+                val params = PftpRequest.PbPFtpStartExerciseParams.newBuilder()
+                    .setSportIdentifier(
+                        Structures.PbSportIdentifier.newBuilder()
+                            .setValue(profile.id.toLong())
+                            .build()
+                    )
+                    .build()
+
+                client.query(
+                    PftpRequest.PbPFtpQuery.START_EXERCISE_VALUE,
+                    params.toByteArray()
+                ).ignoreElement()
+            }
+            .doOnComplete { BleLogger.d(TAG, "Start exercise succeeded for $identifier") }
+            .doOnError { e ->
+                BleLogger.e(TAG, "Start exercise failed for $identifier: ${e.message ?: "unknown error"}")
+            }
+            .onErrorResumeNext { t -> Completable.error(handleError(t)) }
+    }
+
+    override fun pauseExercise(identifier: String): Completable {
+        BleLogger.d(TAG, "Pause exercise pressed for $identifier")
+        return Single.fromCallable {
+            val session = sessionPsFtpClientReady(identifier)
+            (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
+                ?: throw PolarServiceNotAvailable()
+        }
+            .subscribeOn(Schedulers.io())
+            .flatMapCompletable { client ->
+                client.query(
+                    PftpRequest.PbPFtpQuery.PAUSE_EXERCISE_VALUE,
+                    byteArrayOf()
+                ).ignoreElement()
+            }
+            .doOnComplete { BleLogger.d(TAG, "Pause exercise succeeded for $identifier") }
+            .doOnError { e ->
+                BleLogger.e(TAG, "Pause exercise failed for $identifier: ${e.message ?: "unknown error"}")
+            }
+            .onErrorResumeNext { t -> Completable.error(handleError(t)) }
+    }
+
+    override fun resumeExercise(identifier: String): Completable {
+        BleLogger.d(TAG, "Resume exercise pressed for $identifier")
+        return Single.fromCallable {
+            val session = sessionPsFtpClientReady(identifier)
+            (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
+                ?: throw PolarServiceNotAvailable()
+        }
+            .subscribeOn(Schedulers.io())
+            .flatMapCompletable { client ->
+                client.query(
+                    PftpRequest.PbPFtpQuery.RESUME_EXERCISE_VALUE,
+                    byteArrayOf()
+                ).ignoreElement()
+            }
+            .doOnComplete { BleLogger.d(TAG, "Resume exercise succeeded for $identifier") }
+            .doOnError { e ->
+                BleLogger.e(TAG, "Resume exercise failed for $identifier: ${e.message ?: "unknown error"}")
+            }
+            .onErrorResumeNext { t -> Completable.error(handleError(t)) }
+    }
+
+    override fun stopExercise(identifier: String): Completable {
+        BleLogger.d(TAG, "Stop exercise pressed for $identifier")
+        return Single.fromCallable {
+            val session = sessionPsFtpClientReady(identifier)
+            (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
+                ?: throw PolarServiceNotAvailable()
+        }
+            .subscribeOn(Schedulers.io())
+            .flatMapCompletable { client ->
+                val params = PftpRequest.PbPFtpStopExerciseParams.newBuilder()
+                    .setSave(true)
+                    .build()
+
+                client.query(
+                    PftpRequest.PbPFtpQuery.STOP_EXERCISE_VALUE,
+                    params.toByteArray()
+                ).ignoreElement()
+            }
+            .doOnComplete { BleLogger.d(TAG, "Stop exercise succeeded for $identifier") }
+            .doOnError { e ->
+                BleLogger.e(TAG, "Stop exercise failed for $identifier: ${e.message ?: "unknown error"}")
+            }
+            .onErrorResumeNext { t -> Completable.error(handleError(t)) }
+    }
+
+    override fun getExerciseStatus(identifier: String): Single<PolarExerciseSession.ExerciseInfo> {
+        BleLogger.d(TAG, "Get exercise status pressed for $identifier")
+
+        return Single.fromCallable {
+            val session = sessionPsFtpClientReady(identifier)
+            (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
+                ?: throw PolarServiceNotAvailable()
+        }
+            .subscribeOn(Schedulers.io())
+            .flatMap { client ->
+                client.query(
+                    PftpRequest.PbPFtpQuery.GET_EXERCISE_STATUS_VALUE,
+                    byteArrayOf()
+                )
+                    .map { out -> out.toByteArray() }
+                    .map(::parseExerciseStatus)
+            }
+            .doOnSuccess { info ->
+                BleLogger.d(TAG, "Get exercise status succeeded for $identifier: $info")
+            }
+            .doOnError { e ->
+                BleLogger.e(TAG, "Get exercise status failed for $identifier: ${e.message ?: "unknown error"}")
+            }
+            .onErrorResumeNext { t -> Single.error(handleError(t)) }
+    }
+
+    private fun parseExerciseStatus(data: ByteArray): PolarExerciseSession.ExerciseInfo {
+        val proto = PftpResponse.PbPftpGetExerciseStatusResult.parseFrom(data)
+        BleLogger.d(TAG, "EX_STATUS raw: state=${proto.exerciseState} hasSport=${proto.hasSportIdentifier()} sport=${if (proto.hasSportIdentifier()) proto.sportIdentifier.value else -1}")
+
+        val status = when (proto.exerciseState) {
+            PftpResponse.PbPftpGetExerciseStatusResult.PbExerciseState.EXERCISE_STATE_RUNNING -> PolarExerciseSession.ExerciseStatus.IN_PROGRESS
+            PftpResponse.PbPftpGetExerciseStatusResult.PbExerciseState.EXERCISE_STATE_PAUSED  -> PolarExerciseSession.ExerciseStatus.PAUSED
+            PftpResponse.PbPftpGetExerciseStatusResult.PbExerciseState.EXERCISE_STATE_OFF     -> PolarExerciseSession.ExerciseStatus.STOPPED
+            else -> PolarExerciseSession.ExerciseStatus.NOT_STARTED
+        }
+
+        val sport = if (proto.hasSportIdentifier()) {
+            PolarExerciseSession.SportProfile.fromId(proto.sportIdentifier.value.toInt())
+        } else {
+            PolarExerciseSession.SportProfile.UNKNOWN
+        }
+
+        return PolarExerciseSession.ExerciseInfo(status = status, sportProfile = sport)
     }
 
     override fun setWareHouseSleep(identifier: String): Completable {
@@ -3085,6 +3234,33 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
     }
 
+    override fun getActivitySampleData(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<PolarActivitySamplesDayData>> {
+        val session = try {
+            sessionPsFtpClientReady(identifier)
+        } catch (error: Throwable) {
+            return Single.error(error)
+        }
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Single.error(PolarServiceNotAvailable())
+
+        var currentDate: LocalDate = fromDate
+
+        val datesList = mutableListOf<LocalDateTime>()
+
+        while (!currentDate.isAfter(toDate)) {
+            datesList.add(currentDate.atStartOfDay())
+            currentDate = currentDate.plusDays(1)
+        }
+
+        return Observable.fromIterable(datesList)
+            .flatMapSingle { date ->
+                PolarActivityUtils.readActivitySamplesDataFromDayDirectory(
+                    client, Date.from(date.atZone(ZoneId.systemDefault()).toInstant())
+                )}.map { activitySamplesDataList ->
+                    activitySamplesDataList
+                }.toList()
+    }
+
     override fun getDistance(identifier: String, fromDate: Date, toDate: Date): Single<List<PolarDistanceData>> {
         val session = try {
             sessionPsFtpClientReady(identifier)
@@ -3133,6 +3309,16 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     override fun observeSleepRecordingState(identifier: String):  Flowable<Array<Boolean>> {
+        val deviceType = try {
+            sessionByDeviceId(identifier)?.polarDeviceType
+        } catch (error: Throwable) {
+            return Flowable.error(error)
+        }
+
+        if (!BlePolarDeviceCapabilitiesUtility.isActivityDataSupported(deviceType!!)) {
+            return Flowable.error(PolarServiceNotAvailable())
+        }
+
         val receive: Flowable<Array<Boolean>> =
             receiveRestApiEvents<PolarSleepApiServiceEventPayload>(identifier, mapper = { it.toObject() })
                 .map { array ->
@@ -4107,17 +4293,38 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     @Throws(Throwable::class)
     private fun sessionServiceReady(identifier: String, service: UUID): BleDeviceSession {
         val session = fetchSession(identifier)
-        if (session != null) {
-            if (session.sessionState == DeviceSessionState.SESSION_OPEN) {
-                val client = session.fetchClient(service)
-                if (client != null && client.isServiceDiscovered) {
-                    return session
-                }
-                throw PolarServiceNotAvailable()
-            }
+            ?: throw PolarDeviceNotFound()
+
+        if (session.sessionState != DeviceSessionState.SESSION_OPEN) {
             throw PolarDeviceDisconnected()
         }
-        throw PolarDeviceNotFound()
+
+        val client = session.fetchClient(service)
+            ?: throw PolarServiceNotAvailable()
+
+        val timeoutMillis = 10 * 1000L
+        if (!client.isServiceDiscovered) {
+            if (!waitForServiceDiscovery(client, timeoutMillis)) {
+                throw PolarServiceNotAvailable()
+            }
+        }
+
+        return session
+    }
+
+    private fun waitForServiceDiscovery(client: BleGattBase, timeoutMs: Long): Boolean {
+        val start = System.currentTimeMillis()
+        while (!client.isServiceDiscovered) {
+            if (System.currentTimeMillis() - start > timeoutMs) {
+                return false
+            }
+            try {
+                Thread.sleep(100)
+            } catch (ie: InterruptedException) {
+                return false
+            }
+        }
+        return true
     }
 
     @Throws(Throwable::class)
@@ -4226,146 +4433,190 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
     private fun setupDevice(session: BleDeviceSession) {
         val deviceId = session.polarDeviceId.ifEmpty { session.address }
-        val disposableAvailableFeatures = session.monitorServicesDiscovered(true)
+
+        val disposableAvailableFeatures = session.monitorServicesDiscovered(false)
+            .timeout(10, TimeUnit.SECONDS)
+            .toFlowable()
             .flatMapCompletable { discoveredServices ->
-                val availableFeaturesList: MutableList<Completable> = mutableListOf()
-                for (feature in PolarBleSdkFeature.values()) {
-                    if (features.contains(feature)) {
-                        availableFeaturesList.add(makeFeatureCallbackIfNeeded(session, discoveredServices, feature))
+                val completableList = PolarBleSdkFeature.entries
+                    .filter { features.contains(it) }
+                    .map { feature ->
+                        makeFeatureCallbackIfNeeded(
+                            session,
+                            discoveredServices,
+                            feature
+                        )
                     }
-                }
-                Completable.concat(availableFeaturesList)
+
+                Completable.concat(completableList)
             }
             .subscribe(
-                { log("completed available features check ") },
-                { throwable: Throwable -> logError("Error while available features are checked: $throwable") },
+                { BleLogger.d(TAG, "Completed available features check") },
+                { throwable -> BleLogger.e(TAG, "Error while checking available features: $throwable") }
             )
 
         deviceAvailableFeaturesDisposable[session.address] = disposableAvailableFeatures
-        val disposable = session.monitorServicesDiscovered(true)
+
+        val hrClient = session.fetchClient(HR_SERVICE) as? BleHrClient
+        if (hrClient != null) {
+            callback?.bleSdkFeatureReady(deviceId, PolarBleSdkFeature.FEATURE_HR)
+
+            hrClient.observeHrNotifications(true)
+                ?.observeOn(AndroidSchedulers.mainThread())
+                ?.subscribe(
+                    { data ->
+                        callback?.hrNotificationReceived(
+                            deviceId,
+                            PolarHrData.PolarHrSample(
+                                data.hrValue, 0, 0,
+                                data.rrsMs, data.rrPresent,
+                                data.sensorContact, data.sensorContactSupported
+                            )
+                        )
+                    },
+                    { error -> BleLogger.e(TAG, "HR notification error: $error") }
+                )
+        }
+        
+        val disposableDataMonitor = session.monitorServicesDiscovered(true)
+            .timeout(120, TimeUnit.SECONDS)
             .toFlowable()
-            .flatMapIterable { uuids: List<UUID> -> uuids }
-            .flatMap { uuid: UUID ->
-                if (session.fetchClient(uuid) != null) {
+            .flatMapIterable { it }
+            .flatMap { uuid ->
+                val client = session.fetchClient(uuid)
+                if (client != null) {
                     when (uuid) {
                         HR_SERVICE -> {
-                            Completable.fromAction { callback?.bleSdkFeatureReady(deviceId, PolarBleSdkFeature.FEATURE_HR) }
-                                .subscribeOn(AndroidSchedulers.mainThread())
-                                .subscribe()
+                            callback?.bleSdkFeatureReady(deviceId, PolarBleSdkFeature.FEATURE_HR)
 
-                            val bleHrClient = session.fetchClient(HR_SERVICE) as BleHrClient?
-                            bleHrClient?.observeHrNotifications(true)
-                                ?.observeOn(AndroidSchedulers.mainThread())
+                            val bleHrClient = client as BleHrClient
+                            bleHrClient.observeHrNotifications(true)
+                                .observeOn(AndroidSchedulers.mainThread())
                                 ?.subscribe(
-                                    { hrNotificationData: HrNotificationData ->
+                                    { data ->
                                         callback?.hrNotificationReceived(
                                             deviceId,
                                             PolarHrData.PolarHrSample(
-                                                hrNotificationData.hrValue,
-                                                0, 0,
-                                                hrNotificationData.rrsMs,
-                                                hrNotificationData.rrPresent,
-                                                hrNotificationData.sensorContact,
-                                                hrNotificationData.sensorContactSupported
+                                                data.hrValue, 0, 0,
+                                                data.rrsMs, data.rrPresent,
+                                                data.sensorContact, data.sensorContactSupported
                                             )
                                         )
                                     },
-                                    { error: Throwable -> error.message?.let { logError(it) }},
-                                    {})
+                                    { error -> BleLogger.e(TAG, "HR notification error: $error") }
+                                )
+                            Flowable.empty()
                         }
+
                         BleBattClient.BATTERY_SERVICE -> {
-                            val bleBattClient = session.fetchClient(BleBattClient.BATTERY_SERVICE) as BleBattClient?
-                            bleBattClient?.monitorBatteryStatus(true)
-                                ?.observeOn(AndroidSchedulers.mainThread())
-                                ?.subscribe(
-                                    { batteryLevel: Int? ->
-                                        callback?.batteryLevelReceived(deviceId, batteryLevel!!)
-                                    },
-                                    { error: Throwable -> error.message?.let { logError(it) }},
-                                    {}
+                            val bleBattClient = client as BleBattClient
+
+                            bleBattClient.monitorBatteryStatus(true)
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(
+                                    { level -> callback?.batteryLevelReceived(deviceId, level) },
+                                    { error -> BleLogger.e(TAG, "Battery status error: $error") }
                                 )
 
-                            bleBattClient?.monitorChargingStatus(true)
-                                ?.observeOn(AndroidSchedulers.mainThread())
-                                ?.subscribe(
-                                    { chargeState: ChargeState? ->
-                                        callback?.batteryChargingStatusReceived(deviceId, chargeState!!)
+                            bleBattClient.monitorChargingStatus(true)
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(
+                                    { state ->
+                                        callback?.batteryChargingStatusReceived(
+                                            deviceId,
+                                            state
+                                        )
                                     },
-                                    { error: Throwable ->
-                                        error.message?.let { logError(it) }
-                                    }
+                                    { error -> BleLogger.e(TAG, "Charging status error: $error") }
                                 )
+
+                            Flowable.empty()
                         }
+
                         BlePMDClient.PMD_SERVICE -> {
-                            val blePMDClient = session.fetchClient(BlePMDClient.PMD_SERVICE) as BlePMDClient?
-                            if (blePMDClient != null) {
-                                return@flatMap blePMDClient.clientReady(true)
-                                    .andThen(
-                                        blePMDClient.readFeature(true)
-                                            .observeOn(AndroidSchedulers.mainThread())
-                                            .doOnSuccess { pmdFeature: Set<PmdMeasurementType> ->
-                                                callback?.bleSdkFeatureReady(deviceId, PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING)
-                                                if (pmdFeature.contains(PmdMeasurementType.SDK_MODE)) {
-                                                    callback?.bleSdkFeatureReady(deviceId, PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE)
-                                                }
+                            val blePMDClient = client as BlePMDClient
+                            return@flatMap blePMDClient.clientReady(true)
+                                .andThen(
+                                    blePMDClient.readFeature(true)
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .doOnSuccess { pmdFeature ->
+                                            callback?.bleSdkFeatureReady(
+                                                deviceId,
+                                                PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING
+                                            )
+                                            if (pmdFeature.contains(PmdMeasurementType.SDK_MODE)) {
+                                                callback?.bleSdkFeatureReady(
+                                                    deviceId,
+                                                    PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE
+                                                )
                                             }
-                                    )
-                                    .toFlowable()
-                            }
+                                        }
+                                ).toFlowable()
                         }
+
                         BleDisClient.DIS_SERVICE -> {
-                            val bleDisClient = session.fetchClient(BleDisClient.DIS_SERVICE) as BleDisClient?
-                            if (bleDisClient != null) {
-                                return@flatMap Flowable.merge(bleDisClient.observeDisInfo(true)
+                            val bleDisClient = client as BleDisClient
+                            return@flatMap Flowable.merge(
+                                bleDisClient.observeDisInfo(true)
                                     .observeOn(AndroidSchedulers.mainThread())
-                                    .doOnNext { pair: android.util.Pair<UUID?, String?> ->
-                                        callback?.disInformationReceived(deviceId, pair.first!!, pair.second!!)
-                                    }, bleDisClient.observeDisInfoWithKeysAsStrings(true)
+                                    .doOnNext { pair ->
+                                        callback?.disInformationReceived(
+                                            deviceId,
+                                            pair.first!!,
+                                            pair.second!!
+                                        )
+                                    },
+                                bleDisClient.observeDisInfoWithKeysAsStrings(true)
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .doOnNext { disInfo ->
                                         callback?.disInformationReceived(deviceId, disInfo)
-                                    })
-                            }
-                        }
-                        BlePsFtpUtils.RFC77_PFTP_SERVICE -> {
-                            val blePsftpClient = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-                            if (blePsftpClient != null) {
-                                return@flatMap blePsftpClient.clientReady(true)
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .doOnComplete {
-                                        callback?.bleSdkFeatureReady(deviceId, PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER)
                                     }
-                                    .toFlowable<Any>()
-                            }
+                            )
                         }
+
+                        BlePsFtpUtils.RFC77_PFTP_SERVICE -> {
+                            val blePsftpClient = client as BlePsFtpClient
+                            return@flatMap blePsftpClient.clientReady(true)
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .doOnComplete {
+                                    callback?.bleSdkFeatureReady(
+                                        deviceId,
+                                        PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER
+                                    )
+                                }
+                                .toFlowable<Any>()
+                        }
+
                         HealthThermometer.HTS_SERVICE -> {
-                            val bleHtsClient = session.fetchClient(HealthThermometer.HTS_SERVICE) as BleHtsClient?
-                            bleHtsClient?.observeHtsNotifications(true)
-                                ?.observeOn(AndroidSchedulers.mainThread())
-                                ?.subscribe(
-                                    { healthThermometerData ->
+                            val bleHtsClient = client as BleHtsClient
+                            bleHtsClient.observeHtsNotifications(true)
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(
+                                    { data ->
                                         callback?.htsNotificationReceived(
                                             deviceId,
                                             PolarHealthThermometerData(
-                                                healthThermometerData.temperatureCelsius,
-                                                healthThermometerData.temperatureFahrenheit
+                                                data.temperatureCelsius,
+                                                data.temperatureFahrenheit
                                             )
                                         )
                                     },
-                                    { error: Throwable -> error.message?.let { logError(it) } },
-                                    {})
-
+                                    { error -> BleLogger.e(TAG, "HTS notification error: $error") }
+                                )
+                            Flowable.empty<Any>()
                         }
+
+                        else -> Flowable.empty()
                     }
-                }
-                Flowable.empty()
+                } else Flowable.empty()
             }
             .subscribe(
-                { },
-                { throwable: Throwable -> logError("Error while monitoring session services: $throwable") },
-                { log("complete") }
+                {},
+                { throwable -> BleLogger.e(TAG, "Error while monitoring session services: $throwable") },
+                { BleLogger.d(TAG, "Service monitoring complete") }
             )
-        deviceDataMonitorDisposable[session.address] = disposable
+
+        deviceDataMonitorDisposable[session.address] = disposableDataMonitor
     }
 
     private fun makeFeatureCallbackIfNeeded(session: BleDeviceSession, discoveredServices: List<UUID>, featurePolarOfflineRecording: PolarBleSdkFeature): Completable {

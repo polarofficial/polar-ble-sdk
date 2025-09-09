@@ -169,7 +169,7 @@ class PolarSleepUtilsTests: XCTestCase {
             deviceId: "C8D9G10F11H12",
             batteryRanOut: false,
             sleepCycles: [PolarSleepData.SleepCycle.init(secondsFromSleepStart: 2, sleepDepthStart: Float(3.0))],
-            sleepResultDate: try createDate(hour: 0, minute: 0, second: 0, day: 2, month: 2, year: 2525),
+            sleepResultDate: "2525-02-02",
             originalSleepRange: PolarSleepData.OriginalSleepRange(
                 startTime: try createDate(hour: 23, minute: 59, second: 59, day: 1, month: 2, year: 2525),
                 endTime: try createDate(hour: 7, minute: 0, second: 0, day: 2, month: 2, year: 2525)

@@ -69,6 +69,7 @@ public enum PolarActivityDataType: String, CaseIterable {
     case SKINTEMPERATURE
     case PEAKTOPEAKINTERVAL
     case ACTIVE_TIME
+    case ACTIVITY_SAMPLES
     case NONE
    }
 
@@ -456,6 +457,22 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
      ///   - onError: see `PolarErrors` for possible errors invoked
      func setUsbConnectionMode(_ identifier: String, enabled: Bool) -> Completable
 
+     /// Set automatic training detection settings on a device.
+     /// - Parameters:
+     ///   - identifier: Polar device id or UUID
+     ///   - mode: Boolean flag to enable or disable automatic training detection
+     ///   - sensitivity: Sensitivity level as integer, range [0, 100]. Higher values cause training to trigger more easily
+     ///   - minimumDuration: Minimum training duration in seconds
+     /// - Returns: Completable stream
+     ///   - success: when settings are applied successfully
+     ///   - onError: see `PolarErrors` for possible errors invoked
+     func setAutomaticTrainingDetectionSettings(
+         _ identifier: String,
+         mode: Bool,
+         sensitivity: Int,
+         minimumDuration: Int
+     ) -> Completable
+    
     /// Request multi BLE connection mode status from device.
     /// - Parameters:
     ///   - identifier: Polar device id or UUID

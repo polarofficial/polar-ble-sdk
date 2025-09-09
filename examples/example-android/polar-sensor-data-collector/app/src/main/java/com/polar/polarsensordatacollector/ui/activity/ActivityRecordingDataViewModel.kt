@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -49,7 +50,8 @@ sealed class ActivityDataUiState {
 data class ActivityRecordingData(
     val startDate: String,
     val endDate: String,
-    val uri: Uri
+    val uri: Uri,
+    val dataType: PolarBleApi.PolarActivityDataType
 )
 
 private const val TAG: String = "ActivityRecordingDataViewModel"
@@ -132,8 +134,8 @@ class ActivityRecordingDataViewModel @Inject constructor(
                                     json.encodeToByteArray(),
                                     "/SLEEP/$startDate-sleep.json"
                                 )
-                                val sleepRecordingData = ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri)
-                                updateactivityDataUiState(sleepRecordingData, fileUri)
+                                val sleepRecordingData = ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri, PolarBleApi.PolarActivityDataType.SLEEP)
+                                updateActivityDataUiState(sleepRecordingData, fileUri, PolarBleApi.PolarActivityDataType.SLEEP)
                             } else {
                                 activityDataUiState = ActivityDataUiState.Failure("fetch sleep recording responded with empty data", null)
                             }
@@ -155,8 +157,8 @@ class ActivityRecordingDataViewModel @Inject constructor(
                                     Gson().toJson(stepsRecording.value).encodeToByteArray(),
                                     "/STEPS/$startDate-steps.json"
                                 )
-                                val stepsRecording =  ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri)
-                                updateactivityDataUiState(stepsRecording, fileUri)
+                                val stepsRecording =  ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri, PolarBleApi.PolarActivityDataType.STEPS)
+                                updateActivityDataUiState(stepsRecording, fileUri, PolarBleApi.PolarActivityDataType.STEPS)
                             } else {
                                 activityDataUiState = ActivityDataUiState.Failure("fetch recording responded with empty data", null)
                             }
@@ -179,8 +181,8 @@ class ActivityRecordingDataViewModel @Inject constructor(
                                     Gson().toJson(caloriesRecording.value).encodeToByteArray(),
                                     "/CALORIES/$startDate-calories.json"
                                 )
-                                val caloriesRecordingData = ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri)
-                                updateactivityDataUiState(caloriesRecordingData, fileUri)
+                                val caloriesRecordingData = ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri, PolarBleApi.PolarActivityDataType.CALORIES)
+                                updateActivityDataUiState(caloriesRecordingData, fileUri, PolarBleApi.PolarActivityDataType.CALORIES)
                             } else {
                                 activityDataUiState = ActivityDataUiState.Failure("fetch recording responded with empty data", null)
                             }
@@ -202,8 +204,8 @@ class ActivityRecordingDataViewModel @Inject constructor(
                                         Gson().toJson(hrRecording.value).encodeToByteArray(),
                                         "/HR_SAMPLES/$startDate-hr-samples.json"
                                 )
-                                val hrRecording = ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri)
-                                updateactivityDataUiState(hrRecording, fileUri)
+                                val hrRecording = ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri, PolarBleApi.PolarActivityDataType.HR_SAMPLES)
+                                updateActivityDataUiState(hrRecording, fileUri, PolarBleApi.PolarActivityDataType.HR_SAMPLES)
                             } else {
                                 activityDataUiState = ActivityDataUiState.Failure("fetch recording responded with empty data", null)
                             }
@@ -230,8 +232,8 @@ class ActivityRecordingDataViewModel @Inject constructor(
                                         json.encodeToByteArray(),
                                         "/NIGHTLY_RECHARGE/$startDate-nightly-recharge.json"
                                 )
-                                val nightlyRechargeRecording = ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri)
-                                updateactivityDataUiState(nightlyRechargeRecording, fileUri)
+                                val nightlyRechargeRecording = ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri, PolarBleApi.PolarActivityDataType.NIGHTLY_RECHARGE)
+                                updateActivityDataUiState(nightlyRechargeRecording, fileUri, PolarBleApi.PolarActivityDataType.NIGHTLY_RECHARGE)
                             } else {
                                 activityDataUiState = ActivityDataUiState.Failure("fetch recording responded with empty data", null)
                             }
@@ -261,8 +263,8 @@ class ActivityRecordingDataViewModel @Inject constructor(
                                     json.encodeToByteArray(),
                                     "/PPI_SAMPLES/$startDate-ppi-samples.json"
                                 )
-                                val hrRecording = ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri)
-                                updateactivityDataUiState(hrRecording, fileUri)
+                                val hrRecording = ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri, PolarBleApi.PolarActivityDataType.PPI_SAMPLES)
+                                updateActivityDataUiState(hrRecording, fileUri, PolarBleApi.PolarActivityDataType.PPI_SAMPLES)
                             } else {
                                 activityDataUiState = ActivityDataUiState.Failure("fetch PPi data from a device responded with empty data", null)
                             }
@@ -287,8 +289,8 @@ class ActivityRecordingDataViewModel @Inject constructor(
                                         json.encodeToByteArray(),
                                         "/SKIN_TEMPERATURE/$startDate-skin-temperature.json"
                                 )
-                                val skinTemperatureRecording = ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri)
-                                updateactivityDataUiState(skinTemperatureRecording, fileUri)
+                                val skinTemperatureRecording = ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri, PolarBleApi.PolarActivityDataType.SKIN_TEMPERATURE)
+                                updateActivityDataUiState(skinTemperatureRecording, fileUri, PolarBleApi.PolarActivityDataType.SKIN_TEMPERATURE)
                             } else {
                                 activityDataUiState = ActivityDataUiState.Failure("fetch skin temperature recording responded with empty data", null)
                             }
@@ -298,17 +300,72 @@ class ActivityRecordingDataViewModel @Inject constructor(
                         }
                     }
 
+                PolarBleApi.PolarActivityDataType.ACTIVE_TIME ->
+                    when (val activeTimeRecording = polarDeviceStreamingRepository.getActiveTimeData(
+                        deviceId, Date.from(startDate.atStartOfDay(ZoneId.systemDefault()).toInstant()), Date.from(endDate.atStartOfDay(ZoneId.systemDefault()).toInstant()))) {
+                        is ResultOfRequest.Success -> {
+                            if (activeTimeRecording.value != null) {
+                                val gson = GsonBuilder()
+                                    .registerTypeAdapter(LocalDate::class.java, JsonSerializer<LocalDate> { src, _, _ ->
+                                        JsonPrimitive(src?.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                                    })
+                                    .create()
+                                val json = gson.toJson(activeTimeRecording.value)
+                                val fileUri = fileUtils.saveToFile(
+                                    json.encodeToByteArray(),
+                                    "/ACTIVE_TIME/$startDate-active-time.json"
+                                )
+                                val activeTimeRecording = ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri, PolarBleApi.PolarActivityDataType.ACTIVE_TIME)
+                                updateActivityDataUiState(activeTimeRecording, fileUri, PolarBleApi.PolarActivityDataType.ACTIVE_TIME)
+                            } else {
+                                activityDataUiState = ActivityDataUiState.Failure("fetch active time recording responded with empty data", null)
+                            }
+                        }
+                        is ResultOfRequest.Failure -> {
+                            activityDataUiState = ActivityDataUiState.Failure(activeTimeRecording.message, activeTimeRecording.throwable)
+                        }
+                    }
+
+                PolarBleApi.PolarActivityDataType.ACTIVITY_SAMPLES ->
+                    when (val activitySamplesData = polarDeviceStreamingRepository.getActivitySamplesData(
+                        deviceId, Date.from(startDate.atStartOfDay(ZoneId.systemDefault()).toInstant()), Date.from(endDate.atStartOfDay(ZoneId.systemDefault()).toInstant()))) {
+                        is ResultOfRequest.Success -> {
+                            if (activitySamplesData.value != null) {
+                                val gson = GsonBuilder()
+                                    .registerTypeAdapter(LocalDateTime::class.java, JsonSerializer<LocalDateTime> { src, _, _ ->
+                                        JsonPrimitive(src?.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")))
+                                    })
+                                    .create()
+                                val json = gson.toJson(activitySamplesData.value)
+                                val fileUri = fileUtils.saveToFile(
+                                    json.encodeToByteArray(),
+                                    "/ACTIVITY_SAMPLES/$startDate-activity-samples.json"
+                                )
+                                val activitySamplesRecording = ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri, PolarBleApi.PolarActivityDataType.ACTIVITY_SAMPLES)
+                                updateActivityDataUiState(activitySamplesRecording, fileUri, PolarBleApi.PolarActivityDataType.ACTIVITY_SAMPLES)
+                            } else {
+                                activityDataUiState = ActivityDataUiState.Failure("fetch activity samples data responded with empty data", null)
+                            }
+                        }
+                        is ResultOfRequest.Failure -> {
+                            activityDataUiState = ActivityDataUiState.Failure(activitySamplesData.message, activitySamplesData.throwable)
+                        }
+                    }
+
                 else -> { Log.d(TAG, "fetchRecording not implemented for $activityRecordingType") }
             }
         }
     }
 
-    private fun updateactivityDataUiState(activityRecording: ActivityRecordingData, uri: Uri) {
+    private suspend fun updateActivityDataUiState(activityRecording: ActivityRecordingData, uri: Uri, dataType: PolarBleApi.PolarActivityDataType) {
         val activityRecording = ActivityRecordingData(
             startDate = activityRecording.startDate,
             endDate = activityRecording.startDate,
-            uri = uri
+            uri = uri,
+            dataType = dataType
         )
-        activityDataUiState = ActivityDataUiState.FetchedData(data = activityRecording)
+        withContext(Dispatchers.Main) {
+            activityDataUiState = ActivityDataUiState.FetchedData(data = activityRecording)
+        }
     }
 }

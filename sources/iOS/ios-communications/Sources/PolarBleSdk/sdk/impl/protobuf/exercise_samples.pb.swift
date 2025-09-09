@@ -595,8 +595,7 @@ public struct Data_PbExerciseSamples {
     set {_uniqueStorage()._pauseTimes = newValue}
   }
 
-  /// Body temperature samples as Celsius,
-  /// see BODY_TEMPERATURE unit at https://wiki.polar.grp/x/I2DFAw for valid range.
+  /// Body temperature samples as Celsius
   var bodyTemperature: [Float] {
     get {return _storage._bodyTemperature}
     set {_uniqueStorage()._bodyTemperature = newValue}
