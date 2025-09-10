@@ -1,0 +1,857 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		6C2EDE8922B9FE370031AA17 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6C2EDE8822B9FE370031AA17 /* Assets.xcassets */; };
+		6C2EDE8C22B9FE370031AA17 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6C2EDE8A22B9FE370031AA17 /* LaunchScreen.storyboard */; };
+		8415B05A2C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8415B0592C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift */; };
+		8443CFAE2DD47953002AFBB9 /* UserDeviceSettingsFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8443CFAD2DD47948002AFBB9 /* UserDeviceSettingsFeature.swift */; };
+		84698A0F2DB778E2006AD8FA /* TrainingSessionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A0E2DB778E2006AD8FA /* TrainingSessionListView.swift */; };
+		84698A112DB77922006AD8FA /* TrainingSessionDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A102DB77922006AD8FA /* TrainingSessionDetailsView.swift */; };
+		84698A132DB77937006AD8FA /* TrainingSessionEntriesRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A122DB77937006AD8FA /* TrainingSessionEntriesRow.swift */; };
+		84698A152DB77D39006AD8FA /* TrainingSessionEntries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A142DB77D39006AD8FA /* TrainingSessionEntries.swift */; };
+		84698A172DB77D8C006AD8FA /* TrainingSessionData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A162DB77D8C006AD8FA /* TrainingSessionData.swift */; };
+		8499A2DC2E01576D006FD70A /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8499A2DA2E01576D006FD70A /* Localizable.strings */; };
+		84B821432D6C908B005BB62C /* DateFolderDeletionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B821422D6C908B005BB62C /* DateFolderDeletionView.swift */; };
+		84F0A1802CD0F76C009CF1A1 /* ActivityPhysicalDataConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F0A17F2CD0F76C009CF1A1 /* ActivityPhysicalDataConfig.swift */; };
+		84F748FF2C63553400038A4B /* ActivityRecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F748FE2C63553400038A4B /* ActivityRecordingView.swift */; };
+		84F749012C63556500038A4B /* ActivityDatePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F749002C63556500038A4B /* ActivityDatePickerView.swift */; };
+		84F749032C63559A00038A4B /* ActivityRecordingDetailsview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F749022C63559A00038A4B /* ActivityRecordingDetailsview.swift */; };
+		84F749052C6355C400038A4B /* ActivityRecordingData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F749042C6355C400038A4B /* ActivityRecordingData.swift */; };
+		9537D58B2CFF06E200B6A1E6 /* PolarBleDeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9537D58A2CFF06D900B6A1E6 /* PolarBleDeviceManager.swift */; };
+		95B4F1032CEB7A880010E2B6 /* CheckFirmwareUpdateFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B4F1022CEB7A7C0010E2B6 /* CheckFirmwareUpdateFeature.swift */; };
+		95BA028D2D64B1030037F44E /* FilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BA028C2D64B1030037F44E /* FilePicker.swift */; };
+		95EA2BA22D40E7B200657DE5 /* SleepRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EA2BA12D40E7A800657DE5 /* SleepRecordingFeature.swift */; };
+		AA74C2212BDA377D005E0908 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2202BDA377D005E0908 /* ContentView.swift */; };
+		AA74C2232BDA39D6005E0908 /* PolarBleSdkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2222BDA39D6005E0908 /* PolarBleSdkManager.swift */; };
+		AA74C2262BDA3A49005E0908 /* DeviceConnectionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2252BDA3A49005E0908 /* DeviceConnectionState.swift */; };
+		AA74C2282BDA3B67005E0908 /* DeviceSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2272BDA3B67005E0908 /* DeviceSearch.swift */; };
+		AA74C22A2BDA3B99005E0908 /* Messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2292BDA3B99005E0908 /* Messages.swift */; };
+		AA74C22C2BDA3BAF005E0908 /* RecordingSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C22B2BDA3BAF005E0908 /* RecordingSettings.swift */; };
+		AA74C22E2BDA3BC4005E0908 /* OfflineRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C22D2BDA3BC4005E0908 /* OfflineRecordingFeature.swift */; };
+		AA74C2302BDA3BD8005E0908 /* OfflineRecordingEntries.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C22F2BDA3BD8005E0908 /* OfflineRecordingEntries.swift */; };
+		AA74C2322BDA3BED005E0908 /* OfflineRecordingData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2312BDA3BED005E0908 /* OfflineRecordingData.swift */; };
+		AA74C2342BDA3C08005E0908 /* OnlineStreamingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2332BDA3C08005E0908 /* OnlineStreamingFeature.swift */; };
+		AA74C2362BDA3C19005E0908 /* DeviceTimeSetupFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2352BDA3C19005E0908 /* DeviceTimeSetupFeature.swift */; };
+		AA74C2382BDA3C35005E0908 /* SdkModeFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2372BDA3C35005E0908 /* SdkModeFeature.swift */; };
+		AA74C23A2BDA3C56005E0908 /* H10ExerciseRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2392BDA3C56005E0908 /* H10ExerciseRecordingFeature.swift */; };
+		AA74C23C2BDA3C64005E0908 /* DeviceInfoFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C23B2BDA3C64005E0908 /* DeviceInfoFeature.swift */; };
+		AA74C23E2BDA3C78005E0908 /* BatteryStatusFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C23D2BDA3C78005E0908 /* BatteryStatusFeature.swift */; };
+		AA74C2402BDA3C8C005E0908 /* LedAnimationFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C23F2BDA3C8C005E0908 /* LedAnimationFeature.swift */; };
+		AA74C2432BDA3D45005E0908 /* ButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2422BDA3D45005E0908 /* ButtonStyle.swift */; };
+		AA74C2472BDA3DA2005E0908 /* DeviceSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2462BDA3DA2005E0908 /* DeviceSearchView.swift */; };
+		AA74C2492BDA3DAF005E0908 /* DeviceSearchRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2482BDA3DAF005E0908 /* DeviceSearchRow.swift */; };
+		AA74C24C2BDA3DE6005E0908 /* DevicesettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C24B2BDA3DE6005E0908 /* DevicesettingsView.swift */; };
+		AA74C24F2BDA3E2F005E0908 /* OnlineStreamsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C24E2BDA3E2F005E0908 /* OnlineStreamsView.swift */; };
+		AA74C2522BDA3E75005E0908 /* OfflineRecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2512BDA3E75005E0908 /* OfflineRecordingView.swift */; };
+		AA74C2542BDA3E86005E0908 /* OfflineRecordingStartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2532BDA3E86005E0908 /* OfflineRecordingStartView.swift */; };
+		AA74C2562BDA3E9B005E0908 /* OfflineRecordingListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2552BDA3E9B005E0908 /* OfflineRecordingListView.swift */; };
+		AA74C2582BDA3EBF005E0908 /* OfflineRecordingDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2572BDA3EBF005E0908 /* OfflineRecordingDetailsView.swift */; };
+		AA74C25A2BDA3ED8005E0908 /* OfflineRecordingEntriesRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2592BDA3ED8005E0908 /* OfflineRecordingEntriesRow.swift */; };
+		AA74C25C2BDA3F3E005E0908 /* UiHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C25B2BDA3F3E005E0908 /* UiHelper.swift */; };
+		AA74C25E2BDA3F77005E0908 /* PSDCApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C25D2BDA3F77005E0908 /* PSDCApp.swift */; };
+		AA74C2602BDA3FD5005E0908 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C25F2BDA3FD5005E0908 /* SettingsView.swift */; };
+		AA74C2632BDA4FBA005E0908 /* SensorDatalogSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2622BDA4FBA005E0908 /* SensorDatalogSettingsView.swift */; };
+		AA74C2682BDA7215005E0908 /* H10ExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2672BDA7215005E0908 /* H10ExerciseView.swift */; };
+		AAA0FE012BE9EF22005368A7 /* HrRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA0FE002BE9EF22005368A7 /* HrRecordingFeature.swift */; };
+		AAA0FE032BEA354A005368A7 /* EcgRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA0FE022BEA354A005368A7 /* EcgRecordingFeature.swift */; };
+		AAA0FE052BEA3769005368A7 /* AccRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA0FE042BEA3769005368A7 /* AccRecordingFeature.swift */; };
+		AAA0FE072BEA386F005368A7 /* PpgRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA0FE062BEA386F005368A7 /* PpgRecordingFeature.swift */; };
+		AAA0FE092BEA3B42005368A7 /* PpiRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA0FE082BEA3B42005368A7 /* PpiRecordingFeature.swift */; };
+		AAA0FE0B2BEA3D00005368A7 /* GyroRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA0FE0A2BEA3D00005368A7 /* GyroRecordingFeature.swift */; };
+		AAA0FE0D2BEA3E1A005368A7 /* MagnetometerRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA0FE0C2BEA3E1A005368A7 /* MagnetometerRecordingFeature.swift */; };
+		AAB841F42E13A5F000810B09 /* MultiBleFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB841F32E13A5F000810B09 /* MultiBleFeature.swift */; };
+		AABC2A3F2C85BABB00BFC6BD /* PressureRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABC2A3D2C85BABB00BFC6BD /* PressureRecordingFeature.swift */; };
+		AABC2A402C85BABB00BFC6BD /* SDLogConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABC2A3E2C85BABB00BFC6BD /* SDLogConfiguration.swift */; };
+		AAC9FCA02DCCAEB200CFA655 /* UserDeviceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAC9FC9F2DCCAEAB00CFA655 /* UserDeviceSettingsView.swift */; };
+		AACBC92C2BEB5C89003A5D1B /* TemperatureRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AACBC92B2BEB5C89003A5D1B /* TemperatureRecordingFeature.swift */; };
+		AAD1C8612D26760100F169BA /* SkinTemperatureRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD1C8602D26760100F169BA /* SkinTemperatureRecordingFeature.swift */; };
+		AAE726462CB654A700007C6C /* DataDeletionSelections.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAE726452CB654A700007C6C /* DataDeletionSelections.swift */; };
+		AAE726482CB654D000007C6C /* DataDeletionFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAE726472CB654D000007C6C /* DataDeletionFeature.swift */; };
+		AAFA1C6C2C97EB74004DC8C8 /* MenuStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFA1C6B2C97EB74004DC8C8 /* MenuStyle.swift */; };
+		CC57B5DC2E60618900E90F5B /* ExerciseUIState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC57B5DB2E60617F00E90F5B /* ExerciseUIState.swift */; };
+		CC57B5DE2E60619400E90F5B /* ExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC57B5DD2E60618D00E90F5B /* ExerciseView.swift */; };
+		EFC90D59C9EAFEB4A663ACE5 /* Pods_PSDC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB654535DD0D50AFF0A44E38 /* Pods_PSDC.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A5560E23256400EF00C3F75D /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		20AE5DFFB9E2A1A7CD2955F0 /* Pods-PSDC.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PSDC.debug.xcconfig"; path = "Target Support Files/Pods-PSDC/Pods-PSDC.debug.xcconfig"; sourceTree = "<group>"; };
+		671CC8F36BE17D0395634D79 /* Pods-PSDC.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PSDC.release.xcconfig"; path = "Target Support Files/Pods-PSDC/Pods-PSDC.release.xcconfig"; sourceTree = "<group>"; };
+		6C2EDE7E22B9FE360031AA17 /* PSDC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PSDC.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6C2EDE8822B9FE370031AA17 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		6C2EDE8B22B9FE370031AA17 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		6C2EDE8D22B9FE370031AA17 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8415B0592C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareUpdateFeature.swift; sourceTree = "<group>"; };
+		8443CFAD2DD47948002AFBB9 /* UserDeviceSettingsFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDeviceSettingsFeature.swift; sourceTree = "<group>"; };
+		84698A0E2DB778E2006AD8FA /* TrainingSessionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionListView.swift; sourceTree = "<group>"; };
+		84698A102DB77922006AD8FA /* TrainingSessionDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionDetailsView.swift; sourceTree = "<group>"; };
+		84698A122DB77937006AD8FA /* TrainingSessionEntriesRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionEntriesRow.swift; sourceTree = "<group>"; };
+		84698A142DB77D39006AD8FA /* TrainingSessionEntries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionEntries.swift; sourceTree = "<group>"; };
+		84698A162DB77D8C006AD8FA /* TrainingSessionData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionData.swift; sourceTree = "<group>"; };
+		8499A2DB2E01576D006FD70A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		84B821422D6C908B005BB62C /* DateFolderDeletionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFolderDeletionView.swift; sourceTree = "<group>"; };
+		84F0A17F2CD0F76C009CF1A1 /* ActivityPhysicalDataConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityPhysicalDataConfig.swift; sourceTree = "<group>"; };
+		84F748FE2C63553400038A4B /* ActivityRecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityRecordingView.swift; sourceTree = "<group>"; };
+		84F749002C63556500038A4B /* ActivityDatePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityDatePickerView.swift; sourceTree = "<group>"; };
+		84F749022C63559A00038A4B /* ActivityRecordingDetailsview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityRecordingDetailsview.swift; sourceTree = "<group>"; };
+		84F749042C6355C400038A4B /* ActivityRecordingData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityRecordingData.swift; sourceTree = "<group>"; };
+		9537D58A2CFF06D900B6A1E6 /* PolarBleDeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarBleDeviceManager.swift; sourceTree = "<group>"; };
+		9559A5F72D267B960003DC6F /* SkinTemperatureRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkinTemperatureRecordingFeature.swift; sourceTree = "<group>"; };
+		95A381E52D27DEC9005DB1BA /* PSDC.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PSDC.entitlements; sourceTree = "<group>"; };
+		95B4F1022CEB7A7C0010E2B6 /* CheckFirmwareUpdateFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckFirmwareUpdateFeature.swift; sourceTree = "<group>"; };
+		95BA028C2D64B1030037F44E /* FilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePicker.swift; sourceTree = "<group>"; };
+		95EA2BA12D40E7A800657DE5 /* SleepRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepRecordingFeature.swift; sourceTree = "<group>"; };
+		A588B0DB25B81B7800F6D7A3 /* PolarBleSdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = PolarBleSdk.xcframework; path = dependencies/PolarBleSdk.xcframework; sourceTree = "<group>"; };
+		A588B0DE25B81B7D00F6D7A3 /* RxSwift.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = RxSwift.xcframework; path = dependencies/RxSwift.xcframework; sourceTree = "<group>"; };
+		AA74C2202BDA377D005E0908 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AA74C2222BDA39D6005E0908 /* PolarBleSdkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarBleSdkManager.swift; sourceTree = "<group>"; };
+		AA74C2252BDA3A49005E0908 /* DeviceConnectionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionState.swift; sourceTree = "<group>"; };
+		AA74C2272BDA3B67005E0908 /* DeviceSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSearch.swift; sourceTree = "<group>"; };
+		AA74C2292BDA3B99005E0908 /* Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Messages.swift; sourceTree = "<group>"; };
+		AA74C22B2BDA3BAF005E0908 /* RecordingSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingSettings.swift; sourceTree = "<group>"; };
+		AA74C22D2BDA3BC4005E0908 /* OfflineRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingFeature.swift; sourceTree = "<group>"; };
+		AA74C22F2BDA3BD8005E0908 /* OfflineRecordingEntries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingEntries.swift; sourceTree = "<group>"; };
+		AA74C2312BDA3BED005E0908 /* OfflineRecordingData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingData.swift; sourceTree = "<group>"; };
+		AA74C2332BDA3C08005E0908 /* OnlineStreamingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineStreamingFeature.swift; sourceTree = "<group>"; };
+		AA74C2352BDA3C19005E0908 /* DeviceTimeSetupFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTimeSetupFeature.swift; sourceTree = "<group>"; };
+		AA74C2372BDA3C35005E0908 /* SdkModeFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SdkModeFeature.swift; sourceTree = "<group>"; };
+		AA74C2392BDA3C56005E0908 /* H10ExerciseRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = H10ExerciseRecordingFeature.swift; sourceTree = "<group>"; };
+		AA74C23B2BDA3C64005E0908 /* DeviceInfoFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfoFeature.swift; sourceTree = "<group>"; };
+		AA74C23D2BDA3C78005E0908 /* BatteryStatusFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryStatusFeature.swift; sourceTree = "<group>"; };
+		AA74C23F2BDA3C8C005E0908 /* LedAnimationFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedAnimationFeature.swift; sourceTree = "<group>"; };
+		AA74C2422BDA3D45005E0908 /* ButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonStyle.swift; sourceTree = "<group>"; };
+		AA74C2462BDA3DA2005E0908 /* DeviceSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSearchView.swift; sourceTree = "<group>"; };
+		AA74C2482BDA3DAF005E0908 /* DeviceSearchRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSearchRow.swift; sourceTree = "<group>"; };
+		AA74C24B2BDA3DE6005E0908 /* DevicesettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicesettingsView.swift; sourceTree = "<group>"; };
+		AA74C24E2BDA3E2F005E0908 /* OnlineStreamsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineStreamsView.swift; sourceTree = "<group>"; };
+		AA74C2512BDA3E75005E0908 /* OfflineRecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingView.swift; sourceTree = "<group>"; };
+		AA74C2532BDA3E86005E0908 /* OfflineRecordingStartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingStartView.swift; sourceTree = "<group>"; };
+		AA74C2552BDA3E9B005E0908 /* OfflineRecordingListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingListView.swift; sourceTree = "<group>"; };
+		AA74C2572BDA3EBF005E0908 /* OfflineRecordingDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingDetailsView.swift; sourceTree = "<group>"; };
+		AA74C2592BDA3ED8005E0908 /* OfflineRecordingEntriesRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingEntriesRow.swift; sourceTree = "<group>"; };
+		AA74C25B2BDA3F3E005E0908 /* UiHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UiHelper.swift; sourceTree = "<group>"; };
+		AA74C25D2BDA3F77005E0908 /* PSDCApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PSDCApp.swift; sourceTree = "<group>"; };
+		AA74C25F2BDA3FD5005E0908 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AA74C2622BDA4FBA005E0908 /* SensorDatalogSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensorDatalogSettingsView.swift; sourceTree = "<group>"; };
+		AA74C2672BDA7215005E0908 /* H10ExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = H10ExerciseView.swift; sourceTree = "<group>"; };
+		AA7C73292BC4F871006C0645 /* Alamofire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Alamofire.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AAA0FE002BE9EF22005368A7 /* HrRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HrRecordingFeature.swift; sourceTree = "<group>"; };
+		AAA0FE022BEA354A005368A7 /* EcgRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EcgRecordingFeature.swift; sourceTree = "<group>"; };
+		AAA0FE042BEA3769005368A7 /* AccRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccRecordingFeature.swift; sourceTree = "<group>"; };
+		AAA0FE062BEA386F005368A7 /* PpgRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PpgRecordingFeature.swift; sourceTree = "<group>"; };
+		AAA0FE082BEA3B42005368A7 /* PpiRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PpiRecordingFeature.swift; sourceTree = "<group>"; };
+		AAA0FE0A2BEA3D00005368A7 /* GyroRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GyroRecordingFeature.swift; sourceTree = "<group>"; };
+		AAA0FE0C2BEA3E1A005368A7 /* MagnetometerRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagnetometerRecordingFeature.swift; sourceTree = "<group>"; };
+		AAB841F32E13A5F000810B09 /* MultiBleFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiBleFeature.swift; sourceTree = "<group>"; };
+		AABC2A3D2C85BABB00BFC6BD /* PressureRecordingFeature.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PressureRecordingFeature.swift; sourceTree = "<group>"; };
+		AABC2A3E2C85BABB00BFC6BD /* SDLogConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SDLogConfiguration.swift; sourceTree = "<group>"; };
+		AAC9FC9F2DCCAEAB00CFA655 /* UserDeviceSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDeviceSettingsView.swift; sourceTree = "<group>"; };
+		AACBC92B2BEB5C89003A5D1B /* TemperatureRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureRecordingFeature.swift; sourceTree = "<group>"; };
+		AAD1C8602D26760100F169BA /* SkinTemperatureRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkinTemperatureRecordingFeature.swift; sourceTree = "<group>"; };
+		AAE726452CB654A700007C6C /* DataDeletionSelections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataDeletionSelections.swift; sourceTree = "<group>"; };
+		AAE726472CB654D000007C6C /* DataDeletionFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataDeletionFeature.swift; sourceTree = "<group>"; };
+		AAFA1C6B2C97EB74004DC8C8 /* MenuStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuStyle.swift; sourceTree = "<group>"; };
+		BB654535DD0D50AFF0A44E38 /* Pods_PSDC.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PSDC.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC57B5DB2E60617F00E90F5B /* ExerciseUIState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseUIState.swift; sourceTree = "<group>"; };
+		CC57B5DD2E60618D00E90F5B /* ExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		6C2EDE7B22B9FE360031AA17 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EFC90D59C9EAFEB4A663ACE5 /* Pods_PSDC.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		6C2EDE7522B9FE350031AA17 = {
+			isa = PBXGroup;
+			children = (
+				6C2EDE8022B9FE360031AA17 /* PSDC */,
+				6C2EDE7F22B9FE360031AA17 /* Products */,
+				6C2EDE9A22BA42070031AA17 /* Frameworks */,
+				6F9B5877CFCD0DFD62DE31CA /* Pods */,
+			);
+			sourceTree = "<group>";
+		};
+		6C2EDE7F22B9FE360031AA17 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6C2EDE7E22B9FE360031AA17 /* PSDC.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6C2EDE8022B9FE360031AA17 /* PSDC */ = {
+			isa = PBXGroup;
+			children = (
+				AA74C2222BDA39D6005E0908 /* PolarBleSdkManager.swift */,
+				9537D58A2CFF06D900B6A1E6 /* PolarBleDeviceManager.swift */,
+				AA74C25D2BDA3F77005E0908 /* PSDCApp.swift */,
+				AA74C2442BDA3D6D005E0908 /* Views */,
+				AA74C2242BDA3A2C005E0908 /* Models */,
+				6C2EDE8822B9FE370031AA17 /* Assets.xcassets */,
+				6C2EDE8A22B9FE370031AA17 /* LaunchScreen.storyboard */,
+				6C2EDE8D22B9FE370031AA17 /* Info.plist */,
+				95A381E52D27DEC9005DB1BA /* PSDC.entitlements */,
+				8499A2DA2E01576D006FD70A /* Localizable.strings */,
+			);
+			path = PSDC;
+			sourceTree = "<group>";
+		};
+		6C2EDE9A22BA42070031AA17 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AA7C73292BC4F871006C0645 /* Alamofire.framework */,
+				A588B0DE25B81B7D00F6D7A3 /* RxSwift.xcframework */,
+				A588B0DB25B81B7800F6D7A3 /* PolarBleSdk.xcframework */,
+				BB654535DD0D50AFF0A44E38 /* Pods_PSDC.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		6F9B5877CFCD0DFD62DE31CA /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				20AE5DFFB9E2A1A7CD2955F0 /* Pods-PSDC.debug.xcconfig */,
+				671CC8F36BE17D0395634D79 /* Pods-PSDC.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		84698A0D2DB778B2006AD8FA /* TrainingSession */ = {
+			isa = PBXGroup;
+			children = (
+				84698A0E2DB778E2006AD8FA /* TrainingSessionListView.swift */,
+				84698A102DB77922006AD8FA /* TrainingSessionDetailsView.swift */,
+				84698A122DB77937006AD8FA /* TrainingSessionEntriesRow.swift */,
+			);
+			path = TrainingSession;
+			sourceTree = "<group>";
+		};
+		84F0A17E2CD0F74C009CF1A1 /* PhysicalData */ = {
+			isa = PBXGroup;
+			children = (
+				84F0A17F2CD0F76C009CF1A1 /* ActivityPhysicalDataConfig.swift */,
+			);
+			path = PhysicalData;
+			sourceTree = "<group>";
+		};
+		84F748FD2C63551C00038A4B /* Activity */ = {
+			isa = PBXGroup;
+			children = (
+				84F748FE2C63553400038A4B /* ActivityRecordingView.swift */,
+				84F749002C63556500038A4B /* ActivityDatePickerView.swift */,
+				84F749022C63559A00038A4B /* ActivityRecordingDetailsview.swift */,
+			);
+			path = Activity;
+			sourceTree = "<group>";
+		};
+		AA74C2242BDA3A2C005E0908 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AAB841F32E13A5F000810B09 /* MultiBleFeature.swift */,
+				8443CFAD2DD47948002AFBB9 /* UserDeviceSettingsFeature.swift */,
+				95EA2BA12D40E7A800657DE5 /* SleepRecordingFeature.swift */,
+				AAD1C8602D26760100F169BA /* SkinTemperatureRecordingFeature.swift */,
+				AABC2A3D2C85BABB00BFC6BD /* PressureRecordingFeature.swift */,
+				AABC2A3E2C85BABB00BFC6BD /* SDLogConfiguration.swift */,
+				AA74C2252BDA3A49005E0908 /* DeviceConnectionState.swift */,
+				AA74C2272BDA3B67005E0908 /* DeviceSearch.swift */,
+				AA74C2292BDA3B99005E0908 /* Messages.swift */,
+				AA74C22B2BDA3BAF005E0908 /* RecordingSettings.swift */,
+				AA74C22D2BDA3BC4005E0908 /* OfflineRecordingFeature.swift */,
+				AA74C22F2BDA3BD8005E0908 /* OfflineRecordingEntries.swift */,
+				AA74C2312BDA3BED005E0908 /* OfflineRecordingData.swift */,
+				AA74C2332BDA3C08005E0908 /* OnlineStreamingFeature.swift */,
+				AA74C2352BDA3C19005E0908 /* DeviceTimeSetupFeature.swift */,
+				AA74C2372BDA3C35005E0908 /* SdkModeFeature.swift */,
+				AA74C2392BDA3C56005E0908 /* H10ExerciseRecordingFeature.swift */,
+				AA74C23B2BDA3C64005E0908 /* DeviceInfoFeature.swift */,
+				AA74C23D2BDA3C78005E0908 /* BatteryStatusFeature.swift */,
+				AA74C23F2BDA3C8C005E0908 /* LedAnimationFeature.swift */,
+				AAA0FE002BE9EF22005368A7 /* HrRecordingFeature.swift */,
+				AAA0FE022BEA354A005368A7 /* EcgRecordingFeature.swift */,
+				AAA0FE042BEA3769005368A7 /* AccRecordingFeature.swift */,
+				AAA0FE062BEA386F005368A7 /* PpgRecordingFeature.swift */,
+				AAA0FE082BEA3B42005368A7 /* PpiRecordingFeature.swift */,
+				AAA0FE0A2BEA3D00005368A7 /* GyroRecordingFeature.swift */,
+				AAA0FE0C2BEA3E1A005368A7 /* MagnetometerRecordingFeature.swift */,
+				AACBC92B2BEB5C89003A5D1B /* TemperatureRecordingFeature.swift */,
+				9559A5F72D267B960003DC6F /* SkinTemperatureRecordingFeature.swift */,
+				8415B0592C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift */,
+				95B4F1022CEB7A7C0010E2B6 /* CheckFirmwareUpdateFeature.swift */,
+				84F749042C6355C400038A4B /* ActivityRecordingData.swift */,
+				AAE726472CB654D000007C6C /* DataDeletionFeature.swift */,
+				84698A142DB77D39006AD8FA /* TrainingSessionEntries.swift */,
+				84698A162DB77D8C006AD8FA /* TrainingSessionData.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AA74C2412BDA3D34005E0908 /* Styles */ = {
+			isa = PBXGroup;
+			children = (
+				AA74C2422BDA3D45005E0908 /* ButtonStyle.swift */,
+				AAFA1C6B2C97EB74004DC8C8 /* MenuStyle.swift */,
+			);
+			path = Styles;
+			sourceTree = "<group>";
+		};
+		AA74C2442BDA3D6D005E0908 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				CC57B5DA2E60617000E90F5B /* ExerciseSession */,
+				84698A0D2DB778B2006AD8FA /* TrainingSession */,
+				84F0A17E2CD0F74C009CF1A1 /* PhysicalData */,
+				84F748FD2C63551C00038A4B /* Activity */,
+				AA74C2662BDA71FE005E0908 /* H10Exercise */,
+				AA74C2612BDA4F9E005E0908 /* SensorDataLogSettings */,
+				AA74C2412BDA3D34005E0908 /* Styles */,
+				AA74C2502BDA3E57005E0908 /* OfflineRecording */,
+				AA74C24D2BDA3E02005E0908 /* OnlineStreaming */,
+				AA74C24A2BDA3DCC005E0908 /* DeviceSettings */,
+				AA74C2452BDA3D8B005E0908 /* DeviceSearch */,
+				AA74C2202BDA377D005E0908 /* ContentView.swift */,
+				AA74C25B2BDA3F3E005E0908 /* UiHelper.swift */,
+				AA74C25F2BDA3FD5005E0908 /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		AA74C2452BDA3D8B005E0908 /* DeviceSearch */ = {
+			isa = PBXGroup;
+			children = (
+				AA74C2462BDA3DA2005E0908 /* DeviceSearchView.swift */,
+				AA74C2482BDA3DAF005E0908 /* DeviceSearchRow.swift */,
+			);
+			path = DeviceSearch;
+			sourceTree = "<group>";
+		};
+		AA74C24A2BDA3DCC005E0908 /* DeviceSettings */ = {
+			isa = PBXGroup;
+			children = (
+				AAC9FC9F2DCCAEAB00CFA655 /* UserDeviceSettingsView.swift */,
+				AA74C24B2BDA3DE6005E0908 /* DevicesettingsView.swift */,
+				AAE726452CB654A700007C6C /* DataDeletionSelections.swift */,
+				95BA028C2D64B1030037F44E /* FilePicker.swift */,
+				84B821422D6C908B005BB62C /* DateFolderDeletionView.swift */,
+			);
+			path = DeviceSettings;
+			sourceTree = "<group>";
+		};
+		AA74C24D2BDA3E02005E0908 /* OnlineStreaming */ = {
+			isa = PBXGroup;
+			children = (
+				AA74C24E2BDA3E2F005E0908 /* OnlineStreamsView.swift */,
+			);
+			path = OnlineStreaming;
+			sourceTree = "<group>";
+		};
+		AA74C2502BDA3E57005E0908 /* OfflineRecording */ = {
+			isa = PBXGroup;
+			children = (
+				AA74C2512BDA3E75005E0908 /* OfflineRecordingView.swift */,
+				AA74C2532BDA3E86005E0908 /* OfflineRecordingStartView.swift */,
+				AA74C2552BDA3E9B005E0908 /* OfflineRecordingListView.swift */,
+				AA74C2572BDA3EBF005E0908 /* OfflineRecordingDetailsView.swift */,
+				AA74C2592BDA3ED8005E0908 /* OfflineRecordingEntriesRow.swift */,
+			);
+			path = OfflineRecording;
+			sourceTree = "<group>";
+		};
+		AA74C2612BDA4F9E005E0908 /* SensorDataLogSettings */ = {
+			isa = PBXGroup;
+			children = (
+				AA74C2622BDA4FBA005E0908 /* SensorDatalogSettingsView.swift */,
+			);
+			path = SensorDataLogSettings;
+			sourceTree = "<group>";
+		};
+		AA74C2662BDA71FE005E0908 /* H10Exercise */ = {
+			isa = PBXGroup;
+			children = (
+				AA74C2672BDA7215005E0908 /* H10ExerciseView.swift */,
+			);
+			path = H10Exercise;
+			sourceTree = "<group>";
+		};
+		CC57B5DA2E60617000E90F5B /* ExerciseSession */ = {
+			isa = PBXGroup;
+			children = (
+				CC57B5DD2E60618D00E90F5B /* ExerciseView.swift */,
+				CC57B5DB2E60617F00E90F5B /* ExerciseUIState.swift */,
+			);
+			path = ExerciseSession;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		6C2EDE7D22B9FE360031AA17 /* PSDC */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6C2EDE9022B9FE370031AA17 /* Build configuration list for PBXNativeTarget "PSDC" */;
+			buildPhases = (
+				82F5D99AF810E9B3F36095D4 /* [CP] Check Pods Manifest.lock */,
+				9517B91A2E3A03E10079D6FA /* ShellScript */,
+				6C2EDE7A22B9FE360031AA17 /* Sources */,
+				6C2EDE7B22B9FE360031AA17 /* Frameworks */,
+				6C2EDE7C22B9FE360031AA17 /* Resources */,
+				A5560E23256400EF00C3F75D /* Embed Frameworks */,
+				E9B2FA945BFEDF292071DC0A /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PSDC;
+			productName = PSDC;
+			productReference = 6C2EDE7E22B9FE360031AA17 /* PSDC.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		6C2EDE7622B9FE350031AA17 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastSwiftUpdateCheck = 1020;
+				LastUpgradeCheck = 1620;
+				ORGANIZATIONNAME = Polar;
+				TargetAttributes = {
+					6C2EDE7D22B9FE360031AA17 = {
+						CreatedOnToolsVersion = 10.2.1;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
+					};
+				};
+			};
+			buildConfigurationList = 6C2EDE7922B9FE350031AA17 /* Build configuration list for PBXProject "PSDC" */;
+			compatibilityVersion = "Xcode 12.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 6C2EDE7522B9FE350031AA17;
+			productRefGroup = 6C2EDE7F22B9FE360031AA17 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				6C2EDE7D22B9FE360031AA17 /* PSDC */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6C2EDE7C22B9FE360031AA17 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C2EDE8C22B9FE370031AA17 /* LaunchScreen.storyboard in Resources */,
+				8499A2DC2E01576D006FD70A /* Localizable.strings in Resources */,
+				6C2EDE8922B9FE370031AA17 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		82F5D99AF810E9B3F36095D4 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PSDC-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		9517B91A2E3A03E10079D6FA /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "# Get path to SDK using Podfile:\n\nPODFILE=\"Podfile\"\nPOD_NAME=\"PolarBleSdk\"\n\n# Extract non-comment lines containing the pod declaration\nLINE=$(grep -E \"^[^#]*pod ['\\\"]$POD_NAME['\\\"]\" \"$PODFILE\")\n\nif [[ -z \"$LINE\" ]]; then\n  echo \"Build run script phase error\"\n  echo \"Pod '$POD_NAME' not found in $PODFILE\"\n  exit 1\nfi\n\n# Extract the path using regex\n\nPATH=$(echo \"$LINE\" | grep -oE \":path\\s*=>\\s*['\\\"][^'\\\"]+['\\\"]|:path:\\s*['\\\"][^'\\\"]+['\\\"]\" | grep -oE \"['\\\"][^'\\\"]+['\\\"]\" | tr -d \"'\\\"\")\n\nPATH=$(eval echo \"$PATH\") # eval maybe unsafe?\n\nif [[ -n \"$PATH\" ]]; then\n  echo \"Path for pod '$POD_NAME': $PATH\"\nelse\n  echo \"No path found for pod '$POD_NAME'\"\nfi\n\npushd \"${PATH}\"\n\n# Get local git commit hash and branch for local PolarBleSDK\nsdk_git_commit=$(/usr/bin/git log -1 --format=\"%h\")\nsdk_branch=$(/usr/bin/git rev-parse --abbrev-ref HEAD)\n# Get locally modified file list for SDK:\nsdk_local_modifications=$(/usr/bin/git status --porcelain | /usr/bin/awk '/^ M/ {print $2}')\n\npopd\n\n# Get local git commit hash and branch for PSDC app\napp_git_commit=$(/usr/bin/git log -1 --format=\"%h\")\napp_branch=$(/usr/bin/git rev-parse --abbrev-ref HEAD)\n\necho \"app git commit/branch ${app_git_commit}/${app_branch}\"\necho \"sdk git commit/branch ${sdk_git_commit}/${sdk_branch}\"\n\n# Get locally modified file list for PSDC:\napp_local_modifications=$(/usr/bin/git status --porcelain | /usr/bin/awk '/^ M/ {print $2}')\n\ninfo_plist=\"${SRCROOT}/PSDC/Info.plist\"\n\n/usr/libexec/PlistBuddy -c \"Add :APP_GIT_COMMIT string '${app_git_commit}'\" \"${info_plist}\" || \\\n/usr/libexec/PlistBuddy -c \"Set :APP_GIT_COMMIT '${app_git_commit}'\" \"${info_plist}\"\n\n/usr/libexec/PlistBuddy -c \"Add :APP_GIT_BRANCH string '${app_branch}'\" \"${info_plist}\" || \\\n/usr/libexec/PlistBuddy -c \"Set :APP_GIT_BRANCH '${app_branch}'\" \"${info_plist}\"\n\n/usr/libexec/PlistBuddy -c \"Add :SDK_GIT_COMMIT string '${sdk_git_commit}'\" \"${info_plist}\" || \\\n/usr/libexec/PlistBuddy -c \"Set :SDK_GIT_COMMIT '${sdk_git_commit}'\" \"${info_plist}\"\n\n/usr/libexec/PlistBuddy -c \"Add :SDK_GIT_BRANCH string '${sdk_branch}'\" \"${info_plist}\" || \\\n/usr/libexec/PlistBuddy -c \"Set :SDK_GIT_BRANCH '${sdk_branch}'\" \"${info_plist}\"\n\n\n/usr/libexec/PlistBuddy -c \"Add :GIT_APP_LOCALLY_MODIFIED string '${app_local_modifications}'\" \"${info_plist}\" || \\\n/usr/libexec/PlistBuddy -c \"Set :GIT_APP_LOCALLY_MODIFIED  '${app_local_modifications}'\" \"${info_plist}\"\n\n/usr/libexec/PlistBuddy -c \"Add :GIT_SDK_LOCALLY_MODIFIED string '${sdk_local_modifications}'\" \"${info_plist}\" || \\\n/usr/libexec/PlistBuddy -c \"Set :GIT_SDK_LOCALLY_MODIFIED  '${sdk_local_modifications}'\" \"${info_plist}\"\n\n\n";
+		};
+		E9B2FA945BFEDF292071DC0A /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PSDC/Pods-PSDC-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PSDC/Pods-PSDC-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PSDC/Pods-PSDC-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		6C2EDE7A22B9FE360031AA17 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA74C2632BDA4FBA005E0908 /* SensorDatalogSettingsView.swift in Sources */,
+				AAA0FE032BEA354A005368A7 /* EcgRecordingFeature.swift in Sources */,
+				AA74C25C2BDA3F3E005E0908 /* UiHelper.swift in Sources */,
+				AA74C2542BDA3E86005E0908 /* OfflineRecordingStartView.swift in Sources */,
+				84698A112DB77922006AD8FA /* TrainingSessionDetailsView.swift in Sources */,
+				AA74C2302BDA3BD8005E0908 /* OfflineRecordingEntries.swift in Sources */,
+				AAA0FE072BEA386F005368A7 /* PpgRecordingFeature.swift in Sources */,
+				CC57B5DC2E60618900E90F5B /* ExerciseUIState.swift in Sources */,
+				84F0A1802CD0F76C009CF1A1 /* ActivityPhysicalDataConfig.swift in Sources */,
+				AA74C23C2BDA3C64005E0908 /* DeviceInfoFeature.swift in Sources */,
+				AA74C24F2BDA3E2F005E0908 /* OnlineStreamsView.swift in Sources */,
+				AA74C22A2BDA3B99005E0908 /* Messages.swift in Sources */,
+				95B4F1032CEB7A880010E2B6 /* CheckFirmwareUpdateFeature.swift in Sources */,
+				AA74C2492BDA3DAF005E0908 /* DeviceSearchRow.swift in Sources */,
+				9537D58B2CFF06E200B6A1E6 /* PolarBleDeviceManager.swift in Sources */,
+				AA74C22E2BDA3BC4005E0908 /* OfflineRecordingFeature.swift in Sources */,
+				AA74C2472BDA3DA2005E0908 /* DeviceSearchView.swift in Sources */,
+				AA74C2262BDA3A49005E0908 /* DeviceConnectionState.swift in Sources */,
+				CC57B5DE2E60619400E90F5B /* ExerciseView.swift in Sources */,
+				AA74C2362BDA3C19005E0908 /* DeviceTimeSetupFeature.swift in Sources */,
+				AA74C2522BDA3E75005E0908 /* OfflineRecordingView.swift in Sources */,
+				AAD1C8612D26760100F169BA /* SkinTemperatureRecordingFeature.swift in Sources */,
+				AA74C2322BDA3BED005E0908 /* OfflineRecordingData.swift in Sources */,
+				AA74C2382BDA3C35005E0908 /* SdkModeFeature.swift in Sources */,
+				AACBC92C2BEB5C89003A5D1B /* TemperatureRecordingFeature.swift in Sources */,
+				AAA0FE0B2BEA3D00005368A7 /* GyroRecordingFeature.swift in Sources */,
+				AA74C2282BDA3B67005E0908 /* DeviceSearch.swift in Sources */,
+				84B821432D6C908B005BB62C /* DateFolderDeletionView.swift in Sources */,
+				AAB841F42E13A5F000810B09 /* MultiBleFeature.swift in Sources */,
+				84F748FF2C63553400038A4B /* ActivityRecordingView.swift in Sources */,
+				AA74C22C2BDA3BAF005E0908 /* RecordingSettings.swift in Sources */,
+				8443CFAE2DD47953002AFBB9 /* UserDeviceSettingsFeature.swift in Sources */,
+				AAE726482CB654D000007C6C /* DataDeletionFeature.swift in Sources */,
+				AABC2A3F2C85BABB00BFC6BD /* PressureRecordingFeature.swift in Sources */,
+				AAC9FCA02DCCAEB200CFA655 /* UserDeviceSettingsView.swift in Sources */,
+				AA74C24C2BDA3DE6005E0908 /* DevicesettingsView.swift in Sources */,
+				AA74C2432BDA3D45005E0908 /* ButtonStyle.swift in Sources */,
+				AA74C2232BDA39D6005E0908 /* PolarBleSdkManager.swift in Sources */,
+				AAA0FE092BEA3B42005368A7 /* PpiRecordingFeature.swift in Sources */,
+				84F749052C6355C400038A4B /* ActivityRecordingData.swift in Sources */,
+				AA74C2402BDA3C8C005E0908 /* LedAnimationFeature.swift in Sources */,
+				AA74C25A2BDA3ED8005E0908 /* OfflineRecordingEntriesRow.swift in Sources */,
+				AAA0FE012BE9EF22005368A7 /* HrRecordingFeature.swift in Sources */,
+				AAFA1C6C2C97EB74004DC8C8 /* MenuStyle.swift in Sources */,
+				AA74C23E2BDA3C78005E0908 /* BatteryStatusFeature.swift in Sources */,
+				AA74C2212BDA377D005E0908 /* ContentView.swift in Sources */,
+				AA74C25E2BDA3F77005E0908 /* PSDCApp.swift in Sources */,
+				95BA028D2D64B1030037F44E /* FilePicker.swift in Sources */,
+				84698A152DB77D39006AD8FA /* TrainingSessionEntries.swift in Sources */,
+				84698A132DB77937006AD8FA /* TrainingSessionEntriesRow.swift in Sources */,
+				AA74C2682BDA7215005E0908 /* H10ExerciseView.swift in Sources */,
+				AAA0FE052BEA3769005368A7 /* AccRecordingFeature.swift in Sources */,
+				84698A172DB77D8C006AD8FA /* TrainingSessionData.swift in Sources */,
+				AA74C2562BDA3E9B005E0908 /* OfflineRecordingListView.swift in Sources */,
+				8415B05A2C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift in Sources */,
+				95EA2BA22D40E7B200657DE5 /* SleepRecordingFeature.swift in Sources */,
+				AABC2A402C85BABB00BFC6BD /* SDLogConfiguration.swift in Sources */,
+				AA74C2342BDA3C08005E0908 /* OnlineStreamingFeature.swift in Sources */,
+				AAA0FE0D2BEA3E1A005368A7 /* MagnetometerRecordingFeature.swift in Sources */,
+				84698A0F2DB778E2006AD8FA /* TrainingSessionListView.swift in Sources */,
+				AA74C23A2BDA3C56005E0908 /* H10ExerciseRecordingFeature.swift in Sources */,
+				84F749032C63559A00038A4B /* ActivityRecordingDetailsview.swift in Sources */,
+				84F749012C63556500038A4B /* ActivityDatePickerView.swift in Sources */,
+				AAE726462CB654A700007C6C /* DataDeletionSelections.swift in Sources */,
+				AA74C2582BDA3EBF005E0908 /* OfflineRecordingDetailsView.swift in Sources */,
+				AA74C2602BDA3FD5005E0908 /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		6C2EDE8A22B9FE370031AA17 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				6C2EDE8B22B9FE370031AA17 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		8499A2DA2E01576D006FD70A /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				8499A2DB2E01576D006FD70A /* en */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		6C2EDE8E22B9FE370031AA17 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 48T8QNDCP9;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		6C2EDE8F22B9FE370031AA17 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 48T8QNDCP9;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		6C2EDE9122B9FE370031AA17 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 20AE5DFFB9E2A1A7CD2955F0 /* Pods-PSDC.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = PSDC/PSDC.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 48T8QNDCP9;
+				ENABLE_BITCODE = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
+				INFOPLIST_FILE = PSDC/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.polar.PolarSensorDataCollector-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		6C2EDE9222B9FE370031AA17 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 671CC8F36BE17D0395634D79 /* Pods-PSDC.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = PSDC/PSDC.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 48T8QNDCP9;
+				ENABLE_BITCODE = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
+				INFOPLIST_FILE = PSDC/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.polar.PolarSensorDataCollector-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6C2EDE7922B9FE350031AA17 /* Build configuration list for PBXProject "PSDC" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6C2EDE8E22B9FE370031AA17 /* Debug */,
+				6C2EDE8F22B9FE370031AA17 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6C2EDE9022B9FE370031AA17 /* Build configuration list for PBXNativeTarget "PSDC" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6C2EDE9122B9FE370031AA17 /* Debug */,
+				6C2EDE9222B9FE370031AA17 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 6C2EDE7622B9FE350031AA17 /* Project object */;
+}

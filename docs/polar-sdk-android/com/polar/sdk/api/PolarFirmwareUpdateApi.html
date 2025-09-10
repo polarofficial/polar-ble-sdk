@@ -246,6 +246,14 @@ public interface <span class="typeNameLabel"><a href=PolarFirmwareUpdateApi.html
                                         </tr>
                                         
                                         <tr id="i0" class="altColor">
+                                            <td class="colFirst"><code>abstract Observable&lt;<a href=model/CheckFirmwareUpdateStatus.html>CheckFirmwareUpdateStatus</a>&gt;</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarFirmwareUpdateApi.html#checkFirmwareUpdate(java.lang.String)>checkFirmwareUpdate</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">Checks if a firmware update is available for the given device identifier.</td>
+                                        </tr>
+                                        
+                                        <tr id="i1" class="rowColor">
                                             <td class="colFirst"><code>abstract Flowable&lt;<a href=model/FirmwareUpdateStatus.html>FirmwareUpdateStatus</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarFirmwareUpdateApi.html#updateFirmware(java.lang.String)>updateFirmware</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -253,7 +261,7 @@ public interface <span class="typeNameLabel"><a href=PolarFirmwareUpdateApi.html
                                             <td class="colLast">Updates firmware to given device.</td>
                                         </tr>
                                         
-                                        <tr id="i1" class="rowColor">
+                                        <tr id="i2" class="altColor">
                                             <td class="colFirst"><code>abstract Flowable&lt;<a href=model/FirmwareUpdateStatus.html>FirmwareUpdateStatus</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarFirmwareUpdateApi.html#updateFirmware(java.lang.String,java.lang.String)>updateFirmware</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> firmwareUrl) </code>
@@ -304,6 +312,39 @@ public interface <span class="typeNameLabel"><a href=PolarFirmwareUpdateApi.html
                                 <!--   -->
                             </a>
                                 <h3>Method Detail</h3>
+                                
+                                <a id="checkFirmwareUpdate(java.lang.String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>checkFirmwareUpdate</h4>
+                                        <pre class="methodSignature"> abstract Observable&lt;<a href=model/CheckFirmwareUpdateStatus.html>CheckFirmwareUpdateStatus</a>&gt; <a href=PolarFirmwareUpdateApi.html#checkFirmwareUpdate(java.lang.String)>checkFirmwareUpdate</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Checks if a firmware update is available for the given device identifier.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device ID or Bluetooth address</dd>
+                                            
+                                            
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Observable emitting <a href=model/CheckFirmwareUpdateStatus.html>CheckFirmwareUpdateStatus</a></p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
                                 
                                 <a id="updateFirmware(java.lang.String)">
                                     <!--   -->

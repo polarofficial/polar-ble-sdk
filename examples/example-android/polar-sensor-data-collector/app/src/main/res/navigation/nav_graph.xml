@@ -36,6 +36,11 @@
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+        <action
+            android:id="@+id/load_navigate_to_list_action"
+            app:destination="@id/trainingSessionsListFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim" />
     </fragment>
 
     <fragment
@@ -99,6 +104,58 @@
         <action
             android:id="@+id/offline_recording_data_to_home"
             app:destination="@id/mainFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popUpTo="@+id/mainFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/trainingSessionsListFragment"
+        android:name="com.polar.polarsensordatacollector.ui.trainingsession.TrainingSessionListFragment"
+        android:label="Training sessions"
+        tools:layout="@layout/fragment_training_session_list">
+        <argument
+            android:name="deviceIdFragmentArgument"
+            android:defaultValue=""
+            app:argType="string" />
+        <action
+            android:id="@+id/training_session_navigate_to_data_action"
+            app:destination="@id/trainingSessionDataFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim" />
+        <action
+            android:id="@+id/training_session_list_to_home"
+            app:destination="@id/mainFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popUpTo="@+id/mainFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/trainingSessionDataFragment"
+        android:name="com.polar.polarsensordatacollector.ui.trainingsession.TrainingSessionDataFragment"
+        android:label="{trainingSessionFragmentArgument}">
+        <argument
+            android:name="deviceIdFragmentArgument"
+            android:defaultValue=""
+            app:argType="string" />
+        <argument
+            android:name="trainingSessionPathFragmentArgument"
+            android:defaultValue=""
+            app:argType="string" />
+        <argument
+            android:name="trainingSessionNameFragmentArgument"
+            android:defaultValue=""
+            app:argType="string" />
+        <argument
+            android:name="trainingSessionFragmentArgument"
+            android:defaultValue=""
+            app:argType="string" />
+        <action
+            android:id="@+id/training_session_data_to_home"
+            app:destination="@id/activityFragment"
             app:enterAnim="@anim/nav_default_enter_anim"
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popUpTo="@+id/mainFragment"

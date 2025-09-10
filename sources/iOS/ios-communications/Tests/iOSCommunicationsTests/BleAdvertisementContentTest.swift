@@ -24,7 +24,7 @@ class BleAdvertisementContentTest: XCTestCase {
         // Assert
         XCTAssertEqual(testInputString, bleAdvertisementContent.name)
         XCTAssertTrue(bleAdvertisementContent.polarDeviceType.isEmpty)
-        XCTAssertTrue(bleAdvertisementContent.polarDeviceId.isEmpty)
+        XCTAssertEqual(bleAdvertisementContent.polarDeviceId, "AA123459")
     }
     
     func testParseNameFromCompleteLocalNameWhenPolarDevice() throws {

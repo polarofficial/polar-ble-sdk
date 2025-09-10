@@ -35,7 +35,7 @@ android {
     compileSdkVersion 33
 
     defaultConfig {
-        minSdkVersion 24
+        minSdkVersion 26
         targetSdkVersion 33
         versionCode 14
         versionName "14"
@@ -76,6 +76,12 @@ android {
         }
     }
 
+    sourceSets {
+        main {
+            java.srcDirs += 'src/sdk'
+            proto.srcDirs += 'src/sdk/proto'
+            }
+    }
     packagingOptions {
         exclude "**/*.proto"
     }

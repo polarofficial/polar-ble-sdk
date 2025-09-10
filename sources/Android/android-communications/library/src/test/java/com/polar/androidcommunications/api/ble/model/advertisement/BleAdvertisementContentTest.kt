@@ -73,6 +73,23 @@ internal class BleAdvertisementContentTest {
     }
 
     @Test
+    fun `test parse name from short local name when Polar device with custom brand name`() {
+        // Arrange
+        val testInputString = "Custom Bio Sense cbs123456"
+        val map = hashMapOf<BleUtils.AD_TYPE, ByteArray>()
+        map[BleUtils.AD_TYPE.GAP_ADTYPE_LOCAL_NAME_SHORT] = testInputString.toByteArray()
+        bleAdvertisementContent.advertisementDeviceNamePrefix = "Custom"
+        // Act
+        val name = bleAdvertisementContent.getNameFromAdvData(map)
+        bleAdvertisementContent.processName(name)
+
+        // Assert
+        Assert.assertEquals(testInputString, bleAdvertisementContent.name)
+        Assert.assertEquals("Bio Sense", bleAdvertisementContent.polarDeviceType)
+        Assert.assertEquals("cbs123456", bleAdvertisementContent.polarDeviceId)
+    }
+
+    @Test
     fun `test parse hr from manufacturer data without hr`() {
         // Arrange
         val onlyGpbManufacturerData = byteArrayOf(

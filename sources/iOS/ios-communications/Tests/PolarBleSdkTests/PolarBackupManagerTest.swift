@@ -79,7 +79,7 @@ class PolarBackupManagerTest: XCTestCase {
                 XCTFail("Backup failed with error: \(error)")
             }
         }
-        XCTAssertEqual(mockClient.requestCalls.count, 7)
+        XCTAssertEqual(mockClient.requestCalls.count, 10)
 
         wait(for: [expectation], timeout: 5)
         disposable.dispose()

@@ -727,7 +727,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
             var offset = 0
             val refSamples = parseDeltaFrameRefSamples(value, channels, resolution, type)
             offset += (channels * ceil(resolution / 8.0)).toInt()
-            val samples: MutableList<List<Int>> = ArrayList(setOf(refSamples))
+            val samples: MutableList<List<Int>> = mutableListOf(refSamples)
             BleUtils.validate(refSamples.size == channels, "incorrect number of ref channels")
             while (offset < value.size) {
 
@@ -746,7 +746,7 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
                         val sample = lastSample[i] + delta[i]
                         nextSamples.add(sample)
                     }
-                    samples.addAll(setOf<List<Int>>(nextSamples))
+                    samples.add(nextSamples)
                 }
                 offset += length
             }

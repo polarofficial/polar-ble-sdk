@@ -348,8 +348,23 @@ message PbAutomaticMeasurementSettings {
   optional PbIntelligentTimedMeasurementSettings intelligent_timed_settings = 3;
 }
 
+message PbAutomaticTrainingDetectionSettings {
+
+  enum PbAutomaticTrainingDetectionState {
+    OFF = 0;
+    ON  = 1;
+  };
+
+  optional PbAutomaticTrainingDetectionState state = 1;
+  // Automatic training detection sensitivity setting range [0,100]
+  optional uint32 sensitivity = 2;
+  optional uint32 minimum_training_duration_seconds = 3;
+
+};
+
 message PbUserAutomaticMeasurementSettings {
   optional PbAutomaticMeasurementSettings automatic_ohr_measurement = 1;
+  optional PbAutomaticTrainingDetectionSettings automatic_training_detection_settings = 2;
 };
 
 message PbUserDeviceStravaSegmentsSettings {

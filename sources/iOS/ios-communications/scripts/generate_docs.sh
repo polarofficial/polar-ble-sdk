@@ -5,7 +5,5 @@ if [[ "$(gem list '^jazzy$' -i)" == "false" ]]; then
 fi
 
 cd ..
-jazzy \
-  --clean \
-  --build-tool-arguments -workspace,iOSCommunications.xcworkspace,-scheme,PolarBleSdk,-destination,"generic/platform=iOS" \
-  --exclude=Sources/iOSCommunications/ble/*,Sources/PolarBleSdk/sdk/impl/protobuf/*
+# Jazzy reads excluded directories from ".jazzy.yaml"
+jazzy --clean --podspec PolarBleSdk.podspec

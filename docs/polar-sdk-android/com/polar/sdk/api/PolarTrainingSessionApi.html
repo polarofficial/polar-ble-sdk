@@ -261,6 +261,46 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                             <td class="colLast">Get training session.</td>
                                         </tr>
                                         
+                                        <tr id="i2" class="altColor">
+                                            <td class="colFirst"><code>abstract Completable</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarTrainingSessionApi.html#startExercise(java.lang.String,com.polar.sdk.api.model.PolarExerciseSession.SportProfile)>startExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarExerciseSession.SportProfile.html>PolarExerciseSession.SportProfile</a> profile) </code>
+                                            </th>
+                                            <td class="colLast">Start an exercise session on the device.</td>
+                                        </tr>
+                                        
+                                        <tr id="i3" class="rowColor">
+                                            <td class="colFirst"><code>abstract Completable</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarTrainingSessionApi.html#pauseExercise(java.lang.String)>pauseExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">Pause an ongoing exercise session.</td>
+                                        </tr>
+                                        
+                                        <tr id="i4" class="altColor">
+                                            <td class="colFirst"><code>abstract Completable</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarTrainingSessionApi.html#resumeExercise(java.lang.String)>resumeExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">Resume a paused exercise session.</td>
+                                        </tr>
+                                        
+                                        <tr id="i5" class="rowColor">
+                                            <td class="colFirst"><code>abstract Completable</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarTrainingSessionApi.html#stopExercise(java.lang.String)>stopExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">Stop the current exercise session.</td>
+                                        </tr>
+                                        
+                                        <tr id="i6" class="altColor">
+                                            <td class="colFirst"><code>abstract Single&lt;<a href=model/PolarExerciseSession.ExerciseInfo.html>PolarExerciseSession.ExerciseInfo</a>&gt;</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarTrainingSessionApi.html#getExerciseStatus(java.lang.String)>getExerciseStatus</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">Get the current exercise session status from the device.</td>
+                                        </tr>
+                                        
                                         </tbody>
                                     </table>
                                 </div>
@@ -350,7 +390,7 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                     <!--   -->
                                 </a>
                                 <ul class=
-                                              "blockListLast"
+                                              "blockList"
                                           >
                                     <li class="blockList">
                                         <h4>getTrainingSession</h4>
@@ -375,6 +415,175 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
                                             <dd><p>A Single emitting a <a href=model/trainingsession/PolarTrainingSession.html>PolarTrainingSession</a> object representing the training session data.</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="startExercise(java.lang.String,com.polar.sdk.api.model.PolarExerciseSession.SportProfile)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>startExercise</h4>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarTrainingSessionApi.html#startExercise(java.lang.String,com.polar.sdk.api.model.PolarExerciseSession.SportProfile)>startExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarExerciseSession.SportProfile.html>PolarExerciseSession.SportProfile</a> profile)</pre>
+                                        <div class="block"><p>Start an exercise session on the device.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - The Polar device ID or BT address.</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>profile</code> - The sport profile to use for the exercise session.</dd>
+                                            
+                                            
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>A Completable that completes when the command has been delivered to the device.</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="pauseExercise(java.lang.String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>pauseExercise</h4>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarTrainingSessionApi.html#pauseExercise(java.lang.String)>pauseExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Pause an ongoing exercise session.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - The Polar device ID or BT address.</dd>
+                                            
+                                            
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>A Completable that completes when the command has been delivered to the device.</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="resumeExercise(java.lang.String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>resumeExercise</h4>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarTrainingSessionApi.html#resumeExercise(java.lang.String)>resumeExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Resume a paused exercise session.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - The Polar device ID or BT address.</dd>
+                                            
+                                            
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>A Completable that completes when the command has been delivered to the device.</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="stopExercise(java.lang.String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>stopExercise</h4>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarTrainingSessionApi.html#stopExercise(java.lang.String)>stopExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Stop the current exercise session.</p><p>By default, the session is saved on the device.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - The Polar device ID or BT address.</dd>
+                                            
+                                            
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>A Completable that completes when the command has been delivered to the device.</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="getExerciseStatus(java.lang.String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getExerciseStatus</h4>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarExerciseSession.ExerciseInfo.html>PolarExerciseSession.ExerciseInfo</a>&gt; <a href=PolarTrainingSessionApi.html#getExerciseStatus(java.lang.String)>getExerciseStatus</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Get the current exercise session status from the device.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - The Polar device ID or BT address.</dd>
+                                            
+                                            
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>A Single emitting the current <a href=model/PolarExerciseSession.ExerciseInfo.html>PolarExerciseSession.ExerciseInfo</a> for the device.</p></dd>
                                         
 
                                         

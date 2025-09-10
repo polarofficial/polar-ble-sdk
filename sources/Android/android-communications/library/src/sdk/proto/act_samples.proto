@@ -1,9 +1,44 @@
 syntax = "proto2";
 
 package data;
+import "types.proto";
 
 option java_package = "fi.polar.remote.representation.protobuf";
 option java_outer_classname = "ActivitySamples";
+
+message PbActivityInfo
+{
+  enum ActivityClass {
+    SLEEP = 1;
+    SEDENTARY = 2;
+    LIGHT = 3;
+    CONTINUOUS_MODERATE = 4;
+    INTERMITTENT_MODERATE = 5;
+    CONTINUOUS_VIGOROUS = 6;
+    INTERMITTENT_VIGOROUS = 7;
+    NON_WEAR = 8;
+  }
+
+  optional ActivityClass      value          = 1;
+
+  // Local time is used, because the design is originally implemented in local time
+  optional PbLocalDateTime    time_stamp     = 2;
+
+  optional float              factor         = 3;
+};
+
 message PbActivitySamples {
+  // Date and time when the sample was created for the first time
+  // Local time is used, because the design is originally implemented in local time
+  required PbLocalDateTime start_time = 1;
+  // Recording interval of met samples in this file
+  required PbDuration met_recording_interval = 2;
+  // Recording interval of step samples in this file
+  required PbDuration steps_recording_interval = 3;
+  // met samples
+  repeated float met_samples = 4;
+  // step samples
   repeated uint32 steps_samples = 5   [packed=true];
+  // Activity class changes
+  repeated PbActivityInfo activity_info = 7;
 };

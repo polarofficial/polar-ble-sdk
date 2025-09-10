@@ -12,7 +12,10 @@ import org.joda.time.DateTimeZone
 import java.util.Calendar
 
 data class PolarUserDeviceSettings(val deviceLocation: Int? = null,
-                                   val usbConnectionMode: Boolean? = null
+                                   val usbConnectionMode: Boolean? = null,
+                                   val automaticTrainingDetectionMode: Boolean? = null,
+                                   val automaticTrainingDetectionSensitivity: Int? = null,
+                                   val minimumTrainingDurationSeconds: Int? = null
 ) {
 
     enum class DeviceLocation(val value: Int) {
@@ -49,9 +52,33 @@ data class PolarUserDeviceSettings(val deviceLocation: Int? = null,
             )
         }
 
+        val pbAutomaticTrainingDetectionSettings = UserDeviceSettings.PbAutomaticTrainingDetectionSettings.newBuilder()
+        val pbUserAutomaticMeasurementSettings = UserDeviceSettings.PbUserAutomaticMeasurementSettings.newBuilder()
+
+        automaticTrainingDetectionMode?.let {
+            pbAutomaticTrainingDetectionSettings.setState(
+                if(it) {
+                    UserDeviceSettings.PbAutomaticTrainingDetectionSettings.PbAutomaticTrainingDetectionState.ON
+                } else {
+                    UserDeviceSettings.PbAutomaticTrainingDetectionSettings.PbAutomaticTrainingDetectionState.OFF
+                }
+            )
+        }
+
+        automaticTrainingDetectionSensitivity?.let {
+            pbAutomaticTrainingDetectionSettings.setSensitivity(automaticTrainingDetectionSensitivity)
+        }
+
+        minimumTrainingDurationSeconds?.let {
+            pbAutomaticTrainingDetectionSettings.setMinimumTrainingDurationSeconds(minimumTrainingDurationSeconds)
+        }
+
         return PbUserDeviceSettings.newBuilder()
             .setGeneralSettings(pbSettingsWithDeviceLocation.build())
             .setUsbConnectionSettings(pbUsbConnectionSettings.build())
+            .setAutomaticMeasurementSettings(
+                pbUserAutomaticMeasurementSettings.setAutomaticTrainingDetectionSettings(pbAutomaticTrainingDetectionSettings.build()).build()
+            )
             .setLastModified(createTimeStamp())
             .build()
     }
@@ -69,9 +96,34 @@ data class PolarUserDeviceSettings(val deviceLocation: Int? = null,
             null
         }
 
+        val automaticTrainingDetectionMode = if (proto.hasAutomaticMeasurementSettings() && proto.automaticMeasurementSettings.hasAutomaticTrainingDetectionSettings()) {
+            proto.automaticMeasurementSettings.automaticTrainingDetectionSettings.state == UserDeviceSettings.PbAutomaticTrainingDetectionSettings.PbAutomaticTrainingDetectionState.ON
+        } else {
+            null
+        }
+
+        val automaticTrainingDetectionSensitivity = if (proto.hasAutomaticMeasurementSettings() &&
+            proto.automaticMeasurementSettings.hasAutomaticTrainingDetectionSettings() &&
+            proto.automaticMeasurementSettings.automaticTrainingDetectionSettings.hasSensitivity()) {
+            proto.automaticMeasurementSettings.automaticTrainingDetectionSettings.sensitivity
+        } else {
+            0
+        }
+
+        val minimumTrainingDurationSeconds = if (proto.hasAutomaticMeasurementSettings() &&
+            proto.automaticMeasurementSettings.hasAutomaticTrainingDetectionSettings() &&
+            proto.automaticMeasurementSettings.automaticTrainingDetectionSettings.hasMinimumTrainingDurationSeconds()) {
+            proto.automaticMeasurementSettings.automaticTrainingDetectionSettings.minimumTrainingDurationSeconds
+        } else {
+            0
+        }
+
         return PolarUserDeviceSettings(
             deviceLocation,
-            usbConnectionMode
+            usbConnectionMode,
+            automaticTrainingDetectionMode = automaticTrainingDetectionMode,
+            automaticTrainingDetectionSensitivity = automaticTrainingDetectionSensitivity,
+            minimumTrainingDurationSeconds = minimumTrainingDurationSeconds
         )
     }
 }

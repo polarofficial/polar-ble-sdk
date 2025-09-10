@@ -9,6 +9,8 @@ import com.polar.sdk.api.model.trainingsession.PolarExerciseDataTypes
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSession
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionDataTypes
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference
+import fi.polar.remote.representation.protobuf.ExerciseSamples
+import fi.polar.remote.representation.protobuf.ExerciseSamples2
 import fi.polar.remote.representation.protobuf.Training
 import fi.polar.remote.representation.protobuf.TrainingSession
 import io.reactivex.rxjava3.core.Flowable
@@ -145,7 +147,7 @@ internal object PolarTrainingSessionUtils {
         client: BlePsFtpClient,
         reference: PolarTrainingSessionReference
     ): Single<PolarTrainingSession> {
-        BleLogger.d(TAG, "readTrainingSession: reading from $reference.path")
+        BleLogger.d(TAG, "readTrainingSession: reading from ${reference.path}")
 
         val sessionSummarySingle: Single<TrainingSession.PbTrainingSession> =
             if (reference.trainingDataTypes.contains(PolarTrainingSessionDataTypes.TRAINING_SESSION_SUMMARY)) {
@@ -223,6 +225,42 @@ internal object PolarTrainingSessionUtils {
                                 ExerciseRouteSamples2.PbExerciseRouteSamples2.getDefaultInstance()
                             }.map { dataType to it }
                         }
+
+                        PolarExerciseDataTypes.SAMPLES, PolarExerciseDataTypes.SAMPLES_GZIP -> {
+                            val path = "$basePath/${dataType.deviceFileName}"
+                            client.request(
+                                PftpRequest.PbPFtpOperation.newBuilder()
+                                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                                    .setPath(path)
+                                    .build()
+                                    .toByteArray()
+                            ).map { resp ->
+                                val bytes = if (dataType == PolarExerciseDataTypes.SAMPLES_GZIP)
+                                    GZIPInputStream(resp.toByteArray().inputStream()).readBytes()
+                                else resp.toByteArray()
+                                ExerciseSamples.PbExerciseSamples.parseFrom(bytes)
+                            }.onErrorReturn { error ->
+                                BleLogger.e(TAG, "Error loading ${dataType.deviceFileName}: ${error.message}")
+                                ExerciseSamples.PbExerciseSamples.getDefaultInstance()
+                            }.map { dataType to it }
+                        }
+
+                        PolarExerciseDataTypes.SAMPLES_ADVANCED_FORMAT_GZIP -> {
+                            val path = "$basePath/${dataType.deviceFileName}"
+                            client.request(
+                                PftpRequest.PbPFtpOperation.newBuilder()
+                                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                                    .setPath(path)
+                                    .build()
+                                    .toByteArray()
+                            ).map { resp ->
+                                val bytes = GZIPInputStream(resp.toByteArray().inputStream()).readBytes()
+                                ExerciseSamples2.PbExerciseSamples2.parseFrom(bytes)
+                            }.onErrorReturn { error ->
+                                BleLogger.e(TAG, "Error loading ${dataType.deviceFileName}: ${error.message}")
+                                ExerciseSamples2.PbExerciseSamples2.getDefaultInstance()
+                            }.map { dataType to it }
+                        }
                     }
                 }
 
@@ -230,6 +268,8 @@ internal object PolarTrainingSessionUtils {
                     var summary: Training.PbExerciseBase? = null
                     var route: ExerciseRouteSamples.PbExerciseRouteSamples? = null
                     var routeAdv: ExerciseRouteSamples2.PbExerciseRouteSamples2? = null
+                    var samples: ExerciseSamples.PbExerciseSamples? = null
+                    var samplesAdv: ExerciseSamples2.PbExerciseSamples2? = null
 
                     for (result in results.filterIsInstance<Pair<*, *>>()) {
                         when (result.first) {
@@ -247,6 +287,15 @@ internal object PolarTrainingSessionUtils {
                                 val rAdv = result.second as ExerciseRouteSamples2.PbExerciseRouteSamples2
                                 routeAdv = if (rAdv == ExerciseRouteSamples2.PbExerciseRouteSamples2.getDefaultInstance()) null else rAdv
                             }
+                            PolarExerciseDataTypes.SAMPLES,
+                            PolarExerciseDataTypes.SAMPLES_GZIP -> {
+                                val s = result.second as ExerciseSamples.PbExerciseSamples
+                                samples = if (s == ExerciseSamples.PbExerciseSamples.getDefaultInstance()) null else s
+                            }
+                            PolarExerciseDataTypes.SAMPLES_ADVANCED_FORMAT_GZIP -> {
+                                val sAdv = result.second as ExerciseSamples2.PbExerciseSamples2
+                                samplesAdv = if (sAdv == ExerciseSamples2.PbExerciseSamples2.getDefaultInstance()) null else sAdv
+                            }
                         }
                     }
 
@@ -256,7 +305,9 @@ internal object PolarTrainingSessionUtils {
                         exerciseDataTypes = exercise.exerciseDataTypes,
                         exerciseSummary = summary,
                         route = route,
-                        routeAdvanced = routeAdv
+                        routeAdvanced = routeAdv,
+                        samples = samples,
+                        samplesAdvanced = samplesAdv
                     )
                 }
             }

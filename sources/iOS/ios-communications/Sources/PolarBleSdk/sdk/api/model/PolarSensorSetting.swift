@@ -28,13 +28,17 @@ public struct PolarSensorSetting {
         self.settings = [SettingType : Set<UInt32>]()
     }
     
-    /// constructor with desired settings
+    /// Constructor with validation that all values are > 0
     ///
     /// - Parameter settings: single key value pairs to start stream
-    public init(_ settings: [SettingType : UInt32]) {
-        self.settings = settings.mapValues({ (v) -> Set<UInt32> in
-            return Set(arrayLiteral: v)
-        })
+    /// - Throws: PolarErrors.invalidSensorSettingValue if any value is <= 0
+    public init(_ settings: [SettingType : UInt32]) throws {
+        for (key, value) in settings {
+            if value == 0 {
+                throw PolarErrors.invalidSensorSettingValue(setting: key, value: value)
+            }
+        }
+        self.settings = settings.mapValues { Set([$0]) }
     }
     
     init(_ settings: [SettingType : Set<UInt32>]) {
@@ -59,7 +63,7 @@ public struct PolarSensorSetting {
             let (key, value) = arg1
             result[key] = value.max() ?? 0
         } as [SettingType : UInt32]
-        return PolarSensorSetting(selected)
+        return try! PolarSensorSetting(selected)
     }
 }
 

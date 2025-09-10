@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.devicesettings.UserDeviceSettingsActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginVertical="10dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginStart="10dp">
+
+                    <TextView
+                        android:id="@+id/device_user_setting_header"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginBottom="50dp"
+                        android:gravity="center_horizontal"
+                        android:text="@string/set_device_user_settings_header"
+                        android:textAppearance="@android:style/TextAppearance.Material.Widget.PopupMenu.Large"></TextView>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginVertical="10dp">
+
+                    <TextView
+                        android:id="@+id/device_user_location_setting_header"
+                        android:layout_width="150dp"
+                        android:layout_height="fill_parent"
+                        android:text="@string/set_device_user_location"
+                        android:textAppearance="@android:style/TextAppearance.Material.Caption"></TextView>
+
+                    <Spinner
+                        android:id="@+id/set_device_user_location_drop_down"
+                        android:layout_width="fill_parent"
+                        android:layout_height="match_parent"
+                        android:textAppearance="?attr/textAppearanceDisplaySmall"></Spinner>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginStart="10dp">
+
+                    <TextView
+                        android:id="@+id/usb_connection_label"
+                        android:layout_width="250dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/usb_connection"
+                        android:textAppearance="@android:style/TextAppearance.Material.Caption" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/usb_enable_switch"
+                        style="@style/Widget.App.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceSubtitle1" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginStart="10dp">
+
+                    <TextView
+                        android:id="@+id/atd_connection_label"
+                        android:layout_width="250dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/atd_setting"
+                        android:textAppearance="@android:style/TextAppearance.Material.Caption" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/atd_enable_switch"
+                        style="@style/Widget.App.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceSubtitle1" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginStart="10dp">
+
+                    <TextView
+                        android:layout_width="170dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/atd_setting_minimum_duration" />
+
+                    <EditText
+                        android:id="@+id/atdDurationPicker"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_marginRight="20dp"
+                        android:layout_weight="1"
+                        android:inputType="numberDecimal" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="150dp"
+                    android:layout_marginStart="10dp">
+
+                    <TextView
+                        android:layout_width="150dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center_vertical"
+                        android:text="@string/atd_setting_sensitivity" />
+
+                    <NumberPicker
+                        android:id="@+id/atdSensitivityPicker"
+                        android:layout_width="50dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:inputType="numberDecimal" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/submit_device_settings_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/submit" />
+
+                <Button
+                    android:id="@+id/cancel_device_settings_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cancel"/>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

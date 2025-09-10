@@ -701,7 +701,7 @@ invoked when a connection is established.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>for every new polar device found</p>
+                                  <p>for every new Polar device found</p>
                                 </div>
                               </td>
                             </tr>
@@ -713,7 +713,61 @@ invoked when a connection is established.</p>
                         <p>Observable stream
 
 <ul>
-<li>onNext: for every new polar device found</li>
+<li>onNext: for every new Polar device found</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP15searchForDevice012withRequiredG10NamePrefix7RxSwift10ObservableCySS8deviceId_10Foundation4UUIDV7addressSi4rssiSS4nameSb11connectabletGSSSg_tF"></a>
+                    <a name="//apple_ref/swift/Method/searchForDevice(withRequiredDeviceNamePrefix:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP15searchForDevice012withRequiredG10NamePrefix7RxSwift10ObservableCySS8deviceId_10Foundation4UUIDV7addressSi4rssiSS4nameSb11connectabletGSSSg_tF">searchForDevice(withRequiredDeviceNamePrefix:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Start searching for compatible device(s) with given device  name prefix</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">searchForDevice</span><span class="p">(</span><span class="nv">withRequiredDeviceNamePrefix</span><span class="p">:</span> <span class="kt">String</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A10DeviceInfoa">PolarDeviceInfo</a></span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>requiredDeviceNamePrefix</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>returned devices are filtered based on given device name prefix string. Default: &ldquo;Polar&rdquo;</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Observable stream
+
+<ul>
+<li>onNext: for every new device found</li>
 </ul></p>
                       </div>
                     </section>
@@ -2022,6 +2076,239 @@ from the BLE advertisement</p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP25getMultiBLEConnectionMode10identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOSbGSS_tF"></a>
+                    <a name="//apple_ref/swift/Method/getMultiBLEConnectionMode(identifier:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP25getMultiBLEConnectionMode10identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOSbGSS_tF">getMultiBLEConnectionMode(identifier:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Request multi BLE connection mode status from device.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getMultiBLEConnectionMode</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt">Bool</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id or UUID</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Single stream
+
+<ul>
+<li>success: Boolean: true if multi BLE connection has been enabled, false otherwise.</li>
+<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP25setMultiBLEConnectionMode10identifier6enable7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_SbtF"></a>
+                    <a name="//apple_ref/swift/Method/setMultiBLEConnectionMode(identifier:enable:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP25setMultiBLEConnectionMode10identifier6enable7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_SbtF">setMultiBLEConnectionMode(identifier:<wbr>enable:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Enable multi BLE connection mode on a given device.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setMultiBLEConnectionMode</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">enable</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id or UUID</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>enable</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Boolean flag to enable or disable multi BLE connection mode</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Completable stream
+
+<ul>
+<li>success: when multi BLE connection mode has been successfully set</li>
+<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP43sendInitializationAndStartSyncNotifications10identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF"></a>
+                    <a name="//apple_ref/swift/Method/sendInitializationAndStartSyncNotifications(identifier:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP43sendInitializationAndStartSyncNotifications10identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF">sendInitializationAndStartSyncNotifications(identifier:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Notify device of the incoming data transfer operation(s). By using this method the device will handle data transfer operations more efficiently by setting it to faster data transfer mode.
+It also will cause the device to flush the latest data to files giving you the most up-to-date data.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">sendInitializationAndStartSyncNotifications</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id or UUID</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Completable stream
+
+<ul>
+<li>success: Initialization and synchronization start nofifications have been successfully sent</li>
+<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP37sendTerminateAndStopSyncNotifications10identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF"></a>
+                    <a name="//apple_ref/swift/Method/sendTerminateAndStopSyncNotifications(identifier:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP37sendTerminateAndStopSyncNotifications10identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF">sendTerminateAndStopSyncNotifications(identifier:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Notify device that data transfer operations are completed. By calling this API device will set itself back to normal data transfer mode that will use less battery.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">sendTerminateAndStopSyncNotifications</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id or UUID</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Completable stream
+
+<ul>
+<li>success: Initialization and synchronization stop nofifications have been successfully sent</li>
+<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:11PolarBleSdk0aB3ApiP8observerAA0abD8Observer_pSgvp"></a>
                     <a name="//apple_ref/swift/Property/observer" class="dashAnchor"></a>
                     <a class="token" href="#/s:11PolarBleSdk0aB3ApiP8observerAA0abD8Observer_pSgvp">observer</a>
@@ -2248,7 +2535,7 @@ automatically when operation completes. One should not change this setting durin
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-06-04)</p>
+          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-08-14)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

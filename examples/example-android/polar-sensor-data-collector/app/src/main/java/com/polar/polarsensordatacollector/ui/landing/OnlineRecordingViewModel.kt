@@ -415,12 +415,8 @@ class OnlineRecordingViewModel @Inject constructor(
                 }
             }
             PolarBleApi.PolarDeviceDataType.PPI -> {
-                polarDeviceStreamingRepository.stopStreaming(deviceId, PmdMeasurementType.PPI)
-                settingsCache[PolarBleApi.PolarDeviceDataType.PPI]?.selectedSettings?.let {
-                    updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.PPI, StreamingFeatureState.STATES.STOPPED,
-                        it
-                    )
-                }
+                polarDeviceStreamingRepository.stopHrStreaming(deviceId)
+                updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.PPI, StreamingFeatureState.STATES.STOPPED, emptyMap())
             }
             PolarBleApi.PolarDeviceDataType.GYRO -> {
                 polarDeviceStreamingRepository.stopStreaming(deviceId, PmdMeasurementType.GYRO)
@@ -474,11 +470,7 @@ class OnlineRecordingViewModel @Inject constructor(
 
             PolarBleApi.PolarDeviceDataType.HR -> {
                 polarDeviceStreamingRepository.stopHrStreaming(deviceId)
-                settingsCache[PolarBleApi.PolarDeviceDataType.HR]?.selectedSettings?.let {
-                    updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.HR, StreamingFeatureState.STATES.STOPPED,
-                        it
-                    )
-                }
+                updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.HR, StreamingFeatureState.STATES.STOPPED, emptyMap())
             }
         }
         finalizeCollector()
@@ -743,6 +735,49 @@ class OnlineRecordingViewModel @Inject constructor(
                     }
                 }
             )
+
+        ppgStreamsConnectable.filter { value: PolarPpgData -> value.type == PolarPpgData.PpgDataType.FRAME_TYPE_13 }
+            .subscribeOn(Schedulers.io())
+            .subscribe(
+                { polarPpgData: PolarPpgData ->
+                    logPpgFrameType13(polarPpgData)
+                    val sampleRate = if (polarPpgData.samples.size > 1) {
+                        StreamUtils.calculateSampleRate(timeStampEarlier = polarPpgData.samples[0].timeStamp, timeStampLater = polarPpgData.samples[1].timeStamp)
+                    } else {
+                        0.0
+                    }
+                    _uiPpgStreamDataState.update {
+                        PpgSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = polarPpgData)
+                    }
+                },
+                { error: Throwable ->
+                    if (error !is PolarDeviceDisconnected) {
+                        showError("PPG13 stream failed", error)
+                    }
+                }
+            )
+
+        ppgStreamsConnectable.filter { value: PolarPpgData -> value.type == PolarPpgData.PpgDataType.FRAME_TYPE_14 }
+            .subscribeOn(Schedulers.io())
+            .subscribe(
+                { polarPpgData: PolarPpgData ->
+                    logPpgFrameType14(polarPpgData)
+                    val sampleRate = if (polarPpgData.samples.size > 1) {
+                        StreamUtils.calculateSampleRate(timeStampEarlier = polarPpgData.samples[0].timeStamp, timeStampLater = polarPpgData.samples[1].timeStamp)
+                    } else {
+                        0.0
+                    }
+                    _uiPpgStreamDataState.update {
+                        PpgSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = polarPpgData)
+                    }
+                },
+                { error: Throwable ->
+                    if (error !is PolarDeviceDisconnected) {
+                        showError("PPG14 auto gain stream failed", error)
+                    }
+                }
+            )
+
 
         ppgStreamsConnectable.filter { value: PolarPpgData -> value.type == PolarPpgData.PpgDataType.SPORT_ID }
             .subscribeOn(Schedulers.io())
@@ -1102,6 +1137,28 @@ class OnlineRecordingViewModel @Inject constructor(
             collector.logPpgGreen(sample.timeStamp, ppgGreen)
             collector.logPpgRed(sample.timeStamp, ppgRed)
             collector.logPpgIr(sample.timeStamp, ppgIr)
+        }
+    }
+
+    @Throws(IOException::class)
+    private fun logPpgFrameType13(polarPpgData: PolarPpgData) {
+        for (sample in polarPpgData.samples) {
+            check(sample.channelSamples.size == 3) { "Received UNKNOWN PPG Frame Type 13 Data" }
+            val ppgs: List<Int> =
+                sample.channelSamples.subList(0, 2)
+            val status = sample.channelSamples[2]
+            collector.logPpg2Channels(sample.timeStamp, ppgs, status)
+        }
+    }
+
+    @Throws(IOException::class)
+    private fun logPpgFrameType14(polarPpgData: PolarPpgData) {
+        for (sample in polarPpgData.samples) {
+            check(sample.channelSamples.size == 3) { "Received UNKNOWN PPG Frame Type 14 Data" }
+            val ppgs: List<Int> =
+                sample.channelSamples.subList(1, 2)
+            val numInt = sample.channelSamples[2]
+            collector.logPpg2ChannelsAutoGain(sample.timeStamp, ppgs, numInt)
         }
     }
 

@@ -118,7 +118,7 @@ class PolarActivityUtilsTests: XCTestCase {
             .subscribe(onSuccess: { distance in
                 // Assert
                 XCTAssertEqual(distance, Float(distance))
-                XCTAssertTrue(sendNotificationCalled)
+                XCTAssertFalse(sendNotificationCalled)
                 expectation.fulfill()
             }, onFailure: { error in
                 XCTFail("Error: \(error)")
@@ -145,7 +145,7 @@ class PolarActivityUtilsTests: XCTestCase {
             .subscribe(onSuccess: { distance in
                 // Assert
                 XCTAssertEqual(distance, 0)
-                XCTAssertTrue(sendNotificationCalled)
+                XCTAssertFalse(sendNotificationCalled)
                 expectation.fulfill()
             }, onFailure: { error in
                 XCTFail("Error: \(error)")
@@ -221,7 +221,7 @@ class PolarActivityUtilsTests: XCTestCase {
         let disposable = PolarActivityUtils.readActiveTimeFromDayDirectory(client: mockClient, date: date)
             .subscribe(onSuccess: { activeTimeData in
                 // Assert
-                XCTAssertTrue(sendNotificationCalled)
+                XCTAssertFalse(sendNotificationCalled)
                 
                 XCTAssertEqual(activeTimeData.timeNonWear.hours, 1)
                 XCTAssertEqual(activeTimeData.timeNonWear.minutes, 0)
@@ -289,7 +289,7 @@ class PolarActivityUtilsTests: XCTestCase {
         let disposable = PolarActivityUtils.readActiveTimeFromDayDirectory(client: mockClient, date: Date())
             .subscribe(onSuccess: { activeTimeData in
                 // Assert
-                XCTAssertTrue(sendNotificationCalled)
+                XCTAssertFalse(sendNotificationCalled)
                 XCTAssertEqual(activeTimeData.timeNonWear.hours, 0)
                 XCTAssertEqual(activeTimeData.timeNonWear.minutes, 0)
                 XCTAssertEqual(activeTimeData.timeSleep.hours, 0)
@@ -400,5 +400,144 @@ class PolarActivityUtilsTests: XCTestCase {
             })
         
         wait(for: [expectation], timeout: 5)
+    }
+
+    func testReadActivitySamplesDataFromDayDirectory_SuccessfulResponse() {
+
+        // Arrange
+        mockClient.requestReturnValues = []
+
+        // Folder listing mock
+        let mockRecordingDirectoryContent = try! Protocol_PbPFtpDirectory.with {
+            $0.entries = [
+                Protocol_PbPFtpEntry.with { $0.name = "ASAMPL.BPB"; $0.size = 123 }
+            ]
+        }.serializedData()
+
+        mockClient.requestReturnValues.append(Single.just(mockRecordingDirectoryContent))
+
+        // File mock
+        let date = Date()
+        let stepSample: UInt32 = 10000
+        let stepSample2: UInt32 = 5000
+        let stepSample3: UInt32 = 8000
+
+        let metSample: Float = 10000
+        let metSample2: Float = 5000
+        let metSample3: Float = 8000
+
+        var proto = Data_PbActivitySamples()
+        proto.stepsSamples = [stepSample, stepSample2, stepSample3]
+        proto.metSamples = [metSample, metSample2, metSample3]
+
+        proto.metRecordingInterval = PbDuration()
+        proto.metRecordingInterval.hours = 0
+        proto.metRecordingInterval.minutes = 0
+        proto.metRecordingInterval.seconds = 30
+        proto.metRecordingInterval.millis = 0
+
+        proto.stepsRecordingInterval = PbDuration()
+        proto.stepsRecordingInterval.seconds = 60
+        proto.stepsRecordingInterval.hours = 0
+        proto.stepsRecordingInterval.minutes = 0
+        proto.stepsRecordingInterval.seconds = 60
+        proto.stepsRecordingInterval.millis = 0
+
+        proto.startTime = PbLocalDateTime()
+        proto.startTime.date = PbDate()
+        proto.startTime.date.day = 1
+        proto.startTime.date.month = 2
+        proto.startTime.date.year = 2525
+        proto.startTime.time = PbTime()
+        proto.startTime.time.hour = 1
+        proto.startTime.time.minute = 2
+        proto.startTime.time.seconds = 3
+        proto.startTime.time.millis = 4
+        proto.startTime.timeZoneOffset = 5
+        proto.startTime.obsoleteTrusted = true
+
+        var activityInfo = Data_PbActivityInfo()
+        activityInfo.factor = 100
+        activityInfo.value = .continuousModerate
+        activityInfo.timeStamp = PbLocalDateTime()
+        activityInfo.timeStamp.date = PbDate()
+        activityInfo.timeStamp.date.day = 1
+        activityInfo.timeStamp.date.month = 2
+        activityInfo.timeStamp.date.year = 2525
+        activityInfo.timeStamp.time = PbTime()
+        activityInfo.timeStamp.time.hour = 1
+        activityInfo.timeStamp.time.minute = 2
+        activityInfo.timeStamp.time.seconds = 3
+        activityInfo.timeStamp.time.millis = 0
+        activityInfo.timeStamp.timeZoneOffset = 0
+        activityInfo.timeStamp.obsoleteTrusted = true
+        proto.activityInfo.append(activityInfo)
+
+        let responseData = try! proto.serializedData()
+
+        mockClient.requestReturnValues.append(Single.just(responseData))
+
+        // Act
+        let expectation = XCTestExpectation(description: "Read activity samples data from day directory")
+
+        let disposable = PolarActivityUtils.readActivitySamplesDataFromDayDirectory(client: mockClient, date: date)
+            .subscribe(onSuccess: { samplesData in
+                // Assert
+                XCTAssertEqual(samplesData.polarActivityDataList.count, 1)
+                XCTAssertEqual(samplesData.polarActivityDataList[0].samples?.metRecordingInterval, 30)
+                XCTAssertEqual(samplesData.polarActivityDataList[0].samples?.metSamples.count, 3)
+                XCTAssertEqual(samplesData.polarActivityDataList[0].samples?.metSamples[0], 10000)
+                XCTAssertEqual(samplesData.polarActivityDataList[0].samples?.metSamples[1], 5000)
+                XCTAssertEqual(samplesData.polarActivityDataList[0].samples?.metSamples[2], 8000)
+
+                XCTAssertEqual(samplesData.polarActivityDataList[0].samples?.stepRecordingInterval, 60)
+                XCTAssertEqual(samplesData.polarActivityDataList[0].samples?.stepSamples.count, 3)
+                XCTAssertEqual(samplesData.polarActivityDataList[0].samples?.stepSamples[0], 10000)
+                XCTAssertEqual(samplesData.polarActivityDataList[0].samples?.stepSamples[1], 5000)
+                XCTAssertEqual(samplesData.polarActivityDataList[0].samples?.stepSamples[2], 8000)
+
+                XCTAssertEqual(samplesData.polarActivityDataList[0].samples?.activityInfoList.count, 1)
+                XCTAssertEqual(samplesData.polarActivityDataList[0].samples?.activityInfoList[0].activityClass, .CONTINUOUS_MODERATE)
+                XCTAssertEqual(samplesData.polarActivityDataList[0].samples?.activityInfoList[0].factor, 100)
+
+                expectation.fulfill()
+            }, onFailure: { error in
+                XCTFail("Error: \(error)")
+            })
+
+        // Assert
+        wait(for: [expectation], timeout: 5)
+        disposable.dispose()
+    }
+
+    func testReadActivitySamplesDataFromDayDirectory_ActivityFileNotFound() {
+
+        // Arrange
+        mockClient.requestReturnValues = []
+
+        // Folder listing mock
+        let mockRecordingDirectoryContent = try! Protocol_PbPFtpDirectory.with {
+            $0.entries = []
+        }.serializedData()
+        mockClient.requestReturnValues.append(Single.just(mockRecordingDirectoryContent))
+
+        // File not found mock
+        mockClient.requestReturnValues.append(Single.error(NSError(domain: "File not found", code: 103, userInfo: nil)))
+
+        // Act
+        let expectation = XCTestExpectation(description: "Read activity samples from day directory should return 0 when activity file not found")
+        let disposable = PolarActivityUtils.readActivitySamplesDataFromDayDirectory(client: mockClient, date: Date())
+            .subscribe(onSuccess: { samples in
+                // Assert
+                XCTAssertEqual(samples.polarActivityDataList.count, 0)
+                expectation.fulfill()
+            }, onFailure: { error in
+                XCTFail("Error: \(error)")
+                expectation.fulfill()
+            })
+
+        // Assert
+        wait(for: [expectation], timeout: 5)
+        disposable.dispose()
     }
 }

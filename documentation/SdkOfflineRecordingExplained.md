@@ -58,10 +58,12 @@ To anticipate this scenario, the disk space can be queried to the device by call
 | Device             | From ver. onwards | Offline recording triggers | Security | Memory limit 1 | Memory limit 2 |
 |:-------------------|:-----------------:|:--------------------------:|:--------:|:--------------:|:--------------:|
 | Polar Verity Sense |2.1.0              | Yes                        | Yes      | 2 MB           | 300 KB
-| Polar 360          |1.0                | No                         | No       | 2 MB           | 2 MB
+| Polar 360          |1.0                | Yes (> 2.0.8)              | No       | 2 MB           | 2 MB
 
 ## Considerations
 
 The online streaming and offline recording do not work same time for the same data type. For example if either accelerometer offline recording or the accelerometer online streaming is started, the attempt to start the online streaming or offline recording at this state will return the error `ERROR_ALREADY_IN_STATE`.
+> [!NOTE]
+> Heart rate data is sent through the BLE Heart Rate Service and therefore is an exception to this rule. As a result, heart rate is the only data type that can be both streamed online and recorded in an offline file at the same time.
 
 The offline recording read `getOfflineRecord` and delete `removeOfflineRecord` can be called while the offline recording is recording, but that is not recommended. It is recommended to stop the offline recording by `stopOfflineRecording` before trying to access the recording with `getOfflineRecord` or  `removeOfflineRecord` functions. Some devices use an internal buffer to record data samples before it writes them to a file. So, the file is not created immediately after the start of the recording, but after a delay. The delay can be up to five minutes depending on data type. An attempt to read the file before it is created will result in error 103, `NO_SUCH_FILE_OR_DIRECTORY`.

@@ -43,9 +43,9 @@ android {
         applicationId "com.polar.polarsensordatacollector"
         minSdkVersion 26
         targetSdkVersion 33
-        versionCode 72000
+        versionCode 73800
         // version code from semantic version in format [2 digits of major][2 digits of minor][2 digits of batch]
-        versionName "7.20.0"
+        versionName "7.38.0"
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
@@ -130,7 +130,7 @@ if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPa
 }
 
 dependencies {
-    implementation project(":polar-ble-sdk")
+    implementation files('../polarBleSdk/polar-ble-sdk.aar')
 
     if (leakCanary.toBoolean()) {
         debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
@@ -138,9 +138,11 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10"
     implementation 'io.reactivex.rxjava3:rxjava:3.1.6'
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.2'
+    implementation "io.reactivex.rxjava3:rxkotlin:3.0.1"
     implementation 'commons-io:commons-io:2.11.0'
     implementation 'com.google.protobuf:protobuf-javalite:3.20.0'
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.google.code.gson:gson:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.squareup.retrofit2:adapter-rxjava3:2.9.0'
     implementation "joda-time:joda-time:2.12.2"
@@ -168,6 +170,8 @@ dependencies {
     implementation "com.google.android.material:compose-theme-adapter:1.2.1"
     implementation 'com.google.accompanist:accompanist-appcompat-theme:0.23.0'
     implementation 'com.google.accompanist:accompanist-swiperefresh:0.26.0-alpha'
+    implementation 'androidx.compose.runtime:runtime-livedata:1.3.3'
+    implementation 'androidx.compose.runtime:runtime-saveable:1.3.3'
 
     // Lifecycle
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.0'

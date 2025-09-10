@@ -45,6 +45,11 @@ class FirmwareUpdateApi {
                     
                     if let statusCode = (response as? HTTPURLResponse)?.statusCode {
                         switch statusCode {
+                        case 204:
+                            var fwResponse = FirmwareUpdateResponse(version: nil, fileUrl: nil)
+                            fwResponse.statusCode = statusCode
+                            completion(.success(fwResponse))
+                            return
                         case 400..<500:
                             BleLogger.error("Client error: (\(statusCode))")
                             if let errorResponse = try? JSONDecoder().decode(FirmwareUpdateErrorResponse.self, from: data) {
@@ -52,6 +57,7 @@ class FirmwareUpdateApi {
                             } else {
                                 BleLogger.error("Failed to decode client error response")
                             }
+                            return
                         case 500..<600:
                             BleLogger.error("Server error: (\(statusCode))")
                         default:
@@ -91,7 +97,7 @@ class FirmwareUpdateApi {
         }.resume()
     }
 
-    func getFirmwareUpdatePackage(url: String) -> Observable<Data?> {
+    func getFirmwareUpdatePackage(url: String) -> Single<Data?> {
         return Observable.create { observer in
             URLSession.shared.dataTask(with: URLRequest(url: URL(string: url)!)) { (data, _, _) in
                 if let data = data {
@@ -103,6 +109,6 @@ class FirmwareUpdateApi {
                 }
             }.resume()
             return Disposables.create()
-        }
+        }.asSingle()
     }
 }

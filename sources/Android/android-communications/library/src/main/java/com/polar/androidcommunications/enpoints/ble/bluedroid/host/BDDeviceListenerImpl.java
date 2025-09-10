@@ -59,7 +59,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 
 public class BDDeviceListenerImpl extends BleDeviceListener {
-
+    public String advertisingDeviceNamePrefix = "Polar";
     private static final String TAG = BDDeviceListenerImpl.class.getSimpleName();
     private BluetoothAdapter bluetoothAdapter;
     private final BDDeviceList sessions = new BDDeviceList();
@@ -397,6 +397,7 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
 
             if (deviceSession == null) {
                 final BleAdvertisementContent content = new BleAdvertisementContent();
+                content.setAdvertisementDeviceNamePrefix(advertisingDeviceNamePrefix);
                 content.processAdvertisementData(advData, type, rssi);
                 if (preFilter == null || preFilter.process(content)) {
                     if (content.getPolarHrAdvertisement().isPresent()
@@ -415,6 +416,7 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
                     }
                     if (deviceSession == null) {
                         deviceSession = new BDDeviceSessionImpl(context, device, scanCallback, bondingManager, factory);
+                        deviceSession.getAdvertisementContent().setAdvertisementDeviceNamePrefix(advertisingDeviceNamePrefix);
                         deviceSession.getAdvertisementContent().processAdvertisementData(advData, type, rssi);
                         BleLogger.d(TAG, "new device allocated name: " + deviceSession.getAdvertisementContent().getName());
                         sessions.addSession(deviceSession);

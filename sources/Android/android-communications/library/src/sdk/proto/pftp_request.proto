@@ -3,6 +3,7 @@ syntax = "proto2";
 package protocol;
 
 import "types.proto";
+import "structures.proto";
 
 message PbPFtpOperation {
   enum Command {
@@ -25,6 +26,11 @@ enum PbPFtpQuery {
   REQUEST_START_RECORDING = 14;
   REQUEST_STOP_RECORDING = 15;
   REQUEST_RECORDING_STATUS = 16;
+  START_EXERCISE              = 21;
+  STOP_EXERCISE               = 22;
+  PAUSE_EXERCISE              = 23;
+  RESUME_EXERCISE             = 24;
+  GET_EXERCISE_STATUS         = 25;
 }
 
 message PbPFtpRequestStartRecordingParams {
@@ -46,4 +52,20 @@ message PbPFtpSetSystemTimeParams {
   required PbTime time = 2;
   // True, if date and time are from trusted source.
   required bool trusted = 3;
+}
+
+/*
+ * Parameters for START_EXERCISE query.
+ */
+message PbPFtpStartExerciseParams {
+  // Reference to sport ecosystem identifier
+  required PbSportIdentifier sport_identifier = 1;
+}
+
+/*
+ * Parameters for STOP_EXERCISE query.
+ */
+message PbPFtpStopExerciseParams {
+  // Enable / disable saving the stopped exercise
+  required bool save = 1;
 }

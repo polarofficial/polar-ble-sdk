@@ -1,6 +1,7 @@
 package com.polar.sdk.impl.utils
 
 import fi.polar.remote.representation.protobuf.Types.PbDate
+import fi.polar.remote.representation.protobuf.Types.PbDuration
 import fi.polar.remote.representation.protobuf.Types.PbLocalDateTime
 import fi.polar.remote.representation.protobuf.Types.PbSystemDateTime
 import fi.polar.remote.representation.protobuf.Types.PbTime
@@ -130,5 +131,10 @@ internal object PolarTimeUtils {
             pbTime.minute,
             pbTime.seconds
         )
+    }
+
+    // Returns duration in milliseconds
+    fun pbDurationToInt(pbDuration: PbDuration): Int {
+        return (pbDuration.hours*3.6E6+pbDuration.minutes*6E4+pbDuration.seconds*1E3+pbDuration.millis).toInt()
     }
 }

@@ -1,16 +1,269 @@
+// SAMPLES.BPB=PbExerciseSamples
 syntax = "proto2";
 
 package data;
 
 import "types.proto";
+import "structures.proto";
 import "exercise_rr_samples.proto";
 
 option java_package = "fi.polar.remote.representation.protobuf";
 option java_outer_classname = "ExerciseSamples";
 
+/*
+  Power data from crank based power sensors
+*/
+message PbPowerMeasurements {
+
+    // Instantaneous power
+    required int32 current_power = 1               [(type)=POWER];
+
+    // Cumulative crank revolutions starting from the first stored sample data
+    // This is originally overflowing 16 bit unsigned int value
+    // This value do not necessarily change for every vector data set
+    // This value is not necessarily provided for every vector data set
+    optional uint32 cumulative_crank_revolutions = 2;
+
+    // Cumulative timestamp in milliseconds starting from the first stored sample data
+    // Originally overflowing uint16 value, [1/1024 of second]
+    // This value do not necessarily change for every vector data set
+    // This value is not necessarily provided for every vector data set
+    optional uint32 cumulative_timestamp = 3;
+
+    // Minimum force magnitude power
+    optional sint32 force_magnitude_min = 4         [(type)=NEWTON];
+
+    // Maximum force magnitude power
+    optional int32 force_magnitude_max = 5          [(type)=NEWTON];
+
+    // Minimum force magnitude angle
+    // Counted clockwise, topmost position is 0 degrees, view point is right side of the bike for both pedals
+    optional uint32 force_magnitude_min_angle = 6  [(type)=ANGLE_DEGREE];
+
+    // Maximum force magnitude angle
+    // Counted clockwise, topmost position is 0 degrees, view point is right side of the bike for both pedals
+    optional uint32 force_magnitude_max_angle = 7  [(type)=ANGLE_DEGREE];
+
+    // Dead spot bottom angle
+    // Counted clockwise, topmost position is 0 degrees, view point is right side of the bike for both pedals
+    optional uint32 bottom_dead_spot_angle = 8     [(type)=ANGLE_DEGREE];
+
+    // Dead spot top angle
+    // Counted clockwise, topmost position is 0 degrees, view point is right side of the bike for both pedals
+    optional uint32 top_dead_spot_angle = 9        [(type)=ANGLE_DEGREE];
+
+    //Unit is in percentage with a resolution of 1/2. Left foot power percentage of total power.
+    //pedal_power_balance = [LeftPower/(LeftPower + RightPower)]*100
+    optional uint32 pedal_power_balance = 10     [(type)=POWER_LRB];
+
+    //Unit is in newton metres with a resolution of 1/32.
+    optional int32 torque_magnitude_min = 11;
+
+    //Unit is in newton metres with a resolution of 1/32.
+    optional int32 torque_magnitude_max = 12;
+};
+
+/*
+  Sample data calibration value of the exercise
+*/
+message PbCalibrationValue {
+    // index of first sample using calibration value "value"
+    required uint32 start_index = 1;
+
+    // used calibaration value
+    required float value = 2;
+
+    // used operation type of calibration (multiply/sum)
+    required PbOperationType operation = 3;
+
+    // explaines the cause for calibration change (walking/running)
+    optional PbMovingType cause = 4;
+
+};
+
+/*
+    Exercise samples with sample type specific recording intervals
+*/
+message PbExerciseIntervalledSampleList {
+    // Sample Type, SPEED, DISTANCE etc.
+    required PbSampleType sample_type = 1;
+
+    // Recording interval of samples in milliseconds
+    // Note: When this field is set, it will override the default recording interval
+    //       (PbDuration recording_interval) given in the PbExerciseSamples message
+    optional uint32 recording_interval_ms = 2;
+
+    // Indicates the source of certain sample: source and start / stop indexes for the given source
+    repeated PbSampleSource sample_source = 3;
+
+    // heart rate samples
+    repeated uint32 heart_rate_samples = 4 [packed = true, (type)=HEARTRATE];
+
+    // cadence samples
+    repeated uint32 cadence_samples = 5 [packed = true, (type)=CADENCE];
+
+    // speed samples
+    // Note: Samples are already calibrated samples
+    repeated float speed_samples = 6 [packed = true, (type)=SPEED];
+
+    // distance samples: total distance from the beginning of the exercise
+    // Note: Samples are already calibrated samples
+    repeated float distance_samples = 7 [packed = true, (type)=DISTANCE];
+
+    // User 1d acceleration samples as m/s2
+    repeated float forward_acceleration = 8 [(type)=ACCELERATION];
+
+    // User walking/running/standing status samples
+    repeated PbMovingType moving_type_samples = 9;
+
+    // altitude samples
+    // Note: Samples are already calibrated samples
+    repeated float altitude_samples = 10 [packed = true, (type)=ALTITUDE];
+
+    // indicate start and stop indexes, used calibration value and operation type of calibration
+    repeated PbCalibrationValue altitude_calibration = 11;
+
+    // temperature samples
+    repeated float temperature_samples = 12 [packed = true, (type)=TEMPERATURE];
+
+    // stride length samples
+    // Note: Samples are already calibrated samples
+    repeated uint32 stride_length_samples = 13 [packed = true, (type)=STRIDE_LENGTH];
+
+    // indicate the information of the stride sensor calibration
+    repeated PbCalibrationValue stride_calibration = 14;
+
+    // Crank based power samples from left pedal
+    repeated PbPowerMeasurements left_pedal_power_samples = 15;
+
+    // Crank based power samples from right pedal
+    repeated PbPowerMeasurements right_pedal_power_samples = 16;
+
+    // Indicate the information of the bike power sensor calibration
+    // This field is most likely used only for testing purposes
+    repeated PbCalibrationValue left_power_calibration = 17;
+
+    // Indicate the information of the bike power sensor calibration
+    // This field is most likely used only for testing purposes
+    repeated PbCalibrationValue right_power_calibration = 18;
+
+    // Heart Rate R-R sample data.
+    optional PbExerciseRRIntervals rr_samples = 19;
+
+    // Acceleration based Mean Amplitude Deviation (MAD) samples
+    repeated float acceleration_mad_samples = 20;
+};
+
+
+/*
+  Sample data of the exercise.
+  ! All fields are required.
+*/
 message PbExerciseSamples {
-  required PbDuration recording_interval = 1;
-  repeated uint32 heart_rate_samples = 2 [packed = true, (type) = HEARTRATE];
-  optional PbExerciseRRIntervals rr_samples = 28;
+    // Default recording interval of samples
+    // Note: Samples listed in the root of the PbExerciseSamples will use this interval
+    // Note: Samples in the exercise_intervalled_sample_list will use this interval unless
+    //       otherwise specified inside the exercise_intervalled_sample_list
+    required PbDuration recording_interval = 1;
+
+    // heart rate samples
+    repeated uint32 heart_rate_samples = 2 [packed = true, (type)=HEARTRATE];
+
+    // indicate start and stop indexes when there has not been connection to heart rate sensor
+    repeated PbSensorOffline heart_rate_offline = 3;
+
+    // cadence samples
+    repeated uint32 cadence_samples = 4 [packed = true, (type)=CADENCE];
+
+    // indicate start and stop indexes when there has not been connection to a sensor providing cadence
+    repeated PbSensorOffline cadence_offline = 5;
+
+    // altitude samples
+    // Note: Samples are already calibrated samples
+    repeated float altitude_samples = 6 [packed = true, (type)=ALTITUDE];
+
+    // Altitude sensor offline status
+    repeated PbSensorOffline altitude_offline = 18;
+
+    // indicate start and stop indexes, used calibration value and operation type of calibration
+    repeated PbCalibrationValue altitude_calibration = 7;
+
+    // temperature samples
+    repeated float temperature_samples = 8 [packed = true, (type)=TEMPERATURE];
+
+    // Temperature sensor offline status
+    repeated PbSensorOffline temperature_offline = 19;
+
+    // speed samples
+    // Note: Samples are already calibrated samples
+    repeated float speed_samples = 9 [packed = true, (type)=SPEED];
+
+    // indicate start and stop indexes when there has not been connection to speed sensor
+    repeated PbSensorOffline speed_offline = 10;
+
+    // distance samples: total distance from the beginning of the exercise
+    // Note: Samples are already calibrated samples
+    repeated float distance_samples = 11 [packed = true, (type)=DISTANCE];
+
+    // indicate start and stop indexes when there has not been connection to distance measure sensor
+    repeated PbSensorOffline distance_offline = 12;
+
+    // stride length samples
+    // Note: Samples are already calibrated samples
+    repeated uint32 stride_length_samples = 13 [packed = true, (type)=STRIDE_LENGTH];
+
+    // indicate start and stop indexes when there has not been connection to stride sensor
+    repeated PbSensorOffline stride_length_offline = 14;
+
+    // indicate the information of the stride sensor calibration
+    repeated PbCalibrationValue stride_calibration = 15;
+
+    // User 1d acceleration samples as m/s2
+    repeated float forward_acceleration = 16 [(type)=ACCELERATION];
+
+    // indicate start and stop indexes when there has not been connection to sensor that produces forward acceleration
+    repeated PbSensorOffline forward_acceleration_offline = 20;
+
+    // User walking/running/standing status samples
+    repeated PbMovingType moving_type_samples = 17;
+
+    // indicate start and stop indexes when there has not been connection to sensor that produces moving_type
+    repeated PbSensorOffline moving_type_offline = 21;
+
+    // Crank based power samples from left pedal
+    repeated PbPowerMeasurements left_pedal_power_samples = 22;
+
+    // Indicate start and stop indexes when there has not been connection to sensor that produces left_pedal_power_samples
+    repeated PbSensorOffline left_pedal_power_offline = 23;
+
+    // Crank based power samples from right pedal
+    repeated PbPowerMeasurements right_pedal_power_samples = 24;
+
+    // Indicate start and stop indexes when there has not been connection to sensor that produces right_pedal_power_samples
+    repeated PbSensorOffline right_pedal_power_offline = 25;
+
+    // Indicate the information of the bike power sensor calibration
+    // This field is most likely used only for testing purposes
+    repeated PbCalibrationValue left_power_calibration = 26;
+
+    // Indicate the information of the bike power sensor calibration
+    // This field is most likely used only for testing purposes
+    repeated PbCalibrationValue right_power_calibration = 27;
+
+    // Heart Rate R-R sample data.
+    optional PbExerciseRRIntervals rr_samples = 28;
+
+    // Exercise samples with sample type specific recording intervals
+    repeated PbExerciseIntervalledSampleList exercise_intervalled_sample_list = 29;
+
+    // Exercise pause times
+    repeated PbPauseTime pause_times = 30;
+
+    // Body temperature samples as Celsius,
+    repeated float body_temperature = 31;
+
+    // indicate start and stop indexes when there has not been connection to body temperaure sensor
+    repeated PbSensorOffline body_temperature_offline = 32;
+
 };
 

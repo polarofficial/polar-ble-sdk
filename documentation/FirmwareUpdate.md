@@ -2,7 +2,7 @@
 
 ## How to
 
-You can check if there is an update available by using `checkFirmwareUpdate()` method. To update the firmware, simply call `updateFirmware()` method. This will update the device will the latest available firmware.
+You can check if there is an update available by using `checkFirmwareUpdate()` method. To update the firmware, simply call `updateFirmware()` method. This will update the device will the latest available firmware. `UpdateFirmware()` uses Polar Firmware Management API, https://firmware-management.polar.com/docs/.
 
 >[!CAUTION]
 >

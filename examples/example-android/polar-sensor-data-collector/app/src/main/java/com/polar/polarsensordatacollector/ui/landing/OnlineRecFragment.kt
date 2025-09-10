@@ -18,6 +18,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.polar.polarsensordatacollector.R
+import com.polar.polarsensordatacollector.service.OnlineStreamService
 import com.polar.polarsensordatacollector.ui.utils.DialogUtility.showAllSettingsDialog
 import com.polar.polarsensordatacollector.ui.utils.showSnackBar
 import com.polar.sdk.api.PolarBleApi.PolarDeviceDataType
@@ -219,15 +220,42 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
     }
 
     private fun shareFilesToUser(fileUris: ArrayList<Uri>) {
-        if (fileUris.isNotEmpty()) {
+        val outputFileUris = ArrayList<Uri>()
+        val readMode = "r"
+
+        for (fileUri in fileUris) {
+            try {
+                requireContext().contentResolver.openFileDescriptor(fileUri, readMode)?.use { descriptor ->
+                    if (descriptor.statSize > 0) {
+                        outputFileUris.add(fileUri)
+                    } else {
+                        val deleted = requireContext().contentResolver.delete(fileUri, null, null)
+                        Log.d(TAG, "Deleted empty file: $fileUri (result=$deleted)")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error handling file: $fileUri", e)
+                try {
+                    val deleted = requireContext().contentResolver.delete(fileUri, null, null)
+                    Log.d(TAG, "Deleted after exception: $fileUri (result=$deleted)")
+                } catch (inner: Exception) {
+                    Log.e(TAG, "Failed to delete file after exception: $fileUri", inner)
+                }
+            }
+        }
+
+        if (outputFileUris.isNotEmpty()) {
             val intent = Intent().apply {
                 action = Intent.ACTION_SEND_MULTIPLE
                 putExtra(Intent.EXTRA_SUBJECT, "Stream data")
                 type = "plain/text"
-                putParcelableArrayListExtra(Intent.EXTRA_STREAM, fileUris)
+                putParcelableArrayListExtra(Intent.EXTRA_STREAM, outputFileUris)
             }
-            this.startActivity(intent)
+            startActivity(intent)
             onlineViewModel.fileShareCompleted()
+            Log.d(TAG, "Shared ${outputFileUris.size} files")
+        } else {
+            Log.i(TAG, "No valid files to share")
         }
     }
 
@@ -308,28 +336,26 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
 
     private fun startStreams(): Boolean {
         val recordingsToStart = mutableListOf<PolarDeviceDataType>()
-        for (feature in PolarDeviceDataType.values()) {
+
+        for (feature in PolarDeviceDataType.entries) {
             val cb = getOnlineRecordingCheckBox(feature)
             if (cb.isChecked) {
                 recordingsToStart.add(feature)
             }
         }
 
-        return if (recordingsToStart.isNotEmpty()) {
-            for (feature in recordingsToStart) {
+        if (recordingsToStart.isEmpty()) return false
+        OnlineStreamService.startService(requireContext())
+
+        for (feature in recordingsToStart) {
+            if (getOnlineRecordingCheckBox(feature).isChecked) {
                 onlineViewModel.startStream(feature)
-                getOnlineRecordingCheckBox(feature).setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-                    if (isChecked) {
-                        onlineViewModel.startStream(feature)
-                    } else {
-                        onlineViewModel.stopStream(feature)
-                    }
-                }
+            } else {
+                onlineViewModel.stopStream(feature)
+                OnlineStreamService.stopService(requireContext())
             }
-            true
-        } else {
-            false
         }
+        return true
     }
 
     private fun streamingFeatureUpdate(streamingFeatureUiState: LiveRecordingUiState) {
@@ -338,13 +364,15 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             startRecordingButton.setText(R.string.stop_recording)
             startRecordingButton.setOnClickListener {
                 viewModel.selectedDevice?.let {
-                    for (feature in PolarDeviceDataType.values()) {
+                    for (feature in PolarDeviceDataType.entries) {
                         val cb = getOnlineRecordingCheckBox(feature)
                         if (cb.isChecked) {
                             onlineViewModel.stopStream(feature)
+                            OnlineStreamService.stopService(requireContext())
                         }
                         streamingFeatureSettingsToggle(feature, true)
                         cb.isEnabled = true
+                        cb.isChecked = false
                     }
                 } ?: run {
                     showToast("No device selected")
@@ -372,7 +400,6 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                     onlineViewModel.addMarkerToLog(marker)
                     markerButton.text = if (marker) "MARKER STOP" else "MARKER START"
                 }
-
             }
         } else {
             markerButton.isEnabled = false
@@ -809,6 +836,34 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                     recordingLiveData1.text = polarPpgData.samples.last().channelSamples[13].toString()
                     recordingLiveHeader2.text = "ir:"
                     recordingLiveData2.text = polarPpgData.samples.last().channelSamples[19].toString()
+                }
+                PolarPpgData.PpgDataType.FRAME_TYPE_13 -> {
+                    recordingLiveHeader0.visibility = VISIBLE
+                    recordingLiveHeader1.visibility = VISIBLE
+                    recordingLiveHeader2.visibility = VISIBLE
+                    recordingLiveData0.visibility = VISIBLE
+                    recordingLiveData1.visibility = VISIBLE
+                    recordingLiveData2.visibility = VISIBLE
+                    recordingLiveHeader0.text = "PPG0:"
+                    recordingLiveData0.text = polarPpgData.samples.last().channelSamples[0].toString()
+                    recordingLiveHeader1.text = "PPG1:"
+                    recordingLiveData1.text = polarPpgData.samples.last().channelSamples[1].toString()
+                    recordingLiveHeader2.text = "Status:"
+                    recordingLiveData2.text = polarPpgData.samples.last().channelSamples[2].toString()
+                }
+                PolarPpgData.PpgDataType.FRAME_TYPE_14 -> {
+                    recordingLiveHeader0.visibility = VISIBLE
+                    recordingLiveHeader1.visibility = VISIBLE
+                    recordingLiveHeader2.visibility = VISIBLE
+                    recordingLiveData0.visibility = VISIBLE
+                    recordingLiveData1.visibility = VISIBLE
+                    recordingLiveData2.visibility = VISIBLE
+                    recordingLiveHeader0.text = "NUMINT_TS1:"
+                    recordingLiveData0.text = polarPpgData.samples.last().channelSamples[0].toString()
+                    recordingLiveHeader1.text = "TIA_GAIN_CH1_TS1:"
+                    recordingLiveData1.text = polarPpgData.samples.last().channelSamples[1].toString()
+                    recordingLiveHeader2.text = "TIA_GAIN_CH2_TS1:"
+                    recordingLiveData2.text = polarPpgData.samples.last().channelSamples[2].toString()
                 }
                 else -> {
                     //NOP

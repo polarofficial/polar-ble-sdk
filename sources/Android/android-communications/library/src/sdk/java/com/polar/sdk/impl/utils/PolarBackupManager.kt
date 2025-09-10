@@ -73,6 +73,12 @@ class PolarBackupManager(private val client: BlePsFtpClient) {
 
             BleLogger.d(TAG, "Entries retrieved: ${entries.size}")
 
+            val defaultBackupDirectories = linkedSetOf<String>(
+                "/U/*/S/PHYSDATA.BPB",
+                "/U/*/S/UDEVSET.BPB",
+                "/U/*/S/PREFS.BPB",
+                "/U/*/USERID.BPB"
+            )
             val backupEntry = entries.find { it.first.endsWith("BACKUP.TXT") }
 
             if (backupEntry != null) {
@@ -92,13 +98,14 @@ class PolarBackupManager(private val client: BlePsFtpClient) {
                             BleLogger.e(TAG, "Failed to read line: $line, error: $e")
                             null
                         }
-                    }.toList()
+                    }.toMutableSet()
                 }
-                BleLogger.d(TAG, "Lines read from backup entry: ${lines.size}")
-                lines
+                lines.addAll(defaultBackupDirectories)
+                BleLogger.d(TAG, "Lines read from backup entry plus defaults: ${lines.size}")
+                lines.toList()
             } else {
-                BleLogger.w(TAG, "Device does not have BACKUP.TXT")
-                emptyList()
+                BleLogger.w(TAG, "Device does not have BACKUP.TXT, using default backup directories")
+                defaultBackupDirectories.toList()
             }
         }.flatMap { lines ->
             Observable.fromIterable(lines)

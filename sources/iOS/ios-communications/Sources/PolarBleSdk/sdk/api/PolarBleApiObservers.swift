@@ -48,6 +48,13 @@ public protocol PolarBleApiDeviceInfoObserver: AnyObject {
     ///   - identifier: Polar device id
     ///   - chargingStatus: Battery charging status
     func batteryChargingStatusReceived(_ identifier: String, chargingStatus: BleBasClient.ChargeState)
+
+    /// Battery power source status received from device
+    ///
+    /// - Parameters:
+    ///   - identifier: Polar device id
+    ///   - powerSourcesState: Includes presence of battery, and power sources -- wired and wireless -- states
+    func batteryPowerSourcesStateReceived(_ identifier: String, powerSourcesState: BleBasClient.PowerSourcesState)
     
     ///  Received DIS info.
     ///
@@ -64,6 +71,10 @@ public protocol PolarBleApiDeviceInfoObserver: AnyObject {
     ///   - key: String key
     ///   - value: String value
     func disInformationReceivedWithKeysAsStrings(_ identifier: String, key: String, value: String)
+}
+
+public extension PolarBleApiDeviceInfoObserver {
+    func batteryPowerSourcesStateReceived(_ identifier: String, powerSourcesState: BleBasClient.PowerSourcesState) {}
 }
 
 /// Heart rate observer

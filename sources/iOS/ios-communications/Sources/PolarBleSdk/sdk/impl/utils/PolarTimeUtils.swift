@@ -6,6 +6,9 @@ import Foundation
 internal class PolarTimeUtils {
     private static let nanoToMillisMultiplier: Int = 1000000
     private static let secondsToMinutesMultiplier: Int = 60
+    private static let hoursTomillisMultiplier: Int = Int(60*60*1E3)
+    private static let minutesTomillisMultiplier: Int = Int(60*1E3)
+    private static let secondsTomillisMultiplier: Int = Int(1E3)
     
     static func dateToPbPftpSetLocalTime(time: Date, zone: TimeZone) -> Protocol_PbPFtpSetLocalTimeParams? {
         guard let dateTimeBuilder = pbDateTimeBuilder(time, zone) else {
@@ -209,6 +212,10 @@ internal class PolarTimeUtils {
         return proto
     }
 
+    static func pbDurationToMillis(pbDuration: PbDuration) -> Int {
+        return hoursToMillis(hours: Int(pbDuration.hours)) + minutesToMillis(minutes: Int(pbDuration.minutes)) + secondsToMillis(seconds: Int(pbDuration.seconds)) + Int(pbDuration.millis)
+    }
+
     static func pbTimeToTimeString(_ pbTime: PbTime) -> String {
         return String(format: "%02d:%02d:%02d.%02d", pbTime.hour, pbTime.minute, pbTime.seconds, pbTime.millis)
     }
@@ -216,13 +223,25 @@ internal class PolarTimeUtils {
     private static func millisToNanos(milliseconds: Int) -> Int {
         return milliseconds * nanoToMillisMultiplier
     }
-    
+
     private static func secondsToMinutes(seconds: Int) -> Int {
         return Int(round(Double(seconds) / Double(secondsToMinutesMultiplier)))
     }
 
     private static func minutesToSeconds(minutes: Int) -> Int {
         return minutes * secondsToMinutesMultiplier
+    }
+
+    private static func hoursToMillis(hours: Int) -> Int {
+        return hours * hoursTomillisMultiplier
+    }
+
+    private static func minutesToMillis(minutes: Int) -> Int {
+        return minutes * minutesTomillisMultiplier
+    }
+
+    private static func secondsToMillis(seconds: Int) -> Int {
+        return seconds * secondsTomillisMultiplier
     }
 
     private static func timeZoneFromMinutes(_ minutes: Int) throws -> TimeZone {

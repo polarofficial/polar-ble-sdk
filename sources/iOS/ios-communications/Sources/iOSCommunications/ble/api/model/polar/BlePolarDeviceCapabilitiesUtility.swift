@@ -13,6 +13,7 @@ open class BlePolarDeviceCapabilitiesUtility {
     public static let SENSE = "sense"
     public static let INW4J = "inw4j"
     public static let POLAR_360 = "360"
+    public static let POLAR_LOOP_GEN_2 = "loop gen 2"
     public static let IGNITE_3 = "ignite 3"
     public static let GRIT_X2_PRO = "grit x2 pro"
     public static let VANTAGE_V3 = "vantage v3"
@@ -51,9 +52,11 @@ open class BlePolarDeviceCapabilitiesUtility {
     public static func isActivityDataSupported(_ deviceType: String) -> Bool {
         let lowercasedDeviceType = deviceType.lowercased()
         return lowercasedDeviceType == POLAR_360
+            || lowercasedDeviceType == POLAR_LOOP_GEN_2
             || lowercasedDeviceType == IGNITE_3
             || lowercasedDeviceType == GRIT_X2_PRO
             || lowercasedDeviceType == VANTAGE_V3
+            || lowercasedDeviceType == VANTAGE_M3
     }
     
     public static func isDeviceSensor(_ deviceType: String) -> Bool {
@@ -62,6 +65,7 @@ open class BlePolarDeviceCapabilitiesUtility {
                lowercasedDeviceType == H10 ||
                lowercasedDeviceType == SENSE ||
                lowercasedDeviceType == INW4J ||
-               lowercasedDeviceType == POLAR_360
+               lowercasedDeviceType == POLAR_360 ||
+               lowercasedDeviceType == POLAR_LOOP_GEN_2
     }
 }

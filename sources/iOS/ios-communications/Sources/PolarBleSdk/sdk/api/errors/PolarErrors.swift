@@ -42,4 +42,10 @@ public enum PolarErrors: Error {
     
     /// Error related to offline recording
     case polarOfflineRecordingError(description: String)
+    
+    /// Error due timeout
+    case timeout(description: String)
+    
+    /// Invalid sensor setting value
+    case invalidSensorSettingValue(setting: PolarSensorSetting.SettingType, value: UInt32)
 }

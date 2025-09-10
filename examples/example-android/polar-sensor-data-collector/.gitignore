@@ -1,3 +1,19 @@
+*.iml
+.gradle
+/local.properties
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.idea/
+
+
+### AndroidStudio ###
+# Covers files to be ignored for android development using Android Studio.
+
 # Built application files
 *.apk
 *.ap_
@@ -46,11 +62,70 @@ captures/
 *.jks
 *.keystore
 
-
-# IntelliJ
-*.iml
-.idea/
-# Others
-.DS_Store
+# Android Patch
+gen-external-apklibs
 
 
+# NDK
+obj/
+app/.cxx/
+
+# IntelliJ IDEA
+*.iws
+/out/
+
+# User-specific configurations
+.idea/caches/
+.idea/libraries/
+.idea/shelf/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/.name
+.idea/compiler.xml
+.idea/copyright/profiles_settings.xml
+.idea/encodings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/scopes/scope_settings.xml
+.idea/dictionaries
+.idea/vcs.xml
+.idea/jsLibraryMappings.xml
+.idea/datasources.xml
+.idea/dataSources.ids
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+.idea/assetWizardSettings.xml
+.idea/gradle.xml
+.idea/jarRepositories.xml
+.idea/navEditor.xml
+
+# OS-specific files
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Legacy Eclipse project files
+.classpath
+.project
+.cproject
+.settings/
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.war
+*.ear
+
+# virtual machine crash logs (Reference: http://www.java.com/en/download/help/error_hotspot.xml)
+hs_err_pid*
+
+## Plugin-specific files:
+
+
+### AndroidStudio Patch ###
+
+!/gradle/wrapper/gradle-wrapper.jar

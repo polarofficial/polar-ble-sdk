@@ -38,7 +38,7 @@ public class BlePfcClient extends BleGattBase {
 
     public static final byte RESPONSE_CODE = (byte) 0xF0;
 
-    public static final UUID PFC_SERVICE = UUID.fromString("6217FF4B-FB31-1140-AD5A-A45545D7ECF3"); /* Poler Features Configuration Service (PFCS)*/
+    public static final UUID PFC_SERVICE = UUID.fromString("6217FF4B-FB31-1140-AD5A-A45545D7ECF3"); /* Polar Features Configuration Service (PFCS)*/
     public static final UUID PFC_FEATURE = UUID.fromString("6217FF4C-C8EC-B1FB-1380-3AD986708E2D");
     public static final UUID PFC_CP = UUID.fromString("6217FF4D-91BB-91D0-7E2A-7CD3BDA8A1F3");
 
@@ -264,7 +264,7 @@ public class BlePfcClient extends BleGattBase {
                                 return;
                             }
                             default:
-                                throw new BleNotSupported("Unknown pfc command aquired");
+                                throw new BleNotSupported("Unknown pfc command acquired");
                         }
                     } catch (Exception ex) {
                         if (!emitter.isDisposed()) {

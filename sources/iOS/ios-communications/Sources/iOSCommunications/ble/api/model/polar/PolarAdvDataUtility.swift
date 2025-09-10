@@ -2,12 +2,10 @@ import Foundation
 
 open class PolarAdvDataUtility {
         
-    private static let BLE_ADV_POLAR_PREFIX_IN_LOCAL_NAME = "Polar"
-    
-    public static func getPolarModelNameFromAdvLocalName(advLocalName: String) -> String {
-        if (isPolarDevice(advLocalName: advLocalName)) {
+    public static func getDeviceNameFromAdvLocalName(advLocalName: String, withPrefixToTrim prefix: String = "Polar") -> String {
+        if (isValidDevice(advLocalName: advLocalName, requiredPrefix: prefix)) {
             let modelName = advLocalName.trimmingCharacters(in: .whitespacesAndNewlines)
-                .replacingOccurrences(of: BLE_ADV_POLAR_PREFIX_IN_LOCAL_NAME + " ", with: "")
+                .replacingOccurrences(of: prefix != "" ? prefix + " " : "", with: "")
             
             if let endIndex = modelName.lastIndex(of: " ") {
                 let mySubstring = modelName[..<(endIndex)]
@@ -20,8 +18,8 @@ open class PolarAdvDataUtility {
         }
     }
     
-    public static func isPolarDevice(advLocalName: String) -> Bool {
-        return advLocalName.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix(BLE_ADV_POLAR_PREFIX_IN_LOCAL_NAME) &&
+    public static func isValidDevice(advLocalName: String, requiredPrefix: String = "Polar") -> Bool {
+        return advLocalName.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix(requiredPrefix) &&
             advLocalName.trimmingCharacters(in: .whitespacesAndNewlines).split(separator: " ").count > 2
     }
 }

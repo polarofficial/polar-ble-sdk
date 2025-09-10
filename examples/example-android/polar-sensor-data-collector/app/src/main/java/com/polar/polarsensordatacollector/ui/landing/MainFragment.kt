@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.View
 import android.view.View.*
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -37,7 +38,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private val viewModel: MainViewModel by activityViewModels()
     private var connectionState: MainViewModel.DeviceConnectionStates = MainViewModel.DeviceConnectionStates.NOT_CONNECTED
     private val connectedDevices: MutableSet<Device> = mutableSetOf()
-
+    private val viewPagerPagePerDevice: MutableMap<String, Int> = mutableMapOf()
     private lateinit var sensorState: TextView
     private lateinit var phoneBleStatus: TextView
     private lateinit var firmwareVersion: TextView
@@ -46,6 +47,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     private lateinit var deviceConnectionStatusGroup: ConstraintLayout
 
+    private lateinit var searchText: EditText
     private lateinit var connectButton: Button
     private lateinit var disconnectButton: Button
 
@@ -106,7 +108,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                             }
                         }
                     },
-                    viewModel.searchForDevice()
+                    viewModel.searchForDevice(searchText.text.toString())
                 )
                 MainViewModel.DeviceConnectionStates.CONNECTING_TO_SELECTED_DEVICE -> {
                     val connectingToDevice = "Connecting to device ${selectedDevice?.name}"
@@ -165,7 +167,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                                     }
                                 }
                             },
-                            viewModel.searchForDevice()
+                            viewModel.searchForDevice(searchText.text.toString())
                         )
                     } catch (polarInvalidArgument: PolarInvalidArgument) {
                         polarInvalidArgument.printStackTrace()
@@ -219,6 +221,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         sensorState = view.findViewById(R.id.device_status)
         deviceConnectionStatusGroup = view.findViewById(R.id.device_connection_status_group)
         phoneBleStatus = view.findViewById(R.id.phone_bluetooth_status)
+        searchText = view.findViewById(R.id.search_device_name_prefix)
         connectButton = view.findViewById(R.id.search_connect_button)
         disconnectButton = view.findViewById(R.id.disconnect_button)
         firmwareVersion = view.findViewById(R.id.firmware_version)
@@ -238,7 +241,15 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         when (state.state) {
             MainViewModel.DeviceConnectionStates.NOT_CONNECTED -> {
                 Log.i(TAG, "Device not connected")
-                phoneBleStatus.visibility = GONE
+                connectButton.visibility = VISIBLE
+                if (viewModel.isBluetoothEnabled()) {
+                    phoneBleStatus.visibility = GONE
+                } else {
+                    phoneBleStatus.visibility = VISIBLE
+                }
+                selectedDevice?.let {
+                    viewPagerPagePerDevice[it.deviceId] = viewPager.currentItem
+                }
             }
             MainViewModel.DeviceConnectionStates.CONNECTING_TO_SELECTED_DEVICE -> {
                 connectButton.setText(R.string.search_and_connect_connecting)
@@ -248,6 +259,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 viewPager.visibility = INVISIBLE
                 deviceConnectionStatusGroup.visibility = VISIBLE
                 phoneBleStatus.visibility = GONE
+                disconnectButton.visibility = VISIBLE
                 connectButton.setBackgroundColor(resources.getColor(R.color.colorButtonConnecting, null))
             }
             MainViewModel.DeviceConnectionStates.CONNECTED -> {
@@ -255,12 +267,17 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 val deviceId = selectedDevice?.deviceId ?: throw IllegalStateException("Selected device can't be null for connected device!")
                 sensorState.text = getString(R.string.device_id, deviceId)
                 connectButton.isEnabled = true
-                onlineOfflineAdapter.removeFragments(isAlreadyConnected = connectedDevices.contains(selectedDevice))
-                onlineOfflineAdapter.addOnlineRecordingFragment(deviceId)
-                onlineOfflineAdapter.addDeviceSettingsFragment(deviceId)
-                onlineOfflineAdapter.addLoggingFragment(deviceId)
-                onlineOfflineAdapter.addActivityFragment(deviceId)
+                if (!connectedDevices.contains(selectedDevice)) {
+                    onlineOfflineAdapter.removeFragments(isAlreadyConnected = connectedDevices.contains(selectedDevice))
+                    onlineOfflineAdapter.addOnlineRecordingFragment(deviceId)
+                    onlineOfflineAdapter.addDeviceSettingsFragment(deviceId)
+                    onlineOfflineAdapter.addLoggingFragment(deviceId)
+                    onlineOfflineAdapter.addActivityFragment(deviceId)
+                }
                 tabLayout.visibility = VISIBLE
+                viewPagerPagePerDevice[deviceId]?.let {
+                    viewPager.setCurrentItem(it, false)
+                }
                 viewPager.visibility = VISIBLE
                 deviceConnectionStatusGroup.visibility = VISIBLE
                 phoneBleStatus.visibility = GONE
@@ -288,14 +305,19 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 }
             }
             MainViewModel.DeviceConnectionStates.PHONE_BLE_OFF -> {
+                Log.i(TAG, "Phone BLE is off")
+                showToast(getString(R.string.phone_ble_off))
+                searchText.setText(null)
+                searchText.isEnabled = false
                 connectButton.isEnabled = false
-                selectedDevice = null
                 batteryStatus.text = ""
                 batteryChargingStatus.text = ""
                 firmwareVersion.text = ""
                 sensorState.text = ""
                 tabLayout.visibility = GONE
                 viewPager.visibility = INVISIBLE
+                connectButton.visibility = GONE
+                disconnectButton.visibility = GONE
                 phoneBleStatus.visibility = VISIBLE
                 deviceConnectionStatusGroup.visibility = GONE
                 connectButton.setText(R.string.search_and_connect_search)

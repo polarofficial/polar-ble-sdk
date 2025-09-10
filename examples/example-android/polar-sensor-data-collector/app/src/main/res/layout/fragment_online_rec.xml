@@ -306,7 +306,7 @@
                         android:visibility="gone"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/temperature_data_section" />
+                        app:layout_constraintTop_toBottomOf="@+id/loc_data_section" />
 
                     <include
                         android:id="@+id/ecg_data_section"
@@ -316,7 +316,7 @@
                         android:visibility="gone"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/temperature_data_section" />
+                        app:layout_constraintTop_toBottomOf="@+id/skin_temperature_data_section" />
 
                     <include
                         android:id="@+id/hr_data_section"

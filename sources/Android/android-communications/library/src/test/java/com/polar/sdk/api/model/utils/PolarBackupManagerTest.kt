@@ -78,6 +78,28 @@ class PolarBackupManagerTest {
                         .build().toByteArray()
         )} returns Single.just(ByteArrayOutputStream())
 
+        // Default backup files
+        every { mockClient.request(
+            PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                .setPath("/U/0/S/PHYSDATA.BPB")
+                .build().toByteArray()
+        )} returns Single.just(ByteArrayOutputStream())
+
+        every { mockClient.request(
+            PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                .setPath("/U/0/S/UDEVSET.BPB")
+                .build().toByteArray()
+        )} returns Single.just(ByteArrayOutputStream())
+
+        every { mockClient.request(
+            PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                .setPath("/U/0/S/PREFS.BPB")
+                .build().toByteArray()
+        )} returns Single.just(ByteArrayOutputStream())
+
         // Act
         backupManager.backupDevice().blockingGet()
 
@@ -112,6 +134,26 @@ class PolarBackupManagerTest {
                             .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
                             .setPath("/RANDOM/FILE.TXT")
                             .build().toByteArray()
+            )
+
+            // Default files
+            mockClient.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath("/U/0/S/PHYSDATA.BPB")
+                    .build().toByteArray()
+            )
+            mockClient.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath("/U/0/S/UDEVSET.BPB")
+                    .build().toByteArray()
+            )
+            mockClient.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath("/U/0/S/PREFS.BPB")
+                    .build().toByteArray()
             )
         }
         confirmVerified(mockClient)

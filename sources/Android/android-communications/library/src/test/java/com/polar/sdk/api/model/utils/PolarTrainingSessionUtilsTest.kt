@@ -13,6 +13,8 @@ import com.polar.sdk.api.model.trainingsession.PolarExercise
 import com.polar.sdk.api.model.trainingsession.PolarExerciseDataTypes
 import fi.polar.remote.representation.protobuf.ExerciseRouteSamples
 import fi.polar.remote.representation.protobuf.ExerciseRouteSamples2
+import fi.polar.remote.representation.protobuf.ExerciseSamples
+import fi.polar.remote.representation.protobuf.ExerciseSamples2
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
@@ -102,7 +104,10 @@ class PolarTrainingSessionUtilsTest {
                         PbPFtpEntry.newBuilder().setName("ROUTE.BPB").setSize(512L).build(),
                         PbPFtpEntry.newBuilder().setName("ROUTE2.BPB").setSize(512L).build(),
                         PbPFtpEntry.newBuilder().setName("ROUTE.GZB").setSize(512L).build(),
-                        PbPFtpEntry.newBuilder().setName("ROUTE2.GZB").setSize(512L).build()
+                        PbPFtpEntry.newBuilder().setName("ROUTE2.GZB").setSize(512L).build(),
+                        PbPFtpEntry.newBuilder().setName("SAMPLES.BPB").setSize(512L).build(),
+                        PbPFtpEntry.newBuilder().setName("SAMPLES.GZB").setSize(512L).build(),
+                        PbPFtpEntry.newBuilder().setName("SAMPLES2.GZB").setSize(512L).build(),
                     )
                 ).build().writeTo(this)
         }
@@ -130,7 +135,10 @@ class PolarTrainingSessionUtilsTest {
                                 PolarExerciseDataTypes.ROUTE,
                                 PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT,
                                 PolarExerciseDataTypes.ROUTE_GZIP,
-                                PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT_GZIP
+                                PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT_GZIP,
+                                PolarExerciseDataTypes.SAMPLES,
+                                PolarExerciseDataTypes.SAMPLES_GZIP,
+                                PolarExerciseDataTypes.SAMPLES_ADVANCED_FORMAT_GZIP,
                             ),
                             exerciseSummary = null
                         ),
@@ -142,7 +150,10 @@ class PolarTrainingSessionUtilsTest {
                                 PolarExerciseDataTypes.ROUTE,
                                 PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT,
                                 PolarExerciseDataTypes.ROUTE_GZIP,
-                                PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT_GZIP
+                                PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT_GZIP,
+                                PolarExerciseDataTypes.SAMPLES,
+                                PolarExerciseDataTypes.SAMPLES_GZIP,
+                                PolarExerciseDataTypes.SAMPLES_ADVANCED_FORMAT_GZIP,
                             ),
                             exerciseSummary = null
                         )
@@ -256,6 +267,9 @@ class PolarTrainingSessionUtilsTest {
                         PolarExerciseDataTypes.ROUTE_GZIP,
                         PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT,
                         PolarExerciseDataTypes.ROUTE_ADVANCED_FORMAT_GZIP,
+                        PolarExerciseDataTypes.SAMPLES,
+                        PolarExerciseDataTypes.SAMPLES_GZIP,
+                        PolarExerciseDataTypes.SAMPLES_ADVANCED_FORMAT_GZIP,
                     )
                 )
             )
@@ -411,10 +425,44 @@ class PolarTrainingSessionUtilsTest {
             byteOut.toByteArray()
         }
 
+        val sampleProto = ExerciseSamples.PbExerciseSamples.newBuilder()
+            .setRecordingInterval(
+                Types.PbDuration.newBuilder().setMinutes(40)
+            )
+            .addAltitudeSamples(100F)
+            .addAltitudeSamples(101F)
+            .build()
+
+        val sampleBytesGzip = ByteArrayOutputStream().use { byteOut ->
+            GZIPOutputStream(byteOut).use { gzipOut ->
+                sampleProto.writeTo(gzipOut)
+            }
+            byteOut.toByteArray()
+        }
+
+        val sampleAdvancedProto = ExerciseSamples2.PbExerciseSamples2.newBuilder()
+            .addExerciseIntervalledSample2List(
+                ExerciseSamples2.PbExerciseIntervalledSample2List.newBuilder()
+                    .setSampleType(Types.PbSampleType.SAMPLE_TYPE_HEART_RATE)
+                    .setRecordingIntervalMs(1000)
+                    .addAllHeartRateSamples(listOf(50, 60, 70))
+                    .build()
+            )
+            .build()
+
+        val sampleAdvancedBytesGzip = ByteArrayOutputStream().use { byteOut ->
+            GZIPOutputStream(byteOut).use { gzipOut ->
+                sampleAdvancedProto.writeTo(gzipOut)
+            }
+            byteOut.toByteArray()
+        }
+
+
         val sessionBytes = ByteArrayOutputStream().apply { mockProto.writeTo(this) }.toByteArray()
         val exerciseBytes = ByteArrayOutputStream().apply { exerciseProto.writeTo(this) }.toByteArray()
         val routeBytes = ByteArrayOutputStream().apply { routeProto.writeTo(this) }.toByteArray()
         val routeAdvancedBytes = ByteArrayOutputStream().apply { routeAdvancedProto.writeTo(this) }.toByteArray()
+        val sampleBytes = ByteArrayOutputStream().apply { sampleProto.writeTo(this) }.toByteArray()
 
 
         every { client.request(any<ByteArray>()) } returnsMany listOf(
@@ -423,8 +471,10 @@ class PolarTrainingSessionUtilsTest {
             Single.just(ByteArrayOutputStream().apply { write(routeBytes) }),
             Single.just(ByteArrayOutputStream().apply { write(routeBytesGzip) }),
             Single.just(ByteArrayOutputStream().apply { write(routeAdvancedBytes) }),
-            Single.just(ByteArrayOutputStream().apply { write(routeAdvancedBytesGzip) })
-
+            Single.just(ByteArrayOutputStream().apply { write(routeAdvancedBytesGzip) }),
+            Single.just(ByteArrayOutputStream().apply { write(sampleBytes) }),
+            Single.just(ByteArrayOutputStream().apply { write(sampleBytesGzip) }),
+            Single.just(ByteArrayOutputStream().apply { write(sampleAdvancedBytesGzip) })
         )
 
         // Act
@@ -448,6 +498,8 @@ class PolarTrainingSessionUtilsTest {
         assertNotNull(exercise.exerciseSummary)
         assertNotNull(exercise.route)
         assertNotNull(exercise.routeAdvanced)
+        assertNotNull(exercise.samples)
+        assertNotNull(exercise.samplesAdvanced)
 
         val route = exercise.route!!
         assertEquals(60.17, route.latitudeList.first())
@@ -500,6 +552,27 @@ class PolarTrainingSessionUtilsTest {
                 PftpRequest.PbPFtpOperation.newBuilder()
                     .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
                     .setPath("/U/0/20250101/E/101200/ROUTE2.GZB")
+                    .build()
+                    .toByteArray()
+            )
+            client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath("/U/0/20250101/E/101200/SAMPLES.BPB")
+                    .build()
+                    .toByteArray()
+            )
+            client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath("/U/0/20250101/E/101200/SAMPLES.GZB")
+                    .build()
+                    .toByteArray()
+            )
+            client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath("/U/0/20250101/E/101200/SAMPLES2.GZB")
                     .build()
                     .toByteArray()
             )

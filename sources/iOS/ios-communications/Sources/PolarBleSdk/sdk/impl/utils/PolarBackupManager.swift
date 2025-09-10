@@ -86,15 +86,19 @@ public class PolarBackupManager {
                                        }
                                    }
                                }
-
+                               self.addDefaultBackupDirectories(to: &backupDirectories)
                                BleLogger.trace("Backup directories found: \(backupDirectories)")
                                let backupDataSingles = backupDirectories.map { self.backupDirectory(backupDirectory: $0) }
                                return Single.zip(backupDataSingles)
                                    .map { $0.flatMap { $0 } }
                            }
                    } else {
-                       BleLogger.error("No BACKUP.TXT found in entries: \(entries)")
-                       return .just([])
+                       BleLogger.error("No BACKUP.TXT found in entries: \(entries), using default backup directories")
+                       var backupDirectories: [String] = []
+                       self.addDefaultBackupDirectories(to: &backupDirectories)
+                       let backupDataSingles = backupDirectories.map { self.backupDirectory(backupDirectory: $0) }
+                       return Single.zip(backupDataSingles)
+                           .map { $0.flatMap { $0 } }
                    }
                } catch {
                    BleLogger.error("Failed to parse /SYS/ directory: \(error)")
@@ -106,6 +110,22 @@ public class PolarBackupManager {
                return .just([])
            }
    }
+    
+    private func addDefaultBackupDirectories( to directories:inout [String]) {
+        let defaultBackupDirectories:[String] = [
+            "/U/*/S/PHYSDATA.BPB",
+            "/U/*/S/UDEVSET.BPB",
+            "/U/*/S/PREFS.BPB",
+            "/U/*/USERID.BPB"
+        ]
+
+        defaultBackupDirectories.forEach { dir in
+            if false == directories.contains(dir) {
+                directories.append(dir)
+            }
+        }
+
+    }
 
     /// Restores backup to the device.
     ///

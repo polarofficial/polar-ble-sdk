@@ -28,4 +28,38 @@ public protocol PolarTrainingSessionApi {
         identifier: String,
         trainingSessionReference: PolarTrainingSessionReference
     ) -> Single<PolarTrainingSession>
+    
+    /// Start an exercise session on the device.
+    ///
+    /// - Parameters:
+    ///   - identifier: The Polar device ID or BT address.
+    ///   - profile: The sport profile to use for the exercise session.
+    /// - Returns: A `Completable` that completes when the command has been delivered to the device.
+    func startExercise(identifier: String, profile: PolarExerciseSession.SportProfile) -> Completable
+
+    /// Pause an ongoing exercise session.
+    ///
+    /// - Parameter identifier: The Polar device ID or BT address.
+    /// - Returns: A `Completable` that completes when the command has been delivered to the device.
+    func pauseExercise(identifier: String) -> Completable
+
+    /// Resume a paused exercise session.
+    ///
+    /// - Parameter identifier: The Polar device ID or BT address.
+    /// - Returns: A `Completable` that completes when the command has been delivered to the device.
+    func resumeExercise(identifier: String) -> Completable
+
+    /// Stop the current exercise session.
+    ///
+    /// By default, the session is saved on the device.
+    ///
+    /// - Parameter identifier: The Polar device ID or BT address.
+    /// - Returns: A `Completable` that completes when the command has been delivered to the device.
+    func stopExercise(identifier: String) -> Completable
+
+    /// Get the current exercise session status from the device.
+    ///
+    /// - Parameter identifier: The Polar device ID or BT address.
+    /// - Returns: A `Single` emitting the current `PolarExerciseSession.ExerciseInfo` for the device.
+    func getExerciseStatus(identifier: String) -> Single<PolarExerciseSession.ExerciseInfo>
 }

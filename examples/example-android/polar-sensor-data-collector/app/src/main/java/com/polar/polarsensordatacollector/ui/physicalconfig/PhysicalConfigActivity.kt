@@ -1,10 +1,10 @@
 package com.polar.polarsensordatacollector.ui.physicalconfig
 
-import android.app.DatePickerDialog
 import android.os.Bundle
 import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.polar.sdk.api.model.PolarFirstTimeUseConfig
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -55,6 +55,10 @@ class PhysicalConfigActivity : AppCompatActivity() {
         sleepGoalMinutesPicker = findViewById(R.id.sleepGoalPickerMinutes)
         buttonOk = findViewById(R.id.submit_physical_button)
 
+        radioGroupSex.check(R.id.radioButtonMale)
+        editTextHeight.setText("185")
+        editTextWeight.setText("85")
+
         initializeHeartRateSpinners()
         initializeNumberPickerVO2max()
         initializeTrainingBackgroundSpinner()
@@ -66,11 +70,28 @@ class PhysicalConfigActivity : AppCompatActivity() {
 
     private fun setupListeners() {
         textViewBirthday.setOnClickListener {
-            val calendar = Calendar.getInstance()
-            DatePickerDialog(this, { _, year, month, day ->
-                textViewBirthday.text = String.format("%d-%02d-%02d", year, month + 1, day)
-            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
+            val datePicker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText(R.string.birthday_hint)
+                .setTheme(R.style.MaterialCalendarTheme)
+                .build()
+
+            datePicker.show(supportFragmentManager, "MATERIAL_DATE_PICKER")
+
+            datePicker.addOnPositiveButtonClickListener { selection ->
+                val selectedDate = Calendar.getInstance()
+                selectedDate.timeInMillis = selection
+
+                val formattedDate = String.format(
+                    Locale.getDefault(),
+                    "%d-%02d-%02d",
+                    selectedDate.get(Calendar.YEAR),
+                    selectedDate.get(Calendar.MONTH) + 1,
+                    selectedDate.get(Calendar.DAY_OF_MONTH)
+                )
+                textViewBirthday.text = formattedDate
+            }
         }
+        textViewBirthday.setText("2000-01-01")
 
         buttonOk.setOnClickListener {
             saveUserData()
@@ -82,23 +103,27 @@ class PhysicalConfigActivity : AppCompatActivity() {
         val restingHeartRateValues = (PolarFirstTimeUseConfig.RESTING_HEART_RATE_MIN..PolarFirstTimeUseConfig.RESTING_HEART_RATE_MAX).toList()
 
         spinnerMaxHeartRate.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, maxHeartRateValues)
+        spinnerMaxHeartRate.setSelection(maxHeartRateValues.indexOf(180))
         spinnerRestingHeartRate.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, restingHeartRateValues)
+        spinnerRestingHeartRate.setSelection(restingHeartRateValues.indexOf(50))
     }
 
     private fun initializeTrainingBackgroundSpinner() {
         spinnerTrainingBackground.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, PolarFirstTimeUseConfig.TRAINING_BACKGROUND_VALUES)
+        spinnerTrainingBackground.setSelection( PolarFirstTimeUseConfig.TRAINING_BACKGROUND_VALUES.indexOf(30))
     }
 
     private fun initializeNumberPickerVO2max() {
         numberPickerVO2max.minValue = PolarFirstTimeUseConfig.VO2_MAX_MIN
         numberPickerVO2max.maxValue = PolarFirstTimeUseConfig.VO2_MAX_MAX
-        numberPickerVO2max.value = (PolarFirstTimeUseConfig.VO2_MAX_MIN + PolarFirstTimeUseConfig.VO2_MAX_MAX) / 2
+        numberPickerVO2max.value = 50
     }
 
     private fun initializeTypicalDaySpinner() {
         val typicalDays = PolarFirstTimeUseConfig.TypicalDay.values()
         val displayedValues = typicalDays.map { it.name.replace('_', ' ') }
         typicalDaySpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, displayedValues)
+        typicalDaySpinner.setSelection(typicalDays.indexOf(PolarFirstTimeUseConfig.TypicalDay.MOSTLY_STANDING))
     }
 
     private fun initializeSleepGoalPicker() {
@@ -115,6 +140,7 @@ class PhysicalConfigActivity : AppCompatActivity() {
                 sleepGoalMinutesPicker.isEnabled = true
             }
         }
+        sleepGoalHoursPicker.value = 8
     }
 
     private fun parseBirthday(birthdayStr: String): Date {

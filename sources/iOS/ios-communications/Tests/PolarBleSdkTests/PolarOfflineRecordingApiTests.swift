@@ -138,8 +138,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
             dateFormatter.dateStyle = .short
             dateFormatter.timeStyle = .full
             let dateAsString = dateFormatter.string(from: entry.date)
-            XCTAssertEqual(dateAsString, "3/9/25, 3:01:30 AM Eastern Daylight Time")
-            
+            XCTAssertEqual(dateAsString, "2025-03-09, 03:01:30 Eastern Daylight Time")
             XCTAssertEqual(entry.path, "/U/0/20250309/R/020130/HR.REC")
             XCTAssertEqual(entry.size, 444)
             XCTAssertEqual(entry.type, PolarDeviceDataType.hr)
@@ -224,7 +223,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
             dateFormatter.dateStyle = .short
             dateFormatter.timeStyle = .full
             let dateAsString = dateFormatter.string(from: entry.date)
-            XCTAssertEqual(dateAsString, "11/2/25, 1:30:07 AM Eastern Standard Time")
+            XCTAssertEqual(dateAsString, "2025-11-02, 01:30:07 Eastern Standard Time")
             
             XCTAssertEqual(entry.path, "/U/0/20251102/R/013007/HR.REC")
             XCTAssertEqual(entry.size, 444)
@@ -311,7 +310,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
             dateFormatter.dateStyle = .short
             dateFormatter.timeStyle = .full
             let dateAsString = dateFormatter.string(from: entry.date)
-            XCTAssertEqual(dateAsString, "11/2/25, 2:01:30 AM Eastern Standard Time")
+            XCTAssertEqual(dateAsString, "2025-11-02, 02:01:30 Eastern Standard Time")
             
             XCTAssertEqual(entry.path, "/U/0/20251102/R/020130/HR.REC")
             XCTAssertEqual(entry.size, 444)
@@ -397,7 +396,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
             dateFormatter.dateStyle = .short
             dateFormatter.timeStyle = .full
             let dateAsString = dateFormatter.string(from: entry.date)
-            XCTAssertEqual(dateAsString, "30.3.2025 klo 4.15.00 Itä-Euroopan kesäaika")
+            XCTAssertEqual(dateAsString, "2025-03-30 klo 04:15:00 Itä-Euroopan kesäaika")
             
             XCTAssertEqual(entry.path, "/U/0/20250330/R/031500/HR.REC")
             XCTAssertEqual(entry.size, 444)
@@ -481,7 +480,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
             dateFormatter.dateStyle = .short
             dateFormatter.timeStyle = .full
             let dateAsString = dateFormatter.string(from: entry.date)
-            XCTAssertEqual(dateAsString, "26.10.2025 klo 3.15.00 Itä-Euroopan normaaliaika")
+            XCTAssertEqual(dateAsString, "2025-10-26 klo 03:15:00 Itä-Euroopan normaaliaika")
             
             XCTAssertEqual(entry.path, "/U/0/20251026/R/031500/HR.REC")
             XCTAssertEqual(entry.size, 444)
@@ -565,7 +564,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
             dateFormatter.dateStyle = .short
             dateFormatter.timeStyle = .full
             let dateAsString = dateFormatter.string(from: entry.date)
-            XCTAssertEqual(dateAsString, "26.10.2025 klo 4.10.00 Itä-Euroopan normaaliaika")
+            XCTAssertEqual(dateAsString, "2025-10-26 klo 04:10:00 Itä-Euroopan normaaliaika")
             
             XCTAssertEqual(entry.path, "/U/0/20251026/R/041000/HR.REC")
             XCTAssertEqual(entry.size, 444)

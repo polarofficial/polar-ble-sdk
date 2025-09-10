@@ -1,7 +1,7 @@
 //  Copyright © 2021 Polar. All rights reserved.
 
 import XCTest
-import iOSCommunications
+@testable import iOSCommunications
 import CoreBluetooth
 import RxTest
 import RxSwift
@@ -195,5 +195,84 @@ class BleBasClientTest: XCTestCase {
         // Assert
         let events = observer.events.map { $0.value.element }
         XCTAssertEqual(events[1], BleBasClient.ChargeState.charging)
+    }
+    
+    // GIVEN that BLE Battery Service client receives battery power sources status updates
+    // WHEN battery power sources status observable is subscribed
+    // THEN the latest cached power sources status value is emitted
+    func testPowerSourcesCachedValue() throws {
+        
+        // Arrange
+        let characteristic: CBUUID = BleBasClient.BATTERY_STATUS_CHARACTERISTIC
+        let batteryStatusDataWiredNotConnected = Data([0x00, 0b10100001])
+        let batteryStatusDataWiredConnected    = Data([0x00, 0b10100011])
+        
+        let error = 0
+        let observer = scheduler.createObserver(BleBasClient.PowerSourcesState.self)
+        
+        // Act
+        bleBasClient.processServiceData(characteristic, data: batteryStatusDataWiredConnected, err: error)
+        bleBasClient.processServiceData(characteristic, data: batteryStatusDataWiredNotConnected, err: error)
+        
+        let observable = bleBasClient.monitorPowerSourcesState(true)
+        observable.subscribe(observer).disposed(by: disposeBag)
+        
+        // Assert
+        let events = observer.events.map { $0.value.element }
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events[0]?.wiredExternalPowerConnected, BleBasClient.PowerSourceState.notConnected)
+    }
+    
+    func testProcessServiceData_ShouldEmitAllPowerSourceStatesCorrectly() throws {
+        // Arrange
+        let characteristic: CBUUID = BleBasClient.BATTERY_STATUS_CHARACTERISTIC
+        let status = 0
+        let batteryStatusDataBatteryNotPresent              = Data([0x00, 0b10100000])
+        let batteryStatusDataBatteryPresent                 = Data([0x00, 0b10100001])
+        
+        let batteryStatusDataWiredNotConnected              = Data([0x00, 0b10100001])
+        let batteryStatusDataWiredConnected                 = Data([0x00, 0b10100011])
+        let batteryStatusDataWiredUnknown                   = Data([0x00, 0b10100101])
+        let batteryStatusDataWiredReservedForFutureUse      = Data([0x00, 0b10100111])
+        
+        let batteryStatusDataWirelessNotConnected           = Data([0x00, 0b10100011])
+        let batteryStatusDataWirelessConnected              = Data([0x00, 0b10101011])
+        let batteryStatusDataWirelessUnknown                = Data([0x00, 0b10110011])
+        let batteryStatusDataWirelessReservedForFutureUse   = Data([0x00, 0b10111011])
+        
+        // Act
+        let observer = scheduler.createObserver(BleBasClient.PowerSourcesState.self)
+        bleBasClient.monitorPowerSourcesState(true)
+            .subscribe(observer)
+            .disposed(by: disposeBag)
+        
+        bleBasClient.processServiceData(characteristic, data: batteryStatusDataBatteryNotPresent, err: status)
+        bleBasClient.processServiceData(characteristic, data: batteryStatusDataBatteryPresent, err: status)
+        
+        bleBasClient.processServiceData(characteristic, data: batteryStatusDataWiredNotConnected, err: status)
+        bleBasClient.processServiceData(characteristic, data: batteryStatusDataWiredConnected, err: status)
+        bleBasClient.processServiceData(characteristic, data: batteryStatusDataWiredUnknown, err: status)
+        bleBasClient.processServiceData(characteristic, data: batteryStatusDataWiredReservedForFutureUse, err: status)
+        
+        bleBasClient.processServiceData(characteristic, data: batteryStatusDataWirelessNotConnected, err: status)
+        bleBasClient.processServiceData(characteristic, data: batteryStatusDataWirelessConnected, err: status)
+        bleBasClient.processServiceData(characteristic, data: batteryStatusDataWirelessUnknown, err: status)
+        bleBasClient.processServiceData(characteristic, data: batteryStatusDataWirelessReservedForFutureUse, err: status)
+ 
+        // Assert
+        let events = observer.events.map { $0.value.element }
+        XCTAssertEqual(events[1]?.batteryPresent, BleBasClient.BatteryPresentState.notPresent)
+        XCTAssertEqual(events[2]?.batteryPresent, BleBasClient.BatteryPresentState.present)
+
+        XCTAssertEqual(events[3]?.wiredExternalPowerConnected, BleBasClient.PowerSourceState.notConnected)
+        XCTAssertEqual(events[4]?.wiredExternalPowerConnected, BleBasClient.PowerSourceState.connected)
+        XCTAssertEqual(events[5]?.wiredExternalPowerConnected, BleBasClient.PowerSourceState.unknown)
+        XCTAssertEqual(events[6]?.wiredExternalPowerConnected, BleBasClient.PowerSourceState.reservedForFutureUse)
+
+        XCTAssertEqual(events[7]?.wirelessExternalPowerConnected, BleBasClient.PowerSourceState.notConnected)
+        XCTAssertEqual(events[8]?.wirelessExternalPowerConnected, BleBasClient.PowerSourceState.connected)
+        XCTAssertEqual(events[9]?.wirelessExternalPowerConnected, BleBasClient.PowerSourceState.unknown)
+        XCTAssertEqual(events[10]?.wirelessExternalPowerConnected, BleBasClient.PowerSourceState.reservedForFutureUse)
+
     }
 }

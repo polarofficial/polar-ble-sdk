@@ -19,11 +19,8 @@ import com.polar.sdk.api.model.activity.PolarCaloriesData
 import com.polar.sdk.api.model.sleep.PolarSleepData
 import com.polar.sdk.impl.utils.CaloriesType
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -73,58 +70,11 @@ class ActivityRecordingViewModel @Inject constructor(
     private val _caloriesLiveData = MutableLiveData<List<PolarCaloriesData>>()
     private val _skinTemperatureLiveData = MutableLiveData<List<PolarSkinTemperatureData>>()
 
-    data class SleepRecordingState(
-        val enabled: Boolean?
-    )
-
-    private val _sleepRecordingState = MutableStateFlow(SleepRecordingState(enabled = null))
-    val sleepRecordingState: StateFlow<SleepRecordingState> = _sleepRecordingState.asStateFlow()
-
     private val compositeDisposable = CompositeDisposable()
-
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            observeSleepRecordingState()
-        }
-    }
 
     public override fun onCleared() {
         super.onCleared()
         compositeDisposable.dispose()
-    }
-
-    fun forceStopSleep() {
-            viewModelScope.launch(Dispatchers.IO) {
-            when (val result = polarDeviceStreamingRepository.forceStopSleep(deviceId)) {
-                is ResultOfRequest.Success -> {
-                    _sleepRecordingState.update {
-                        SleepRecordingState(enabled = result.value)
-                    }
-                    Log.d(TAG, "forcing stop sleep received sleep recording state ${result.value}")
-                    showInfo("Success",
-                        description = "Forced sleep stop for device $deviceId")
-                }
-                is ResultOfRequest.Failure -> {
-                    showError("Failure",
-                        errorDescription = "Forced sleep stop for device $deviceId failed: ${result.message ?: result.throwable?.message ?: result.throwable.toString()}")
-                }
-            }
-        }
-    }
-
-    fun observeSleepRecordingState() {
-        val disposable = polarDeviceStreamingRepository.observeSleepRecordingState(deviceId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { value ->
-                    _sleepRecordingState.value  = SleepRecordingState(enabled = value)
-                },
-                { error ->
-                    Log.w(TAG, "Observing sleep recording state failed: ${error.message ?: error.toString()}")
-                }
-            )
-        compositeDisposable.add(disposable)
     }
 
     fun getSleep(from: LocalDate, to: LocalDate) {
