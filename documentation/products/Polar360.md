@@ -37,7 +37,8 @@ It is a device designed to increase general well-being and to make the lives of 
 * [Offline recording](../SdkOfflineRecordingExplained.md)
 
 ### Data export
-* Sleep data [iOS](https://polarofficial.github.io/polar-ble-sdk/polar-sdk-ios/Protocols/PolarSleepApi.html), [Android](https://polarofficial.github.io/polar-ble-sdk/polar-sdk-android/com/polar/sdk/api/PolarSleepApi.html), 
+* Sleep data [iOS](https://polarofficial.github.io/polar-ble-sdk/polar-sdk-ios/Protocols/PolarSleepApi.html), [Android](https://polarofficial.github.io/polar-ble-sdk/polar-sdk-android/com/polar/sdk/api/PolarSleepApi.html)
+* Training sessions [iOS](https://polarofficial.github.io/polar-ble-sdk/polar-sdk-ios/Protocols/PolarTrainingSessionApi.html), [Android](https://polarofficial.github.io/polar-ble-sdk/polar-sdk-android/com/polar/sdk/api/PolarTrainingSessionApi.html)
 * Activity data [iOS](https://polarofficial.github.io/polar-ble-sdk/polar-sdk-ios/Protocols/PolarActivityApi.html), [Android](https://polarofficial.github.io/polar-ble-sdk/polar-sdk-android/com/polar/sdk/api/PolarActivityApi.html)
   * Steps
   * Active time
@@ -46,6 +47,10 @@ It is a device designed to increase general well-being and to make the lives of 
   * Nightly recharge data
   * Skin temperature data
   * 24/7 PPi samples
+  * Activity sample data
+      * step count with one minute interval (1440 samples per day)
+      * MET samples with 30 sec interval (2880 samples per day)
+      * Activity levels
 
 ### Device management
 * get battery level
