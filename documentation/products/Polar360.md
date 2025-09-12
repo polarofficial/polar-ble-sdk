@@ -26,6 +26,8 @@ Polar 360 is a new stylish wearable that is designed for individuals but made fo
 It is a device designed to increase general well-being and to make the lives of end users healthier and happier. 
 [Store page](https://www.polar.com/en/business/polar-360)
 
+POLAR Loop is a screen-free wearable that automatically tracks daily activity, training, sleep, and recovery. For developers, it offers continuous, reliable data and long-term health insights for seamless integration into their own ecosystems.
+
 ## Polar 360 and Polar loop features available by the SDK
 
 ### Online streaming and offline recording
