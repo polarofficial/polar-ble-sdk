@@ -369,7 +369,7 @@ extension CBDeviceListenerImpl: BleDeviceListener {
                 }
                 if fetchKnownDevices {
                     self.sessions.items.forEach { (sess) in
-                        NSLog("search returning session \(sess.peripheral)")
+                        BleLogger.trace("search returning session \(sess.peripheral)")
                         observer.onNext(sess)
                     }
                 }
