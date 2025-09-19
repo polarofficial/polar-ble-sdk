@@ -29,7 +29,7 @@ The SDK API uses ReactiveX. You can read more about ReactiveX from their website
 
 ## Supported products
 
-- [Polar 360](./documentation/products/Polar360.md)
+- [Polar 360 & Polar Loop](./documentation/products/Polar360.md)
 - [Polar H10](./documentation/products/PolarH10.md)
 - [Polar H9](./documentation/products/PolarH9.md)
 - [Polar Verity Sense](./documentation/products/PolarVeritySense.md)
