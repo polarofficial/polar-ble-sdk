@@ -179,3 +179,95 @@ public struct PolarFirstTimeUseConfig {
         }
     }
 }
+
+extension Data_PbUserPhysData {
+    func toPolarPhysicalConfiguration() -> PolarPhysicalConfiguration {
+        let gender: PolarPhysicalConfiguration.Gender
+        switch self.gender.value {
+        case .male:
+            gender = .male
+        case .female:
+            gender = .female
+        default:
+            gender = .male
+        }
+
+        let birthDate: Date = {
+            let date = self.birthday.value
+            var components = DateComponents()
+            components.year = Int(date.year)
+            components.month = Int(date.month)
+            components.day = Int(date.day)
+            return Calendar(identifier: .gregorian).date(from: components) ?? Date()
+        }()
+
+        let deviceTime: String = {
+            let lastModified = self.lastModified
+            if lastModified.hasDate && lastModified.hasTime {
+                var components = DateComponents()
+                components.year = Int(lastModified.date.year)
+                components.month = Int(lastModified.date.month)
+                components.day = Int(lastModified.date.day)
+                components.hour = Int(lastModified.time.hour)
+                components.minute = Int(lastModified.time.minute)
+                components.second = Int(lastModified.time.seconds)
+                components.timeZone = TimeZone(secondsFromGMT: 0)
+
+                let calendar = Calendar(identifier: .gregorian)
+                if let date = calendar.date(from: components) {
+                    return ISO8601DateFormatter().string(from: date)
+                }
+            }
+            return ISO8601DateFormatter().string(from: Date())
+        }()
+
+        let typicalDay: PolarPhysicalConfiguration.TypicalDay
+        switch self.typicalDay.value {
+        case .mostlySitting:
+            typicalDay = .mostlySitting
+        case .mostlyStanding:
+            typicalDay = .mostlyStanding
+        case .mostlyMoving:
+            typicalDay = .mostlyMoving
+        }
+
+        return PolarPhysicalConfiguration(
+            gender: gender,
+            birthDate: birthDate,
+            height: self.height.value,
+            weight: self.weight.value,
+            maxHeartRate: Int(self.maximumHeartrate.value),
+            vo2Max: Int(self.vo2Max.value),
+            restingHeartRate: Int(self.restingHeartrate.value),
+            trainingBackground: Int(self.trainingBackground.value.rawValue),
+            deviceTime: deviceTime,
+            typicalDay: typicalDay,
+            sleepGoalMinutes: Int(self.sleepGoal.sleepGoalMinutes)
+        )
+    }
+}
+
+public struct PolarPhysicalConfiguration: Codable {
+    public enum Gender: String, Codable {
+        case male
+        case female
+    }
+
+    public enum TypicalDay: Int, Codable {
+        case mostlySitting = 1
+        case mostlyStanding = 2
+        case mostlyMoving = 3
+    }
+
+    public let gender: Gender
+    public let birthDate: Date
+    public let height: Float
+    public let weight: Float
+    public let maxHeartRate: Int
+    public let vo2Max: Int
+    public let restingHeartRate: Int
+    public let trainingBackground: Int
+    public let deviceTime: String
+    public let typicalDay: TypicalDay
+    public let sleepGoalMinutes: Int
+}

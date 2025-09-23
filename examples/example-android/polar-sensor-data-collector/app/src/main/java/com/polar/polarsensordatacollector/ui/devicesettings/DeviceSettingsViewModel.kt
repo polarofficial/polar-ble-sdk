@@ -30,6 +30,7 @@ import android.content.Intent
 import com.polar.polarsensordatacollector.R
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.model.PolarDiskSpaceData
+import com.polar.sdk.api.model.PolarPhysicalConfiguration
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -116,6 +117,9 @@ internal class DeviceSettingsViewModel @Inject constructor(
     private val _sleepRecordingState = MutableStateFlow(SleepRecordingState(enabled = null))
     val sleepRecordingState: StateFlow<SleepRecordingState> = _sleepRecordingState.asStateFlow()
 
+    private val _physInfo = MutableStateFlow<PolarPhysicalConfiguration?>(null)
+    val physInfo: StateFlow<PolarPhysicalConfiguration?> = _physInfo.asStateFlow()
+
     private val compositeDisposable = CompositeDisposable()
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -198,7 +202,7 @@ internal class DeviceSettingsViewModel @Inject constructor(
 
     fun openPhysicalConfigActivity(context: Context) {
         val intent = Intent(context, PhysicalConfigActivity::class.java)
-        intent.putExtra("DEVICE_ID", deviceId)
+        intent.putExtra(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId)
         context.startActivity(intent)
     }
 
@@ -215,6 +219,20 @@ internal class DeviceSettingsViewModel @Inject constructor(
                 }
             )
         compositeDisposable.add(disposable)
+    }
+
+    fun getUserPhysicalInfo() {
+        viewModelScope.launch {
+            when (val result = polarDeviceStreamingRepository.getUserPhysicalConfiguration(deviceId)) {
+                is ResultOfRequest.Success -> {
+                    _physInfo.value = result.value
+                }
+                is ResultOfRequest.Failure -> {
+                    Log.e(TAG, "Fetching Device Physical Info failed: ${result.throwable?.message ?: result.message}")
+                    _physInfo.value = null
+                }
+            }
+        }
     }
 
     fun doRestart() {

@@ -5,4 +5,5 @@ import Foundation
 public enum BlePmdError: Error {
     case controlPointRequestFailed(errorCode: Int, description:String)
     case bleOnlineStreamClosed(description:String)
+    case invalidPMDData(description:String)
 }

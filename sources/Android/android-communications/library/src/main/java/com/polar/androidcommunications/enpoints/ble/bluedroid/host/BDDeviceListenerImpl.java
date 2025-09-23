@@ -1,6 +1,7 @@
 package com.polar.androidcommunications.enpoints.ble.bluedroid.host;
 
 
+import static android.bluetooth.BluetoothGatt.CONNECTION_PRIORITY_BALANCED;
 import static android.bluetooth.BluetoothGatt.GATT_FAILURE;
 import static com.polar.androidcommunications.api.ble.model.gatt.BleGattBase.DEFAULT_ATT_MTU_SIZE;
 import static com.polar.androidcommunications.common.ble.AndroidBuildUtils.getBrand;
@@ -338,6 +339,7 @@ public class BDDeviceListenerImpl extends BleDeviceListener {
             boolean result = false;
             synchronized (session.getGattMutex()) {
                 if (session.getGatt() != null) {
+                    session.getGatt().requestConnectionPriority(CONNECTION_PRIORITY_BALANCED);
                     result = session.getGatt().discoverServices();
                 }
             }

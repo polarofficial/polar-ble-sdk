@@ -581,6 +581,14 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         </tr>
                                         
                                         <tr id="i30" class="altColor">
+                                            <td class="colFirst"><code>abstract Maybe&lt;<a href=model/PolarPhysicalConfiguration.html>PolarPhysicalConfiguration</a>&gt;</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getUserPhysicalConfiguration(java.lang.String)>getUserPhysicalConfiguration</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">Get the user's physical data from the given device.</td>
+                                        </tr>
+                                        
+                                        <tr id="i31" class="rowColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setUserDeviceSettings(java.lang.String,com.polar.sdk.api.model.PolarUserDeviceSettings)>setUserDeviceSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarUserDeviceSettings.html>PolarUserDeviceSettings</a> deviceUserSetting) </code>
@@ -588,7 +596,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Set <a href=model/PolarUserDeviceSettings.html>PolarUserDeviceSettings</a> for device.</td>
                                         </tr>
                                         
-                                        <tr id="i31" class="rowColor">
+                                        <tr id="i32" class="altColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=model/PolarUserDeviceSettings.html>PolarUserDeviceSettings</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getUserDeviceSettings(java.lang.String)>getUserDeviceSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -596,7 +604,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Get <a href=model/PolarUserDeviceSettings.html>PolarUserDeviceSettings</a> from device.</td>
                                         </tr>
                                         
-                                        <tr id="i32" class="altColor">
+                                        <tr id="i33" class="rowColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setUserDeviceLocation(java.lang.String,java.lang.Integer)>setUserDeviceLocation</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> location) </code>
@@ -604,7 +612,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Set the user device location on the device.</td>
                                         </tr>
                                         
-                                        <tr id="i33" class="rowColor">
+                                        <tr id="i34" class="altColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setUsbConnectionMode(java.lang.String,java.lang.Boolean)>setUsbConnectionMode</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> enabled) </code>
@@ -612,7 +620,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Set the USB connection mode on the device.</td>
                                         </tr>
                                         
-                                        <tr id="i34" class="altColor">
+                                        <tr id="i35" class="rowColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setAutomaticTrainingDetectionSettings(java.lang.String,java.lang.Boolean,java.lang.Integer,java.lang.Integer)>setAutomaticTrainingDetectionSettings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> automaticTrainingDetectionMode, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> automaticTrainingDetectionSensitivity, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> minimumTrainingDurationSeconds) </code>
@@ -620,7 +628,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Set the automatic training detection settings on the device.</td>
                                         </tr>
                                         
-                                        <tr id="i35" class="rowColor">
+                                        <tr id="i36" class="altColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#deleteStoredDeviceData(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarStoredDataType,java.time.LocalDate)>deleteStoredDeviceData</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarStoredDataType.html>PolarBleApi.PolarStoredDataType</a> dataType, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> until) </code>
@@ -628,7 +636,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Delete data <a href=PolarBleApi.PolarStoredDataType.html>PolarStoredDataType</a> from a device.</td>
                                         </tr>
                                         
-                                        <tr id="i36" class="altColor">
+                                        <tr id="i37" class="rowColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#deleteDeviceDateFolders(java.lang.String,java.time.LocalDate,java.time.LocalDate)>deleteDeviceDateFolders</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate) </code>
@@ -636,7 +644,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Deletes device day (YYYMMDD) folders from the given date range from a device.</td>
                                         </tr>
                                         
-                                        <tr id="i37" class="rowColor">
+                                        <tr id="i38" class="altColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#waitForConnection(java.lang.String)>waitForConnection</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -644,7 +652,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Waits for a connection to the specified device.</td>
                                         </tr>
                                         
-                                        <tr id="i38" class="altColor">
+                                        <tr id="i39" class="rowColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setMultiBLEConnectionMode(java.lang.String,java.lang.Boolean)>setMultiBLEConnectionMode</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> enable) </code>
@@ -652,7 +660,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Enable multi BLE connection mode on a given device.</td>
                                         </tr>
                                         
-                                        <tr id="i39" class="rowColor">
+                                        <tr id="i40" class="altColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getMultiBLEConnectionMode(java.lang.String)>getMultiBLEConnectionMode</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -660,7 +668,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Request multi BLE connection mode status from device.</td>
                                         </tr>
                                         
-                                        <tr id="i40" class="altColor">
+                                        <tr id="i41" class="rowColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#sendInitializationAndStartSyncNotifications(java.lang.String)>sendInitializationAndStartSyncNotifications</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -668,7 +676,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Notify device of the incoming data transfer operation(s).</td>
                                         </tr>
                                         
-                                        <tr id="i41" class="rowColor">
+                                        <tr id="i42" class="altColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#sendTerminateAndStopSyncNotifications(java.lang.String)>sendTerminateAndStopSyncNotifications</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -1722,6 +1730,39 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
                                             <dd><p>Single emitting success with &quot;true&quot; or &quot;false&quot; response, or error.</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="getUserPhysicalConfiguration(java.lang.String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getUserPhysicalConfiguration</h4>
+                                        <pre class="methodSignature"> abstract Maybe&lt;<a href=model/PolarPhysicalConfiguration.html>PolarPhysicalConfiguration</a>&gt; <a href=PolarBleApi.html#getUserPhysicalConfiguration(java.lang.String)>getUserPhysicalConfiguration</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Get the user's physical data from the given device.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device ID or Bluetooth address</dd>
+                                            
+                                            
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Maybe emitting <a href=model/PolarPhysicalConfiguration.html>PolarPhysicalConfiguration</a> if available, null if FTU not done or error</p></dd>
                                         
 
                                         

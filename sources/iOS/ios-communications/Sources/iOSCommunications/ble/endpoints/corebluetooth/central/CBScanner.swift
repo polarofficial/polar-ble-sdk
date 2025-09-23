@@ -195,10 +195,9 @@ class CBScanner {
                 case .completed:
                     BleLogger.trace("Scan complete")
                 case .error(let error):
-                    NSLog("Scanning error: \(error))")
                     BleLogger.error("Scanning error: \(error))")
                 case .next( _):
-                    NSLog("Scanning next:")
+                    BleLogger.trace("Scanning next:")
                     self.central.stopScan()
                     self.central.scanForPeripherals(withServices: self.services, options:   [CBCentralManagerScanOptionAllowDuplicatesKey: true])
                 }

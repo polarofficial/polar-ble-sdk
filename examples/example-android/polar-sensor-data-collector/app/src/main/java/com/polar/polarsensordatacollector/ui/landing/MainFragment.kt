@@ -17,7 +17,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import com.polar.androidcommunications.api.ble.model.gatt.client.BatteryPresentState
 import com.polar.androidcommunications.api.ble.model.gatt.client.ChargeState
+import com.polar.androidcommunications.api.ble.model.gatt.client.PowerSourceState
 import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.model.Device
 import com.polar.polarsensordatacollector.ui.utils.DialogUtility.showSensorSelection
@@ -53,6 +55,9 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     private lateinit var batteryStatus: TextView
     private lateinit var batteryChargingStatus: TextView
+    private lateinit var batteryPresentStatus: TextView
+    private lateinit var wiredPowerSourceConnectedStatus: TextView
+    private lateinit var wirelessPowerSourceConnectedStatus: TextView
 
     private var selectedDevice: Device? = null
 
@@ -75,6 +80,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     disInformationReceived(it)
                     batteryLevelReceived(it)
                     batteryChargingStatusReceived(it)
+                    powerSourcesStateReceived(it)
                 }
             }
         }
@@ -118,6 +124,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         selectedDevice = null
                         batteryStatus.text = ""
                         batteryChargingStatus.text = ""
+                        hidePowerSourceState()
                         firmwareVersion.text = ""
                         sensorState.text = ""
                         tabLayout.visibility = GONE
@@ -189,6 +196,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     disconnectButton.visibility = GONE
                     connectButton.setText(R.string.search_and_connect_search)
                     batteryStatus.text = ""
+                    hidePowerSourceState()
                     firmwareVersion.text = ""
                     sensorState.text = ""
                     connectButton.isEnabled = true
@@ -206,6 +214,12 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 }
             }
         }
+
+        batteryChargingStatus.setOnClickListener { this.togglePowersourceState() }
+        batteryStatus.setOnClickListener { this.togglePowersourceState() }
+        batteryPresentStatus.setOnClickListener { this.hidePowerSourceState() }
+        wirelessPowerSourceConnectedStatus.setOnClickListener { this.hidePowerSourceState() }
+        wiredPowerSourceConnectedStatus.setOnClickListener { this.hidePowerSourceState() }
     }
 
     private fun setupViews(view: View) {
@@ -227,6 +241,9 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         firmwareVersion = view.findViewById(R.id.firmware_version)
         batteryStatus = view.findViewById(R.id.battery)
         batteryChargingStatus = view.findViewById(R.id.battery_charging_status)
+        batteryPresentStatus = view.findViewById(R.id.battery_present_status)
+        wiredPowerSourceConnectedStatus = view.findViewById(R.id.wired_power_source_connected_status)
+        wirelessPowerSourceConnectedStatus = view.findViewById(R.id.wireless_power_source_connected_status)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -237,6 +254,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private fun deviceConnectionStateChange(state: DeviceConnectionUiState) {
         Log.d(TAG, "device connection state change to $state")
         connectionState = state.state
+        hidePowerSourceState()
 
         when (state.state) {
             MainViewModel.DeviceConnectionStates.NOT_CONNECTED -> {
@@ -264,11 +282,18 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             }
             MainViewModel.DeviceConnectionStates.CONNECTED -> {
                 connectButton.setText(R.string.search_and_connect_connections)
-                val deviceId = selectedDevice?.deviceId ?: throw IllegalStateException("Selected device can't be null for connected device!")
+                val deviceId = selectedDevice?.deviceId ?: state.deviceId
+                if (deviceId.isNullOrEmpty()) {
+                    Log.w(TAG, "Connected but deviceId missing; deferring UI build")
+                    return
+                }
                 sensorState.text = getString(R.string.device_id, deviceId)
                 connectButton.isEnabled = true
-                if (!connectedDevices.contains(selectedDevice)) {
-                    onlineOfflineAdapter.removeFragments(isAlreadyConnected = connectedDevices.contains(selectedDevice))
+                val alreadyConnected =
+                    selectedDevice?.let { connectedDevices.contains(it) }
+                        ?: connectedDevices.any { it.deviceId == deviceId }
+                if (!alreadyConnected) {
+                    onlineOfflineAdapter.removeFragments(isAlreadyConnected = alreadyConnected)
                     onlineOfflineAdapter.addOnlineRecordingFragment(deviceId)
                     onlineOfflineAdapter.addDeviceSettingsFragment(deviceId)
                     onlineOfflineAdapter.addLoggingFragment(deviceId)
@@ -358,5 +383,57 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             ChargeState.UNKNOWN -> ""
         }
         this.batteryChargingStatus.text = chargeState
+    }
+
+    private fun togglePowersourceState() {
+        if (batteryPresentStatus.visibility != VISIBLE) {
+            showPowerSourceState()
+        } else {
+            hidePowerSourceState()
+        }
+    }
+
+    private fun hidePowerSourceState() {
+        this.batteryPresentStatus.visibility = GONE
+        this.wiredPowerSourceConnectedStatus.visibility = GONE
+        this.wirelessPowerSourceConnectedStatus.visibility = GONE
+    }
+
+    private fun showPowerSourceState() {
+        this.batteryPresentStatus.visibility = VISIBLE
+        this.wiredPowerSourceConnectedStatus.visibility = VISIBLE
+        this.wirelessPowerSourceConnectedStatus.visibility = VISIBLE
+    }
+
+    private fun powerSourcesStateReceived(deviceInformationUiState: DeviceInformationUiState) {
+        if (connectionState == MainViewModel.DeviceConnectionStates.NOT_CONNECTED) {
+            this.batteryPresentStatus.text = ""
+            this.wiredPowerSourceConnectedStatus.text = ""
+            this.wirelessPowerSourceConnectedStatus.text = ""
+            return
+        }
+
+        val batteryPresentStatus = when (deviceInformationUiState.powerSourcesState.batteryPresent) {
+            BatteryPresentState.PRESENT -> getString(R.string.battery_present_state_present)
+            BatteryPresentState.NOT_PRESENT -> getString(R.string.battery_present_state_not_present)
+            BatteryPresentState.UNKNOWN -> getString(R.string.battery_present_state_unknown)
+        }
+        this.batteryPresentStatus.text = batteryPresentStatus
+
+        val wiredExternalPowerSourceConnectedStatus = when (deviceInformationUiState.powerSourcesState.wiredExternalPowerConnected) {
+            PowerSourceState.CONNECTED -> getString(R.string.wired_external_power_connected)
+            PowerSourceState.NOT_CONNECTED -> getString(R.string.wired_external_power_not_connected)
+            PowerSourceState.UNKNOWN -> getString(R.string.wired_external_power_unknown)
+            PowerSourceState.RESERVED_FOR_FUTURE_USE -> getString(R.string.wired_external_power_reserved_for_future_use)
+        }
+        this.wiredPowerSourceConnectedStatus.text = wiredExternalPowerSourceConnectedStatus
+
+        val wirelessExternalPowerSourceConnectedStatus = when (deviceInformationUiState.powerSourcesState.wirelessExternalPowerConnected) {
+            PowerSourceState.CONNECTED -> getString(R.string.wireless_external_power_connected)
+            PowerSourceState.NOT_CONNECTED -> getString(R.string.wireless_external_power_not_connected)
+            PowerSourceState.UNKNOWN -> getString(R.string.wireless_external_power_unknown)
+            PowerSourceState.RESERVED_FOR_FUTURE_USE -> getString(R.string.wireless_external_power_reserved_for_future_use)
+        }
+        this.wirelessPowerSourceConnectedStatus.text = wirelessExternalPowerSourceConnectedStatus
     }
 }

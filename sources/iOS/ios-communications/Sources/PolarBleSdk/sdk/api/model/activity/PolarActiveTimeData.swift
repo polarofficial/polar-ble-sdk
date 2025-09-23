@@ -2,7 +2,7 @@
 
 import Foundation
 
-public struct PolarActiveTimeData {
+public struct PolarActiveTimeData: Codable  {
     public let date: Date
     public let timeNonWear: PolarActiveTime
     public let timeSleep: PolarActiveTime
@@ -34,7 +34,7 @@ public struct PolarActiveTimeData {
     }
 }
 
-public struct PolarActiveTime {
+public struct PolarActiveTime: Codable {
     public let hours: Int
     public let minutes: Int
     public let seconds: Int
@@ -45,5 +45,10 @@ public struct PolarActiveTime {
         self.minutes = minutes
         self.seconds = seconds
         self.millis = millis
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(hours*3600 + minutes*60 + seconds + millis/1000)
     }
 }

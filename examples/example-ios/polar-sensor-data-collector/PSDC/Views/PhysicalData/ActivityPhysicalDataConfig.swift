@@ -15,7 +15,8 @@ struct PhysicalDataConfigView: View {
     @State private var birthDate: Date = DateComponents(calendar: Calendar.current, year: 2000, month: 1, day: 1).date ?? Date()
     @State private var typicalDay: PolarFirstTimeUseConfig.TypicalDay = .mostlyStanding
     @State private var sleepGoalMinutes: String = "480"
-   
+    @State private var loading = true
+
     @ObservedObject private var formValidation = FormValidation()
     
     var deviceId: String
@@ -24,9 +25,9 @@ struct PhysicalDataConfigView: View {
         self.deviceId = deviceId
     }
     
-    let genders: [PolarFirstTimeUseConfig.Gender] = [.female, .male]
+    private let genders: [PolarFirstTimeUseConfig.Gender] = [.female, .male]
     
-    let trainingBackgroundLevels: [PolarFirstTimeUseConfig.TrainingBackground] = [
+    private let trainingBackgroundLevels: [PolarFirstTimeUseConfig.TrainingBackground] = [
         .occasional,
         .regular,
         .frequent,
@@ -35,18 +36,22 @@ struct PhysicalDataConfigView: View {
         .pro
     ]
     
-    let typicalDays: [PolarFirstTimeUseConfig.TypicalDay] = [
+    private let typicalDays: [PolarFirstTimeUseConfig.TypicalDay] = [
         .mostlySitting,
         .mostlyStanding,
         .mostlyMoving
     ]
     
     var body: some View {
-        VStack {
-            Text("Device ID: \(deviceId)")
-                .font(.subheadline)
-                .padding()
-            
+        Group {
+            if loading {
+                ProgressView("Loading…")
+            } else {
+                VStack {
+                    Text("Device ID: \(deviceId)")
+                        .font(.subheadline)
+                        .padding()
+
             Form {
                 Section(header: Text("Personal Information")) {
                     Picker("Gender", selection: $gender) {
@@ -106,58 +111,64 @@ struct PhysicalDataConfigView: View {
                                     formValidation: formValidation)
                 }
             }
-            
-            Button(action: {
-                Task {
-                    await submitData()
+
+                    Button(action: { Task { await submitData() } }) {
+                        Text("Submit")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                            .padding(.horizontal)
+                    }
+                    .disabled(!formValidation.isOK)
+                    .opacity(formValidation.isOK ? 1 : 0.5)
                 }
-            }) {
-                Text("Submit")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .padding(.horizontal)
             }
-            .disabled(formValidation.isOK == false)
-            .opacity(formValidation.isOK ? 1 : 0.5)
         }
         .navigationBarTitle("Physical Data Config", displayMode: .inline)
+        .task { await loadPhysicalInfo() }
     }
-    
-    func submitData() async {
-        let heightValue: Float = Float(height) ?? 0.0
-        let weightValue: Float = Float(weight) ?? 0.0
-        let maxHRValue: Int = Int(maxHeartRate) ?? 0
-        let restingHRValue: Int = Int(restingHeartRate) ?? 0
-        let vo2MaxValue: Int = Int(vo2Max) ?? 0
-        let sleepGoalValue: Int = Int(sleepGoalMinutes) ?? 0
-        
-        let deviceTimeFormatter = ISO8601DateFormatter()
-        deviceTimeFormatter.formatOptions = [.withInternetDateTime]
-        let deviceTime = deviceTimeFormatter.string(from: Date())
-        
+
+    private func loadPhysicalInfo() async {
+        if let info = await bleSdkManager.getUserPhysicalConfiguration() {
+            await MainActor.run {
+                switch info.gender {
+                    case .male: gender = .male
+                    case .female: gender = .female
+                    @unknown default: gender = .male
+                }
+                height = String(Int(info.height))
+                weight = String(Int(info.weight))
+                maxHeartRate = String(info.maxHeartRate)
+                restingHeartRate = String(info.restingHeartRate)
+                vo2Max = String(info.vo2Max)
+                trainingBackground = PolarFirstTimeUseConfig.TrainingBackground(rawValue: info.trainingBackground) ?? .frequent
+                birthDate = info.birthDate
+                typicalDay = PolarFirstTimeUseConfig.TypicalDay(rawValue: info.typicalDay.rawValue) ?? .mostlyStanding
+                sleepGoalMinutes = String(info.sleepGoalMinutes)
+            }
+        }
+        await MainActor.run { loading = false }
+    }
+
+    private func submitData() async {
         let ftuConfig = PolarFirstTimeUseConfig(
             gender: gender,
             birthDate: birthDate,
-            height: heightValue,
-            weight: weightValue,
-            maxHeartRate: maxHRValue,
-            vo2Max: vo2MaxValue,
-            restingHeartRate: restingHRValue,
+            height: Float(height) ?? 0,
+            weight: Float(weight) ?? 0,
+            maxHeartRate: Int(maxHeartRate) ?? 0,
+            vo2Max: Int(vo2Max) ?? 0,
+            restingHeartRate: Int(restingHeartRate) ?? 0,
             trainingBackground: trainingBackground,
-            deviceTime: deviceTime,
+            deviceTime: ISO8601DateFormatter().string(from: Date()),
             typicalDay: typicalDay,
-            sleepGoalMinutes: sleepGoalValue
+            sleepGoalMinutes: Int(sleepGoalMinutes) ?? 0
         )
-        
         await bleSdkManager.sendPhysicalConfig(ftuConfig: ftuConfig)
-        
-        await MainActor.run {
-            presentationMode.wrappedValue.dismiss()
-        }
+        await MainActor.run { presentationMode.wrappedValue.dismiss() }
     }
 }
 

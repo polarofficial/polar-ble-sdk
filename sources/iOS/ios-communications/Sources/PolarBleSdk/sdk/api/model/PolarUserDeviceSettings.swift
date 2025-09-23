@@ -6,6 +6,8 @@ import Foundation
 
 public class PolarUserDeviceSettings {
 
+    public init() {}
+
     public enum DeviceLocation: String, Codable, CaseIterable, Identifiable {
         
         public var id: Self { self }
@@ -123,8 +125,8 @@ public class PolarUserDeviceSettings {
             automaticTrainingDetectionSettings.state = automaticTrainingDetectionMode.toProto()
         }
         
-        proto.automaticMeasurementSettings.automaticTrainingDetectionSettings.sensitivity = userDeviceSettings.automaticTrainingDetectionSensitivity!
-        proto.automaticMeasurementSettings.automaticTrainingDetectionSettings.minimumTrainingDurationSeconds = userDeviceSettings.minimumTrainingDurationSeconds!
+        proto.automaticMeasurementSettings.automaticTrainingDetectionSettings.sensitivity = userDeviceSettings.automaticTrainingDetectionSensitivity ?? 50
+        proto.automaticMeasurementSettings.automaticTrainingDetectionSettings.minimumTrainingDurationSeconds = userDeviceSettings.minimumTrainingDurationSeconds ?? 600
 
         return proto
     }

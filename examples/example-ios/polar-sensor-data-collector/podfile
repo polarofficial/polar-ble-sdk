@@ -7,5 +7,5 @@ pod 'Zip', '~> 2.1.2'
 pod 'RxSwift', '~> 6.8.0'
 
 target 'PSDC' do
-    pod 'PolarBleSdk', '6.6.0'
+    pod 'PolarBleSdk', :path => '~/repos/ios-communications/'
 end

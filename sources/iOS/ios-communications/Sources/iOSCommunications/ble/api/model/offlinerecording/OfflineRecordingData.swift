@@ -207,7 +207,7 @@ public struct OfflineRecordingData<DataType> {
         var pmdSetting: PmdSetting? = nil
         
         if (!settingBytes.isEmpty) {
-            pmdSetting  = PmdSetting(settingBytes)
+            pmdSetting  = try PmdSetting(settingBytes)
         }
         return (pmdSetting, offset + settingsLength)
     }

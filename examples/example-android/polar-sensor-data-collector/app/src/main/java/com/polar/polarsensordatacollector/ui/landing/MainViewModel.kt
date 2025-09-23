@@ -4,6 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.polar.androidcommunications.api.ble.model.gatt.client.ChargeState
+import com.polar.androidcommunications.api.ble.model.gatt.client.PowerSourceState
+import com.polar.androidcommunications.api.ble.model.gatt.client.BatteryPresentState
+import com.polar.androidcommunications.api.ble.model.gatt.client.PowerSourcesState
 import com.polar.polarsensordatacollector.model.Device
 import com.polar.polarsensordatacollector.repository.DeviceConnectionState
 import com.polar.polarsensordatacollector.repository.PolarDeviceRepository
@@ -33,7 +36,12 @@ data class DeviceInformationUiState(
     val deviceId: String = "",
     val firmwareVersion: String = "",
     val batteryLevel: Int? = null,
-    val batteryChargeState: ChargeState = ChargeState.UNKNOWN
+    val batteryChargeState: ChargeState = ChargeState.UNKNOWN,
+    val powerSourcesState: PowerSourcesState = PowerSourcesState(
+        batteryPresent = BatteryPresentState.UNKNOWN,
+        wiredExternalPowerConnected = PowerSourceState.UNKNOWN,
+        wirelessExternalPowerConnected = PowerSourceState.UNKNOWN
+    )
 )
 
 /**
@@ -105,6 +113,7 @@ class MainViewModel @Inject constructor(
                 .collect { deviceInformation ->
                     updateDeviceBatteryUiState(deviceId = deviceInformation.deviceId, batteryLevel = deviceInformation.batteryLevel)
                     updateDeviceBatteryChargeStatusUiState(deviceId = deviceInformation.deviceId, chargeStatus = deviceInformation.batteryChargingStatus)
+                    updateDeviceBatteryPowerSourceStateUiState(deviceId = deviceInformation.deviceId, powerSourcesState = deviceInformation.powerSourcesState)
                     updateDeviceFirmwareVersionUiState(deviceId = deviceInformation.deviceId, firmwareVersion = deviceInformation.firmwareVersion)
                 }
         }
@@ -173,6 +182,13 @@ class MainViewModel @Inject constructor(
         Log.d(TAG, "updateDeviceBatteryChargeStatusUiState() chargeStatus $chargeStatus")
         _uiDeviceInformationState.update {
             it.copy(deviceId = deviceId, batteryChargeState = chargeStatus)
+        }
+    }
+
+    private fun updateDeviceBatteryPowerSourceStateUiState(deviceId: String, powerSourcesState: PowerSourcesState) {
+        Log.d(TAG, "updateDeviceBatteryPowerSourceStateUiState() powerSourcesState $powerSourcesState")
+        _uiDeviceInformationState.update {
+            it.copy(deviceId = deviceId, powerSourcesState = powerSourcesState)
         }
     }
 

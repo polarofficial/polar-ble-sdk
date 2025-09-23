@@ -2,6 +2,7 @@ package com.polar.polarsensordatacollector.ui.devicesettings
 
 import android.app.AlertDialog
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
@@ -31,13 +32,13 @@ import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.switchmaterial.SwitchMaterial
+import com.google.gson.GsonBuilder
 import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.repository.SdkMode
 import com.polar.polarsensordatacollector.ui.activity.ActivityRecordingFragmentDirections
 import com.polar.polarsensordatacollector.ui.utils.showSnackBar
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.model.CheckFirmwareUpdateStatus
-import com.polar.sdk.api.model.FirmwareUpdateStatus
 import com.polar.sdk.api.model.PolarDiskSpaceData
 import com.polar.sdk.api.model.PolarUserDeviceSettings
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,6 +48,12 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
 import com.polar.polarsensordatacollector.ui.exercise.ExerciseActivity
+import com.polar.sdk.api.model.PolarPhysicalConfiguration
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @AndroidEntryPoint
 class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
@@ -119,6 +126,7 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
     private lateinit var deviceDataType: PolarBleApi.PolarStoredDataType
 
     private lateinit var doUserDeviceSettingsButton: Button
+    private lateinit var getUserPhysicalInfoButton: Button
 
     private lateinit var deleteDateFoldersButton: Button
 
@@ -133,6 +141,8 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
 
     private lateinit var sleepRecordingStateHeader: TextView
     private lateinit var forceStopSleepButton: Button
+
+    private var latestPhysicalConfiguration: PolarPhysicalConfiguration? = null
 
     interface DateRangeSelectedListener {
         fun onDateRangeSelected(fromDate: LocalDate?, toDate: LocalDate?)
@@ -232,6 +242,14 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
             }
         }
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.physInfo.collect { physInfo ->
+                    latestPhysicalConfiguration = physInfo
+                }
+            }
+        }
+
         sdkModeToggleButton.setOnClickListener {
             viewModel.sdkModeToggle()
         }
@@ -258,6 +276,14 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
 
         doUserDeviceSettingsButton.setOnClickListener {
             viewModel.openUserDeviceSettingsActivity(requireContext())
+        }
+
+        getUserPhysicalInfoButton.setOnClickListener {
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewModel.getUserPhysicalInfo()
+                val ftu = viewModel.physInfo.drop(1).filterNotNull().first()
+                showUserPhysicalInfoDialog(ftu)
+            }
         }
 
         getFtuButton.setOnClickListener {
@@ -481,6 +507,7 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         userDataSelectionSpinner.adapter = userDataSelectionSpinnerAdapter
         userDataDeletionSelectButton = view.findViewById(R.id.do_file_delete_button)
         doUserDeviceSettingsButton = view.findViewById(R.id.do_device_user_settings_button)
+        getUserPhysicalInfoButton = view.findViewById(R.id.get_user_physical_info_button)
         deleteDateFoldersButton = view.findViewById(R.id.do_date_folder_delete_button)
 
         waitForConnectionButton = view.findViewById(R.id.wait_connection_button)
@@ -598,6 +625,7 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         val dialog = MaterialDatePicker.Builder.datePicker()
             .setTitleText("Select until date")
             .setPositiveButtonText("Submit")
+            .setTheme(R.style.MaterialCalendarTheme)
             .build()
 
         dialog.addOnPositiveButtonClickListener { timeInMillis ->
@@ -670,4 +698,46 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         forceStopSleepButton.isEnabled = state.enabled != null && state.enabled == true
     }
 
+    private fun showUserPhysicalInfoDialog(physInfo: PolarPhysicalConfiguration) {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val ctx = requireContext()
+
+        val message = buildString {
+            appendLine(getString(R.string.ftu_gender, physInfo.gender))
+            appendLine(getString(R.string.ftu_birthdate, dateFormat.format(physInfo.birthDate)))
+            appendLine(getString(R.string.ftu_height, physInfo.height))
+            appendLine(getString(R.string.ftu_weight, physInfo.weight))
+            appendLine(getString(R.string.ftu_max_hr, physInfo.maxHeartRate))
+            appendLine(getString(R.string.ftu_vo2max, physInfo.vo2Max))
+            appendLine(getString(R.string.ftu_resting_hr, physInfo.restingHeartRate))
+            appendLine(getString(R.string.ftu_training_background, physInfo.trainingBackground))
+            appendLine(getString(R.string.ftu_typical_day, physInfo.typicalDay))
+            appendLine(getString(R.string.ftu_sleep_goal, physInfo.sleepGoalMinutes))
+        }
+
+        val dialog = MaterialAlertDialogBuilder(ctx)
+            .setTitle(R.string.ftu_dialog_title)
+            .setMessage(message)
+            .setPositiveButton(R.string.share) { _, _ ->
+
+                val gson = GsonBuilder()
+                    .setDateFormat("yyyy-MM-dd")
+                    .setPrettyPrinting()
+                    .create()
+                val json = gson.toJson(physInfo)
+
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_SUBJECT, getString(R.string.ftu_dialog_title))
+                    putExtra(Intent.EXTRA_TEXT, json)
+                }
+                ctx.startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+
+        dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setTextColor(
+            ContextCompat.getColor(ctx, R.color.secondaryColor)
+        )
+    }
 }

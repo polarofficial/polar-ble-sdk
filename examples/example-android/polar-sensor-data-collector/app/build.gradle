@@ -43,9 +43,9 @@ android {
         applicationId "com.polar.polarsensordatacollector"
         minSdkVersion 26
         targetSdkVersion 33
-        versionCode 73800
+        versionCode 73900
         // version code from semantic version in format [2 digits of major][2 digits of minor][2 digits of batch]
-        versionName "7.38.0"
+        versionName "7.39.0"
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 

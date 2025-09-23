@@ -17,12 +17,30 @@ enum class ChargeState {
     UNKNOWN, CHARGING, DISCHARGING_ACTIVE, DISCHARGING_INACTIVE
 }
 
+enum class PowerSourceState {
+    NOT_CONNECTED, CONNECTED, UNKNOWN, RESERVED_FOR_FUTURE_USE
+}
+
+enum class BatteryPresentState {
+    NOT_PRESENT, PRESENT, UNKNOWN
+}
+
+data class PowerSourcesState(
+    val batteryPresent: BatteryPresentState,
+    val wiredExternalPowerConnected: PowerSourceState,
+    val wirelessExternalPowerConnected: PowerSourceState
+)
+
 class BleBattClient(txInterface: BleGattTxInterface?) : BleGattBase(txInterface, BATTERY_SERVICE) {
     private val batteryStatusObservers = AtomicSet<FlowableEmitter<in Int>>()
     private val cachedBatteryPercentage = AtomicInteger(UNDEFINED_BATTERY_PERCENTAGE)
 
     private val batteryChargeStateObservers = AtomicSet<FlowableEmitter<in ChargeState>>()
     private var cachedChargeState: ChargeState = ChargeState.UNKNOWN
+
+    private var powerSourcesStateObservers = AtomicSet<FlowableEmitter<in PowerSourcesState>>()
+    private var cachedPowerSourcesState =
+        PowerSourcesState(BatteryPresentState.UNKNOWN, PowerSourceState.UNKNOWN, PowerSourceState.UNKNOWN)
 
     companion object {
         @JvmField
@@ -47,6 +65,9 @@ class BleBattClient(txInterface: BleGattTxInterface?) : BleGattBase(txInterface,
 
         cachedChargeState = ChargeState.UNKNOWN
         RxUtils.postDisconnectedAndClearList(batteryChargeStateObservers)
+
+        cachedPowerSourcesState = PowerSourcesState(BatteryPresentState.UNKNOWN, PowerSourceState.UNKNOWN, PowerSourceState.UNKNOWN)
+        RxUtils.postDisconnectedAndClearList(powerSourcesStateObservers)
     }
 
     override fun processServiceData(
@@ -67,6 +88,10 @@ class BleBattClient(txInterface: BleGattTxInterface?) : BleGattBase(txInterface,
                     cachedChargeState = parseBatteryStatus(data)
                     RxUtils.emitNext(batteryChargeStateObservers) { emitter: FlowableEmitter<in ChargeState> ->
                         emitter.onNext(cachedChargeState)
+                    }
+                    cachedPowerSourcesState = parsePowerSourcesState(data)
+                    RxUtils.emitNext(powerSourcesStateObservers) { emitter: FlowableEmitter<in PowerSourcesState> ->
+                        emitter.onNext(cachedPowerSourcesState)
                     }
                 }
             }
@@ -104,6 +129,19 @@ class BleBattClient(txInterface: BleGattTxInterface?) : BleGattBase(txInterface,
                 .startWith(Flowable.just(cachedChargeState))
     }
 
+    /**
+     * Get observable for monitoring power sources updates on connected device.
+     * Requires BLE BAS v1.1. Exposes battery present, wired and wireless power
+     * source connected statuses.
+     *
+     * @param checkConnection false = connection is not check before observer added, true = connection is check
+     * @return Flowable stream emitting [PowerSourcesState]
+     */
+    fun monitorPowerSourcesState(checkConnection: Boolean): Flowable<PowerSourcesState> {
+        return RxUtils.monitorNotifications(powerSourcesStateObservers, txInterface, checkConnection)
+            .startWith(Flowable.just(cachedPowerSourcesState))
+    }
+
     private fun parseBatteryStatus(data: ByteArray): ChargeState {
         return when (val chargeStateValue = (data[1].toInt() and 0x60) shr 5) {
             1 -> ChargeState.CHARGING
@@ -118,5 +156,50 @@ class BleBattClient(txInterface: BleGattTxInterface?) : BleGattBase(txInterface,
 
     private fun isValidBatteryPercentage(batteryPercentage: Int): Boolean {
         return batteryPercentage in 0..100
+    }
+
+    private fun parsePowerSourcesState(data: ByteArray): PowerSourcesState {
+        val batteryPresent = when (val batteryPresentValue = (data[1].toInt() and 0x01)) {
+            0 -> BatteryPresentState.NOT_PRESENT
+            1 -> BatteryPresentState.PRESENT
+            else -> {
+                BleLogger.e(
+                    TAG,
+                    "Unknown wired battery present value: $batteryPresentValue"
+                )
+                BatteryPresentState.UNKNOWN
+            }
+        }
+        val wiredExternalPowerConnected =
+            when (val externalPowerConnectedValue = (data[1].toInt() and 0x06) shr 1) {
+                0 -> PowerSourceState.NOT_CONNECTED
+                1 -> PowerSourceState.CONNECTED
+                3 -> PowerSourceState.RESERVED_FOR_FUTURE_USE
+                else -> {
+                    BleLogger.e(
+                        TAG,
+                        "Unknown wired power source state value: $externalPowerConnectedValue"
+                    )
+                    PowerSourceState.UNKNOWN
+                }
+            }
+        val wirelessExternalPowerConnected =
+            when (val externalPowerConnectedValue = data[1].toInt() and 0x18 shr 3) {
+                0 -> PowerSourceState.NOT_CONNECTED
+                1 -> PowerSourceState.CONNECTED
+                3 -> PowerSourceState.RESERVED_FOR_FUTURE_USE
+                else -> {
+                    BleLogger.e(
+                        TAG,
+                        "Unknown wireless power source state value: $externalPowerConnectedValue"
+                    )
+                    PowerSourceState.UNKNOWN
+                }
+            }
+        return PowerSourcesState(
+            batteryPresent,
+            wiredExternalPowerConnected,
+            wirelessExternalPowerConnected
+        )
     }
 }

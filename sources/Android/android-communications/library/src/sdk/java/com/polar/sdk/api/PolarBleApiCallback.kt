@@ -2,6 +2,7 @@
 package com.polar.sdk.api
 
 import com.polar.androidcommunications.api.ble.model.gatt.client.ChargeState
+import com.polar.androidcommunications.api.ble.model.gatt.client.PowerSourcesState
 import com.polar.sdk.api.model.PolarDeviceInfo
 import com.polar.sdk.api.model.PolarHrData
 import java.util.*
@@ -71,6 +72,13 @@ abstract class PolarBleApiCallback : PolarBleApiCallbackProvider {
      */
     override fun batteryChargingStatusReceived(identifier: String, chargingStatus: ChargeState) {}
 
+    /**
+     * Battery power sources state received. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_BATTERY_INFO]
+     *
+     * @param identifier Polar device id or bt address
+     * @param power sources state [PowerSourcesState]
+     */
+    override fun powerSourcesStateReceived(identifier: String, powerSourcesState: PowerSourcesState) {}
     /**
      * HR notification data received from device. Notice when using OH1
      * and PPI measurement is started hr received from this callback is 0.

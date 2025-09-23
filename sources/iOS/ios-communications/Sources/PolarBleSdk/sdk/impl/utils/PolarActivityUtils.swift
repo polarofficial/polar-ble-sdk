@@ -35,6 +35,7 @@ internal class PolarActivityUtils {
             .subscribe (
                 onError: { error in
                     BleLogger.error("Failed to list Activity sample files.")
+                    emitter(.success(0))
                 },
                 onCompleted: {
                     var index = 0

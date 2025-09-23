@@ -101,7 +101,7 @@
         <item name="buttonBarNegativeButtonStyle">@style/TextButton</item>
     </style>
     <style name="TextButton" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
-        <item name="android:textColor">@color/colorOnPrimary</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
     <style name="Widget.AppTheme.MaterialCalendar.HeaderToggleButton" parent="Widget.MaterialComponents.MaterialCalendar.HeaderToggleButton">

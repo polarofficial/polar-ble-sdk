@@ -36,7 +36,12 @@ final class PmdSettingTest: XCTestCase {
         let numberOfSettings = 4
         
         //Act
-        let pmdSetting = PmdSetting(bytes)
+        var pmdSetting: PmdSetting
+        do {
+            pmdSetting = try PmdSetting(bytes)
+        } catch {
+            XCTFail(error.localizedDescription); return
+        }
         
         // Assert
         XCTAssertEqual(numberOfSettings, pmdSetting.settings.count)
@@ -63,7 +68,7 @@ final class PmdSettingTest: XCTestCase {
         XCTAssertNil(pmdSetting.settings[PmdSetting.PmdSettingType.factor])
     }
     
-     func testPmdSelectedSerialization() {
+    func testPmdSelectedSerialization() {
         //Arrange
         var selected = [PmdSetting.PmdSettingType : UInt32]()
         let sampleRate: UInt32 = 0xFFFF
@@ -79,12 +84,17 @@ final class PmdSettingTest: XCTestCase {
         let factor: UInt32 = 15
         selected[PmdSetting.PmdSettingType.factor] = factor
         let numberOfSettings = 5
-
+        
         //Act
         let settingsFromSelected = PmdSetting.init(selected)
         let serializedSelected = settingsFromSelected.serialize()
-        let settings = PmdSetting(serializedSelected)
-
+        var settings: PmdSetting
+        do {
+            settings = try PmdSetting(serializedSelected)
+        } catch {
+            XCTFail(error.localizedDescription); return
+        }
+        
         //Assert
         XCTAssertEqual(numberOfSettings, settings.settings.count)
         XCTAssertTrue(settings.settings[PmdSetting.PmdSettingType.sampleRate]!.contains(sampleRate))
@@ -95,24 +105,53 @@ final class PmdSettingTest: XCTestCase {
         XCTAssertTrue(settings.settings[PmdSetting.PmdSettingType.channels]!.contains(channels))
         XCTAssertNil(settings.settings[PmdSetting.PmdSettingType.factor])
     }
-     
+    
     func testPmdSetting() {
-         
-         let data = Data([PmdSetting.PmdSettingType.rangeMilliUnit.rawValue,
-                          0x02,0xFF,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x00,
-                          PmdSetting.PmdSettingType.resolution.rawValue,
-                          0x01,0x0E,0x00])
-         let setting = PmdSetting(data)
-         XCTAssertEqual(setting.settings.count, 2)
-         XCTAssertNotNil(setting.settings[PmdSetting.PmdSettingType.rangeMilliUnit])
-         XCTAssertNotNil(setting.settings[PmdSetting.PmdSettingType.resolution])
-         XCTAssertEqual(setting.settings[PmdSetting.PmdSettingType.rangeMilliUnit]!.count, 2)
-         XCTAssertEqual(setting.settings[PmdSetting.PmdSettingType.resolution]!.count, 1)
-         XCTAssertTrue(setting.settings[PmdSetting.PmdSettingType.rangeMilliUnit]!.contains(0xffffffff))
-         XCTAssertTrue(setting.settings[PmdSetting.PmdSettingType.rangeMilliUnit]!.contains(0xff))
-         XCTAssertTrue(setting.settings[PmdSetting.PmdSettingType.resolution]!.contains(0x0E))
-         
-         let serialized = setting.serialize()
-         XCTAssertEqual(serialized.count, 10)
-     }
+        
+        // Arrange
+        let data = Data([PmdSetting.PmdSettingType.rangeMilliUnit.rawValue,
+                         0x02,0xFF,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x00,
+                         PmdSetting.PmdSettingType.resolution.rawValue,
+                         0x01,0x0E,0x00])
+        
+        // Act
+        var setting: PmdSetting
+        do {
+            setting = try PmdSetting(data)
+        } catch {
+            XCTFail(error.localizedDescription); return
+        }
+        
+        // Assert
+        XCTAssertEqual(setting.settings.count, 2)
+        XCTAssertNotNil(setting.settings[PmdSetting.PmdSettingType.rangeMilliUnit])
+        XCTAssertNotNil(setting.settings[PmdSetting.PmdSettingType.resolution])
+        XCTAssertEqual(setting.settings[PmdSetting.PmdSettingType.rangeMilliUnit]!.count, 2)
+        XCTAssertEqual(setting.settings[PmdSetting.PmdSettingType.resolution]!.count, 1)
+        XCTAssertTrue(setting.settings[PmdSetting.PmdSettingType.rangeMilliUnit]!.contains(0xffffffff))
+        XCTAssertTrue(setting.settings[PmdSetting.PmdSettingType.rangeMilliUnit]!.contains(0xff))
+        XCTAssertTrue(setting.settings[PmdSetting.PmdSettingType.resolution]!.contains(0x0E))
+        
+        let serialized = setting.serialize()
+        XCTAssertEqual(serialized.count, 10)
+    }
+    
+    func testPmdSettingThrows() {
+        
+        // Arrange
+        // Last byte removed. Too short data should produce error.
+        let data = Data([PmdSetting.PmdSettingType.rangeMilliUnit.rawValue,
+                         0x02,0xFF,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x00,
+                         PmdSetting.PmdSettingType.resolution.rawValue,
+                         0x01,0x0E])
+        
+        //Act & Assert
+        XCTAssertThrowsError(
+            try PmdSetting(data))
+        { error in
+            guard case BlePmdError.invalidPMDData = error else {
+                return XCTFail()
+            }
+        }
+    }
 }

@@ -62,7 +62,7 @@ public struct PmdOfflineTrigger {
                 if settingBytes.isEmpty {
                     pmdSetting = nil
                 } else {
-                    pmdSetting = PmdSetting(settingBytes)
+                    pmdSetting = try PmdSetting(settingBytes)
                 }
                 
                 offset += triggerSettingsLength

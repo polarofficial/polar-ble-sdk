@@ -1,13 +1,11 @@
 package com.polar.sdk.api.model.utils
 
-import com.polar.androidcommunications.api.ble.BleLogger
 import fi.polar.remote.representation.protobuf.Types.PbDate
 import fi.polar.remote.representation.protobuf.Types.PbSystemDateTime
 import fi.polar.remote.representation.protobuf.Types.PbTime
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
 import com.polar.sdk.api.model.sleep.PolarNightlyRechargeData
 import com.polar.sdk.impl.utils.PolarNightlyRechargeUtils
-import com.polar.sdk.impl.utils.PolarTimeUtils
 import fi.polar.remote.representation.protobuf.NightlyRecovery
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -17,19 +15,21 @@ import io.reactivex.rxjava3.core.Single
 import org.junit.Test
 import protocol.PftpRequest
 import java.io.ByteArrayOutputStream
-import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 class PolarNightlyRechargeUtilsTest {
 
+    private val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+
     @Test
     fun `readNightlyRechargeData() should return nightly recharge data`() {
         // Arrange
-        val dateFormatter = SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
         val mockClient = mockk<BlePsFtpClient>()
-        val date = Date()
-        val expectedPath = "/U/0/${dateFormatter.format(date)}/NR/NR.BPB"
+        val date = LocalDate.now()
+        val expectedPath = "/U/0/${date.format(dateFormatter)}/NR/NR.BPB"
 
         val outputStream = ByteArrayOutputStream().apply {
             val proto = NightlyRecovery.PbNightlyRecoveryStatus.newBuilder()
@@ -120,10 +120,9 @@ class PolarNightlyRechargeUtilsTest {
     @Test
     fun `readNightlyRechargeData() should return null when an error is thrown`() {
         // Arrange
-        val dateFormatter = SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
         val mockClient = mockk<BlePsFtpClient>()
-        val date = Date()
-        val expectedPath = "/U/0/${dateFormatter.format(date)}/NR/NR.BPB"
+        val date = LocalDate.now()
+        val expectedPath = "/U/0/${date.format(dateFormatter)}/NR/NR.BPB"
         val expectedError = Throwable("No nightly recharge data found")
 
         every { mockClient.request(any()) } returns Single.error(expectedError)

@@ -1733,6 +1733,31 @@ extension PolarBleSdkManager {
         }
     }
     
+    func getUserPhysicalConfiguration() async -> PolarPhysicalConfiguration? {
+        if case .connected(let device) = deviceConnectionState {
+            do {
+                guard let physInfo = try await api.getUserPhysicalConfiguration(device.deviceId).value else {
+                    Task { @MainActor in
+                        self.somethingFailed(text: "No physical configuration stored on device.")
+                    }
+                    return nil
+                }
+                return physInfo
+
+            } catch let err {
+                Task { @MainActor in
+                    self.somethingFailed(text: "getUserPhysicalConfiguration() error: \(err)")
+                }
+                return nil
+            }
+        } else {
+            Task { @MainActor in
+                self.somethingFailed(text: "getUserPhysicalConfiguration() failed. No device connected.")
+            }
+            return nil
+        }
+    }
+
     func setWarehouseSleep() async {
         if case .connected(let device) = deviceConnectionState {
             do {
@@ -2223,6 +2248,8 @@ extension PolarBleSdkManager {
                 let activeTimeData = try await api.getActiveTime(identifier: device.deviceId, fromDate: start, toDate: endOfDayOfEnd).value
                 Task {@MainActor in
                     if (!activeTimeData.isEmpty) {
+                        let activeTimeJson = try encoder.encode(activeTimeData)
+                        self.activityRecordingData.data = String(data: activeTimeJson, encoding: .utf8)!
                         self.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.success
                     } else {
                         self.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.failed(error: "No active time data data found for dates \(dateFormatter.string(from: start)) - \(dateFormatter.string(from: end))")

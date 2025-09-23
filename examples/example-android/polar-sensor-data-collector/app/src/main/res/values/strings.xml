@@ -118,9 +118,9 @@
     <string name="storage_title">Backup location</string>
 
     <!-- Sync Preferences -->
-    <string name="stream_file_destination_title">Back up log files</string>
-    <string name="stream_file_destination_summary_on">Save back up on phone storage</string>
-    <string name="stream_file_destination_summary_off">No back up</string>
+    <string name="stream_file_destination_title">Back up online stream files</string>
+    <string name="stream_file_destination_summary_on">Save online stream files on phone storage</string>
+    <string name="stream_file_destination_summary_off">No online stream files back up</string>
     <string name="ext_storage_prefs_summary_not_set">Not set</string>
 
     <!-- Physical config activity-->
@@ -136,6 +136,18 @@
     <string name="title_delete_data">PhysicalDataConfig</string>
     <string name="submit_delete_button">Submit</string>
     <string name="delete_until_date_hint">Select until date</string>
+    <string name="ftu_dialog_title">User physical information</string>
+    <string name="ftu_gender">Gender: %1$s</string>
+    <string name="ftu_birthdate">Birthdate: %1$s</string>
+    <string name="ftu_height">Height: %1$f cm</string>
+    <string name="ftu_weight">Weight: %1$f kg</string>
+    <string name="ftu_max_hr">Max HR: %1$d bpm</string>
+    <string name="ftu_vo2max">VO₂ Max: %1$d ml/kg/min</string>
+    <string name="ftu_resting_hr">Resting HR: %1$d bpm</string>
+    <string name="ftu_training_background">Training background: %1$s</string>
+    <string name="ftu_typical_day">Typical day: %1$s</string>
+    <string name="ftu_sleep_goal">Sleep goal: %1$d min</string>
+    <string name="ftu_failed_to_get_user_physical_information_from_device_using_defaults">Failed to get user physical information from device, using defaults</string>
 
     <!-- Preference keys -->
     <string name="back_up_enabled">PSDC_back_up_enabled</string>
@@ -230,4 +242,21 @@
 
     <!-- Activity samples data -->
     <string name="activity_samples_label">Activity samples</string>
+
+    <!-- Battery present states -->
+    <string name="battery_present_state_present">Battery present</string>
+    <string name="battery_present_state_not_present">Battery not present</string>
+    <string name="battery_present_state_unknown">Battery present state unknown</string>
+
+    <!-- Wired power source states -->
+    <string name="wired_external_power_connected">"Power cable connected"</string>
+    <string name="wired_external_power_not_connected">"Power cable not connected"</string>
+    <string name="wired_external_power_unknown">"Power cable status unknown</string>
+    <string name="wired_external_power_reserved_for_future_use">Power cable status RFU</string>
+
+    <!-- Wireless power source states -->
+    <string name="wireless_external_power_connected">"Wireless power source connected"</string>
+    <string name="wireless_external_power_not_connected">"Wireless power source not connected"</string>
+    <string name="wireless_external_power_unknown">"Wireless power source status unknown</string>
+    <string name="wireless_external_power_reserved_for_future_use">Wireless power source status unknown</string>
 </resources>

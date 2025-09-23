@@ -376,6 +376,16 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - onError: see `PolarErrors` for possible errors invoked
     func isFtuDone(_ identifier: String) -> Single<Bool>
 
+    /// Get the user¨s physical data from the given Polar device.
+    ///
+    /// - Parameters:
+    ///   - identifier: Polar device ID or UUID
+    /// - Returns: `Maybe<PolarPhysicalConfiguration?>`
+    ///   - Emits the `PolarPhysicalConfiguration` if available
+    ///   - Emits `nil` if not available
+    ///   - Errors are propagated as `PolarErrors`
+    func getUserPhysicalConfiguration(_ identifier: String) -> Maybe<PolarPhysicalConfiguration?>
+
     /// Set the device to warehouse sleep state. Factory reset will be performed in order to enable the setting.
     ///
     /// - Parameters:

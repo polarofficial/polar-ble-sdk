@@ -32,6 +32,8 @@ struct DeviceSettingsView: View {
     @State private var showError = false
     @State private var selectedFirmwareFileURL: URL?
     @State private var showFactoryResetAlert = false
+    @State private var showPhysicalInfo = false
+    @State private var physicalInfoMessage = ""
 
     var body: some View {
         VStack {
@@ -239,6 +241,44 @@ struct DeviceSettingsView: View {
                 }
                 .buttonStyle(SecondaryButtonStyle(buttonState: .released))
                 
+                Button("Get physical data config") {
+                    Task {
+                        guard let info = await bleSdkManager.getUserPhysicalConfiguration() else {
+                            errorMessage = "No physical configuration stored on device."
+                            showError = true
+                            return
+                        }
+
+                        let df = DateFormatter()
+                        df.dateFormat = "yyyy-MM-dd"
+
+                        physicalInfoMessage = """
+                        Gender: \(info.gender)
+                        Birthdate: \(df.string(from: info.birthDate))
+                        Height: \(info.height) cm
+                        Weight: \(info.weight) kg
+                        Max HR: \(info.maxHeartRate) bpm
+                        VO₂ Max: \(info.vo2Max) ml/kg/min
+                        Resting HR: \(info.restingHeartRate) bpm
+                        Training background: \(info.trainingBackground)
+                        Typical day: \(info.typicalDay)
+                        Sleep goal: \(info.sleepGoalMinutes) min
+                        """
+                        showPhysicalInfo = true
+                    }
+                }
+                .buttonStyle(SecondaryButtonStyle(buttonState: .released))
+                .alert("User physical data", isPresented: $showPhysicalInfo) {
+                    Button("OK", role: .cancel) { }
+                } message: {
+                    Text(physicalInfoMessage)
+                }
+                .alert("Error", isPresented: $showError) {
+                    Button("OK", role: .cancel) { }
+                } message: {
+                    Text(errorMessage)
+                }
+
                 Button("Get FTU status",
                        action: {
                     Task {

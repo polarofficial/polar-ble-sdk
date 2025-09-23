@@ -1,9 +1,9 @@
 package com.polar.sdk.api.model.activity
 
-import java.util.Date
+import java.time.LocalDate
 
 data class PolarActiveTimeData(
-    val date: Date,
+    val date: LocalDate,
     val timeNonWear: PolarActiveTime = PolarActiveTime(),
     val timeSleep: PolarActiveTime = PolarActiveTime(),
     val timeSedentary: PolarActiveTime = PolarActiveTime(),

@@ -28,13 +28,16 @@ import protocol.PftpResponse.PbPFtpDirectory
 import protocol.PftpResponse.PbPFtpEntry
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
 class PolarActivityUtilsTest {
 
     private val dateFormat = SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
+    private val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
 
     @Test
     fun `readStepsFromDayDirectory() should return sum of step samples`() {
@@ -67,10 +70,10 @@ class PolarActivityUtilsTest {
                 ).build().writeTo(this)
         }
 
-        val date = Date()
+        val date = LocalDate.now()
         val expectedSteps = 23000
-        val expectedDirectoryPath = "/U/0/${dateFormat.format(date)}/ACT/"
-        val expectedFilePath = "/U/0/${dateFormat.format(date)}/ACT/ASAMPL0.BPB"
+        val expectedDirectoryPath = "/U/0/${date.format(dateFormatter)}/ACT/"
+        val expectedFilePath = "/U/0/${date.format(dateFormatter)}/ACT/ASAMPL0.BPB"
 
         every { client.request(any<ByteArray>()) } returns Single.just(mockDirectoryContent) andThen Single.just(mockFileContent1)
 
@@ -172,9 +175,9 @@ class PolarActivityUtilsTest {
                 ).build().writeTo(this)
         }
 
-        val date = Date()
+        val date = LocalDate.now()
         val expectedSteps = 23000 + 2300 + 230
-        val expectedDirectoryPath = "/U/0/${dateFormat.format(date)}/ACT/"
+        val expectedDirectoryPath = "/U/0/${date.format(dateFormatter)}/ACT/"
 
         every { client.request(any<ByteArray>()) } returns Single.just(mockDirectoryContent) andThen Single.just(mockFileContent1) andThen Single.just(mockFileContent2) andThen Single.just(mockFileContent3)
 
@@ -201,8 +204,8 @@ class PolarActivityUtilsTest {
     fun `readStepsFromDayDirectory() should return 0 if activity file not found`() {
         // Arrange
         val client = mockk<BlePsFtpClient>()
-        val date = Date()
-        val expectedDirectoryPath = "/U/0/${dateFormat.format(date)}/ACT/"
+        val date = LocalDate.now()
+        val expectedDirectoryPath = "/U/0/${date.format(dateFormatter)}/ACT/"
         val expectedError = Throwable("No files found for date $date")
 
         every { client.request(any()) } returns Single.error(expectedError)
@@ -232,10 +235,10 @@ class PolarActivityUtilsTest {
     fun `readDistanceFromDayDirectory() should return daily distance`() {
         // Arrange
         val client = mockk<BlePsFtpClient>()
-        val date = Date()
+        val date = LocalDate.now()
         val expectedDistance = 1234.56f
         val outputStream = ByteArrayOutputStream()
-        val expectedPath = "/U/0/${dateFormat.format(date)}/DSUM/DSUM.BPB"
+        val expectedPath = "/U/0/${date.format(dateFormatter)}/DSUM/DSUM.BPB"
 
         val proto = DailySummary.PbDailySummary.newBuilder().setActivityDistance(1234.56f).build()
         proto.writeTo(outputStream)
@@ -267,8 +270,8 @@ class PolarActivityUtilsTest {
     fun `readDistanceFromDayDirectory() should return 0 if activity file not found`() {
         // Arrange
         val client = mockk<BlePsFtpClient>()
-        val date = Date()
-        val expectedPath = "/U/0/${dateFormat.format(date)}/DSUM/DSUM.BPB"
+        val date = LocalDate.now()
+        val expectedPath = "/U/0/${date.format(dateFormatter)}/DSUM/DSUM.BPB"
         val expectedError = Throwable("File not found")
 
         every { client.request(any()) } returns Single.error(expectedError)
@@ -298,10 +301,10 @@ class PolarActivityUtilsTest {
     fun `readSpecificCaloriesFromDayDirectory() should return specific calories value`() {
         // Arrange
         val client = mockk<BlePsFtpClient>()
-        val date = Date()
+        val date = LocalDate.now()
         val caloriesType = CaloriesType.ACTIVITY
         val expectedCalories = 500
-        val expectedPath = "/U/0/${dateFormat.format(date)}/DSUM/DSUM.BPB"
+        val expectedPath = "/U/0/${date.format(dateFormatter)}/DSUM/DSUM.BPB"
 
         val dailySummaryBuilder = DailySummary.PbDailySummary.newBuilder()
         when (caloriesType) {
@@ -340,9 +343,9 @@ class PolarActivityUtilsTest {
     fun `readSpecificCaloriesFromDayDirectory() should return 0 if activity file not found`() {
         // Arrange
         val client = mockk<BlePsFtpClient>()
-        val date = Date()
+        val date = LocalDate.now()
         val caloriesType = CaloriesType.ACTIVITY
-        val expectedPath = "/U/0/${dateFormat.format(date)}/DSUM/DSUM.BPB"
+        val expectedPath = "/U/0/${date.format(dateFormatter)}/DSUM/DSUM.BPB"
         val expectedError = Throwable("File not found")
 
         every { client.request(any()) } returns Single.error(expectedError)
@@ -372,8 +375,8 @@ class PolarActivityUtilsTest {
     fun `readActiveTimeFromDayDirectory() should return PolarActiveTimeData`() {
         // Arrange
         val client = mockk<BlePsFtpClient>()
-        val date = Date()
-        val expectedPath = "/U/0/${dateFormat.format(date)}/DSUM/DSUM.BPB"
+        val date = LocalDate.now()
+        val expectedPath = "/U/0/${date.format(dateFormatter)}/DSUM/DSUM.BPB"
 
         val proto = DailySummary.PbDailySummary.newBuilder()
             .setActivityClassTimes(
@@ -456,8 +459,8 @@ class PolarActivityUtilsTest {
     fun `readActiveTimeFromDayDirectory() should return default PolarActiveTimeData if error occurs`() {
         // Arrange
         val client = mockk<BlePsFtpClient>()
-        val date = Date()
-        val expectedPath = "/U/0/${dateFormat.format(date)}/DSUM/DSUM.BPB"
+        val date = LocalDate.now()
+        val expectedPath = "/U/0/${date.format(dateFormatter)}/DSUM/DSUM.BPB"
         val expectedError = Throwable("File not found")
 
         every { client.request(any()) } returns Single.error(expectedError)

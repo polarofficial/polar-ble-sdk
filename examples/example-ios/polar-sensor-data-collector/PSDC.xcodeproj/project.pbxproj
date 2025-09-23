@@ -74,9 +74,9 @@
 		AAE726462CB654A700007C6C /* DataDeletionSelections.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAE726452CB654A700007C6C /* DataDeletionSelections.swift */; };
 		AAE726482CB654D000007C6C /* DataDeletionFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAE726472CB654D000007C6C /* DataDeletionFeature.swift */; };
 		AAFA1C6C2C97EB74004DC8C8 /* MenuStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFA1C6B2C97EB74004DC8C8 /* MenuStyle.swift */; };
+		BEDB9EF625555CAD916169E9 /* Pods_PSDC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75E61F152F496A99F4257C7F /* Pods_PSDC.framework */; };
 		CC57B5DC2E60618900E90F5B /* ExerciseUIState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC57B5DB2E60617F00E90F5B /* ExerciseUIState.swift */; };
 		CC57B5DE2E60619400E90F5B /* ExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC57B5DD2E60618D00E90F5B /* ExerciseView.swift */; };
-		EFC90D59C9EAFEB4A663ACE5 /* Pods_PSDC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB654535DD0D50AFF0A44E38 /* Pods_PSDC.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -93,12 +93,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		20AE5DFFB9E2A1A7CD2955F0 /* Pods-PSDC.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PSDC.debug.xcconfig"; path = "Target Support Files/Pods-PSDC/Pods-PSDC.debug.xcconfig"; sourceTree = "<group>"; };
-		671CC8F36BE17D0395634D79 /* Pods-PSDC.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PSDC.release.xcconfig"; path = "Target Support Files/Pods-PSDC/Pods-PSDC.release.xcconfig"; sourceTree = "<group>"; };
+		34353962155EF32F5E440FE6 /* Pods-PSDC.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PSDC.release.xcconfig"; path = "Target Support Files/Pods-PSDC/Pods-PSDC.release.xcconfig"; sourceTree = "<group>"; };
 		6C2EDE7E22B9FE360031AA17 /* PSDC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PSDC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C2EDE8822B9FE370031AA17 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6C2EDE8B22B9FE370031AA17 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		6C2EDE8D22B9FE370031AA17 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		715294F1BBD29D04D81C64D1 /* Pods-PSDC.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PSDC.debug.xcconfig"; path = "Target Support Files/Pods-PSDC/Pods-PSDC.debug.xcconfig"; sourceTree = "<group>"; };
+		75E61F152F496A99F4257C7F /* Pods_PSDC.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PSDC.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8415B0592C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareUpdateFeature.swift; sourceTree = "<group>"; };
 		8443CFAD2DD47948002AFBB9 /* UserDeviceSettingsFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDeviceSettingsFeature.swift; sourceTree = "<group>"; };
 		84698A0E2DB778E2006AD8FA /* TrainingSessionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionListView.swift; sourceTree = "<group>"; };
@@ -169,7 +170,6 @@
 		AAE726452CB654A700007C6C /* DataDeletionSelections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataDeletionSelections.swift; sourceTree = "<group>"; };
 		AAE726472CB654D000007C6C /* DataDeletionFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataDeletionFeature.swift; sourceTree = "<group>"; };
 		AAFA1C6B2C97EB74004DC8C8 /* MenuStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuStyle.swift; sourceTree = "<group>"; };
-		BB654535DD0D50AFF0A44E38 /* Pods_PSDC.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PSDC.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC57B5DB2E60617F00E90F5B /* ExerciseUIState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseUIState.swift; sourceTree = "<group>"; };
 		CC57B5DD2E60618D00E90F5B /* ExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -179,7 +179,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EFC90D59C9EAFEB4A663ACE5 /* Pods_PSDC.framework in Frameworks */,
+				BEDB9EF625555CAD916169E9 /* Pods_PSDC.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -227,7 +227,7 @@
 				AA7C73292BC4F871006C0645 /* Alamofire.framework */,
 				A588B0DE25B81B7D00F6D7A3 /* RxSwift.xcframework */,
 				A588B0DB25B81B7800F6D7A3 /* PolarBleSdk.xcframework */,
-				BB654535DD0D50AFF0A44E38 /* Pods_PSDC.framework */,
+				75E61F152F496A99F4257C7F /* Pods_PSDC.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -235,8 +235,8 @@
 		6F9B5877CFCD0DFD62DE31CA /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				20AE5DFFB9E2A1A7CD2955F0 /* Pods-PSDC.debug.xcconfig */,
-				671CC8F36BE17D0395634D79 /* Pods-PSDC.release.xcconfig */,
+				715294F1BBD29D04D81C64D1 /* Pods-PSDC.debug.xcconfig */,
+				34353962155EF32F5E440FE6 /* Pods-PSDC.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -414,13 +414,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6C2EDE9022B9FE370031AA17 /* Build configuration list for PBXNativeTarget "PSDC" */;
 			buildPhases = (
-				82F5D99AF810E9B3F36095D4 /* [CP] Check Pods Manifest.lock */,
+				29395EF02EFE46EE7368FBE0 /* [CP] Check Pods Manifest.lock */,
 				9517B91A2E3A03E10079D6FA /* ShellScript */,
 				6C2EDE7A22B9FE360031AA17 /* Sources */,
 				6C2EDE7B22B9FE360031AA17 /* Frameworks */,
 				6C2EDE7C22B9FE360031AA17 /* Resources */,
 				A5560E23256400EF00C3F75D /* Embed Frameworks */,
-				E9B2FA945BFEDF292071DC0A /* [CP] Embed Pods Frameworks */,
+				72DFD238D0968388961DFBCC /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -484,7 +484,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		82F5D99AF810E9B3F36095D4 /* [CP] Check Pods Manifest.lock */ = {
+		29395EF02EFE46EE7368FBE0 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -506,6 +506,23 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		72DFD238D0968388961DFBCC /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PSDC/Pods-PSDC-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PSDC/Pods-PSDC-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PSDC/Pods-PSDC-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		9517B91A2E3A03E10079D6FA /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -522,23 +539,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
 			shellScript = "# Get path to SDK using Podfile:\n\nPODFILE=\"Podfile\"\nPOD_NAME=\"PolarBleSdk\"\n\n# Extract non-comment lines containing the pod declaration\nLINE=$(grep -E \"^[^#]*pod ['\\\"]$POD_NAME['\\\"]\" \"$PODFILE\")\n\nif [[ -z \"$LINE\" ]]; then\n  echo \"Build run script phase error\"\n  echo \"Pod '$POD_NAME' not found in $PODFILE\"\n  exit 1\nfi\n\n# Extract the path using regex\n\nPATH=$(echo \"$LINE\" | grep -oE \":path\\s*=>\\s*['\\\"][^'\\\"]+['\\\"]|:path:\\s*['\\\"][^'\\\"]+['\\\"]\" | grep -oE \"['\\\"][^'\\\"]+['\\\"]\" | tr -d \"'\\\"\")\n\nPATH=$(eval echo \"$PATH\") # eval maybe unsafe?\n\nif [[ -n \"$PATH\" ]]; then\n  echo \"Path for pod '$POD_NAME': $PATH\"\nelse\n  echo \"No path found for pod '$POD_NAME'\"\nfi\n\npushd \"${PATH}\"\n\n# Get local git commit hash and branch for local PolarBleSDK\nsdk_git_commit=$(/usr/bin/git log -1 --format=\"%h\")\nsdk_branch=$(/usr/bin/git rev-parse --abbrev-ref HEAD)\n# Get locally modified file list for SDK:\nsdk_local_modifications=$(/usr/bin/git status --porcelain | /usr/bin/awk '/^ M/ {print $2}')\n\npopd\n\n# Get local git commit hash and branch for PSDC app\napp_git_commit=$(/usr/bin/git log -1 --format=\"%h\")\napp_branch=$(/usr/bin/git rev-parse --abbrev-ref HEAD)\n\necho \"app git commit/branch ${app_git_commit}/${app_branch}\"\necho \"sdk git commit/branch ${sdk_git_commit}/${sdk_branch}\"\n\n# Get locally modified file list for PSDC:\napp_local_modifications=$(/usr/bin/git status --porcelain | /usr/bin/awk '/^ M/ {print $2}')\n\ninfo_plist=\"${SRCROOT}/PSDC/Info.plist\"\n\n/usr/libexec/PlistBuddy -c \"Add :APP_GIT_COMMIT string '${app_git_commit}'\" \"${info_plist}\" || \\\n/usr/libexec/PlistBuddy -c \"Set :APP_GIT_COMMIT '${app_git_commit}'\" \"${info_plist}\"\n\n/usr/libexec/PlistBuddy -c \"Add :APP_GIT_BRANCH string '${app_branch}'\" \"${info_plist}\" || \\\n/usr/libexec/PlistBuddy -c \"Set :APP_GIT_BRANCH '${app_branch}'\" \"${info_plist}\"\n\n/usr/libexec/PlistBuddy -c \"Add :SDK_GIT_COMMIT string '${sdk_git_commit}'\" \"${info_plist}\" || \\\n/usr/libexec/PlistBuddy -c \"Set :SDK_GIT_COMMIT '${sdk_git_commit}'\" \"${info_plist}\"\n\n/usr/libexec/PlistBuddy -c \"Add :SDK_GIT_BRANCH string '${sdk_branch}'\" \"${info_plist}\" || \\\n/usr/libexec/PlistBuddy -c \"Set :SDK_GIT_BRANCH '${sdk_branch}'\" \"${info_plist}\"\n\n\n/usr/libexec/PlistBuddy -c \"Add :GIT_APP_LOCALLY_MODIFIED string '${app_local_modifications}'\" \"${info_plist}\" || \\\n/usr/libexec/PlistBuddy -c \"Set :GIT_APP_LOCALLY_MODIFIED  '${app_local_modifications}'\" \"${info_plist}\"\n\n/usr/libexec/PlistBuddy -c \"Add :GIT_SDK_LOCALLY_MODIFIED string '${sdk_local_modifications}'\" \"${info_plist}\" || \\\n/usr/libexec/PlistBuddy -c \"Set :GIT_SDK_LOCALLY_MODIFIED  '${sdk_local_modifications}'\" \"${info_plist}\"\n\n\n";
-		};
-		E9B2FA945BFEDF292071DC0A /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-PSDC/Pods-PSDC-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-PSDC/Pods-PSDC-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PSDC/Pods-PSDC-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -764,7 +764,7 @@
 		};
 		6C2EDE9122B9FE370031AA17 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 20AE5DFFB9E2A1A7CD2955F0 /* Pods-PSDC.debug.xcconfig */;
+			baseConfigurationReference = 715294F1BBD29D04D81C64D1 /* Pods-PSDC.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = PSDC/PSDC.entitlements;
@@ -798,7 +798,7 @@
 		};
 		6C2EDE9222B9FE370031AA17 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 671CC8F36BE17D0395634D79 /* Pods-PSDC.release.xcconfig */;
+			baseConfigurationReference = 34353962155EF32F5E440FE6 /* Pods-PSDC.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = PSDC/PSDC.entitlements;

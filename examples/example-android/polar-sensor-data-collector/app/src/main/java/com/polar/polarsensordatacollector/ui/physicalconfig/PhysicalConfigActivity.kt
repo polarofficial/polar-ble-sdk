@@ -3,7 +3,9 @@ package com.polar.polarsensordatacollector.ui.physicalconfig
 import android.os.Bundle
 import android.util.Log
 import android.widget.*
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.polar.sdk.api.model.PolarFirstTimeUseConfig
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -12,8 +14,18 @@ import java.text.SimpleDateFormat
 import java.util.*
 import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.di.PolarBleSdkModule
+import com.polar.polarsensordatacollector.ui.devicesettings.DeviceSettingsViewModel
+import com.polar.polarsensordatacollector.ui.landing.ONLINE_OFFLINE_KEY_DEVICE_ID
+import com.polar.sdk.api.model.PolarPhysicalConfiguration
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import java.time.LocalDate
 
+private const val TAG = "PhysicalConfigActivity"
 
+@AndroidEntryPoint
 class PhysicalConfigActivity : AppCompatActivity() {
 
     private lateinit var radioGroupSex: RadioGroup
@@ -29,16 +41,80 @@ class PhysicalConfigActivity : AppCompatActivity() {
     private lateinit var sleepGoalMinutesPicker: NumberPicker
     private lateinit var buttonOk: Button
 
-
     private val api = PolarBleSdkModule.providePolarBleSdkApi(this)
+    private val deviceSettingsViewModel: DeviceSettingsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.physical_config)
 
-        initViews()
-        setupListeners()
+        lifecycleScope.launch {
+            val info = try {
+                deviceSettingsViewModel.getUserPhysicalInfo()
+                deviceSettingsViewModel.physInfo
+                    .filterNotNull()
+                    .first()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to get user physical information from device, using defaults", e)
+                showToast(getString(R.string.ftu_failed_to_get_user_physical_information_from_device_using_defaults))
+                PolarPhysicalConfiguration(
+                    gender = PolarFirstTimeUseConfig.Gender.MALE,
+                    birthDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse("2000-01-01")!!,
+                    height = 185f,
+                    weight = 85f,
+                    maxHeartRate = 180,
+                    restingHeartRate = 50,
+                    vo2Max = 50,
+                    trainingBackground = 30,
+                    typicalDay = PolarFirstTimeUseConfig.TypicalDay.MOSTLY_SITTING,
+                    sleepGoalMinutes = 8 * 60,
+                    deviceTime = LocalDate.now().toString()
+                )
+            }
 
+            setContentView(R.layout.physical_config)
+            initViews()
+            setupListeners()
+
+            val df = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+            when (info.gender) {
+                PolarFirstTimeUseConfig.Gender.MALE -> radioGroupSex.check(R.id.radioButtonMale)
+                PolarFirstTimeUseConfig.Gender.FEMALE -> radioGroupSex.check(R.id.radioButtonFemale)
+            }
+
+            val birthDate = info.birthDate
+            textViewBirthday.text = df.format(birthDate)
+
+            editTextHeight.setText(info.height.toString())
+            editTextWeight.run { setText(info.weight.toString()) }
+
+            val maxHr = info.maxHeartRate
+            spinnerMaxHeartRate.setSelection(
+                (PolarFirstTimeUseConfig.MAX_HEART_RATE_MIN..PolarFirstTimeUseConfig.MAX_HEART_RATE_MAX)
+                    .indexOf(maxHr)
+            )
+
+            val restHr = info.restingHeartRate
+            spinnerRestingHeartRate.setSelection(
+                (PolarFirstTimeUseConfig.RESTING_HEART_RATE_MIN..PolarFirstTimeUseConfig.RESTING_HEART_RATE_MAX)
+                    .indexOf(restHr)
+            )
+
+            numberPickerVO2max.value = info.vo2Max
+
+            spinnerTrainingBackground.setSelection(
+                PolarFirstTimeUseConfig.TRAINING_BACKGROUND_VALUES
+                    .indexOf(info.trainingBackground)
+            )
+
+            typicalDaySpinner.setSelection(
+                info.typicalDay.ordinal
+            )
+
+            val totalMinutes = info.sleepGoalMinutes
+            sleepGoalHoursPicker.value = totalMinutes / 60
+            sleepGoalMinutesPicker.value = totalMinutes % 60
+        }
     }
 
     private fun initViews() {
@@ -55,18 +131,12 @@ class PhysicalConfigActivity : AppCompatActivity() {
         sleepGoalMinutesPicker = findViewById(R.id.sleepGoalPickerMinutes)
         buttonOk = findViewById(R.id.submit_physical_button)
 
-        radioGroupSex.check(R.id.radioButtonMale)
-        editTextHeight.setText("185")
-        editTextWeight.setText("85")
-
         initializeHeartRateSpinners()
         initializeNumberPickerVO2max()
         initializeTrainingBackgroundSpinner()
         initializeTypicalDaySpinner()
         initializeSleepGoalPicker()
     }
-
-
 
     private fun setupListeners() {
         textViewBirthday.setOnClickListener {
@@ -91,7 +161,6 @@ class PhysicalConfigActivity : AppCompatActivity() {
                 textViewBirthday.text = formattedDate
             }
         }
-        textViewBirthday.setText("2000-01-01")
 
         buttonOk.setOnClickListener {
             saveUserData()
@@ -103,20 +172,16 @@ class PhysicalConfigActivity : AppCompatActivity() {
         val restingHeartRateValues = (PolarFirstTimeUseConfig.RESTING_HEART_RATE_MIN..PolarFirstTimeUseConfig.RESTING_HEART_RATE_MAX).toList()
 
         spinnerMaxHeartRate.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, maxHeartRateValues)
-        spinnerMaxHeartRate.setSelection(maxHeartRateValues.indexOf(180))
         spinnerRestingHeartRate.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, restingHeartRateValues)
-        spinnerRestingHeartRate.setSelection(restingHeartRateValues.indexOf(50))
     }
 
     private fun initializeTrainingBackgroundSpinner() {
         spinnerTrainingBackground.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, PolarFirstTimeUseConfig.TRAINING_BACKGROUND_VALUES)
-        spinnerTrainingBackground.setSelection( PolarFirstTimeUseConfig.TRAINING_BACKGROUND_VALUES.indexOf(30))
     }
 
     private fun initializeNumberPickerVO2max() {
         numberPickerVO2max.minValue = PolarFirstTimeUseConfig.VO2_MAX_MIN
         numberPickerVO2max.maxValue = PolarFirstTimeUseConfig.VO2_MAX_MAX
-        numberPickerVO2max.value = 50
     }
 
     private fun initializeTypicalDaySpinner() {
@@ -179,7 +244,7 @@ class PhysicalConfigActivity : AppCompatActivity() {
                     timeZone = TimeZone.getTimeZone("UTC")
                 }.format(Calendar.getInstance().time))
 
-        val deviceId = intent.getStringExtra("DEVICE_ID") ?: run {
+        val deviceId = intent.getStringExtra(ONLINE_OFFLINE_KEY_DEVICE_ID) ?: run {
             showToast("Device ID not found")
             return
         }

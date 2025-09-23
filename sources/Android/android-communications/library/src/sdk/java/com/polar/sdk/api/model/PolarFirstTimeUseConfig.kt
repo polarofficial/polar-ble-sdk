@@ -1,12 +1,14 @@
 package com.polar.sdk.api.model
 
+import com.polar.sdk.api.model.PolarFirstTimeUseConfig.Gender
+import com.polar.sdk.api.model.PolarFirstTimeUseConfig.TypicalDay
 import java.util.Date
 import java.util.Calendar
 
 import fi.polar.remote.representation.protobuf.Types
 import java.time.format.DateTimeFormatter
 import fi.polar.remote.representation.protobuf.PhysData
-import fi.polar.remote.representation.protobuf.PhysData.PbUserTypicalDay.TypicalDay
+import fi.polar.remote.representation.protobuf.PhysData.PbUserTypicalDay.TypicalDay as PbTypicalDay
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
@@ -89,8 +91,8 @@ data class PolarFirstTimeUseConfig(
 
         val gender = PhysData.PbUserGender.newBuilder().apply {
             setValue(when (gender) {
-                PolarFirstTimeUseConfig.Gender.MALE -> PhysData.PbUserGender.Gender.MALE
-                PolarFirstTimeUseConfig.Gender.FEMALE -> PhysData.PbUserGender.Gender.FEMALE
+                Gender.MALE -> PhysData.PbUserGender.Gender.MALE
+                Gender.FEMALE -> PhysData.PbUserGender.Gender.FEMALE
             })
             setLastModified(lastModified)
         }.build()
@@ -126,7 +128,7 @@ data class PolarFirstTimeUseConfig(
         }.build()
 
         val typicalDay = PhysData.PbUserTypicalDay.newBuilder()
-                .setValue(TypicalDay.forNumber(typicalDay.index))
+                .setValue(PbTypicalDay.forNumber(typicalDay.index))
                 .setLastModified(lastModified)
                 .build()
 
@@ -149,5 +151,66 @@ data class PolarFirstTimeUseConfig(
             setLastModified(lastModified)
         }.build()
     }
+
+fun PhysData.PbUserPhysData.toPolarPhysicalConfiguration(): PolarPhysicalConfiguration {
+    val gender = when (gender.value) {
+        PhysData.PbUserGender.Gender.MALE -> Gender.MALE
+        PhysData.PbUserGender.Gender.FEMALE -> Gender.FEMALE
+        else -> throw IllegalArgumentException("Unknown gender: ${gender.value}")
+    }
+
+    val birthDate = Calendar.getInstance().apply {
+        val date = birthday.value
+        set(date.year, date.month - 1, date.day)
+    }.time
+
+    val deviceTime = lastModified?.let {
+        ZonedDateTime.of(
+            it.date.year,
+            it.date.month,
+            it.date.day,
+            it.time.hour,
+            it.time.minute,
+            it.time.seconds,
+            0,
+            ZoneOffset.UTC
+        ).toString()
+    } ?: ZonedDateTime.now(ZoneOffset.UTC).toString()
+
+    val typicalDay = when (typicalDay.value) {
+        PhysData.PbUserTypicalDay.TypicalDay.MOSTLY_SITTING -> TypicalDay.MOSTLY_SITTING
+        PhysData.PbUserTypicalDay.TypicalDay.MOSTLY_STANDING -> TypicalDay.MOSTLY_STANDING
+        PhysData.PbUserTypicalDay.TypicalDay.MOSTLY_MOVING -> TypicalDay.MOSTLY_MOVING
+        else -> TypicalDay.MOSTLY_SITTING
+    }
+
+    return PolarPhysicalConfiguration(
+        gender = gender,
+        birthDate = birthDate,
+        height = height.value,
+        weight = weight.value,
+        maxHeartRate = maximumHeartrate.value,
+        vo2Max = vo2Max.value,
+        restingHeartRate = restingHeartrate.value,
+        trainingBackground = trainingBackground.value.number,
+        deviceTime = deviceTime,
+        typicalDay = typicalDay,
+        sleepGoalMinutes = sleepGoal.sleepGoalMinutes
+    )
+}
+
+data class PolarPhysicalConfiguration(
+    val gender: Gender,
+    val birthDate: Date,
+    val height: Float,
+    val weight: Float,
+    val maxHeartRate: Int,
+    val vo2Max: Int,
+    val restingHeartRate: Int,
+    val trainingBackground: Int,
+    val deviceTime: String,
+    val typicalDay: TypicalDay,
+    val sleepGoalMinutes: Int
+)
 
 

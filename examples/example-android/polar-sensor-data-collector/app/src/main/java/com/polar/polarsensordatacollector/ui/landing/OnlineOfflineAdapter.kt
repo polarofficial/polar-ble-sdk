@@ -36,12 +36,14 @@ class OnlineOfflineAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) 
     fun addOfflineRecordingFragment(deviceId: String) {
         if (!items.any { it.second is OfflineRecFragment }) {
             Log.d(TAG, "Add OfflineRecordingFragment")
-            val fragment = OfflineRecFragment()
-            fragment.arguments = Bundle().apply {
-                putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId)
+            val fragment = OfflineRecFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId)
+                }
             }
-            items.add(1, Pair("OFFLINE", fragment))
-            this.notifyItemInserted(items.size - 1)
+            val insertIndex = 1.coerceAtMost(items.size)
+            items.add(insertIndex, "OFFLINE" to fragment)
+            notifyItemInserted(insertIndex)
         } else {
             Log.w(TAG, "trying to add OfflineRecordingFragment but found already")
         }
@@ -50,12 +52,13 @@ class OnlineOfflineAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) 
     fun addOnlineRecordingFragment(deviceId: String) {
         if (!items.any { it.second is OnlineRecFragment }) {
             Log.d(TAG, "Add OnlineRecordingFragment")
-            val fragment = OnlineRecFragment()
-            fragment.arguments = Bundle().apply {
-                putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId)
+            val fragment = OnlineRecFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId)
+                }
             }
-            items.add(0, Pair("ONLINE", fragment))
-            this.notifyItemInserted(items.size - 1)
+            items.add(0, "ONLINE" to fragment)
+            notifyItemInserted(0)
         } else {
             Log.w(TAG, "trying to add OnlineRecordingFragment but found already")
         }

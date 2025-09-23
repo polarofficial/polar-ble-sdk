@@ -104,6 +104,7 @@
                     android:textAlignment="center"
                     android:textAppearance="?attr/textAppearanceBody1"
                     android:textColor="@android:color/holo_green_light"
+                    android:clickable="true"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/firmware_version"
@@ -117,8 +118,48 @@
                     android:textAppearance="?attr/textAppearanceBody1"
                     android:layout_marginStart="10dp"
                     android:textColor="@android:color/holo_green_light"
+                    android:clickable="true"
                     app:layout_constraintStart_toEndOf="@id/battery"
                     app:layout_constraintTop_toBottomOf="@+id/firmware_version" />
+
+                <TextView
+                    android:id="@+id/battery_present_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    android:textAppearance="?attr/textAppearanceBody1"
+                    android:layout_marginStart="10dp"
+                    android:textColor="@android:color/holo_green_light"
+                    android:clickable="true"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/battery_charging_status" />
+
+                <TextView
+                    android:id="@+id/wired_power_source_connected_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    android:textAppearance="?attr/textAppearanceBody1"
+                    android:layout_marginStart="10dp"
+                    android:textColor="@android:color/holo_green_light"
+                    android:clickable="true"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/battery_present_status" />
+
+                <TextView
+                    android:id="@+id/wireless_power_source_connected_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    android:textAppearance="?attr/textAppearanceBody1"
+                    android:layout_marginStart="10dp"
+                    android:textColor="@android:color/holo_green_light"
+                    android:clickable="true"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/wired_power_source_connected_status" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>

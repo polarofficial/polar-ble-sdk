@@ -2470,6 +2470,11 @@ extension PolarBleApiImpl: PolarBleApi  {
                             },
                             onDisposed: {
                                 _ = self.sendTerminateAndStopSyncNotifications(identifier: identifier)
+                                    .subscribe(
+                                        onError: { error in
+                                            BleLogger.error("Error sending terminate and stop sync notifications for device: \(identifier) - \(error.localizedDescription)")
+                                    }
+                                )
                             }
                         )
                 } catch let error {
@@ -2504,6 +2509,57 @@ extension PolarBleApiImpl: PolarBleApi  {
                 }
         } catch let err {
             return Single.error(handleError(err))
+        }
+    }
+    
+    func getUserPhysicalConfiguration(_ identifier: String) -> Maybe<PolarPhysicalConfiguration?> {
+        return Maybe.create { emitter in
+            do {
+                let session = try self.sessionFtpClientReady(identifier)
+                guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                    emitter(.error(PolarErrors.deviceError(description: "Failed to fetch GATT client.")))
+                    return Disposables.create()
+                }
+
+                var operation = Protocol_PbPFtpOperation()
+                operation.command = .get
+                operation.path = PolarFirstTimeUseConfig.FTU_CONFIG_FILEPATH
+
+                let requestData = try operation.serializedData()
+
+                let disposable = client.request(requestData)
+                    .subscribe(
+                        onSuccess: { nsData in
+                            do {
+                                let data = nsData as Data
+                                let pbUserPhysData = try Data_PbUserPhysData(serializedData: data)
+                                let ftuConfig = pbUserPhysData.toPolarPhysicalConfiguration()
+                                emitter(.success(ftuConfig))
+                            } catch {
+                                BleLogger.error("Failed to parse FTU data for device \(identifier): \(error.localizedDescription)")
+                                emitter(.error(error))
+                            }
+                        },
+                        onFailure: { error in
+                            if case let BlePsFtpException.responseError(errorCode) = error,
+                               errorCode == Protocol_PbPFtpError.noSuchFileOrDirectory.rawValue {
+                                BleLogger.trace("Phys data file does not exist on device \(identifier)")
+                                emitter(.completed)
+                            } else {
+                                BleLogger.error("Unexpected error reading phys data file for device \(identifier): \(error.localizedDescription)")
+                                emitter(.error(error))
+                            }
+                        }
+                    )
+
+                return Disposables.create {
+                    disposable.dispose()
+                }
+            } catch {
+                BleLogger.error("getUserPhysicalConfiguration(\(identifier)) error: \(error.localizedDescription)")
+                emitter(.error(error))
+                return Disposables.create()
+            }
         }
     }
     
@@ -4021,7 +4077,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
 
-    private func getFile(identifier: String, filePath: String) -> Observable<NSData> {
+    internal func getFile(identifier: String, filePath: String) -> Observable<NSData> {
         do {
             let session = try self.sessionFtpClientReady(identifier)
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {

@@ -26,15 +26,15 @@ public struct PmdSetting {
         self.selected = selected
     }
     
-    public init(_ data: Data){
-        self.settings = PmdSetting.parsePmdSettingsData(data)
+    public init(_ data: Data) throws {
+        self.settings = try PmdSetting.parsePmdSettingsData(data)
         self.selected = settings.reduce(into: [:]) { (result, arg1) in
             let (key, value) = arg1
             result[PmdSetting.PmdSettingType(rawValue: UInt8(key.rawValue)) ?? PmdSetting.PmdSettingType.unknown]=value.max()!
         }
     }
     
-    static func parsePmdSettingsData(_ data: Data) -> [PmdSettingType : Set<UInt32>] {
+    static func parsePmdSettingsData(_ data: Data) throws -> [PmdSettingType : Set<UInt32>] {
         var offset = 0
         var settings = [PmdSettingType : Set<UInt32>]()
         while (offset+2) < data.count {
@@ -43,17 +43,21 @@ public struct PmdSetting {
             let count = Int(data[offset])
             offset += 1
             let advanceStep = mapTypeToFieldSize[type] ?? data.count
-            settings[type] = Set(stride(from: offset, to: offset + (count*advanceStep), by: advanceStep).map { (start) -> UInt32 in
-                let value = data.subdata(in: start..<start.advanced(by: advanceStep))
-                offset += advanceStep
-                return BlePmdClient.arrayToUInt(value, offset: 0, size: advanceStep)
+            settings[type] = try Set(stride(from: offset, to: offset + (count*advanceStep), by: advanceStep).map { (start) -> UInt32 in
+                if (start.advanced(by: advanceStep) <= data.count ) {
+                    let value = data.subdata(in: start..<start.advanced(by: advanceStep))
+                    offset += advanceStep
+                    return BlePmdClient.arrayToUInt(value, offset: 0, size: advanceStep)
+                } else {
+                    throw BlePmdError.invalidPMDData(description: "Broken PMD settings data.")
+                }
             })
         }
         return settings
     }
     
-    mutating func updatePmdSettingsFromStartResponse(_ data: Data) {
-        let settingsFromStartResponse = PmdSetting.parsePmdSettingsData(data)
+    mutating func updatePmdSettingsFromStartResponse(_ data: Data) throws {
+        let settingsFromStartResponse = try PmdSetting.parsePmdSettingsData(data)
         if let factor = settingsFromStartResponse[PmdSettingType.factor] {
             selected[PmdSettingType.factor] = factor.first!
         }

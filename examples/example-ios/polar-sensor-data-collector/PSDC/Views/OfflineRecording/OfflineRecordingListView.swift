@@ -9,29 +9,30 @@ struct OfflineRecordingListView: View {
     
     var body: some View {
         NavigationView {
-            List(bleSdkManager.offlineRecordingEntries.entries, id: \.path) { offlineRecording in
-                NavigationLink {
-                    OfflineRecordingDetailsView(offlineRecordingEntry: offlineRecording)
-                } label: {
-                    OfflineRecordingEntriesRow(offlineRecordingEntry: offlineRecording)
+            VStack {
+                List(bleSdkManager.offlineRecordingEntries.entries, id: \.path) { offlineRecording in
+                    NavigationLink {
+                        OfflineRecordingDetailsView(offlineRecordingEntry: offlineRecording)
+                    } label: {
+                        OfflineRecordingEntriesRow(offlineRecordingEntry: offlineRecording)
+                    }
                 }
-            }
-            .overlay {
-                if bleSdkManager.offlineRecordingEntries.isFetching {
-                    ProgressView("Fetching data, please wait...")
-                        .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
+                .overlay {
+                    if bleSdkManager.offlineRecordingEntries.isFetching {
+                        ProgressView("Fetching data, please wait...")
+                            .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
+                    }
                 }
-            }
-            .animation(.default, value: bleSdkManager.offlineRecordingEntries.entries)
-            .task {
-                await bleSdkManager.listOfflineRecordings()
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .edgesIgnoringSafeArea(.all)
+                .animation(.default, value: bleSdkManager.offlineRecordingEntries.entries)
+                .task {
+                    await bleSdkManager.listOfflineRecordings()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .edgesIgnoringSafeArea(.all)
                 .navigationBarTitle("")
                 .navigationBarHidden(true)
-            
-        }.navigationViewStyle(StackNavigationViewStyle())
+            }.navigationViewStyle(StackNavigationViewStyle())
+        }
     }
 }
 

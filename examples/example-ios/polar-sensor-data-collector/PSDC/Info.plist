@@ -2,10 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>APP_GIT_BRANCH</key>
-	<string>master</string>
-	<key>APP_GIT_COMMIT</key>
-	<string>6b117e7</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -19,197 +15,9 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.31.0</string>
+	<string>1.33.0</string>
 	<key>CFBundleVersion</key>
-	<string>1.31.0</string>
-	<key>GIT_APP_LOCALLY_MODIFIED</key>
-	<string>docs/polar-sdk-android/allclasses.html
-docs/polar-sdk-android/com/polar/sdk/api/PolarActivityApi.html
-docs/polar-sdk-android/com/polar/sdk/api/PolarBleApi.PolarActivityDataType.html
-docs/polar-sdk-android/com/polar/sdk/api/PolarBleApi.html
-docs/polar-sdk-android/com/polar/sdk/api/PolarTrainingSessionApi.html
-docs/polar-sdk-android/com/polar/sdk/api/model/activity/package-summary.html
-docs/polar-sdk-android/com/polar/sdk/api/model/package-summary.html
-docs/polar-sdk-android/element-list
-docs/polar-sdk-android/index-files/index-1.html
-docs/polar-sdk-android/index-files/index-10.html
-docs/polar-sdk-android/index-files/index-12.html
-docs/polar-sdk-android/index-files/index-13.html
-docs/polar-sdk-android/index-files/index-14.html
-docs/polar-sdk-android/index-files/index-15.html
-docs/polar-sdk-android/index-files/index-16.html
-docs/polar-sdk-android/index-files/index-18.html
-docs/polar-sdk-android/index-files/index-19.html
-docs/polar-sdk-android/index-files/index-3.html
-docs/polar-sdk-android/index-files/index-6.html
-docs/polar-sdk-android/index-files/index-7.html
-docs/polar-sdk-android/index-files/index-9.html
-docs/polar-sdk-android/member-search-index.js
-docs/polar-sdk-android/package-list
-docs/polar-sdk-android/type-search-index.js
-examples/example-android/polar-sensor-data-collector/.gitignore
-examples/example-android/polar-sensor-data-collector/app/build.gradle
-examples/example-android/polar-sensor-data-collector/app/src/main/AndroidManifest.xml
-examples/example-android/polar-sensor-data-collector/app/src/main/java/com/polar/polarsensordatacollector/DataCollector.kt
-examples/example-android/polar-sensor-data-collector/app/src/main/java/com/polar/polarsensordatacollector/di/PolarBleSdkModule.kt
-examples/example-android/polar-sensor-data-collector/app/src/main/java/com/polar/polarsensordatacollector/repository/PolarDeviceRepository.kt
-examples/example-android/polar-sensor-data-collector/app/src/main/java/com/polar/polarsensordatacollector/ui/activity/ActivityRecordingDataFragment.kt
-examples/example-android/polar-sensor-data-collector/app/src/main/java/com/polar/polarsensordatacollector/ui/activity/ActivityRecordingDataViewModel.kt
-examples/example-android/polar-sensor-data-collector/app/src/main/java/com/polar/polarsensordatacollector/ui/activity/ActivityRecordingFragment.kt
-examples/example-android/polar-sensor-data-collector/app/src/main/java/com/polar/polarsensordatacollector/ui/activity/ActivityRecordingViewModel.kt
-examples/example-android/polar-sensor-data-collector/app/src/main/java/com/polar/polarsensordatacollector/ui/devicesettings/DeviceSettingsFragment.kt
-examples/example-android/polar-sensor-data-collector/app/src/main/java/com/polar/polarsensordatacollector/ui/devicesettings/DeviceSettingsViewModel.kt
-examples/example-android/polar-sensor-data-collector/app/src/main/java/com/polar/polarsensordatacollector/ui/landing/MainFragment.kt
-examples/example-android/polar-sensor-data-collector/app/src/main/java/com/polar/polarsensordatacollector/ui/landing/MainViewModel.kt
-examples/example-android/polar-sensor-data-collector/app/src/main/java/com/polar/polarsensordatacollector/ui/landing/OfflineRecordingViewModel.kt
-examples/example-android/polar-sensor-data-collector/app/src/main/java/com/polar/polarsensordatacollector/ui/landing/OnlineRecFragment.kt
-examples/example-android/polar-sensor-data-collector/app/src/main/java/com/polar/polarsensordatacollector/ui/landing/OnlineRecordingViewModel.kt
-examples/example-android/polar-sensor-data-collector/app/src/main/java/com/polar/polarsensordatacollector/ui/physicalconfig/PhysicalConfigActivity.kt
-examples/example-android/polar-sensor-data-collector/app/src/main/res/layout/fragment_activity_recording.xml
-examples/example-android/polar-sensor-data-collector/app/src/main/res/layout/fragment_device_settings.xml
-examples/example-android/polar-sensor-data-collector/app/src/main/res/layout/fragment_main.xml
-examples/example-android/polar-sensor-data-collector/app/src/main/res/layout/fragment_online_rec.xml
-examples/example-android/polar-sensor-data-collector/app/src/main/res/navigation/nav_graph.xml
-examples/example-android/polar-sensor-data-collector/app/src/main/res/values/strings.xml
-examples/example-android/polar-sensor-data-collector/build/reports/problems/problems-report.html
-sources/Android/android-communications/library/build.gradle
-sources/Android/android-communications/library/src/main/java/com/polar/androidcommunications/api/ble/model/gatt/client/pmd/BlePMDClient.kt
-sources/Android/android-communications/library/src/main/java/com/polar/androidcommunications/api/ble/model/polar/BlePolarDeviceCapabilitiesUtility.kt
-sources/Android/android-communications/library/src/sdk/java/com/polar/sdk/api/PolarActivityApi.kt
-sources/Android/android-communications/library/src/sdk/java/com/polar/sdk/api/PolarBleApi.kt
-sources/Android/android-communications/library/src/sdk/java/com/polar/sdk/api/PolarBleApiDefaultImpl.kt
-sources/Android/android-communications/library/src/sdk/java/com/polar/sdk/api/PolarTrainingSessionApi.kt
-sources/Android/android-communications/library/src/sdk/java/com/polar/sdk/impl/BDBleApiImpl.kt
-sources/Android/android-communications/library/src/sdk/java/com/polar/sdk/impl/utils/PolarActivityUtils.kt
-sources/Android/android-communications/library/src/sdk/java/com/polar/sdk/impl/utils/PolarTimeUtils.kt
-sources/Android/android-communications/library/src/sdk/proto/act_samples.proto
-sources/Android/android-communications/library/src/sdk/proto/pftp_request.proto
-sources/Android/android-communications/library/src/sdk/proto/pftp_response.proto
-sources/Android/android-communications/library/src/test/java/com/polar/sdk/api/model/utils/PolarActivityUtilsTest.kt
-sources/Android/android-communications/library/src/test/java/com/polar/sdk/api/model/utils/PolarTimeUtilsTest.kt
-sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/api/PolarActivityApi.swift
-sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApi.swift
-sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApiDefaultImpl.swift
-sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApiObservers.swift
-sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/api/PolarTrainingSessionApi.swift
-sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/api/errors/PolarErrors.swift
-sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarSensorSetting.swift
-sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift
-sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/impl/PolarBleApiImpl.swift
-sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/impl/protobuf/act_samples.pb.swift
-sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/impl/protobuf/exercise_samples.pb.swift
-sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/impl/protobuf/pftp_request.pb.swift
-sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/impl/protobuf/pftp_response.pb.swift
-sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/impl/utils/PolarActivityUtils.swift
-sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/impl/utils/PolarTimeUtils.swift
-sources/iOS/ios-communications/Sources/iOSCommunications/FirmwareUpdateApi.swift
-sources/iOS/ios-communications/Sources/iOSCommunications/ble/api/model/gatt/client/BleBasClient.swift
-sources/iOS/ios-communications/Sources/iOSCommunications/ble/api/model/polar/BlePolarDeviceCapabilitiesUtility.swift
-sources/iOS/ios-communications/Sources/iOSCommunications/ble/endpoints/corebluetooth/central/CBDeviceSessionImpl.swift
-sources/iOS/ios-communications/Tests/PolarBleSdkTests/PolarActivityUtilsTest.swift
-sources/iOS/ios-communications/Tests/PolarBleSdkTests/PolarAutomaticSamplesUnitTest.swift
-sources/iOS/ios-communications/Tests/PolarBleSdkTests/PolarBackupManagerTest.swift
-sources/iOS/ios-communications/Tests/PolarBleSdkTests/PolarOfflineRecordingApiTests.swift
-sources/iOS/ios-communications/Tests/PolarBleSdkTests/PolarSleepUtilsTest.swift
-sources/iOS/ios-communications/Tests/PolarBleSdkTests/PolarTimeUtilsTests.swift
-sources/iOS/ios-communications/Tests/iOSCommunicationsTests/BleBasClientTest.swift
-sources/iOS/ios-communications/iOSCommunications.xcodeproj/project.pbxproj
-sources/iOS/ios-communications/scripts/generate_docs.sh</string>
-	<key>GIT_SDK_LOCALLY_MODIFIED</key>
-	<string>Podfile.lock
-Pods/Manifest.lock
-Pods/Pods.xcodeproj/project.pbxproj
-Pods/SwiftProtobuf/README.md
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/AnyMessageStorage.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/AnyUnpackError.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/BinaryDecoder.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/BinaryDecodingError.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/BinaryDecodingOptions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/BinaryDelimited.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/BinaryEncoder.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/BinaryEncodingError.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/BinaryEncodingSizeVisitor.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/BinaryEncodingVisitor.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/CustomJSONCodable.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Decoder.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/DoubleParser.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Enum.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/ExtensibleMessage.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/ExtensionFieldValueSet.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/ExtensionFields.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/ExtensionMap.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/FieldTag.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/FieldTypes.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Google_Protobuf_Any+Extensions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Google_Protobuf_Any+Registry.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Google_Protobuf_Duration+Extensions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Google_Protobuf_FieldMask+Extensions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Google_Protobuf_ListValue+Extensions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Google_Protobuf_NullValue+Extensions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Google_Protobuf_Struct+Extensions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Google_Protobuf_Timestamp+Extensions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Google_Protobuf_Value+Extensions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Google_Protobuf_Wrappers+Extensions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/HashVisitor.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Internal.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/JSONDecoder.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/JSONDecodingOptions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/JSONEncoder.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/JSONEncodingError.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/JSONEncodingOptions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/JSONEncodingVisitor.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/JSONMapEncodingVisitor.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/JSONScanner.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/MathUtils.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Message+AnyAdditions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Message+BinaryAdditions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Message+JSONAdditions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Message+JSONArrayAdditions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Message+TextFormatAdditions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Message.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/MessageExtension.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/NameMap.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/ProtoNameProviding.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/ProtobufAPIVersionCheck.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/ProtobufMap.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/SelectiveVisitor.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/SimpleExtensionMap.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/StringUtils.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/TextFormatDecoder.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/TextFormatDecodingOptions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/TextFormatEncoder.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/TextFormatEncodingOptions.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/TextFormatEncodingVisitor.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/TextFormatScanner.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/TimeUtils.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/UnknownStorage.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/UnsafeRawPointer+Shims.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Varint.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Version.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/Visitor.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/WireFormat.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/ZigZag.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/any.pb.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/api.pb.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/descriptor.pb.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/duration.pb.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/empty.pb.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/field_mask.pb.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/source_context.pb.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/struct.pb.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/timestamp.pb.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/type.pb.swift
-Pods/SwiftProtobuf/Sources/SwiftProtobuf/wrappers.pb.swift
-Pods/Target
-Pods/Target
-Pods/Target
-Pods/Target
-Pods/Target
-Pods/Target
-Sources/PolarBleSdk/sdk/api/PolarBleApiDefaultImpl.swift
-Sources/PolarBleSdk/sdk/impl/protobuf/exercise_samples.pb.swift
-scripts/generate_docs.sh
-scripts/github_file_copy_assistant.sh</string>
+	<string>1.33.0</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.healthcare-fitness</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -218,10 +26,6 @@ scripts/github_file_copy_assistant.sh</string>
 	<string>To use this app with Polar device, you need to allow us to use Bluetooth.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Allowing this gives you the access to the full set of Bluetooth features.</string>
-	<key>SDK_GIT_BRANCH</key>
-	<string>master</string>
-	<key>SDK_GIT_COMMIT</key>
-	<string>47cf0e6f</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>

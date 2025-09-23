@@ -17,7 +17,7 @@ internal class OfflineRecTriggerAdapter(fragment: Fragment, deviceId: String) : 
         addOfflineRecTriggerSettingsFragment(deviceId)
     }
 
-    override fun getItemCount(): Int = 2
+    override fun getItemCount(): Int = items.size
 
     override fun createFragment(position: Int): Fragment {
         return try {
@@ -30,12 +30,14 @@ internal class OfflineRecTriggerAdapter(fragment: Fragment, deviceId: String) : 
     private fun addOfflineRecTriggerStatusFragment(deviceId: String) {
         if (!items.any { it.second is OfflineRecTriggerStatusFragment }) {
             Log.d(TAG, "Add OfflineRecTriggerStatusFragment")
-            val fragment = OfflineRecTriggerStatusFragment()
-            fragment.arguments = Bundle().apply {
-                putString(OFFLINE_REC_TRIG_KEY_DEVICE_ID, deviceId)
+            val fragment = OfflineRecTriggerStatusFragment().apply {
+                arguments = Bundle().apply {
+                    putString(OFFLINE_REC_TRIG_KEY_DEVICE_ID, deviceId)
+                }
             }
-            items.add(0, Pair("STATUS", fragment))
-            this.notifyItemInserted(items.size - 1)
+            val insertIndex = 0
+            items.add(insertIndex, "STATUS" to fragment)
+            notifyItemInserted(insertIndex)
         } else {
             Log.w(TAG, "trying to add OfflineRecTriggerStatusFragment but found already")
         }
@@ -44,12 +46,14 @@ internal class OfflineRecTriggerAdapter(fragment: Fragment, deviceId: String) : 
     private fun addOfflineRecTriggerSettingsFragment(deviceId: String) {
         if (!items.any { it.second is OfflineRecTriggerSettingsFragment }) {
             Log.d(TAG, "Add OfflineRecTriggerSettingsFragment")
-            val fragment = OfflineRecTriggerSettingsFragment()
-            fragment.arguments = Bundle().apply {
-                putString(OFFLINE_REC_TRIG_KEY_DEVICE_ID, deviceId)
+            val fragment = OfflineRecTriggerSettingsFragment().apply {
+                arguments = Bundle().apply {
+                    putString(OFFLINE_REC_TRIG_KEY_DEVICE_ID, deviceId)
+                }
             }
-            items.add(1, Pair("SETUP", fragment))
-            this.notifyItemInserted(items.size - 1)
+            val insertIndex = 1
+            items.add(insertIndex, "SETUP" to fragment)
+            notifyItemInserted(insertIndex)
         } else {
             Log.w(TAG, "trying to add OfflineRecTriggerSettingsFragment but found already")
         }

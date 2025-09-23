@@ -320,12 +320,20 @@ public interface <span class="typeNameLabel"><a href=PolarBleApiCallbackProvider
                                         <tr id="i9" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#powerSourcesStateReceived(java.lang.String,.<Error class: unknown class>)>powerSourcesStateReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, &lt;Error class: unknown class&gt; powerSourcesState) </code>
+                                            </th>
+                                            <td class="colLast">Battery power sources state received.</td>
+                                        </tr>
+                                        
+                                        <tr id="i10" class="altColor">
+                                            <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#hrNotificationReceived(java.lang.String,com.polar.sdk.api.model.PolarHrData.PolarHrSample)>hrNotificationReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarHrData.PolarHrSample.html>PolarHrData.PolarHrSample</a> data) </code>
                                             </th>
                                             <td class="colLast">HR notification data received from device.</td>
                                         </tr>
                                         
-                                        <tr id="i10" class="altColor">
+                                        <tr id="i11" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#htsNotificationReceived(java.lang.String,com.polar.sdk.api.model.PolarHealthThermometerData)>htsNotificationReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarHealthThermometerData.html>PolarHealthThermometerData</a> data) </code>
@@ -659,6 +667,40 @@ public interface <span class="typeNameLabel"><a href=PolarBleApiCallbackProvider
                                             
                                             
                                             <dd><code>chargingStatus</code> - Charging status ChargeState</dd>
+                                            
+                                            
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="powerSourcesStateReceived(java.lang.String,.&lt;Error class: unknown class&gt;)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>powerSourcesStateReceived</h4>
+                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBleApiCallbackProvider.html#powerSourcesStateReceived(java.lang.String,.<Error class: unknown class>)>powerSourcesStateReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, &lt;Error class: unknown class&gt; powerSourcesState)</pre>
+                                        <div class="block"><p>Battery power sources state received. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_BATTERY_INFO>PolarBleApi.PolarBleSdkFeature.FEATURE_BATTERY_INFO</a></p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device id or bt address</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>powerSourcesState</code> - PowerSourcesState</dd>
                                             
                                             
                                         

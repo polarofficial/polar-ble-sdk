@@ -403,7 +403,11 @@ public class BlePmdClient: BleGattClientBase {
                 let cpResponse = try self.sendControlPointCommand(packet as Data)
                 if cpResponse.errorCode == .success {
                     self.storedSettings.accessItem { (settingsStored) in
-                        settingsStored[type]?.updatePmdSettingsFromStartResponse(cpResponse.parameters as Data)
+                        do {
+                            try settingsStored[type]?.updatePmdSettingsFromStartResponse(cpResponse.parameters as Data)
+                        } catch let err {
+                            BleLogger.error("Failed to update PMD settings: \(err)")
+                        }
                     }
                     observer(.completed)
                 } else {
@@ -532,8 +536,13 @@ public class BlePmdClient: BleGattClientBase {
                 
                 let cpResponse = try self.sendControlPointCommand(packet)
                 if cpResponse.errorCode == .success {
-                    let settings = PmdSetting(cpResponse.parameters as Data)
-                    observer(.success(settings))
+                    do {
+                        let settings = try PmdSetting(cpResponse.parameters as Data)
+                        observer(.success(settings))
+                    } catch let err {
+                        BleLogger.error("Failed to parse PmdSetting: \(err)")
+                        observer(.failure(err))
+                    }
                 } else {
                     observer(.failure(BleGattException.gattAttributeError(errorCode: cpResponse.errorCode.rawValue, errorDescription: cpResponse.errorCode.description)))
                 }
@@ -554,8 +563,13 @@ public class BlePmdClient: BleGattClientBase {
                 let packet = Data([PmdControlPointCommandClientToService.GET_SDK_MODE_SETTINGS, requestByte])
                 let cpResponse = try self.sendControlPointCommand(packet)
                 if cpResponse.errorCode == .success {
-                    let settings = PmdSetting(cpResponse.parameters as Data)
-                    observer(.success(settings))
+                    do {
+                        let settings = try PmdSetting(cpResponse.parameters as Data)
+                        observer(.success(settings))
+                    } catch let err {
+                        BleLogger.error("Failed to parse PmdSetting: \(err)")
+                        observer(.failure(err))
+                    }
                 } else {
                     observer(.failure(BleGattException.gattAttributeError(errorCode: cpResponse.errorCode.rawValue, errorDescription: cpResponse.errorCode.description)))
                 }

@@ -17,7 +17,7 @@
     <a title="PolarBleApi Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">PolarBleSdk 5.7.1 Docs</a> (38% documented)</p>
+        <p><a href="../index.html">PolarBleSdk 5.7.1 Docs</a> (37% documented)</p>
         <div class="header-right">
           <form role="search" action="../search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -343,6 +343,15 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/PolarOfflineRecordingTrigger.html">PolarOfflineRecordingTrigger</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarPhysicalConfiguration.html">PolarPhysicalConfiguration</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarPhysicalConfiguration/Gender.html">– Gender</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarPhysicalConfiguration/TypicalDay.html">– TypicalDay</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/PolarPlainDate.html">PolarPlainDate</a>
@@ -1590,6 +1599,62 @@ from the BLE advertisement</p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP28getUserPhysicalConfigurationy7RxSwift17PrimitiveSequenceVyAE10MaybeTraitOAA0agH0VSgGSSF"></a>
+                    <a name="//apple_ref/swift/Method/getUserPhysicalConfiguration(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP28getUserPhysicalConfigurationy7RxSwift17PrimitiveSequenceVyAE10MaybeTraitOAA0agH0VSgGSSF">getUserPhysicalConfiguration(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Get the user¨s physical data from the given Polar device.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getUserPhysicalConfiguration</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Maybe</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarPhysicalConfiguration.html">PolarPhysicalConfiguration</a></span><span class="p">?</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device ID or UUID</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p><code>Maybe&lt;PolarPhysicalConfiguration?&gt;</code>
+
+<ul>
+<li>Emits the <code><a href="../Structs/PolarPhysicalConfiguration.html">PolarPhysicalConfiguration</a></code> if available</li>
+<li>Emits <code>nil</code> if not available</li>
+<li>Errors are propagated as <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code></li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:11PolarBleSdk0aB3ApiP17setWarehouseSleepy7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF"></a>
                     <a name="//apple_ref/swift/Method/setWarehouseSleep(_:)" class="dashAnchor"></a>
                     <a class="token" href="#/s:11PolarBleSdk0aB3ApiP17setWarehouseSleepy7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF">setWarehouseSleep(_:<wbr>)</a>
@@ -2658,7 +2723,7 @@ automatically when operation completes. One should not change this setting durin
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2025 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2025-09-11)</p>
+          <p>&copy; 2025 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2025-09-23)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

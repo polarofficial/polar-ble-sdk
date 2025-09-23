@@ -100,7 +100,12 @@ public class BleDisClient: BleGattClientBase {
     /// - Returns: Observable stream
     public func readDisInfo(_ checkConnection: Bool) -> Observable<(CBUUID,String)> {
         var object: RxObserver<(CBUUID ,String)>!
-        return Observable.create{ observer in
+        return Observable.create{ [weak self] observer in
+            guard let self = self else {
+              BleLogger.trace("readDisInfo: self is nil, observer completed early")
+              observer.onCompleted()
+              return Disposables.create()
+            }
             object = RxObserver<(CBUUID ,String)>.init(obs: observer)
             if !checkConnection || self.gattServiceTransmitter?.isConnected() ?? false {
                 self.observers.append(object)
@@ -128,7 +133,12 @@ public class BleDisClient: BleGattClientBase {
 
     public func readDisInfoWithKeysAsStrings(_ checkConnection: Bool) -> Observable<(String, String)> {
             var object: RxObserver<(String, String)>!
-            return Observable.create { observer in
+            return Observable.create{ [weak self] observer in
+                guard let self = self else {
+                  BleLogger.trace("readDisInfoWithKeysAsStrings: self is nil, observer completed early")
+                  observer.onCompleted()
+                  return Disposables.create()
+                }
                 object = RxObserver<(String, String)>.init(obs: observer)
                 if !checkConnection || self.gattServiceTransmitter?.isConnected() ?? false {
                     self.observersStringKey.append(object)

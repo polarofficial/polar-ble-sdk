@@ -8,6 +8,7 @@ import com.polar.sdk.api.model.*
 import fi.polar.remote.representation.protobuf.UserDeviceSettings.*
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
+import io.reactivex.rxjava3.core.Maybe
 import io.reactivex.rxjava3.core.Single
 import java.time.LocalDate
 import java.util.*
@@ -416,6 +417,14 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      *
      */
     abstract fun isFtuDone(identifier: String): Single<Boolean>
+
+    /**
+     * Get the user's physical data from the given device.
+     *
+     * @param identifier Polar device ID or Bluetooth address
+     * @return [Maybe] emitting [PolarPhysicalConfiguration] if available, null if FTU not done or error
+     */
+    abstract fun getUserPhysicalConfiguration(identifier: String): Maybe<PolarPhysicalConfiguration>
 
     /**
      * Set [PolarUserDeviceSettings] for device.

@@ -3,7 +3,7 @@
 import Foundation
 
 /// Distance for given date.
-public struct PolarDistanceData {
+public struct PolarDistanceData: Codable {
     public let date: Date
     public let distanceMeters: Float
 }

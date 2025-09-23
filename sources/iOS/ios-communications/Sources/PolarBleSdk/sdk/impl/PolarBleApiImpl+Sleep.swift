@@ -13,10 +13,30 @@ import UIKit
 
 extension PolarBleApiImpl: PolarSleepApi {
     
+    enum Failure: Error {
+        case sleepApiNotSupported
+        var localizedDescription: String {
+            switch self {
+            case .sleepApiNotSupported:
+                return "Device does not support PolarSleepApi"
+            }
+        }
+    }
+    
     func stopSleepRecording(identifier: String) -> RxSwift.Completable {
-        return self.putNotification(identifier: identifier,
-                                    notification: "{}",
-                                    path: "/REST/SLEEP.API?cmd=post&endpoint=stop_sleep_recording")
+        let checkApiAvailable = self.getFile(identifier: identifier, filePath: "/REST/SLEEP.API")
+            .catch { error in
+                if case let BlePsFtpException.responseError(code) = error {
+                    return Observable.error(code == 103 ? Failure.sleepApiNotSupported : error)
+                   } else {
+                       return Observable.error(error)
+                   }
+            }
+            .ignoreElements().asCompletable()
+            return checkApiAvailable
+                .andThen(putNotification(identifier: identifier,
+                                         notification: "{}",
+                                         path: "/REST/SLEEP.API?cmd=post&endpoint=stop_sleep_recording"))
     }
     
     internal struct SleepRecordingState: Decodable {
@@ -40,7 +60,6 @@ extension PolarBleApiImpl: PolarSleepApi {
     }
     
     func getSleepRecordingState(identifier: String) -> Single<Bool> {
-            
         let observeRecordingState = observeSleepRecordingState(identifier: identifier)
             .filter { $0.isEmpty == false }
             .take(1)
@@ -51,14 +70,24 @@ extension PolarBleApiImpl: PolarSleepApi {
     }
         
     func observeSleepRecordingState(identifier: String) -> Observable<[Bool]> {
+        let checkApiAvailable =
+            self.getFile(identifier: identifier, filePath: "/REST/SLEEP.API")
+            .catch { error in
+                if case let BlePsFtpException.responseError(code) = error {
+                    return Observable.error(code == 103 ? Failure.sleepApiNotSupported : error)
+                   } else {
+                       return Observable.error(error)
+                   }
+            }
+           .ignoreElements().asCompletable()
+        let subscribe = self.putNotification(identifier: identifier, notification: "{}",
+                             path: "/REST/SLEEP.API?cmd=subscribe&event=sleep_recording_state&details=[enabled]")
         let receiveSleepRecordingStates:Observable<[SleepRecordingStateWrapper]> =
             self.receiveRestApiEvents(identifier: identifier)
         let receiveSleepRecordingEnabled = receiveSleepRecordingStates.compactMap {
             return $0.compactMap { $0.sleepRecordingState.isEnabled }
         }
-        let subscribe = self.putNotification(identifier: identifier, notification: "{}",
-                             path: "/REST/SLEEP.API?cmd=subscribe&event=sleep_recording_state&details=[enabled]")
-        return subscribe.andThen(receiveSleepRecordingEnabled)
+        return checkApiAvailable.andThen(subscribe).andThen(receiveSleepRecordingEnabled)
     }
     
     func getSleepData(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarSleepData.PolarSleepAnalysisResult]> {

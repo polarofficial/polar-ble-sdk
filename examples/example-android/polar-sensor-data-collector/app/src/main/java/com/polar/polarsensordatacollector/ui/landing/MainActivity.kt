@@ -14,6 +14,7 @@ import androidx.navigation.ui.onNavDestinationSelected
 import androidx.navigation.ui.setupWithNavController
 import com.polar.polarsensordatacollector.R
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.navigation.navOptions
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -35,6 +36,26 @@ class MainActivity : AppCompatActivity() {
         topAppBar.setupWithNavController(navController, appBarConfiguration)
         topAppBar.setOnMenuItemClickListener { item ->
             item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
+        }
+
+        topAppBar.setNavigationOnClickListener {
+            val current = navController.currentDestination?.id
+            if (
+                current == R.id.offlineRecTriggerFragment ||
+                current == R.id.settings_dest ||
+                current == R.id.about_dest
+            ) {
+                navController.navigate(
+                    R.id.mainFragment,
+                    null,
+                    navOptions {
+                        popUpTo(R.id.mainFragment) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                )
+            } else {
+                navController.navigateUp()
+            }
         }
 
         navController.addOnDestinationChangedListener { _, destination, _ ->

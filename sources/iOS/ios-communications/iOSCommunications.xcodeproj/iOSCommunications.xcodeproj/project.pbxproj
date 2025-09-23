@@ -1,0 +1,2615 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		19C40FCF6ADCE0C526429DCF /* Pods_iOSCommunicationsTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EAAEDEC04BFC03AD734C3056 /* Pods_iOSCommunicationsTests.framework */; };
+		4986E83D1B4BDC29063FC084 /* Pods_PolarBleSdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B05E5443D4BD82E84117A35 /* Pods_PolarBleSdk.framework */; };
+		5A061CA47473A774AB6445EA /* Pods_PolarBleSdkWatchOs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49A5107367704369EB9A6D26 /* Pods_PolarBleSdkWatchOs.framework */; };
+		6C0C54FE1CFEB3C900FF23E9 /* TimeUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C54FD1CFEB3C900FF23E9 /* TimeUtility.swift */; };
+		6C10792D1D6D9C4800931948 /* iOSCommunications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C34DE881CAA3F240083EB1F /* iOSCommunications.framework */; };
+		6C2408F8220D9581001C1A84 /* CBScanningProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */; };
+		6C2409422216A6E3001C1A84 /* CBScanningProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */; };
+		6C2409432216A6E3001C1A84 /* BlePsFtpUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD381CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift */; };
+		6C2409442216A6E3001C1A84 /* BlePsFtpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD391CE5BCEA00A4C6A8 /* BlePsFtpClient.swift */; };
+		6C2409462216A6F3001C1A84 /* AtomicType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9810392154AEDD002820A2 /* AtomicType.swift */; };
+		6C32C6D7220AD3CA006615C3 /* CBScanningProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */; };
+		6C39E8DA209B07BC001F7E44 /* CBDeviceListenerImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44A91CB291A40006220D /* CBDeviceListenerImpl.swift */; };
+		6C39E8DB209B07BC001F7E44 /* CBDeviceSessionImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44AA1CB291A40006220D /* CBDeviceSessionImpl.swift */; };
+		6C39E8DC209B07BC001F7E44 /* CBScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9209061D93B2DC0035B928 /* CBScanner.swift */; };
+		6C39E8DD209B07BC001F7E44 /* BleDeviceSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44BA1CB37F060006220D /* BleDeviceSession.swift */; };
+		6C39E8DE209B07BC001F7E44 /* BlePolarDeviceIdUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD421CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift */; };
+		6C39E8DF209B07BC001F7E44 /* BleAdvertisementContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A251CC0BA0400E3AD73 /* BleAdvertisementContent.swift */; };
+		6C39E8E0209B07BC001F7E44 /* BlePolarHrAdvertisement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A261CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift */; };
+		6C39E8E1209B07BC001F7E44 /* BleRssiFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A271CC0BA0400E3AD73 /* BleRssiFilter.swift */; };
+		6C39E8E2209B07BC001F7E44 /* BleGattException.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD12AC9201F126500F3A417 /* BleGattException.swift */; };
+		6C39E8E5209B07BC001F7E44 /* BleBasClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FC1E169CCE00411498 /* BleBasClient.swift */; };
+		6C39E8E6209B07BC001F7E44 /* BleDisClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FD1E169CCE00411498 /* BleDisClient.swift */; };
+		6C39E8E7209B07BC001F7E44 /* BleHrClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FE1E169CCE00411498 /* BleHrClient.swift */; };
+		6C39E8EA209B07BC001F7E44 /* BlePsdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */; };
+		6C39E8EC209B07BC001F7E44 /* BleGattClientBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44941CB291500006220D /* BleGattClientBase.swift */; };
+		6C39E8ED209B07BC001F7E44 /* BleGattClientFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44951CB291500006220D /* BleGattClientFactory.swift */; };
+		6C39E8EE209B07BC001F7E44 /* BleAttributeTransportProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44961CB291500006220D /* BleAttributeTransportProtocol.swift */; };
+		6C39E8EF209B07BC001F7E44 /* BleLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A351CC0BA4E00E3AD73 /* BleLogger.swift */; };
+		6C39E8F0209B07BC001F7E44 /* BleDeviceListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A448D1CB291260006220D /* BleDeviceListener.swift */; };
+		6C39E8F5209B07BC001F7E44 /* AtomicBoolean.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A449E1CB291790006220D /* AtomicBoolean.swift */; };
+		6C39E8F6209B07BC001F7E44 /* AtomicInteger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A449F1CB291790006220D /* AtomicInteger.swift */; };
+		6C39E8F7209B07BC001F7E44 /* AtomicList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44A01CB291790006220D /* AtomicList.swift */; };
+		6C39E8F8209B07BC001F7E44 /* TimeUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C54FD1CFEB3C900FF23E9 /* TimeUtility.swift */; };
+		6C39E8FA209B07BC001F7E44 /* RxObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7709F72036D15F00F3D51D /* RxObserver.swift */; };
+		6C39E8FB209B07BC001F7E44 /* RxUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB9DB982087188E00505269 /* RxUtils.swift */; };
+		6C4A6A291CC0BA0400E3AD73 /* BleAdvertisementContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A251CC0BA0400E3AD73 /* BleAdvertisementContent.swift */; };
+		6C4A6A2A1CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A261CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift */; };
+		6C4A6A2B1CC0BA0400E3AD73 /* BleRssiFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A271CC0BA0400E3AD73 /* BleRssiFilter.swift */; };
+		6C4A6A311CC0BA2400E3AD73 /* BlePfcClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A2E1CC0BA2400E3AD73 /* BlePfcClient.swift */; };
+		6C4A6A381CC0BA4E00E3AD73 /* BleLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A351CC0BA4E00E3AD73 /* BleLogger.swift */; };
+		6C57A5B41F987B44002E50DB /* BleRscClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C57A5B31F987B40002E50DB /* BleRscClient.swift */; };
+		6C5A448F1CB291260006220D /* BleDeviceListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A448D1CB291260006220D /* BleDeviceListener.swift */; };
+		6C5A44971CB291500006220D /* BleGattClientBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44941CB291500006220D /* BleGattClientBase.swift */; };
+		6C5A44981CB291500006220D /* BleGattClientFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44951CB291500006220D /* BleGattClientFactory.swift */; };
+		6C5A44991CB291500006220D /* BleAttributeTransportProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44961CB291500006220D /* BleAttributeTransportProtocol.swift */; };
+		6C5A44A21CB291790006220D /* AtomicBoolean.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A449E1CB291790006220D /* AtomicBoolean.swift */; };
+		6C5A44A31CB291790006220D /* AtomicInteger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A449F1CB291790006220D /* AtomicInteger.swift */; };
+		6C5A44A41CB291790006220D /* AtomicList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44A01CB291790006220D /* AtomicList.swift */; };
+		6C5A44AC1CB291A40006220D /* CBDeviceListenerImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44A91CB291A40006220D /* CBDeviceListenerImpl.swift */; };
+		6C5A44AD1CB291A40006220D /* CBDeviceSessionImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44AA1CB291A40006220D /* CBDeviceSessionImpl.swift */; };
+		6C5A44BB1CB37F060006220D /* BleDeviceSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44BA1CB37F060006220D /* BleDeviceSession.swift */; };
+		6C67C7FF1E169CCE00411498 /* BleBasClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FC1E169CCE00411498 /* BleBasClient.swift */; };
+		6C67C8001E169CCE00411498 /* BleDisClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FD1E169CCE00411498 /* BleDisClient.swift */; };
+		6C67C8011E169CCE00411498 /* BleHrClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FE1E169CCE00411498 /* BleHrClient.swift */; };
+		6C707D2920D7F138002FE7FF /* RxUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB9DB982087188E00505269 /* RxUtils.swift */; };
+		6C7709F82036D15F00F3D51D /* RxObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7709F72036D15F00F3D51D /* RxObserver.swift */; };
+		6C770B86206B77F300F3D51D /* CBDeviceListenerImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44A91CB291A40006220D /* CBDeviceListenerImpl.swift */; };
+		6C770B87206B77F300F3D51D /* CBDeviceSessionImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44AA1CB291A40006220D /* CBDeviceSessionImpl.swift */; };
+		6C770B88206B77F300F3D51D /* CBScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9209061D93B2DC0035B928 /* CBScanner.swift */; };
+		6C770B8A206B77F300F3D51D /* BleDeviceSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44BA1CB37F060006220D /* BleDeviceSession.swift */; };
+		6C770B8B206B77F300F3D51D /* BlePolarDeviceIdUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD421CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift */; };
+		6C770B8C206B77F300F3D51D /* BleAdvertisementContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A251CC0BA0400E3AD73 /* BleAdvertisementContent.swift */; };
+		6C770B8D206B77F300F3D51D /* BlePolarHrAdvertisement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A261CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift */; };
+		6C770B8E206B77F300F3D51D /* BleRssiFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A271CC0BA0400E3AD73 /* BleRssiFilter.swift */; };
+		6C770B8F206B77F300F3D51D /* BleGattException.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD12AC9201F126500F3A417 /* BleGattException.swift */; };
+		6C770B92206B77F300F3D51D /* BleBasClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FC1E169CCE00411498 /* BleBasClient.swift */; };
+		6C770B93206B77F300F3D51D /* BleDisClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FD1E169CCE00411498 /* BleDisClient.swift */; };
+		6C770B94206B77F300F3D51D /* BleHrClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C67C7FE1E169CCE00411498 /* BleHrClient.swift */; };
+		6C770B95206B77F300F3D51D /* BlePsdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */; };
+		6C770B96206B77F300F3D51D /* BleGattClientBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44941CB291500006220D /* BleGattClientBase.swift */; };
+		6C770B97206B77F300F3D51D /* BleGattClientFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44951CB291500006220D /* BleGattClientFactory.swift */; };
+		6C770B98206B77F300F3D51D /* BleAttributeTransportProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44961CB291500006220D /* BleAttributeTransportProtocol.swift */; };
+		6C770B9A206B77F300F3D51D /* BleLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A351CC0BA4E00E3AD73 /* BleLogger.swift */; };
+		6C770B9B206B77F300F3D51D /* BleDeviceListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A448D1CB291260006220D /* BleDeviceListener.swift */; };
+		6C770BA1206B77F300F3D51D /* AtomicBoolean.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A449E1CB291790006220D /* AtomicBoolean.swift */; };
+		6C770BA2206B77F300F3D51D /* AtomicInteger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A449F1CB291790006220D /* AtomicInteger.swift */; };
+		6C770BA3206B77F300F3D51D /* AtomicList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5A44A01CB291790006220D /* AtomicList.swift */; };
+		6C770BA4206B77F300F3D51D /* TimeUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C54FD1CFEB3C900FF23E9 /* TimeUtility.swift */; };
+		6C770BA6206B77F300F3D51D /* RxObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7709F72036D15F00F3D51D /* RxObserver.swift */; };
+		6C8BCD3C1CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD381CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift */; };
+		6C8BCD3D1CE5BCEA00A4C6A8 /* BlePsFtpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD391CE5BCEA00A4C6A8 /* BlePsFtpClient.swift */; };
+		6C8BCD431CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD421CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift */; };
+		6C9209071D93B2DC0035B928 /* CBScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9209061D93B2DC0035B928 /* CBScanner.swift */; };
+		6C98103A2154AEDE002820A2 /* AtomicType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9810392154AEDD002820A2 /* AtomicType.swift */; };
+		6C9810402158A943002820A2 /* RecursiveCondition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C98103F2158A943002820A2 /* RecursiveCondition.swift */; };
+		6C981041215B7136002820A2 /* AtomicType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9810392154AEDD002820A2 /* AtomicType.swift */; };
+		6CB902771D9B7F65001F1C9C /* BleH7SettingsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB902761D9B7F65001F1C9C /* BleH7SettingsClient.swift */; };
+		6CB9DB992087188E00505269 /* RxUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB9DB982087188E00505269 /* RxUtils.swift */; };
+		6CCFE4001E5D76C100FAA131 /* BlePsdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */; };
+		6CD12ACA201F126500F3A417 /* BleGattException.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD12AC9201F126500F3A417 /* BleGattException.swift */; };
+		6CEA10DF2175AA5B00E16FBF /* BlePsFtpUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD381CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift */; };
+		6CEA10E02175AA5B00E16FBF /* BlePsFtpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD391CE5BCEA00A4C6A8 /* BlePsFtpClient.swift */; };
+		8403763D2D50EB080004AB66 /* PolarCaloriesData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8403763C2D50EB080004AB66 /* PolarCaloriesData.swift */; };
+		8403763E2D50EB080004AB66 /* PolarCaloriesData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8403763C2D50EB080004AB66 /* PolarCaloriesData.swift */; };
+		84059D112DEF096C0013C470 /* exercise_samples2.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84059D102DEF09600013C470 /* exercise_samples2.pb.swift */; };
+		84059D122DF031EF0013C470 /* exercise_samples2.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84059D102DEF09600013C470 /* exercise_samples2.pb.swift */; };
+		84059D142DF0340E0013C470 /* exercise_samples.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289327CE860600855884 /* exercise_samples.pb.swift */; };
+		84059D152DF0342A0013C470 /* exercise_samples2.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84059D102DEF09600013C470 /* exercise_samples2.pb.swift */; };
+		84059D182DF04B5A0013C470 /* exercise_rr_samples.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289627CE860600855884 /* exercise_rr_samples.pb.swift */; };
+		840880BC2D072E6900883420 /* PolarNightlyRechargeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840880BB2D072E6900883420 /* PolarNightlyRechargeData.swift */; };
+		840880BF2D07329D00883420 /* PolarNightlyRechargeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840880BE2D07329D00883420 /* PolarNightlyRechargeUtils.swift */; };
+		841A37892C7DF53B009194CC /* PolarDeviceUuidTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 841A37882C7DF53B009194CC /* PolarDeviceUuidTest.swift */; };
+		841A378C2C808982009194CC /* pftp_request.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289427CE860600855884 /* pftp_request.pb.swift */; };
+		841A378D2C808987009194CC /* pftp_request.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289427CE860600855884 /* pftp_request.pb.swift */; };
+		841A378E2C808AE6009194CC /* types.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289527CE860600855884 /* types.pb.swift */; };
+		841A378F2C808AE7009194CC /* types.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289527CE860600855884 /* types.pb.swift */; };
+		841A37902C808B01009194CC /* device.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 846B11B72C60E07A004EA886 /* device.pb.swift */; };
+		841A37912C808B01009194CC /* device.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 846B11B72C60E07A004EA886 /* device.pb.swift */; };
+		841A37922C808B1D009194CC /* PolarFirmwareUpdateModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A43C672BDFCF610066334F /* PolarFirmwareUpdateModels.swift */; };
+		841A37932C808B1D009194CC /* PolarFirmwareUpdateModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A43C672BDFCF610066334F /* PolarFirmwareUpdateModels.swift */; };
+		841A37942C808BD9009194CC /* structures.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289227CE860600855884 /* structures.pb.swift */; };
+		841A37952C808BD9009194CC /* structures.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289227CE860600855884 /* structures.pb.swift */; };
+		841A37962C808D49009194CC /* communications_pftp_request.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52DB1DA2A1F59770073E795 /* communications_pftp_request.pb.swift */; };
+		8428E1DF2CEF47350021E3B1 /* PolarAutomaticSamplesUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8428E1DE2CEF47350021E3B1 /* PolarAutomaticSamplesUtils.swift */; };
+		8428E1E42CEF73CB0021E3B1 /* PolarAutomaticSamplesUnitTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8428E1E32CEF73CB0021E3B1 /* PolarAutomaticSamplesUnitTest.swift */; };
+		842B36082DE4713A0059C207 /* PolarTrainingSessionApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842B36072DE471340059C207 /* PolarTrainingSessionApi.swift */; };
+		842B36092DE4713A0059C207 /* PolarTrainingSessionApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842B36072DE471340059C207 /* PolarTrainingSessionApi.swift */; };
+		842B360D2DE471870059C207 /* exercise_route.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842B360C2DE4717F0059C207 /* exercise_route.pb.swift */; };
+		842B360F2DE471AD0059C207 /* exercise_route2.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842B360E2DE471A30059C207 /* exercise_route2.pb.swift */; };
+		842B36102DE472470059C207 /* exercise_route.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842B360C2DE4717F0059C207 /* exercise_route.pb.swift */; };
+		842B36112DE472470059C207 /* exercise_route.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842B360C2DE4717F0059C207 /* exercise_route.pb.swift */; };
+		842B36122DE4724D0059C207 /* exercise_route2.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842B360E2DE471A30059C207 /* exercise_route2.pb.swift */; };
+		842B36132DE4724D0059C207 /* exercise_route2.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842B360E2DE471A30059C207 /* exercise_route2.pb.swift */; };
+		842B36142DE472AB0059C207 /* PolarPlainDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF7FEE72D94012400B13734 /* PolarPlainDate.swift */; };
+		842B36162DE49B5C0059C207 /* PolarTrainingSessionUtilsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842B36152DE49B530059C207 /* PolarTrainingSessionUtilsTest.swift */; };
+		84389FD52E4C81E600FDA8CF /* PolarSensorSettingTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84389FD42E4C81DE00FDA8CF /* PolarSensorSettingTest.swift */; };
+		844D99932D083D4600FCE97C /* nightly_recovery.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D99922D083D4600FCE97C /* nightly_recovery.pb.swift */; };
+		844D99942D083D4600FCE97C /* nightly_recovery.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844D99922D083D4600FCE97C /* nightly_recovery.pb.swift */; };
+		84655A902C08947F00D49203 /* PolarActiveTimeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84655A8F2C08947F00D49203 /* PolarActiveTimeData.swift */; };
+		84655A912C08947F00D49203 /* PolarActiveTimeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84655A8F2C08947F00D49203 /* PolarActiveTimeData.swift */; };
+		84698A582DB8FDB4006AD8FA /* types.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289527CE860600855884 /* types.pb.swift */; };
+		84698A592DB8FE9D006AD8FA /* structures.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289227CE860600855884 /* structures.pb.swift */; };
+		846B11B82C60E07A004EA886 /* device.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 846B11B72C60E07A004EA886 /* device.pb.swift */; };
+		8484D97F2C775B3400271DA5 /* PolarDeviceUuid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8484D97E2C775B3400271DA5 /* PolarDeviceUuid.swift */; };
+		848660362DC0C987003B92EF /* exercise_base.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848660352DC0C987003B92EF /* exercise_base.pb.swift */; };
+		848660372DC0C987003B92EF /* exercise_base.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848660352DC0C987003B92EF /* exercise_base.pb.swift */; };
+		84CE7CF52C0DDAF80096A44A /* MockBlePsFtpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84CE7CF42C0DDAF80096A44A /* MockBlePsFtpClient.swift */; };
+		84CE7CF62C0DE98B0096A44A /* PolarSleepUtilsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA818E652C06F8F400D45B3C /* PolarSleepUtilsTest.swift */; };
+		84D0098B2C85D41800AB4C43 /* PolarFirstTimeUseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D0098A2C85D41800AB4C43 /* PolarFirstTimeUseConfig.swift */; };
+		84D0098C2C85D41800AB4C43 /* PolarFirstTimeUseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D0098A2C85D41800AB4C43 /* PolarFirstTimeUseConfig.swift */; };
+		84D0098E2C85D46500AB4C43 /* user_physdata.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D0098D2C85D46500AB4C43 /* user_physdata.pb.swift */; };
+		84D0098F2C85D46500AB4C43 /* user_physdata.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D0098D2C85D46500AB4C43 /* user_physdata.pb.swift */; };
+		84D71C9F2D09C19600CE8089 /* PolarNightlyRechargeUtilsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D71C9E2D09C19600CE8089 /* PolarNightlyRechargeUtilsTest.swift */; };
+		955B94092D92A51C00F0447A /* PolarOfflineRecordingApiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 955B94072D92A4B200F0447A /* PolarOfflineRecordingApiTests.swift */; };
+		9590AD942D95497700EBD84E /* MockGattServiceTransmitterImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9590AD932D95497700EBD84E /* MockGattServiceTransmitterImpl.swift */; };
+		9590AD952D9549CC00EBD84E /* MockGattServiceTransmitterImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5346A3625F21858006752CA /* MockGattServiceTransmitterImpl.swift */; };
+		95A641822D37E57000178ED3 /* PolarBleApiImpl+Sleep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A641812D37E57000178ED3 /* PolarBleApiImpl+Sleep.swift */; };
+		95A641832D37E57000178ED3 /* PolarBleApiImpl+Sleep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A641812D37E57000178ED3 /* PolarBleApiImpl+Sleep.swift */; };
+		95A641872D3804EF00178ED3 /* PolarSleepApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA818E5F2C06F8C200D45B3C /* PolarSleepApi.swift */; };
+		95D439292D380AFB004AB936 /* PolarBleApiImpl+RestService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95D439282D380AFB004AB936 /* PolarBleApiImpl+RestService.swift */; };
+		95D4392A2D380AFB004AB936 /* PolarBleApiImpl+RestService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95D439282D380AFB004AB936 /* PolarBleApiImpl+RestService.swift */; };
+		95EA2B9A2D3A2CCC00657DE5 /* PolarDeviceRestApiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EA2B992D3A2CCC00657DE5 /* PolarDeviceRestApiTests.swift */; };
+		95EA2BA02D3E887E00657DE5 /* PolarDeviceRestApiUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EA2B9E2D3E887E00657DE5 /* PolarDeviceRestApiUtils.swift */; };
+		95EA2BB02D4217B100657DE5 /* PolarCompressionUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EA2BAE2D42179C00657DE5 /* PolarCompressionUtils.swift */; };
+		9708EE2D5CABD0771D2C3443 /* Pods_PolarBleSdkTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4592C66DA389FF07420D3379 /* Pods_PolarBleSdkTests.framework */; };
+		A518C36D2AFA61C7001F3724 /* OfflineRecordingUtilsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A518C36C2AFA61C7001F3724 /* OfflineRecordingUtilsTest.swift */; };
+		A52DB1DB2A1F59770073E795 /* communications_pftp_request.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52DB1DA2A1F59770073E795 /* communications_pftp_request.pb.swift */; };
+		A52DB1DC2A1F59770073E795 /* communications_pftp_request.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52DB1DA2A1F59770073E795 /* communications_pftp_request.pb.swift */; };
+		A52DB1DD2A1F59770073E795 /* communications_pftp_request.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52DB1DA2A1F59770073E795 /* communications_pftp_request.pb.swift */; };
+		A5346A4125F21866006752CA /* BlePsFtpClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5346A4025F21866006752CA /* BlePsFtpClientTest.swift */; };
+		A5346A4B25F21877006752CA /* BlePsFtpUtilityTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5346A4A25F21877006752CA /* BlePsFtpUtilityTest.swift */; };
+		A5385ABB29CDBB0900A6DB6A /* PmdControlPointResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5385ABA29CDBB0900A6DB6A /* PmdControlPointResponse.swift */; };
+		A5385ABC29CDBB0900A6DB6A /* PmdControlPointResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5385ABA29CDBB0900A6DB6A /* PmdControlPointResponse.swift */; };
+		A5385ABD29CDBB0900A6DB6A /* PmdControlPointResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5385ABA29CDBB0900A6DB6A /* PmdControlPointResponse.swift */; };
+		A5385ABF29CDBBDF00A6DB6A /* PmdErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5385ABE29CDBBDF00A6DB6A /* PmdErrors.swift */; };
+		A5385AC029CDBBDF00A6DB6A /* PmdErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5385ABE29CDBBDF00A6DB6A /* PmdErrors.swift */; };
+		A5385AC129CDBBDF00A6DB6A /* PmdErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5385ABE29CDBBDF00A6DB6A /* PmdErrors.swift */; };
+		A543BC17282261E900852672 /* BlePolarHrAdvertisementTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A543BC16282261E900852672 /* BlePolarHrAdvertisementTest.swift */; };
+		A543BC192825236000852672 /* BleAdvertisementContentTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A543BC182825236000852672 /* BleAdvertisementContentTest.swift */; };
+		A5488C4C264939A000B2DB5C /* BleHrClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5488C4B264939A000B2DB5C /* BleHrClientTest.swift */; };
+		A54BC2A429DC471B003F022A /* PolarDiskSpaceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54BC2A329DC471B003F022A /* PolarDiskSpaceData.swift */; };
+		A54BC2A529DC471B003F022A /* PolarDiskSpaceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54BC2A329DC471B003F022A /* PolarDiskSpaceData.swift */; };
+		A54EC6EC29655CBD00E1B910 /* OfflineRecordingUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54EC6EB29655CBC00E1B910 /* OfflineRecordingUtils.swift */; };
+		A54EC6ED29655CBD00E1B910 /* OfflineRecordingUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54EC6EB29655CBC00E1B910 /* OfflineRecordingUtils.swift */; };
+		A54EC6EE29655CBD00E1B910 /* OfflineRecordingUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54EC6EB29655CBC00E1B910 /* OfflineRecordingUtils.swift */; };
+		A55604C3298B893800DB6EDB /* PolarOnlineStreamingApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55604C2298B893800DB6EDB /* PolarOnlineStreamingApi.swift */; };
+		A55604C4298B893800DB6EDB /* PolarOnlineStreamingApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55604C2298B893800DB6EDB /* PolarOnlineStreamingApi.swift */; };
+		A55604C6298B8B2700DB6EDB /* PolarH10OfflineExerciseApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55604C5298B8B2700DB6EDB /* PolarH10OfflineExerciseApi.swift */; };
+		A55604C7298B8B2700DB6EDB /* PolarH10OfflineExerciseApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55604C5298B8B2700DB6EDB /* PolarH10OfflineExerciseApi.swift */; };
+		A55D31C32ADD5EAE005CD1B3 /* LedConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55D31C22ADD5EAE005CD1B3 /* LedConfig.swift */; };
+		A55D31C42ADD5EAE005CD1B3 /* LedConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55D31C22ADD5EAE005CD1B3 /* LedConfig.swift */; };
+		A55E08AE2A273C770059E6C7 /* BleHtsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55E08AD2A273C770059E6C7 /* BleHtsClient.swift */; };
+		A55E08B42A29EB0C0059E6C7 /* BleHtsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55E08AD2A273C770059E6C7 /* BleHtsClient.swift */; };
+		A55E08B52A29EB0C0059E6C7 /* BleHtsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55E08AD2A273C770059E6C7 /* BleHtsClient.swift */; };
+		A55E08BA2A29FA5D0059E6C7 /* BleHtsClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55E08B62A29FA560059E6C7 /* BleHtsClientTest.swift */; };
+		A5743683291A7DB400E901A4 /* PolarTimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5743682291A7DB400E901A4 /* PolarTimeUtils.swift */; };
+		A5743684291A7DB400E901A4 /* PolarTimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5743682291A7DB400E901A4 /* PolarTimeUtils.swift */; };
+		A5743690291B81F500E901A4 /* PolarBleSdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C770B6C206B779900F3D51D /* PolarBleSdk.framework */; platformFilter = ios; };
+		A5743696291B824300E901A4 /* PolarTimeUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5743686291A825F00E901A4 /* PolarTimeUtilsTests.swift */; };
+		A57728A027CE860600855884 /* PolarBleApiImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577288D27CE860600855884 /* PolarBleApiImpl.swift */; };
+		A57728A127CE860600855884 /* PolarBleApiImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577288D27CE860600855884 /* PolarBleApiImpl.swift */; };
+		A57728A227CE860600855884 /* pftp_error.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577288F27CE860600855884 /* pftp_error.pb.swift */; };
+		A57728A327CE860600855884 /* pftp_error.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577288F27CE860600855884 /* pftp_error.pb.swift */; };
+		A57728A427CE860600855884 /* pftp_notification.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289027CE860600855884 /* pftp_notification.pb.swift */; };
+		A57728A527CE860600855884 /* pftp_notification.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289027CE860600855884 /* pftp_notification.pb.swift */; };
+		A57728A627CE860600855884 /* pftp_response.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289127CE860600855884 /* pftp_response.pb.swift */; };
+		A57728A727CE860600855884 /* pftp_response.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289127CE860600855884 /* pftp_response.pb.swift */; };
+		A57728A827CE860600855884 /* structures.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289227CE860600855884 /* structures.pb.swift */; };
+		A57728A927CE860600855884 /* structures.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289227CE860600855884 /* structures.pb.swift */; };
+		A57728AA27CE860600855884 /* exercise_samples.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289327CE860600855884 /* exercise_samples.pb.swift */; };
+		A57728AB27CE860600855884 /* exercise_samples.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289327CE860600855884 /* exercise_samples.pb.swift */; };
+		A57728AC27CE860600855884 /* pftp_request.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289427CE860600855884 /* pftp_request.pb.swift */; };
+		A57728AD27CE860600855884 /* pftp_request.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289427CE860600855884 /* pftp_request.pb.swift */; };
+		A57728AE27CE860600855884 /* types.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289527CE860600855884 /* types.pb.swift */; };
+		A57728AF27CE860600855884 /* types.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289527CE860600855884 /* types.pb.swift */; };
+		A57728B027CE860600855884 /* exercise_rr_samples.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289627CE860600855884 /* exercise_rr_samples.pb.swift */; };
+		A57728B127CE860600855884 /* exercise_rr_samples.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289627CE860600855884 /* exercise_rr_samples.pb.swift */; };
+		A57728B227CE860600855884 /* nanopb.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289727CE860600855884 /* nanopb.pb.swift */; };
+		A57728B327CE860600855884 /* nanopb.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289727CE860600855884 /* nanopb.pb.swift */; };
+		A57728B427CE860600855884 /* PolarBleApiObservers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289927CE860600855884 /* PolarBleApiObservers.swift */; };
+		A57728B527CE860600855884 /* PolarBleApiObservers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289927CE860600855884 /* PolarBleApiObservers.swift */; };
+		A57728B627CE860600855884 /* PolarBleApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289A27CE860600855884 /* PolarBleApi.swift */; };
+		A57728B727CE860600855884 /* PolarBleApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289A27CE860600855884 /* PolarBleApi.swift */; };
+		A57728B827CE860600855884 /* PolarSensorSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289C27CE860600855884 /* PolarSensorSetting.swift */; };
+		A57728B927CE860600855884 /* PolarSensorSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289C27CE860600855884 /* PolarSensorSetting.swift */; };
+		A57728BA27CE860600855884 /* PolarBleApiDefaultImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289D27CE860600855884 /* PolarBleApiDefaultImpl.swift */; };
+		A57728BB27CE860600855884 /* PolarBleApiDefaultImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289D27CE860600855884 /* PolarBleApiDefaultImpl.swift */; };
+		A57728BC27CE860600855884 /* PolarErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289F27CE860600855884 /* PolarErrors.swift */; };
+		A57728BD27CE860600855884 /* PolarErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289F27CE860600855884 /* PolarErrors.swift */; };
+		A57D050A292254E2002824D9 /* BlePmdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0509292254E2002824D9 /* BlePmdClient.swift */; };
+		A57D050B292254E2002824D9 /* BlePmdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0509292254E2002824D9 /* BlePmdClient.swift */; };
+		A57D050C292254E2002824D9 /* BlePmdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0509292254E2002824D9 /* BlePmdClient.swift */; };
+		A57D050E29225779002824D9 /* PmdSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D050D29225779002824D9 /* PmdSetting.swift */; };
+		A57D050F29225779002824D9 /* PmdSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D050D29225779002824D9 /* PmdSetting.swift */; };
+		A57D051029225779002824D9 /* PmdSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D050D29225779002824D9 /* PmdSetting.swift */; };
+		A57D0512292258D5002824D9 /* PmdMeasurementType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0511292258D5002824D9 /* PmdMeasurementType.swift */; };
+		A57D0513292258D5002824D9 /* PmdMeasurementType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0511292258D5002824D9 /* PmdMeasurementType.swift */; };
+		A57D0514292258D5002824D9 /* PmdMeasurementType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0511292258D5002824D9 /* PmdMeasurementType.swift */; };
+		A57D051629225991002824D9 /* PmdDataFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D051529225991002824D9 /* PmdDataFrame.swift */; };
+		A57D051729225991002824D9 /* PmdDataFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D051529225991002824D9 /* PmdDataFrame.swift */; };
+		A57D051829225991002824D9 /* PmdDataFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D051529225991002824D9 /* PmdDataFrame.swift */; };
+		A57D051D2922658F002824D9 /* GyrData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D051C2922658F002824D9 /* GyrData.swift */; };
+		A57D051E2922658F002824D9 /* GyrData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D051C2922658F002824D9 /* GyrData.swift */; };
+		A57D051F29226590002824D9 /* GyrData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D051C2922658F002824D9 /* GyrData.swift */; };
+		A57D05212924C800002824D9 /* PmdTimeStampUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05202924C800002824D9 /* PmdTimeStampUtils.swift */; };
+		A57D05222924C800002824D9 /* PmdTimeStampUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05202924C800002824D9 /* PmdTimeStampUtils.swift */; };
+		A57D05232924C800002824D9 /* PmdTimeStampUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05202924C800002824D9 /* PmdTimeStampUtils.swift */; };
+		A57D0525292F316B002824D9 /* GyrDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0524292F316B002824D9 /* GyrDataTest.swift */; };
+		A57D0527292F360F002824D9 /* PmdTimeStampUtilsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0526292F360F002824D9 /* PmdTimeStampUtilsTest.swift */; };
+		A57D0529292F60E3002824D9 /* AccData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0528292F60E3002824D9 /* AccData.swift */; };
+		A57D052A292F60E3002824D9 /* AccData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0528292F60E3002824D9 /* AccData.swift */; };
+		A57D052B292F60E3002824D9 /* AccData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0528292F60E3002824D9 /* AccData.swift */; };
+		A57D052D292F72A5002824D9 /* AccDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D052C292F72A5002824D9 /* AccDataTest.swift */; };
+		A57D052F29308AE6002824D9 /* TypeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D052E29308AE6002824D9 /* TypeUtils.swift */; };
+		A57D053029308AE6002824D9 /* TypeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D052E29308AE6002824D9 /* TypeUtils.swift */; };
+		A57D053129308AE6002824D9 /* TypeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D052E29308AE6002824D9 /* TypeUtils.swift */; };
+		A57D053329308BDF002824D9 /* TypeUtilsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D053229308BDF002824D9 /* TypeUtilsTest.swift */; };
+		A57D053529309329002824D9 /* MagData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D053429309329002824D9 /* MagData.swift */; };
+		A57D05362930932A002824D9 /* MagData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D053429309329002824D9 /* MagData.swift */; };
+		A57D05372930932A002824D9 /* MagData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D053429309329002824D9 /* MagData.swift */; };
+		A57D0539293098C1002824D9 /* MagDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0538293098C1002824D9 /* MagDataTest.swift */; };
+		A57D053B29309B71002824D9 /* PpiData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D053A29309B71002824D9 /* PpiData.swift */; };
+		A57D053C29309B71002824D9 /* PpiData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D053A29309B71002824D9 /* PpiData.swift */; };
+		A57D053D29309B71002824D9 /* PpiData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D053A29309B71002824D9 /* PpiData.swift */; };
+		A57D053F29309FB4002824D9 /* PpiDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D053E29309FB4002824D9 /* PpiDataTest.swift */; };
+		A57D05412930A8CA002824D9 /* EcgData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05402930A8CA002824D9 /* EcgData.swift */; };
+		A57D05422930A8CA002824D9 /* EcgData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05402930A8CA002824D9 /* EcgData.swift */; };
+		A57D05432930A8CA002824D9 /* EcgData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05402930A8CA002824D9 /* EcgData.swift */; };
+		A57D05452930B01D002824D9 /* EcgDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05442930B01D002824D9 /* EcgDataTest.swift */; };
+		A57D05472930B217002824D9 /* PpgData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05462930B217002824D9 /* PpgData.swift */; };
+		A57D05482930B217002824D9 /* PpgData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05462930B217002824D9 /* PpgData.swift */; };
+		A57D05492930B217002824D9 /* PpgData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D05462930B217002824D9 /* PpgData.swift */; };
+		A57D054B2930C84B002824D9 /* PpgDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D054A2930C84B002824D9 /* PpgDataTest.swift */; };
+		A57D054D2934B745002824D9 /* PmdSettingTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D054C2934B745002824D9 /* PmdSettingTest.swift */; };
+		A57D951429CD8F5100D771ED /* BlePmdClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D951329CD8F5100D771ED /* BlePmdClientTest.swift */; };
+		A57F8B182BE0E3AA00F8708F /* BleGattException.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD12AC9201F126500F3A417 /* BleGattException.swift */; };
+		A57F8B1C2BE0E67100F8708F /* communications_pftp_request.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52DB1DA2A1F59770073E795 /* communications_pftp_request.pb.swift */; };
+		A580139725B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
+		A580139825B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
+		A580139925B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */; };
+		A58F0CAC2983EE2700B5615C /* OfflineHrData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58F0CAB2983EE2700B5615C /* OfflineHrData.swift */; };
+		A58F0CAD2983EE2700B5615C /* OfflineHrData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58F0CAB2983EE2700B5615C /* OfflineHrData.swift */; };
+		A58F0CAE2983EE2700B5615C /* OfflineHrData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58F0CAB2983EE2700B5615C /* OfflineHrData.swift */; };
+		A58F0CB02983EFE000B5615C /* OfflineHrDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58F0CAF2983EFE000B5615C /* OfflineHrDataTest.swift */; };
+		A5986D292BF7534A0014C5DF /* PolarDistanceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5986D282BF7534A0014C5DF /* PolarDistanceData.swift */; };
+		A5986D2A2BF7534A0014C5DF /* PolarDistanceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5986D282BF7534A0014C5DF /* PolarDistanceData.swift */; };
+		A5986D2E2BF7537E0014C5DF /* dailysummary.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5986D2C2BF7537E0014C5DF /* dailysummary.pb.swift */; };
+		A599EA9D2689AFE300414E26 /* PolarAdvDataUtilityTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A599EA9C2689AFE300414E26 /* PolarAdvDataUtilityTest.swift */; };
+		A59A0D2F2990D68E007D30A3 /* PmdSdkMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59A0D2E2990D68E007D30A3 /* PmdSdkMode.swift */; };
+		A59A0D302990D68E007D30A3 /* PmdSdkMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59A0D2E2990D68E007D30A3 /* PmdSdkMode.swift */; };
+		A59A0D312990D68E007D30A3 /* PmdSdkMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59A0D2E2990D68E007D30A3 /* PmdSdkMode.swift */; };
+		A5A127E0273689E0007874B8 /* PolarAdvDataUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A127DF273689E0007874B8 /* PolarAdvDataUtility.swift */; };
+		A5A127E1273689E0007874B8 /* PolarAdvDataUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A127DF273689E0007874B8 /* PolarAdvDataUtility.swift */; };
+		A5A127E2273689E0007874B8 /* PolarAdvDataUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A127DF273689E0007874B8 /* PolarAdvDataUtility.swift */; };
+		A5A43C602BDFC9500066334F /* PolarBackupManagerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A43C5F2BDFC9500066334F /* PolarBackupManagerTest.swift */; };
+		A5A43C622BDFCB270066334F /* PolarFirmwareUpdateApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A43C612BDFCB270066334F /* PolarFirmwareUpdateApi.swift */; };
+		A5A43C652BDFCB830066334F /* PolarSdkModeApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A43C642BDFCB830066334F /* PolarSdkModeApi.swift */; };
+		A5A43C682BDFCF610066334F /* PolarFirmwareUpdateModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A43C672BDFCF610066334F /* PolarFirmwareUpdateModels.swift */; };
+		A5A43C6B2BDFD00D0066334F /* FirmwareUpdateApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A43C6A2BDFD00D0066334F /* FirmwareUpdateApi.swift */; };
+		A5A43C6C2BDFD00D0066334F /* FirmwareUpdateApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A43C6A2BDFD00D0066334F /* FirmwareUpdateApi.swift */; };
+		A5A43C6E2BDFD0520066334F /* FirmwareUpdateApiModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A43C6D2BDFD0520066334F /* FirmwareUpdateApiModels.swift */; };
+		A5A43C6F2BDFD0520066334F /* FirmwareUpdateApiModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A43C6D2BDFD0520066334F /* FirmwareUpdateApiModels.swift */; };
+		A5A43C712BDFD2920066334F /* PolarBackupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A43C702BDFD2920066334F /* PolarBackupManager.swift */; };
+		A5A5EA342BE0DD8E00EDEF87 /* PolarFirmwareUpdateUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A5EA332BE0DD8E00EDEF87 /* PolarFirmwareUpdateUtils.swift */; };
+		A5A5EA352BE0DD8E00EDEF87 /* PolarFirmwareUpdateUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A5EA332BE0DD8E00EDEF87 /* PolarFirmwareUpdateUtils.swift */; };
+		A5A5EA3A2BE0DF5C00EDEF87 /* BleLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A351CC0BA4E00E3AD73 /* BleLogger.swift */; };
+		A5A88BFC299A5CEA007B9C28 /* PolarOfflineRecordingTriggerMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A88BFB299A5CEA007B9C28 /* PolarOfflineRecordingTriggerMode.swift */; };
+		A5A88BFD299A5CEA007B9C28 /* PolarOfflineRecordingTriggerMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A88BFB299A5CEA007B9C28 /* PolarOfflineRecordingTriggerMode.swift */; };
+		A5A88BFF299A64C8007B9C28 /* PmdOfflineTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A88BFE299A64C8007B9C28 /* PmdOfflineTrigger.swift */; };
+		A5A88C00299A64C8007B9C28 /* PmdOfflineTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A88BFE299A64C8007B9C28 /* PmdOfflineTrigger.swift */; };
+		A5A88C01299A64C8007B9C28 /* PmdOfflineTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A88BFE299A64C8007B9C28 /* PmdOfflineTrigger.swift */; };
+		A5A88C03299A6FA0007B9C28 /* PmdOfflineTriggerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A88C02299A6FA0007B9C28 /* PmdOfflineTriggerTest.swift */; };
+		A5AD08B725E67064002DA200 /* BleBasClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5AD08B625E67064002DA200 /* BleBasClientTest.swift */; };
+		A5BC3EED2BF20D39008DD743 /* PolarStepsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BC3EEC2BF20D39008DD743 /* PolarStepsData.swift */; };
+		A5BC3EEE2BF20D39008DD743 /* PolarStepsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BC3EEC2BF20D39008DD743 /* PolarStepsData.swift */; };
+		A5BC3EF12BF20DB5008DD743 /* PolarActivityApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BC3EF02BF20DB5008DD743 /* PolarActivityApi.swift */; };
+		A5BC3EF42BF20FBD008DD743 /* PolarActivityUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BC3EF32BF20FBD008DD743 /* PolarActivityUtils.swift */; };
+		A5BC3EFC2BF34EA7008DD743 /* PolarActivityUtilsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BC3EFB2BF34EA7008DD743 /* PolarActivityUtilsTest.swift */; };
+		A5BC3EFE2BF34FEA008DD743 /* act_samples.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BC3EFD2BF34FEA008DD743 /* act_samples.pb.swift */; };
+		A5BE73652949E20D00CD55BB /* OfflineRecordingDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BE73642949E20D00CD55BB /* OfflineRecordingDataTest.swift */; };
+		A5CD172D297BFC8400C62BC7 /* PolarRecordingSecret.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CD172C297BFC8400C62BC7 /* PolarRecordingSecret.swift */; };
+		A5CD172E297BFC8400C62BC7 /* PolarRecordingSecret.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CD172C297BFC8400C62BC7 /* PolarRecordingSecret.swift */; };
+		A5CD1730297C03D400C62BC7 /* PmdSecret.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CD172F297C03D400C62BC7 /* PmdSecret.swift */; };
+		A5CD1731297C03D400C62BC7 /* PmdSecret.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CD172F297C03D400C62BC7 /* PmdSecret.swift */; };
+		A5CD1732297C03EA00C62BC7 /* PmdSecret.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CD172F297C03D400C62BC7 /* PmdSecret.swift */; };
+		A5CD1734297C229D00C62BC7 /* PmdSecretTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CD1733297C229D00C62BC7 /* PmdSecretTest.swift */; };
+		A5D04F352948AB4900CE93E1 /* PolarOfflineRecordingEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D04F332948A9F000CE93E1 /* PolarOfflineRecordingEntry.swift */; };
+		A5D04F362948AB4A00CE93E1 /* PolarOfflineRecordingEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D04F332948A9F000CE93E1 /* PolarOfflineRecordingEntry.swift */; };
+		A5D04F382948AB9800CE93E1 /* PolarOfflineRecordingData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D04F372948AB9800CE93E1 /* PolarOfflineRecordingData.swift */; };
+		A5D04F392948AB9800CE93E1 /* PolarOfflineRecordingData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D04F372948AB9800CE93E1 /* PolarOfflineRecordingData.swift */; };
+		A5D04F3B2949BCD600CE93E1 /* PolarDataUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D04F3A2949BCD600CE93E1 /* PolarDataUtils.swift */; };
+		A5D04F3C2949BCD600CE93E1 /* PolarDataUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D04F3A2949BCD600CE93E1 /* PolarDataUtils.swift */; };
+		A5DE0954295B059900BC2E0B /* PolarOfflineRecordingApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DE0953295B059900BC2E0B /* PolarOfflineRecordingApi.swift */; };
+		A5DE0955295B059900BC2E0B /* PolarOfflineRecordingApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DE0953295B059900BC2E0B /* PolarOfflineRecordingApi.swift */; };
+		A5DE0957295B092700BC2E0B /* PmdRecordingType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DE0956295B092700BC2E0B /* PmdRecordingType.swift */; };
+		A5DE0958295B092700BC2E0B /* PmdRecordingType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DE0956295B092700BC2E0B /* PmdRecordingType.swift */; };
+		A5DE0959295B092700BC2E0B /* PmdRecordingType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DE0956295B092700BC2E0B /* PmdRecordingType.swift */; };
+		A5DE095B295C10E300BC2E0B /* PmdActiveMeasurement.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DE095A295C10E300BC2E0B /* PmdActiveMeasurement.swift */; };
+		A5DE095C295C10E300BC2E0B /* PmdActiveMeasurement.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DE095A295C10E300BC2E0B /* PmdActiveMeasurement.swift */; };
+		A5DE095D295C10E300BC2E0B /* PmdActiveMeasurement.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DE095A295C10E300BC2E0B /* PmdActiveMeasurement.swift */; };
+		A5DE095F295C131A00BC2E0B /* PmdControlPointCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DE095E295C131A00BC2E0B /* PmdControlPointCommand.swift */; };
+		A5DE0960295C131A00BC2E0B /* PmdControlPointCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DE095E295C131A00BC2E0B /* PmdControlPointCommand.swift */; };
+		A5DE0961295C131A00BC2E0B /* PmdControlPointCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DE095E295C131A00BC2E0B /* PmdControlPointCommand.swift */; };
+		A5E416D32B7F7CD300314EEB /* PolarFirmwareUpdateUtilsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E416D22B7F7CD300314EEB /* PolarFirmwareUpdateUtilsTest.swift */; };
+		A5E5BDB8295AC26500188D55 /* OfflineRecordingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E5BDB6295AC26500188D55 /* OfflineRecordingError.swift */; };
+		A5E5BDB9295AC26500188D55 /* OfflineRecordingData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E5BDB7295AC26500188D55 /* OfflineRecordingData.swift */; };
+		A5E5BDBA295AC55B00188D55 /* OfflineRecordingData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E5BDB7295AC26500188D55 /* OfflineRecordingData.swift */; };
+		A5E5BDBB295AC55C00188D55 /* OfflineRecordingData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E5BDB7295AC26500188D55 /* OfflineRecordingData.swift */; };
+		A5E5BDBC295AC55F00188D55 /* OfflineRecordingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E5BDB6295AC26500188D55 /* OfflineRecordingError.swift */; };
+		A5E5BDBD295AC56000188D55 /* OfflineRecordingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E5BDB6295AC26500188D55 /* OfflineRecordingError.swift */; };
+		A5E75E95263BC9F700BEA32A /* BleGattClientBaseTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E75E94263BC9F700BEA32A /* BleGattClientBaseTest.swift */; };
+		AA15C89D2DC1DA730015E8C0 /* PolarTrainingSessionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA15C89C2DC1DA730015E8C0 /* PolarTrainingSessionModels.swift */; };
+		AA15C89E2DC1DA730015E8C0 /* PolarTrainingSessionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA15C89C2DC1DA730015E8C0 /* PolarTrainingSessionModels.swift */; };
+		AA15C8A02DC1DA910015E8C0 /* training_session.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA15C89F2DC1DA910015E8C0 /* training_session.pb.swift */; };
+		AA15C8A12DC1DA910015E8C0 /* training_session.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA15C89F2DC1DA910015E8C0 /* training_session.pb.swift */; };
+		AA1C8ECC2D130187007EC386 /* SkinTemperatureDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1C8ECB2D130179007EC386 /* SkinTemperatureDataTest.swift */; };
+		AA27D9C72B88C38600397873 /* TemperatureData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA27D9C62B88C38600397873 /* TemperatureData.swift */; };
+		AA27D9C82B88C38600397873 /* TemperatureData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA27D9C62B88C38600397873 /* TemperatureData.swift */; };
+		AA27D9C92B88C38600397873 /* TemperatureData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA27D9C62B88C38600397873 /* TemperatureData.swift */; };
+		AA27EF2C2C995E690097AF23 /* user_devset.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA27EF2A2C995E690097AF23 /* user_devset.pb.swift */; };
+		AA27EF2F2C995EB30097AF23 /* PolarUserDeviceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA27EF2E2C995EB30097AF23 /* PolarUserDeviceSettings.swift */; };
+		AA27EF342C995EFC0097AF23 /* PolarUserDeviceSettingsUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA27EF332C995EFC0097AF23 /* PolarUserDeviceSettingsUtils.swift */; };
+		AA2ACAE62DE71566002A3707 /* EmptyData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2ACAE52DE71566002A3707 /* EmptyData.swift */; };
+		AA2ACAE72DE71566002A3707 /* EmptyData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2ACAE52DE71566002A3707 /* EmptyData.swift */; };
+		AA2ACAE82DE71566002A3707 /* EmptyData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2ACAE52DE71566002A3707 /* EmptyData.swift */; };
+		AA2ACAE92DE71566002A3707 /* EmptyData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2ACAE52DE71566002A3707 /* EmptyData.swift */; };
+		AA2FBE0E2DDB2F8900D2378F /* PolarTrainingSessionUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2FBE0D2DDB2F8900D2378F /* PolarTrainingSessionUtils.swift */; };
+		AA2FBE0F2DDB2F8900D2378F /* PolarTrainingSessionUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2FBE0D2DDB2F8900D2378F /* PolarTrainingSessionUtils.swift */; };
+		AA35F12D2E607D2600D44C87 /* PolarActivityData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA35F12C2E607D2600D44C87 /* PolarActivityData.swift */; };
+		AA5981772D6318C900267B81 /* Polar247PPiSamplesData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5981762D6318BD00267B81 /* Polar247PPiSamplesData.swift */; };
+		AA7DA2852CF9B4FF00275965 /* PolarAutomaticSamplesData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7DA2832CF9B4FF00275965 /* PolarAutomaticSamplesData.swift */; };
+		AA7DA2862CF9B4FF00275965 /* PolarAutomaticSamplesData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA7DA2832CF9B4FF00275965 /* PolarAutomaticSamplesData.swift */; };
+		AA818E5B2C06F8A000D45B3C /* PolarSleepData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA818E582C06F8A000D45B3C /* PolarSleepData.swift */; };
+		AA818E5E2C06F8B100D45B3C /* PolarSleepUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA818E5C2C06F8B100D45B3C /* PolarSleepUtils.swift */; };
+		AA818E612C06F8C200D45B3C /* PolarSleepApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA818E5F2C06F8C200D45B3C /* PolarSleepApi.swift */; };
+		AA818E642C06F8D700D45B3C /* sleepanalysisresult.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA818E622C06F8D700D45B3C /* sleepanalysisresult.pb.swift */; };
+		AAB386E32CB803EC00D18313 /* UserIdentifierType.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB386E12CB803EC00D18313 /* UserIdentifierType.swift */; };
+		AAB386E62CB8042100D18313 /* user_id.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB386E42CB8042100D18313 /* user_id.pb.swift */; };
+		AAB386F12CB918CA00D18313 /* ppi_samples.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB386EE2CB918CA00D18313 /* ppi_samples.pb.swift */; };
+		AAB386F22CB918CA00D18313 /* automatic_samples.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB386ED2CB918CA00D18313 /* automatic_samples.pb.swift */; };
+		AAB386F52CB934CF00D18313 /* PolarAutomaticSamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB386F32CB934CF00D18313 /* PolarAutomaticSamples.swift */; };
+		AAB386F62CB934CF00D18313 /* PolarStoredData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB386F42CB934CF00D18313 /* PolarStoredData.swift */; };
+		AAB386F72CB934CF00D18313 /* PolarAutomaticSamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB386F32CB934CF00D18313 /* PolarAutomaticSamples.swift */; };
+		AAB386F82CB934CF00D18313 /* PolarStoredData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB386F42CB934CF00D18313 /* PolarStoredData.swift */; };
+		AAB841F52E13D44D00810B09 /* BlePfcClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4A6A2E1CC0BA2400E3AD73 /* BlePfcClient.swift */; };
+		AABC2A3A2C859DDF00BFC6BD /* PressureData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABC2A392C859DDF00BFC6BD /* PressureData.swift */; };
+		AABC2A3B2C859DDF00BFC6BD /* PressureData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABC2A392C859DDF00BFC6BD /* PressureData.swift */; };
+		AABC2A3C2C859DDF00BFC6BD /* PressureData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABC2A392C859DDF00BFC6BD /* PressureData.swift */; };
+		AABCBC5C2D08494A00364101 /* SkinTemperatureData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABCBC5B2D08494A00364101 /* SkinTemperatureData.swift */; };
+		AABCBC5D2D08494A00364101 /* SkinTemperatureData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABCBC5B2D08494A00364101 /* SkinTemperatureData.swift */; };
+		AABCBC5E2D08494A00364101 /* SkinTemperatureData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABCBC5B2D08494A00364101 /* SkinTemperatureData.swift */; };
+		AAC63EF62B908FC100CC8DFE /* TemperatureDataTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAC63EF52B908FC100CC8DFE /* TemperatureDataTest.swift */; };
+		AACBC9212BEB4392003A5D1B /* SDLogConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AACBC91F2BEB4392003A5D1B /* SDLogConfig.swift */; };
+		AACBC92A2BEB4491003A5D1B /* sensor_data_log.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = AACBC9242BEB4491003A5D1B /* sensor_data_log.pb.swift */; };
+		AAEEB2322D3E52F900D2B4A7 /* PolarSkinTemperatureData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEEB2302D3E52F900D2B4A7 /* PolarSkinTemperatureData.swift */; };
+		AAEEB2342D3E530F00D2B4A7 /* PolarSkinTemperatureUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEEB2332D3E530F00D2B4A7 /* PolarSkinTemperatureUtils.swift */; };
+		AAEEB2382D3E532200D2B4A7 /* temperature_measurement_period.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEEB2362D3E532200D2B4A7 /* temperature_measurement_period.pb.swift */; };
+		AAEEB2392D3E532200D2B4A7 /* types_proto3.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEEB2372D3E532200D2B4A7 /* types_proto3.pb.swift */; };
+		AAF7FEE92D94012400B13734 /* PolarPlainDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF7FEE72D94012400B13734 /* PolarPlainDate.swift */; };
+		CC57B5E02E60642500E90F5B /* PolarExerciseSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC57B5DF2E60641200E90F5B /* PolarExerciseSession.swift */; };
+		CC57B5E12E60642500E90F5B /* PolarExerciseSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC57B5DF2E60641200E90F5B /* PolarExerciseSession.swift */; };
+		CF7F1A25FDC78D507DA67B69 /* Pods_iOSCommunications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 119A850082BC99162095355C /* Pods_iOSCommunications.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		6C1079261D6D6EA000931948 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6C34DE7F1CAA3F240083EB1F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6C34DE871CAA3F240083EB1F;
+			remoteInfo = iOSCommunications;
+		};
+		A5743691291B81F500E901A4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6C34DE7F1CAA3F240083EB1F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6C770B6B206B779900F3D51D;
+			remoteInfo = PolarBleSdk;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A5346A5725F218B1006752CA /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		119A850082BC99162095355C /* Pods_iOSCommunications.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iOSCommunications.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		1654AE2486652C1371FDBEEB /* Pods-PolarBleSdkTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdkTests.debug.xcconfig"; path = "Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests.debug.xcconfig"; sourceTree = "<group>"; };
+		2B53CFCDD87ACF2297030478 /* Pods-PolarBleSdkWatchOs.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdkWatchOs.release.xcconfig"; path = "Target Support Files/Pods-PolarBleSdkWatchOs/Pods-PolarBleSdkWatchOs.release.xcconfig"; sourceTree = "<group>"; };
+		31CBF837AEFC4679AF13D8D4 /* Pods-iOSCommunications.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSCommunications.debug.xcconfig"; path = "Target Support Files/Pods-iOSCommunications/Pods-iOSCommunications.debug.xcconfig"; sourceTree = "<group>"; };
+		425280368159F4E5FF416098 /* Pods-PolarBleSdk.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdk.debug.xcconfig"; path = "Target Support Files/Pods-PolarBleSdk/Pods-PolarBleSdk.debug.xcconfig"; sourceTree = "<group>"; };
+		4592C66DA389FF07420D3379 /* Pods_PolarBleSdkTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PolarBleSdkTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		49A5107367704369EB9A6D26 /* Pods_PolarBleSdkWatchOs.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PolarBleSdkWatchOs.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4B05E5443D4BD82E84117A35 /* Pods_PolarBleSdk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PolarBleSdk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		64C3C9F5FC21E1BE328F8217 /* Pods-PolarBleSdkTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdkTests.release.xcconfig"; path = "Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests.release.xcconfig"; sourceTree = "<group>"; };
+		6A9605370BA977B96745D3BE /* Pods-PolarBleSdkWatchOs.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdkWatchOs.debug.xcconfig"; path = "Target Support Files/Pods-PolarBleSdkWatchOs/Pods-PolarBleSdkWatchOs.debug.xcconfig"; sourceTree = "<group>"; };
+		6C0C54FD1CFEB3C900FF23E9 /* TimeUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TimeUtility.swift; path = ble/common/TimeUtility.swift; sourceTree = "<group>"; };
+		6C1079201D6D6EA000931948 /* iOSCommunicationsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iOSCommunicationsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CBScanningProtocol.swift; path = ble/endpoints/corebluetooth/central/CBScanningProtocol.swift; sourceTree = "<group>"; };
+		6C34DE881CAA3F240083EB1F /* iOSCommunications.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = iOSCommunications.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6C39E8C3209B0754001F7E44 /* PolarBleSdkWatchOs.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PolarBleSdkWatchOs.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6C4A6A251CC0BA0400E3AD73 /* BleAdvertisementContent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleAdvertisementContent.swift; path = ble/api/model/advertisement/BleAdvertisementContent.swift; sourceTree = "<group>"; };
+		6C4A6A261CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePolarHrAdvertisement.swift; path = ble/api/model/advertisement/BlePolarHrAdvertisement.swift; sourceTree = "<group>"; };
+		6C4A6A271CC0BA0400E3AD73 /* BleRssiFilter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleRssiFilter.swift; path = ble/api/model/advertisement/BleRssiFilter.swift; sourceTree = "<group>"; };
+		6C4A6A2E1CC0BA2400E3AD73 /* BlePfcClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePfcClient.swift; path = ble/api/model/gatt/client/BlePfcClient.swift; sourceTree = "<group>"; };
+		6C4A6A351CC0BA4E00E3AD73 /* BleLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleLogger.swift; path = ble/api/BleLogger.swift; sourceTree = "<group>"; };
+		6C57A5B31F987B40002E50DB /* BleRscClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BleRscClient.swift; path = ble/api/model/gatt/client/BleRscClient.swift; sourceTree = "<group>"; };
+		6C5A448D1CB291260006220D /* BleDeviceListener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleDeviceListener.swift; path = ble/api/BleDeviceListener.swift; sourceTree = "<group>"; };
+		6C5A44941CB291500006220D /* BleGattClientBase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleGattClientBase.swift; path = ble/api/model/gatt/BleGattClientBase.swift; sourceTree = "<group>"; };
+		6C5A44951CB291500006220D /* BleGattClientFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleGattClientFactory.swift; path = ble/api/model/gatt/BleGattClientFactory.swift; sourceTree = "<group>"; };
+		6C5A44961CB291500006220D /* BleAttributeTransportProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleAttributeTransportProtocol.swift; path = ble/api/model/gatt/BleAttributeTransportProtocol.swift; sourceTree = "<group>"; };
+		6C5A449E1CB291790006220D /* AtomicBoolean.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AtomicBoolean.swift; path = ble/common/AtomicBoolean.swift; sourceTree = "<group>"; };
+		6C5A449F1CB291790006220D /* AtomicInteger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AtomicInteger.swift; path = ble/common/AtomicInteger.swift; sourceTree = "<group>"; };
+		6C5A44A01CB291790006220D /* AtomicList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AtomicList.swift; path = ble/common/AtomicList.swift; sourceTree = "<group>"; };
+		6C5A44A91CB291A40006220D /* CBDeviceListenerImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CBDeviceListenerImpl.swift; path = ble/endpoints/corebluetooth/central/CBDeviceListenerImpl.swift; sourceTree = "<group>"; };
+		6C5A44AA1CB291A40006220D /* CBDeviceSessionImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CBDeviceSessionImpl.swift; path = ble/endpoints/corebluetooth/central/CBDeviceSessionImpl.swift; sourceTree = "<group>"; };
+		6C5A44BA1CB37F060006220D /* BleDeviceSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleDeviceSession.swift; path = ble/api/model/BleDeviceSession.swift; sourceTree = "<group>"; };
+		6C67C7FC1E169CCE00411498 /* BleBasClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleBasClient.swift; path = ble/api/model/gatt/client/BleBasClient.swift; sourceTree = "<group>"; };
+		6C67C7FD1E169CCE00411498 /* BleDisClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleDisClient.swift; path = ble/api/model/gatt/client/BleDisClient.swift; sourceTree = "<group>"; };
+		6C67C7FE1E169CCE00411498 /* BleHrClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleHrClient.swift; path = ble/api/model/gatt/client/BleHrClient.swift; sourceTree = "<group>"; };
+		6C7709F72036D15F00F3D51D /* RxObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RxObserver.swift; path = ble/common/RxObserver.swift; sourceTree = "<group>"; };
+		6C770B6C206B779900F3D51D /* PolarBleSdk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PolarBleSdk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6C8BCD381CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePsFtpUtility.swift; path = ble/api/model/gatt/client/psftp/BlePsFtpUtility.swift; sourceTree = "<group>"; };
+		6C8BCD391CE5BCEA00A4C6A8 /* BlePsFtpClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePsFtpClient.swift; path = ble/api/model/gatt/client/psftp/BlePsFtpClient.swift; sourceTree = "<group>"; };
+		6C8BCD421CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePolarDeviceIdUtility.swift; path = ble/api/model/polar/BlePolarDeviceIdUtility.swift; sourceTree = "<group>"; };
+		6C9209061D93B2DC0035B928 /* CBScanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CBScanner.swift; path = ble/endpoints/corebluetooth/central/CBScanner.swift; sourceTree = "<group>"; };
+		6C9810392154AEDD002820A2 /* AtomicType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AtomicType.swift; path = ble/common/AtomicType.swift; sourceTree = "<group>"; };
+		6C98103F2158A943002820A2 /* RecursiveCondition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecursiveCondition.swift; path = ble/common/RecursiveCondition.swift; sourceTree = "<group>"; };
+		6CB902761D9B7F65001F1C9C /* BleH7SettingsClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleH7SettingsClient.swift; path = ble/api/model/gatt/client/BleH7SettingsClient.swift; sourceTree = "<group>"; };
+		6CB9DB982087188E00505269 /* RxUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RxUtils.swift; path = ble/common/RxUtils.swift; sourceTree = "<group>"; };
+		6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePsdClient.swift; path = ble/api/model/gatt/client/BlePsdClient.swift; sourceTree = "<group>"; };
+		6CD12AC9201F126500F3A417 /* BleGattException.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleGattException.swift; path = ble/api/model/gatt/exceptions/BleGattException.swift; sourceTree = "<group>"; };
+		8403763C2D50EB080004AB66 /* PolarCaloriesData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarCaloriesData.swift; sourceTree = "<group>"; };
+		84059D102DEF09600013C470 /* exercise_samples2.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = exercise_samples2.pb.swift; sourceTree = "<group>"; };
+		840880BB2D072E6900883420 /* PolarNightlyRechargeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarNightlyRechargeData.swift; sourceTree = "<group>"; };
+		840880BE2D07329D00883420 /* PolarNightlyRechargeUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarNightlyRechargeUtils.swift; sourceTree = "<group>"; };
+		841A37882C7DF53B009194CC /* PolarDeviceUuidTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarDeviceUuidTest.swift; sourceTree = "<group>"; };
+		8428E1DE2CEF47350021E3B1 /* PolarAutomaticSamplesUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarAutomaticSamplesUtils.swift; sourceTree = "<group>"; };
+		8428E1E32CEF73CB0021E3B1 /* PolarAutomaticSamplesUnitTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarAutomaticSamplesUnitTest.swift; sourceTree = "<group>"; };
+		842B36072DE471340059C207 /* PolarTrainingSessionApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarTrainingSessionApi.swift; sourceTree = "<group>"; };
+		842B360C2DE4717F0059C207 /* exercise_route.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = exercise_route.pb.swift; sourceTree = "<group>"; };
+		842B360E2DE471A30059C207 /* exercise_route2.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = exercise_route2.pb.swift; sourceTree = "<group>"; };
+		842B36152DE49B530059C207 /* PolarTrainingSessionUtilsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarTrainingSessionUtilsTest.swift; sourceTree = "<group>"; };
+		84389FD42E4C81DE00FDA8CF /* PolarSensorSettingTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarSensorSettingTest.swift; sourceTree = "<group>"; };
+		844D99922D083D4600FCE97C /* nightly_recovery.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = nightly_recovery.pb.swift; sourceTree = "<group>"; };
+		84655A8F2C08947F00D49203 /* PolarActiveTimeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarActiveTimeData.swift; sourceTree = "<group>"; };
+		846B11B72C60E07A004EA886 /* device.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = device.pb.swift; sourceTree = "<group>"; };
+		8484D97E2C775B3400271DA5 /* PolarDeviceUuid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarDeviceUuid.swift; sourceTree = "<group>"; };
+		848660352DC0C987003B92EF /* exercise_base.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = exercise_base.pb.swift; sourceTree = "<group>"; };
+		84CE7CF42C0DDAF80096A44A /* MockBlePsFtpClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBlePsFtpClient.swift; sourceTree = "<group>"; };
+		84D0098A2C85D41800AB4C43 /* PolarFirstTimeUseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarFirstTimeUseConfig.swift; sourceTree = "<group>"; };
+		84D0098D2C85D46500AB4C43 /* user_physdata.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = user_physdata.pb.swift; sourceTree = "<group>"; };
+		84D71C9E2D09C19600CE8089 /* PolarNightlyRechargeUtilsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarNightlyRechargeUtilsTest.swift; sourceTree = "<group>"; };
+		869700D0971E27B1E230468A /* Pods-iOSCommunicationsTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSCommunicationsTests.release.xcconfig"; path = "Target Support Files/Pods-iOSCommunicationsTests/Pods-iOSCommunicationsTests.release.xcconfig"; sourceTree = "<group>"; };
+		87FB706CC2F9CABA4D82915F /* Pods-PolarBleSdk.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdk.release.xcconfig"; path = "Target Support Files/Pods-PolarBleSdk/Pods-PolarBleSdk.release.xcconfig"; sourceTree = "<group>"; };
+		955B94072D92A4B200F0447A /* PolarOfflineRecordingApiTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarOfflineRecordingApiTests.swift; sourceTree = "<group>"; };
+		9590AD932D95497700EBD84E /* MockGattServiceTransmitterImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockGattServiceTransmitterImpl.swift; sourceTree = "<group>"; };
+		95A641812D37E57000178ED3 /* PolarBleApiImpl+Sleep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PolarBleApiImpl+Sleep.swift"; sourceTree = "<group>"; };
+		95D439282D380AFB004AB936 /* PolarBleApiImpl+RestService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PolarBleApiImpl+RestService.swift"; sourceTree = "<group>"; };
+		95EA2B992D3A2CCC00657DE5 /* PolarDeviceRestApiTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarDeviceRestApiTests.swift; sourceTree = "<group>"; };
+		95EA2B9E2D3E887E00657DE5 /* PolarDeviceRestApiUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarDeviceRestApiUtils.swift; sourceTree = "<group>"; };
+		95EA2BAE2D42179C00657DE5 /* PolarCompressionUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarCompressionUtils.swift; sourceTree = "<group>"; };
+		9F1D8481CB3836037355EFD4 /* Pods-iOSCommunicationsTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSCommunicationsTests.debug.xcconfig"; path = "Target Support Files/Pods-iOSCommunicationsTests/Pods-iOSCommunicationsTests.debug.xcconfig"; sourceTree = "<group>"; };
+		A518C36C2AFA61C7001F3724 /* OfflineRecordingUtilsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingUtilsTest.swift; sourceTree = "<group>"; };
+		A52DB1DA2A1F59770073E795 /* communications_pftp_request.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = communications_pftp_request.pb.swift; path = ble/api/model/protobuf/communications_pftp_request.pb.swift; sourceTree = "<group>"; };
+		A5346A3625F21858006752CA /* MockGattServiceTransmitterImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockGattServiceTransmitterImpl.swift; sourceTree = "<group>"; };
+		A5346A4025F21866006752CA /* BlePsFtpClientTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlePsFtpClientTest.swift; sourceTree = "<group>"; };
+		A5346A4A25F21877006752CA /* BlePsFtpUtilityTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlePsFtpUtilityTest.swift; sourceTree = "<group>"; };
+		A5385ABA29CDBB0900A6DB6A /* PmdControlPointResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdControlPointResponse.swift; sourceTree = "<group>"; };
+		A5385ABE29CDBBDF00A6DB6A /* PmdErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdErrors.swift; sourceTree = "<group>"; };
+		A543BC16282261E900852672 /* BlePolarHrAdvertisementTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlePolarHrAdvertisementTest.swift; sourceTree = "<group>"; };
+		A543BC182825236000852672 /* BleAdvertisementContentTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleAdvertisementContentTest.swift; sourceTree = "<group>"; };
+		A5488C4B264939A000B2DB5C /* BleHrClientTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleHrClientTest.swift; sourceTree = "<group>"; };
+		A54BC2A329DC471B003F022A /* PolarDiskSpaceData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarDiskSpaceData.swift; sourceTree = "<group>"; };
+		A54EC6EB29655CBC00E1B910 /* OfflineRecordingUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingUtils.swift; sourceTree = "<group>"; };
+		A55604C2298B893800DB6EDB /* PolarOnlineStreamingApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarOnlineStreamingApi.swift; sourceTree = "<group>"; };
+		A55604C5298B8B2700DB6EDB /* PolarH10OfflineExerciseApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarH10OfflineExerciseApi.swift; sourceTree = "<group>"; };
+		A55D31C22ADD5EAE005CD1B3 /* LedConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedConfig.swift; sourceTree = "<group>"; };
+		A55E08AD2A273C770059E6C7 /* BleHtsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleHtsClient.swift; sourceTree = "<group>"; };
+		A55E08B62A29FA560059E6C7 /* BleHtsClientTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleHtsClientTest.swift; sourceTree = "<group>"; };
+		A5743682291A7DB400E901A4 /* PolarTimeUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarTimeUtils.swift; sourceTree = "<group>"; };
+		A5743686291A825F00E901A4 /* PolarTimeUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarTimeUtilsTests.swift; sourceTree = "<group>"; };
+		A574368C291B81F500E901A4 /* PolarBleSdkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PolarBleSdkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A577288D27CE860600855884 /* PolarBleApiImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarBleApiImpl.swift; sourceTree = "<group>"; };
+		A577288F27CE860600855884 /* pftp_error.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = pftp_error.pb.swift; sourceTree = "<group>"; };
+		A577289027CE860600855884 /* pftp_notification.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = pftp_notification.pb.swift; sourceTree = "<group>"; };
+		A577289127CE860600855884 /* pftp_response.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = pftp_response.pb.swift; sourceTree = "<group>"; };
+		A577289227CE860600855884 /* structures.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = structures.pb.swift; sourceTree = "<group>"; };
+		A577289327CE860600855884 /* exercise_samples.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = exercise_samples.pb.swift; sourceTree = "<group>"; };
+		A577289427CE860600855884 /* pftp_request.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = pftp_request.pb.swift; sourceTree = "<group>"; };
+		A577289527CE860600855884 /* types.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = types.pb.swift; sourceTree = "<group>"; };
+		A577289627CE860600855884 /* exercise_rr_samples.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = exercise_rr_samples.pb.swift; sourceTree = "<group>"; };
+		A577289727CE860600855884 /* nanopb.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = nanopb.pb.swift; sourceTree = "<group>"; };
+		A577289927CE860600855884 /* PolarBleApiObservers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarBleApiObservers.swift; sourceTree = "<group>"; };
+		A577289A27CE860600855884 /* PolarBleApi.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarBleApi.swift; sourceTree = "<group>"; };
+		A577289C27CE860600855884 /* PolarSensorSetting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarSensorSetting.swift; sourceTree = "<group>"; };
+		A577289D27CE860600855884 /* PolarBleApiDefaultImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarBleApiDefaultImpl.swift; sourceTree = "<group>"; };
+		A577289F27CE860600855884 /* PolarErrors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarErrors.swift; sourceTree = "<group>"; };
+		A57D0509292254E2002824D9 /* BlePmdClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlePmdClient.swift; sourceTree = "<group>"; };
+		A57D050D29225779002824D9 /* PmdSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdSetting.swift; sourceTree = "<group>"; };
+		A57D0511292258D5002824D9 /* PmdMeasurementType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdMeasurementType.swift; sourceTree = "<group>"; };
+		A57D051529225991002824D9 /* PmdDataFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdDataFrame.swift; sourceTree = "<group>"; };
+		A57D051C2922658F002824D9 /* GyrData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GyrData.swift; sourceTree = "<group>"; };
+		A57D05202924C800002824D9 /* PmdTimeStampUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdTimeStampUtils.swift; sourceTree = "<group>"; };
+		A57D0524292F316B002824D9 /* GyrDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GyrDataTest.swift; sourceTree = "<group>"; };
+		A57D0526292F360F002824D9 /* PmdTimeStampUtilsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdTimeStampUtilsTest.swift; sourceTree = "<group>"; };
+		A57D0528292F60E3002824D9 /* AccData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccData.swift; sourceTree = "<group>"; };
+		A57D052C292F72A5002824D9 /* AccDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccDataTest.swift; sourceTree = "<group>"; };
+		A57D052E29308AE6002824D9 /* TypeUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeUtils.swift; sourceTree = "<group>"; };
+		A57D053229308BDF002824D9 /* TypeUtilsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeUtilsTest.swift; sourceTree = "<group>"; };
+		A57D053429309329002824D9 /* MagData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagData.swift; sourceTree = "<group>"; };
+		A57D0538293098C1002824D9 /* MagDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagDataTest.swift; sourceTree = "<group>"; };
+		A57D053A29309B71002824D9 /* PpiData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PpiData.swift; sourceTree = "<group>"; };
+		A57D053E29309FB4002824D9 /* PpiDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PpiDataTest.swift; sourceTree = "<group>"; };
+		A57D05402930A8CA002824D9 /* EcgData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EcgData.swift; sourceTree = "<group>"; };
+		A57D05442930B01D002824D9 /* EcgDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EcgDataTest.swift; sourceTree = "<group>"; };
+		A57D05462930B217002824D9 /* PpgData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PpgData.swift; sourceTree = "<group>"; };
+		A57D054A2930C84B002824D9 /* PpgDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PpgDataTest.swift; sourceTree = "<group>"; };
+		A57D054C2934B745002824D9 /* PmdSettingTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdSettingTest.swift; sourceTree = "<group>"; };
+		A57D951329CD8F5100D771ED /* BlePmdClientTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlePmdClientTest.swift; sourceTree = "<group>"; };
+		A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePolarDeviceCapabilitiesUtility.swift; path = ble/api/model/polar/BlePolarDeviceCapabilitiesUtility.swift; sourceTree = "<group>"; };
+		A58F0CAB2983EE2700B5615C /* OfflineHrData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineHrData.swift; sourceTree = "<group>"; };
+		A58F0CAF2983EFE000B5615C /* OfflineHrDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineHrDataTest.swift; sourceTree = "<group>"; };
+		A5986D282BF7534A0014C5DF /* PolarDistanceData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarDistanceData.swift; sourceTree = "<group>"; };
+		A5986D2C2BF7537E0014C5DF /* dailysummary.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dailysummary.pb.swift; sourceTree = "<group>"; };
+		A599EA9C2689AFE300414E26 /* PolarAdvDataUtilityTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarAdvDataUtilityTest.swift; sourceTree = "<group>"; };
+		A59A0D2E2990D68E007D30A3 /* PmdSdkMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdSdkMode.swift; sourceTree = "<group>"; };
+		A5A127DF273689E0007874B8 /* PolarAdvDataUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PolarAdvDataUtility.swift; path = ble/api/model/polar/PolarAdvDataUtility.swift; sourceTree = "<group>"; };
+		A5A43C5F2BDFC9500066334F /* PolarBackupManagerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarBackupManagerTest.swift; sourceTree = "<group>"; };
+		A5A43C612BDFCB270066334F /* PolarFirmwareUpdateApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarFirmwareUpdateApi.swift; sourceTree = "<group>"; };
+		A5A43C642BDFCB830066334F /* PolarSdkModeApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarSdkModeApi.swift; sourceTree = "<group>"; };
+		A5A43C672BDFCF610066334F /* PolarFirmwareUpdateModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarFirmwareUpdateModels.swift; sourceTree = "<group>"; };
+		A5A43C6A2BDFD00D0066334F /* FirmwareUpdateApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareUpdateApi.swift; sourceTree = "<group>"; };
+		A5A43C6D2BDFD0520066334F /* FirmwareUpdateApiModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareUpdateApiModels.swift; sourceTree = "<group>"; };
+		A5A43C702BDFD2920066334F /* PolarBackupManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarBackupManager.swift; sourceTree = "<group>"; };
+		A5A5EA332BE0DD8E00EDEF87 /* PolarFirmwareUpdateUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarFirmwareUpdateUtils.swift; sourceTree = "<group>"; };
+		A5A88BFB299A5CEA007B9C28 /* PolarOfflineRecordingTriggerMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarOfflineRecordingTriggerMode.swift; sourceTree = "<group>"; };
+		A5A88BFE299A64C8007B9C28 /* PmdOfflineTrigger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdOfflineTrigger.swift; sourceTree = "<group>"; };
+		A5A88C02299A6FA0007B9C28 /* PmdOfflineTriggerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdOfflineTriggerTest.swift; sourceTree = "<group>"; };
+		A5AD08B625E67064002DA200 /* BleBasClientTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleBasClientTest.swift; sourceTree = "<group>"; };
+		A5B1BAFE27CF41A0001FBB04 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A5B1BB0127CF41B5001FBB04 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A5BC3EEC2BF20D39008DD743 /* PolarStepsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarStepsData.swift; sourceTree = "<group>"; };
+		A5BC3EF02BF20DB5008DD743 /* PolarActivityApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarActivityApi.swift; sourceTree = "<group>"; };
+		A5BC3EF32BF20FBD008DD743 /* PolarActivityUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarActivityUtils.swift; sourceTree = "<group>"; };
+		A5BC3EFB2BF34EA7008DD743 /* PolarActivityUtilsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarActivityUtilsTest.swift; sourceTree = "<group>"; };
+		A5BC3EFD2BF34FEA008DD743 /* act_samples.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = act_samples.pb.swift; sourceTree = "<group>"; };
+		A5BE73642949E20D00CD55BB /* OfflineRecordingDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingDataTest.swift; sourceTree = "<group>"; };
+		A5CD172C297BFC8400C62BC7 /* PolarRecordingSecret.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarRecordingSecret.swift; sourceTree = "<group>"; };
+		A5CD172F297C03D400C62BC7 /* PmdSecret.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdSecret.swift; sourceTree = "<group>"; };
+		A5CD1733297C229D00C62BC7 /* PmdSecretTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdSecretTest.swift; sourceTree = "<group>"; };
+		A5D04F332948A9F000CE93E1 /* PolarOfflineRecordingEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarOfflineRecordingEntry.swift; sourceTree = "<group>"; };
+		A5D04F372948AB9800CE93E1 /* PolarOfflineRecordingData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarOfflineRecordingData.swift; sourceTree = "<group>"; };
+		A5D04F3A2949BCD600CE93E1 /* PolarDataUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarDataUtils.swift; sourceTree = "<group>"; };
+		A5DE0953295B059900BC2E0B /* PolarOfflineRecordingApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarOfflineRecordingApi.swift; sourceTree = "<group>"; };
+		A5DE0956295B092700BC2E0B /* PmdRecordingType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdRecordingType.swift; sourceTree = "<group>"; };
+		A5DE095A295C10E300BC2E0B /* PmdActiveMeasurement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdActiveMeasurement.swift; sourceTree = "<group>"; };
+		A5DE095E295C131A00BC2E0B /* PmdControlPointCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdControlPointCommand.swift; sourceTree = "<group>"; };
+		A5E416D22B7F7CD300314EEB /* PolarFirmwareUpdateUtilsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarFirmwareUpdateUtilsTest.swift; sourceTree = "<group>"; };
+		A5E5BDB6295AC26500188D55 /* OfflineRecordingError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OfflineRecordingError.swift; sourceTree = "<group>"; };
+		A5E5BDB7295AC26500188D55 /* OfflineRecordingData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OfflineRecordingData.swift; sourceTree = "<group>"; };
+		A5E75E94263BC9F700BEA32A /* BleGattClientBaseTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleGattClientBaseTest.swift; sourceTree = "<group>"; };
+		AA15C89C2DC1DA730015E8C0 /* PolarTrainingSessionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarTrainingSessionModels.swift; sourceTree = "<group>"; };
+		AA15C89F2DC1DA910015E8C0 /* training_session.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = training_session.pb.swift; sourceTree = "<group>"; };
+		AA1C8ECB2D130179007EC386 /* SkinTemperatureDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkinTemperatureDataTest.swift; sourceTree = "<group>"; };
+		AA27D9C62B88C38600397873 /* TemperatureData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureData.swift; sourceTree = "<group>"; };
+		AA27EF2A2C995E690097AF23 /* user_devset.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = user_devset.pb.swift; sourceTree = "<group>"; };
+		AA27EF2E2C995EB30097AF23 /* PolarUserDeviceSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarUserDeviceSettings.swift; sourceTree = "<group>"; };
+		AA27EF332C995EFC0097AF23 /* PolarUserDeviceSettingsUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarUserDeviceSettingsUtils.swift; sourceTree = "<group>"; };
+		AA2ACAE52DE71566002A3707 /* EmptyData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyData.swift; sourceTree = "<group>"; };
+		AA2FBE0D2DDB2F8900D2378F /* PolarTrainingSessionUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarTrainingSessionUtils.swift; sourceTree = "<group>"; };
+		AA35F12C2E607D2600D44C87 /* PolarActivityData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarActivityData.swift; sourceTree = "<group>"; };
+		AA5981762D6318BD00267B81 /* Polar247PPiSamplesData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Polar247PPiSamplesData.swift; sourceTree = "<group>"; };
+		AA7DA2832CF9B4FF00275965 /* PolarAutomaticSamplesData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarAutomaticSamplesData.swift; sourceTree = "<group>"; };
+		AA818E582C06F8A000D45B3C /* PolarSleepData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarSleepData.swift; sourceTree = "<group>"; };
+		AA818E5C2C06F8B100D45B3C /* PolarSleepUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarSleepUtils.swift; sourceTree = "<group>"; };
+		AA818E5F2C06F8C200D45B3C /* PolarSleepApi.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarSleepApi.swift; sourceTree = "<group>"; };
+		AA818E622C06F8D700D45B3C /* sleepanalysisresult.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = sleepanalysisresult.pb.swift; sourceTree = "<group>"; };
+		AA818E652C06F8F400D45B3C /* PolarSleepUtilsTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarSleepUtilsTest.swift; sourceTree = "<group>"; };
+		AAB386E12CB803EC00D18313 /* UserIdentifierType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserIdentifierType.swift; sourceTree = "<group>"; };
+		AAB386E42CB8042100D18313 /* user_id.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = user_id.pb.swift; sourceTree = "<group>"; };
+		AAB386ED2CB918CA00D18313 /* automatic_samples.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = automatic_samples.pb.swift; sourceTree = "<group>"; };
+		AAB386EE2CB918CA00D18313 /* ppi_samples.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ppi_samples.pb.swift; sourceTree = "<group>"; };
+		AAB386F32CB934CF00D18313 /* PolarAutomaticSamples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarAutomaticSamples.swift; sourceTree = "<group>"; };
+		AAB386F42CB934CF00D18313 /* PolarStoredData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarStoredData.swift; sourceTree = "<group>"; };
+		AABC2A392C859DDF00BFC6BD /* PressureData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PressureData.swift; sourceTree = "<group>"; };
+		AABCBC5B2D08494A00364101 /* SkinTemperatureData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkinTemperatureData.swift; sourceTree = "<group>"; };
+		AAC63EF52B908FC100CC8DFE /* TemperatureDataTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureDataTest.swift; sourceTree = "<group>"; };
+		AACBC91F2BEB4392003A5D1B /* SDLogConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDLogConfig.swift; sourceTree = "<group>"; };
+		AACBC9242BEB4491003A5D1B /* sensor_data_log.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = sensor_data_log.pb.swift; sourceTree = "<group>"; };
+		AAEEB2302D3E52F900D2B4A7 /* PolarSkinTemperatureData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarSkinTemperatureData.swift; sourceTree = "<group>"; };
+		AAEEB2332D3E530F00D2B4A7 /* PolarSkinTemperatureUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarSkinTemperatureUtils.swift; sourceTree = "<group>"; };
+		AAEEB2362D3E532200D2B4A7 /* temperature_measurement_period.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = temperature_measurement_period.pb.swift; sourceTree = "<group>"; };
+		AAEEB2372D3E532200D2B4A7 /* types_proto3.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = types_proto3.pb.swift; sourceTree = "<group>"; };
+		AAEEB23C2D3E53A200D2B4A7 /* PolarSkinTemperatureUnitTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarSkinTemperatureUnitTest.swift; sourceTree = "<group>"; };
+		AAF7FEE72D94012400B13734 /* PolarPlainDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarPlainDate.swift; sourceTree = "<group>"; };
+		B51D1928BB072A399C96061C /* Pods-iOSCommunications.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSCommunications.release.xcconfig"; path = "Target Support Files/Pods-iOSCommunications/Pods-iOSCommunications.release.xcconfig"; sourceTree = "<group>"; };
+		CC57B5DF2E60641200E90F5B /* PolarExerciseSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarExerciseSession.swift; sourceTree = "<group>"; };
+		EAAEDEC04BFC03AD734C3056 /* Pods_iOSCommunicationsTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iOSCommunicationsTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		6C10791D1D6D6EA000931948 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6C10792D1D6D9C4800931948 /* iOSCommunications.framework in Frameworks */,
+				19C40FCF6ADCE0C526429DCF /* Pods_iOSCommunicationsTests.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C34DE841CAA3F240083EB1F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CF7F1A25FDC78D507DA67B69 /* Pods_iOSCommunications.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C39E8BF209B0754001F7E44 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5A061CA47473A774AB6445EA /* Pods_PolarBleSdkWatchOs.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C770B68206B779900F3D51D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4986E83D1B4BDC29063FC084 /* Pods_PolarBleSdk.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A5743689291B81F500E901A4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A5743690291B81F500E901A4 /* PolarBleSdk.framework in Frameworks */,
+				9708EE2D5CABD0771D2C3443 /* Pods_PolarBleSdkTests.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		427CAC3008CFEF6A777FB862 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				425280368159F4E5FF416098 /* Pods-PolarBleSdk.debug.xcconfig */,
+				87FB706CC2F9CABA4D82915F /* Pods-PolarBleSdk.release.xcconfig */,
+				1654AE2486652C1371FDBEEB /* Pods-PolarBleSdkTests.debug.xcconfig */,
+				64C3C9F5FC21E1BE328F8217 /* Pods-PolarBleSdkTests.release.xcconfig */,
+				6A9605370BA977B96745D3BE /* Pods-PolarBleSdkWatchOs.debug.xcconfig */,
+				2B53CFCDD87ACF2297030478 /* Pods-PolarBleSdkWatchOs.release.xcconfig */,
+				31CBF837AEFC4679AF13D8D4 /* Pods-iOSCommunications.debug.xcconfig */,
+				B51D1928BB072A399C96061C /* Pods-iOSCommunications.release.xcconfig */,
+				9F1D8481CB3836037355EFD4 /* Pods-iOSCommunicationsTests.debug.xcconfig */,
+				869700D0971E27B1E230468A /* Pods-iOSCommunicationsTests.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		56E4F0941D295A3E24C428E5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4B05E5443D4BD82E84117A35 /* Pods_PolarBleSdk.framework */,
+				4592C66DA389FF07420D3379 /* Pods_PolarBleSdkTests.framework */,
+				49A5107367704369EB9A6D26 /* Pods_PolarBleSdkWatchOs.framework */,
+				119A850082BC99162095355C /* Pods_iOSCommunications.framework */,
+				EAAEDEC04BFC03AD734C3056 /* Pods_iOSCommunicationsTests.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		6C1079211D6D6EA000931948 /* iOSCommunicationsTests */ = {
+			isa = PBXGroup;
+			children = (
+				A5346A3625F21858006752CA /* MockGattServiceTransmitterImpl.swift */,
+				AA1C8ECB2D130179007EC386 /* SkinTemperatureDataTest.swift */,
+				A57D951329CD8F5100D771ED /* BlePmdClientTest.swift */,
+				A5A88C02299A6FA0007B9C28 /* PmdOfflineTriggerTest.swift */,
+				A58F0CAF2983EFE000B5615C /* OfflineHrDataTest.swift */,
+				A5CD1733297C229D00C62BC7 /* PmdSecretTest.swift */,
+				A5BE73642949E20D00CD55BB /* OfflineRecordingDataTest.swift */,
+				A57D054C2934B745002824D9 /* PmdSettingTest.swift */,
+				A57D054A2930C84B002824D9 /* PpgDataTest.swift */,
+				A57D05442930B01D002824D9 /* EcgDataTest.swift */,
+				A57D053E29309FB4002824D9 /* PpiDataTest.swift */,
+				A57D0538293098C1002824D9 /* MagDataTest.swift */,
+				A57D053229308BDF002824D9 /* TypeUtilsTest.swift */,
+				A57D052C292F72A5002824D9 /* AccDataTest.swift */,
+				A57D0526292F360F002824D9 /* PmdTimeStampUtilsTest.swift */,
+				A57D0524292F316B002824D9 /* GyrDataTest.swift */,
+				A543BC182825236000852672 /* BleAdvertisementContentTest.swift */,
+				A543BC16282261E900852672 /* BlePolarHrAdvertisementTest.swift */,
+				A599EA9C2689AFE300414E26 /* PolarAdvDataUtilityTest.swift */,
+				A5488C4B264939A000B2DB5C /* BleHrClientTest.swift */,
+				A5E75E94263BC9F700BEA32A /* BleGattClientBaseTest.swift */,
+				A5346A4A25F21877006752CA /* BlePsFtpUtilityTest.swift */,
+				A5346A4025F21866006752CA /* BlePsFtpClientTest.swift */,
+				A5AD08B625E67064002DA200 /* BleBasClientTest.swift */,
+				A55E08B62A29FA560059E6C7 /* BleHtsClientTest.swift */,
+				A518C36C2AFA61C7001F3724 /* OfflineRecordingUtilsTest.swift */,
+				AAC63EF52B908FC100CC8DFE /* TemperatureDataTest.swift */,
+			);
+			path = iOSCommunicationsTests;
+			sourceTree = "<group>";
+		};
+		6C34DE7E1CAA3F240083EB1F = {
+			isa = PBXGroup;
+			children = (
+				A5E46E7C27A7C33900F33C80 /* Sources */,
+				A5E46E7D27A7C34300F33C80 /* Tests */,
+				6C34DE891CAA3F240083EB1F /* Products */,
+				427CAC3008CFEF6A777FB862 /* Pods */,
+				56E4F0941D295A3E24C428E5 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		6C34DE891CAA3F240083EB1F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6C34DE881CAA3F240083EB1F /* iOSCommunications.framework */,
+				6C1079201D6D6EA000931948 /* iOSCommunicationsTests.xctest */,
+				6C770B6C206B779900F3D51D /* PolarBleSdk.framework */,
+				6C39E8C3209B0754001F7E44 /* PolarBleSdkWatchOs.framework */,
+				A574368C291B81F500E901A4 /* PolarBleSdkTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6C34DE8A1CAA3F240083EB1F /* iOSCommunications */ = {
+			isa = PBXGroup;
+			children = (
+				A5B1BB0127CF41B5001FBB04 /* Info.plist */,
+				6C5A44891CB291030006220D /* ble */,
+			);
+			path = iOSCommunications;
+			sourceTree = "<group>";
+		};
+		6C5A44891CB291030006220D /* ble */ = {
+			isa = PBXGroup;
+			children = (
+				6C5A448C1CB291160006220D /* endpoints */,
+				6C5A448B1CB291110006220D /* api */,
+				6C5A448A1CB291090006220D /* common */,
+			);
+			name = ble;
+			sourceTree = "<group>";
+		};
+		6C5A448A1CB291090006220D /* common */ = {
+			isa = PBXGroup;
+			children = (
+				6C9810392154AEDD002820A2 /* AtomicType.swift */,
+				6C5A449E1CB291790006220D /* AtomicBoolean.swift */,
+				6C5A449F1CB291790006220D /* AtomicInteger.swift */,
+				6C5A44A01CB291790006220D /* AtomicList.swift */,
+				6C0C54FD1CFEB3C900FF23E9 /* TimeUtility.swift */,
+				6C7709F72036D15F00F3D51D /* RxObserver.swift */,
+				6CB9DB982087188E00505269 /* RxUtils.swift */,
+				6C98103F2158A943002820A2 /* RecursiveCondition.swift */,
+				A57D052E29308AE6002824D9 /* TypeUtils.swift */,
+			);
+			name = common;
+			sourceTree = "<group>";
+		};
+		6C5A448B1CB291110006220D /* api */ = {
+			isa = PBXGroup;
+			children = (
+				6C5A44911CB2912D0006220D /* model */,
+				6C4A6A351CC0BA4E00E3AD73 /* BleLogger.swift */,
+				6C5A448D1CB291260006220D /* BleDeviceListener.swift */,
+			);
+			name = api;
+			sourceTree = "<group>";
+		};
+		6C5A448C1CB291160006220D /* endpoints */ = {
+			isa = PBXGroup;
+			children = (
+				6C5A44A61CB2918D0006220D /* corebluetooth */,
+			);
+			name = endpoints;
+			sourceTree = "<group>";
+		};
+		6C5A44911CB2912D0006220D /* model */ = {
+			isa = PBXGroup;
+			children = (
+				A52DB1D92A1F594E0073E795 /* protobuf */,
+				A5E5BDB5295AC26500188D55 /* offlinerecording */,
+				6C5A44BA1CB37F060006220D /* BleDeviceSession.swift */,
+				6C8BCD411CE5D60100A4C6A8 /* polar */,
+				6C5A46C11CB4F0E80006220D /* advertisement */,
+				6C5A44921CB291340006220D /* gatt */,
+			);
+			name = model;
+			sourceTree = "<group>";
+		};
+		6C5A44921CB291340006220D /* gatt */ = {
+			isa = PBXGroup;
+			children = (
+				6CD12AC8201F11F700F3A417 /* exceptions */,
+				6C5A449A1CB291530006220D /* client */,
+				6C5A44941CB291500006220D /* BleGattClientBase.swift */,
+				6C5A44951CB291500006220D /* BleGattClientFactory.swift */,
+				6C5A44961CB291500006220D /* BleAttributeTransportProtocol.swift */,
+			);
+			name = gatt;
+			sourceTree = "<group>";
+		};
+		6C5A449A1CB291530006220D /* client */ = {
+			isa = PBXGroup;
+			children = (
+				A57D0508292254E2002824D9 /* pmd */,
+				6C8BCD351CE5BC8100A4C6A8 /* psftp */,
+				6C67C7FC1E169CCE00411498 /* BleBasClient.swift */,
+				6C67C7FD1E169CCE00411498 /* BleDisClient.swift */,
+				6C67C7FE1E169CCE00411498 /* BleHrClient.swift */,
+				6C4A6A2E1CC0BA2400E3AD73 /* BlePfcClient.swift */,
+				6CB902761D9B7F65001F1C9C /* BleH7SettingsClient.swift */,
+				6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */,
+				6C57A5B31F987B40002E50DB /* BleRscClient.swift */,
+				A55E08AD2A273C770059E6C7 /* BleHtsClient.swift */,
+			);
+			name = client;
+			sourceTree = "<group>";
+		};
+		6C5A44A61CB2918D0006220D /* corebluetooth */ = {
+			isa = PBXGroup;
+			children = (
+				6C5A44A71CB291950006220D /* central */,
+			);
+			name = corebluetooth;
+			sourceTree = "<group>";
+		};
+		6C5A44A71CB291950006220D /* central */ = {
+			isa = PBXGroup;
+			children = (
+				6C5A44A91CB291A40006220D /* CBDeviceListenerImpl.swift */,
+				6C5A44AA1CB291A40006220D /* CBDeviceSessionImpl.swift */,
+				6C9209061D93B2DC0035B928 /* CBScanner.swift */,
+				6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */,
+			);
+			name = central;
+			sourceTree = "<group>";
+		};
+		6C5A46C11CB4F0E80006220D /* advertisement */ = {
+			isa = PBXGroup;
+			children = (
+				6C4A6A251CC0BA0400E3AD73 /* BleAdvertisementContent.swift */,
+				6C4A6A261CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift */,
+				6C4A6A271CC0BA0400E3AD73 /* BleRssiFilter.swift */,
+			);
+			name = advertisement;
+			sourceTree = "<group>";
+		};
+		6C770B6D206B779A00F3D51D /* PolarBleSdk */ = {
+			isa = PBXGroup;
+			children = (
+				A5B1BAFE27CF41A0001FBB04 /* Info.plist */,
+				A577288B27CE860600855884 /* sdk */,
+			);
+			path = PolarBleSdk;
+			sourceTree = "<group>";
+		};
+		6C8BCD351CE5BC8100A4C6A8 /* psftp */ = {
+			isa = PBXGroup;
+			children = (
+				6C8BCD381CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift */,
+				6C8BCD391CE5BCEA00A4C6A8 /* BlePsFtpClient.swift */,
+			);
+			name = psftp;
+			sourceTree = "<group>";
+		};
+		6C8BCD411CE5D60100A4C6A8 /* polar */ = {
+			isa = PBXGroup;
+			children = (
+				A5A127DF273689E0007874B8 /* PolarAdvDataUtility.swift */,
+				A580139625B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift */,
+				6C8BCD421CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift */,
+				A5A43C6A2BDFD00D0066334F /* FirmwareUpdateApi.swift */,
+				A5A43C6D2BDFD0520066334F /* FirmwareUpdateApiModels.swift */,
+			);
+			name = polar;
+			sourceTree = "<group>";
+		};
+		6CD12AC8201F11F700F3A417 /* exceptions */ = {
+			isa = PBXGroup;
+			children = (
+				6CD12AC9201F126500F3A417 /* BleGattException.swift */,
+			);
+			name = exceptions;
+			sourceTree = "<group>";
+		};
+		A52DB1D92A1F594E0073E795 /* protobuf */ = {
+			isa = PBXGroup;
+			children = (
+				A52DB1DA2A1F59770073E795 /* communications_pftp_request.pb.swift */,
+			);
+			name = protobuf;
+			sourceTree = "<group>";
+		};
+		A5743681291A7D7C00E901A4 /* utils */ = {
+			isa = PBXGroup;
+			children = (
+				AA2FBE0D2DDB2F8900D2378F /* PolarTrainingSessionUtils.swift */,
+				AAF7FEE72D94012400B13734 /* PolarPlainDate.swift */,
+				AAEEB2332D3E530F00D2B4A7 /* PolarSkinTemperatureUtils.swift */,
+				AA27EF332C995EFC0097AF23 /* PolarUserDeviceSettingsUtils.swift */,
+				95EA2B9E2D3E887E00657DE5 /* PolarDeviceRestApiUtils.swift */,
+				AA818E5C2C06F8B100D45B3C /* PolarSleepUtils.swift */,
+				A5743682291A7DB400E901A4 /* PolarTimeUtils.swift */,
+				A5D04F3A2949BCD600CE93E1 /* PolarDataUtils.swift */,
+				A5A43C702BDFD2920066334F /* PolarBackupManager.swift */,
+				A5A5EA332BE0DD8E00EDEF87 /* PolarFirmwareUpdateUtils.swift */,
+				A5BC3EF32BF20FBD008DD743 /* PolarActivityUtils.swift */,
+				8428E1DE2CEF47350021E3B1 /* PolarAutomaticSamplesUtils.swift */,
+				840880BE2D07329D00883420 /* PolarNightlyRechargeUtils.swift */,
+				95EA2BAE2D42179C00657DE5 /* PolarCompressionUtils.swift */,
+			);
+			path = utils;
+			sourceTree = "<group>";
+		};
+		A574368D291B81F500E901A4 /* PolarBleSdkTests */ = {
+			isa = PBXGroup;
+			children = (
+				84389FD42E4C81DE00FDA8CF /* PolarSensorSettingTest.swift */,
+				842B36152DE49B530059C207 /* PolarTrainingSessionUtilsTest.swift */,
+				9590AD932D95497700EBD84E /* MockGattServiceTransmitterImpl.swift */,
+				84CE7CF42C0DDAF80096A44A /* MockBlePsFtpClient.swift */,
+				AAEEB23C2D3E53A200D2B4A7 /* PolarSkinTemperatureUnitTest.swift */,
+				95EA2B992D3A2CCC00657DE5 /* PolarDeviceRestApiTests.swift */,
+				AA818E652C06F8F400D45B3C /* PolarSleepUtilsTest.swift */,
+				A5743686291A825F00E901A4 /* PolarTimeUtilsTests.swift */,
+				A5E416D22B7F7CD300314EEB /* PolarFirmwareUpdateUtilsTest.swift */,
+				A5A43C5F2BDFC9500066334F /* PolarBackupManagerTest.swift */,
+				A5BC3EFB2BF34EA7008DD743 /* PolarActivityUtilsTest.swift */,
+				841A37882C7DF53B009194CC /* PolarDeviceUuidTest.swift */,
+				8428E1E32CEF73CB0021E3B1 /* PolarAutomaticSamplesUnitTest.swift */,
+				84D71C9E2D09C19600CE8089 /* PolarNightlyRechargeUtilsTest.swift */,
+				955B94072D92A4B200F0447A /* PolarOfflineRecordingApiTests.swift */,
+			);
+			path = PolarBleSdkTests;
+			sourceTree = "<group>";
+		};
+		A577288B27CE860600855884 /* sdk */ = {
+			isa = PBXGroup;
+			children = (
+				A577288C27CE860600855884 /* impl */,
+				A577289827CE860600855884 /* api */,
+			);
+			path = sdk;
+			sourceTree = "<group>";
+		};
+		A577288C27CE860600855884 /* impl */ = {
+			isa = PBXGroup;
+			children = (
+				A5743681291A7D7C00E901A4 /* utils */,
+				A577288D27CE860600855884 /* PolarBleApiImpl.swift */,
+				95A641812D37E57000178ED3 /* PolarBleApiImpl+Sleep.swift */,
+				95D439282D380AFB004AB936 /* PolarBleApiImpl+RestService.swift */,
+				A577288E27CE860600855884 /* protobuf */,
+			);
+			path = impl;
+			sourceTree = "<group>";
+		};
+		A577288E27CE860600855884 /* protobuf */ = {
+			isa = PBXGroup;
+			children = (
+				84059D102DEF09600013C470 /* exercise_samples2.pb.swift */,
+				842B360E2DE471A30059C207 /* exercise_route2.pb.swift */,
+				842B360C2DE4717F0059C207 /* exercise_route.pb.swift */,
+				AA15C89F2DC1DA910015E8C0 /* training_session.pb.swift */,
+				AAEEB2362D3E532200D2B4A7 /* temperature_measurement_period.pb.swift */,
+				AAEEB2372D3E532200D2B4A7 /* types_proto3.pb.swift */,
+				AAB386E42CB8042100D18313 /* user_id.pb.swift */,
+				AAB386ED2CB918CA00D18313 /* automatic_samples.pb.swift */,
+				AAB386EE2CB918CA00D18313 /* ppi_samples.pb.swift */,
+				AA27EF2A2C995E690097AF23 /* user_devset.pb.swift */,
+				AA818E622C06F8D700D45B3C /* sleepanalysisresult.pb.swift */,
+				AACBC9242BEB4491003A5D1B /* sensor_data_log.pb.swift */,
+				A577288F27CE860600855884 /* pftp_error.pb.swift */,
+				A577289027CE860600855884 /* pftp_notification.pb.swift */,
+				A577289127CE860600855884 /* pftp_response.pb.swift */,
+				A577289227CE860600855884 /* structures.pb.swift */,
+				A577289327CE860600855884 /* exercise_samples.pb.swift */,
+				A577289427CE860600855884 /* pftp_request.pb.swift */,
+				A577289527CE860600855884 /* types.pb.swift */,
+				A577289627CE860600855884 /* exercise_rr_samples.pb.swift */,
+				A577289727CE860600855884 /* nanopb.pb.swift */,
+				A5BC3EFD2BF34FEA008DD743 /* act_samples.pb.swift */,
+				A5986D2C2BF7537E0014C5DF /* dailysummary.pb.swift */,
+				846B11B72C60E07A004EA886 /* device.pb.swift */,
+				84D0098D2C85D46500AB4C43 /* user_physdata.pb.swift */,
+				844D99922D083D4600FCE97C /* nightly_recovery.pb.swift */,
+				848660352DC0C987003B92EF /* exercise_base.pb.swift */,
+			);
+			path = protobuf;
+			sourceTree = "<group>";
+		};
+		A577289827CE860600855884 /* api */ = {
+			isa = PBXGroup;
+			children = (
+				842B36072DE471340059C207 /* PolarTrainingSessionApi.swift */,
+				A577289927CE860600855884 /* PolarBleApiObservers.swift */,
+				A577289A27CE860600855884 /* PolarBleApi.swift */,
+				A577289B27CE860600855884 /* model */,
+				A577289D27CE860600855884 /* PolarBleApiDefaultImpl.swift */,
+				A577289E27CE860600855884 /* errors */,
+				A5DE0953295B059900BC2E0B /* PolarOfflineRecordingApi.swift */,
+				A55604C2298B893800DB6EDB /* PolarOnlineStreamingApi.swift */,
+				A55604C5298B8B2700DB6EDB /* PolarH10OfflineExerciseApi.swift */,
+				A5A43C612BDFCB270066334F /* PolarFirmwareUpdateApi.swift */,
+				A5A43C642BDFCB830066334F /* PolarSdkModeApi.swift */,
+				A5BC3EF02BF20DB5008DD743 /* PolarActivityApi.swift */,
+				AA818E5F2C06F8C200D45B3C /* PolarSleepApi.swift */,
+			);
+			path = api;
+			sourceTree = "<group>";
+		};
+		A577289B27CE860600855884 /* model */ = {
+			isa = PBXGroup;
+			children = (
+				CC57B5DF2E60641200E90F5B /* PolarExerciseSession.swift */,
+				AA15C89C2DC1DA730015E8C0 /* PolarTrainingSessionModels.swift */,
+				AAB386F32CB934CF00D18313 /* PolarAutomaticSamples.swift */,
+				AAB386F42CB934CF00D18313 /* PolarStoredData.swift */,
+				AAB386E12CB803EC00D18313 /* UserIdentifierType.swift */,
+				AA27EF2E2C995EB30097AF23 /* PolarUserDeviceSettings.swift */,
+				AA818E592C06F8A000D45B3C /* sleep */,
+				A5BC3EEB2BF20D16008DD743 /* activity */,
+				A577289C27CE860600855884 /* PolarSensorSetting.swift */,
+				A5D04F332948A9F000CE93E1 /* PolarOfflineRecordingEntry.swift */,
+				A5D04F372948AB9800CE93E1 /* PolarOfflineRecordingData.swift */,
+				A5CD172C297BFC8400C62BC7 /* PolarRecordingSecret.swift */,
+				A5A88BFB299A5CEA007B9C28 /* PolarOfflineRecordingTriggerMode.swift */,
+				A54BC2A329DC471B003F022A /* PolarDiskSpaceData.swift */,
+				A55D31C22ADD5EAE005CD1B3 /* LedConfig.swift */,
+				A5A43C672BDFCF610066334F /* PolarFirmwareUpdateModels.swift */,
+				AACBC91F2BEB4392003A5D1B /* SDLogConfig.swift */,
+				8484D97E2C775B3400271DA5 /* PolarDeviceUuid.swift */,
+				84D0098A2C85D41800AB4C43 /* PolarFirstTimeUseConfig.swift */,
+			);
+			path = model;
+			sourceTree = "<group>";
+		};
+		A577289E27CE860600855884 /* errors */ = {
+			isa = PBXGroup;
+			children = (
+				A577289F27CE860600855884 /* PolarErrors.swift */,
+			);
+			path = errors;
+			sourceTree = "<group>";
+		};
+		A57D0508292254E2002824D9 /* pmd */ = {
+			isa = PBXGroup;
+			children = (
+				A57D051B29226577002824D9 /* model */,
+				A57D0509292254E2002824D9 /* BlePmdClient.swift */,
+				A57D050D29225779002824D9 /* PmdSetting.swift */,
+				A59A0D2E2990D68E007D30A3 /* PmdSdkMode.swift */,
+				A5CD172F297C03D400C62BC7 /* PmdSecret.swift */,
+				A57D0511292258D5002824D9 /* PmdMeasurementType.swift */,
+				A57D051529225991002824D9 /* PmdDataFrame.swift */,
+				A5DE0956295B092700BC2E0B /* PmdRecordingType.swift */,
+				A5DE095A295C10E300BC2E0B /* PmdActiveMeasurement.swift */,
+				A5DE095E295C131A00BC2E0B /* PmdControlPointCommand.swift */,
+				A5A88BFE299A64C8007B9C28 /* PmdOfflineTrigger.swift */,
+				A5385ABA29CDBB0900A6DB6A /* PmdControlPointResponse.swift */,
+				A5385ABE29CDBBDF00A6DB6A /* PmdErrors.swift */,
+			);
+			name = pmd;
+			path = ble/api/model/gatt/client/pmd;
+			sourceTree = "<group>";
+		};
+		A57D051B29226577002824D9 /* model */ = {
+			isa = PBXGroup;
+			children = (
+				AA2ACAE52DE71566002A3707 /* EmptyData.swift */,
+				AABC2A392C859DDF00BFC6BD /* PressureData.swift */,
+				A57D051C2922658F002824D9 /* GyrData.swift */,
+				A57D05202924C800002824D9 /* PmdTimeStampUtils.swift */,
+				A57D0528292F60E3002824D9 /* AccData.swift */,
+				A57D053429309329002824D9 /* MagData.swift */,
+				A57D053A29309B71002824D9 /* PpiData.swift */,
+				A57D05402930A8CA002824D9 /* EcgData.swift */,
+				A57D05462930B217002824D9 /* PpgData.swift */,
+				A58F0CAB2983EE2700B5615C /* OfflineHrData.swift */,
+				AA27D9C62B88C38600397873 /* TemperatureData.swift */,
+				AABCBC5B2D08494A00364101 /* SkinTemperatureData.swift */,
+			);
+			path = model;
+			sourceTree = "<group>";
+		};
+		A5BC3EEB2BF20D16008DD743 /* activity */ = {
+			isa = PBXGroup;
+			children = (
+				AA35F12C2E607D2600D44C87 /* PolarActivityData.swift */,
+				AA5981762D6318BD00267B81 /* Polar247PPiSamplesData.swift */,
+				AAEEB2302D3E52F900D2B4A7 /* PolarSkinTemperatureData.swift */,
+				AA7DA2832CF9B4FF00275965 /* PolarAutomaticSamplesData.swift */,
+				A5BC3EEC2BF20D39008DD743 /* PolarStepsData.swift */,
+				A5986D282BF7534A0014C5DF /* PolarDistanceData.swift */,
+				84655A8F2C08947F00D49203 /* PolarActiveTimeData.swift */,
+				8403763C2D50EB080004AB66 /* PolarCaloriesData.swift */,
+			);
+			path = activity;
+			sourceTree = "<group>";
+		};
+		A5E46E7C27A7C33900F33C80 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				6C34DE8A1CAA3F240083EB1F /* iOSCommunications */,
+				6C770B6D206B779A00F3D51D /* PolarBleSdk */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		A5E46E7D27A7C34300F33C80 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				A574368D291B81F500E901A4 /* PolarBleSdkTests */,
+				6C1079211D6D6EA000931948 /* iOSCommunicationsTests */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		A5E5BDB5295AC26500188D55 /* offlinerecording */ = {
+			isa = PBXGroup;
+			children = (
+				A5E5BDB6295AC26500188D55 /* OfflineRecordingError.swift */,
+				A5E5BDB7295AC26500188D55 /* OfflineRecordingData.swift */,
+				A54EC6EB29655CBC00E1B910 /* OfflineRecordingUtils.swift */,
+			);
+			name = offlinerecording;
+			path = ble/api/model/offlinerecording;
+			sourceTree = "<group>";
+		};
+		AA818E592C06F8A000D45B3C /* sleep */ = {
+			isa = PBXGroup;
+			children = (
+				AA818E582C06F8A000D45B3C /* PolarSleepData.swift */,
+				840880BB2D072E6900883420 /* PolarNightlyRechargeData.swift */,
+			);
+			path = sleep;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		6C34DE851CAA3F240083EB1F /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C39E8C0209B0754001F7E44 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C770B69206B779900F3D51D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		6C10791F1D6D6EA000931948 /* iOSCommunicationsTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6C1079281D6D6EA000931948 /* Build configuration list for PBXNativeTarget "iOSCommunicationsTests" */;
+			buildPhases = (
+				C2E005C0DA19AF589BF5EC88 /* [CP] Check Pods Manifest.lock */,
+				6C10791C1D6D6EA000931948 /* Sources */,
+				6C10791D1D6D6EA000931948 /* Frameworks */,
+				6C10791E1D6D6EA000931948 /* Resources */,
+				4AC738BD8FCE5964633C7AE8 /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6C1079271D6D6EA000931948 /* PBXTargetDependency */,
+			);
+			name = iOSCommunicationsTests;
+			productName = iOSCommunicationsTests;
+			productReference = 6C1079201D6D6EA000931948 /* iOSCommunicationsTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		6C34DE871CAA3F240083EB1F /* iOSCommunications */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6C34DE901CAA3F240083EB1F /* Build configuration list for PBXNativeTarget "iOSCommunications" */;
+			buildPhases = (
+				D8955BD6D7EDD5A7235F6947 /* [CP] Check Pods Manifest.lock */,
+				6C34DE831CAA3F240083EB1F /* Sources */,
+				6C34DE841CAA3F240083EB1F /* Frameworks */,
+				6C34DE851CAA3F240083EB1F /* Headers */,
+				6C34DE861CAA3F240083EB1F /* Resources */,
+				A5346A5725F218B1006752CA /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = iOSCommunications;
+			productName = iOSCommunications;
+			productReference = 6C34DE881CAA3F240083EB1F /* iOSCommunications.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		6C39E8C2209B0754001F7E44 /* PolarBleSdkWatchOs */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6C39E8C8209B0755001F7E44 /* Build configuration list for PBXNativeTarget "PolarBleSdkWatchOs" */;
+			buildPhases = (
+				1824EB4D8EB17BFB4854E115 /* [CP] Check Pods Manifest.lock */,
+				6C39E8BE209B0754001F7E44 /* Sources */,
+				6C39E8BF209B0754001F7E44 /* Frameworks */,
+				6C39E8C0209B0754001F7E44 /* Headers */,
+				6C39E8C1209B0754001F7E44 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PolarBleSdkWatchOs;
+			productName = PolarBleSdkWatchOs;
+			productReference = 6C39E8C3209B0754001F7E44 /* PolarBleSdkWatchOs.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		6C770B6B206B779900F3D51D /* PolarBleSdk */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6C770B73206B779A00F3D51D /* Build configuration list for PBXNativeTarget "PolarBleSdk" */;
+			buildPhases = (
+				D4545446CFBEE62AFA58DFAE /* [CP] Check Pods Manifest.lock */,
+				6C770B67206B779900F3D51D /* Sources */,
+				6C770B68206B779900F3D51D /* Frameworks */,
+				6C770B69206B779900F3D51D /* Headers */,
+				6C770B6A206B779900F3D51D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PolarBleSdk;
+			productName = PolarBleSdk;
+			productReference = 6C770B6C206B779900F3D51D /* PolarBleSdk.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		A574368B291B81F500E901A4 /* PolarBleSdkTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A5743693291B81F500E901A4 /* Build configuration list for PBXNativeTarget "PolarBleSdkTests" */;
+			buildPhases = (
+				1987B637829F3D86D41D0465 /* [CP] Check Pods Manifest.lock */,
+				A5743688291B81F500E901A4 /* Sources */,
+				A5743689291B81F500E901A4 /* Frameworks */,
+				A574368A291B81F500E901A4 /* Resources */,
+				5E26466A07328B91B93A9ACE /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A5743692291B81F500E901A4 /* PBXTargetDependency */,
+			);
+			name = PolarBleSdkTests;
+			productName = PolarBleSdkTests;
+			productReference = A574368C291B81F500E901A4 /* PolarBleSdkTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		6C34DE7F1CAA3F240083EB1F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1410;
+				LastUpgradeCheck = 1230;
+				ORGANIZATIONNAME = Polar;
+				TargetAttributes = {
+					6C10791F1D6D6EA000931948 = {
+						CreatedOnToolsVersion = 7.3;
+						LastSwiftMigration = 0800;
+					};
+					6C34DE871CAA3F240083EB1F = {
+						CreatedOnToolsVersion = 7.3;
+						LastSwiftMigration = 1000;
+					};
+					6C39E8C2209B0754001F7E44 = {
+						CreatedOnToolsVersion = 9.3;
+						ProvisioningStyle = Automatic;
+					};
+					6C770B6B206B779900F3D51D = {
+						CreatedOnToolsVersion = 9.2;
+						LastSwiftMigration = 1620;
+						ProvisioningStyle = Automatic;
+					};
+					A574368B291B81F500E901A4 = {
+						CreatedOnToolsVersion = 14.1;
+						LastSwiftMigration = 1620;
+					};
+				};
+			};
+			buildConfigurationList = 6C34DE821CAA3F240083EB1F /* Build configuration list for PBXProject "iOSCommunications" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 6C34DE7E1CAA3F240083EB1F;
+			productRefGroup = 6C34DE891CAA3F240083EB1F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				6C34DE871CAA3F240083EB1F /* iOSCommunications */,
+				6C10791F1D6D6EA000931948 /* iOSCommunicationsTests */,
+				6C770B6B206B779900F3D51D /* PolarBleSdk */,
+				6C39E8C2209B0754001F7E44 /* PolarBleSdkWatchOs */,
+				A574368B291B81F500E901A4 /* PolarBleSdkTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6C10791E1D6D6EA000931948 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C34DE861CAA3F240083EB1F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C39E8C1209B0754001F7E44 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C770B6A206B779900F3D51D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A574368A291B81F500E901A4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		1824EB4D8EB17BFB4854E115 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PolarBleSdkWatchOs-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		1987B637829F3D86D41D0465 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PolarBleSdkTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		4AC738BD8FCE5964633C7AE8 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-iOSCommunicationsTests/Pods-iOSCommunicationsTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-iOSCommunicationsTests/Pods-iOSCommunicationsTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-iOSCommunicationsTests/Pods-iOSCommunicationsTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		5E26466A07328B91B93A9ACE /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2E005C0DA19AF589BF5EC88 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-iOSCommunicationsTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D4545446CFBEE62AFA58DFAE /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PolarBleSdk-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D8955BD6D7EDD5A7235F6947 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-iOSCommunications-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		6C10791C1D6D6EA000931948 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				841A37932C808B1D009194CC /* PolarFirmwareUpdateModels.swift in Sources */,
+				A57D053329308BDF002824D9 /* TypeUtilsTest.swift in Sources */,
+				A57D0525292F316B002824D9 /* GyrDataTest.swift in Sources */,
+				841A378E2C808AE6009194CC /* types.pb.swift in Sources */,
+				A55E08BA2A29FA5D0059E6C7 /* BleHtsClientTest.swift in Sources */,
+				A58F0CB02983EFE000B5615C /* OfflineHrDataTest.swift in Sources */,
+				A57D054B2930C84B002824D9 /* PpgDataTest.swift in Sources */,
+				A57D05452930B01D002824D9 /* EcgDataTest.swift in Sources */,
+				A57D951429CD8F5100D771ED /* BlePmdClientTest.swift in Sources */,
+				A543BC17282261E900852672 /* BlePolarHrAdvertisementTest.swift in Sources */,
+				AA1C8ECC2D130187007EC386 /* SkinTemperatureDataTest.swift in Sources */,
+				841A378D2C808987009194CC /* pftp_request.pb.swift in Sources */,
+				A5A88C03299A6FA0007B9C28 /* PmdOfflineTriggerTest.swift in Sources */,
+				A5488C4C264939A000B2DB5C /* BleHrClientTest.swift in Sources */,
+				A57D052D292F72A5002824D9 /* AccDataTest.swift in Sources */,
+				A5346A4B25F21877006752CA /* BlePsFtpUtilityTest.swift in Sources */,
+				A57D053F29309FB4002824D9 /* PpiDataTest.swift in Sources */,
+				A5346A4125F21866006752CA /* BlePsFtpClientTest.swift in Sources */,
+				A5AD08B725E67064002DA200 /* BleBasClientTest.swift in Sources */,
+				9590AD952D9549CC00EBD84E /* MockGattServiceTransmitterImpl.swift in Sources */,
+				A543BC192825236000852672 /* BleAdvertisementContentTest.swift in Sources */,
+				A57D0539293098C1002824D9 /* MagDataTest.swift in Sources */,
+				A5E75E95263BC9F700BEA32A /* BleGattClientBaseTest.swift in Sources */,
+				A57D0527292F360F002824D9 /* PmdTimeStampUtilsTest.swift in Sources */,
+				A57D054D2934B745002824D9 /* PmdSettingTest.swift in Sources */,
+				841A37942C808BD9009194CC /* structures.pb.swift in Sources */,
+				841A37962C808D49009194CC /* communications_pftp_request.pb.swift in Sources */,
+				A5CD1734297C229D00C62BC7 /* PmdSecretTest.swift in Sources */,
+				841A37902C808B01009194CC /* device.pb.swift in Sources */,
+				A518C36D2AFA61C7001F3724 /* OfflineRecordingUtilsTest.swift in Sources */,
+				A599EA9D2689AFE300414E26 /* PolarAdvDataUtilityTest.swift in Sources */,
+				A5BE73652949E20D00CD55BB /* OfflineRecordingDataTest.swift in Sources */,
+				AAC63EF62B908FC100CC8DFE /* TemperatureDataTest.swift in Sources */,
+				AA2ACAE82DE71566002A3707 /* EmptyData.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C34DE831CAA3F240083EB1F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AABC2A3A2C859DDF00BFC6BD /* PressureData.swift in Sources */,
+				A5A5EA342BE0DD8E00EDEF87 /* PolarFirmwareUpdateUtils.swift in Sources */,
+				A57D050A292254E2002824D9 /* BlePmdClient.swift in Sources */,
+				A5385ABB29CDBB0900A6DB6A /* PmdControlPointResponse.swift in Sources */,
+				841A37922C808B1D009194CC /* PolarFirmwareUpdateModels.swift in Sources */,
+				841A37952C808BD9009194CC /* structures.pb.swift in Sources */,
+				6C8BCD3C1CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift in Sources */,
+				A5DE0957295B092700BC2E0B /* PmdRecordingType.swift in Sources */,
+				A5986D292BF7534A0014C5DF /* PolarDistanceData.swift in Sources */,
+				6C57A5B41F987B44002E50DB /* BleRscClient.swift in Sources */,
+				A57D053B29309B71002824D9 /* PpiData.swift in Sources */,
+				84655A902C08947F00D49203 /* PolarActiveTimeData.swift in Sources */,
+				6C5A44A31CB291790006220D /* AtomicInteger.swift in Sources */,
+				8403763D2D50EB080004AB66 /* PolarCaloriesData.swift in Sources */,
+				A57D05412930A8CA002824D9 /* EcgData.swift in Sources */,
+				6C5A44AC1CB291A40006220D /* CBDeviceListenerImpl.swift in Sources */,
+				A57D051629225991002824D9 /* PmdDataFrame.swift in Sources */,
+				6CB902771D9B7F65001F1C9C /* BleH7SettingsClient.swift in Sources */,
+				841A378C2C808982009194CC /* pftp_request.pb.swift in Sources */,
+				A5A127E0273689E0007874B8 /* PolarAdvDataUtility.swift in Sources */,
+				6C0C54FE1CFEB3C900FF23E9 /* TimeUtility.swift in Sources */,
+				6C5A44971CB291500006220D /* BleGattClientBase.swift in Sources */,
+				6C5A44981CB291500006220D /* BleGattClientFactory.swift in Sources */,
+				6C8BCD3D1CE5BCEA00A4C6A8 /* BlePsFtpClient.swift in Sources */,
+				6C4A6A2B1CC0BA0400E3AD73 /* BleRssiFilter.swift in Sources */,
+				6C67C8011E169CCE00411498 /* BleHrClient.swift in Sources */,
+				A580139725B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */,
+				AA7DA2862CF9B4FF00275965 /* PolarAutomaticSamplesData.swift in Sources */,
+				A57D05212924C800002824D9 /* PmdTimeStampUtils.swift in Sources */,
+				84D0098E2C85D46500AB4C43 /* user_physdata.pb.swift in Sources */,
+				A5BC3EED2BF20D39008DD743 /* PolarStepsData.swift in Sources */,
+				6C5A44991CB291500006220D /* BleAttributeTransportProtocol.swift in Sources */,
+				A59A0D2F2990D68E007D30A3 /* PmdSdkMode.swift in Sources */,
+				6CD12ACA201F126500F3A417 /* BleGattException.swift in Sources */,
+				A57D051D2922658F002824D9 /* GyrData.swift in Sources */,
+				6C5A44A21CB291790006220D /* AtomicBoolean.swift in Sources */,
+				6C9810402158A943002820A2 /* RecursiveCondition.swift in Sources */,
+				A5385ABF29CDBBDF00A6DB6A /* PmdErrors.swift in Sources */,
+				6C5A448F1CB291260006220D /* BleDeviceListener.swift in Sources */,
+				6C5A44AD1CB291A40006220D /* CBDeviceSessionImpl.swift in Sources */,
+				A5DE095F295C131A00BC2E0B /* PmdControlPointCommand.swift in Sources */,
+				A54EC6EC29655CBD00E1B910 /* OfflineRecordingUtils.swift in Sources */,
+				6C7709F82036D15F00F3D51D /* RxObserver.swift in Sources */,
+				841A378F2C808AE7009194CC /* types.pb.swift in Sources */,
+				A58F0CAC2983EE2700B5615C /* OfflineHrData.swift in Sources */,
+				AA27D9C72B88C38600397873 /* TemperatureData.swift in Sources */,
+				6C5A44BB1CB37F060006220D /* BleDeviceSession.swift in Sources */,
+				A5DE095B295C10E300BC2E0B /* PmdActiveMeasurement.swift in Sources */,
+				6C4A6A381CC0BA4E00E3AD73 /* BleLogger.swift in Sources */,
+				6CB9DB992087188E00505269 /* RxUtils.swift in Sources */,
+				A57D05472930B217002824D9 /* PpgData.swift in Sources */,
+				AA2ACAE92DE71566002A3707 /* EmptyData.swift in Sources */,
+				6C9209071D93B2DC0035B928 /* CBScanner.swift in Sources */,
+				A5E5BDB9295AC26500188D55 /* OfflineRecordingData.swift in Sources */,
+				6C8BCD431CE5D64200A4C6A8 /* BlePolarDeviceIdUtility.swift in Sources */,
+				A57D050E29225779002824D9 /* PmdSetting.swift in Sources */,
+				844D99932D083D4600FCE97C /* nightly_recovery.pb.swift in Sources */,
+				6C67C7FF1E169CCE00411498 /* BleBasClient.swift in Sources */,
+				841A37912C808B01009194CC /* device.pb.swift in Sources */,
+				6CCFE4001E5D76C100FAA131 /* BlePsdClient.swift in Sources */,
+				A52DB1DB2A1F59770073E795 /* communications_pftp_request.pb.swift in Sources */,
+				A5A88BFF299A64C8007B9C28 /* PmdOfflineTrigger.swift in Sources */,
+				A57D053529309329002824D9 /* MagData.swift in Sources */,
+				6C5A44A41CB291790006220D /* AtomicList.swift in Sources */,
+				A57D052F29308AE6002824D9 /* TypeUtils.swift in Sources */,
+				A5E5BDB8295AC26500188D55 /* OfflineRecordingError.swift in Sources */,
+				A55E08AE2A273C770059E6C7 /* BleHtsClient.swift in Sources */,
+				6C67C8001E169CCE00411498 /* BleDisClient.swift in Sources */,
+				AABCBC5D2D08494A00364101 /* SkinTemperatureData.swift in Sources */,
+				6C32C6D7220AD3CA006615C3 /* CBScanningProtocol.swift in Sources */,
+				84D0098B2C85D41800AB4C43 /* PolarFirstTimeUseConfig.swift in Sources */,
+				6C4A6A311CC0BA2400E3AD73 /* BlePfcClient.swift in Sources */,
+				A57D0529292F60E3002824D9 /* AccData.swift in Sources */,
+				6C4A6A291CC0BA0400E3AD73 /* BleAdvertisementContent.swift in Sources */,
+				6C98103A2154AEDE002820A2 /* AtomicType.swift in Sources */,
+				A57D0512292258D5002824D9 /* PmdMeasurementType.swift in Sources */,
+				A5CD1732297C03EA00C62BC7 /* PmdSecret.swift in Sources */,
+				6C4A6A2A1CC0BA0400E3AD73 /* BlePolarHrAdvertisement.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C39E8BE209B0754001F7E44 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A57728A727CE860600855884 /* pftp_response.pb.swift in Sources */,
+				6C2409462216A6F3001C1A84 /* AtomicType.swift in Sources */,
+				A54BC2A529DC471B003F022A /* PolarDiskSpaceData.swift in Sources */,
+				A5D04F392948AB9800CE93E1 /* PolarOfflineRecordingData.swift in Sources */,
+				A580139925B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */,
+				A57D05232924C800002824D9 /* PmdTimeStampUtils.swift in Sources */,
+				6C2409422216A6E3001C1A84 /* CBScanningProtocol.swift in Sources */,
+				A5A127E2273689E0007874B8 /* PolarAdvDataUtility.swift in Sources */,
+				95D439292D380AFB004AB936 /* PolarBleApiImpl+RestService.swift in Sources */,
+				A52DB1DD2A1F59770073E795 /* communications_pftp_request.pb.swift in Sources */,
+				A57D052B292F60E3002824D9 /* AccData.swift in Sources */,
+				A5385AC129CDBBDF00A6DB6A /* PmdErrors.swift in Sources */,
+				A57D050C292254E2002824D9 /* BlePmdClient.swift in Sources */,
+				6C2409432216A6E3001C1A84 /* BlePsFtpUtility.swift in Sources */,
+				6C2409442216A6E3001C1A84 /* BlePsFtpClient.swift in Sources */,
+				84059D122DF031EF0013C470 /* exercise_samples2.pb.swift in Sources */,
+				6C39E8DA209B07BC001F7E44 /* CBDeviceListenerImpl.swift in Sources */,
+				A57D053D29309B71002824D9 /* PpiData.swift in Sources */,
+				A5E5BDBB295AC55C00188D55 /* OfflineRecordingData.swift in Sources */,
+				A57728A327CE860600855884 /* pftp_error.pb.swift in Sources */,
+				A55604C4298B893800DB6EDB /* PolarOnlineStreamingApi.swift in Sources */,
+				A5E5BDBD295AC56000188D55 /* OfflineRecordingError.swift in Sources */,
+				AABCBC5E2D08494A00364101 /* SkinTemperatureData.swift in Sources */,
+				A57D05492930B217002824D9 /* PpgData.swift in Sources */,
+				6C39E8DB209B07BC001F7E44 /* CBDeviceSessionImpl.swift in Sources */,
+				A57728B727CE860600855884 /* PolarBleApi.swift in Sources */,
+				6C39E8DC209B07BC001F7E44 /* CBScanner.swift in Sources */,
+				842B36122DE4724D0059C207 /* exercise_route2.pb.swift in Sources */,
+				6C39E8DD209B07BC001F7E44 /* BleDeviceSession.swift in Sources */,
+				A57728BB27CE860600855884 /* PolarBleApiDefaultImpl.swift in Sources */,
+				6C39E8DE209B07BC001F7E44 /* BlePolarDeviceIdUtility.swift in Sources */,
+				A57728AB27CE860600855884 /* exercise_samples.pb.swift in Sources */,
+				A57D051F29226590002824D9 /* GyrData.swift in Sources */,
+				A5CD1731297C03D400C62BC7 /* PmdSecret.swift in Sources */,
+				A55D31C42ADD5EAE005CD1B3 /* LedConfig.swift in Sources */,
+				A57728B527CE860600855884 /* PolarBleApiObservers.swift in Sources */,
+				A57D05372930932A002824D9 /* MagData.swift in Sources */,
+				A57D05432930A8CA002824D9 /* EcgData.swift in Sources */,
+				6C39E8DF209B07BC001F7E44 /* BleAdvertisementContent.swift in Sources */,
+				A58F0CAE2983EE2700B5615C /* OfflineHrData.swift in Sources */,
+				AAB386F52CB934CF00D18313 /* PolarAutomaticSamples.swift in Sources */,
+				AAB386F62CB934CF00D18313 /* PolarStoredData.swift in Sources */,
+				A57728A127CE860600855884 /* PolarBleApiImpl.swift in Sources */,
+				6C39E8E0209B07BC001F7E44 /* BlePolarHrAdvertisement.swift in Sources */,
+				A5A88C01299A64C8007B9C28 /* PmdOfflineTrigger.swift in Sources */,
+				6C39E8E1209B07BC001F7E44 /* BleRssiFilter.swift in Sources */,
+				AABC2A3C2C859DDF00BFC6BD /* PressureData.swift in Sources */,
+				A57728B327CE860600855884 /* nanopb.pb.swift in Sources */,
+				6C39E8E2209B07BC001F7E44 /* BleGattException.swift in Sources */,
+				6C39E8E5209B07BC001F7E44 /* BleBasClient.swift in Sources */,
+				95A641832D37E57000178ED3 /* PolarBleApiImpl+Sleep.swift in Sources */,
+				6C39E8E6209B07BC001F7E44 /* BleDisClient.swift in Sources */,
+				A55604C7298B8B2700DB6EDB /* PolarH10OfflineExerciseApi.swift in Sources */,
+				A57D051029225779002824D9 /* PmdSetting.swift in Sources */,
+				A5385ABD29CDBB0900A6DB6A /* PmdControlPointResponse.swift in Sources */,
+				A57D0514292258D5002824D9 /* PmdMeasurementType.swift in Sources */,
+				6C39E8E7209B07BC001F7E44 /* BleHrClient.swift in Sources */,
+				6C39E8EA209B07BC001F7E44 /* BlePsdClient.swift in Sources */,
+				A5DE095D295C10E300BC2E0B /* PmdActiveMeasurement.swift in Sources */,
+				6C39E8EC209B07BC001F7E44 /* BleGattClientBase.swift in Sources */,
+				6C39E8ED209B07BC001F7E44 /* BleGattClientFactory.swift in Sources */,
+				A57728B927CE860600855884 /* PolarSensorSetting.swift in Sources */,
+				6C39E8EE209B07BC001F7E44 /* BleAttributeTransportProtocol.swift in Sources */,
+				A59A0D312990D68E007D30A3 /* PmdSdkMode.swift in Sources */,
+				CC57B5E02E60642500E90F5B /* PolarExerciseSession.swift in Sources */,
+				A55E08B52A29EB0C0059E6C7 /* BleHtsClient.swift in Sources */,
+				A5DE0959295B092700BC2E0B /* PmdRecordingType.swift in Sources */,
+				6C39E8EF209B07BC001F7E44 /* BleLogger.swift in Sources */,
+				AA27D9C92B88C38600397873 /* TemperatureData.swift in Sources */,
+				A5DE0961295C131A00BC2E0B /* PmdControlPointCommand.swift in Sources */,
+				842B36082DE4713A0059C207 /* PolarTrainingSessionApi.swift in Sources */,
+				A5D04F3C2949BCD600CE93E1 /* PolarDataUtils.swift in Sources */,
+				A5D04F362948AB4A00CE93E1 /* PolarOfflineRecordingEntry.swift in Sources */,
+				6C39E8F0209B07BC001F7E44 /* BleDeviceListener.swift in Sources */,
+				A54EC6EE29655CBD00E1B910 /* OfflineRecordingUtils.swift in Sources */,
+				95A641872D3804EF00178ED3 /* PolarSleepApi.swift in Sources */,
+				A57D053129308AE6002824D9 /* TypeUtils.swift in Sources */,
+				A5DE0955295B059900BC2E0B /* PolarOfflineRecordingApi.swift in Sources */,
+				A57728A527CE860600855884 /* pftp_notification.pb.swift in Sources */,
+				6C39E8F5209B07BC001F7E44 /* AtomicBoolean.swift in Sources */,
+				A5743684291A7DB400E901A4 /* PolarTimeUtils.swift in Sources */,
+				A5CD172E297BFC8400C62BC7 /* PolarRecordingSecret.swift in Sources */,
+				A57728A927CE860600855884 /* structures.pb.swift in Sources */,
+				842B36102DE472470059C207 /* exercise_route.pb.swift in Sources */,
+				A57728BD27CE860600855884 /* PolarErrors.swift in Sources */,
+				6C39E8F6209B07BC001F7E44 /* AtomicInteger.swift in Sources */,
+				6C39E8F7209B07BC001F7E44 /* AtomicList.swift in Sources */,
+				A5A88BFD299A5CEA007B9C28 /* PolarOfflineRecordingTriggerMode.swift in Sources */,
+				A57D051829225991002824D9 /* PmdDataFrame.swift in Sources */,
+				A57728AD27CE860600855884 /* pftp_request.pb.swift in Sources */,
+				A57728AF27CE860600855884 /* types.pb.swift in Sources */,
+				6C39E8F8209B07BC001F7E44 /* TimeUtility.swift in Sources */,
+				6C39E8FA209B07BC001F7E44 /* RxObserver.swift in Sources */,
+				A57728B127CE860600855884 /* exercise_rr_samples.pb.swift in Sources */,
+				6C39E8FB209B07BC001F7E44 /* RxUtils.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6C770B67206B779900F3D51D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A57728A627CE860600855884 /* pftp_response.pb.swift in Sources */,
+				6C2408F8220D9581001C1A84 /* CBScanningProtocol.swift in Sources */,
+				84D0098C2C85D41800AB4C43 /* PolarFirstTimeUseConfig.swift in Sources */,
+				A54BC2A429DC471B003F022A /* PolarDiskSpaceData.swift in Sources */,
+				840880BF2D07329D00883420 /* PolarNightlyRechargeUtils.swift in Sources */,
+				AA27EF2F2C995EB30097AF23 /* PolarUserDeviceSettings.swift in Sources */,
+				A5D04F382948AB9800CE93E1 /* PolarOfflineRecordingData.swift in Sources */,
+				6CEA10DF2175AA5B00E16FBF /* BlePsFtpUtility.swift in Sources */,
+				A5BC3EFE2BF34FEA008DD743 /* act_samples.pb.swift in Sources */,
+				AACBC92A2BEB4491003A5D1B /* sensor_data_log.pb.swift in Sources */,
+				840880BC2D072E6900883420 /* PolarNightlyRechargeData.swift in Sources */,
+				A57D05222924C800002824D9 /* PmdTimeStampUtils.swift in Sources */,
+				6CEA10E02175AA5B00E16FBF /* BlePsFtpClient.swift in Sources */,
+				6C981041215B7136002820A2 /* AtomicType.swift in Sources */,
+				A52DB1DC2A1F59770073E795 /* communications_pftp_request.pb.swift in Sources */,
+				AA2ACAE72DE71566002A3707 /* EmptyData.swift in Sources */,
+				A57D052A292F60E3002824D9 /* AccData.swift in Sources */,
+				A5385AC029CDBBDF00A6DB6A /* PmdErrors.swift in Sources */,
+				A57D050B292254E2002824D9 /* BlePmdClient.swift in Sources */,
+				6C707D2920D7F138002FE7FF /* RxUtils.swift in Sources */,
+				6C770B86206B77F300F3D51D /* CBDeviceListenerImpl.swift in Sources */,
+				6C770B87206B77F300F3D51D /* CBDeviceSessionImpl.swift in Sources */,
+				A57D053C29309B71002824D9 /* PpiData.swift in Sources */,
+				A5E5BDBA295AC55B00188D55 /* OfflineRecordingData.swift in Sources */,
+				95D4392A2D380AFB004AB936 /* PolarBleApiImpl+RestService.swift in Sources */,
+				AA818E642C06F8D700D45B3C /* sleepanalysisresult.pb.swift in Sources */,
+				A57728A227CE860600855884 /* pftp_error.pb.swift in Sources */,
+				A5A43C6B2BDFD00D0066334F /* FirmwareUpdateApi.swift in Sources */,
+				A55604C3298B893800DB6EDB /* PolarOnlineStreamingApi.swift in Sources */,
+				A5E5BDBC295AC55F00188D55 /* OfflineRecordingError.swift in Sources */,
+				AAEEB2322D3E52F900D2B4A7 /* PolarSkinTemperatureData.swift in Sources */,
+				A5986D2A2BF7534A0014C5DF /* PolarDistanceData.swift in Sources */,
+				A57D05482930B217002824D9 /* PpgData.swift in Sources */,
+				6C770B88206B77F300F3D51D /* CBScanner.swift in Sources */,
+				A57728B627CE860600855884 /* PolarBleApi.swift in Sources */,
+				6C770B8A206B77F300F3D51D /* BleDeviceSession.swift in Sources */,
+				AA818E5B2C06F8A000D45B3C /* PolarSleepData.swift in Sources */,
+				6C770B8B206B77F300F3D51D /* BlePolarDeviceIdUtility.swift in Sources */,
+				842B36142DE472AB0059C207 /* PolarPlainDate.swift in Sources */,
+				A57728BA27CE860600855884 /* PolarBleApiDefaultImpl.swift in Sources */,
+				A580139825B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */,
+				AABCBC5C2D08494A00364101 /* SkinTemperatureData.swift in Sources */,
+				A57728AA27CE860600855884 /* exercise_samples.pb.swift in Sources */,
+				A57D051E2922658F002824D9 /* GyrData.swift in Sources */,
+				AA35F12D2E607D2600D44C87 /* PolarActivityData.swift in Sources */,
+				A5CD1730297C03D400C62BC7 /* PmdSecret.swift in Sources */,
+				AAEEB2382D3E532200D2B4A7 /* temperature_measurement_period.pb.swift in Sources */,
+				AAEEB2392D3E532200D2B4A7 /* types_proto3.pb.swift in Sources */,
+				AAEEB2342D3E530F00D2B4A7 /* PolarSkinTemperatureUtils.swift in Sources */,
+				A55D31C32ADD5EAE005CD1B3 /* LedConfig.swift in Sources */,
+				CC57B5E12E60642500E90F5B /* PolarExerciseSession.swift in Sources */,
+				A57728B427CE860600855884 /* PolarBleApiObservers.swift in Sources */,
+				A57D05362930932A002824D9 /* MagData.swift in Sources */,
+				844D99942D083D4600FCE97C /* nightly_recovery.pb.swift in Sources */,
+				A57D05422930A8CA002824D9 /* EcgData.swift in Sources */,
+				8428E1DF2CEF47350021E3B1 /* PolarAutomaticSamplesUtils.swift in Sources */,
+				6C770B8C206B77F300F3D51D /* BleAdvertisementContent.swift in Sources */,
+				95EA2BA02D3E887E00657DE5 /* PolarDeviceRestApiUtils.swift in Sources */,
+				AA2FBE0F2DDB2F8900D2378F /* PolarTrainingSessionUtils.swift in Sources */,
+				A5BC3EF42BF20FBD008DD743 /* PolarActivityUtils.swift in Sources */,
+				A58F0CAD2983EE2700B5615C /* OfflineHrData.swift in Sources */,
+				A57728A027CE860600855884 /* PolarBleApiImpl.swift in Sources */,
+				95A641822D37E57000178ED3 /* PolarBleApiImpl+Sleep.swift in Sources */,
+				A5A43C6E2BDFD0520066334F /* FirmwareUpdateApiModels.swift in Sources */,
+				A5A127E1273689E0007874B8 /* PolarAdvDataUtility.swift in Sources */,
+				A5A88C00299A64C8007B9C28 /* PmdOfflineTrigger.swift in Sources */,
+				6C770B8D206B77F300F3D51D /* BlePolarHrAdvertisement.swift in Sources */,
+				8484D97F2C775B3400271DA5 /* PolarDeviceUuid.swift in Sources */,
+				AA27EF342C995EFC0097AF23 /* PolarUserDeviceSettingsUtils.swift in Sources */,
+				84D0098F2C85D46500AB4C43 /* user_physdata.pb.swift in Sources */,
+				A57728B227CE860600855884 /* nanopb.pb.swift in Sources */,
+				6C770B8E206B77F300F3D51D /* BleRssiFilter.swift in Sources */,
+				6C770B8F206B77F300F3D51D /* BleGattException.swift in Sources */,
+				8403763E2D50EB080004AB66 /* PolarCaloriesData.swift in Sources */,
+				AAB841F52E13D44D00810B09 /* BlePfcClient.swift in Sources */,
+				6C770B92206B77F300F3D51D /* BleBasClient.swift in Sources */,
+				A55604C6298B8B2700DB6EDB /* PolarH10OfflineExerciseApi.swift in Sources */,
+				A57D050F29225779002824D9 /* PmdSetting.swift in Sources */,
+				A5385ABC29CDBB0900A6DB6A /* PmdControlPointResponse.swift in Sources */,
+				A57D0513292258D5002824D9 /* PmdMeasurementType.swift in Sources */,
+				6C770B93206B77F300F3D51D /* BleDisClient.swift in Sources */,
+				6C770B94206B77F300F3D51D /* BleHrClient.swift in Sources */,
+				A5DE095C295C10E300BC2E0B /* PmdActiveMeasurement.swift in Sources */,
+				6C770B95206B77F300F3D51D /* BlePsdClient.swift in Sources */,
+				A5A43C682BDFCF610066334F /* PolarFirmwareUpdateModels.swift in Sources */,
+				6C770B96206B77F300F3D51D /* BleGattClientBase.swift in Sources */,
+				AABC2A3B2C859DDF00BFC6BD /* PressureData.swift in Sources */,
+				A57728B827CE860600855884 /* PolarSensorSetting.swift in Sources */,
+				A5A43C712BDFD2920066334F /* PolarBackupManager.swift in Sources */,
+				AA15C89E2DC1DA730015E8C0 /* PolarTrainingSessionModels.swift in Sources */,
+				AACBC9212BEB4392003A5D1B /* SDLogConfig.swift in Sources */,
+				84655A912C08947F00D49203 /* PolarActiveTimeData.swift in Sources */,
+				A5A5EA352BE0DD8E00EDEF87 /* PolarFirmwareUpdateUtils.swift in Sources */,
+				6C770B97206B77F300F3D51D /* BleGattClientFactory.swift in Sources */,
+				A59A0D302990D68E007D30A3 /* PmdSdkMode.swift in Sources */,
+				A55E08B42A29EB0C0059E6C7 /* BleHtsClient.swift in Sources */,
+				AA7DA2852CF9B4FF00275965 /* PolarAutomaticSamplesData.swift in Sources */,
+				AAB386F12CB918CA00D18313 /* ppi_samples.pb.swift in Sources */,
+				95EA2BB02D4217B100657DE5 /* PolarCompressionUtils.swift in Sources */,
+				AAB386F22CB918CA00D18313 /* automatic_samples.pb.swift in Sources */,
+				A5DE0958295B092700BC2E0B /* PmdRecordingType.swift in Sources */,
+				6C770B98206B77F300F3D51D /* BleAttributeTransportProtocol.swift in Sources */,
+				A5DE0960295C131A00BC2E0B /* PmdControlPointCommand.swift in Sources */,
+				A5BC3EEE2BF20D39008DD743 /* PolarStepsData.swift in Sources */,
+				AA27D9C82B88C38600397873 /* TemperatureData.swift in Sources */,
+				A5D04F3B2949BCD600CE93E1 /* PolarDataUtils.swift in Sources */,
+				AA5981772D6318C900267B81 /* Polar247PPiSamplesData.swift in Sources */,
+				AA15C8A02DC1DA910015E8C0 /* training_session.pb.swift in Sources */,
+				A5D04F352948AB4900CE93E1 /* PolarOfflineRecordingEntry.swift in Sources */,
+				6C770B9A206B77F300F3D51D /* BleLogger.swift in Sources */,
+				A54EC6ED29655CBD00E1B910 /* OfflineRecordingUtils.swift in Sources */,
+				84059D112DEF096C0013C470 /* exercise_samples2.pb.swift in Sources */,
+				A5BC3EF12BF20DB5008DD743 /* PolarActivityApi.swift in Sources */,
+				A57D053029308AE6002824D9 /* TypeUtils.swift in Sources */,
+				842B36092DE4713A0059C207 /* PolarTrainingSessionApi.swift in Sources */,
+				AAB386E32CB803EC00D18313 /* UserIdentifierType.swift in Sources */,
+				A5DE0954295B059900BC2E0B /* PolarOfflineRecordingApi.swift in Sources */,
+				A57728A427CE860600855884 /* pftp_notification.pb.swift in Sources */,
+				AA818E612C06F8C200D45B3C /* PolarSleepApi.swift in Sources */,
+				AAB386F72CB934CF00D18313 /* PolarAutomaticSamples.swift in Sources */,
+				AAB386F82CB934CF00D18313 /* PolarStoredData.swift in Sources */,
+				6C770B9B206B77F300F3D51D /* BleDeviceListener.swift in Sources */,
+				A5743683291A7DB400E901A4 /* PolarTimeUtils.swift in Sources */,
+				A5CD172D297BFC8400C62BC7 /* PolarRecordingSecret.swift in Sources */,
+				AA27EF2C2C995E690097AF23 /* user_devset.pb.swift in Sources */,
+				842B360F2DE471AD0059C207 /* exercise_route2.pb.swift in Sources */,
+				A57728A827CE860600855884 /* structures.pb.swift in Sources */,
+				A5986D2E2BF7537E0014C5DF /* dailysummary.pb.swift in Sources */,
+				A57728BC27CE860600855884 /* PolarErrors.swift in Sources */,
+				6C770BA1206B77F300F3D51D /* AtomicBoolean.swift in Sources */,
+				A5A43C652BDFCB830066334F /* PolarSdkModeApi.swift in Sources */,
+				6C770BA2206B77F300F3D51D /* AtomicInteger.swift in Sources */,
+				846B11B82C60E07A004EA886 /* device.pb.swift in Sources */,
+				AAB386E62CB8042100D18313 /* user_id.pb.swift in Sources */,
+				A5A88BFC299A5CEA007B9C28 /* PolarOfflineRecordingTriggerMode.swift in Sources */,
+				848660362DC0C987003B92EF /* exercise_base.pb.swift in Sources */,
+				A57D051729225991002824D9 /* PmdDataFrame.swift in Sources */,
+				A57728AC27CE860600855884 /* pftp_request.pb.swift in Sources */,
+				A57728AE27CE860600855884 /* types.pb.swift in Sources */,
+				A5A43C622BDFCB270066334F /* PolarFirmwareUpdateApi.swift in Sources */,
+				AA818E5E2C06F8B100D45B3C /* PolarSleepUtils.swift in Sources */,
+				6C770BA3206B77F300F3D51D /* AtomicList.swift in Sources */,
+				6C770BA4206B77F300F3D51D /* TimeUtility.swift in Sources */,
+				A57728B027CE860600855884 /* exercise_rr_samples.pb.swift in Sources */,
+				6C770BA6206B77F300F3D51D /* RxObserver.swift in Sources */,
+				842B360D2DE471870059C207 /* exercise_route.pb.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A5743688291B81F500E901A4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				842B36162DE49B5C0059C207 /* PolarTrainingSessionUtilsTest.swift in Sources */,
+				A5BC3EFC2BF34EA7008DD743 /* PolarActivityUtilsTest.swift in Sources */,
+				95EA2B9A2D3A2CCC00657DE5 /* PolarDeviceRestApiTests.swift in Sources */,
+				842B36132DE4724D0059C207 /* exercise_route2.pb.swift in Sources */,
+				AAF7FEE92D94012400B13734 /* PolarPlainDate.swift in Sources */,
+				A5E416D32B7F7CD300314EEB /* PolarFirmwareUpdateUtilsTest.swift in Sources */,
+				A57F8B182BE0E3AA00F8708F /* BleGattException.swift in Sources */,
+				AA15C8A12DC1DA910015E8C0 /* training_session.pb.swift in Sources */,
+				955B94092D92A51C00F0447A /* PolarOfflineRecordingApiTests.swift in Sources */,
+				A5A43C6C2BDFD00D0066334F /* FirmwareUpdateApi.swift in Sources */,
+				84059D182DF04B5A0013C470 /* exercise_rr_samples.pb.swift in Sources */,
+				A5A5EA3A2BE0DF5C00EDEF87 /* BleLogger.swift in Sources */,
+				AA2FBE0E2DDB2F8900D2378F /* PolarTrainingSessionUtils.swift in Sources */,
+				84389FD52E4C81E600FDA8CF /* PolarSensorSettingTest.swift in Sources */,
+				841A37892C7DF53B009194CC /* PolarDeviceUuidTest.swift in Sources */,
+				84059D142DF0340E0013C470 /* exercise_samples.pb.swift in Sources */,
+				A5A43C602BDFC9500066334F /* PolarBackupManagerTest.swift in Sources */,
+				84D71C9F2D09C19600CE8089 /* PolarNightlyRechargeUtilsTest.swift in Sources */,
+				848660372DC0C987003B92EF /* exercise_base.pb.swift in Sources */,
+				A57F8B1C2BE0E67100F8708F /* communications_pftp_request.pb.swift in Sources */,
+				AA15C89D2DC1DA730015E8C0 /* PolarTrainingSessionModels.swift in Sources */,
+				84CE7CF62C0DE98B0096A44A /* PolarSleepUtilsTest.swift in Sources */,
+				8428E1E42CEF73CB0021E3B1 /* PolarAutomaticSamplesUnitTest.swift in Sources */,
+				84059D152DF0342A0013C470 /* exercise_samples2.pb.swift in Sources */,
+				84CE7CF52C0DDAF80096A44A /* MockBlePsFtpClient.swift in Sources */,
+				84698A592DB8FE9D006AD8FA /* structures.pb.swift in Sources */,
+				A5743696291B824300E901A4 /* PolarTimeUtilsTests.swift in Sources */,
+				A5A43C6F2BDFD0520066334F /* FirmwareUpdateApiModels.swift in Sources */,
+				9590AD942D95497700EBD84E /* MockGattServiceTransmitterImpl.swift in Sources */,
+				842B36112DE472470059C207 /* exercise_route.pb.swift in Sources */,
+				84698A582DB8FDB4006AD8FA /* types.pb.swift in Sources */,
+				AA2ACAE62DE71566002A3707 /* EmptyData.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		6C1079271D6D6EA000931948 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6C34DE871CAA3F240083EB1F /* iOSCommunications */;
+			targetProxy = 6C1079261D6D6EA000931948 /* PBXContainerItemProxy */;
+		};
+		A5743692291B81F500E901A4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilter = ios;
+			target = 6C770B6B206B779900F3D51D /* PolarBleSdk */;
+			targetProxy = A5743691291B81F500E901A4 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		6C1079291D6D6EA000931948 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9F1D8481CB3836037355EFD4 /* Pods-iOSCommunicationsTests.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = Tests/iOSCommunicationsTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iOSCommunicationsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		6C10792A1D6D6EA000931948 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 869700D0971E27B1E230468A /* Pods-iOSCommunicationsTests.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = Tests/iOSCommunicationsTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iOSCommunicationsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		6C34DE8E1CAA3F240083EB1F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BITCODE_GENERATION_MODE = "";
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = NO;
+				CLANG_WARN_COMMA = NO;
+				CLANG_WARN_CONSTANT_CONVERSION = NO;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = NO;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = NO;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = NO;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEFINES_MODULE = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = "";
+				"HEADER_SEARCH_PATHS[arch=*]" = "$(inherited)";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = "";
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = "";
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = "";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		6C34DE8F1CAA3F240083EB1F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BITCODE_GENERATION_MODE = "";
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = NO;
+				CLANG_WARN_COMMA = NO;
+				CLANG_WARN_CONSTANT_CONVERSION = NO;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = NO;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = NO;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = NO;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEFINES_MODULE = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VALUE = NO;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				HEADER_SEARCH_PATHS = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = "";
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = "";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = "";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		6C34DE911CAA3F240083EB1F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 31CBF837AEFC4679AF13D8D4 /* Pods-iOSCommunications.debug.xcconfig */;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				CLANG_ENABLE_MODULES = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				"HEADER_SEARCH_PATHS[arch=*]" = "$(inherited)";
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/iOSCommunications/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 14.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 14.1.9;
+				MODULEMAP_FILE = "";
+				MODULEMAP_PRIVATE_FILE = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iOSCommunications;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_INCLUDE_PATHS = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "$(SWIFT_MODULE_NAME)-Swift.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		6C34DE921CAA3F240083EB1F /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = B51D1928BB072A399C96061C /* Pods-iOSCommunications.release.xcconfig */;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				CLANG_ENABLE_MODULES = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				"HEADER_SEARCH_PATHS[arch=*]" = "$(inherited)";
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/iOSCommunications/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 14.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 14.1.9;
+				MODULEMAP_FILE = "";
+				MODULEMAP_PRIVATE_FILE = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.iOSCommunications;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_INCLUDE_PATHS = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "$(SWIFT_MODULE_NAME)-Swift.h";
+				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		6C39E8C9209B0755001F7E44 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6A9605370BA977B96745D3BE /* Pods-PolarBleSdkWatchOs.debug.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = NO;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				"HEADER_SEARCH_PATHS[arch=*]" = (
+					"$(inherited)",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RxSwift-watchOS/RxSwift.framework/Headers\"",
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/PolarBleSdk/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 3.3.0;
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdkWatchOs;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/iOSCommunications/sdk/impl/protobuf";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 5.0;
+			};
+			name = Debug;
+		};
+		6C39E8CA209B0755001F7E44 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2B53CFCDD87ACF2297030478 /* Pods-PolarBleSdkWatchOs.release.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = NO;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/PolarBleSdk/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 3.3.0;
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdkWatchOs;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/iOSCommunications/sdk/impl/protobuf";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 5.0;
+			};
+			name = Release;
+		};
+		6C770B71206B779A00F3D51D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 425280368159F4E5FF416098 /* Pods-PolarBleSdk.debug.xcconfig */;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
+				EXCLUDED_ARCHS = "";
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				"HEADER_SEARCH_PATHS[arch=*]" = "$(inherited)";
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/PolarBleSdk/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = mh_dylib;
+				MARKETING_VERSION = 3.3.0;
+				"OTHER_CFLAGS[arch=*]" = "-fembed-bitcode";
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdk;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/iOSCommunications/sdk/impl/protobuf";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_WORKSPACE = YES;
+			};
+			name = Debug;
+		};
+		6C770B72206B779A00F3D51D /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 87FB706CC2F9CABA4D82915F /* Pods-PolarBleSdk.release.xcconfig */;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/PolarBleSdk/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = mh_dylib;
+				MARKETING_VERSION = 3.3.0;
+				"OTHER_CFLAGS[arch=*]" = "-fembed-bitcode";
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdk;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/iOSCommunications/sdk/impl/protobuf";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_WORKSPACE = YES;
+			};
+			name = Release;
+		};
+		A5743694291B81F500E901A4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1654AE2486652C1371FDBEEB /* Pods-PolarBleSdkTests.debug.xcconfig */;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdkTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A5743695291B81F500E901A4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 64C3C9F5FC21E1BE328F8217 /* Pods-PolarBleSdkTests.release.xcconfig */;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PolarBleSdkTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6C1079281D6D6EA000931948 /* Build configuration list for PBXNativeTarget "iOSCommunicationsTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6C1079291D6D6EA000931948 /* Debug */,
+				6C10792A1D6D6EA000931948 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6C34DE821CAA3F240083EB1F /* Build configuration list for PBXProject "iOSCommunications" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6C34DE8E1CAA3F240083EB1F /* Debug */,
+				6C34DE8F1CAA3F240083EB1F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6C34DE901CAA3F240083EB1F /* Build configuration list for PBXNativeTarget "iOSCommunications" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6C34DE911CAA3F240083EB1F /* Debug */,
+				6C34DE921CAA3F240083EB1F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6C39E8C8209B0755001F7E44 /* Build configuration list for PBXNativeTarget "PolarBleSdkWatchOs" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6C39E8C9209B0755001F7E44 /* Debug */,
+				6C39E8CA209B0755001F7E44 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6C770B73206B779A00F3D51D /* Build configuration list for PBXNativeTarget "PolarBleSdk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6C770B71206B779A00F3D51D /* Debug */,
+				6C770B72206B779A00F3D51D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A5743693291B81F500E901A4 /* Build configuration list for PBXNativeTarget "PolarBleSdkTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A5743694291B81F500E901A4 /* Debug */,
+				A5743695291B81F500E901A4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 6C34DE7F1CAA3F240083EB1F /* Project object */;
+}

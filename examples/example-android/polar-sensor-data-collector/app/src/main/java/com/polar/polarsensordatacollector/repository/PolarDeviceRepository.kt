@@ -5,6 +5,9 @@ import android.util.Log
 import com.polar.androidcommunications.api.ble.model.DisInfo
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleDisClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.ChargeState
+import com.polar.androidcommunications.api.ble.model.gatt.client.PowerSourcesState
+import com.polar.androidcommunications.api.ble.model.gatt.client.BatteryPresentState
+import com.polar.androidcommunications.api.ble.model.gatt.client.PowerSourceState
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
 import com.polar.polarsensordatacollector.DataCollector
 import com.polar.polarsensordatacollector.crypto.SecretKeyManager
@@ -38,6 +41,7 @@ import com.polar.sdk.api.model.activity.PolarActiveTimeData
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSession
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference
 import com.polar.sdk.api.model.activity.PolarActivitySamplesDayData
+import kotlinx.coroutines.rx3.awaitSingleOrNull
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.*
@@ -59,6 +63,10 @@ data class DeviceInformation(
     val firmwareVersion: String = "",
     val batteryLevel: Int? = null,
     val batteryChargingStatus: ChargeState = ChargeState.UNKNOWN,
+    val powerSourcesState: PowerSourcesState =
+        PowerSourcesState(BatteryPresentState.UNKNOWN,
+            PowerSourceState.UNKNOWN,
+            PowerSourceState.UNKNOWN)
 )
 
 data class OfflineRecordingData(
@@ -236,6 +244,17 @@ class PolarDeviceRepository @Inject constructor(
         }
     }
 
+    suspend fun getUserPhysicalConfiguration(deviceId: String): ResultOfRequest<PolarPhysicalConfiguration?> =
+        withContext(Dispatchers.IO) {
+            try {
+                val result: PolarPhysicalConfiguration? = api.getUserPhysicalConfiguration(deviceId)
+                    .awaitSingleOrNull()
+                ResultOfRequest.Success(result)
+            } catch (e: Exception) {
+                ResultOfRequest.Failure("Failed to get device physical info", e)
+            }
+        }
+
     private fun saveData(deviceId: String, offlineRecData: PolarOfflineRecordingData): Uri {
         val logIdentifier = getDeviceName(deviceId) ?: deviceId
         when (offlineRecData) {
@@ -381,6 +400,12 @@ class PolarDeviceRepository @Inject constructor(
     override fun batteryChargingStatusReceived(identifier: String, chargingStatus: ChargeState) {
         _deviceInformation.update {
             it.copy(deviceId = identifier, batteryChargingStatus = chargingStatus)
+        }
+    }
+
+    override fun powerSourcesStateReceived(identifier: String, powerSourcesState: PowerSourcesState) {
+        _deviceInformation.update {
+            it.copy(deviceId = identifier, powerSourcesState = powerSourcesState)
         }
     }
 
@@ -878,16 +903,16 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun getSleepData(deviceId: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<PolarSleepData>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            var result = api.getSleep(deviceId, from, to).await()
+            val result = api.getSleep(deviceId, from, to).await()
             ResultOfRequest.Success(result)
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
         }
     }
 
-    suspend fun getStepsData(deviceId: String, from: Date, to: Date): ResultOfRequest<List<PolarStepsData>> = withContext(Dispatchers.IO) {
+    suspend fun getStepsData(deviceId: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<PolarStepsData>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            var result = api.getSteps(deviceId, from, to).await()
+            val result = api.getSteps(deviceId, from, to).await()
             ResultOfRequest.Success(result)
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
@@ -896,8 +921,8 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun getCaloriesData(
         deviceId: String,
-        from: Date,
-        to: Date,
+        from: LocalDate,
+        to: LocalDate,
         caloriesType: CaloriesType
     ): ResultOfRequest<List<PolarCaloriesData>> = withContext(Dispatchers.IO) {
         return@withContext try {
@@ -917,7 +942,7 @@ class PolarDeviceRepository @Inject constructor(
         }
     }
 
-    suspend fun getNightlyRechargeData(deviceId: String, from: Date, to: Date): ResultOfRequest<List<PolarNightlyRechargeData>> = withContext(Dispatchers.IO) {
+    suspend fun getNightlyRechargeData(deviceId: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<PolarNightlyRechargeData>> = withContext(Dispatchers.IO) {
         return@withContext try {
             val result = api.getNightlyRecharge(deviceId, from, to).await()
             ResultOfRequest.Success(result)
@@ -1017,8 +1042,8 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun getActiveTimeData(
         deviceId: String,
-        from: Date,
-        to: Date
+        from: LocalDate,
+        to: LocalDate
     ): ResultOfRequest<List<PolarActiveTimeData>> = withContext(Dispatchers.IO) {
         return@withContext try {
             val result = api.getActiveTime(deviceId, from, to).await()

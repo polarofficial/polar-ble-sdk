@@ -2,7 +2,7 @@
 
 import Foundation
 
-public struct AutomaticSamples {
+public struct AutomaticSamples: Codable {
     
     public var day: Date? = nil
     

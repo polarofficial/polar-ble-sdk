@@ -248,7 +248,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                         <tr id="i0" class="altColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarStepsData.html>PolarStepsData</a>&gt;&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getSteps(java.lang.String,java.util.Date,java.util.Date)>getSteps</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getSteps(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getSteps</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate) </code>
                                             </th>
                                             <td class="colLast">Get steps for a given period.</td>
                                         </tr>
@@ -264,7 +264,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                         <tr id="i2" class="altColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarDistanceData.html>PolarDistanceData</a>&gt;&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getDistance(java.lang.String,java.util.Date,java.util.Date)>getDistance</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getDistance(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getDistance</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate) </code>
                                             </th>
                                             <td class="colLast">Get distance for a given period.</td>
                                         </tr>
@@ -272,7 +272,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                         <tr id="i3" class="rowColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarActiveTimeData.html>PolarActiveTimeData</a>&gt;&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getActiveTime(java.lang.String,java.util.Date,java.util.Date)>getActiveTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getActiveTime(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getActiveTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate) </code>
                                             </th>
                                             <td class="colLast">Get active time for a given period.</td>
                                         </tr>
@@ -280,7 +280,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                         <tr id="i4" class="altColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarCaloriesData.html>PolarCaloriesData</a>&gt;&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getCalories(java.lang.String,java.util.Date,java.util.Date,com.polar.sdk.impl.utils.CaloriesType)>getCalories</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate, <a href=../impl/utils/CaloriesType.html>CaloriesType</a> caloriesType) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getCalories(java.lang.String,java.time.LocalDate,java.time.LocalDate,com.polar.sdk.impl.utils.CaloriesType)>getCalories</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate, <a href=../impl/utils/CaloriesType.html>CaloriesType</a> caloriesType) </code>
                                             </th>
                                             <td class="colLast">Get specific calories type for a given period.</td>
                                         </tr>
@@ -296,7 +296,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                         <tr id="i6" class="altColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/sleep/PolarNightlyRechargeData.html>PolarNightlyRechargeData</a>&gt;&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getNightlyRecharge(java.lang.String,java.util.Date,java.util.Date)>getNightlyRecharge</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getNightlyRecharge(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getNightlyRecharge</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate) </code>
                                             </th>
                                             <td class="colLast">Get nightly recharge for a given period.</td>
                                         </tr>
@@ -353,7 +353,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                             </a>
                                 <h3>Method Detail</h3>
                                 
-                                <a id="getSteps(java.lang.String,java.util.Date,java.util.Date)">
+                                <a id="getSteps(java.lang.String,java.time.LocalDate,java.time.LocalDate)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -361,7 +361,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                           >
                                     <li class="blockList">
                                         <h4>getSteps</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarStepsData.html>PolarStepsData</a>&gt;&gt; <a href=PolarBleApi.html#getSteps(java.lang.String,java.util.Date,java.util.Date)>getSteps</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate)</pre>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarStepsData.html>PolarStepsData</a>&gt;&gt; <a href=PolarBleApi.html#getSteps(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getSteps</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate)</pre>
                                         <div class="block"><p>Get steps for a given period.</p></div>
 
                                         <dl>
@@ -435,7 +435,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                     </li>
                                 </ul>
                                 
-                                <a id="getDistance(java.lang.String,java.util.Date,java.util.Date)">
+                                <a id="getDistance(java.lang.String,java.time.LocalDate,java.time.LocalDate)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -443,7 +443,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                           >
                                     <li class="blockList">
                                         <h4>getDistance</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarDistanceData.html>PolarDistanceData</a>&gt;&gt; <a href=PolarBleApi.html#getDistance(java.lang.String,java.util.Date,java.util.Date)>getDistance</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate)</pre>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarDistanceData.html>PolarDistanceData</a>&gt;&gt; <a href=PolarBleApi.html#getDistance(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getDistance</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate)</pre>
                                         <div class="block"><p>Get distance for a given period.</p></div>
 
                                         <dl>
@@ -476,7 +476,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                     </li>
                                 </ul>
                                 
-                                <a id="getActiveTime(java.lang.String,java.util.Date,java.util.Date)">
+                                <a id="getActiveTime(java.lang.String,java.time.LocalDate,java.time.LocalDate)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -484,7 +484,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                           >
                                     <li class="blockList">
                                         <h4>getActiveTime</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarActiveTimeData.html>PolarActiveTimeData</a>&gt;&gt; <a href=PolarBleApi.html#getActiveTime(java.lang.String,java.util.Date,java.util.Date)>getActiveTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate)</pre>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarActiveTimeData.html>PolarActiveTimeData</a>&gt;&gt; <a href=PolarBleApi.html#getActiveTime(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getActiveTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate)</pre>
                                         <div class="block"><p>Get active time for a given period.</p></div>
 
                                         <dl>
@@ -517,7 +517,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                     </li>
                                 </ul>
                                 
-                                <a id="getCalories(java.lang.String,java.util.Date,java.util.Date,com.polar.sdk.impl.utils.CaloriesType)">
+                                <a id="getCalories(java.lang.String,java.time.LocalDate,java.time.LocalDate,com.polar.sdk.impl.utils.CaloriesType)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -525,7 +525,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                           >
                                     <li class="blockList">
                                         <h4>getCalories</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarCaloriesData.html>PolarCaloriesData</a>&gt;&gt; <a href=PolarBleApi.html#getCalories(java.lang.String,java.util.Date,java.util.Date,com.polar.sdk.impl.utils.CaloriesType)>getCalories</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate, <a href=../impl/utils/CaloriesType.html>CaloriesType</a> caloriesType)</pre>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarCaloriesData.html>PolarCaloriesData</a>&gt;&gt; <a href=PolarBleApi.html#getCalories(java.lang.String,java.time.LocalDate,java.time.LocalDate,com.polar.sdk.impl.utils.CaloriesType)>getCalories</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate, <a href=../impl/utils/CaloriesType.html>CaloriesType</a> caloriesType)</pre>
                                         <div class="block"><p>Get specific calories type for a given period.</p></div>
 
                                         <dl>
@@ -603,7 +603,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                     </li>
                                 </ul>
                                 
-                                <a id="getNightlyRecharge(java.lang.String,java.util.Date,java.util.Date)">
+                                <a id="getNightlyRecharge(java.lang.String,java.time.LocalDate,java.time.LocalDate)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -611,7 +611,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                           >
                                     <li class="blockList">
                                         <h4>getNightlyRecharge</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/sleep/PolarNightlyRechargeData.html>PolarNightlyRechargeData</a>&gt;&gt; <a href=PolarBleApi.html#getNightlyRecharge(java.lang.String,java.util.Date,java.util.Date)>getNightlyRecharge</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/util/Date.html>Date</a> toDate)</pre>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/sleep/PolarNightlyRechargeData.html>PolarNightlyRechargeData</a>&gt;&gt; <a href=PolarBleApi.html#getNightlyRecharge(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getNightlyRecharge</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate)</pre>
                                         <div class="block"><p>Get nightly recharge for a given period.</p></div>
 
                                         <dl>
