@@ -5,7 +5,7 @@
 PolarBleSDK 5.0.0 is a major release that includes API-breaking changes. This guide aims to make the transition easier for developers who are updating their existing applications from PolarBleSDK 4.x.x to the latest APIs
 
 ## New Features
-PolarBleSDK 5.0.0 introduces a new feature that enables offline recording functionality in VeritySense. To learn more about offline recording, please see the [documentation](OfflineRecordingExplained.md)  
+PolarBleSDK 5.0.0 introduces a new feature that enables offline recording functionality in VeritySense. To learn more about offline recording, please see the [documentation](./SdkOfflineRecordingExplained.md).
 
 ## Terminology update
 In previous versions of the Polar BLE SDK, the core functionality provided online data streams over the BLE connection. This functionality was typically referred to as "streaming" in the PolarBleSdk vocabulary and APIs. With the introduction of new features for recording data to device storage in PolarBleSDK 5.0.0, the terminology has been updated.

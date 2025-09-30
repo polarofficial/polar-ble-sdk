@@ -8,7 +8,7 @@ The SDK mode is the mode of the device in which a wider range of stream capabili
 > When SDK mode is enabled, all algorithms on the device are disabled as they work with only certain device sensor settings. It means that any computed data such as heart rate, PP intervals, RR intervals, etc. is not available anymore. Any passively gathered data such as activity or sleep data will not be gathered anymore as well.
 
 > [!NOTE]
->Enabling the SDK mode shutdowns all sensors (accelerometer, gyroscope, PPG, ...) as they are not needed anymore by the device. These will only be enabled when explictely requested for streaming or offline recording (if supported, see [here](OfflineRecordingExplained)). Using SDK mode could also be a way to extend device lifetime to much longer time for example if only some of the sensors are enabled with low sampling rates.
+>Enabling the SDK mode shutdowns all sensors (accelerometer, gyroscope, PPG, ...) as they are not needed anymore by the device. These will only be enabled when explictely requested for streaming or offline recording (if supported, see [here](./SdkOfflineRecordingExplained.md)). Using SDK mode could also be a way to extend device lifetime to much longer time for example if only some of the sensors are enabled with low sampling rates.
 
 ## How to use SDK Mode
 
