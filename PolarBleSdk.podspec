@@ -6,8 +6,8 @@ Pod::Spec.new do |s|
     s.license           = { :type => 'Custom', :file => 'Polar_SDK_License.txt' }
     s.authors           = 'Polar Electro Oy'  
     s.swift_versions    = '5.0'
-    s.cocoapods.version           = '6.8.0'
-    s.source            = { :git => 'https://github.com/polarofficial/polar-ble-sdk.git', :tag => s.version           = '6.8.0'
+    s.cocoapods_version = '>= 1.10'
+    s.source            = { :git => 'https://github.com/polarofficial/polar-ble-sdk.git', :tag => s.version.to_s }
 
     s.ios.deployment_target = '14.0'
 
