@@ -80,7 +80,7 @@ class PolarNightlyRechargeUtilsTests: XCTestCase {
 
         let createdTimestamp = DateComponents(calendar: Calendar.current, year: 2023, month: 12, day: 5, hour: 10, minute: 0).date!
         let modifiedTimestamp = DateComponents(calendar: Calendar.current, year: 2023, month: 12, day: 5, hour: 10, minute: 30).date!
-        let sleepResultDate = DateComponents(calendar: Calendar.current, year: 2024, month: 12, day: 5).date!
+        let sleepResultDate = DateComponents(year: 2024, month: 12, day: 5)
 
         let expectedResult = PolarNightlyRechargeData(
             createdTimestamp: createdTimestamp,

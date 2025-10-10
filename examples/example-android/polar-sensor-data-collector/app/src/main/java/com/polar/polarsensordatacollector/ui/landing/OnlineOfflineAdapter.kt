@@ -41,9 +41,8 @@ class OnlineOfflineAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) 
                     putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId)
                 }
             }
-            val insertIndex = 1.coerceAtMost(items.size)
-            items.add(insertIndex, "OFFLINE" to fragment)
-            notifyItemInserted(insertIndex)
+            items.add(1, "OFFLINE" to fragment)
+            this.notifyItemInserted(items.size - 1)
         } else {
             Log.w(TAG, "trying to add OfflineRecordingFragment but found already")
         }

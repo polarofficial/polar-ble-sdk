@@ -77,14 +77,9 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         // Sunday, 9 March 2025, 03:00:00 local daylight time instead.
         
         // Arrange
-        
         let api = PolarBleApiImplWithMockSession(mockDeviceSession: mockSession)
-        let originalTimeZone = TimeZone.current
         let testTimeZone = TimeZone(identifier: "America/New_York")!
-        
-        // Time zone of system is set for the test duration
-        setenv("TZ", testTimeZone.identifier, 1)
-        CFTimeZoneResetSystem()
+        let originalTimeZone = mockTimeZoneReturningCurrent(testTimeZone)
         
         let mockUserDirectoryContent = try! Protocol_PbPFtpDirectory.with {
             $0.entries = [
@@ -111,6 +106,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
+            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),
@@ -119,7 +115,6 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         ]
         
         // Act
-        
         let result = api.listOfflineRecordings("123456")
         
         let expectation = self.expectation(description: "List offline recordings should return data")
@@ -127,16 +122,12 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         _ = result.subscribe(onNext: { entry in
     
             // Assert
-            
-            XCTAssertEqual(TimeZone.current.identifier, testTimeZone.identifier)
-           
             // Time should be shifted one hour forward
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .iso8601)
             dateFormatter.timeZone = testTimeZone
             dateFormatter.locale = Locale(identifier: "en_US")
-            dateFormatter.dateStyle = .short
-            dateFormatter.timeStyle = .full
+            dateFormatter.dateFormat = "yyyy-MM-dd, HH:mm:ss zzzz"
             let dateAsString = dateFormatter.string(from: entry.date)
             XCTAssertEqual(dateAsString, "2025-03-09, 03:01:30 Eastern Daylight Time")
             XCTAssertEqual(entry.path, "/U/0/20250309/R/020130/HR.REC")
@@ -152,11 +143,37 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         })
         
         wait(for: [expectation], timeout: 1.0)
-            
-        setenv("TZ", originalTimeZone.identifier, 1)
-        CFTimeZoneResetSystem()
-        XCTAssertEqual(TimeZone.current.identifier, originalTimeZone.identifier)
-        
+    
+        restoreTimeZone(originalTimeZone)
+        if #available(iOS 17.0, *) {
+            setenv("TZ", originalTimeZone.identifier, 1)
+            CFTimeZoneResetSystem()
+            XCTAssertEqual(TimeZone.current.identifier, originalTimeZone.identifier)
+        } else {
+            NSTimeZone.default = originalTimeZone
+            XCTAssertEqual(TimeZone.current.identifier, originalTimeZone.identifier)
+        }
+    }
+    
+    private func mockTimeZoneReturningCurrent(_ testTimeZone: TimeZone) -> TimeZone {
+        let originalTimeZone = TimeZone.current
+        if #available(iOS 17.0, *) {
+            setenv("TZ", testTimeZone.identifier, 1)
+            CFTimeZoneResetSystem()
+        } else {
+            //let originalNSTimeZone = NSTimeZone.default
+            NSTimeZone.default = testTimeZone
+        }
+        return originalTimeZone
+    }
+    
+    private func restoreTimeZone(_ originalTimeZone: TimeZone) {
+        if #available(iOS 17.0, *) {
+            setenv("TZ", originalTimeZone.identifier, 1)
+            CFTimeZoneResetSystem()
+        } else {
+            NSTimeZone.default = originalTimeZone
+        }
     }
     
     func testReadOfflineRecordingBeforeDaylightSavingsTimeShiftHourBackwardInNewYork2025_shouldReturnListing() {
@@ -167,10 +184,8 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         // Arrange
         
         let api = PolarBleApiImplWithMockSession(mockDeviceSession: mockSession)
-        let originalTimeZone = TimeZone.current
         let testTimeZone = TimeZone(identifier: "America/New_York")!
-        setenv("TZ", testTimeZone.identifier, 1)
-        CFTimeZoneResetSystem()
+        let originalTimeZone = mockTimeZoneReturningCurrent(testTimeZone)
         
         let mockUserDirectoryContent = try! Protocol_PbPFtpDirectory.with {
             $0.entries = [
@@ -197,6 +212,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
+            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),
@@ -213,15 +229,12 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         _ = result.subscribe(onNext: { entry in
     
             // Assert
-            
-            XCTAssertEqual(TimeZone.current.identifier, testTimeZone.identifier)
            
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .iso8601)
             dateFormatter.timeZone = testTimeZone
             dateFormatter.locale = Locale(identifier: "en_US")
-            dateFormatter.dateStyle = .short
-            dateFormatter.timeStyle = .full
+            dateFormatter.dateFormat = "yyyy-MM-dd, HH:mm:ss zzzz"
             let dateAsString = dateFormatter.string(from: entry.date)
             XCTAssertEqual(dateAsString, "2025-11-02, 01:30:07 Eastern Standard Time")
             
@@ -238,11 +251,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         })
         
         wait(for: [expectation], timeout: 1.0)
-            
-        setenv("TZ", originalTimeZone.identifier, 1)
-        CFTimeZoneResetSystem()
-        XCTAssertEqual(TimeZone.current.identifier, originalTimeZone.identifier)
-        
+        restoreTimeZone(originalTimeZone)
     }
     
     
@@ -254,10 +263,8 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         // Arrange
         
         let api = PolarBleApiImplWithMockSession(mockDeviceSession: mockSession)
-        let originalTimeZone = TimeZone.current
         let testTimeZone = TimeZone(identifier: "America/New_York")!
-        setenv("TZ", testTimeZone.identifier, 1)
-        CFTimeZoneResetSystem()
+        let originalTimeZone = mockTimeZoneReturningCurrent(testTimeZone)
         
         let mockUserDirectoryContent = try! Protocol_PbPFtpDirectory.with {
             $0.entries = [
@@ -284,6 +291,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
+            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),
@@ -301,14 +309,11 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
     
             // Assert
             
-            XCTAssertEqual(TimeZone.current.identifier, testTimeZone.identifier)
-           
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .iso8601)
             dateFormatter.timeZone = testTimeZone
             dateFormatter.locale = Locale(identifier: "en_US")
-            dateFormatter.dateStyle = .short
-            dateFormatter.timeStyle = .full
+            dateFormatter.dateFormat = "yyyy-MM-dd, HH:mm:ss zzzz"
             let dateAsString = dateFormatter.string(from: entry.date)
             XCTAssertEqual(dateAsString, "2025-11-02, 02:01:30 Eastern Standard Time")
             
@@ -325,10 +330,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         })
         
         wait(for: [expectation], timeout: 1.0)
-            
-        setenv("TZ", originalTimeZone.identifier, 1)
-        CFTimeZoneResetSystem()
-        XCTAssertEqual(TimeZone.current.identifier, originalTimeZone.identifier)
+        restoreTimeZone(originalTimeZone)
         
     }
     
@@ -339,11 +341,9 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         //Sunday, 30 March 2025, 04:00:00 local daylight time instead.
         
         let api = PolarBleApiImplWithMockSession(mockDeviceSession: mockSession)
-        let originalTimeZone = TimeZone.current
         let testTimeZone = TimeZone(identifier: "Europe/Helsinki")!
-        setenv("TZ", testTimeZone.identifier, 1)
-        CFTimeZoneResetSystem()
-
+        let originalTimeZone = mockTimeZoneReturningCurrent(testTimeZone)
+        
         let mockUserDirectoryContent = try! Protocol_PbPFtpDirectory.with {
             $0.entries = [
                 Protocol_PbPFtpEntry.with { $0.name = "20250330/"; $0.size = 0 }
@@ -369,6 +369,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
+            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),
@@ -385,18 +386,15 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         _ = result.subscribe(onNext: { entry in
     
             // Assert
-            
-            XCTAssertEqual(TimeZone.current.identifier, testTimeZone.identifier)
            
             // Time should be shifted one hour forward
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .iso8601)
             dateFormatter.timeZone = testTimeZone
             dateFormatter.locale = Locale(identifier: "fi_FI")
-            dateFormatter.dateStyle = .short
-            dateFormatter.timeStyle = .full
+            dateFormatter.dateFormat = "yyyy-MM-dd, HH:mm:ss zzzz"
             let dateAsString = dateFormatter.string(from: entry.date)
-            XCTAssertEqual(dateAsString, "2025-03-30 klo 04:15:00 Itä-Euroopan kesäaika")
+            XCTAssertEqual(dateAsString, "2025-03-30, 04:15:00 Itä-Euroopan kesäaika")
             
             XCTAssertEqual(entry.path, "/U/0/20250330/R/031500/HR.REC")
             XCTAssertEqual(entry.size, 444)
@@ -411,10 +409,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         })
         
         wait(for: [expectation], timeout: 1.0)
-            
-        setenv("TZ", originalTimeZone.identifier, 1)
-        CFTimeZoneResetSystem()
-        XCTAssertEqual(TimeZone.current.identifier, originalTimeZone.identifier)
+        restoreTimeZone(originalTimeZone)
         
     }
     
@@ -424,10 +419,8 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         //Sunday, 26 October 2025, 03:00:00 local standard time instead.
         
         let api = PolarBleApiImplWithMockSession(mockDeviceSession: mockSession)
-        let originalTimeZone = TimeZone.current
         let testTimeZone = TimeZone(identifier: "Europe/Helsinki")!
-        setenv("TZ", testTimeZone.identifier, 1)
-        CFTimeZoneResetSystem()
+        let originalTimeZone = mockTimeZoneReturningCurrent(testTimeZone)
 
         let mockUserDirectoryContent = try! Protocol_PbPFtpDirectory.with {
             $0.entries = [
@@ -454,6 +447,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
+            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),
@@ -470,17 +464,13 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         _ = result.subscribe(onNext: { entry in
     
             // Assert
-            
-            XCTAssertEqual(TimeZone.current.identifier, testTimeZone.identifier)
-           
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .iso8601)
             dateFormatter.timeZone = testTimeZone
             dateFormatter.locale = Locale(identifier: "fi_FI")
-            dateFormatter.dateStyle = .short
-            dateFormatter.timeStyle = .full
+            dateFormatter.dateFormat = "yyyy-MM-dd, HH:mm:ss zzzz"
             let dateAsString = dateFormatter.string(from: entry.date)
-            XCTAssertEqual(dateAsString, "2025-10-26 klo 03:15:00 Itä-Euroopan normaaliaika")
+            XCTAssertEqual(dateAsString, "2025-10-26, 03:15:00 Itä-Euroopan normaaliaika")
             
             XCTAssertEqual(entry.path, "/U/0/20251026/R/031500/HR.REC")
             XCTAssertEqual(entry.size, 444)
@@ -495,10 +485,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         })
         
         wait(for: [expectation], timeout: 1.0)
-            
-        setenv("TZ", originalTimeZone.identifier, 1)
-        CFTimeZoneResetSystem()
-        XCTAssertEqual(TimeZone.current.identifier, originalTimeZone.identifier)
+        restoreTimeZone(originalTimeZone)
         
     }
     
@@ -508,11 +495,9 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         //Sunday, 26 October 2025, 03:00:00 local standard time instead.
         
         let api = PolarBleApiImplWithMockSession(mockDeviceSession: mockSession)
-        let originalTimeZone = TimeZone.current
         let testTimeZone = TimeZone(identifier: "Europe/Helsinki")!
-        setenv("TZ", testTimeZone.identifier, 1)
-        CFTimeZoneResetSystem()
-
+        let originalTimeZone = mockTimeZoneReturningCurrent(testTimeZone)
+        
         let mockUserDirectoryContent = try! Protocol_PbPFtpDirectory.with {
             $0.entries = [
                 Protocol_PbPFtpEntry.with { $0.name = "20251026/"; $0.size = 0 }
@@ -538,6 +523,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
+            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),
@@ -554,17 +540,14 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         _ = result.subscribe(onNext: { entry in
     
             // Assert
-            
-            XCTAssertEqual(TimeZone.current.identifier, testTimeZone.identifier)
-           
+
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .iso8601)
             dateFormatter.timeZone = testTimeZone
             dateFormatter.locale = Locale(identifier: "fi_FI")
-            dateFormatter.dateStyle = .short
-            dateFormatter.timeStyle = .full
+            dateFormatter.dateFormat = "yyyy-MM-dd, HH:mm:ss zzzz"
             let dateAsString = dateFormatter.string(from: entry.date)
-            XCTAssertEqual(dateAsString, "2025-10-26 klo 04:10:00 Itä-Euroopan normaaliaika")
+            XCTAssertEqual(dateAsString, "2025-10-26, 04:10:00 Itä-Euroopan normaaliaika")
             
             XCTAssertEqual(entry.path, "/U/0/20251026/R/041000/HR.REC")
             XCTAssertEqual(entry.size, 444)
@@ -579,10 +562,6 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         })
         
         wait(for: [expectation], timeout: 1.0)
-            
-        setenv("TZ", originalTimeZone.identifier, 1)
-        CFTimeZoneResetSystem()
-        XCTAssertEqual(TimeZone.current.identifier, originalTimeZone.identifier)
-        
+        restoreTimeZone(originalTimeZone)
     }
 }

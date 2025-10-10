@@ -3,11 +3,9 @@ package com.polar.polarsensordatacollector.ui.utils
 import android.app.Activity
 import android.app.Dialog
 import android.util.Log
-import android.view.View
 import android.view.Window
 import android.widget.Button
 import android.widget.RadioGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -39,78 +37,47 @@ object DialogUtility {
         val dialog = Dialog(activity)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setContentView(R.layout.sensor_settings_dialog)
+
         val samplingRateRg = dialog.findViewById<RadioGroup>(R.id.sampling_rate_group)
         val resolutionRg = dialog.findViewById<RadioGroup>(R.id.resolution_group)
         val rangeRg = dialog.findViewById<RadioGroup>(R.id.range_group)
         val channelsRg = dialog.findViewById<RadioGroup>(R.id.channel_group)
-        drawAllAndAvailableSettingsGroup(
-            activity,
-            samplingRateRg,
-            SettingType.SAMPLE_RATE,
-            available,
-            all,
-            selectedSettings
-        )
-        drawAllAndAvailableSettingsGroup(
-            activity,
-            resolutionRg,
-            SettingType.RESOLUTION,
-            available,
-            all,
-            selectedSettings
-        )
-        drawAllAndAvailableSettingsGroup(
-            activity,
-            rangeRg,
-            SettingType.RANGE,
-            available,
-            all,
-            selectedSettings
-        )
-        drawAllAndAvailableSettingsGroup(
-            activity,
-            channelsRg,
-            SettingType.CHANNELS,
-            available,
-            all,
-            selectedSettings
-        )
-        if (samplingRateRg.childCount == 0) {
-            val noValues = dialog.findViewById<TextView>(R.id.sampling_rate_no_values)
-            noValues.visibility = View.VISIBLE
-        }
-        if (resolutionRg.childCount == 0) {
-            val noValues = dialog.findViewById<TextView>(R.id.resolution_no_values)
-            noValues.visibility = View.VISIBLE
-        }
-        if (rangeRg.childCount == 0) {
-            val noValues = dialog.findViewById<TextView>(R.id.range_no_values)
-            noValues.visibility = View.VISIBLE
-        }
-        if (channelsRg.childCount == 0) {
-            val noValues = dialog.findViewById<TextView>(R.id.channel_no_values)
-            noValues.visibility = View.VISIBLE
-        }
+
+        drawAllAndAvailableSettingsGroup(activity, samplingRateRg, SettingType.SAMPLE_RATE, available, all, selectedSettings)
+        drawAllAndAvailableSettingsGroup(activity, resolutionRg, SettingType.RESOLUTION, available, all, selectedSettings)
+        drawAllAndAvailableSettingsGroup(activity, rangeRg, SettingType.RANGE, available, all, selectedSettings)
+        drawAllAndAvailableSettingsGroup(activity, channelsRg, SettingType.CHANNELS, available, all, selectedSettings)
+
         val ok = dialog.findViewById<Button>(R.id.dialog_ok_button)
         ok.setOnClickListener { dialog.dismiss() }
-        return Single.create { e: SingleEmitter<Map<SettingType, Int>> ->
-            val selected: MutableMap<SettingType, Int> = EnumMap(SettingType::class.java)
+
+        return Single.create { emitter ->
 
             dialog.setOnDismissListener {
+                val selected: MutableMap<SettingType, Int> = EnumMap(SettingType::class.java)
                 handleSettingsGroupSelection(dialog, samplingRateRg, selected, SettingType.SAMPLE_RATE)
                 handleSettingsGroupSelection(dialog, resolutionRg, selected, SettingType.RESOLUTION)
                 handleSettingsGroupSelection(dialog, rangeRg, selected, SettingType.RANGE)
                 handleSettingsGroupSelection(dialog, channelsRg, selected, SettingType.CHANNELS)
-                e.onSuccess(selected)
+
+                if (!emitter.isDisposed) {
+                    emitter.onSuccess(selected.toMap())
+                }
             }
+
             dialog.setOnCancelListener {
-                e.tryOnError(
-                    Throwable("")
-                )
+                val defaults: MutableMap<SettingType, Int> = EnumMap(SettingType::class.java)
+                selectedSettings?.forEach { (type, value) ->
+                    if (value != null) {
+                        defaults[type] = value
+                    }
+                }
+                if (!emitter.isDisposed) {
+                    emitter.onSuccess(defaults.toMap())
+                }
             }
             dialog.show()
-        }
-            .subscribeOn(AndroidSchedulers.mainThread())
+        }.subscribeOn(AndroidSchedulers.mainThread())
     }
 
     private fun handleSettingsGroupSelection(

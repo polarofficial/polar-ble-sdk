@@ -1,0 +1,32 @@
+{
+  "configurations" : [
+    {
+      "id" : "849378C8-C497-42A8-9C86-4E2B1167A70B",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:iOSCommunications.xcodeproj",
+        "identifier" : "6C10791F1D6D6EA000931948",
+        "name" : "iOSCommunicationsTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:iOSCommunications.xcodeproj",
+        "identifier" : "A574368B291B81F500E901A4",
+        "name" : "PolarBleSdkTests"
+      }
+    }
+  ],
+  "version" : 1
+}

@@ -10,9 +10,11 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:8.7.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22"
-        classpath 'com.google.gms:google-services:4.3.15'
         classpath 'com.google.dagger:hilt-android-gradle-plugin:2.43.2'
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:2.5.3"
+        classpath "com.google.gms:google-services:4.4.3"
+        classpath "com.google.firebase:firebase-appdistribution-gradle:5.1.1"
+        classpath "com.google.firebase:firebase-crashlytics-gradle:3.0.2"
 
         if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPassword")) {
             classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.28.1"

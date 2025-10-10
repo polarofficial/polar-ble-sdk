@@ -164,6 +164,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     private var callback: PolarBleApiCallbackProvider? = null
     private var logger: PolarBleApiLogger? = null
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd", Locale.ENGLISH)
+    private val PMDFilePath = "/PMDFILES.TXT"
 
     init {
         val clients: MutableSet<Class<out BleGattBase>> = mutableSetOf()
@@ -916,6 +917,16 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     override fun listOfflineRecordings(identifier: String): Flowable<PolarOfflineRecordingEntry> {
+        return deviceSupportsFasterOfflineRecordListing(identifier).map { supports ->
+            if (supports) {
+                listOfflineRecordingsV2(identifier).flattenAsFlowable { it }
+            } else {
+                listOfflineRecordingsV1(identifier)
+            }
+        }.flatMapPublisher { it }
+    }
+
+    private fun listOfflineRecordingsV1(identifier: String): Flowable<PolarOfflineRecordingEntry> {
         val session = try {
             sessionPsFtpClientReady(identifier)
         } catch (error: Throwable) {
@@ -992,6 +1003,82 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 }
             }
             else -> Flowable.error(PolarServiceNotAvailable())
+        }
+    }
+
+    private fun listOfflineRecordingsV2(identifier: String): Single<List<PolarOfflineRecordingEntry>>{
+        return Single.create { emitter ->
+            val disposable = getFile(identifier, PMDFilePath)
+                .subscribe(
+                    { byteArray ->
+                        try {
+                            val offlineRecordings = ByteArrayInputStream(byteArray)
+                                .bufferedReader()
+                                .useLines { lines ->
+                                lines.mapNotNull { line ->
+                                    try {
+                                        BleLogger.d(TAG, "Reading line: $line")
+                                        if (line.split(" ")[1].endsWith(".REC")) {
+                                            val recordingPath = line.split(" ")[1].replace(
+                                                    Regex("\\d*\\.REC$"), ".REC")
+                                            val deviceDataType = mapOfflineRecordingTypeToPolarDeviceDataType(
+                                                recordingPath.split("/")[6]
+                                                    .removeSuffix(".REC")
+                                                    .filter { !it.isDigit() })
+                                            val format = SimpleDateFormat("yyyyMMdd HHmmss", Locale.getDefault())
+                                            val dateFromFileName = format.parse(recordingPath.split("/")[3] + " " + recordingPath.split("/")[5])
+                                            PolarOfflineRecordingEntry(
+                                                recordingPath,
+                                                line.split(" ")[0].toLong(),
+                                                dateFromFileName,
+                                                deviceDataType
+                                            )
+                                        } else {
+                                            BleLogger.d(TAG, "Line does not contain offline recording information: $line")
+                                        }
+                                    } catch (e: Exception) {
+                                        BleLogger.e(TAG, "Failed to read line: $line, error: $e")
+                                        null
+                                    }
+                                }.toList()
+                            }
+                            emitter.onSuccess(offlineRecordings as List<PolarOfflineRecordingEntry>)
+                        } catch (e: Exception) {
+                            BleLogger.e(TAG, "Failed to read offline record listing from $PMDFilePath: $e")
+                            emitter.onError(e)
+                        }
+                    },
+                    { error ->
+                        BleLogger.e(TAG, "Failed to get file $PMDFilePath: $error")
+                        emitter.onError(error)
+                    }
+                )
+            emitter.setCancellable { disposable.dispose() }
+        }
+    }
+
+    private fun deviceSupportsFasterOfflineRecordListing(identifier: String): Single<Boolean> {
+        return Single.create { emitter ->
+            try {
+                getFile(identifier, PMDFilePath)
+                    .subscribe(
+                        { _ ->
+                            emitter.onSuccess(true)
+                        },
+                        { _ ->
+                            emitter.onSuccess(false)
+                        })
+            } catch (e: Exception) {
+                BleLogger.e(TAG, "Failed to check if device supports fast offline record listing: $e")
+                emitter.onError(e)
+            }
+        }
+    }
+
+    private fun mapOfflineRecordingTypeToPolarDeviceDataType(offlineRecordingDataType: String) : PolarDeviceDataType {
+        return when (offlineRecordingDataType) {
+            "SKINTEMP" -> PolarDeviceDataType.SKIN_TEMPERATURE
+            else -> PolarDeviceDataType.valueOf(offlineRecordingDataType)
         }
     }
 
@@ -1909,6 +1996,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     return@filter prefix == null || name.startsWith(prefix)
                 }
                 .map { bleDeviceSession: BleDeviceSession ->
+                    val hasSAGRFCFileSystem = BlePolarDeviceCapabilitiesUtility.getFileSystemType(bleDeviceSession.polarDeviceType) == FileSystemType.SAGRFC2_FILE_SYSTEM
                     PolarDeviceInfo(
                         deviceId = bleDeviceSession.polarDeviceId,
                         address = bleDeviceSession.address,
@@ -1921,6 +2009,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         hasFileSystemService = bleDeviceSession.advertisementContent.containsService(
                             PFTP_SERVICE_16BIT_UUID
                         ),
+                        hasSAGRFCFileSystem = hasSAGRFCFileSystem
                     )
                 }
         }
@@ -2146,6 +2235,19 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         return client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.RESET.ordinal, params.build().toByteArray())
     }
 
+    override fun doFactoryReset(identifier: String): Completable {
+        val session = try {
+            sessionPsFtpClientReady(identifier)
+        } catch (error: Throwable) {
+            return Completable.error(error)
+        }
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return Completable.error(PolarServiceNotAvailable())
+        val params = PftpNotification.PbPFtpFactoryResetParams.newBuilder()
+        params.sleep = false
+        BleLogger.d(TAG, "send factory reset notification to device $identifier")
+        return client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.RESET.ordinal, params.build().toByteArray())
+    }
+
     override fun doRestart(identifier: String): Completable {
         val session = try {
             sessionPsFtpClientReady(identifier)
@@ -2170,66 +2272,54 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
                     ?: throw PolarServiceNotAvailable()
 
-                val ftuBuilder = PftpRequest.PbPFtpOperation.newBuilder().apply {
-                    command = PftpRequest.PbPFtpOperation.Command.PUT
-                    path = PolarFirstTimeUseConfig.FTU_CONFIG_FILENAME
-                }
-
                 val ftuData = ByteArrayOutputStream().use { baos ->
                     ftuConfig.toProto().writeTo(baos)
                     baos.toByteArray()
                 }
 
-                val ftuInputStream = ByteArrayInputStream(ftuData)
+                val ftuBuilder = PftpRequest.PbPFtpOperation.newBuilder().apply {
+                    command = PftpRequest.PbPFtpOperation.Command.PUT
+                    path = PolarFirstTimeUseConfig.FTU_CONFIG_FILENAME
+                }
+
+                val userIdentifier = UserIdentifierType.create().toProto()
+                val userIdData = ByteArrayOutputStream().use { baos ->
+                    userIdentifier.writeTo(baos)
+                    baos.toByteArray()
+                }
+                val userIdBuilder = PftpRequest.PbPFtpOperation.newBuilder().apply {
+                    command = PftpRequest.PbPFtpOperation.Command.PUT
+                    path = UserIdentifierType.USER_IDENTIFIER_FILENAME
+                }
+
+                val calendar = Calendar.getInstance().apply {
+                    val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
+                    isoFormat.timeZone = TimeZone.getTimeZone("UTC")
+                    time = try {
+                        isoFormat.parse(ftuConfig.deviceTime)
+                    } catch (e: ParseException) {
+                        throw IllegalArgumentException(
+                            "Invalid deviceTime format: ${ftuConfig.deviceTime}", e
+                        )
+                    }
+                }
 
                 return@defer sendInitializationAndStartSyncNotifications(identifier)
                     .ignoreElement()
                     .andThen(
-                        client.write(ftuBuilder.build().toByteArray(), ftuInputStream)
-                            .concatWith(
-                                Completable.defer {
-                                    try {
-                                        val userIdBuilder = PftpRequest.PbPFtpOperation.newBuilder().apply {
-                                            command = PftpRequest.PbPFtpOperation.Command.PUT
-                                            path = UserIdentifierType.USER_IDENTIFIER_FILENAME
-                                        }
-
-                                        val userIdentifier = UserIdentifierType.create()
-                                        val protoUserIdentifier = userIdentifier.toProto()
-
-                                        val userIdData = ByteArrayOutputStream().use { baos ->
-                                            protoUserIdentifier.writeTo(baos)
-                                            baos.toByteArray()
-                                        }
-
-                                        BleLogger.d(TAG, "doFirstTimeUse(identifier: $identifier): write user identifier")
-
-                                        val userIdInputStream = ByteArrayInputStream(userIdData)
-                                        client.write(userIdBuilder.build().toByteArray(), userIdInputStream)
-                                            .ignoreElements()
-                                            .concatWith(
-                                                Completable.defer {
-                                                    val calendar = Calendar.getInstance().apply {
-                                                        val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
-                                                        isoFormat.timeZone = TimeZone.getTimeZone("UTC")
-                                                        time = try {
-                                                            isoFormat.parse(ftuConfig.deviceTime)
-                                                        } catch (e: ParseException) {
-                                                            throw IllegalArgumentException("Invalid deviceTime format: ${ftuConfig.deviceTime}", e)
-                                                        }
-                                                    }
-                                                    BleLogger.d(TAG, "doFirstTimeUse(identifier: $identifier): set local time")
-                                                    setLocalTime(identifier, calendar)
-                                                }
-                                            )
-                                    } catch (error: Throwable) {
-                                        BleLogger.e(TAG, "doFirstTimeUse(identifier: $identifier): write user identifier error: $error")
-                                        Completable.error(error)
-                                    }
-                                }
-                            )
+                        Completable.defer {
+                            BleLogger.d(TAG, "doFirstTimeUse(identifier: $identifier): set local time")
+                            setLocalTime(identifier, calendar)
+                        }
                     )
-                    .ignoreElements()
+                    .andThen(
+                        client.write(ftuBuilder.build().toByteArray(), ByteArrayInputStream(ftuData))
+                            .ignoreElements()
+                    )
+                    .andThen(
+                        client.write(userIdBuilder.build().toByteArray(), ByteArrayInputStream(userIdData))
+                            .ignoreElements()
+                    )
                     .doOnComplete {
                         BleLogger.d(TAG, "doFirstTimeUse(identifier: $identifier): completed")
                         sendTerminateAndStopSyncNotifications(identifier).blockingAwait()
@@ -2239,7 +2329,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     }
             } catch (error: Throwable) {
                 BleLogger.e(TAG, "doFirstTimeUse(identifier: $identifier): error $error")
-                return@defer Completable.error(error)
+                sendTerminateAndStopSyncNotifications(identifier).blockingAwait()
+                Completable.error(error)
             }
         }
     }
@@ -2925,145 +3016,184 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
     override fun updateFirmware(identifier: String, firmwareUrl: String): Flowable<FirmwareUpdateStatus> {
 
-        val session = sessionPsFtpClientReady(identifier)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient
-        sendInitializationAndStartSyncNotifications(identifier).blockingGet()
+        return Observable.create<FirmwareUpdateStatus> { emitter ->
 
-        val backupManager = PolarBackupManager(client)
-        var backupList: List<PolarBackupManager.BackupFileData> = listOf()
-        var firmwareVersionInfo: String = ""
-        val automaticReconnection = listener?.automaticReconnection
-        listener?.automaticReconnection = true
+            val session = sessionPsFtpClientReady(identifier)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient
+            sendInitializationAndStartSyncNotifications(identifier).blockingGet()
 
-        val fwUrlProvider =
-            if (firmwareUrl.isNotBlank()) {
-                Single.just(
-                    Triple(
-                        File(firmwareUrl).name,
-                        firmwareUrl,
-                        FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Preparing for firmware update")
+            val backupManager = PolarBackupManager(client)
+            var backupList: List<PolarBackupManager.BackupFileData> = listOf()
+            var firmwareVersionInfo = ""
+            val automaticReconnection = listener?.automaticReconnection
+            listener?.automaticReconnection = true
+
+            // Disable Multi-BLE
+            var wasMultiConnectionEnabled = false
+            try {
+                wasMultiConnectionEnabled = getMultiBLEConnectionMode(identifier).blockingGet()
+                if (wasMultiConnectionEnabled) {
+                    setMultiBLEConnectionMode(identifier, false).blockingAwait()
+                    BleLogger.d(TAG, "Temporarily disabled multi-BLE connection for firmware update on $identifier")
+                }
+            } catch (ex: Exception) {
+                BleLogger.e(TAG, "Failed to read/disable multi-BLE connection mode: ${ex.message}")
+            }
+
+            val fwUrlProvider =
+                if (firmwareUrl.isNotBlank()) {
+                    Single.just(
+                        Triple(
+                            File(firmwareUrl).name,
+                            firmwareUrl,
+                            FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Preparing for firmware update")
+                        )
                     )
-                )
-            } else
-                checkFirmwareUrlAvailability(client, identifier)
+                } else
+                    checkFirmwareUrlAvailability(client, identifier)
 
-        val observable: Observable<FirmwareUpdateStatus> = Observable.create { emitter ->
+            try {
+                // Resolve Firmware URL
+                val (availableVersionInfo, url, updateStatus) = fwUrlProvider.blockingGet()
+                firmwareVersionInfo = availableVersionInfo ?: "new version"
 
-            // Resolve Firmware URL
-            val (availableVersionInfo, url, updateStatus) = fwUrlProvider.blockingGet()
-            firmwareVersionInfo = availableVersionInfo ?: "new version"
+                if (url.isNullOrBlank()) {
+                    BleLogger.d(TAG, "Did not receive url for firmware package, can not update")
+                    emitter.onNext(FirmwareUpdateStatus.FwUpdateNotAvailable("Firmware update not available"))
+                    emitter.onComplete()
+                    return@create
+                }
+                emitter.onNext(updateStatus)
 
-            if (url.isNullOrBlank()) {
-                BleLogger.d(TAG, "Did not receive url for firmware package, can not update")
-                emitter.onNext(FirmwareUpdateStatus.FwUpdateNotAvailable("Firmware update not available"))
-                emitter.onComplete()
-                return@create
-            }
-            emitter.onNext(updateStatus)
+                // Fetch Firmware package
+                emitter.onNext(FirmwareUpdateStatus.FetchingFwUpdatePackage("Fetching firmware package to $firmwareVersionInfo"))
+                val firmwareFiles = getFirmwareUpdatePackage(url!!).blockingGet()
 
-            // Fetch Firmware package
-            emitter.onNext(FirmwareUpdateStatus.FetchingFwUpdatePackage("Fetching firmware package to $firmwareVersionInfo"))
-            val firmwareFiles = getFirmwareUpdatePackage(url!!).blockingGet()
+                if (firmwareFiles.isEmpty()) {
+                    BleLogger.e(TAG, "No firmware files available, can not update")
+                    emitter.onNext(FirmwareUpdateStatus.FwUpdateNotAvailable("Can not update, firmware files were not available"))
+                    throw Throwable("Firmware files were not available")
+                }
 
-            if (firmwareFiles.isEmpty()) {
-                BleLogger.e(TAG, "No firmware files available, can not update")
-                emitter.onNext(FirmwareUpdateStatus.FwUpdateNotAvailable("Can not update, firmware files were not available"))
-                emitter.onError(Throwable("Firmware files were not available"))
-                return@create
-            }
+                // Prepare device: backup
+                emitter.onNext(FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Backing up"))
+                backupList = backupManager.backupDevice().blockingGet()
 
-            // Prepare device: backup
-            emitter.onNext(FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Backing up"))
-            backupList = backupManager.backupDevice().blockingGet()
+                // Prepare device: factory reset
+                emitter.onNext(FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Performing factory reset"))
+                doFactoryReset(identifier, true).blockingAwait()
 
-            // Prepare device: factory reset
-            emitter.onNext(FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Performing factory reset"))
-            doFactoryReset(identifier, true).blockingAwait()
-
-            // Wait for reconnection after factory reset
-            emitter.onNext(FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Reconnecting after factory reset"))
-            waitDeviceSessionWithPftpToOpen(
-                identifier,
-                6 * 60L,
-                waitForDeviceDownSeconds = 10L
-            ).blockingAwait()
-
-            // Speed up for file transfer
-            sendInitializationAndStartSyncNotifications(identifier).blockingGet()
-
-            // Write FW files
-            emitter.onNext(FirmwareUpdateStatus.WritingFwUpdatePackage("Writing firmware files ${firmwareVersionInfo}"))
-            writeFirmwareToDevice(client, firmwareFiles)
-                .doOnNext { it ->
-                    emitter.onNext(it)
-                }.blockingLast()
-
-            // Wait for reconnection after device reboot
-            emitter.onNext(FirmwareUpdateStatus.FinalizingFwUpdate("Reconnecting after updating to ${firmwareVersionInfo}"))
-            waitDeviceSessionWithPftpToOpen(
-                identifier,
-                6 * 60L,
-                waitForDeviceDownSeconds = 10L
-            ).blockingAwait()
-
-            // Speed up for restoring backups
-            sendInitializationAndStartSyncNotifications(identifier).blockingGet()
-
-            // Finalize: Restore backups
-            emitter.onNext(FirmwareUpdateStatus.FinalizingFwUpdate("Restoring backup on device"))
-            backupManager.restoreBackup(backupList).blockingAwait()
-            backupList = listOf()
-
-            // Finalize: Set local time
-            emitter.onNext(FirmwareUpdateStatus.FinalizingFwUpdate("Setting device time"))
-            setLocalTime(identifier, Calendar.getInstance()).blockingAwait()
-
-            // Completing FWU based on device type
-
-            if (BlePolarDeviceCapabilitiesUtility.isDeviceSensor(session.polarDeviceType)) {
-                // Complete for sensors - stop sync
-                emitter.onNext(FirmwareUpdateStatus.FinalizingFwUpdate("Stopping sync"))
-                sendTerminateAndStopSyncNotifications(identifier).blockingAwait()
-
-            } else {
-                // Do final restart to reset Wrist Unit from FWU UI
-                emitter.onNext(FirmwareUpdateStatus.FinalizingFwUpdate("Restarting device"))
-                doRestart(identifier).blockingAwait()
-
-                // Wait for reconnection after device restart
-                emitter.onNext(FirmwareUpdateStatus.FinalizingFwUpdate("Restarting and reconnecting"))
+                // Wait for reconnection after factory reset
+                emitter.onNext(FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Reconnecting after factory reset"))
                 waitDeviceSessionWithPftpToOpen(
                     identifier,
                     6 * 60L,
                     waitForDeviceDownSeconds = 10L
                 ).blockingAwait()
-            }
 
-            // FWU complete
-            emitter.onNext(FirmwareUpdateStatus.FwUpdateCompletedSuccessfully("Firmware update to ${firmwareVersionInfo} completed successfully"))
-            emitter.onComplete()
-
-        }.onErrorResumeNext { error ->
-            if (backupList.isNotEmpty()) {
-                BleLogger.e(TAG, "Error during updateFirmware() to ${firmwareVersionInfo}, restoring backup, error: $error")
+                // Speed up for file transfer
                 sendInitializationAndStartSyncNotifications(identifier).blockingGet()
+
+                // Write FW files
+                var disconnectedDuringWrite = false
+                try {
+                    writeFirmwareToDevice(client, firmwareFiles)
+                        .doOnNext { emitter.onNext(it) }
+                        .blockingLast()
+                } catch (error: Throwable) {
+                    val t = if (error is RuntimeException && error.cause != null) error.cause!! else error
+                    if (t is BleDisconnected) {
+                        BleLogger.d(
+                            TAG,
+                            "Device disconnected as expected during firmware update, will continue to reconnection step"
+                        )
+                        disconnectedDuringWrite = true
+                    } else {
+                        // throw to outer catch so the single restore/failed logic there handles it
+                        throw t
+                    }
+                }
+
+                // Wait for reconnection after device reboot
+                emitter.onNext(FirmwareUpdateStatus.FinalizingFwUpdate("Reconnecting after updating to ${firmwareVersionInfo}"))
+                waitDeviceSessionWithPftpToOpen(
+                    identifier,
+                    6 * 60L,
+                    waitForDeviceDownSeconds = 10L
+                ).blockingAwait()
+
+                // Speed up for restoring backups
+                sendInitializationAndStartSyncNotifications(identifier).blockingGet()
+
+                // Finalize: Restore backups
+                emitter.onNext(FirmwareUpdateStatus.FinalizingFwUpdate("Restoring backup on device"))
                 backupManager.restoreBackup(backupList).blockingAwait()
-                sendTerminateAndStopSyncNotifications(identifier)
-                Observable.just(FirmwareUpdateStatus.FwUpdateFailed("Error during updateFirmware() to ${firmwareVersionInfo}, backup not available, error: $error"))
-            } else {
-                BleLogger.e(TAG, "Error during updateFirmware() to ${firmwareVersionInfo}, backup not available, error: $error")
-                Observable.just(FirmwareUpdateStatus.FwUpdateFailed("Error during updateFirmware() to ${firmwareVersionInfo}, backup not available, error: $error"))
-            }
-        }.doFinally {
-            automaticReconnection?.let {
-                listener?.automaticReconnection = it
-            }
-        }
+                backupList = listOf()
 
-        val flowable = observable.toFlowable(BackpressureStrategy.BUFFER)
-        return flowable.subscribeOn(Schedulers.io(), false)
+                // Finalize: Set local time
+                emitter.onNext(FirmwareUpdateStatus.FinalizingFwUpdate("Setting device time"))
+                setLocalTime(identifier, Calendar.getInstance()).blockingAwait()
+
+                // Completing FWU based on device type
+                if (BlePolarDeviceCapabilitiesUtility.isDeviceSensor(session.polarDeviceType)) {
+                    // Complete for sensors - stop sync
+                    emitter.onNext(FirmwareUpdateStatus.FinalizingFwUpdate("Stopping sync"))
+                    sendTerminateAndStopSyncNotifications(identifier).blockingAwait()
+                } else {
+                    // Do final restart to reset Wrist Unit from FWU UI
+                    emitter.onNext(FirmwareUpdateStatus.FinalizingFwUpdate("Restarting device"))
+                    doRestart(identifier).blockingAwait()
+
+                    // Wait for reconnection after device restart
+                    emitter.onNext(FirmwareUpdateStatus.FinalizingFwUpdate("Restarting and reconnecting"))
+                    waitDeviceSessionWithPftpToOpen(
+                        identifier,
+                        6 * 60L,
+                        waitForDeviceDownSeconds = 10L
+                    ).blockingAwait()
+                }
+
+                // FWU complete
+                emitter.onNext(FirmwareUpdateStatus.FwUpdateCompletedSuccessfully("Firmware update to ${firmwareVersionInfo} completed successfully"))
+                emitter.onComplete()
+
+            } catch (error: Throwable) {
+                if (backupList.isNotEmpty()) {
+                    BleLogger.e(TAG,
+                        "Error during updateFirmware() to $firmwareVersionInfo, restoring backup, error: $error")
+                    sendInitializationAndStartSyncNotifications(identifier).blockingGet()
+                    backupManager.restoreBackup(backupList).blockingAwait()
+                    sendTerminateAndStopSyncNotifications(identifier)
+                    emitter.onNext(
+                        FirmwareUpdateStatus.FwUpdateFailed(
+                            "Error during updateFirmware() to $firmwareVersionInfo, backup restored, error: $error"
+                        )
+                    )
+                } else {
+                    BleLogger.e(TAG,
+                        "Error during updateFirmware() to $firmwareVersionInfo, backup not available, error: $error")
+                    emitter.onNext(
+                        FirmwareUpdateStatus.FwUpdateFailed(
+                            "Error during updateFirmware() to $firmwareVersionInfo, backup not available, error: $error"
+                        )
+                    )
+                }
+                emitter.onComplete()
+            }
+
+            try {
+                if (wasMultiConnectionEnabled) {
+                    setMultiBLEConnectionMode(identifier, true).blockingAwait()
+                    BleLogger.d(TAG, "Restored multi-BLE connection for $identifier")
+                }
+            } catch (ex: Exception) {
+                BleLogger.e(TAG, "Failed to restore multi-BLE connection mode: ${ex.message}")
+            }
+            automaticReconnection?.let { listener?.automaticReconnection = it }
+
+        }.toFlowable(BackpressureStrategy.BUFFER)
+            .subscribeOn(Schedulers.io(), false)
     }
-
 
     override fun updateFirmware(identifier: String): Flowable<FirmwareUpdateStatus> {
         return updateFirmware(identifier, firmwareUrl = "")
@@ -4405,7 +4535,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             return@Consumer
         }
         deviceSessionState = sessionState
-        val info = PolarDeviceInfo(session.polarDeviceId.ifEmpty { session.address }, session.address, session.rssi, session.name, true)
+        val hasSAGRFCFileSystem = BlePolarDeviceCapabilitiesUtility.getFileSystemType(session.polarDeviceType) == FileSystemType.SAGRFC2_FILE_SYSTEM
+        val info = PolarDeviceInfo(session.polarDeviceId.ifEmpty { session.address }, session.address, session.rssi, session.name, true, hasSAGRFCFileSystem = hasSAGRFCFileSystem)
         when (Objects.requireNonNull(sessionState)) {
             DeviceSessionState.SESSION_OPEN -> {
                 callback?.let {

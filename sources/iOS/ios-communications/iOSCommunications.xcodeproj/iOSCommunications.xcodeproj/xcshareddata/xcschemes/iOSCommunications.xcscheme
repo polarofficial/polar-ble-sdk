@@ -52,6 +52,16 @@
                </Test>
             </SkippedTests>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "A574368B291B81F500E901A4"
+               BuildableName = "PolarBleSdkTests.xctest"
+               BlueprintName = "PolarBleSdkTests"
+               ReferencedContainer = "container:iOSCommunications.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

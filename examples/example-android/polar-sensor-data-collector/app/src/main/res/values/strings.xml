@@ -1,8 +1,7 @@
 <resources>
     <string name="app_name">PSDC</string>
-    <string name="recording">Recording:</string>
-    <string name="start_recording">Start recording</string>
-    <string name="stop_recording">Stop recording</string>
+    <string name="start_streaming">Start streaming</string>
+    <string name="stop_streaming">Stop streaming</string>
     <string name="start_offline_recording">Start offline recording</string>
     <string name="search">Search</string>
     <string name="filter_by_name_prefix">Filter by name prefix</string>
@@ -28,9 +27,6 @@
     <string name="set_warehouse_sleep_button_header">Set warehouse sleep</string>
     <string name="set_warehouse_sleep_switch_header">Enable?</string>
     <string name="set_turn_device_off_header">Turn device off</string>
-    <string name="do_device_user_location_settings">Set user device settings</string>
-    <string name="set_device_user_settings_header">User Device Settings</string>
-    <string name="set_device_user_location">Set user device location</string>
     <string name="ohr_logging_enable">Enable OHR logging</string>
     <string name="ohr_logging_disable">Disable OHR logging</string>
     <string name="ppi_logging_enable">Enable PPi logging</string>
@@ -259,4 +255,13 @@
     <string name="wireless_external_power_not_connected">"Wireless power source not connected"</string>
     <string name="wireless_external_power_unknown">"Wireless power source status unknown</string>
     <string name="wireless_external_power_reserved_for_future_use">Wireless power source status unknown</string>
+
+    <!-- User device settings -->
+    <string name="do_device_user_location_settings">Set user device settings</string>
+    <string name="set_device_user_settings_header">User Device Settings</string>
+    <string name="set_device_user_location">Set user device location</string>
+    <string name="user_device_settings_not_saved">User device settings not saved</string>
+    <string name="user_device_settings_saved">User device settings saved</string>
+    <string name="failed_to_load_settings">Failed to load settings: %1$s</string>
+    <string name="failed_to_save_settings">Failed to save settings: %1$s</string>
 </resources>

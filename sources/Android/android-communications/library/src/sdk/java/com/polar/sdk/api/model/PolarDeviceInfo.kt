@@ -38,5 +38,22 @@ data class PolarDeviceInfo(
     /**
      * true if device has file system service (PSFTP) available
      */
-    val hasFileSystemService: Boolean = false
+    val hasFileSystemService: Boolean = false,
+
+    /**
+     * true if device has SAGRFC filesystem, false otherwise.
+     * If true, more abundant settings, like:
+     * - User device settings
+     * - User physical settings
+     * If true, actions like:
+     * - Offline measurement and measurement data reading and deletion
+     * - Reading activity data files from device
+     * - Device data logging
+     * - Device activity data reading and deletion
+     * - Reading device time
+     * - Exercise support (if available in device sw)
+     * are enabled.
+     * If false, the device may have limited or none settings available.
+     */
+    val hasSAGRFCFileSystem: Boolean = false
 )

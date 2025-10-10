@@ -48,4 +48,7 @@ public enum PolarErrors: Error {
     
     /// Invalid sensor setting value
     case invalidSensorSettingValue(setting: PolarSensorSetting.SettingType, value: UInt32)
+    
+    /// Error occurred while loading file data from device or while reading the the file data or while writing file data
+    case fileError(description: String)
 }

@@ -5,7 +5,7 @@ import Foundation
 // [PolarActivitySamplesData] data for given [startTime].
 public class PolarActivityData: Codable {
 
-    var samples: PolarActivitySamples?
+    public var samples: PolarActivitySamples?
 
     public struct PolarActivitySamples: Codable {
         public var startTime: Date

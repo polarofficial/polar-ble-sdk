@@ -142,14 +142,14 @@
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApi.swift",
-      "line": 155,
+      "line": 156,
       "symbol": "PpgDataType.ppg1",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApi.swift",
-      "line": 166,
+      "line": 167,
       "symbol": "PpgDataType.unknown",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
@@ -2046,6 +2046,13 @@
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/activity/PolarActivityData.swift",
+      "line": 8,
+      "symbol": "PolarActivityData.samples",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/activity/PolarActivityData.swift",
       "line": 10,
       "symbol": "PolarActivityData.PolarActivitySamples",
       "symbol_kind": "source.lang.swift.decl.struct",
@@ -2886,7 +2893,7 @@
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/impl/PolarBleApiImpl.swift",
-      "line": 4673,
+      "line": 4922,
       "symbol": "PrimitiveSequence.asCompletable()",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"

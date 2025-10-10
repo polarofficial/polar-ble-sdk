@@ -9,6 +9,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.PowerSourcesSta
 import com.polar.androidcommunications.api.ble.model.gatt.client.BatteryPresentState
 import com.polar.androidcommunications.api.ble.model.gatt.client.PowerSourceState
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
+import com.polar.androidcommunications.api.ble.model.polar.BlePolarDeviceCapabilitiesUtility.FileSystemType
 import com.polar.polarsensordatacollector.DataCollector
 import com.polar.polarsensordatacollector.crypto.SecretKeyManager
 import com.polar.sdk.api.PolarBleApi
@@ -148,6 +149,9 @@ class PolarDeviceRepository @Inject constructor(
 
     private val _isMultiBleModeEnabled: MutableStateFlow<Boolean> = MutableStateFlow(false)
     var isMultiBleModeEnabled: StateFlow<Boolean> = _isMultiBleModeEnabled.asStateFlow()
+
+    private val _deviceSupportsSettings: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    var deviceSupportsSettings: StateFlow<Boolean> = _deviceSupportsSettings.asStateFlow()
 
     init {
         RxJavaPlugins.setErrorHandler { e ->
@@ -345,6 +349,9 @@ class PolarDeviceRepository @Inject constructor(
     override fun deviceConnected(polarDeviceInfo: PolarDeviceInfo) {
         Log.d(TAG, "device ${polarDeviceInfo.deviceId} connected")
         Completable.fromAction {
+            _deviceSupportsSettings.update {
+                polarDeviceInfo.hasSAGRFCFileSystem
+            }
             _deviceConnectionStatus.update {
                 DeviceConnectionState.DeviceConnected(
                     deviceId = polarDeviceInfo.deviceId
@@ -620,8 +627,8 @@ class PolarDeviceRepository @Inject constructor(
          return api.doRestart(deviceId)
     }
 
-    fun doFactoryReset(deviceId: String, savePairing: Boolean): Completable {
-        return api.doFactoryReset(deviceId, savePairing)
+    fun doFactoryReset(deviceId: String): Completable {
+        return api.doFactoryReset(deviceId)
     }
 
     fun setWarehouseSleep(deviceId: String): Completable {
@@ -1098,5 +1105,34 @@ class PolarDeviceRepository @Inject constructor(
             Log.e(TAG, "getBleMultiConnectionMode failed. Error $e")
             return  false
         }
+    }
+
+    suspend fun getUserDeviceSettings(deviceId: String): PolarUserDeviceSettings =
+        withContext(Dispatchers.IO) {
+            api.getUserDeviceSettings(identifier = deviceId).await()
+        }
+
+    suspend fun setUserDeviceLocation(deviceId: String, location: Int) =
+        withContext(Dispatchers.IO) {
+            api.setUserDeviceLocation(deviceId, location).await()
+        }
+
+    suspend fun setUsbConnectionMode(deviceId: String, enabled: Boolean) =
+        withContext(Dispatchers.IO) {
+            api.setUsbConnectionMode(deviceId, enabled).await()
+        }
+
+    suspend fun setAutomaticTrainingDetectionSettings(
+        deviceId: String,
+        atdEnabled: Boolean,
+        sensitivity: Int,
+        minDuration: Int
+    ) = withContext(Dispatchers.IO) {
+        api.setAutomaticTrainingDetectionSettings(
+            identifier = deviceId,
+            automaticTrainingDetectionMode = atdEnabled,
+            automaticTrainingDetectionSensitivity = sensitivity,
+            minimumTrainingDurationSeconds = minDuration
+        ).await()
     }
 }

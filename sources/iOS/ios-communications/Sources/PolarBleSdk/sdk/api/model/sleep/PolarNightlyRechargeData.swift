@@ -63,5 +63,5 @@ public struct PolarNightlyRechargeData: Encodable {
     public let exerciseTip: String?
 
     // Date for which the sleep result and nightly recovery result is for
-    public let sleepResultDate: Date?
+    public let sleepResultDate: DateComponents?
 }

@@ -3,6 +3,14 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'dagger.hilt.android.plugin'
 apply plugin: 'androidx.navigation.safeargs.kotlin'
+apply plugin: 'com.google.firebase.appdistribution'
+apply plugin: 'com.google.firebase.crashlytics'
+
+def requireEnv = { name ->
+    def v = System.getenv(name)
+    if (!v) throw new GradleException("Missing environment variable: " + name)
+    return v
+}
 
 if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPassword")) {
     apply plugin: 'com.jfrog.artifactory'
@@ -33,7 +41,7 @@ def getVersion = { ->
 
 android {
     namespace 'com.polar.polarsensordatacollector'
-    compileSdkVersion 33
+    compileSdkVersion 35
     buildTypes.all { buildType ->
         def version = getVersion()
         buildConfigField 'String', 'GIT_VERSION', "\"$version\""
@@ -43,9 +51,9 @@ android {
         applicationId "com.polar.polarsensordatacollector"
         minSdkVersion 26
         targetSdkVersion 33
-        versionCode 73900
+        versionCode 74100
         // version code from semantic version in format [2 digits of major][2 digits of minor][2 digits of batch]
-        versionName "7.39.0"
+        versionName "7.41.0"
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
@@ -62,10 +70,27 @@ android {
         buildConfig = true
     }
 
+    signingConfigs {
+        release {
+            storeFile file(requireEnv("PSDC_ANDROID_KEYSTORE_PATH"))
+            storePassword requireEnv("PSDC_ANDROID_KEYSTORE_PASSWORD")
+            keyAlias (System.getenv("PSDC_ANDROID_KEY_ALIAS") ?: "release")
+            keyPassword requireEnv("PSDC_ANDROID_KEY_PASSWORD")
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            firebaseAppDistribution {
+                artifactType = "APK"
+                serviceCredentialsFile = System.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+                groups = "psdc-internal-testing"
+                // releaseNotesFile = "release-notes.txt"
+            }
         }
     }
 
@@ -152,6 +177,8 @@ dependencies {
     implementation 'androidx.preference:preference-ktx:1.2.0'
     implementation 'androidx.documentfile:documentfile:1.0.1'
     implementation "androidx.viewpager2:viewpager2:1.1.0-beta01"
+    implementation("com.google.firebase:firebase-crashlytics-ktx:19.4.4")
+    implementation("com.google.firebase:firebase-analytics:22.0.0")
 
     // Material
     implementation 'com.google.android.material:material:1.8.0'
@@ -204,3 +231,4 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
+apply plugin: 'com.google.gms.google-services'

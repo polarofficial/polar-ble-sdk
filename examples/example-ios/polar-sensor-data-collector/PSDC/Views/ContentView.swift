@@ -107,7 +107,16 @@ struct ContentView: View {
                 
                 Picker("Choose operation", selection: $selectedTab) {
                     ForEach(SelectedAction.allCases, id: \.self) {
-                        Text($0.rawValue)
+                        let action = $0.rawValue
+                        if (action == "Online" || action == "Settings") {
+                            Text(action)
+                        } else if( (action == "Offline" && bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) ||
+                                    (action == "Logging" && bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) ||
+                                    (action == "Load" && bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) ||
+                                    (action == "H10 Exercise" && !bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem)
+                        ){
+                            Text(action)
+                        }
                     }
                 }.pickerStyle(SegmentedPickerStyle())
                     .padding(.horizontal)
@@ -222,20 +231,28 @@ struct OperationModesTabView: View {
                 OnlineStreamsView()
                     .environmentObject(bleSdkManager)
             case .offline:
-                OfflineRecordingView()
-                    .environmentObject(bleSdkManager)
+                if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                    OfflineRecordingView()
+                        .environmentObject(bleSdkManager)
+                }
             case .h10Exercise:
-                H10ExerciseView()
-                    .environmentObject(bleSdkManager)
+                if (!bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                    H10ExerciseView()
+                        .environmentObject(bleSdkManager)
+                }
             case .settings:
                 DeviceSettingsView()
                     .environmentObject(bleSdkManager)
             case .logging:
-                SensorDatalogSettingsView()
-                    .environmentObject(bleSdkManager)
+                if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                    SensorDatalogSettingsView()
+                        .environmentObject(bleSdkManager)
+                }
             case .activityRecordingView:
-                ActivityRecordingView()
-                    .environmentObject(bleSdkManager)
+                if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                    ActivityRecordingView()
+                        .environmentObject(bleSdkManager)
+                }
             }
         }
     }

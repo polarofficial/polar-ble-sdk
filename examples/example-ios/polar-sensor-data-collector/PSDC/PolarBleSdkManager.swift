@@ -1580,12 +1580,16 @@ extension PolarBleSdkManager {
     func getTime() async {
         if case .connected(let device) = deviceConnectionState {
             do {
-                let date: Date = try await api.getLocalTime(device.deviceId).value
+                let (date, tz): (Date, TimeZone) = try await api.getLocalTimeWithZone(device.deviceId).value
                 Task { @MainActor in
                     let formatter = DateFormatter()
                     formatter.dateStyle = .short
                     formatter.timeStyle = .medium
-                    self.generalMessage = Message(text: "\(formatter.string(from: date)) read from the device \(device.deviceId)")
+                    formatter.timeZone = tz
+                    
+                    self.generalMessage = Message(
+                        text: "\(formatter.string(from: date)) (\(tz.identifier)) read from the device \(device.deviceId)"
+                    )
                 }
             } catch let err {
                 Task { @MainActor in
@@ -1594,7 +1598,7 @@ extension PolarBleSdkManager {
             }
         } else {
             Task { @MainActor in
-                self.somethingFailed(text: "time get failed. No device connected)")
+                self.somethingFailed(text: "time get failed. No device connected")
             }
         }
     }
@@ -1638,10 +1642,10 @@ extension PolarBleSdkManager {
         }
     }
     
-    func doRestart(preservePairingInformation: Bool) async {
+    func doRestart() async {
         if case .connected(let device) = deviceConnectionState {
             do {
-                let _: Void = try await api.doRestart(device.deviceId, preservePairingInformation: preservePairingInformation).value
+                let _: Void = try await api.doRestart(device.deviceId).value
                 Task { @MainActor in
                     self.generalMessage = Message(text: "restarting notification to device: \(device.deviceId)")
                 }
@@ -1668,10 +1672,10 @@ extension PolarBleSdkManager {
         }
     }
     
-    func doFactoryReset(preservePairingInformation: Bool) async {
+    func doFactoryReset() async {
         if case .connected(let device) = deviceConnectionState {
             do {
-                let _: Void = try await api.doFactoryReset(device.deviceId, preservePairingInformation: preservePairingInformation).value
+                let _: Void = try await api.doFactoryReset(device.deviceId).value
                 Task { @MainActor in
                     self.generalMessage = Message(text: "Send factory reset notification to device: \(device.deviceId)")
                 }

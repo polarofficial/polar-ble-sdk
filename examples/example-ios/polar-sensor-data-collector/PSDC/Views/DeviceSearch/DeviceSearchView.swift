@@ -124,11 +124,11 @@ struct DeviceSearchView: View {
 
 struct DeviceSearchView_Previews: PreviewProvider {
     
-    private static let device1: PolarDeviceInfo = (deviceId: "device1", address: UUID(), rssi: -70, name: "Polar H10", connectable: true)
-    private static let device2: PolarDeviceInfo = (deviceId: "device2", address: UUID(), rssi: -60, name: "Polar A370", connectable: true)
-    private static let device3: PolarDeviceInfo = (deviceId: "device3", address: UUID(), rssi: -85, name: "Polar Vantage M", connectable: false)
-    private static let device4: PolarDeviceInfo = (deviceId: "device4", address: UUID(), rssi: -55, name: "Polar Ignite", connectable: true)
-    private static let device5: PolarDeviceInfo = (deviceId: "device5", address: UUID(), rssi: -90, name: "Polar OH1", connectable: false)
+    private static let device1: PolarDeviceInfo = (deviceId: "device1", address: UUID(), rssi: -70, name: "Polar H10", connectable: true, false)
+    private static let device2: PolarDeviceInfo = (deviceId: "device2", address: UUID(), rssi: -60, name: "Polar A370", connectable: true, true)
+    private static let device3: PolarDeviceInfo = (deviceId: "device3", address: UUID(), rssi: -85, name: "Polar Vantage M", connectable: false, true)
+    private static let device4: PolarDeviceInfo = (deviceId: "device4", address: UUID(), rssi: -55, name: "Polar Ignite", connectable: true, true)
+    private static let device5: PolarDeviceInfo = (deviceId: "device5", address: UUID(), rssi: -90, name: "Polar OH1", connectable: false, true)
     
     private static let polarBleSdkManager: PolarBleSdkManager = {
         let polarBleSdkManager = PolarBleSdkManager()

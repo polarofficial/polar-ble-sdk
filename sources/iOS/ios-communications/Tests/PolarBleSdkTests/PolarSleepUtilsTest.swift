@@ -26,14 +26,14 @@ class PolarSleepUtilsTests: XCTestCase {
         
         let proto = Data_PbSleepAnalysisResult.with {
             $0.alarmTime = PbLocalDateTime.with {
-                $0.date = PbDate.with { $0.day = 2; $0.month = 2; $0.year = 2525 };
+                $0.date = PbDate.with { $0.day = 28; $0.month = 2; $0.year = 2525 };
                 $0.time = PbTime.with{ $0.hour = 7; $0.minute = 0; $0.seconds = 0 };
                 $0.timeZoneOffset = 120;
                 $0.obsoleteTrusted = true;
             };
             $0.batteryRanOut = false;
             $0.createdTimestamp = PbSystemDateTime.with {
-                $0.date = PbDate.with { $0.day = 2; $0.month = 2; $0.year = 2525 };
+                $0.date = PbDate.with { $0.day = 28; $0.month = 2; $0.year = 2525 };
                 $0.time = PbTime.with{ $0.hour = 7; $0.minute = 0; $0.seconds = 0 };
                 $0.trusted = true;
             };
@@ -44,13 +44,13 @@ class PolarSleepUtilsTests: XCTestCase {
             };
             $0.originalSleepRange = PbLocalDateTimeRange.with {
                 $0.startTime = PbLocalDateTime.with {
-                    $0.date = PbDate.with { $0.day = 1; $0.month = 2; $0.year = 2525 };
+                    $0.date = PbDate.with { $0.day = 27; $0.month = 2; $0.year = 2525 };
                     $0.time = PbTime.with{ $0.hour = 23; $0.minute = 59; $0.seconds = 59; };
                     $0.timeZoneOffset = 120;
                     $0.obsoleteTrusted = true;
                 };
                 $0.endTime = PbLocalDateTime.with {
-                    $0.date = PbDate.with { $0.day = 2; $0.month = 2; $0.year = 2525 };
+                    $0.date = PbDate.with { $0.day = 28; $0.month = 2; $0.year = 2525 };
                     $0.time = PbTime.with{ $0.hour = 7; $0.minute = 0; $0.seconds = 0 };
                     $0.timeZoneOffset = 120;
                     $0.obsoleteTrusted = true;
@@ -67,17 +67,17 @@ class PolarSleepUtilsTests: XCTestCase {
             $0.sleepEndOffsetSeconds = 1;
             $0.sleepStartOffsetSeconds = 1;
             $0.sleepResultDate = PbDate.with {
-                $0.day = 2; $0.month = 2; $0.year = 2525
+                $0.day = 28; $0.month = 2; $0.year = 2525
             };
             $0.sleepStartTime = PbLocalDateTime.with {
-                $0.date = PbDate.with { $0.day = 1; $0.month = 2; $0.year = 2525 };
+                $0.date = PbDate.with { $0.day = 27; $0.month = 2; $0.year = 2525 };
                 $0.time = PbTime.with{ $0.hour = 23; $0.minute = 45; $0.seconds = 45; };
                 $0.timeZoneOffset = 120;
                 $0.obsoleteTrusted = true;
                 
             };
             $0.sleepEndTime = PbLocalDateTime.with {
-                $0.date = PbDate.with { $0.day = 2; $0.month = 2; $0.year = 2525 };
+                $0.date = PbDate.with { $0.day = 28; $0.month = 2; $0.year = 2525 };
                 $0.time = PbTime.with{ $0.hour = 7; $0.minute = 5; $0.seconds = 7; };
                 $0.timeZoneOffset = 120;
                 $0.obsoleteTrusted = true;
@@ -87,7 +87,7 @@ class PolarSleepUtilsTests: XCTestCase {
                 $0.sleepwakeState = Data_PbSleepWakeState.pbWake;
             }];
             $0.snoozeTime = [PbLocalDateTime.with {
-                $0.date = PbDate.with { $0.day = 1; $0.month = 2; $0.year = 2525 };
+                $0.date = PbDate.with { $0.day = 27; $0.month = 2; $0.year = 2525 };
                 $0.time = PbTime.with{ $0.hour = 23; $0.minute = 59; $0.seconds = 59; };
                 $0.timeZoneOffset = 120;
                 $0.obsoleteTrusted = true;
@@ -145,12 +145,12 @@ class PolarSleepUtilsTests: XCTestCase {
         var sleepResultDate = Date()
         
         do {
-            sleepStartTime = try createDate(hour: 23, minute: 45, second: 45, day: 1, month: 2, year: 2525)
-            sleepEndTime = try createDate(hour: 7, minute: 5, second: 7, day: 2, month: 2, year: 2525)
+            sleepStartTime = try createDate(hour: 23, minute: 45, second: 45, day: 27, month: 2, year: 2525)
+            sleepEndTime = try createDate(hour: 7, minute: 5, second: 7, day: 28, month: 2, year: 2525)
             lastModified = try createDate(hour: 4, minute: 3, second: 2, day: 4, month: 3, year: 2525)
-            snoozeTime = try createDate(hour: 23, minute: 59, second: 59, day: 1, month: 2, year: 2525)
+            snoozeTime = try createDate(hour: 23, minute: 59, second: 59, day: 27, month: 2, year: 2525)
             snoozeTimes.append(snoozeTime)
-            alarmTime = try createDate(hour: 7, minute: 0, second: 0, day: 2, month: 2, year: 2525)
+            alarmTime = try createDate(hour: 7, minute: 0, second: 0, day: 28, month: 2, year: 2525)
         } catch let error {
             XCTFail("Error, could not create sleep analysis data: \(error)")
         }
@@ -169,10 +169,10 @@ class PolarSleepUtilsTests: XCTestCase {
             deviceId: "C8D9G10F11H12",
             batteryRanOut: false,
             sleepCycles: [PolarSleepData.SleepCycle.init(secondsFromSleepStart: 2, sleepDepthStart: Float(3.0))],
-            sleepResultDate: "2525-02-02",
+            sleepResultDate: DateComponents(year: 2525, month: 2, day: 28),
             originalSleepRange: PolarSleepData.OriginalSleepRange(
-                startTime: try createDate(hour: 23, minute: 59, second: 59, day: 1, month: 2, year: 2525),
-                endTime: try createDate(hour: 7, minute: 0, second: 0, day: 2, month: 2, year: 2525)
+                startTime: try createDate(hour: 23, minute: 59, second: 59, day: 27, month: 2, year: 2525),
+                endTime: try createDate(hour: 7, minute: 0, second: 0, day: 28, month: 2, year: 2525)
             )
         )
         

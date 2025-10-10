@@ -73,6 +73,7 @@ class ConnectionHandler(
     private var phySafeGuardDisposable: Disposable? = null
     private var mtuSafeGuardDisposable: Disposable? = null
     private var firstAttributeOperationDisposable: Disposable? = null
+    private var mutex = Object()
 
     fun setAutomaticReconnection(automaticReconnection: Boolean) {
         this.automaticReconnection = automaticReconnection
@@ -130,13 +131,15 @@ class ConnectionHandler(
     }
 
     private fun commandState(bleDeviceSession: BDDeviceSessionImpl, action: ConnectionHandlerAction) {
-        when (state) {
-            ConnectionHandlerState.FREE -> {
-                free(bleDeviceSession, action)
-            }
-            ConnectionHandlerState.CONNECTING -> {
-                BleLogger.d(TAG, "state: $state action: $action")
-                connecting(bleDeviceSession, action)
+        synchronized(mutex) {
+            when (state) {
+                ConnectionHandlerState.FREE -> {
+                    free(bleDeviceSession, action)
+                }
+                ConnectionHandlerState.CONNECTING -> {
+                    BleLogger.d(TAG, "state: $state action: $action")
+                    connecting(bleDeviceSession, action)
+                }
             }
         }
     }

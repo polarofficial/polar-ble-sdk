@@ -3,7 +3,7 @@
 import Foundation
 import PolarBleSdk
 
-let nullPolarDeviceInfo = (deviceId: "no device", address: UUID(), rssi: 0, name: "no device", connectable: false)
+let nullPolarDeviceInfo = (deviceId: "no device", address: UUID(), rssi: 0, name: "no device", connectable: false, false)
 
 enum DeviceConnectionState {
     case noDevice(PolarDeviceInfo)

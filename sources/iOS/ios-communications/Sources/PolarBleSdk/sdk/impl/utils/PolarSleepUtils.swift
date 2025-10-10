@@ -43,7 +43,7 @@ internal class PolarSleepUtils {
                             deviceId: proto.hasRecordingDevice ? proto.recordingDevice.deviceID : nil,
                             batteryRanOut: proto.hasBatteryRanOut ? proto.batteryRanOut : nil,
                             sleepCycles: PolarSleepData.fromPbSleepCyclesList(pbSleepCyclesList: proto.sleepCycles),
-                            sleepResultDate: try? PolarPlainDate.init(date: PolarTimeUtils.pbDateToDate(pbDate: proto.sleepResultDate)).description,
+                            sleepResultDate: try PolarTimeUtils.pbDateToDateComponents(pbDate: proto.sleepResultDate),
                             originalSleepRange: try PolarSleepData.fromPbOriginalSleepRange(pbOriginalSleepRange: proto.originalSleepRange)
                         )
                         emitter(.success(result))

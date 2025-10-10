@@ -174,28 +174,6 @@
                         android:textAppearance="?attr/textAppearanceSubtitle1"
                         app:layout_constraintStart_toEndOf="@+id/do_factory_reset_header"
                         app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/do_factory_reset_switch_header"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:text="@string/do_factory_reset_switch_header"
-                        android:textAppearance="@android:style/TextAppearance.Material.Caption"
-                        app:layout_constraintHorizontal_chainStyle="packed"
-                        app:layout_constraintBaseline_toBaselineOf="@+id/do_factory_reset_button"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintStart_toEndOf="@+id/do_factory_reset_button" />
-
-                    <com.google.android.material.switchmaterial.SwitchMaterial
-                        android:id="@+id/do_factory_reset_switch"
-                        style="@style/Widget.App.Button.OutlinedButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:textAppearance="?attr/textAppearanceSubtitle1"
-                        app:layout_constraintStart_toEndOf="@+id/do_factory_reset_switch_header"
-                        app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -524,6 +502,7 @@
                         app:layout_constraintEnd_toStartOf="@+id/time_settings_write_button"
                         app:layout_constraintHorizontal_bias="0.5"
                         app:layout_constraintStart_toEndOf="@+id/time_settings_header"
+                        app:layout_constraintBaseline_toBaselineOf="@+id/time_settings_header"
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <Button
@@ -537,6 +516,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHorizontal_bias="0.5"
                         app:layout_constraintStart_toEndOf="@+id/time_settings_read_button"
+                        app:layout_constraintBaseline_toBaselineOf="@+id/time_settings_header"
                         app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 

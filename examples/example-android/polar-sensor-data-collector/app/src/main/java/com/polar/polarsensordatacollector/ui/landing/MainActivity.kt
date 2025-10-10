@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity() {
             if (
                 current == R.id.offlineRecTriggerFragment ||
                 current == R.id.settings_dest ||
+                current == R.id.offlineRecordingsListFragment ||
                 current == R.id.about_dest
             ) {
                 navController.navigate(

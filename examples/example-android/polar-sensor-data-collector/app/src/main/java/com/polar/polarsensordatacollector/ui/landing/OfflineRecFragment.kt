@@ -22,7 +22,9 @@ import com.polar.polarsensordatacollector.ui.utils.showSnackBar
 import com.polar.sdk.api.PolarBleApi.PolarDeviceDataType
 import com.polar.sdk.api.model.PolarSensorSetting.SettingType
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.await
 
 @AndroidEntryPoint
 class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
@@ -132,29 +134,36 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
     }
 
     private fun userSelectsOfflineSettings(availableStreamSettingsUiState: OfflineAvailableStreamSettingsUiState?) {
-        if (availableStreamSettingsUiState != null &&
-            availableStreamSettingsUiState.settings.currentlyAvailable != null &&
-            availableStreamSettingsUiState.settings.allPossibleSettings != null
-        ) {
-            showAllSettingsDialog(
-                requireActivity(),
-                availableStreamSettingsUiState.settings.currentlyAvailable.settings,
-                availableStreamSettingsUiState.settings.allPossibleSettings.settings,
-                availableStreamSettingsUiState.settings.selectedSettings
-            ).toFlowable()
-                .doFinally {
-                    getOfflineRecSettingsButtonView(availableStreamSettingsUiState.feature)?.isEnabled = true
-                }
-                .subscribe({ settings: Map<SettingType, Int>? ->
-                    Log.d(TAG, "Dialog completed with settings $settings")
-                    settings?.let {
-                        offlineViewModel.updateSelectedStreamSettings(availableStreamSettingsUiState.feature, it)
-                    }
-                }, { error: Throwable ->
-                    val settingsSelectionFailed = "Error while selecting settings for feature: ${availableStreamSettingsUiState.feature} error: $error"
-                    Log.e(TAG, settingsSelectionFailed)
-                    showToast(settingsSelectionFailed)
-                })
+        if (availableStreamSettingsUiState == null ||
+            availableStreamSettingsUiState.settings.currentlyAvailable == null ||
+            availableStreamSettingsUiState.settings.allPossibleSettings == null
+        ) return
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val settings: Map<SettingType, Int> = showAllSettingsDialog(
+                    requireActivity(),
+                    availableStreamSettingsUiState.settings.currentlyAvailable.settings,
+                    availableStreamSettingsUiState.settings.allPossibleSettings.settings,
+                    availableStreamSettingsUiState.settings.selectedSettings
+                )
+                    .subscribeOn(AndroidSchedulers.mainThread())
+                    .await()
+
+                Log.d(TAG, "Dialog completed with settings $settings")
+
+                offlineViewModel.updateSelectedStreamSettings(
+                    availableStreamSettingsUiState.feature,
+                    settings
+                )
+            } catch (e: Throwable) {
+                val settingsSelectionFailed =
+                    "Error while selecting settings for feature: ${availableStreamSettingsUiState.feature} error: $e"
+                Log.e(TAG, settingsSelectionFailed, e)
+                showToast(settingsSelectionFailed)
+            } finally {
+                getOfflineRecSettingsButtonView(availableStreamSettingsUiState.feature)?.isEnabled = true
+            }
         }
     }
 

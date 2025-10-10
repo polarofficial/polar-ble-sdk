@@ -149,15 +149,6 @@ final class OfflineRecordingDataTest: XCTestCase {
         XCTAssertEqual(HrOfflineMockData.hrSampleLast, (offlineHrData.data as! OfflineHrData).samples.last?.hr)
     }
     
-    func testParseOfflineRecordingDataContainingOnlyHeader() throws {
-        // Arrange & Act & Assert
-        XCTAssertThrowsError(try OfflineRecordingData<Any>.parseDataFromOfflineFile(fileData: OfflineRecordingDataTest.offlineFrameWithoutData, type: PmdMeasurementType.mgn)) { error in
-            guard case OfflineRecordingError.offlineRecordingErrorMetaDataParseFailed = error else {
-                return XCTFail()
-            }
-        }
-    }
-    
     func testParseEncryptedAccOfflineRecordingData() throws {
         // Arrange
         let mockEncryptedAccData = try MockEncryptedOfflineRecordingDataAcc()

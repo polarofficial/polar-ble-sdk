@@ -1,19 +1,17 @@
 package com.polar.polarsensordatacollector.ui.devicesettings
 
 import android.os.Bundle
-import android.util.Log
 import android.widget.*
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.switchmaterial.SwitchMaterial
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.schedulers.Schedulers
 import com.polar.polarsensordatacollector.R
-import com.polar.polarsensordatacollector.di.PolarBleSdkModule
 import com.polar.sdk.api.model.PolarUserDeviceSettings
-import io.reactivex.rxjava3.core.Single
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
-private const val TAG = "UserDeviceSettingsActivity"
-
+@AndroidEntryPoint
 class UserDeviceSettingsActivity : AppCompatActivity() {
 
     private lateinit var setDeviceUserLocationSpinner: Spinner
@@ -28,13 +26,14 @@ class UserDeviceSettingsActivity : AppCompatActivity() {
     private lateinit var buttonOk: Button
     private lateinit var buttonCancel: Button
 
-    private val api = PolarBleSdkModule.providePolarBleSdkApi(this)
+    private val viewModel: UserDeviceSettingsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_device_user_settings)
 
         initItems()
+        observeViewModel()
     }
 
     private fun initItems() {
@@ -42,8 +41,6 @@ class UserDeviceSettingsActivity : AppCompatActivity() {
         initUSBSettingsComponents()
         initATDSettingsComponents()
         initButtons()
-
-        initWithValues()
     }
 
     private fun initDeviceUserLocationComponents() {
@@ -51,7 +48,7 @@ class UserDeviceSettingsActivity : AppCompatActivity() {
         val adapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_dropdown_item,
-            PolarUserDeviceSettings.DeviceLocation.values()
+            PolarUserDeviceSettings.DeviceLocation.entries.toTypedArray()
         )
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -81,95 +78,42 @@ class UserDeviceSettingsActivity : AppCompatActivity() {
 
         buttonCancel = findViewById(R.id.cancel_device_settings_button)
         buttonCancel.setOnClickListener {
-            showToast("User device settings not saved")
-            super.onBackPressed()
+            showToastAndFinish(getString(R.string.user_device_settings_not_saved))
         }
     }
 
-    private fun initWithValues() {
-
-        val settings = getSettings().blockingGet()
-        setDeviceUserLocationSpinner.setSelection(settings.deviceLocation!!)
-
-        usbConnectionSwitch.isChecked = settings.usbConnectionMode == true
-        atdSwitch.isChecked = settings.automaticTrainingDetectionMode == true
-
-        if (settings.automaticTrainingDetectionSensitivity != null) {
-            atdSensitivity.value = settings.automaticTrainingDetectionSensitivity!!
-        }
-        if (settings.minimumTrainingDurationSeconds != null) {
-            atdMinimumTrainingDurationSeconds.setText(settings.minimumTrainingDurationSeconds!!.toString())
-        }
-    }
-
-    private fun getSettings(): Single<PolarUserDeviceSettings> {
-        val deviceId = intent.getStringExtra("DEVICE_ID") ?: run {
-            showToast("Device ID not found")
-        }
-        return api.getUserDeviceSettings(identifier = deviceId.toString())
-    }
-    private fun saveDeviceSettings() {
-        val deviceUserLocation = setDeviceUserLocationSpinner.selectedItemPosition
-        val usbEnabled = usbConnectionSwitch.isChecked
-        val atdEnabled = atdSwitch.isChecked
-
-        val atdSensitivityValue = if (atdEnabled) atdSensitivity.value else 0
-        val atdMinimumDuration = if (atdEnabled) {
-            atdMinimumTrainingDurationSeconds.text.toString().toIntOrNull() ?: 0
-        } else {
-            0
-        }
-
-        val deviceId = intent.getStringExtra("DEVICE_ID") ?: run {
-            showToast("Device ID not found")
-            return
-        }
-
-        api.setUserDeviceLocation(deviceId, deviceUserLocation)
-            .doOnError { error ->
-                Log.e(TAG, "Failed to set user device location", error)
-                runOnUiThread {
-                    showToast("Failed to set device location")
-                }
+    private fun observeViewModel() {
+        lifecycleScope.launch {
+            viewModel.uiState.collect { state ->
+                state.deviceLocation?.let { setDeviceUserLocationSpinner.setSelection(it) }
+                usbConnectionSwitch.isChecked = state.usbEnabled
+                atdSwitch.isChecked = state.atdEnabled
+                atdSensitivity.value = state.atdSensitivity
+                atdMinimumTrainingDurationSeconds.setText(state.atdMinDuration.toString())
             }
-            .onErrorComplete()
-            .andThen(
-                api.setUsbConnectionMode(deviceId, usbEnabled)
-                    .doOnError { error ->
-                        Log.e(TAG, "Failed to set USB connection mode", error)
-                        runOnUiThread {
-                            showToast("Failed to set USB mode")
-                        }
-                    }
-                    .onErrorComplete()
-            )
-            .andThen(
-                api.setAutomaticTrainingDetectionSettings(
-                    identifier = deviceId,
-                    automaticTrainingDetectionMode = atdEnabled,
-                    automaticTrainingDetectionSensitivity = atdSensitivityValue,
-                    minimumTrainingDurationSeconds = atdMinimumDuration
-                )
-                    .doOnError { error ->
-                        Log.e(TAG, "Failed to set ATD settings", error)
-                        runOnUiThread {
-                            showToast("Failed to set ATD settings")
-                        }
-                    }
-                    .onErrorComplete()
-            )
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeOn(Schedulers.io())
-            .subscribe({
-                showToast("User device settings saved")
-            }, { error ->
-                Log.e("UserDeviceSettingsActivity", "Failed to send user device settings to device ${deviceId}, error message: ${error.localizedMessage}", error)
-                showToast("Failed to save user device settings")
-            })
+        }
+
+        lifecycleScope.launch {
+            viewModel.message.collect { msg ->
+                msg?.let { showToastAndFinish(it) }
+            }
+        }
     }
 
-    private fun showToast(message: String) {
+    private fun saveDeviceSettings() {
+        viewModel.saveSettings(
+            deviceLocation = setDeviceUserLocationSpinner.selectedItemPosition,
+            usbEnabled = usbConnectionSwitch.isChecked,
+            atdEnabled = atdSwitch.isChecked,
+            atdSensitivity = if (atdSwitch.isChecked) atdSensitivity.value else 0,
+            atdMinDuration = if (atdSwitch.isChecked)
+                atdMinimumTrainingDurationSeconds.text.toString().toIntOrNull() ?: 0
+            else 0
+        )
+    }
+
+    private fun showToastAndFinish(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-        super.onBackPressed();
+        super.onBackPressed()
     }
 }

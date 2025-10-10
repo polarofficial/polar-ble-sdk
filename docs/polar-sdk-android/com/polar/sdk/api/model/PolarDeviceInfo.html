@@ -214,6 +214,12 @@ public final class <span class="typeNameLabel"><a href=PolarDeviceInfo.html>Pola
                                             <td class="colLast"></td>
                                         </tr>
                                         
+                                        <tr class="rowColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarDeviceInfo.html#hasSAGRFCFileSystem>hasSAGRFCFileSystem</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
                                     </table>
                                 </div>
                             </li>
@@ -240,7 +246,7 @@ public final class <span class="typeNameLabel"><a href=PolarDeviceInfo.html>Pola
                                         
                                             <tr class="altColor">
                                                 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a
-                                                        href="#PolarDeviceInfo(java.lang.String,java.lang.String,java.lang.Integer,java.lang.String,java.lang.Boolean,java.lang.Boolean,java.lang.Boolean)">PolarDeviceInfo</a></span>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> address, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> rssi, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> name, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> isConnectable, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> hasHeartRateService, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> hasFileSystemService)</code></th>
+                                                        href="#PolarDeviceInfo(java.lang.String,java.lang.String,java.lang.Integer,java.lang.String,java.lang.Boolean,java.lang.Boolean,java.lang.Boolean,java.lang.Boolean)">PolarDeviceInfo</a></span>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> address, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> rssi, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> name, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> isConnectable, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> hasHeartRateService, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> hasFileSystemService, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> hasSAGRFCFileSystem)</code></th>
                                                 <td class="colLast"></td>
                                             </tr>
                                         
@@ -349,6 +355,14 @@ public final class <span class="typeNameLabel"><a href=PolarDeviceInfo.html>Pola
                                             <td class="colLast">true if device has file system service (PSFTP) available</td>
                                         </tr>
                                         
+                                        <tr id="i7" class="rowColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarDeviceInfo.html#getHasSAGRFCFileSystem()>getHasSAGRFCFileSystem</a>() </code>
+                                            </th>
+                                            <td class="colLast">true if device has SAGRFC filesystem, false otherwise.</td>
+                                        </tr>
+                                        
                                         </tbody>
                                     </table>
                                 </div>
@@ -380,11 +394,11 @@ public final class <span class="typeNameLabel"><a href=PolarDeviceInfo.html>Pola
                             </a>
                                 <h3>Constructor Detail</h3>
                                 
-                                <a name="PolarDeviceInfo(java.lang.String,java.lang.String,java.lang.Integer,java.lang.String,java.lang.Boolean,java.lang.Boolean,java.lang.Boolean)"></a>
+                                <a name="PolarDeviceInfo(java.lang.String,java.lang.String,java.lang.Integer,java.lang.String,java.lang.Boolean,java.lang.Boolean,java.lang.Boolean,java.lang.Boolean)"></a>
                                 <ul class="blockList">
                                     <li class="blockList">
                                         <h4>PolarDeviceInfo</h4>
-                                        <pre>PolarDeviceInfo(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> address, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> rssi, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> name, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> isConnectable, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> hasHeartRateService, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> hasFileSystemService)</pre>
+                                        <pre>PolarDeviceInfo(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> address, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> rssi, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> name, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> isConnectable, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> hasHeartRateService, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> hasFileSystemService, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> hasSAGRFCFileSystem)</pre>
                                         <div class="block"></div>
                                         
                                     </li>
@@ -545,12 +559,35 @@ public final class <span class="typeNameLabel"><a href=PolarDeviceInfo.html>Pola
                                     <!--   -->
                                 </a>
                                 <ul class=
-                                              "blockListLast"
+                                              "blockList"
                                           >
                                     <li class="blockList">
                                         <h4>getHasFileSystemService</h4>
                                         <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarDeviceInfo.html#getHasFileSystemService()>getHasFileSystemService</a>()</pre>
                                         <div class="block"><p>true if device has file system service (PSFTP) available</p></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="getHasSAGRFCFileSystem()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getHasSAGRFCFileSystem</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarDeviceInfo.html#getHasSAGRFCFileSystem()>getHasSAGRFCFileSystem</a>()</pre>
+                                        <div class="block"><p>true if device has SAGRFC filesystem, false otherwise. If true, more abundant settings, like:</p><ul><li><p>User device settings</p></li><li><p>User physical settings If true, actions like:</p></li><li><p>Offline measurement and measurement data reading and deletion</p></li><li><p>Reading activity data files from device</p></li><li><p>Device data logging</p></li><li><p>Device activity data reading and deletion</p></li><li><p>Reading device time</p></li><li><p>Exercise support (if available in device sw) are enabled. If false, the device may have limited or none settings available.</p></li></ul></div>
 
                                         <dl>
 

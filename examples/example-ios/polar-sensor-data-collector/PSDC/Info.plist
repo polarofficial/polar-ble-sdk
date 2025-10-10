@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>APP_GIT_BRANCH</key>
+	<string>master</string>
+	<key>APP_GIT_COMMIT</key>
+	<string>f27e191</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -15,9 +19,13 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.33.0</string>
+	<string>1.35.0</string>
 	<key>CFBundleVersion</key>
-	<string>1.33.0</string>
+	<string>1.35.0</string>
+	<key>GIT_APP_LOCALLY_MODIFIED</key>
+	<string>PSDC.xcodeproj/project.pbxproj</string>
+	<key>GIT_SDK_LOCALLY_MODIFIED</key>
+	<string></string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.healthcare-fitness</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -26,6 +34,10 @@
 	<string>To use this app with Polar device, you need to allow us to use Bluetooth.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Allowing this gives you the access to the full set of Bluetooth features.</string>
+	<key>SDK_GIT_BRANCH</key>
+	<string>master</string>
+	<key>SDK_GIT_COMMIT</key>
+	<string>3fd0993b</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>

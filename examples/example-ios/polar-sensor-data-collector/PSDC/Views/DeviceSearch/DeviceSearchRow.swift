@@ -44,7 +44,7 @@ struct DeviceSearchRow_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             VStack {
-                DeviceSearchRow( polarDeviceInfo:  PolarDeviceInfo("ABD", UUID(), -70, "Polar H10", true))
+                DeviceSearchRow( polarDeviceInfo:  PolarDeviceInfo("ABD", UUID(), -70, "Polar H10", true, false))
             }
         }
         .previewLayout(.fixed(width: 300, height: 70))

@@ -79,7 +79,8 @@ public enum PolarActivityDataType: String, CaseIterable {
 ///     - rssi = RSSI (Received Signal Strength Indicator) value from advertisement
 ///     - name = local name from advertisement
 ///     - connectable = true adv type is connectable
-public typealias PolarDeviceInfo = (deviceId: String, address: UUID, rssi: Int, name: String, connectable: Bool)
+///     - hasSAGRFCFileSystem = true, device has wider range of settings and user actions available.
+public typealias PolarDeviceInfo = (deviceId: String, address: UUID, rssi: Int, name: String, connectable: Bool, hasSAGRFCFileSystem: Bool)
 
 /// deviceInfo: see #PolarDeviceInfo ,
 ///
@@ -291,7 +292,18 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Returns: Single stream
     ///   - success: once after settings received from device
     ///   - onError: see `PolarErrors` for possible errors invoked
+    @available(*, deprecated, message: "Use getLocalTimeWithZone() instead to also get timezone")
     func getLocalTime(_ identifier: String) -> Single<Date>
+    
+    /// Get current time and timezone from device.
+    ///
+    /// Requires feature `PolarBleSdkFeature.feature_polar_device_time_setup`
+    ///
+    /// - Parameter identifier: Polar device id or UUID
+    /// - Returns: Single stream
+    ///   - success: once after settings received from device, emits `(Date, TimeZone)`
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func getLocalTimeWithZone(_ identifier: String) -> Single<(Date, TimeZone)>
     
     /// Get `PolarDiskSpaceData` from device.
     ///
@@ -320,8 +332,18 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Returns: Completable stream
     ///   - success: when factory reset notification sent to device
     ///   - onError: see `PolarErrors` for possible errors invoked
+    @available(*, deprecated, message: "Use doFactoryReset(_ identifier: String) instead.")
     func doFactoryReset(_ identifier: String, preservePairingInformation: Bool) -> Completable
-    
+
+    /// Perform factory reset to given device.
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id or UUID
+    /// - Returns: Completable stream
+    ///   - success: when factory reset notification sent to device
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func doFactoryReset(_ identifier: String) -> Completable
+
     /// Perform restart to given device.
     ///
     /// - Parameters:
@@ -330,8 +352,18 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Returns: Completable stream
     ///   - success: when restart notification sent to device
     ///   - onError: see `PolarErrors` for possible errors invoked
+    @available(*, deprecated, message: "Use doRestart(_ identifier: String) instead.")
     func doRestart(_ identifier: String, preservePairingInformation: Bool) -> Completable
     
+    /// Perform restart to given device.
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id or UUID
+    /// - Returns: Completable stream
+    ///   - success: when restart notification sent to device
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func doRestart(_ identifier: String) -> Completable
+
     /// Get SD log configuration from a device (SDLOGS.BPB)
     /// - Parameters:
     ///   - identifier: polar device id or UUID

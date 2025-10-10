@@ -100,8 +100,6 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
     private lateinit var dofactoryResetGroup: ConstraintLayout
     private lateinit var dofactoryResetButton: Button
     private lateinit var dofactoryResetHeader: TextView
-    private lateinit var dofactoryResetEnabledSwitch: SwitchMaterial
-    private lateinit var dofactoryResetSwitchHeader: TextView
 
     private lateinit var setExerciseGroup: ConstraintLayout
     private lateinit var setExerciseButton: Button
@@ -123,17 +121,27 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
 
     private lateinit var userDataSelectionSpinner: Spinner
     private lateinit var userDataDeletionSelectButton: Button
+    private lateinit var userDataDeletionSelectText: TextView
+    private lateinit var userDataDeletionSelectGroup: ConstraintLayout
     private lateinit var deviceDataType: PolarBleApi.PolarStoredDataType
 
     private lateinit var doUserDeviceSettingsButton: Button
+    private lateinit var doUserDeviceSettingsText: TextView
+    private lateinit var doUserDeviceSettingsGroup: ConstraintLayout
     private lateinit var getUserPhysicalInfoButton: Button
 
     private lateinit var deleteDateFoldersButton: Button
+    private lateinit var deleteDateFoldersText: TextView
+    private lateinit var deleteDateFoldersGroup: ConstraintLayout
 
     private lateinit var waitForConnectionButton: Button
     private lateinit var waitForConnectionStatusText: TextView
+    private lateinit var waitForConnectionStatusGroup: ConstraintLayout
 
     private lateinit var getDiskSpaceButton: Button
+    private lateinit var getDiskSpaceText: TextView
+    private lateinit var getDiskSpaceGroup: ConstraintLayout
+
     private lateinit var bleMultiConnectionEnableGroup: ConstraintLayout
     private lateinit var bleMultiConnectionEnableHeader: TextView
     private lateinit var bleMultiConnectionEnableButton: Button
@@ -141,6 +149,7 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
 
     private lateinit var sleepRecordingStateHeader: TextView
     private lateinit var forceStopSleepButton: Button
+    private lateinit var forceStopSleepGroup: ConstraintLayout
 
     private var latestPhysicalConfiguration: PolarPhysicalConfiguration? = null
 
@@ -250,6 +259,14 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
             }
         }
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiSettingsSupportUiState.collect {
+                    settingsSupportUiState(SettingsSupportUiState(it))
+                }
+            }
+        }
+
         sdkModeToggleButton.setOnClickListener {
             viewModel.sdkModeToggle()
         }
@@ -299,8 +316,7 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
                 .setTitle(getString(R.string.do_factory_reset_header))
                 .setMessage(getString(R.string.confirm_factory_reset))
                 .setPositiveButton(getString(R.string.confirm)) { _, _ ->
-                    val savePairing = dofactoryResetEnabledSwitch.isChecked
-                    viewModel.doFactoryReset(savePairing = savePairing)
+                    viewModel.doFactoryReset()
                 }
                 .setNegativeButton(getString(R.string.cancel), null)
                 .show()
@@ -464,8 +480,6 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         dofactoryResetGroup = view.findViewById(R.id.do_factory_reset_group)
         dofactoryResetButton = view.findViewById(R.id.do_factory_reset_button)
         dofactoryResetHeader = view.findViewById(R.id.do_factory_reset_header)
-        dofactoryResetEnabledSwitch = view.findViewById(R.id.do_factory_reset_switch)
-        dofactoryResetSwitchHeader = view.findViewById(R.id.do_factory_reset_switch_header)
 
         setExerciseGroup = view.findViewById(R.id.set_exercise_group)
         setExerciseButton = view.findViewById(R.id.set_exercise_button)
@@ -506,14 +520,23 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         userDataSelectionSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         userDataSelectionSpinner.adapter = userDataSelectionSpinnerAdapter
         userDataDeletionSelectButton = view.findViewById(R.id.do_file_delete_button)
+        userDataDeletionSelectText = view.findViewById(R.id.do_file_delete_header)
+        userDataDeletionSelectGroup = view.findViewById(R.id.do_file_delete_group)
         doUserDeviceSettingsButton = view.findViewById(R.id.do_device_user_settings_button)
+        doUserDeviceSettingsText = view.findViewById(R.id.do_user_device_settings_header)
+        doUserDeviceSettingsGroup = view.findViewById(R.id.do_user_device_settings_group)
         getUserPhysicalInfoButton = view.findViewById(R.id.get_user_physical_info_button)
         deleteDateFoldersButton = view.findViewById(R.id.do_date_folder_delete_button)
+        deleteDateFoldersText = view.findViewById(R.id.do_date_folder_delete_header)
+        deleteDateFoldersGroup = view.findViewById(R.id.do_date_folder_delete_group)
 
         waitForConnectionButton = view.findViewById(R.id.wait_connection_button)
         waitForConnectionStatusText = view.findViewById(R.id.wait_connection_status_text)
+        waitForConnectionStatusGroup = view.findViewById(R.id.wait_for_connection_group)
 
         getDiskSpaceButton = view.findViewById(R.id.get_disk_space_button)
+        getDiskSpaceText = view.findViewById(R.id.get_disk_space_label)
+        getDiskSpaceGroup = view.findViewById(R.id.get_disk_space_group)
         bleMultiConnectionEnableGroup = view.findViewById(R.id.multi_ble_settings_group)
         bleMultiConnectionEnableButton = view.findViewById(R.id.multi_ble_settings_button)
         bleMultiConnectionEnableHeader =
@@ -522,10 +545,31 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
             view.findViewById(R.id.multi_ble_settings_enabled)
 
         forceStopSleepButton = view.findViewById(R.id.force_stop_sleep_button)
+        forceStopSleepGroup = view.findViewById(R.id.force_stop_sleep_group)
+    }
+
+    private fun settingsSupportUiState(settingsSupportUiState: SettingsSupportUiState) {
+        Log.d(TAG, "Update UI settings based on support state: settingsSupportUiState")
+        if (settingsSupportUiState.support == false) {
+            setWareHouseSleepGroup.visibility = GONE
+            readTimeButton.visibility = GONE
+            getFtuConfigGroup.visibility = GONE
+            doPhysicalConfigGroup.visibility = GONE
+            deleteDateFoldersGroup.visibility = GONE
+            userDataDeletionSelectGroup.visibility = GONE
+            setExerciseGroup.visibility = GONE
+            waitForConnectionStatusGroup.visibility = GONE
+            userDataDeletionSelectGroup.visibility = GONE
+            getDiskSpaceGroup.visibility = GONE
+            forceStopSleepGroup.visibility = GONE
+            doUserDeviceSettingsGroup.visibility = GONE
+            setTurnDeviceOffGroup.visibility = GONE
+        }
     }
 
     private fun sdkModeStateChange(sdkModeUiState: SdkModeUiState) {
         Log.d(TAG, "Update UI SDK Mode: $sdkModeUiState")
+
         if (sdkModeUiState.isAvailable) {
             sdkModeToggleHeader.visibility = VISIBLE
             sdkModeToggleButton.visibility = VISIBLE

@@ -25,7 +25,9 @@ import com.polar.sdk.api.PolarBleApi.PolarDeviceDataType
 import com.polar.sdk.api.model.*
 import com.polar.sdk.api.model.PolarSensorSetting.SettingType
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.await
 import java.text.DecimalFormat
 
 @AndroidEntryPoint
@@ -260,32 +262,41 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
     }
 
     private fun userSelectsSettings(availableStreamSettingsUiState: OnlineAvailableStreamSettingsUiState?) {
-        if (availableStreamSettingsUiState != null &&
-            availableStreamSettingsUiState.settings.currentlyAvailable != null &&
-            availableStreamSettingsUiState.settings.allPossibleSettings != null
-        ) {
-            showAllSettingsDialog(
-                requireActivity(),
-                availableStreamSettingsUiState.settings.currentlyAvailable.settings,
-                availableStreamSettingsUiState.settings.allPossibleSettings.settings,
-                availableStreamSettingsUiState.settings.selectedSettings
-            )
-                .toFlowable()
-                .doFinally {
-                    getOnlineRecSettingsButtonView(availableStreamSettingsUiState.feature)?.isEnabled = true
-                }
-                .subscribe(
-                    { settings: Map<SettingType, Int>? ->
-                        Log.d(TAG, "Dialog completed with settings $settings")
-                        settings?.let {
-                            onlineViewModel.updateSelectedStreamSettings(availableStreamSettingsUiState.feature, it)
-                            recordingLiveSettingsView(getLiveSectionView(availableStreamSettingsUiState.feature), settings)
-                        }
-                    }, { error: Throwable ->
-                        val settingsSelectionFailed = "Error while selecting settings for feature: ${availableStreamSettingsUiState.feature} error: $error"
-                        Log.e(TAG, settingsSelectionFailed)
-                        showToast(settingsSelectionFailed)
-                    })
+        if (availableStreamSettingsUiState == null ||
+            availableStreamSettingsUiState.settings.currentlyAvailable == null ||
+            availableStreamSettingsUiState.settings.allPossibleSettings == null
+        ) return
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val settings: Map<SettingType, Int> = showAllSettingsDialog(
+                    requireActivity(),
+                    availableStreamSettingsUiState.settings.currentlyAvailable.settings,
+                    availableStreamSettingsUiState.settings.allPossibleSettings.settings,
+                    availableStreamSettingsUiState.settings.selectedSettings
+                )
+                    .subscribeOn(AndroidSchedulers.mainThread())
+                    .await()
+
+                Log.d(TAG, "Dialog completed with settings $settings")
+
+                onlineViewModel.updateSelectedStreamSettings(
+                    availableStreamSettingsUiState.feature,
+                    settings
+                )
+
+                recordingLiveSettingsView(
+                    getLiveSectionView(availableStreamSettingsUiState.feature),
+                    settings
+                )
+            } catch (e: Throwable) {
+                val settingsSelectionFailed =
+                    "Error while selecting settings for feature: ${availableStreamSettingsUiState.feature} error: $e"
+                Log.e(TAG, settingsSelectionFailed, e)
+                showToast(settingsSelectionFailed)
+            } finally {
+                getOnlineRecSettingsButtonView(availableStreamSettingsUiState.feature)?.isEnabled = true
+            }
         }
     }
 
@@ -361,7 +372,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
     private fun streamingFeatureUpdate(streamingFeatureUiState: LiveRecordingUiState) {
         val isStreamRecordingOn = streamingFeatureUiState.streamingRecordingState.any { it.value.state == StreamingFeatureState.STATES.RECORDING }
         if (isStreamRecordingOn) {
-            startRecordingButton.setText(R.string.stop_recording)
+            startRecordingButton.setText(R.string.stop_streaming)
             startRecordingButton.setOnClickListener {
                 viewModel.selectedDevice?.let {
                     for (feature in PolarDeviceDataType.entries) {
@@ -379,7 +390,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                 }
             }
         } else {
-            startRecordingButton.setText(R.string.start_recording)
+            startRecordingButton.setText(R.string.start_streaming)
             startRecordingButton.setOnClickListener {
                 viewModel.selectedDevice?.let {
                     val isRecordingStarted = startStreams()

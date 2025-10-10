@@ -2,7 +2,6 @@
 package com.polar.sdk.api
 
 import androidx.annotation.IntRange
-import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
 import com.polar.sdk.api.errors.PolarInvalidArgument
 import com.polar.sdk.api.model.*
 import fi.polar.remote.representation.protobuf.UserDeviceSettings.*
@@ -345,7 +344,16 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @param preservePairingInformation preserve pairing information during factory reset
      * @return [Completable] emitting success or error
      */
+    @Deprecated("Use method doFactoryReset(identifier: String) instead.")
     abstract fun doFactoryReset(identifier: String, preservePairingInformation: Boolean): Completable
+
+    /**
+     * Perform factory reset to given device.
+     *
+     * @param identifier Polar device ID or BT address
+     * @return [Completable] emitting success or error
+     */
+    abstract fun doFactoryReset(identifier: String): Completable
 
     /**
      * Perform restart device.
