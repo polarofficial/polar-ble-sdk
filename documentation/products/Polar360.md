@@ -45,13 +45,14 @@ POLAR Loop is a screen-free wearable that automatically tracks daily activity, t
   * Steps count accumulated per day (getSteps)
   * Active time per day (getActiveTime)
   * Calory data: activity/training/BMR (getCalories)
-  * 24/7 HR samples as 5 min averages (get247HrSamples)
-  * 24/7 PPi samples (get247PPiSamples)
+  * 24/7 HR samples as 5 min averages when low or moderate activity and with 60 samples/minute when high activity is detected (get247HrSamples)
+  * 24/7 PPi samples in milliseconds (get247PPiSamples)
   * 24/7 Skin temperature data with 5 min interval (getSkinTemperature)
   * Nightly recharge data per night (getNightlyRecharge)
   * Activity sample data (getActivitySampleData) including
       * step count with one minute interval (1440 samples per day)
       * MET samples with 30 sec interval (2880 samples per day)
+        * MET samples are calculated using ACC data and HR data if available. [White paper](https://www.polar.com/sites/default/files/static/science/white-papers/polar-smart-calories-white-paper.pdf)
       * Activity levels
 
 ### Device management
