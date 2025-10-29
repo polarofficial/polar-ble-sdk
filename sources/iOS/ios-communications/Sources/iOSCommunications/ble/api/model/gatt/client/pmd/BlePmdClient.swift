@@ -57,17 +57,37 @@ public struct Pmd {
             offset += 1
             let bitLength = (sampleCount * deltaSize * UInt32(channels))
             let length = Int(ceil(Double(bitLength) / 8.0))
+            // Check for issue #652 incident, provide data for debugging
+            guard offset + length <= data.count else {
+                BleLogger.error("parseDeltaFramesToSamples() data is too short (\(data.count)) for computed offset(\(offset)) and length(\(length)). Returning incomplete samples as data may be malformed." )
+                BleLogger.trace_hex("Please report new incident to SDK issue #652, with data:", data: data)
+                return samples
+            }
             let frame = data.subdata(in: offset..<(offset+length))
             let deltas = parseDeltaFrame(frame, channels: UInt32(channels), bitWidth: deltaSize, totalBitLength: bitLength)
             offset += length
+            var deltaSamples = [[Int32]]()
             deltas.forEach { (delta) in
                 var nextSamples = [Int32]()
                 let last = samples.last!
                 for i in 0..<channels {
-                    let sample = last[Int(i)] + delta[Int(i)]
-                    nextSamples.append(sample)
+                    // Check for issue #652 incident, provide data for debugging
+                    let sample = last[Int(i)].addingReportingOverflow(delta[Int(i)])
+                    guard false == sample.overflow else {
+                        BleLogger.error("parseDeltaFramesToSamples() overflow in sample calculation \(last[Int(i)]) + \(delta[Int(i)]). Returning incomplete samples as data may be malformed.")
+                        BleLogger.trace_hex("Please report new incident to SDK issue #652, with data:", data:data)
+                        break
+                    }
+                    nextSamples.append(sample.partialValue)
                 }
-                samples.append(nextSamples)
+                if nextSamples.count == Int(channels) {
+                    deltaSamples.append(nextSamples)
+                }
+            }
+            if deltaSamples.count == deltas.count {
+                samples.append(contentsOf: deltaSamples)
+            } else {
+                return samples
             }
         }
         return samples

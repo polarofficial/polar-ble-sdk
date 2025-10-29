@@ -4,7 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,6 +17,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.FilePresent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,7 +31,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
@@ -36,11 +38,11 @@ import androidx.navigation.fragment.navArgs
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.polar.polarsensordatacollector.ui.theme.PolarsensordatacollectorTheme
-import com.polar.polarsensordatacollector.ui.utils.showSnackBar
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.model.PolarOfflineRecordingEntry
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.*
 
 private const val TAG = "OfflineRecordingsListFragment"
@@ -53,17 +55,6 @@ class OfflineRecordingsListFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         deviceId = args.deviceIdFragmentArgument
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.devConnectionState.collect {
-                    if (!it.isConnected) {
-                        val navigateActionToHome = OfflineRecordingsListFragmentDirections.offlineRecordingListToHome()
-                        findNavController().navigate(navigateActionToHome)
-                    }
-                }
-            }
-        }
 
         return ComposeView(requireContext()).apply {
             setContent {
@@ -177,10 +168,21 @@ private fun ListingEmpty() {
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun Recording(recordingEntry: PolarOfflineRecordingEntry, onClick: (String, String) -> Unit, onDelete: (path: String) -> Unit, modifier: Modifier = Modifier) {
+fun Recording(
+    recordingEntry: PolarOfflineRecordingEntry,
+    onClick: (String, String) -> Unit,
+    onDelete: (path: String) -> Unit,
+    isDeleting: Boolean = false,
+    modifier: Modifier = Modifier
+) {
     ListItem(
         modifier = modifier
-            .clickable { onClick(recordingEntry.path, getFileNameFromPath(recordingEntry.path)) }
+            .clickable(
+                enabled = !isDeleting,
+                onClick = { onClick(recordingEntry.path, getFileNameFromPath(recordingEntry.path)) },
+                indication = LocalIndication.current,
+                interactionSource = remember { MutableInteractionSource() }
+            )
             .padding(vertical = 8.dp),
         icon = {
             Icon(
@@ -190,28 +192,39 @@ fun Recording(recordingEntry: PolarOfflineRecordingEntry, onClick: (String, Stri
             )
         },
         text = {
-            Text(text = getFileNameFromPath(recordingEntry.path), color = getColor(recordingEntry.type))
+            Text(
+                text = getFileNameFromPath(recordingEntry.path),
+                color = getColor(recordingEntry.type)
+            )
         },
         secondaryText = {
             Column {
                 Row {
-                    Text(text = recordingEntry.date.toLocaleString())
+                    Text(
+                        text = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                            .format(recordingEntry.date)
+                    )
                 }
                 Row {
-                    val sizeInKb = String.format("%.2f", (recordingEntry.size / 1000.0))
-                    Text(text = "Size: ${(sizeInKb)}kB")
+                    val sizeInKb = String.format(Locale.ENGLISH, "%.2f", (recordingEntry.size / 1000.0))
+                    Text(text = "Size: $sizeInKb KB")
                 }
             }
         },
         trailing = {
-            Row {
+            if (isDeleting) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    strokeWidth = 2.dp
+                )
+            } else {
                 IconButton(onClick = { onDelete(recordingEntry.path) }) {
                     Icon(
-                        Icons.Filled.Delete,
-                        contentDescription = "Delete file"
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = "Delete file",
+                        tint = Color.Red
                     )
                 }
-
             }
         }
     )

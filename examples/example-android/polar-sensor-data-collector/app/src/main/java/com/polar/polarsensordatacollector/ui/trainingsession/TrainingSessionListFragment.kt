@@ -4,7 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.FilePresent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +45,7 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.ui.theme.PolarsensordatacollectorTheme
+import com.polar.polarsensordatacollector.ui.utils.DataLoadProgressIndicator
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -98,15 +102,22 @@ fun TrainingSessionItemsList(onRefresh: () -> Unit, onClickItem: (String, String
                 ListingFailed(fetchStatus)
             }
             is TrainingSessionFetch.InProgress -> {
-                LazyColumn(
-                    state = rememberLazyListState(),
-                    modifier = Modifier
-                        .padding(24.dp)
-                        .fillMaxWidth()
-                ) {
-                    items(fetchStatus.fetchedTrainingSessions) { trainingSessionEntry ->
-                        TrainingSession(trainingSessionEntry, onClickItem)
-                        Divider(startIndent = 72.dp)
+                if (fetchStatus.fetchedTrainingSessions.isEmpty()) {
+                    DataLoadProgressIndicator(
+                        progress = null,
+                        dataType = "Training Sessions"
+                    )
+                } else {
+                    LazyColumn(
+                        state = rememberLazyListState(),
+                        modifier = Modifier
+                            .padding(24.dp)
+                            .fillMaxWidth()
+                    ) {
+                        items(fetchStatus.fetchedTrainingSessions) { trainingSessionEntry ->
+                            TrainingSession(trainingSessionEntry, onClickItem)
+                            Divider(startIndent = 72.dp)
+                        }
                     }
                 }
             }
@@ -173,9 +184,16 @@ fun TrainingSession(
     onClick: (String, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+
     ListItem(
         modifier = modifier
-            .clickable { onClick(trainingSessionEntry.path, trainingSessionEntry.path) }
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current
+            ) {
+                onClick(trainingSessionEntry.path, trainingSessionEntry.path)
+            }
             .padding(vertical = 8.dp),
         icon = {
             Icon(

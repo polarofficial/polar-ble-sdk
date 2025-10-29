@@ -29,9 +29,20 @@ struct TrainingSessionDetailsView: View {
                 }
                 
             case .inProgress:
-                Color.white.opacity(1.0).edgesIgnoringSafeArea(.all)
-                ProgressView("Fetching \(trainingSessionEntry.path)")
-                    .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
+                if let progress = bleSdkManager.trainingSessionData.progress {
+                    DataLoadProgressView(
+                        progress: DataLoadProgress(
+                            completedBytes: progress.completedBytes,
+                            totalBytes: progress.totalBytes,
+                            progressPercent: progress.progressPercent,
+                            path: trainingSessionEntry.path
+                        ),
+                        dataType: "Training Session"
+                    )
+                } else {
+                    ProgressView("Loading...")
+                }
+                
             case .success:
                 ScrollView {
                     VStack(alignment: .leading) {
@@ -77,7 +88,8 @@ struct TrainingSessionDetailsView: View {
                     .padding()
                 }
 
-                
+            case .notStarted:
+                EmptyView()
             }
         }.task {
             await bleSdkManager.getTrainingSession(trainingSessionReference: trainingSessionEntry)
@@ -85,7 +97,6 @@ struct TrainingSessionDetailsView: View {
         .navigationTitle(trainingSessionEntry.path)
         .navigationBarTitleDisplayMode(.inline)
     }
-
 }
 
 struct TrainingView: UIViewControllerRepresentable {

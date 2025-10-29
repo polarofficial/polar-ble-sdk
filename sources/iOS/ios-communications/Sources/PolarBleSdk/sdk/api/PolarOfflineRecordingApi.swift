@@ -79,6 +79,19 @@ public protocol PolarOfflineRecordingApi {
     ///   - success :  the offline recording data
     ///   - error: fetch recording request failed. see `PolarErrors` for possible errors invoked
     func getOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret?) -> Single< PolarOfflineRecordingData>
+    
+    /// Fetch recording from the device with progress updates.
+    ///
+    /// Note, the fetching of the recording may take several seconds if the recording is big.
+    ///
+    /// - Parameters:
+    ///   - identifier: polar device id
+    ///   - entry:  The offline recording to be fetched
+    ///   - secret: If the secret is provided in `startOfflineRecording` or `setOfflineRecordingTrigger` then the same secret must be provided when fetching the offline record
+    /// - Returns: Observable
+    ///   - next: `PolarOfflineRecordingResult` containing either progress updates or the complete recording data
+    ///   - error: fetch recording request failed. see `PolarErrors` for possible errors invoked
+    func getOfflineRecordWithProgress(_ identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret?) -> Observable<PolarOfflineRecordingResult>
 
     /// Fetch number sub recordings in recording from the  device.
     ///

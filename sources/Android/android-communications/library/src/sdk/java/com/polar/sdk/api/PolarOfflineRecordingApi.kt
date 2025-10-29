@@ -5,6 +5,7 @@ import com.polar.sdk.api.PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RE
 import com.polar.sdk.api.model.*
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 
 /**
@@ -101,6 +102,29 @@ interface PolarOfflineRecordingApi {
      * <BR></BR> - onError fetch recording request failed
      */
     fun getOfflineRecord(identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret? = null): Single<PolarOfflineRecordingData>
+
+    /**
+     * Fetch recording from the Polar device with progress tracking.
+     *
+     * Note, the fetching of the recording may take several seconds if the recording is big.
+     * This method provides progress updates during the download.
+     *
+     * @param identifier Polar device id found printed on the sensor/device or bt address
+     * @param entry The offline recording to be fetched
+     * @param secret If the secret is provided in [startOfflineRecording] or [setOfflineRecordingTrigger]
+     * then the same secret must be provided when fetching the offline record
+     *
+     * @return [Observable]
+     * Produces:
+     * <BR></BR> - onNext progress updates with [PolarOfflineRecordingProgress] containing bytes downloaded
+     * <BR></BR> - onComplete when download finishes with final [PolarOfflineRecordingResult]
+     * <BR></BR> - onError fetch recording request failed
+     */
+    fun getOfflineRecordWithProgress(
+        identifier: String,
+        entry: PolarOfflineRecordingEntry,
+        secret: PolarRecordingSecret? = null
+    ): Observable<PolarOfflineRecordingResult>
 
     /**
      * Lists all parts of all offline recordings (split and non-split) stored in the device.

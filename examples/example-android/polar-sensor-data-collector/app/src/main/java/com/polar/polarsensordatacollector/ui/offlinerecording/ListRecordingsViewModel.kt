@@ -10,12 +10,11 @@ import androidx.lifecycle.viewModelScope
 import com.polar.polarsensordatacollector.repository.DeviceConnectionState
 import com.polar.polarsensordatacollector.repository.PolarDeviceRepository
 import com.polar.polarsensordatacollector.repository.ResultOfRequest
+import com.polar.polarsensordatacollector.ui.trainingsession.TrainingSessionListDevConnectionState
 import com.polar.sdk.api.model.PolarOfflineRecordingEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 internal data class RecordingListDevConnectionState(
@@ -23,16 +22,20 @@ internal data class RecordingListDevConnectionState(
 )
 
 data class OfflineRecordingsUiState(
-    val fetchStatus: OfflineRecordingFetch
+    val fetchStatus: OfflineRecordingFetch,
+    val deletingEntryPath: String? = null
 )
 
 sealed class OfflineRecordingFetch {
-    class Success(
+    data class Success(
         val fetchedRecordings: List<PolarOfflineRecordingEntry>
     ) : OfflineRecordingFetch()
 
-    class InProgress(val fetchedRecordings: List<PolarOfflineRecordingEntry>) : OfflineRecordingFetch()
-    class Failure(
+    data class InProgress(
+        val fetchedRecordings: List<PolarOfflineRecordingEntry>
+    ) : OfflineRecordingFetch()
+
+    data class Failure(
         val message: String,
         val throwable: Throwable?
     ) : OfflineRecordingFetch()
@@ -45,18 +48,18 @@ class ListRecordingsViewModel @Inject constructor(
     private val polarDeviceStreamingRepository: PolarDeviceRepository,
     state: SavedStateHandle
 ) : ViewModel() {
-    private val deviceId = state.get<String>("deviceIdFragmentArgument") ?: throw Exception("ListRecordingsViewModel model requires deviceId")
+    private val deviceId = state.get<String>("deviceIdFragmentArgument")
+        ?: throw Exception("ListRecordingsViewModel requires deviceId")
 
-    var offlineRecordingsUiState by mutableStateOf(OfflineRecordingsUiState(OfflineRecordingFetch.InProgress(fetchedRecordings = emptyList())))
+    var offlineRecordingsUiState by mutableStateOf(
+        OfflineRecordingsUiState(
+            fetchStatus = OfflineRecordingFetch.InProgress(fetchedRecordings = emptyList())
+        )
+    )
         private set
 
-    private val _devConnectionState = MutableStateFlow(RecordingListDevConnectionState(true))
-    internal var devConnectionState: StateFlow<RecordingListDevConnectionState> = _devConnectionState.asStateFlow()
-
+    private val devConnectionState = MutableStateFlow(RecordingListDevConnectionState(true))
     private var listOfRecordings: MutableList<PolarOfflineRecordingEntry> = mutableListOf()
-
-    var recordingDataUiState: RecordingDataUiState by mutableStateOf(RecordingDataUiState.IsFetching)
-        private set
 
     init {
         viewModelScope.launch {
@@ -64,14 +67,14 @@ class ListRecordingsViewModel @Inject constructor(
                 .collect { connectionStatus ->
                     when (connectionStatus) {
                         is DeviceConnectionState.DeviceConnected -> {
-                            _devConnectionState.update {
+                            devConnectionState.update {
                                 it.copy(isConnected = true)
                             }
                         }
                         is DeviceConnectionState.DeviceConnecting,
                         is DeviceConnectionState.DeviceDisconnecting,
                         is DeviceConnectionState.DeviceNotConnected -> {
-                            _devConnectionState.update {
+                            devConnectionState.update {
                                 it.copy(isConnected = false)
                             }
                         }
@@ -81,45 +84,78 @@ class ListRecordingsViewModel @Inject constructor(
     }
 
     fun listOfflineRecordings() {
-        Log.d(TAG, "listFiles $deviceId")
-        viewModelScope.launch(Dispatchers.IO) {
+        Log.d(TAG, "listOfflineRecordings for device $deviceId")
+        viewModelScope.launch {
             try {
+                listOfRecordings.clear()
+                offlineRecordingsUiState = offlineRecordingsUiState.copy(
+                    fetchStatus = OfflineRecordingFetch.InProgress(emptyList())
+                )
+
                 polarDeviceStreamingRepository.listOfflineRecordings(deviceId)
-                    .onStart {
-                        listOfRecordings.clear()
-                        withContext(Dispatchers.Main) {
-                            offlineRecordingsUiState = OfflineRecordingsUiState(fetchStatus = OfflineRecordingFetch.InProgress(listOfRecordings.toList()))
+                    .onCompletion { error ->
+                        if (error == null) {
+                            Log.d(TAG, "Offline recordings listing completed. Total: ${listOfRecordings.size}")
+                            offlineRecordingsUiState = offlineRecordingsUiState.copy(
+                                fetchStatus = OfflineRecordingFetch.Success(listOfRecordings.toList())
+                            )
+                        } else {
+                            Log.e(TAG, "Offline recordings listing failed: $error")
                         }
                     }
-                    .onCompletion {
-                        withContext(Dispatchers.Main) {
-                            offlineRecordingsUiState = OfflineRecordingsUiState(fetchStatus = OfflineRecordingFetch.Success(listOfRecordings.toList()))
-                        }
-                    }.collect {
-                        listOfRecordings.add(it)
-                        withContext(Dispatchers.Main) {
-                            offlineRecordingsUiState = OfflineRecordingsUiState(fetchStatus = OfflineRecordingFetch.InProgress(listOfRecordings.toList()))
-                        }
+                    .catch { error ->
+                        Log.e(TAG, "Fetch of recordings error: $error")
+                        offlineRecordingsUiState = offlineRecordingsUiState.copy(
+                            fetchStatus = OfflineRecordingFetch.Failure(
+                                message = "Fetching of recordings failed: ${error.message}",
+                                throwable = error
+                            )
+                        )
+                    }
+                    .collect { entry ->
+                        Log.d(TAG, "Found recording: path=${entry.path}, size=${entry.size} bytes, type=${entry.type}, date=${entry.date}")
+                        listOfRecordings.add(entry)
+                        offlineRecordingsUiState = offlineRecordingsUiState.copy(
+                            fetchStatus = OfflineRecordingFetch.InProgress(listOfRecordings.toList())
+                        )
                     }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Log.e(TAG, "Fetch of recordings error: $e")
-                    offlineRecordingsUiState = OfflineRecordingsUiState(fetchStatus = OfflineRecordingFetch.Failure(message = "Fetching of recordings failed", throwable = e))
-                }
+                Log.e(TAG, "Unexpected error while fetching recordings: $e")
+                offlineRecordingsUiState = offlineRecordingsUiState.copy(
+                    fetchStatus = OfflineRecordingFetch.Failure(
+                        message = "Fetching of recordings failed: ${e.message}",
+                        throwable = e
+                    )
+                )
             }
         }
     }
 
     fun deleteRecording(entry: PolarOfflineRecordingEntry) {
-        Log.d(TAG, "deleteRecording from device $deviceId")
-        viewModelScope.launch(Dispatchers.IO) {
-            recordingDataUiState = RecordingDataUiState.IsDeleting
-            recordingDataUiState = when (val result = polarDeviceStreamingRepository.deleteRecording(deviceId, entry.path)) {
-                is ResultOfRequest.Success -> RecordingDataUiState.RecordingDeleted
-                is ResultOfRequest.Failure -> RecordingDataUiState.Failure(result.message, result.throwable)
+        Log.d(TAG, "deleteRecording from device $deviceId, path: ${entry.path}")
+        viewModelScope.launch {
+            offlineRecordingsUiState = offlineRecordingsUiState.copy(
+                deletingEntryPath = entry.path
+            )
+
+            when (val result = polarDeviceStreamingRepository.deleteRecording(deviceId, entry.path)) {
+                is ResultOfRequest.Success -> {
+                    Log.d(TAG, "Recording deleted successfully: ${entry.path}")
+
+                    listOfRecordings.remove(entry)
+                    offlineRecordingsUiState = offlineRecordingsUiState.copy(
+                        fetchStatus = OfflineRecordingFetch.Success(listOfRecordings.toList()),
+                        deletingEntryPath = null
+                    )
+                }
+                is ResultOfRequest.Failure -> {
+                    Log.e(TAG, "Failed to delete recording: ${result.message}")
+
+                    offlineRecordingsUiState = offlineRecordingsUiState.copy(
+                        deletingEntryPath = null
+                    )
+                }
             }
         }
-        listOfRecordings.remove(entry)
-        offlineRecordingsUiState = OfflineRecordingsUiState(fetchStatus = OfflineRecordingFetch.Success(listOfRecordings.toList()))
     }
 }

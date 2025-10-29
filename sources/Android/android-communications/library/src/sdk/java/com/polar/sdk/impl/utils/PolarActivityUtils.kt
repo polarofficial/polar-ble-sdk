@@ -6,12 +6,15 @@ import com.polar.sdk.api.model.activity.PolarActiveTime
 import com.polar.sdk.api.model.activity.PolarActiveTimeData
 import com.polar.sdk.api.model.activity.PolarActivitySamplesData
 import com.polar.sdk.api.model.activity.PolarActivitySamplesDayData
+import com.polar.sdk.api.model.activity.PolarDailySummaryData
 import com.polar.sdk.api.model.activity.parsePbActivityInfo
+import com.polar.sdk.api.model.activity.parsePbDailySummary
+import com.polar.sdk.api.model.activity.polarActiveTimeFromProto
 import com.polar.sdk.impl.BDBleApiImpl.FetchRecursiveCondition
 import fi.polar.remote.representation.protobuf.ActivitySamples
 import fi.polar.remote.representation.protobuf.DailySummary
-import fi.polar.remote.representation.protobuf.Types.PbDuration
 import io.reactivex.rxjava3.core.Flowable
+import io.reactivex.rxjava3.core.Maybe
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.functions.Function
 import org.reactivestreams.Publisher
@@ -252,13 +255,39 @@ internal object PolarActivityUtils {
         }
     }
 
-    private fun polarActiveTimeFromProto(proto: PbDuration): PolarActiveTime {
-        return PolarActiveTime(
-            hours = proto.hours,
-            minutes = proto.minutes,
-            seconds = proto.seconds,
-            millis = proto.millis
-        )
+    /**
+     * Read and return daily summary data for a given date.
+     */
+    fun readDailySummaryDataFromDayDirectory(client: BlePsFtpClient, date: LocalDate): Maybe<PolarDailySummaryData> {
+        BleLogger.d(TAG, "readDailySummaryDataFromDayDirectory: $date")
+
+        var dailySummaryDataList: MutableList<PolarDailySummaryData> = mutableListOf()
+        var dailySummaryData: PolarDailySummaryData
+
+        return Maybe.create { emitter ->
+            val dailySummaryFilePath = "$ARABICA_USER_ROOT_FOLDER${date.format(dateFormatter)}/${DAILY_SUMMARY_DIRECTORY}${DAILY_SUMMARY_PROTO}"
+            val disposable = client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath(dailySummaryFilePath)
+                    .build()
+                    .toByteArray()
+            )
+                .subscribe(
+                    { response ->
+                        val proto =
+                            DailySummary.PbDailySummary.parseFrom(response.toByteArray())
+                        dailySummaryData = parsePbDailySummary(proto)
+                        dailySummaryDataList.add(dailySummaryData)
+                        emitter.onSuccess(dailySummaryData)
+                    },
+                    { error ->
+                        BleLogger.w(TAG, "readDailySummaryDataFromDayDirectory() failed for file: $dailySummaryFilePath, error: $error")
+                        emitter.onSuccess(PolarDailySummaryData())
+                    }
+                )
+            emitter.setDisposable(disposable)
+        }
     }
 
     private fun listFiles(client: BlePsFtpClient, folderPath: String = "/", condition: FetchRecursiveCondition): Flowable<String> {

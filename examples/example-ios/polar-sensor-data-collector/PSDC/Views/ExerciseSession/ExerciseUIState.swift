@@ -16,10 +16,14 @@ struct ExerciseUIState {
 
     var sportProfiles: [PolarExerciseSession.SportProfile] = PolarExerciseSession.SportProfile.allCases
     var selectedSport: PolarExerciseSession.SportProfile = .running
+    
+    var startTime: Date? = nil
 
     mutating func apply(status new: PolarExerciseSession.ExerciseStatus,
-                        sport: PolarExerciseSession.SportProfile) {
+                        sport: PolarExerciseSession.SportProfile,
+                        startTime newStartTime: Date? = nil) {
         status = new
+        startTime = newStartTime
 
         switch new {
         case .inProgress:

@@ -1,16 +1,16 @@
 PODS:
-  - RxBlocking (6.5.0):
-    - RxSwift (= 6.5.0)
-  - RxSwift (6.5.0)
-  - RxTest (6.5.0):
-    - RxSwift (= 6.5.0)
+  - RxBlocking (6.8.0):
+    - RxSwift (= 6.8.0)
+  - RxSwift (6.8.0)
+  - RxTest (6.8.0):
+    - RxSwift (= 6.8.0)
   - SwiftProtobuf (1.24.0)
   - Zip (2.1.2)
 
 DEPENDENCIES:
-  - RxBlocking (~> 6.5.0)
-  - RxSwift (~> 6.5.0)
-  - RxTest (~> 6.5.0)
+  - RxBlocking (~> 6.8.0)
+  - RxSwift (~> 6.8.0)
+  - RxTest (~> 6.8.0)
   - SwiftProtobuf (~> 1.0)
   - Zip (~> 2.1.2)
 
@@ -23,12 +23,12 @@ SPEC REPOS:
     - Zip
 
 SPEC CHECKSUMS:
-  RxBlocking: 04b5fd28bb5ea49f7d64b80db8bbfe50d9cc1c7d
-  RxSwift: 5710a9e6b17f3c3d6e40d6e559b9fa1e813b2ef8
-  RxTest: eb2d23adefc5a5ebf5779c7792fa3edfe6ebcc17
+  RxBlocking: a8b634fba6850913bc3df40bb73fd08b2dbf0f01
+  RxSwift: 4e28be97cbcfeee614af26d83415febbf2bf6f45
+  RxTest: d0fa1ec82feb41efa826a59173ec65eafbbe4aaf
   SwiftProtobuf: bcfd2bc231cf9ae552cdc7c4e877bd3b41fe57b1
   Zip: b3fef584b147b6e582b2256a9815c897d60ddc67
 
-PODFILE CHECKSUM: 33579a760ec60fd96890b6fd664b7cbfc8725c77
+PODFILE CHECKSUM: 4443dd964b8edbafe8edb55abac7b414368ffd77
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

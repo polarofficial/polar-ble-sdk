@@ -366,7 +366,7 @@ extension PolarBleSdkManager {
         do {
             let info = try await api.getExerciseStatus(identifier: device.deviceId).value
             await MainActor.run {
-                self.exerciseState.apply(status: info.status, sport: info.sportProfile)
+                self.exerciseState.apply(status: info.status, sport: info.sportProfile, startTime: info.startTime)
                 self.exerciseState.isRefreshing = false
             }
         } catch {
@@ -383,7 +383,7 @@ extension PolarBleSdkManager {
             .observe(on: MainScheduler.instance)
             .subscribe(
                 onSuccess: { [weak self] info in
-                    self?.exerciseState.apply(status: info.status, sport: info.sportProfile)
+                    self?.exerciseState.apply(status: info.status, sport: info.sportProfile, startTime: info.startTime)
                     NSLog("Start exercise succeeded for \(device.deviceId)")
                 },
                 onFailure: { err in
@@ -401,7 +401,7 @@ extension PolarBleSdkManager {
             .observe(on: MainScheduler.instance)
             .subscribe(
                 onSuccess: { [weak self] info in
-                    self?.exerciseState.apply(status: info.status, sport: info.sportProfile)
+                    self?.exerciseState.apply(status: info.status, sport: info.sportProfile, startTime: info.startTime)
                     NSLog("Pause exercise succeeded for \(device.deviceId)")
                 },
                 onFailure: { err in
@@ -419,7 +419,7 @@ extension PolarBleSdkManager {
             .observe(on: MainScheduler.instance)
             .subscribe(
                 onSuccess: { [weak self] info in
-                    self?.exerciseState.apply(status: info.status, sport: info.sportProfile)
+                    self?.exerciseState.apply(status: info.status, sport: info.sportProfile, startTime: info.startTime)
                     NSLog("Resume exercise succeeded for \(device.deviceId)")
                 },
                 onFailure: { err in
@@ -437,7 +437,7 @@ extension PolarBleSdkManager {
             .observe(on: MainScheduler.instance)
             .subscribe(
                 onSuccess: { [weak self] info in
-                    self?.exerciseState.apply(status: info.status, sport: info.sportProfile)
+                    self?.exerciseState.apply(status: info.status, sport: info.sportProfile, startTime: info.startTime)
                     NSLog("Stop exercise succeeded for \(device.deviceId)")
                 },
                 onFailure: { err in
@@ -649,102 +649,120 @@ extension PolarBleSdkManager {
     
     func getOfflineRecording(offlineRecordingEntry: PolarOfflineRecordingEntry) async {
         if case .connected(let device) = deviceConnectionState {
-            Task { @MainActor in
+            await MainActor.run {
                 self.offlineRecordingData.loadState = OfflineRecordingDataLoadingState.inProgress
+                self.offlineRecordingData.progress = PolarOfflineRecordingProgress(
+                    bytesDownloaded: 0,
+                    totalBytes: Int64(offlineRecordingEntry.size),
+                    progressPercent: 0
+                )
             }
             
             do {
                 NSLog("start offline recording \(offlineRecordingEntry.path) fetch")
                 let readStartTime = Date()
-                let offlineRecording: PolarOfflineRecordingData
-                offlineRecording = try await api.getOfflineRecord(device.deviceId, entry: offlineRecordingEntry, secret: nil).value
-                let elapsedTime = Date().timeIntervalSince(readStartTime)
-                
-                switch offlineRecording {
-                case .accOfflineRecordingData(let data, let startTime, let settings):
-                    NSLog("ACC data received")
-                    Task { @MainActor in
-                        self.offlineRecordingData.startTime = startTime
-                        self.offlineRecordingData.usedSettings = settings
-                        self.offlineRecordingData.data = dataHeaderString(.acc) + dataToString(data)
-                        self.offlineRecordingData.dataSize = offlineRecordingEntry.size
-                        self.offlineRecordingData.downLoadTime = elapsedTime
+
+                for try await result in api.getOfflineRecordWithProgress(device.deviceId, entry: offlineRecordingEntry, secret: nil).values {
+                    switch result {
+                    case .progress(let progress):
+                        await MainActor.run {
+                            self.offlineRecordingData.progress = PolarOfflineRecordingProgress(
+                                bytesDownloaded: progress.bytesDownloaded,
+                                totalBytes: progress.totalBytes,
+                                progressPercent: progress.progressPercent
+                            )
+                        }
+                        
+                    case .complete(let offlineRecording):
+                        let elapsedTime = Date().timeIntervalSince(readStartTime)
+                        
+                        switch offlineRecording {
+                        case .accOfflineRecordingData(let data, let startTime, let settings):
+                            NSLog("ACC data received")
+                            await MainActor.run {
+                                self.offlineRecordingData.startTime = startTime
+                                self.offlineRecordingData.usedSettings = settings
+                                self.offlineRecordingData.data = dataHeaderString(.acc) + dataToString(data)
+                                self.offlineRecordingData.dataSize = offlineRecordingEntry.size
+                                self.offlineRecordingData.downLoadTime = elapsedTime
+                            }
+                        case .gyroOfflineRecordingData(let data, startTime: let startTime, settings: let settings):
+                            NSLog("GYR data received")
+                            await MainActor.run {
+                                self.offlineRecordingData.startTime = startTime
+                                self.offlineRecordingData.usedSettings = settings
+                                self.offlineRecordingData.data = dataHeaderString(.gyro) + dataToString(data)
+                                self.offlineRecordingData.dataSize = offlineRecordingEntry.size
+                                self.offlineRecordingData.downLoadTime = elapsedTime
+                            }
+                        case .magOfflineRecordingData(let data, startTime: let startTime, settings: let settings):
+                            NSLog("MAG data received")
+                            await MainActor.run {
+                                self.offlineRecordingData.startTime = startTime
+                                self.offlineRecordingData.usedSettings = settings
+                                self.offlineRecordingData.data = dataHeaderString(.magnetometer) + dataToString(data)
+                                self.offlineRecordingData.dataSize = offlineRecordingEntry.size
+                                self.offlineRecordingData.downLoadTime = elapsedTime
+                            }
+                        case .ppgOfflineRecordingData(let data, startTime: let startTime, settings: let settings):
+                            NSLog("PPG data received")
+                            await MainActor.run {
+                                self.offlineRecordingData.startTime = startTime
+                                self.offlineRecordingData.usedSettings = settings
+                                self.offlineRecordingData.data = ppgDataHeaderString(data) + dataToString(data)
+                                self.offlineRecordingData.dataSize = offlineRecordingEntry.size
+                                self.offlineRecordingData.downLoadTime = elapsedTime
+                            }
+                        case .ppiOfflineRecordingData(let data, startTime: let startTime):
+                            NSLog("PPI data received")
+                            await MainActor.run {
+                                self.offlineRecordingData.startTime = startTime
+                                self.offlineRecordingData.usedSettings = nil
+                                self.offlineRecordingData.data = dataHeaderString(.ppi) + dataToString(data)
+                                self.offlineRecordingData.dataSize = offlineRecordingEntry.size
+                                self.offlineRecordingData.downLoadTime = elapsedTime
+                            }
+                        case .hrOfflineRecordingData(let data, startTime: let startTime):
+                            NSLog("HR data received")
+                            await MainActor.run {
+                                self.offlineRecordingData.startTime = startTime
+                                self.offlineRecordingData.usedSettings = nil
+                                self.offlineRecordingData.data = dataHeaderString(.hr) + dataToString(data)
+                                self.offlineRecordingData.dataSize = offlineRecordingEntry.size
+                                self.offlineRecordingData.downLoadTime = elapsedTime
+                            }
+                        case .temperatureOfflineRecordingData(let data, startTime: let startTime):
+                            NSLog("Temperature data received")
+                            await MainActor.run {
+                                self.offlineRecordingData.startTime = startTime
+                                self.offlineRecordingData.usedSettings = nil
+                                self.offlineRecordingData.data = dataHeaderString(.temperature) + dataToString(data)
+                                self.offlineRecordingData.dataSize = offlineRecordingEntry.size
+                                self.offlineRecordingData.downLoadTime = elapsedTime
+                            }
+                        case .skinTemperatureOfflineRecordingData(let data, startTime: let startTime):
+                            NSLog("Skin temperature data received")
+                            await MainActor.run {
+                                self.offlineRecordingData.startTime = startTime
+                                self.offlineRecordingData.usedSettings = nil
+                                self.offlineRecordingData.data = dataHeaderString(.skinTemperature) + dataToString(data)
+                                self.offlineRecordingData.dataSize = offlineRecordingEntry.size
+                                self.offlineRecordingData.downLoadTime = elapsedTime
+                            }
+                        case .emptyData(startTime: let startTime):
+                            await MainActor.run {
+                                self.offlineRecordingData.startTime = startTime
+                            }
+                        }
+                        
+                        await MainActor.run {
+                            self.offlineRecordingData.loadState = OfflineRecordingDataLoadingState.success
+                        }
                     }
-                case .gyroOfflineRecordingData(let data, startTime: let startTime, settings: let settings):
-                    NSLog("GYR data received")
-                    Task { @MainActor in
-                        self.offlineRecordingData.startTime = startTime
-                        self.offlineRecordingData.usedSettings = settings
-                        self.offlineRecordingData.data = dataHeaderString(.gyro) + dataToString(data)
-                        self.offlineRecordingData.dataSize = offlineRecordingEntry.size
-                        self.offlineRecordingData.downLoadTime = elapsedTime
-                    }
-                case .magOfflineRecordingData(let data, startTime: let startTime, settings: let settings):
-                    NSLog("MAG data received")
-                    Task { @MainActor in
-                        self.offlineRecordingData.startTime = startTime
-                        self.offlineRecordingData.usedSettings = settings
-                        self.offlineRecordingData.data = dataHeaderString(.magnetometer) + dataToString(data)
-                        self.offlineRecordingData.dataSize = offlineRecordingEntry.size
-                        self.offlineRecordingData.downLoadTime = elapsedTime
-                    }
-                case .ppgOfflineRecordingData(let data, startTime: let startTime, settings: let settings):
-                    NSLog("PPG data received")
-                    Task { @MainActor in
-                        self.offlineRecordingData.startTime = startTime
-                        self.offlineRecordingData.usedSettings = settings
-                        self.offlineRecordingData.data = ppgDataHeaderString(data) + dataToString(data)
-                        self.offlineRecordingData.dataSize = offlineRecordingEntry.size
-                        self.offlineRecordingData.downLoadTime = elapsedTime
-                    }
-                case .ppiOfflineRecordingData(let data, startTime: let startTime):
-                    NSLog("PPI data received")
-                    Task { @MainActor in
-                        self.offlineRecordingData.startTime = startTime
-                        self.offlineRecordingData.usedSettings = nil
-                        self.offlineRecordingData.data = dataHeaderString(.ppi) + dataToString(data)
-                        self.offlineRecordingData.dataSize = offlineRecordingEntry.size
-                        self.offlineRecordingData.downLoadTime = elapsedTime
-                    }
-                case .hrOfflineRecordingData(let data, startTime: let startTime):
-                    NSLog("HR data received")
-                    Task { @MainActor in
-                        self.offlineRecordingData.startTime = startTime
-                        self.offlineRecordingData.usedSettings = nil
-                        self.offlineRecordingData.data = dataHeaderString(.hr) + dataToString(data)
-                        self.offlineRecordingData.dataSize = offlineRecordingEntry.size
-                        self.offlineRecordingData.downLoadTime = elapsedTime
-                    }
-                case .temperatureOfflineRecordingData(let data, startTime: let startTime):
-                    NSLog("Temperature data received")
-                    Task { @MainActor in
-                        self.offlineRecordingData.startTime = startTime
-                        self.offlineRecordingData.usedSettings = nil
-                        self.offlineRecordingData.data = dataHeaderString(.temperature) + dataToString(data)
-                        self.offlineRecordingData.dataSize = offlineRecordingEntry.size
-                        self.offlineRecordingData.downLoadTime = elapsedTime
-                    }
-                case .skinTemperatureOfflineRecordingData(let data, startTime: let startTime):
-                    NSLog("Skin temperature data received")
-                    Task { @MainActor in
-                        self.offlineRecordingData.startTime = startTime
-                        self.offlineRecordingData.usedSettings = nil
-                        self.offlineRecordingData.data = dataHeaderString(.skinTemperature) + dataToString(data)
-                        self.offlineRecordingData.dataSize = offlineRecordingEntry.size
-                        self.offlineRecordingData.downLoadTime = elapsedTime
-                    }
-                case .emptyData(startTime: let startTime):
-                    NSLog("Empty data received")
-                    Task { @MainActor in
-                        self.offlineRecordingData.startTime = startTime
-                    }
-                }
-                Task { @MainActor in
-                    self.offlineRecordingData.loadState = OfflineRecordingDataLoadingState.success
                 }
             } catch let err {
                 NSLog("offline recording read failed: \(err)")
-                Task { @MainActor in
+                await MainActor.run {
                     self.offlineRecordingData.loadState = OfflineRecordingDataLoadingState.failed(error: "offline recording read failed: \(err)")
                 }
             }
@@ -2033,11 +2051,7 @@ extension PolarBleSdkManager {
             do {
                 dateFormatter.dateFormat = "yyyy-MM-dd"
                 encoder.dateEncodingStrategy = .formatted(dateFormatter)
-                let calendar = Calendar(identifier: .gregorian)
-                let endOfDayOfEnd =
-                    calendar.date(byAdding: .day, value: 1, to: end)!
-                    .addingTimeInterval(TimeInterval(-Double.leastNonzeroMagnitude))
-                let hrSamplesData = try await api.get247HrSamples(identifier: device.deviceId, fromDate: start, toDate: endOfDayOfEnd).value
+                let hrSamplesData = try await api.get247HrSamples(identifier: device.deviceId, fromDate: start, toDate: end).value
                 Task {@MainActor in
                     if (!hrSamplesData.isEmpty) {
                         let hrSamplesJson = try encoder.encode(hrSamplesData)
@@ -2058,11 +2072,7 @@ extension PolarBleSdkManager {
             do {
                 dateFormatter.dateFormat = "yyyy-MM-dd"
                 encoder.dateEncodingStrategy = .formatted(dateFormatter)
-                let calendar = Calendar(identifier: .gregorian)
-                let endOfDayOfEnd =
-                    calendar.date(byAdding: .day, value: 1, to: end)!
-                    .addingTimeInterval(TimeInterval(-Double.leastNonzeroMagnitude))
-                let ppiSamplesData = try await api.get247PPiSamples(identifier: device.deviceId, fromDate: start, toDate: endOfDayOfEnd).value
+                let ppiSamplesData = try await api.get247PPiSamples(identifier: device.deviceId, fromDate: start, toDate: end).value
                 Task {@MainActor in
                     if (!ppiSamplesData.isEmpty) {
                         let ppiSamplesJson = try encoder.encode(ppiSamplesData)
@@ -2147,6 +2157,27 @@ extension PolarBleSdkManager {
                 }
             } catch let err {
                 self.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.failed(error: "Failed to load activity samples data, \(err)")
+            }
+        }
+    }
+
+    func getDailySummaryData(start: Date, end: Date) async {
+        if case .connected(let device) = deviceConnectionState {
+            do {
+                dateFormatter.dateFormat = "yyyy-MM-dd"
+                encoder.dateEncodingStrategy = .formatted(dateFormatter)
+                let dailySummaryData = try await api.getDailySummaryData(identifier: device.deviceId, fromDate: start, toDate: end).value
+                Task {@MainActor in
+                    if (!dailySummaryData.isEmpty) {
+                        let dailySummaryDataJson = try encoder.encode(dailySummaryData)
+                        self.activityRecordingData.data = String(data: dailySummaryDataJson, encoding: String.Encoding.utf8)!
+                        self.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.success
+                    } else {
+                        self.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.failed(error: "No daily summary data found for dates \(dateFormatter.string(from: start)) - \(dateFormatter.string(from: end))")
+                    }
+                }
+            } catch let err {
+                self.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.failed(error: "Failed to load daily summary data, \(err)")
             }
         }
     }
@@ -2329,7 +2360,12 @@ extension PolarBleSdkManager {
     
     func getTrainingSession(trainingSessionReference: PolarTrainingSessionReference) async {
         if case .connected(let device) = deviceConnectionState {
-            Task { @MainActor in
+            await MainActor.run {
+                self.trainingSessionData.progress = PolarTrainingSessionProgress(
+                    totalBytes: trainingSessionReference.fileSize,
+                    completedBytes: 0,
+                    progressPercent: 0
+                )
                 self.trainingSessionData.loadState = TrainingSessionDataLoadingState.inProgress
             }
 
@@ -2337,82 +2373,92 @@ extension PolarBleSdkManager {
                 NSLog("Start training session \(trainingSessionReference.path) fetch")
                 let readStartTime = Date()
 
-                let trainingSession: PolarTrainingSession
-                trainingSession = try await api.getTrainingSession(
-                    identifier: device.deviceId,
-                    trainingSessionReference: trainingSessionReference
-                ).value
-
-                let sessionSummaryData = try trainingSession.sessionSummary.jsonUTF8Data()
-                let sessionSummaryString = String(data: sessionSummaryData, encoding: .utf8) ?? "{}"
-
-                var exerciseJsonObjects: [String] = []
-                for exercise in trainingSession.exercises {
-                    let summaryString: String
-                    if let summaryData = try exercise.exerciseSummary?.jsonUTF8Data(),
-                       let str = String(data: summaryData, encoding: .utf8) {
-                        summaryString = str
-                    } else {
-                        summaryString = "{}"
-                    }
-
-                    let routeString: String = {
-                        if let route = exercise.route,
-                           let data = try? route.jsonUTF8Data(),
-                           let str = String(data: data, encoding: .utf8) {
-                            return str
-                        } else if let routeAdv = exercise.routeAdvanced,
-                                  let data = try? routeAdv.jsonUTF8Data(),
-                                  let str = String(data: data, encoding: .utf8) {
-                            return str
-                        } else {
-                            return "{}"
+                for try await result in api.getTrainingSessionWithProgress(identifier: device.deviceId, trainingSessionReference: trainingSessionReference).values {
+                    switch result {
+                    case .progress(let progress):
+                        NSLog("Training session progress: \(progress.completedBytes)/\(progress.totalBytes) (\(progress.progressPercent)%)")
+                        await MainActor.run {
+                            self.trainingSessionData.progress = PolarTrainingSessionProgress(
+                                totalBytes: progress.totalBytes,
+                                completedBytes: progress.completedBytes,
+                                progressPercent: progress.progressPercent
+                            )
                         }
-                    }()
+                        
+                    case .complete(let trainingSession):
+                        let elapsedTime = Date().timeIntervalSince(readStartTime)
+                        NSLog("Training session received")
+                        
+                        let sessionSummaryData = try trainingSession.sessionSummary.jsonUTF8Data()
+                        let sessionSummaryString = String(data: sessionSummaryData, encoding: .utf8) ?? "{}"
 
-                    let samplesString: String = {
-                        if let samples = exercise.samples,
-                           let data = try? samples.jsonUTF8Data(),
-                           let str = String(data: data, encoding: .utf8) {
-                            return str
-                        } else if let samplesAdv = exercise.samplesAdvanced,
-                                  let data = try? samplesAdv.jsonUTF8Data(),
-                                  let str = String(data: data, encoding: .utf8) {
-                            return str
-                        } else {
-                            return "{}"
+                        var exerciseJsonObjects: [String] = []
+                        for exercise in trainingSession.exercises {
+                            let summaryString: String
+                            if let summaryData = try exercise.exerciseSummary?.jsonUTF8Data(),
+                               let str = String(data: summaryData, encoding: .utf8) {
+                                summaryString = str
+                            } else {
+                                summaryString = "{}"
+                            }
+
+                            let routeString: String = {
+                                if let route = exercise.route,
+                                   let data = try? route.jsonUTF8Data(),
+                                   let str = String(data: data, encoding: .utf8) {
+                                    return str
+                                } else if let routeAdv = exercise.routeAdvanced,
+                                          let data = try? routeAdv.jsonUTF8Data(),
+                                          let str = String(data: data, encoding: .utf8) {
+                                    return str
+                                } else {
+                                    return "{}"
+                                }
+                            }()
+
+                            let samplesString: String = {
+                                if let samples = exercise.samples,
+                                   let data = try? samples.jsonUTF8Data(),
+                                   let str = String(data: data, encoding: .utf8) {
+                                    return str
+                                } else if let samplesAdv = exercise.samplesAdvanced,
+                                          let data = try? samplesAdv.jsonUTF8Data(),
+                                          let str = String(data: data, encoding: .utf8) {
+                                    return str
+                                } else {
+                                    return "{}"
+                                }
+                            }()
+
+                            let exerciseJson = """
+                            {
+                              "exerciseSummary": \(summaryString),
+                              "route": \(routeString),
+                              "samples": \(samplesString)
+                            }
+                            """
+                            exerciseJsonObjects.append(exerciseJson)
                         }
-                    }()
 
-                    let exerciseJson = """
-                    {
-                      "exerciseSummary": \(summaryString),
-                      "route": \(routeString),
-                      "samples": \(samplesString)
+                        let exercisesArrayString = "[\(exerciseJsonObjects.joined(separator: ","))]"
+
+                        let jsonString = """
+                        {
+                          "sessionSummary": \(sessionSummaryString),
+                          "exercises": \(exercisesArrayString)
+                        }
+                        """
+                        
+                        await MainActor.run {
+                            self.trainingSessionData.data = jsonString
+                            self.trainingSessionData.loadState = TrainingSessionDataLoadingState.success
+                        }
                     }
-                    """
-                    exerciseJsonObjects.append(exerciseJson)
-                }
-
-                let exercisesArrayString = "[\(exerciseJsonObjects.joined(separator: ","))]"
-
-                let jsonString = """
-                {
-                  "sessionSummary": \(sessionSummaryString),
-                  "exercises": \(exercisesArrayString)
-                }
-                """
-
-                Task { @MainActor in
-                    self.trainingSessionData.data = jsonString
-                    self.trainingSessionData.loadState = TrainingSessionDataLoadingState.success
                 }
             } catch let err {
-                NSLog("Training session read failed: \(err)")
-                Task { @MainActor in
-                    self.trainingSessionData.loadState = TrainingSessionDataLoadingState.failed(
-                        error: "Training session read failed: \(err)"
-                    )
+                NSLog("training session read failed: \(err)")
+                await MainActor.run {
+                    self.trainingSessionData.loadState = TrainingSessionDataLoadingState.failed(error: "training session read failed: \(err)")
                 }
             }
         }

@@ -33,10 +33,11 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.polar.polarsensordatacollector.ui.theme.PolarsensordatacollectorTheme
+import com.polar.polarsensordatacollector.ui.utils.DataLoadProgress
+import com.polar.polarsensordatacollector.ui.utils.DataLoadProgressIndicator
 import com.polar.sdk.api.model.PolarSensorSetting
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.util.*
 
 private lateinit var path: String
 
@@ -76,6 +77,7 @@ class OfflineRecordingDataFragment : Fragment() {
 @Composable
 fun ShowRecordingData(viewModel: RecordingDataViewModel = viewModel(), onNavigateBack: () -> Boolean) {
     when (val uiState = viewModel.recordingDataUiState) {
+        is RecordingDataUiState.Loading -> ShowIsLoading(uiState.progress)
         is RecordingDataUiState.FetchedData -> {
             val context = LocalContext.current
             val intent = Intent().apply {
@@ -91,8 +93,7 @@ fun ShowRecordingData(viewModel: RecordingDataViewModel = viewModel(), onNavigat
                 path
             )
         }
-        RecordingDataUiState.IsDeleting,
-        RecordingDataUiState.IsFetching -> ShowIsLoading()
+        RecordingDataUiState.IsDeleting -> ShowIsLoading(null)
         is RecordingDataUiState.Failure -> {
             ShowFailed(uiState)
         }
@@ -100,18 +101,24 @@ fun ShowRecordingData(viewModel: RecordingDataViewModel = viewModel(), onNavigat
             Toast.makeText(LocalContext.current, "Deleted $path ", Toast.LENGTH_LONG).show()
             onNavigateBack()
         }
+        RecordingDataUiState.Idle -> {
+        }
     }
 }
 
 @Composable
-fun ShowIsLoading() {
-    Box(contentAlignment = Alignment.Center) {
-        CircularProgressIndicator(
-            modifier = Modifier.size(size = 64.dp),
-            color = Color.Blue,
-            strokeWidth = 6.dp
-        )
-    }
+fun ShowIsLoading(progress: OfflineRecordingProgress?) {
+    DataLoadProgressIndicator(
+        progress = progress?.let {
+            DataLoadProgress(
+                completedBytes = it.completedBytes,
+                totalBytes = it.totalBytes,
+                progressPercent = it.progressPercent,
+                path = path
+            )
+        },
+        dataType = "Offline Recording"
+    )
 }
 
 @Composable
@@ -247,7 +254,7 @@ private fun ShowFailed(failure: RecordingDataUiState.Failure) {
 private fun RecordingDataLoadingPreview() {
     PolarsensordatacollectorTheme(content = {
         Surface {
-            ShowIsLoading()
+            ShowIsLoading(null)
         }
     })
 }

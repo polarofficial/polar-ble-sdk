@@ -37,14 +37,16 @@ public enum PolarExerciseSession {
     public struct ExerciseInfo: Equatable, CustomStringConvertible {
         public let status: ExerciseStatus
         public let sportProfile: SportProfile
+        public let startTime: Date?
 
-        public init(status: ExerciseStatus, sportProfile: SportProfile) {
+        public init(status: ExerciseStatus, sportProfile: SportProfile, startTime: Date? = nil) {
             self.status = status
             self.sportProfile = sportProfile
+            self.startTime = startTime
         }
 
         public var description: String {
-            "ExerciseInfo(status: \(status), sport: \(sportProfile))"
+            "ExerciseInfo(status: \(status), sport: \(sportProfile), startTime: \(startTime?.description ?? "nil"))"
         }
     }
 }
@@ -60,7 +62,8 @@ public extension PolarExerciseSession.ExerciseInfo {
         BleLogger.trace(
             "EX_STATUS raw: state=\(proto.exerciseState) " +
             "hasSport=\(proto.hasSportIdentifier) " +
-            "sport=\(proto.hasSportIdentifier ? proto.sportIdentifier.value : 0)"
+            "sport=\(proto.hasSportIdentifier ? proto.sportIdentifier.value : 0) " +
+            "startTime=\(String(describing: proto.hasStartTime ? proto.startTime : nil))"
         )
 
         let status: PolarExerciseSession.ExerciseStatus
@@ -79,6 +82,34 @@ public extension PolarExerciseSession.ExerciseInfo {
             }
         }()
 
-        return .init(status: status, sportProfile: sport)
+        let startTime: Date? = { () -> Date? in
+            guard proto.hasStartTime else { return nil }
+            let st = proto.startTime
+
+            let year  = Int(st.date.year)
+            let month = Int(st.date.month)
+            let day   = Int(st.date.day)
+
+            let hour   = Int(st.time.hour)
+            let minute = Int(st.time.minute)
+            let second = Int(st.time.seconds)
+            let millis = Int(st.time.millis)
+
+            let tzOffsetSec = Int(st.timeZoneOffset) * 60
+            let calendar = Calendar(identifier: .gregorian)
+            var components = DateComponents()
+            components.year = year
+            components.month = month
+            components.day = day
+            components.hour = hour
+            components.minute = minute
+            components.second = second
+            components.nanosecond = millis * 1_000_000
+            components.timeZone = TimeZone(secondsFromGMT: tzOffsetSec)
+
+            return calendar.date(from: components)
+        }()
+
+        return .init(status: status, sportProfile: sport, startTime: startTime)
     }
 }

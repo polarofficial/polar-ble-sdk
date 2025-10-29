@@ -20,7 +20,7 @@ struct OfflineRecordingDetailsView: View {
         formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
         return formatter
     }()
-
+    
     var body: some View {
         ZStack {
             switch bleSdkManager.offlineRecordingData.loadState {
@@ -35,10 +35,20 @@ struct OfflineRecordingDetailsView: View {
                 }
                 
             case .inProgress:
-                Color.white.opacity(1.0).edgesIgnoringSafeArea(.all)
-                ProgressView("Fetching \(getLongNameForDataType(offlineRecordingEntry.type)) data...")
-                    .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
-
+                if let progress = bleSdkManager.offlineRecordingData.progress {
+                    DataLoadProgressView(
+                        progress: DataLoadProgress(
+                            completedBytes: progress.bytesDownloaded,
+                            totalBytes: progress.totalBytes,
+                            progressPercent: progress.progressPercent,
+                            path: offlineRecordingEntry.path
+                        ),
+                        dataType: "Offline Recording"
+                    )
+                } else {
+                    ProgressView("Loading...")
+                }
+                
             case .success:
                 let sizeString = sizeInKbString(size: offlineRecordingEntry.size)
                 let speedString = downLoadSpeedInKbString(speed: bleSdkManager.offlineRecordingData.downloadSpeed)
@@ -127,6 +137,9 @@ struct OfflineRecordingDetailsView: View {
                     }
                     .padding()
                 }
+                
+            case .notStarted:
+                EmptyView()
             }
         }
         .task {
@@ -171,12 +184,13 @@ struct ActivityView: UIViewControllerRepresentable {
 
 struct OfflineRecordingDetailsView_Previews: PreviewProvider {
     private static let offlineRecordingData = OfflineRecordingData(
-        loadState: OfflineRecordingDataLoadingState.success,
+        loadState: .success,
         startTime: Date(),
         usedSettings: nil,
         downLoadTime: 0.06,
         dataSize: 11234,
-        data: "test data"
+        data: "test data",
+        progress: nil as PolarOfflineRecordingProgress?
     )
     
     private static let polarBleSdkManager: PolarBleSdkManager = {
@@ -188,7 +202,13 @@ struct OfflineRecordingDetailsView_Previews: PreviewProvider {
     private static let polarBleSdkManagerInProgress: PolarBleSdkManager = {
         let polarBleSdkManager = PolarBleSdkManager()
         polarBleSdkManager.offlineRecordingData = OfflineRecordingData(
-            loadState: OfflineRecordingDataLoadingState.inProgress
+            loadState: .inProgress,
+            data: "",
+            progress: PolarOfflineRecordingProgress(
+                bytesDownloaded: 5000,
+                totalBytes: 10000,
+                progressPercent: 50
+            )
         )
         return polarBleSdkManager
     }()
@@ -196,7 +216,9 @@ struct OfflineRecordingDetailsView_Previews: PreviewProvider {
     private static let polarBleSdkManagerFailed: PolarBleSdkManager = {
         let polarBleSdkManager = PolarBleSdkManager()
         polarBleSdkManager.offlineRecordingData = OfflineRecordingData(
-            loadState: OfflineRecordingDataLoadingState.failed(error: "Error while loading")
+            loadState: .failed(error: "Error while loading"),
+            data: "",
+            progress: nil as PolarOfflineRecordingProgress?
         )
         return polarBleSdkManager
     }()

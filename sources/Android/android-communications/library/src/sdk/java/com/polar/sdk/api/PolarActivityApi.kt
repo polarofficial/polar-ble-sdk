@@ -10,6 +10,7 @@ import com.polar.sdk.api.model.sleep.PolarNightlyRechargeData
 import com.polar.sdk.impl.utils.CaloriesType
 import io.reactivex.rxjava3.core.Single
 import com.polar.sdk.api.model.activity.PolarActivitySamplesDayData
+import com.polar.sdk.api.model.activity.PolarDailySummaryData
 import java.time.LocalDate
 import java.util.Date
 
@@ -39,6 +40,17 @@ interface PolarActivityApi {
      * activity sample data for the given date range.
      */
     fun getActivitySampleData(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<PolarActivitySamplesDayData>>
+
+    /**
+     * Get daily summary sample data for a given period. Daily summary data is a cumulative sum for the activity per given date.
+     *
+     * @param identifier The Polar device ID or BT address.
+     * @param fromDate The starting date of the period to retrieve daily summary data from.
+     * @param toDate The ending date of the period to retrieve daily summary data from.
+     * @return A [Single] emitting a list of [PolarDailySummaryData] containing all
+     * daily summary data for the given date range.
+     */
+    fun getDailySummaryData(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<PolarDailySummaryData>>
 
     /**
      * Get distance for a given period.

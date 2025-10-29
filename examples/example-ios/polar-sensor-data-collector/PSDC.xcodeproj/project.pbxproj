@@ -16,6 +16,7 @@
 		84698A132DB77937006AD8FA /* TrainingSessionEntriesRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A122DB77937006AD8FA /* TrainingSessionEntriesRow.swift */; };
 		84698A152DB77D39006AD8FA /* TrainingSessionEntries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A142DB77D39006AD8FA /* TrainingSessionEntries.swift */; };
 		84698A172DB77D8C006AD8FA /* TrainingSessionData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A162DB77D8C006AD8FA /* TrainingSessionData.swift */; };
+		84954BAD2E9E65C5000A5C0A /* DataLoadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84954BAC2E9E65C2000A5C0A /* DataLoadProgressView.swift */; };
 		8499A2DC2E01576D006FD70A /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8499A2DA2E01576D006FD70A /* Localizable.strings */; };
 		84B821432D6C908B005BB62C /* DateFolderDeletionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B821422D6C908B005BB62C /* DateFolderDeletionView.swift */; };
 		84F0A1802CD0F76C009CF1A1 /* ActivityPhysicalDataConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F0A17F2CD0F76C009CF1A1 /* ActivityPhysicalDataConfig.swift */; };
@@ -107,6 +108,7 @@
 		84698A122DB77937006AD8FA /* TrainingSessionEntriesRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionEntriesRow.swift; sourceTree = "<group>"; };
 		84698A142DB77D39006AD8FA /* TrainingSessionEntries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionEntries.swift; sourceTree = "<group>"; };
 		84698A162DB77D8C006AD8FA /* TrainingSessionData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionData.swift; sourceTree = "<group>"; };
+		84954BAC2E9E65C2000A5C0A /* DataLoadProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataLoadProgressView.swift; sourceTree = "<group>"; };
 		8499A2DB2E01576D006FD70A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		84B821422D6C908B005BB62C /* DateFolderDeletionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFolderDeletionView.swift; sourceTree = "<group>"; };
 		84F0A17F2CD0F76C009CF1A1 /* ActivityPhysicalDataConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityPhysicalDataConfig.swift; sourceTree = "<group>"; };
@@ -323,6 +325,7 @@
 		AA74C2442BDA3D6D005E0908 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				84954BAC2E9E65C2000A5C0A /* DataLoadProgressView.swift */,
 				CC57B5DA2E60617000E90F5B /* ExerciseSession */,
 				84698A0D2DB778B2006AD8FA /* TrainingSession */,
 				84F0A17E2CD0F74C009CF1A1 /* PhysicalData */,
@@ -587,6 +590,7 @@
 				AA74C2232BDA39D6005E0908 /* PolarBleSdkManager.swift in Sources */,
 				AAA0FE092BEA3B42005368A7 /* PpiRecordingFeature.swift in Sources */,
 				84F749052C6355C400038A4B /* ActivityRecordingData.swift in Sources */,
+				84954BAD2E9E65C5000A5C0A /* DataLoadProgressView.swift in Sources */,
 				AA74C2402BDA3C8C005E0908 /* LedAnimationFeature.swift in Sources */,
 				AA74C25A2BDA3ED8005E0908 /* OfflineRecordingEntriesRow.swift in Sources */,
 				AAA0FE012BE9EF22005368A7 /* HrRecordingFeature.swift in Sources */,

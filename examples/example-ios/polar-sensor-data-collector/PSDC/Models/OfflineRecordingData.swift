@@ -4,6 +4,7 @@ import Foundation
 import PolarBleSdk
 
 enum OfflineRecordingDataLoadingState {
+    case notStarted
     case inProgress
     case success
     case failed(error: String)
@@ -11,17 +12,19 @@ enum OfflineRecordingDataLoadingState {
 
 struct OfflineRecordingData: Identifiable {
     let id = UUID()
-    var loadState: OfflineRecordingDataLoadingState = OfflineRecordingDataLoadingState.inProgress
+    var loadState: OfflineRecordingDataLoadingState = .notStarted
     var startTime: Date = Date()
     var usedSettings: PolarSensorSetting? = nil
     var downLoadTime: TimeInterval? = nil
     var dataSize: UInt = 0
     var downloadSpeed: Double {
         if let time = downLoadTime, dataSize > 0 {
-            return  Double(dataSize) / time
+            return Double(dataSize) / time
         } else {
             return 0.0
         }
     }
-    var data:String = ""
+    var data: String = ""
+    var progress: PolarOfflineRecordingProgress? = nil
+    var offlineRecordingData: PolarOfflineRecordingData? = nil
 }

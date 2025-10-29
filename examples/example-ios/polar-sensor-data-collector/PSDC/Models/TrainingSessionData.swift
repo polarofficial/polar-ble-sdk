@@ -4,6 +4,7 @@ import Foundation
 import PolarBleSdk
 
 enum TrainingSessionDataLoadingState {
+    case notStarted
     case inProgress
     case success
     case failed(error: String)
@@ -11,7 +12,8 @@ enum TrainingSessionDataLoadingState {
 
 struct TrainingSessionData: Identifiable {
     let id = UUID()
-    var loadState: TrainingSessionDataLoadingState = TrainingSessionDataLoadingState.inProgress
+    var loadState: TrainingSessionDataLoadingState = .notStarted
     var startTime: Date = Date()
     var data: String = ""
+    var progress: PolarTrainingSessionProgress? = nil
 }

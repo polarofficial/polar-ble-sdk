@@ -1,10 +1,12 @@
 package com.polar.sdk.api
 
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSession
+import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionFetchResult
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference
 import com.polar.sdk.api.model.PolarExerciseSession
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import java.util.Date
 
@@ -38,6 +40,18 @@ interface PolarTrainingSessionApi {
         identifier: String,
         trainingSessionReference: PolarTrainingSessionReference
     ): Single<PolarTrainingSession>
+
+    /**
+     * Get training session with progress tracking.
+     *
+     * @param identifier The Polar device ID or BT address.
+     * @param trainingSessionReference The reference to the training session to retrieve.
+     * @return An [Observable] emitting [PolarTrainingSessionFetchResult] objects with progress updates and final result.
+     */
+    fun getTrainingSessionWithProgress(
+        identifier: String,
+        trainingSessionReference: PolarTrainingSessionReference
+    ): Observable<PolarTrainingSessionFetchResult>
     
     /**
      * Start an exercise session on the device.

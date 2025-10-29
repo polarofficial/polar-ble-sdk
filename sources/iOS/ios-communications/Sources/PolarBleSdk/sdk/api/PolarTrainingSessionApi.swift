@@ -29,6 +29,17 @@ public protocol PolarTrainingSessionApi {
         trainingSessionReference: PolarTrainingSessionReference
     ) -> Single<PolarTrainingSession>
     
+    /// Get a specific training session using a reference with progress updates.
+    ///
+    /// - Parameters:
+    ///   - identifier: The Polar device ID or BT address.
+    ///   - trainingSessionReference: The reference to the training session to retrieve.
+    /// - Returns: An Observable emitting `PolarTrainingSessionFetchResult` containing either progress updates or the complete session data.
+    func getTrainingSessionWithProgress(
+        identifier: String,
+        trainingSessionReference: PolarTrainingSessionReference
+    ) -> Observable<PolarTrainingSessionFetchResult>
+    
     /// Start an exercise session on the device.
     ///
     /// - Parameters:

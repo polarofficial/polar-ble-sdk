@@ -262,6 +262,14 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                         </tr>
                                         
                                         <tr id="i2" class="altColor">
+                                            <td class="colFirst"><code>abstract Observable&lt;<a href=model/trainingsession/PolarTrainingSessionFetchResult.html>PolarTrainingSessionFetchResult</a>&gt;</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarTrainingSessionApi.html#getTrainingSessionWithProgress(java.lang.String,com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference)>getTrainingSessionWithProgress</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/trainingsession/PolarTrainingSessionReference.html>PolarTrainingSessionReference</a> trainingSessionReference) </code>
+                                            </th>
+                                            <td class="colLast">Get training session with progress tracking.</td>
+                                        </tr>
+                                        
+                                        <tr id="i3" class="rowColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarTrainingSessionApi.html#startExercise(java.lang.String,com.polar.sdk.api.model.PolarExerciseSession.SportProfile)>startExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarExerciseSession.SportProfile.html>PolarExerciseSession.SportProfile</a> profile) </code>
@@ -269,7 +277,7 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                             <td class="colLast">Start an exercise session on the device.</td>
                                         </tr>
                                         
-                                        <tr id="i3" class="rowColor">
+                                        <tr id="i4" class="altColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarTrainingSessionApi.html#pauseExercise(java.lang.String)>pauseExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -277,7 +285,7 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                             <td class="colLast">Pause an ongoing exercise session.</td>
                                         </tr>
                                         
-                                        <tr id="i4" class="altColor">
+                                        <tr id="i5" class="rowColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarTrainingSessionApi.html#resumeExercise(java.lang.String)>resumeExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -285,7 +293,7 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                             <td class="colLast">Resume a paused exercise session.</td>
                                         </tr>
                                         
-                                        <tr id="i5" class="rowColor">
+                                        <tr id="i6" class="altColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarTrainingSessionApi.html#stopExercise(java.lang.String)>stopExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -293,7 +301,7 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                             <td class="colLast">Stop the current exercise session.</td>
                                         </tr>
                                         
-                                        <tr id="i6" class="altColor">
+                                        <tr id="i7" class="rowColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=model/PolarExerciseSession.ExerciseInfo.html>PolarExerciseSession.ExerciseInfo</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarTrainingSessionApi.html#getExerciseStatus(java.lang.String)>getExerciseStatus</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -415,6 +423,43 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
                                             <dd><p>A Single emitting a <a href=model/trainingsession/PolarTrainingSession.html>PolarTrainingSession</a> object representing the training session data.</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="getTrainingSessionWithProgress(java.lang.String,com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getTrainingSessionWithProgress</h4>
+                                        <pre class="methodSignature"> abstract Observable&lt;<a href=model/trainingsession/PolarTrainingSessionFetchResult.html>PolarTrainingSessionFetchResult</a>&gt; <a href=PolarTrainingSessionApi.html#getTrainingSessionWithProgress(java.lang.String,com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference)>getTrainingSessionWithProgress</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/trainingsession/PolarTrainingSessionReference.html>PolarTrainingSessionReference</a> trainingSessionReference)</pre>
+                                        <div class="block"><p>Get training session with progress tracking.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - The Polar device ID or BT address.</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>trainingSessionReference</code> - The reference to the training session to retrieve.</dd>
+                                            
+                                            
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>An Observable emitting <a href=model/trainingsession/PolarTrainingSessionFetchResult.html>PolarTrainingSessionFetchResult</a> objects with progress updates and final result.</p></dd>
                                         
 
                                         

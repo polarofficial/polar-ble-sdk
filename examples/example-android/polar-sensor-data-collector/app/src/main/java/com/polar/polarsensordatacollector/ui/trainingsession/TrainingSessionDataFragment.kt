@@ -28,33 +28,32 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.google.gson.Gson
-import com.polar.polarsensordatacollector.ui.theme.PolarsensordatacollectorTheme
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonElement
-import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializer
 import com.polar.polarsensordatacollector.R
+import com.polar.polarsensordatacollector.ui.theme.PolarsensordatacollectorTheme
+import com.polar.polarsensordatacollector.ui.utils.DataLoadProgress
+import com.polar.polarsensordatacollector.ui.utils.DataLoadProgressIndicator
 import com.polar.polarsensordatacollector.ui.utils.FileUtils
 import com.polar.polarsensordatacollector.ui.utils.JsonUtils
+import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionProgress
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-
-private lateinit var path: String
 
 @AndroidEntryPoint
 class TrainingSessionDataFragment : Fragment() {
     private val viewModel: TrainingSessionDataViewModel by viewModels()
     private lateinit var deviceId: String
+    private lateinit var sessionPath: String
     private val args: TrainingSessionDataFragmentArgs by navArgs()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         deviceId = args.deviceIdFragmentArgument
-        path = args.trainingSessionPathFragmentArgument
+        sessionPath = args.trainingSessionPathFragmentArgument
 
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -71,7 +70,10 @@ class TrainingSessionDataFragment : Fragment() {
             setContent {
                 PolarsensordatacollectorTheme {
                     Surface {
-                        ShowTrainingSessionData(viewModel = viewModel)
+                        ShowTrainingSessionData(
+                            viewModel = viewModel,
+                            sessionPath = sessionPath
+                        )
                     }
                 }
             }
@@ -80,7 +82,10 @@ class TrainingSessionDataFragment : Fragment() {
 }
 
 @Composable
-fun ShowTrainingSessionData(viewModel: TrainingSessionDataViewModel = viewModel()) {
+fun ShowTrainingSessionData(
+    viewModel: TrainingSessionDataViewModel = viewModel(),
+    sessionPath: String
+) {
     when (val uiState = viewModel.trainingSessionDataUiState) {
         is TrainingSessionDataUiState.FetchedData -> {
             val context = LocalContext.current
@@ -117,7 +122,8 @@ fun ShowTrainingSessionData(viewModel: TrainingSessionDataViewModel = viewModel(
                 fileUri.path ?: ""
             )
         }
-        TrainingSessionDataUiState.IsFetching -> ShowIsLoading()
+        TrainingSessionDataUiState.IsFetching -> ShowIsLoading(null, sessionPath)
+        is TrainingSessionDataUiState.Fetching -> ShowIsLoading(uiState.progress, sessionPath)
         is TrainingSessionDataUiState.Failure -> {
             ShowFailed(uiState)
         }
@@ -125,14 +131,18 @@ fun ShowTrainingSessionData(viewModel: TrainingSessionDataViewModel = viewModel(
 }
 
 @Composable
-fun ShowIsLoading() {
-    Box(contentAlignment = Alignment.Center) {
-        CircularProgressIndicator(
-            modifier = Modifier.size(size = 64.dp),
-            color = Color.Blue,
-            strokeWidth = 6.dp
-        )
-    }
+fun ShowIsLoading(progress: PolarTrainingSessionProgress?, sessionPath: String) {
+    DataLoadProgressIndicator(
+        progress = progress?.let {
+            DataLoadProgress(
+                completedBytes = it.completedBytes,
+                totalBytes = it.totalBytes,
+                progressPercent = it.progressPercent,
+                path = sessionPath
+            )
+        },
+        dataType = "Training Session"
+    )
 }
 
 @Composable
@@ -141,20 +151,25 @@ fun ShowData(
     trainingSession: TrainingSessionDataUiState.FetchedData,
     path: String
 ) {
-    Column {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         Text(text = stringResource(R.string.path), style = MaterialTheme.typography.h6)
         Text(
-            text = path, modifier = Modifier
-                .padding(8.dp)
+            text = path,
+            modifier = Modifier.padding(8.dp)
         )
 
         Text(text = stringResource(R.string.start_time), style = MaterialTheme.typography.h6)
         Row(
-            modifier = Modifier
-                .padding(8.dp)
+            modifier = Modifier.padding(8.dp)
         ) {
             Text(text = trainingSession.data.reference.date.toString())
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = { onShare() },

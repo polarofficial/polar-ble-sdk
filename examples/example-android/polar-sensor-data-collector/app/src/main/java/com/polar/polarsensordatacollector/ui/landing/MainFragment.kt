@@ -292,29 +292,13 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             MainViewModel.DeviceConnectionStates.CONNECTED -> {
                 connectButton.setText(R.string.search_and_connect_connections)
                 val deviceId = selectedDevice?.deviceId ?: state.deviceId
-
-                if (deviceId.isNullOrEmpty()) {
-                    Log.w(TAG, "Connected but deviceId missing; deferring UI build")
-                    return
-                }
-                // Although device might already be connected, selected device is set to null when
-                // returning to MainFragment from another window.
-                if (selectedDevice == null) {
-                    selectedDevice = Device("", deviceId, "")
-                }
                 sensorState.text = getString(R.string.device_id, deviceId)
                 connectButton.isEnabled = true
-                val alreadyConnected =
-                    selectedDevice?.let { connectedDevices.contains(it) }
-                        ?: connectedDevices.any { it.deviceId == deviceId }
-                if (!alreadyConnected) {
-                    onlineOfflineAdapter.removeFragments(isAlreadyConnected = alreadyConnected)
-                    onlineOfflineAdapter.addOnlineRecordingFragment(deviceId)
-                    onlineOfflineAdapter.addDeviceSettingsFragment(deviceId)
-                    if (selectedDeviceSupportsSettings == true) {
-                        onlineOfflineAdapter.addLoggingFragment(deviceId)
-                        onlineOfflineAdapter.addActivityFragment(deviceId)
-                    }
+                onlineOfflineAdapter.addOnlineRecordingFragment(deviceId)
+                onlineOfflineAdapter.addDeviceSettingsFragment(deviceId)
+                if (selectedDeviceSupportsSettings == true) {
+                    onlineOfflineAdapter.addLoggingFragment(deviceId)
+                    onlineOfflineAdapter.addActivityFragment(deviceId)
                 }
                 tabLayout.visibility = VISIBLE
                 viewPagerPagePerDevice[deviceId]?.let {

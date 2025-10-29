@@ -5,11 +5,15 @@ import com.polar.sdk.api.model.activity.PolarActiveTime
 import com.polar.sdk.api.model.activity.PolarActiveTimeData
 import com.polar.sdk.api.model.activity.PolarActivityClass
 import com.polar.sdk.api.model.activity.PolarActivityInfo
+import com.polar.sdk.api.model.activity.PolarDailyBalanceFeedBack
+import com.polar.sdk.api.model.activity.PolarReadinessForSpeedAndStrengthTraining
 import com.polar.sdk.impl.utils.CaloriesType
 import com.polar.sdk.impl.utils.PolarActivityUtils
 import fi.polar.remote.representation.protobuf.ActivitySamples.PbActivityInfo
 import fi.polar.remote.representation.protobuf.ActivitySamples.PbActivitySamples
 import fi.polar.remote.representation.protobuf.DailySummary
+import fi.polar.remote.representation.protobuf.DailySummary.PbActivityGoalSummary
+import fi.polar.remote.representation.protobuf.DailySummary.PbDailySummary
 import fi.polar.remote.representation.protobuf.Types
 import fi.polar.remote.representation.protobuf.Types.PbDate
 import fi.polar.remote.representation.protobuf.Types.PbDuration
@@ -240,7 +244,31 @@ class PolarActivityUtilsTest {
         val outputStream = ByteArrayOutputStream()
         val expectedPath = "/U/0/${date.format(dateFormatter)}/DSUM/DSUM.BPB"
 
-        val proto = DailySummary.PbDailySummary.newBuilder().setActivityDistance(1234.56f).build()
+        val proto = PbDailySummary.newBuilder()
+            .setDate(PbDate.newBuilder().setDay(1).setMonth(1).setYear(2525))
+            .setActivityDistance(1234.56f)
+            .setActivityCalories(100)
+            .setBmrCalories(2000)
+            .setTrainingCalories(500)
+            .setActivityClassTimes(
+                DailySummary.PbActivityClassTimes.newBuilder()
+                    .setTimeLightActivity(PbDuration.newBuilder().setHours(5).setMinutes(0).setSeconds(0).setMillis(0) )
+                    .setTimeSleep(PbDuration.newBuilder().setHours(8).setMinutes(0).setSeconds(0).setMillis(0) )
+                    .setTimeSedentary(PbDuration.newBuilder().setHours(7).setMinutes(0).setSeconds(0).setMillis(0) )
+                    .setTimeContinuousModerate(PbDuration.newBuilder().setHours(1).setMinutes(0).setSeconds(0).setMillis(0) )
+                    .setTimeContinuousVigorous(PbDuration.newBuilder().setHours(1).setMinutes(0).setSeconds(0).setMillis(0) )
+                    .setTimeIntermittentModerate(PbDuration.newBuilder().setHours(1).setMinutes(0).setSeconds(0).setMillis(0) )
+                    .setTimeIntermittentVigorous(PbDuration.newBuilder().setHours(1).setMinutes(0).setSeconds(0).setMillis(0) )
+                    .setTimeNonWear(PbDuration.newBuilder().setHours(0).setMinutes(0).setSeconds(0).setMillis(0) )
+            )
+            .setActivityGoalSummary(PbActivityGoalSummary.newBuilder()
+                .setActivityGoal(100f)
+                .setAchievedActivity(50f)
+            )
+            .setDailyBalanceFeedback(Types.PbDailyBalanceFeedback.DB_YOU_COULD_DO_MORE_TRAINING)
+            .setReadinessForSpeedAndStrengthTraining(Types.PbReadinessForSpeedAndStrengthTraining.RSST_A1_RECOVERED_READY_FOR_ALL_TRAINING)
+            .setSteps(10000)
+            .build()
         proto.writeTo(outputStream)
 
         every { client.request(any()) } returns Single.just(outputStream)
@@ -302,16 +330,40 @@ class PolarActivityUtilsTest {
         // Arrange
         val client = mockk<BlePsFtpClient>()
         val date = LocalDate.now()
-        val caloriesType = CaloriesType.ACTIVITY
+        //val caloriesType = CaloriesType.ACTIVITY
         val expectedCalories = 500
         val expectedPath = "/U/0/${date.format(dateFormatter)}/DSUM/DSUM.BPB"
 
         val dailySummaryBuilder = DailySummary.PbDailySummary.newBuilder()
-        when (caloriesType) {
-            CaloriesType.ACTIVITY -> dailySummaryBuilder.activityCalories = expectedCalories
-            CaloriesType.TRAINING -> dailySummaryBuilder.trainingCalories = expectedCalories
-            CaloriesType.BMR -> dailySummaryBuilder.bmrCalories = expectedCalories
+        val calories = arrayOf(Pair(CaloriesType.ACTIVITY, 500),Pair(CaloriesType.BMR, 500), Pair(CaloriesType.TRAINING, 500))
+        for (caloriesType in calories) {
+            when (caloriesType.first) {
+                CaloriesType.ACTIVITY -> dailySummaryBuilder.activityCalories = expectedCalories
+                CaloriesType.TRAINING -> dailySummaryBuilder.trainingCalories = expectedCalories
+                CaloriesType.BMR -> dailySummaryBuilder.bmrCalories = expectedCalories
+            }
         }
+        dailySummaryBuilder
+            .setDate(PbDate.newBuilder().setDay(1).setMonth(1).setYear(2525))
+            .setActivityClassTimes(
+                DailySummary.PbActivityClassTimes.newBuilder()
+                    .setTimeLightActivity(PbDuration.newBuilder().setHours(5).setMinutes(0).setSeconds(0).setMillis(0) )
+                    .setTimeSleep(PbDuration.newBuilder().setHours(8).setMinutes(0).setSeconds(0).setMillis(0) )
+                    .setTimeSedentary(PbDuration.newBuilder().setHours(7).setMinutes(0).setSeconds(0).setMillis(0) )
+                    .setTimeContinuousModerate(PbDuration.newBuilder().setHours(1).setMinutes(0).setSeconds(0).setMillis(0) )
+                    .setTimeContinuousVigorous(PbDuration.newBuilder().setHours(1).setMinutes(0).setSeconds(0).setMillis(0) )
+                    .setTimeIntermittentModerate(PbDuration.newBuilder().setHours(1).setMinutes(0).setSeconds(0).setMillis(0) )
+                    .setTimeIntermittentVigorous(PbDuration.newBuilder().setHours(1).setMinutes(0).setSeconds(0).setMillis(0) )
+                    .setTimeNonWear(PbDuration.newBuilder().setHours(0).setMinutes(0).setSeconds(0).setMillis(0) )
+
+            )
+            .setActivityGoalSummary(PbActivityGoalSummary.newBuilder()
+                .setActivityGoal(100f)
+                .setAchievedActivity(50f)
+            )
+            .setDailyBalanceFeedback(Types.PbDailyBalanceFeedback.DB_YOU_COULD_DO_MORE_TRAINING)
+            .setReadinessForSpeedAndStrengthTraining(Types.PbReadinessForSpeedAndStrengthTraining.RSST_A1_RECOVERED_READY_FOR_ALL_TRAINING)
+            .setSteps(10000)
         val dailySummary = dailySummaryBuilder.build()
         val outputStream = ByteArrayOutputStream()
         dailySummary.writeTo(outputStream)
@@ -320,14 +372,26 @@ class PolarActivityUtilsTest {
         every { client.sendNotification(any(), null) } returns Completable.complete()
 
         // Act
-        val testObserver = PolarActivityUtils.readSpecificCaloriesFromDayDirectory(client, date, caloriesType).test()
+        val testObserver1 = PolarActivityUtils.readSpecificCaloriesFromDayDirectory(client, date, calories.get(0).first).test()
+        val testObserver2 = PolarActivityUtils.readSpecificCaloriesFromDayDirectory(client, date, calories.get(1).first).test()
+        val testObserver3 = PolarActivityUtils.readSpecificCaloriesFromDayDirectory(client, date, calories.get(2).first).test()
 
         // Assert
-        testObserver.assertComplete()
-        testObserver.assertNoErrors()
-        testObserver.assertValue(expectedCalories)
+        // ACTIVITY
+        testObserver1.assertComplete()
+        testObserver1.assertNoErrors()
+        testObserver1.assertValue(expectedCalories)
+        // BMR
+        testObserver2.assertComplete()
+        testObserver2.assertNoErrors()
+        testObserver2.assertValue(expectedCalories)
 
-        verifyOrder {
+        // TRAINING
+        testObserver3.assertComplete()
+        testObserver3.assertNoErrors()
+        testObserver3.assertValue(expectedCalories)
+
+        verify(exactly = 3) {
             client.request(
                 PftpRequest.PbPFtpOperation.newBuilder()
                     .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
@@ -336,7 +400,6 @@ class PolarActivityUtilsTest {
                     .toByteArray()
             )
         }
-        confirmVerified(client)
     }
 
     @Test
@@ -378,7 +441,12 @@ class PolarActivityUtilsTest {
         val date = LocalDate.now()
         val expectedPath = "/U/0/${date.format(dateFormatter)}/DSUM/DSUM.BPB"
 
-        val proto = DailySummary.PbDailySummary.newBuilder()
+        val proto = PbDailySummary.newBuilder()
+            .setDate(PbDate.newBuilder().setDay(1).setMonth(1).setYear(2525))
+            .setActivityDistance(1234.56f)
+            .setActivityCalories(100)
+            .setBmrCalories(2000)
+            .setTrainingCalories(500)
             .setActivityClassTimes(
                 DailySummary.PbActivityClassTimes.newBuilder()
                     .setTimeNonWear(
@@ -415,6 +483,13 @@ class PolarActivityUtilsTest {
                     )
                     .build()
             )
+            .setActivityGoalSummary(PbActivityGoalSummary.newBuilder()
+                .setActivityGoal(100f)
+                .setAchievedActivity(50f)
+            )
+            .setDailyBalanceFeedback(Types.PbDailyBalanceFeedback.DB_YOU_COULD_DO_MORE_TRAINING)
+            .setReadinessForSpeedAndStrengthTraining(Types.PbReadinessForSpeedAndStrengthTraining.RSST_A1_RECOVERED_READY_FOR_ALL_TRAINING)
+            .setSteps(10000)
             .build()
 
         val outputStream = ByteArrayOutputStream()
@@ -632,6 +707,144 @@ class PolarActivityUtilsTest {
 
         // Act
         val testObserver = PolarActivityUtils.readActivitySamplesDataFromDayDirectory(client, date).test()
+
+        // Assert
+        testObserver.assertComplete()
+        testObserver.assertNoErrors()
+
+        verifyOrder {
+            client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath(expectedPath)
+                    .build()
+                    .toByteArray()
+            )
+        }
+        confirmVerified(client)
+    }
+
+    @Test
+    fun `readDailySummaryDataFromDayDirectory() should return all daily summary data`() {
+        // Arrange
+        val client = mockk<BlePsFtpClient>()
+
+        val proto = PbDailySummary.newBuilder()
+            .setDate(PbDate.newBuilder().setDay(1).setMonth(1).setYear(2525))
+            .setActivityDistance(2000.01f)
+            .setActivityCalories(100)
+            .setBmrCalories(2000)
+            .setTrainingCalories(500)
+            .setActivityClassTimes(
+                DailySummary.PbActivityClassTimes.newBuilder()
+                    .setTimeLightActivity(PbDuration.newBuilder().setHours(5).setMinutes(0).setSeconds(0).setMillis(0) )
+                        .setTimeSleep(PbDuration.newBuilder().setHours(8).setMinutes(0).setSeconds(0).setMillis(0) )
+                        .setTimeSedentary(PbDuration.newBuilder().setHours(7).setMinutes(0).setSeconds(0).setMillis(0) )
+                        .setTimeContinuousModerate(PbDuration.newBuilder().setHours(1).setMinutes(0).setSeconds(0).setMillis(0) )
+                        .setTimeContinuousVigorous(PbDuration.newBuilder().setHours(1).setMinutes(0).setSeconds(0).setMillis(0) )
+                        .setTimeIntermittentModerate(PbDuration.newBuilder().setHours(1).setMinutes(0).setSeconds(0).setMillis(0) )
+                        .setTimeIntermittentVigorous(PbDuration.newBuilder().setHours(1).setMinutes(0).setSeconds(0).setMillis(0) )
+                        .setTimeNonWear(PbDuration.newBuilder().setHours(0).setMinutes(0).setSeconds(0).setMillis(0) )
+                    .build()
+            )
+            .setActivityGoalSummary(PbActivityGoalSummary.newBuilder()
+                .setActivityGoal(100f)
+                .setAchievedActivity(50f)
+                .setTimeToGoUp(PbDuration.newBuilder()
+                    .setHours(1).setMinutes(0)
+                    .setSeconds(0)
+                    .setMillis(0) )
+                .setTimeToGoJog(PbDuration.newBuilder()
+                    .setHours(1).setMinutes(0)
+                    .setSeconds(0)
+                    .setMillis(0) )
+                .setTimeToGoWalk(PbDuration.newBuilder()
+                    .setHours(1).setMinutes(0)
+                    .setSeconds(0)
+                    .setMillis(0)
+                    .setMinutes(0))
+                 )
+            .setDailyBalanceFeedback(Types.PbDailyBalanceFeedback.DB_YOU_COULD_DO_MORE_TRAINING)
+            .setReadinessForSpeedAndStrengthTraining(Types.PbReadinessForSpeedAndStrengthTraining.RSST_A1_RECOVERED_READY_FOR_ALL_TRAINING)
+            .setSteps(10000)
+            .build()
+
+        val outputStream = ByteArrayOutputStream()
+        proto.writeTo(outputStream)
+
+        every { client.request(any()) } returns Single.just(outputStream)
+        every { client.sendNotification(any(), null) } returns Completable.complete()
+
+        val date = LocalDate.now()
+        val expectedFilePath = "/U/0/${date.format(dateFormatter)}/DSUM/DSUM.BPB"
+        val expectedDate = LocalDate.of(2525, 1,1)
+        val expectedDistance = 2000.01f
+        val expectedSteps = 10000
+        val expectedCalories = 2600
+        val expectedActiveTime = 24
+        val expectedReadiness = PolarReadinessForSpeedAndStrengthTraining.RECOVERED_READY_FOR_ALL_TRAINING
+        val expectedDBFeedBack = PolarDailyBalanceFeedBack.YOU_COULD_DO_MORE_TRAINING
+        val expectedActivityGoal = 100f
+        val expectedAchievedGoal = 50f
+        val expectedTimeToGo = PolarActiveTime(1)
+
+        // Act
+        val testObserver = PolarActivityUtils.readDailySummaryDataFromDayDirectory(client, date).test()
+        // Assert
+        testObserver.assertComplete()
+        testObserver.assertNoErrors()
+
+        assert(testObserver.values().size == 1)
+
+        for (dailySummaryData in testObserver.values()) {
+            assert(dailySummaryData.activityGoalSummary?.activityGoal == expectedActivityGoal)
+            assert(dailySummaryData.activityGoalSummary?.achievedActivity == expectedAchievedGoal)
+            assert(dailySummaryData.activityDistance == expectedDistance)
+            assert(dailySummaryData.activityGoalSummary?.achievedActivity == expectedAchievedGoal)
+            assert(dailySummaryData.activityGoalSummary?.timeToGoUp == expectedTimeToGo)
+            assert(dailySummaryData.activityGoalSummary?.timeToGoJog == expectedTimeToGo)
+            assert(dailySummaryData.activityGoalSummary?.timeToGoWalk == expectedTimeToGo)
+            assert(dailySummaryData.date == expectedDate)
+            assert(dailySummaryData.steps == expectedSteps)
+            assert((dailySummaryData.activityCalories!! + dailySummaryData.bmrCalories!! + dailySummaryData.trainingCalories!!)  == expectedCalories)
+            assert((dailySummaryData.activityClassTimes!!.timeLightActivity.hours +
+                    dailySummaryData.activityClassTimes!!.timeSleep.hours +
+                    dailySummaryData.activityClassTimes!!.timeSedentary.hours +
+                    dailySummaryData.activityClassTimes!!.timeContinuousModerateActivity.hours +
+                    dailySummaryData.activityClassTimes!!.timeContinuousVigorousActivity.hours +
+                    dailySummaryData.activityClassTimes!!.timeIntermittentModerateActivity.hours +
+                    dailySummaryData.activityClassTimes!!.timeIntermittentVigorousActivity.hours +
+                    dailySummaryData.activityClassTimes!!.timeNonWear.hours) == expectedActiveTime)
+            assert(dailySummaryData.readinessForSpeedAndStrengthTraining == expectedReadiness)
+            assert(dailySummaryData.dailyBalanceFeedback == expectedDBFeedBack)
+        }
+
+        verify(exactly = 1) {
+            client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath(expectedFilePath)
+                    .build()
+                    .toByteArray()
+            )
+        }
+
+        confirmVerified(client)
+    }
+
+    @Test
+    fun `readDailySummaryDataFromDayDirectory() should return default PolarDailySummaryData if error occurs`() {
+
+        // Arrange
+        val client = mockk<BlePsFtpClient>()
+        val date = LocalDate.now()
+        val expectedPath = "/U/0/${date.format(dateFormatter)}/DSUM/DSUM.BPB"
+        val expectedError = Throwable("File not found")
+
+        every { client.request(any()) } returns Single.error(expectedError)
+
+        // Act
+        val testObserver = PolarActivityUtils.readDailySummaryDataFromDayDirectory(client, date).test()
 
         // Assert
         testObserver.assertComplete()

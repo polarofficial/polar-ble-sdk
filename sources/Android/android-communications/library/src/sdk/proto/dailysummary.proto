@@ -19,10 +19,23 @@ message PbActivityClassTimes {
   required PbDuration time_intermittent_vigorous = 8;
 };
 
+message PbActivityGoalSummary {
+  required float activity_goal = 1 [(type)=CUMULATED_ACTIVITY_DAY];
+  required float achieved_activity = 2 [(type)=CUMULATED_ACTIVITY_DAY];
+  optional PbDuration time_to_go_up = 3;
+  optional PbDuration time_to_go_walk = 4;
+  optional PbDuration time_to_go_jog = 5;
+};
+
 message PbDailySummary {
+  required PbDate date = 1;
+  optional uint32 steps = 2;
   optional uint32 activity_calories = 3 [(type)=CALORIES];
   optional uint32 training_calories = 4 [(type)=CALORIES];
   optional uint32 bmr_calories = 5 [(type)=CALORIES];
+  optional PbActivityGoalSummary activity_goal_summary = 6;
   optional PbActivityClassTimes activity_class_times = 7;
   optional float activity_distance = 8 [(type)=DISTANCE];
+  optional PbDailyBalanceFeedback daily_balance_feedback = 9;
+  optional PbReadinessForSpeedAndStrengthTraining readiness_for_speed_and_strength_training = 10;
 };

@@ -3,14 +3,6 @@
 import Foundation
 import SwiftUI
 
-extension DateComponents: Comparable {
-    public static func < (lhs: DateComponents, rhs: DateComponents) -> Bool {
-        let now = Date()
-        let calendar = Calendar.current
-        return calendar.date(byAdding: lhs, to: now)! < calendar.date(byAdding: rhs, to: now)!
-    }
-}
-
 struct ActivityDatePickerView: View {
     
     @EnvironmentObject private var bleSdkManager: PolarBleSdkManager
@@ -82,6 +74,8 @@ struct ActivityDatePickerView: View {
                                     await bleSdkManager.getActiveTimeData(start: startDate, end: endDate)
                                 case .ACTIVITY_SAMPLES:
                                     await bleSdkManager.getActivitySamplesData(start: startDate, end: endDate)
+                                case .DAILY_SUMMARY:
+                                    await bleSdkManager.getDailySummaryData(start: startDate, end: endDate)
                                 case .NONE:
                                     print("NOT IMPLEMENTED")
                                 }

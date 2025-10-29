@@ -42,6 +42,10 @@ import com.polar.sdk.api.model.activity.PolarActiveTimeData
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSession
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference
 import com.polar.sdk.api.model.activity.PolarActivitySamplesDayData
+import com.polar.sdk.api.model.activity.PolarDailySummaryData
+import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionFetchResult
+import io.reactivex.rxjava3.core.BackpressureStrategy
+import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.awaitSingleOrNull
 import java.time.LocalDate
 import java.time.ZoneId
@@ -103,12 +107,22 @@ data class OfflineRecTriggerStatus(
 )
 
 sealed class ResultOfRequest<out T> {
-    data class Success<out R>(val value: R? = null) : ResultOfRequest<R>()
+    data class Success<out T>(
+        val value: T? = null,
+        val progress: ProgressInfo? = null
+    ) : ResultOfRequest<T>()
+
     data class Failure(
         val message: String,
         val throwable: Throwable?
     ) : ResultOfRequest<Nothing>()
 }
+
+data class ProgressInfo(
+    val bytesDownloaded: Long,
+    val totalBytes: Long,
+    val progressPercent: Int
+)
 
 @Singleton
 class PolarDeviceRepository @Inject constructor(
@@ -209,6 +223,10 @@ class PolarDeviceRepository @Inject constructor(
         return ResultOfRequest.Failure("Get offline recording fetch failed. Entry in path $path is not existing", null)
     }
 
+    fun getOfflineEntryFromCache(deviceId: String, path: String): PolarOfflineRecordingEntry? {
+        return offlineEntryCache[deviceId]?.find { it.path == path }
+    }
+
     @OptIn(ExperimentalTime::class)
     suspend fun deleteRecording(deviceId: String, path: String): ResultOfRequest<Nothing> = withContext(Dispatchers.IO) {
         val offlineRecEntry = offlineEntryCache[deviceId]?.find { it.path == path }
@@ -225,6 +243,76 @@ class PolarDeviceRepository @Inject constructor(
             }
         }
         ResultOfRequest.Failure("Tried to remove \"$path\", but no matching entry in repository", null)
+    }
+
+    fun getOfflineRecordingWithProgress(
+        deviceId: String,
+        path: String
+    ): Flow<ResultOfRequest<OfflineRecordingData>> {
+        Log.d(TAG, "getOfflineRecordingWithProgress from device $deviceId in $path")
+
+        val offlineRecEntry = offlineEntryCache[deviceId]?.find { it.path == path }
+
+        return if (offlineRecEntry != null) {
+            flow<ResultOfRequest<OfflineRecordingData>> {
+                val startTime = System.currentTimeMillis()
+
+                api.getOfflineRecordWithProgress(
+                    deviceId,
+                    offlineRecEntry,
+                    security.getSecretKey(deviceId)?.let { PolarRecordingSecret(it.encoded) }
+                )
+                    .toFlowable(BackpressureStrategy.BUFFER)
+                    .asFlow()
+                    .collect { result ->
+                        when (result) {
+                            is PolarOfflineRecordingResult.Progress -> {
+                                Log.d(
+                                    TAG,
+                                    "Progress: ${result.progressPercent}% (${result.bytesDownloaded}/${result.totalBytes} bytes)"
+                                )
+                                emit(
+                                    ResultOfRequest.Success(
+                                        value = null,
+                                        progress = ProgressInfo(
+                                            bytesDownloaded = result.bytesDownloaded,
+                                            totalBytes = result.totalBytes,
+                                            progressPercent = result.progressPercent
+                                        )
+                                    )
+                                )
+                            }
+                            is PolarOfflineRecordingResult.Complete -> {
+                                val downloadDuration = (System.currentTimeMillis() - startTime) / 1000.0
+                                val downloadSpeed = if (downloadDuration > 0) {
+                                    (offlineRecEntry.size / 1000.0) / downloadDuration
+                                } else 0.0
+
+                                val uri = saveData(deviceId, result.data)
+
+                                emit(
+                                    ResultOfRequest.Success(
+                                        value = OfflineRecordingData(
+                                            data = result.data,
+                                            uri = uri,
+                                            fileSize = offlineRecEntry.size,
+                                            downLoadSpeed = downloadSpeed
+                                        ),
+                                        progress = null
+                                    )
+                                )
+                            }
+                        }
+                    }
+            }.catch { e ->
+                Log.e(TAG, "Get offline recording fetch failed on path $path error $e")
+                emit(ResultOfRequest.Failure("Get offline recording fetch failed on path $path", e))
+            }
+        } else {
+            flow {
+                emit(ResultOfRequest.Failure("Offline recording entry not found for path $path", null))
+            }
+        }
     }
 
     suspend fun setTime(deviceId: String, calendar: Calendar): ResultOfRequest<Nothing> = withContext(Dispatchers.IO) {
@@ -1047,6 +1135,32 @@ class PolarDeviceRepository @Inject constructor(
         return ResultOfRequest.Failure("getTrainingSession failed on path $path", null)
     }
 
+    fun getTrainingSessionWithProgress(
+        deviceId: String,
+        path: String
+    ): Flow<ResultOfRequest<PolarTrainingSessionFetchResult>> {
+        Log.d(TAG, "getTrainingSessionWithProgress from device $deviceId in $path")
+
+        val trainingSessionReference = trainingSessionReferenceCache[deviceId]?.find { it.path == path }
+
+        return if (trainingSessionReference != null) {
+            api.getTrainingSessionWithProgress(deviceId, trainingSessionReference)
+                .asFlow()
+                .map { result ->
+                    ResultOfRequest.Success(result) as ResultOfRequest<PolarTrainingSessionFetchResult>
+                }
+                .catch { e ->
+                    Log.e(TAG, "getTrainingSessionWithProgress failed on path $path error $e")
+                    emit(ResultOfRequest.Failure("getTrainingSessionWithProgress failed on path $path", e))
+                }
+        } else {
+            flow {
+                Log.e(TAG, "Training session reference not found for path $path")
+                emit(ResultOfRequest.Failure("Training session reference not found for path $path", null))
+            }
+        }
+    }
+
     suspend fun getActiveTimeData(
         deviceId: String,
         from: LocalDate,
@@ -1085,6 +1199,15 @@ class PolarDeviceRepository @Inject constructor(
                 from.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
                 to.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
             ).await()
+            ResultOfRequest.Success(result)
+        } catch (e: Exception) {
+            ResultOfRequest.Failure(e.message.toString(), e)
+        }
+    }
+
+    suspend fun getDailySummaryData(deviceId: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<PolarDailySummaryData>> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            var result = api.getDailySummaryData(deviceId, from, to).await()
             ResultOfRequest.Success(result)
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)

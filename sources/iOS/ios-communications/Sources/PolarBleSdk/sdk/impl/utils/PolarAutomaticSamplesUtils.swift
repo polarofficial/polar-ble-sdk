@@ -16,7 +16,7 @@ internal class PolarAutomaticSamplesUtils {
         BleLogger.trace(TAG, "read247HrSamples: from \(fromDate) to \(toDate)")
         return Single<[Polar247HrSamplesData]>.create { emitter in
             let autoSamplesPath = "\(ARABICA_USER_ROOT_FOLDER)\(AUTOMATIC_SAMPLES_DIRECTORY)"
-            
+
             let operation = Protocol_PbPFtpOperation.with {
                 $0.command = .get
                 $0.path = autoSamplesPath
@@ -45,48 +45,29 @@ internal class PolarAutomaticSamplesUtils {
                                 let sampleSessions = try Data_PbAutomaticSampleSessions(serializedData: Data(fileResponse))
                                 let sampleDateProto = sampleSessions.day
                                 
-                                sampleSessions.samples.forEach { sample in
-                                    let sampleTimeProto = sample.time
-                                    
-                                    var calendar = Calendar(identifier: .gregorian)
-                                    calendar.timeZone = TimeZone(secondsFromGMT: 0)!
-                                    
-                                    let sampleDate = calendar.date(from: DateComponents(
-                                        year: Int(sampleDateProto.year),
-                                        month: Int(sampleDateProto.month),
-                                        day: Int(sampleDateProto.day),
-                                        hour: Int(sampleTimeProto.hour),
-                                        minute: Int(sampleTimeProto.minute),
-                                        second: Int(sampleTimeProto.seconds),
-                                        nanosecond: 0
-                                    ))!
-                                    
-                                    if sampleDate >= fromDate && sampleDate <= toDate {
-                                        let hrSamples = sample.heartRate.map { Int($0) }
-
-                                        let triggerType: AutomaticSampleTriggerType
-
-                                        switch sample.triggerType {
-                                        case .triggerTypeHighActivity:
-                                            triggerType = .highActivity
-                                        case .triggerTypeLowActivity:
-                                            triggerType = .lowActivity
-                                        case .triggerTypeTimed:
-                                            triggerType = .timed
-                                        case .triggerTypeManual:
-                                            triggerType = .manual
-                                        }
-                                        
-                                        let data = Polar247HrSamplesData(
-                                            date: sampleDate,
-                                            hrSamples: hrSamples,
-                                            triggerType: triggerType
-                                        )
-                                        
-                                        hrSamplesDataList.append(data)
-                                    } else {
-                                        BleLogger.trace(TAG, "Sample date \(sampleDate) is out of range: \(fromDate) to \(toDate)")
+                                var polar247HrSampleList: [Polar247HrSamplesData.Polar247HrSample] = []
+                                var calendar = Calendar(identifier: .gregorian)
+                                calendar.timeZone = TimeZone.current
+                                
+                                let startDate = Calendar.current.dateComponents([.year, .month, .day], from: fromDate)
+                                let endDate = Calendar.current.dateComponents([.year, .month, .day], from: toDate)
+                                let sampleDate = DateComponents(
+                                    year: Int(sampleDateProto.year),
+                                    month: Int(sampleDateProto.month),
+                                    day: Int(sampleDateProto.day)
+                                )
+                                
+                                if sampleDate >= startDate && sampleDate <= endDate {
+                                    do {
+                                        var sample = try Polar247HrSamplesData.fromPbHrDataSamples(samples: sampleSessions.samples)
+                                        polar247HrSampleList.append(contentsOf: sample)
+                                    } catch let error {
+                                        BleLogger.error(TAG, "Failed to parse hr samples: \(error)")
+                                        return
                                     }
+                                    hrSamplesDataList.append(Polar247HrSamplesData(date: sampleDate, samples: polar247HrSampleList))
+                                } else {
+                                    BleLogger.trace(TAG, "Sample date \(sampleDate) is out of range: \(fromDate) to \(toDate)")
                                 }
                             }
                         }
@@ -155,21 +136,23 @@ internal class PolarAutomaticSamplesUtils {
                                 var ppiSamplesDataList: [Polar247PPiSamplesData.PolarPpiDataSample] = []
 
                                 var calendar = Calendar(identifier: .gregorian)
-                                calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+                                calendar.timeZone = TimeZone.current
 
-                                let sampleDate = calendar.date(from: DateComponents(
+                                let startDate = Calendar.current.dateComponents([.year, .month, .day], from: fromDate)
+                                let endDate = Calendar.current.dateComponents([.year, .month, .day], from: toDate)
+                                let sampleDate = DateComponents(
                                     year: Int(sampleDateProto.year),
                                     month: Int(sampleDateProto.month),
                                     day: Int(sampleDateProto.day)
-                                ))!
+                                )
 
-                                if sampleDate >= fromDate && sampleDate <= toDate {
+                                if sampleDate >= startDate && sampleDate <= endDate {
                                     sampleSessions.ppiSamples.forEach { sample in
                                         ppiSamplesDataList.append(Polar247PPiSamplesData.fromPbPPiDataSamples(ppiData: sample))
                                     }
                                     polar247PpiSamplesDataList.append(Polar247PPiSamplesData(date: sampleDate, samples: ppiSamplesDataList))
                                 } else {
-                                    BleLogger.trace(TAG, "Sample date \(sampleDate) is out of range: \(fromDate) to \(toDate)")
+                                    BleLogger.trace(TAG, "Sample date \(sampleDate) is out of range: \(startDate) to \(endDate)")
                                 }
                             }
                         }
@@ -199,5 +182,13 @@ internal class PolarAutomaticSamplesUtils {
                 disposable.dispose()
             }
         }
+    }
+}
+
+extension DateComponents: Comparable {
+    public static func < (lhs: DateComponents, rhs: DateComponents) -> Bool {
+        let now = Date()
+        let calendar = Calendar.current
+        return calendar.date(byAdding: lhs, to: now)! < calendar.date(byAdding: rhs, to: now)!
     }
 }

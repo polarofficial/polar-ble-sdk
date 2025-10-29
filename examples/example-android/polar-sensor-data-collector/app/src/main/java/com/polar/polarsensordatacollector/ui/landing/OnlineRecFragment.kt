@@ -1016,6 +1016,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                 recordingLiveHeader.text = "HR"
                 recordingLiveHeader0.visibility = VISIBLE
                 recordingLiveData0.visibility = VISIBLE
+                measSampleRateHeader.visibility = GONE
             }
         }
     }

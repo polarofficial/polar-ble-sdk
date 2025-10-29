@@ -118,7 +118,8 @@ class PolarTrainingSessionUtilsTest {
                     date = it,
                     path = "/U/0/20250101/E/204507/TSESS.BPB",
                     trainingDataTypes = listOf(PolarTrainingSessionDataTypes.TRAINING_SESSION_SUMMARY),
-                    exercises = emptyList()
+                    exercises = emptyList(),
+                    fileSize = 1024L
                 )
             },
             dateTimeFormatter.parse("20250202163020")?.let {
@@ -140,7 +141,17 @@ class PolarTrainingSessionUtilsTest {
                                 PolarExerciseDataTypes.SAMPLES_GZIP,
                                 PolarExerciseDataTypes.SAMPLES_ADVANCED_FORMAT_GZIP,
                             ),
-                            exerciseSummary = null
+                            exerciseSummary = null,
+                            fileSizes = mapOf(
+                                "BASE.BPB" to 512L,
+                                "ROUTE.BPB" to 512L,
+                                "ROUTE2.BPB" to 512L,
+                                "ROUTE.GZB" to 512L,
+                                "ROUTE2.GZB" to 512L,
+                                "SAMPLES.BPB" to 512L,
+                                "SAMPLES.GZB" to 512L,
+                                "SAMPLES2.GZB" to 512L
+                            )
                         ),
                         PolarExercise(
                             index = 1,
@@ -155,9 +166,20 @@ class PolarTrainingSessionUtilsTest {
                                 PolarExerciseDataTypes.SAMPLES_GZIP,
                                 PolarExerciseDataTypes.SAMPLES_ADVANCED_FORMAT_GZIP,
                             ),
-                            exerciseSummary = null
+                            exerciseSummary = null,
+                            fileSizes = mapOf(
+                                "BASE.BPB" to 512L,
+                                "ROUTE.BPB" to 512L,
+                                "ROUTE2.BPB" to 512L,
+                                "ROUTE.GZB" to 512L,
+                                "ROUTE2.GZB" to 512L,
+                                "SAMPLES.BPB" to 512L,
+                                "SAMPLES.GZB" to 512L,
+                                "SAMPLES2.GZB" to 512L
+                            )
                         )
-                    )
+                    ),
+                    fileSize = 8192L
                 )
             }
         )

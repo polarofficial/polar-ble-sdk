@@ -3,6 +3,7 @@ package com.polar.sdk.impl.utils
 import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
 import com.polar.sdk.api.model.activity.AutomaticSampleTriggerType
+import com.polar.sdk.api.model.activity.Polar247HrSamples
 import com.polar.sdk.api.model.activity.Polar247HrSamplesData
 import com.polar.sdk.api.model.activity.Polar247PPiSamplesData
 import com.polar.sdk.api.model.activity.fromPbPPiDataSamples
@@ -11,6 +12,7 @@ import fi.polar.remote.representation.protobuf.AutomaticSamples.PbAutomaticSampl
 import io.reactivex.rxjava3.core.Single
 import protocol.PftpRequest
 import protocol.PftpResponse.PbPFtpDirectory
+import java.time.LocalDate
 import java.util.Calendar
 import java.util.Date
 import java.util.regex.Pattern
@@ -24,7 +26,7 @@ internal object PolarAutomaticSamplesUtils {
     /**
      * Read 24/7 heart rate samples for given date range.
      */
-    fun read247HrSamples(client: BlePsFtpClient, fromDate: Date, toDate: Date): Single<List<Polar247HrSamplesData>> {
+    fun read247HrSamples(client: BlePsFtpClient, fromDate: LocalDate, toDate: LocalDate): Single<List<Polar247HrSamplesData>> {
         BleLogger.d(TAG, "read247HrSamples: from $fromDate to $toDate")
         return Single.create { emitter ->
             val autoSamplesPath = "$ARABICA_USER_ROOT_FOLDER$AUTOMATIC_SAMPLES_DIRECTORY"
@@ -50,31 +52,11 @@ internal object PolarAutomaticSamplesUtils {
                             client.request(fileBuilder.build().toByteArray()).map { fileResponse ->
                                 val sampleSessions = PbAutomaticSampleSessions.parseFrom(fileResponse.toByteArray())
                                 val sampleDateProto = sampleSessions.day
-                                sampleSessions.samplesList.forEach { sample ->
-                                    val sampleTimeProto = sample.time
-                                    val sampleDate = Calendar.getInstance().apply {
-                                        set(sampleDateProto.year, sampleDateProto.month - 1, sampleDateProto.day, sampleTimeProto.hour, sampleTimeProto.minute, sampleTimeProto.seconds)
-                                        set(Calendar.MILLISECOND, 0)
-                                    }.time
-
-                                    val sampleDateForCheck = Calendar.getInstance().apply {
-                                        set(sampleDateProto.year, sampleDateProto.month - 1, sampleDateProto.day, 0, 0, 0)
-                                        set(Calendar.MILLISECOND, 0)
-                                    }.time
-
-                                    if (sampleDateForCheck in fromDate..toDate) {
-                                        val hrSamples = sample.heartRateList
-                                        val triggerType = when (sample.triggerType) {
-                                            AutomaticSamples.PbMeasTriggerType.TRIGGER_TYPE_HIGH_ACTIVITY -> AutomaticSampleTriggerType.TRIGGER_TYPE_HIGH_ACTIVITY
-                                            AutomaticSamples.PbMeasTriggerType.TRIGGER_TYPE_LOW_ACTIVITY -> AutomaticSampleTriggerType.TRIGGER_TYPE_LOW_ACTIVITY
-                                            AutomaticSamples.PbMeasTriggerType.TRIGGER_TYPE_TIMED -> AutomaticSampleTriggerType.TRIGGER_TYPE_TIMED
-                                            AutomaticSamples.PbMeasTriggerType.TRIGGER_TYPE_MANUAL -> AutomaticSampleTriggerType.TRIGGER_TYPE_MANUAL
-                                            else -> throw IllegalArgumentException("Unknown trigger type: ${sample.triggerType}")
-                                        }
-                                        hrSamplesDataList.add(Polar247HrSamplesData(sampleDate, hrSamples, triggerType))
-                                    } else {
-                                        BleLogger.d(TAG, "Sample date $sampleDate is out of range: $fromDate to $toDate")
-                                    }
+                                val sampleDate = PolarTimeUtils.pbDateToLocalDate(sampleDateProto)
+                                if (sampleDate in fromDate..toDate) {
+                                    hrSamplesDataList.add(Polar247HrSamplesData.fromProto(sampleSessions))
+                                } else {
+                                    BleLogger.d(TAG, "Sample date $sampleDate is out of range: $fromDate to $toDate")
                                 }
                             }
                         }

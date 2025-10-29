@@ -17,7 +17,7 @@
     <a title="Structures  Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="index.html">PolarBleSdk 5.7.1 Docs</a> (37% documented)</p>
+        <p><a href="index.html">PolarBleSdk 5.7.1 Docs</a> (34% documented)</p>
         <div class="header-right">
           <form role="search" action="search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -136,14 +136,14 @@
               <li class="nav-group-task">
                 <a href="Global%20Variables.html#/s:11PolarBleSdk25DEVICE_SETTINGS_FILE_PATHSSvp">DEVICE_SETTINGS_FILE_PATH</a>
               </li>
+              <li class="nav-group-task">
+                <a href="Global%20Variables.html#/s:11PolarBleSdk17polarDailySummaryAA0aeF0VSgvp">polarDailySummary</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
             <a href="Enums.html">Enumerations</a>
             <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a href="Enums/AutomaticSampleTriggerType.html">AutomaticSampleTriggerType</a>
-              </li>
               <li class="nav-group-task">
                 <a href="Enums/CaloriesType.html">CaloriesType</a>
               </li>
@@ -158,6 +158,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="Enums/PolarBleSdkFeature.html">PolarBleSdkFeature</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/PolarDailyBalanceFeedBack.html">PolarDailyBalanceFeedBack</a>
               </li>
               <li class="nav-group-task">
                 <a href="Enums/PolarDeviceDataType.html">PolarDeviceDataType</a>
@@ -184,10 +187,19 @@
                 <a href="Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a>
               </li>
               <li class="nav-group-task">
+                <a href="Enums/PolarOfflineRecordingResult.html">PolarOfflineRecordingResult</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Enums/PolarOfflineRecordingTriggerMode.html">PolarOfflineRecordingTriggerMode</a>
               </li>
               <li class="nav-group-task">
+                <a href="Enums/PolarReadinessForSpeedAndStrengthTraining.html">PolarReadinessForSpeedAndStrengthTraining</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Enums/PolarTrainingSessionDataTypes.html">PolarTrainingSessionDataTypes</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/PolarTrainingSessionFetchResult.html">PolarTrainingSessionFetchResult</a>
               </li>
               <li class="nav-group-task">
                 <a href="Enums/PpgDataType.html">PpgDataType</a>
@@ -203,6 +215,9 @@
           <li class="nav-group-name">
             <a href="Extensions.html">Extensions</a>
             <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Extensions/DateComponents.html">DateComponents</a>
+              </li>
               <li class="nav-group-task">
                 <a href="Extensions/PrimitiveSequence.html">PrimitiveSequence</a>
               </li>
@@ -274,6 +289,12 @@
                 <a href="Structs/Polar247HrSamplesData.html">Polar247HrSamplesData</a>
               </li>
               <li class="nav-group-task">
+                <a href="Structs/Polar247HrSamplesData/Polar247HrSample.html">– Polar247HrSample</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/Polar247HrSamplesData/AutomaticSampleTriggerType.html">– AutomaticSampleTriggerType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Structs/Polar247PPiSamplesData.html">Polar247PPiSamplesData</a>
               </li>
               <li class="nav-group-task">
@@ -304,7 +325,13 @@
                 <a href="Structs/PolarActivityDayData.html">PolarActivityDayData</a>
               </li>
               <li class="nav-group-task">
+                <a href="Structs.html#/s:11PolarBleSdk0A19ActivityGoalSummaryV">PolarActivityGoalSummary</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Structs/PolarCaloriesData.html">PolarCaloriesData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/PolarDailySummary.html">PolarDailySummary</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/PolarDeviceRestApiServiceDescription.html">PolarDeviceRestApiServiceDescription</a>
@@ -340,6 +367,9 @@
                 <a href="Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a>
               </li>
               <li class="nav-group-task">
+                <a href="Structs/PolarOfflineRecordingProgress.html">PolarOfflineRecordingProgress</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Structs/PolarOfflineRecordingTrigger.html">PolarOfflineRecordingTrigger</a>
               </li>
               <li class="nav-group-task">
@@ -368,6 +398,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="Structs/PolarTrainingSession.html">PolarTrainingSession</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/PolarTrainingSessionProgress.html">PolarTrainingSessionProgress</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/PolarTrainingSessionReference.html">PolarTrainingSessionReference</a>
@@ -585,6 +618,34 @@
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:11PolarBleSdk0A24OfflineRecordingProgressV"></a>
+                    <a name="//apple_ref/swift/Struct/PolarOfflineRecordingProgress" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A24OfflineRecordingProgressV">PolarOfflineRecordingProgress</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                        <a href="Structs/PolarOfflineRecordingProgress.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">PolarOfflineRecordingProgress</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:11PolarBleSdk0A21OfflineRecordingEntryV"></a>
                     <a name="//apple_ref/swift/Struct/PolarOfflineRecordingEntry" class="dashAnchor"></a>
                     <a class="token" href="#/s:11PolarBleSdk0A21OfflineRecordingEntryV">PolarOfflineRecordingEntry</a>
@@ -782,6 +843,34 @@
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:11PolarBleSdk0A23TrainingSessionProgressV"></a>
+                    <a name="//apple_ref/swift/Struct/PolarTrainingSessionProgress" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A23TrainingSessionProgressV">PolarTrainingSessionProgress</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                        <a href="Structs/PolarTrainingSessionProgress.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">PolarTrainingSessionProgress</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:11PolarBleSdk0A22UserDeviceSettingsDataV"></a>
                     <a name="//apple_ref/swift/Struct/PolarUserDeviceSettingsData" class="dashAnchor"></a>
                     <a class="token" href="#/s:11PolarBleSdk0A22UserDeviceSettingsDataV">PolarUserDeviceSettingsData</a>
@@ -866,6 +955,34 @@
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:11PolarBleSdk21Polar247HrSamplesDataV"></a>
+                    <a name="//apple_ref/swift/Struct/Polar247HrSamplesData" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk21Polar247HrSamplesDataV">Polar247HrSamplesData</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                        <a href="Structs/Polar247HrSamplesData.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Polar247HrSamplesData</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:11PolarBleSdk22Polar247PPiSamplesDataV"></a>
                     <a name="//apple_ref/swift/Struct/Polar247PPiSamplesData" class="dashAnchor"></a>
                     <a class="token" href="#/s:11PolarBleSdk22Polar247PPiSamplesDataV">Polar247PPiSamplesData</a>
@@ -892,6 +1009,117 @@
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Polar247PPiSamplesData</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0A15ActivityDayDataV"></a>
+                    <a name="//apple_ref/swift/Struct/PolarActivityDayData" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A15ActivityDayDataV">PolarActivityDayData</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                        <a href="Structs/PolarActivityDayData.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">PolarActivityDayData</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0A12CaloriesDataV"></a>
+                    <a name="//apple_ref/swift/Struct/PolarCaloriesData" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A12CaloriesDataV">PolarCaloriesData</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                        <a href="Structs/PolarCaloriesData.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">PolarCaloriesData</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0A12DailySummaryV"></a>
+                    <a name="//apple_ref/swift/Struct/PolarDailySummary" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A12DailySummaryV">PolarDailySummary</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                        <a href="Structs/PolarDailySummary.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">PolarDailySummary</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0A19ActivityGoalSummaryV"></a>
+                    <a name="//apple_ref/swift/Struct/PolarActivityGoalSummary" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A19ActivityGoalSummaryV">PolarActivityGoalSummary</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">PolarActivityGoalSummary</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
 
                         </div>
                       </div>
@@ -947,91 +1175,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">PolarActiveTime</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:11PolarBleSdk0A15ActivityDayDataV"></a>
-                    <a name="//apple_ref/swift/Struct/PolarActivityDayData" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A15ActivityDayDataV">PolarActivityDayData</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Undocumented</p>
-
-                        <a href="Structs/PolarActivityDayData.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">PolarActivityDayData</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:11PolarBleSdk21Polar247HrSamplesDataV"></a>
-                    <a name="//apple_ref/swift/Struct/Polar247HrSamplesData" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk21Polar247HrSamplesDataV">Polar247HrSamplesData</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Undocumented</p>
-
-                        <a href="Structs/Polar247HrSamplesData.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Polar247HrSamplesData</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:11PolarBleSdk0A12CaloriesDataV"></a>
-                    <a name="//apple_ref/swift/Struct/PolarCaloriesData" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A12CaloriesDataV">PolarCaloriesData</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Undocumented</p>
-
-                        <a href="Structs/PolarCaloriesData.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">PolarCaloriesData</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">PolarActiveTime</span> <span class="p">:</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Equatable</span></code></pre>
 
                         </div>
                       </div>
@@ -1214,7 +1358,7 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2025 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2025-10-10)</p>
+          <p>&copy; 2025 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2025-10-29)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

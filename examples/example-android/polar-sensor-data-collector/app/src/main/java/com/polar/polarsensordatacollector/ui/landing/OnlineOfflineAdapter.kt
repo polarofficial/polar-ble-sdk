@@ -41,7 +41,11 @@ class OnlineOfflineAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) 
                     putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId)
                 }
             }
-            items.add(1, "OFFLINE" to fragment)
+            if (items.isNotEmpty()) {
+                items.add(1, "OFFLINE" to fragment)
+            } else {
+                items.add(0, "OFFLINE" to fragment)
+            }
             this.notifyItemInserted(items.size - 1)
         } else {
             Log.w(TAG, "trying to add OfflineRecordingFragment but found already")

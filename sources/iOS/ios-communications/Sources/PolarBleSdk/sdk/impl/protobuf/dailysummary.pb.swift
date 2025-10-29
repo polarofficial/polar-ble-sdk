@@ -106,69 +106,172 @@ struct Data_PbActivityClassTimes {
   fileprivate var _storage = _StorageClass.defaultInstance
 }
 
-struct Data_PbDailySummary {
+struct Data_PbActivityGoalSummary {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var activityClassTimes: Data_PbActivityClassTimes {
-    get {return _activityClassTimes ?? Data_PbActivityClassTimes()}
-    set {_activityClassTimes = newValue}
+  var activityGoal: Float {
+    get {return _activityGoal ?? 0}
+    set {_activityGoal = newValue}
   }
-  /// Returns true if `activityClassTimes` has been explicitly set.
-  var hasActivityClassTimes: Bool {return self._activityClassTimes != nil}
-  /// Clears the value of `activityClassTimes`. Subsequent reads from it will return its default value.
-  mutating func clearActivityClassTimes() {self._activityClassTimes = nil}
+  /// Returns true if `activityGoal` has been explicitly set.
+  var hasActivityGoal: Bool {return self._activityGoal != nil}
+  /// Clears the value of `activityGoal`. Subsequent reads from it will return its default value.
+  mutating func clearActivityGoal() {self._activityGoal = nil}
 
-  var activityCalories: UInt32 {
-    get {return _activityCalories ?? 0}
-    set {_activityCalories = newValue}
+  var achievedActivity: Float {
+    get {return _achievedActivity ?? 0}
+    set {_achievedActivity = newValue}
   }
-  /// Returns true if `activityCalories` has been explicitly set.
-  var hasActivityCalories: Bool {return self._activityCalories != nil}
-  /// Clears the value of `activityCalories`. Subsequent reads from it will return its default value.
-  mutating func clearActivityCalories() {self._activityCalories = nil}
+  /// Returns true if `achievedActivity` has been explicitly set.
+  var hasAchievedActivity: Bool {return self._achievedActivity != nil}
+  /// Clears the value of `achievedActivity`. Subsequent reads from it will return its default value.
+  mutating func clearAchievedActivity() {self._achievedActivity = nil}
 
-  var trainingCalories: UInt32 {
-    get {return _trainingCalories ?? 0}
-    set {_trainingCalories = newValue}
+  var timeToGoUp: PbDuration {
+    get {return _timeToGoUp ?? PbDuration()}
+    set {_timeToGoUp = newValue}
   }
-  /// Returns true if `trainingCalories` has been explicitly set.
-  var hasTrainingCalories: Bool {return self._trainingCalories != nil}
-  /// Clears the value of `trainingCalories`. Subsequent reads from it will return its default value.
-  mutating func clearTrainingCalories() {self._trainingCalories = nil}
+  /// Returns true if `timeToGoUp` has been explicitly set.
+  var hasTimeToGoUp: Bool {return self._timeToGoUp != nil}
+  /// Clears the value of `timeToGoUp`. Subsequent reads from it will return its default value.
+  mutating func clearTimeToGoUp() {self._timeToGoUp = nil}
 
-  var bmrCalories: UInt32 {
-    get {return _bmrCalories ?? 0}
-    set {_bmrCalories = newValue}
+  var timeToGoWalk: PbDuration {
+    get {return _timeToGoWalk ?? PbDuration()}
+    set {_timeToGoWalk = newValue}
   }
-  /// Returns true if `bmrCalories` has been explicitly set.
-  var hasBmrCalories: Bool {return self._bmrCalories != nil}
-  /// Clears the value of `bmrCalories`. Subsequent reads from it will return its default value.
-  mutating func clearBmrCalories() {self._bmrCalories = nil}
+  /// Returns true if `timeToGoWalk` has been explicitly set.
+  var hasTimeToGoWalk: Bool {return self._timeToGoWalk != nil}
+  /// Clears the value of `timeToGoWalk`. Subsequent reads from it will return its default value.
+  mutating func clearTimeToGoWalk() {self._timeToGoWalk = nil}
 
-  var activityDistance: Float {
-    get {return _activityDistance ?? 0}
-    set {_activityDistance = newValue}
+  var timeToGoJog: PbDuration {
+    get {return _timeToGoJog ?? PbDuration()}
+    set {_timeToGoJog = newValue}
   }
-  /// Returns true if `activityDistance` has been explicitly set.
-  var hasActivityDistance: Bool {return self._activityDistance != nil}
-  /// Clears the value of `activityDistance`. Subsequent reads from it will return its default value.
-  mutating func clearActivityDistance() {self._activityDistance = nil}
+  /// Returns true if `timeToGoJog` has been explicitly set.
+  var hasTimeToGoJog: Bool {return self._timeToGoJog != nil}
+  /// Clears the value of `timeToGoJog`. Subsequent reads from it will return its default value.
+  mutating func clearTimeToGoJog() {self._timeToGoJog = nil}
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
-  fileprivate var _activityClassTimes: Data_PbActivityClassTimes? = nil
-  fileprivate var _activityCalories: UInt32? = nil
-  fileprivate var _trainingCalories: UInt32? = nil
-  fileprivate var _bmrCalories: UInt32? = nil
-  fileprivate var _activityDistance: Float? = nil
+  fileprivate var _activityGoal: Float? = nil
+  fileprivate var _achievedActivity: Float? = nil
+  fileprivate var _timeToGoUp: PbDuration? = nil
+  fileprivate var _timeToGoWalk: PbDuration? = nil
+  fileprivate var _timeToGoJog: PbDuration? = nil
+}
+
+struct Data_PbDailySummary {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var date: PbDate {
+    get {return _storage._date ?? PbDate()}
+    set {_uniqueStorage()._date = newValue}
+  }
+  /// Returns true if `date` has been explicitly set.
+  var hasDate: Bool {return _storage._date != nil}
+  /// Clears the value of `date`. Subsequent reads from it will return its default value.
+  mutating func clearDate() {_uniqueStorage()._date = nil}
+
+  var steps: UInt32 {
+    get {return _storage._steps ?? 0}
+    set {_uniqueStorage()._steps = newValue}
+  }
+  /// Returns true if `steps` has been explicitly set.
+  var hasSteps: Bool {return _storage._steps != nil}
+  /// Clears the value of `steps`. Subsequent reads from it will return its default value.
+  mutating func clearSteps() {_uniqueStorage()._steps = nil}
+
+  var activityCalories: UInt32 {
+    get {return _storage._activityCalories ?? 0}
+    set {_uniqueStorage()._activityCalories = newValue}
+  }
+  /// Returns true if `activityCalories` has been explicitly set.
+  var hasActivityCalories: Bool {return _storage._activityCalories != nil}
+  /// Clears the value of `activityCalories`. Subsequent reads from it will return its default value.
+  mutating func clearActivityCalories() {_uniqueStorage()._activityCalories = nil}
+
+  var trainingCalories: UInt32 {
+    get {return _storage._trainingCalories ?? 0}
+    set {_uniqueStorage()._trainingCalories = newValue}
+  }
+  /// Returns true if `trainingCalories` has been explicitly set.
+  var hasTrainingCalories: Bool {return _storage._trainingCalories != nil}
+  /// Clears the value of `trainingCalories`. Subsequent reads from it will return its default value.
+  mutating func clearTrainingCalories() {_uniqueStorage()._trainingCalories = nil}
+
+  var bmrCalories: UInt32 {
+    get {return _storage._bmrCalories ?? 0}
+    set {_uniqueStorage()._bmrCalories = newValue}
+  }
+  /// Returns true if `bmrCalories` has been explicitly set.
+  var hasBmrCalories: Bool {return _storage._bmrCalories != nil}
+  /// Clears the value of `bmrCalories`. Subsequent reads from it will return its default value.
+  mutating func clearBmrCalories() {_uniqueStorage()._bmrCalories = nil}
+
+  var activityGoalSummary: Data_PbActivityGoalSummary {
+    get {return _storage._activityGoalSummary ?? Data_PbActivityGoalSummary()}
+    set {_uniqueStorage()._activityGoalSummary = newValue}
+  }
+  /// Returns true if `activityGoalSummary` has been explicitly set.
+  var hasActivityGoalSummary: Bool {return _storage._activityGoalSummary != nil}
+  /// Clears the value of `activityGoalSummary`. Subsequent reads from it will return its default value.
+  mutating func clearActivityGoalSummary() {_uniqueStorage()._activityGoalSummary = nil}
+
+  var activityClassTimes: Data_PbActivityClassTimes {
+    get {return _storage._activityClassTimes ?? Data_PbActivityClassTimes()}
+    set {_uniqueStorage()._activityClassTimes = newValue}
+  }
+  /// Returns true if `activityClassTimes` has been explicitly set.
+  var hasActivityClassTimes: Bool {return _storage._activityClassTimes != nil}
+  /// Clears the value of `activityClassTimes`. Subsequent reads from it will return its default value.
+  mutating func clearActivityClassTimes() {_uniqueStorage()._activityClassTimes = nil}
+
+  var activityDistance: Float {
+    get {return _storage._activityDistance ?? 0}
+    set {_uniqueStorage()._activityDistance = newValue}
+  }
+  /// Returns true if `activityDistance` has been explicitly set.
+  var hasActivityDistance: Bool {return _storage._activityDistance != nil}
+  /// Clears the value of `activityDistance`. Subsequent reads from it will return its default value.
+  mutating func clearActivityDistance() {_uniqueStorage()._activityDistance = nil}
+
+  var dailyBalanceFeedback: PbDailyBalanceFeedback {
+    get {return _storage._dailyBalanceFeedback ?? .dbNotCalculated}
+    set {_uniqueStorage()._dailyBalanceFeedback = newValue}
+  }
+  /// Returns true if `dailyBalanceFeedback` has been explicitly set.
+  var hasDailyBalanceFeedback: Bool {return _storage._dailyBalanceFeedback != nil}
+  /// Clears the value of `dailyBalanceFeedback`. Subsequent reads from it will return its default value.
+  mutating func clearDailyBalanceFeedback() {_uniqueStorage()._dailyBalanceFeedback = nil}
+
+  var readinessForSpeedAndStrengthTraining: PbReadinessForSpeedAndStrengthTraining {
+    get {return _storage._readinessForSpeedAndStrengthTraining ?? .rsstNotCalculated}
+    set {_uniqueStorage()._readinessForSpeedAndStrengthTraining = newValue}
+  }
+  /// Returns true if `readinessForSpeedAndStrengthTraining` has been explicitly set.
+  var hasReadinessForSpeedAndStrengthTraining: Bool {return _storage._readinessForSpeedAndStrengthTraining != nil}
+  /// Clears the value of `readinessForSpeedAndStrengthTraining`. Subsequent reads from it will return its default value.
+  mutating func clearReadinessForSpeedAndStrengthTraining() {_uniqueStorage()._readinessForSpeedAndStrengthTraining = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
 extension Data_PbActivityClassTimes: @unchecked Sendable {}
+extension Data_PbActivityGoalSummary: @unchecked Sendable {}
 extension Data_PbDailySummary: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
@@ -322,18 +425,19 @@ extension Data_PbActivityClassTimes: SwiftProtobuf.Message, SwiftProtobuf._Messa
   }
 }
 
-extension Data_PbDailySummary: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".PbDailySummary"
+extension Data_PbActivityGoalSummary: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".PbActivityGoalSummary"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    7: .standard(proto: "activity_class_times"),
-    3: .standard(proto: "activity_calories"),
-    4: .standard(proto: "training_calories"),
-    5: .standard(proto: "bmr_calories"),
-    8: .standard(proto: "activity_distance"),
+    1: .standard(proto: "activity_goal"),
+    2: .standard(proto: "achieved_activity"),
+    3: .standard(proto: "time_to_go_up"),
+    4: .standard(proto: "time_to_go_walk"),
+    5: .standard(proto: "time_to_go_jog"),
   ]
 
   public var isInitialized: Bool {
-    if let v = self._activityClassTimes, !v.isInitialized {return false}
+    if self._activityGoal == nil {return false}
+    if self._achievedActivity == nil {return false}
     return true
   }
 
@@ -343,11 +447,11 @@ extension Data_PbDailySummary: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 3: try { try decoder.decodeSingularUInt32Field(value: &self._activityCalories) }()
-      case 4: try { try decoder.decodeSingularUInt32Field(value: &self._trainingCalories) }()
-      case 5: try { try decoder.decodeSingularUInt32Field(value: &self._bmrCalories) }()
-      case 7: try { try decoder.decodeSingularMessageField(value: &self._activityClassTimes) }()
-      case 8: try { try decoder.decodeSingularFloatField(value: &self._activityDistance) }()
+      case 1: try { try decoder.decodeSingularFloatField(value: &self._activityGoal) }()
+      case 2: try { try decoder.decodeSingularFloatField(value: &self._achievedActivity) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._timeToGoUp) }()
+      case 4: try { try decoder.decodeSingularMessageField(value: &self._timeToGoWalk) }()
+      case 5: try { try decoder.decodeSingularMessageField(value: &self._timeToGoJog) }()
       default: break
       }
     }
@@ -358,30 +462,188 @@ extension Data_PbDailySummary: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
     // https://github.com/apple/swift-protobuf/issues/1182
-    try { if let v = self._activityCalories {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 3)
+    try { if let v = self._activityGoal {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 1)
     } }()
-    try { if let v = self._trainingCalories {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 4)
+    try { if let v = self._achievedActivity {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 2)
     } }()
-    try { if let v = self._bmrCalories {
-      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 5)
+    try { if let v = self._timeToGoUp {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
     } }()
-    try { if let v = self._activityClassTimes {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+    try { if let v = self._timeToGoWalk {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
     } }()
-    try { if let v = self._activityDistance {
-      try visitor.visitSingularFloatField(value: v, fieldNumber: 8)
+    try { if let v = self._timeToGoJog {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
     } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
+  static func ==(lhs: Data_PbActivityGoalSummary, rhs: Data_PbActivityGoalSummary) -> Bool {
+    if lhs._activityGoal != rhs._activityGoal {return false}
+    if lhs._achievedActivity != rhs._achievedActivity {return false}
+    if lhs._timeToGoUp != rhs._timeToGoUp {return false}
+    if lhs._timeToGoWalk != rhs._timeToGoWalk {return false}
+    if lhs._timeToGoJog != rhs._timeToGoJog {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Data_PbDailySummary: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".PbDailySummary"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "date"),
+    2: .same(proto: "steps"),
+    3: .standard(proto: "activity_calories"),
+    4: .standard(proto: "training_calories"),
+    5: .standard(proto: "bmr_calories"),
+    6: .standard(proto: "activity_goal_summary"),
+    7: .standard(proto: "activity_class_times"),
+    8: .standard(proto: "activity_distance"),
+    9: .standard(proto: "daily_balance_feedback"),
+    10: .standard(proto: "readiness_for_speed_and_strength_training"),
+  ]
+
+  fileprivate class _StorageClass {
+    var _date: PbDate? = nil
+    var _steps: UInt32? = nil
+    var _activityCalories: UInt32? = nil
+    var _trainingCalories: UInt32? = nil
+    var _bmrCalories: UInt32? = nil
+    var _activityGoalSummary: Data_PbActivityGoalSummary? = nil
+    var _activityClassTimes: Data_PbActivityClassTimes? = nil
+    var _activityDistance: Float? = nil
+    var _dailyBalanceFeedback: PbDailyBalanceFeedback? = nil
+    var _readinessForSpeedAndStrengthTraining: PbReadinessForSpeedAndStrengthTraining? = nil
+
+    #if swift(>=5.10)
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _date = source._date
+      _steps = source._steps
+      _activityCalories = source._activityCalories
+      _trainingCalories = source._trainingCalories
+      _bmrCalories = source._bmrCalories
+      _activityGoalSummary = source._activityGoalSummary
+      _activityClassTimes = source._activityClassTimes
+      _activityDistance = source._activityDistance
+      _dailyBalanceFeedback = source._dailyBalanceFeedback
+      _readinessForSpeedAndStrengthTraining = source._readinessForSpeedAndStrengthTraining
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
+  public var isInitialized: Bool {
+    return withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      if _storage._date == nil {return false}
+      if let v = _storage._date, !v.isInitialized {return false}
+      if let v = _storage._activityGoalSummary, !v.isInitialized {return false}
+      if let v = _storage._activityClassTimes, !v.isInitialized {return false}
+      return true
+    }
+  }
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._date) }()
+        case 2: try { try decoder.decodeSingularUInt32Field(value: &_storage._steps) }()
+        case 3: try { try decoder.decodeSingularUInt32Field(value: &_storage._activityCalories) }()
+        case 4: try { try decoder.decodeSingularUInt32Field(value: &_storage._trainingCalories) }()
+        case 5: try { try decoder.decodeSingularUInt32Field(value: &_storage._bmrCalories) }()
+        case 6: try { try decoder.decodeSingularMessageField(value: &_storage._activityGoalSummary) }()
+        case 7: try { try decoder.decodeSingularMessageField(value: &_storage._activityClassTimes) }()
+        case 8: try { try decoder.decodeSingularFloatField(value: &_storage._activityDistance) }()
+        case 9: try { try decoder.decodeSingularEnumField(value: &_storage._dailyBalanceFeedback) }()
+        case 10: try { try decoder.decodeSingularEnumField(value: &_storage._readinessForSpeedAndStrengthTraining) }()
+        default: break
+        }
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._date {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      } }()
+      try { if let v = _storage._steps {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 2)
+      } }()
+      try { if let v = _storage._activityCalories {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 3)
+      } }()
+      try { if let v = _storage._trainingCalories {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 4)
+      } }()
+      try { if let v = _storage._bmrCalories {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 5)
+      } }()
+      try { if let v = _storage._activityGoalSummary {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+      } }()
+      try { if let v = _storage._activityClassTimes {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+      } }()
+      try { if let v = _storage._activityDistance {
+        try visitor.visitSingularFloatField(value: v, fieldNumber: 8)
+      } }()
+      try { if let v = _storage._dailyBalanceFeedback {
+        try visitor.visitSingularEnumField(value: v, fieldNumber: 9)
+      } }()
+      try { if let v = _storage._readinessForSpeedAndStrengthTraining {
+        try visitor.visitSingularEnumField(value: v, fieldNumber: 10)
+      } }()
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
   static func ==(lhs: Data_PbDailySummary, rhs: Data_PbDailySummary) -> Bool {
-    if lhs._activityClassTimes != rhs._activityClassTimes {return false}
-    if lhs._activityCalories != rhs._activityCalories {return false}
-    if lhs._trainingCalories != rhs._trainingCalories {return false}
-    if lhs._bmrCalories != rhs._bmrCalories {return false}
-    if lhs._activityDistance != rhs._activityDistance {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._date != rhs_storage._date {return false}
+        if _storage._steps != rhs_storage._steps {return false}
+        if _storage._activityCalories != rhs_storage._activityCalories {return false}
+        if _storage._trainingCalories != rhs_storage._trainingCalories {return false}
+        if _storage._bmrCalories != rhs_storage._bmrCalories {return false}
+        if _storage._activityGoalSummary != rhs_storage._activityGoalSummary {return false}
+        if _storage._activityClassTimes != rhs_storage._activityClassTimes {return false}
+        if _storage._activityDistance != rhs_storage._activityDistance {return false}
+        if _storage._dailyBalanceFeedback != rhs_storage._dailyBalanceFeedback {return false}
+        if _storage._readinessForSpeedAndStrengthTraining != rhs_storage._readinessForSpeedAndStrengthTraining {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

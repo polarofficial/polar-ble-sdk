@@ -7,7 +7,7 @@ import Foundation
 /// - date: date of the PPi activity data
 /// - samples: PPi samples from sensor as PolarPpiDataSample object
 public struct Polar247PPiSamplesData: Codable {
-    public let date: Date
+    public let date: DateComponents
     public let samples: [PolarPpiDataSample]
     
     /// Polar 24/7 PPi data sample

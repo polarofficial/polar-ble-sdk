@@ -1,5 +1,6 @@
 package com.polar.polarsensordatacollector.ui.exercise
 
+import android.text.format.DateFormat
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -30,8 +31,8 @@ fun ExerciseScreen(
     val canPause by vm.canPause.observeAsState(false)
     val canResume by vm.canResume.observeAsState(false)
     val canStop by vm.canStop.observeAsState(false)
+    val startTime by vm.startTime.observeAsState()
     val context = LocalContext.current
-
 
     var expanded by remember { mutableStateOf(false) }
     var selectedIndex by rememberSaveable {
@@ -173,6 +174,23 @@ fun ExerciseScreen(
                     .weight(1f)
                     .padding(start = 6.dp)
             ) { Text(stringResource(R.string.btn_stop)) }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        startTime?.let { date ->
+            val formatted: String = DateFormat.format(
+                "yyyy-MM-dd HH:mm:ss",
+                date
+            ).toString()
+            Text(
+                text = stringResource(R.string.exercise_start_time, formatted),
+                style = MaterialTheme.typography.body2,
+                color = MaterialTheme.colors.onSurface,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp)
+            )
         }
     }
 }

@@ -1,6 +1,8 @@
 // Copyright © 2025 Polar Electro Oy. All rights reserved.
 package com.polar.sdk.api.model
 
+import java.util.Date
+
 /**
  * Represents a live exercise session on a Polar device.
  */
@@ -40,6 +42,7 @@ class PolarExerciseSession {
      */
     data class ExerciseInfo(
         val status: ExerciseStatus,
-        val sportProfile: SportProfile
+        val sportProfile: SportProfile,
+        val startTime: Date? = null
     )
 }

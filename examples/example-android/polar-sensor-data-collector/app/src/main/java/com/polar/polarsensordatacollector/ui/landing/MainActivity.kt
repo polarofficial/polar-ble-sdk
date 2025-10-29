@@ -38,27 +38,6 @@ class MainActivity : AppCompatActivity() {
             item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
         }
 
-        topAppBar.setNavigationOnClickListener {
-            val current = navController.currentDestination?.id
-            if (
-                current == R.id.offlineRecTriggerFragment ||
-                current == R.id.settings_dest ||
-                current == R.id.offlineRecordingsListFragment ||
-                current == R.id.about_dest
-            ) {
-                navController.navigate(
-                    R.id.mainFragment,
-                    null,
-                    navOptions {
-                        popUpTo(R.id.mainFragment) { inclusive = true }
-                        launchSingleTop = true
-                    }
-                )
-            } else {
-                navController.navigateUp()
-            }
-        }
-
         navController.addOnDestinationChangedListener { _, destination, _ ->
             val dest: String = try {
                 resources.getResourceName(destination.id)

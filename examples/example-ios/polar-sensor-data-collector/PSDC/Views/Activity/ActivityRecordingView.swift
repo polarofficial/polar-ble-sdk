@@ -22,6 +22,7 @@ struct ActivityRecordingView: View {
     @State private var selectedCaloriesType: CaloriesType = .activity
     @State private var activeTimeTitle = "Get active time data"
     @State private var activitySamplesTitle = "Get activity samples data"
+    @State private var dailySummaryTitle = "Get daily summary"
     
     var body: some View {
         if case .connected = bleSdkManager.deviceConnectionState,
@@ -147,6 +148,20 @@ struct ActivityRecordingView: View {
                         showActivityView = false
                         bleSdkManager.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.inProgress
                         bleSdkManager.activityRecordingData.activityType = PolarActivityDataType.ACTIVITY_SAMPLES
+                    }.alignmentGuide(.leading) { d in d[.leading] }
+                    .sheet(isPresented: $showDatePickerView) {
+                        ActivityDatePickerView(isPresented: $showDatePickerView, showActivityView: $showActivityView)
+                    }
+                    .sheet(isPresented: $showActivityView) {
+                        ActivityRecordingDetailsView(isPresented: $showActivityView)
+                            .environmentObject(bleSdkManager)
+                    }
+
+                    Button(dailySummaryTitle) {
+                        showDatePickerView = true
+                        showActivityView = false
+                        bleSdkManager.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.inProgress
+                        bleSdkManager.activityRecordingData.activityType = PolarActivityDataType.DAILY_SUMMARY
                     }.alignmentGuide(.leading) { d in d[.leading] }
                     .sheet(isPresented: $showDatePickerView) {
                         ActivityDatePickerView(isPresented: $showDatePickerView, showActivityView: $showActivityView)

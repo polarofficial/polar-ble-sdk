@@ -200,8 +200,17 @@ class ActivityRecordingDataViewModel @Inject constructor(
                     )) {
                         is ResultOfRequest.Success -> {
                             if (hrRecording.value != null) {
+                                val gson = GsonBuilder()
+                                    .registerTypeAdapter(LocalDate::class.java, JsonSerializer<LocalDate> { src, _, _ ->
+                                        JsonPrimitive(src?.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                                    })
+                                    .registerTypeAdapter(LocalTime::class.java, JsonSerializer<LocalTime> { src, _, _ ->
+                                        JsonPrimitive(src?.format(DateTimeFormatter.ISO_LOCAL_TIME))
+                                    })
+                                    .create()
+                                val json = gson.toJson(hrRecording.value)
                                 val fileUri = fileUtils.saveToFile(
-                                        Gson().toJson(hrRecording.value).encodeToByteArray(),
+                                        json.encodeToByteArray(),
                                         "/HR_SAMPLES/$startDate-hr-samples.json"
                                 )
                                 val hrRecording = ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri, PolarBleApi.PolarActivityDataType.HR_SAMPLES)
@@ -352,6 +361,32 @@ class ActivityRecordingDataViewModel @Inject constructor(
                         }
                         is ResultOfRequest.Failure -> {
                             activityDataUiState = ActivityDataUiState.Failure(activitySamplesData.message, activitySamplesData.throwable)
+                        }
+                    }
+
+                PolarBleApi.PolarActivityDataType.DAILY_SUMMARY ->
+                    when (val dailySummaryData = polarDeviceStreamingRepository.getDailySummaryData(
+                        deviceId, startDate, endDate)) {
+                        is ResultOfRequest.Success -> {
+                            if (dailySummaryData.value != null) {
+                                val gson = GsonBuilder()
+                                    .registerTypeAdapter(LocalDate::class.java, JsonSerializer<LocalDate> { src, _, _ ->
+                                        JsonPrimitive(src?.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                                    })
+                                    .create()
+                                val json = gson.toJson(dailySummaryData.value)
+                                val fileUri = fileUtils.saveToFile(
+                                    json.encodeToByteArray(),
+                                    "/DAILY_SUMMARY/$startDate-daily_summary.json"
+                                )
+                                val dailySummaryRecording = ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri, PolarBleApi.PolarActivityDataType.DAILY_SUMMARY)
+                                updateActivityDataUiState(dailySummaryRecording, fileUri, PolarBleApi.PolarActivityDataType.DAILY_SUMMARY)
+                            } else {
+                                activityDataUiState = ActivityDataUiState.Failure("fetch daily summary data responded with empty data", null)
+                            }
+                        }
+                        is ResultOfRequest.Failure -> {
+                            activityDataUiState = ActivityDataUiState.Failure(dailySummaryData.message, dailySummaryData.throwable)
                         }
                     }
 

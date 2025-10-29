@@ -102,6 +102,11 @@ class PolarActivityUtilsTests: XCTestCase {
         var proto = Data_PbDailySummary()
         proto.activityDistance = distance
 
+        proto.date = PbDate()
+        proto.date.day = 1
+        proto.date.month = 1
+        proto.date.year = 2525
+
         let responseData = try! proto.serializedData()
 
         mockClient.requestReturnValue = Single.just(responseData)
@@ -205,7 +210,11 @@ class PolarActivityUtilsTests: XCTestCase {
         activityClassTimes.timeIntermittentVigorous.millis = 50
 
         proto.activityClassTimes = activityClassTimes
-
+        proto.date = PbDate()
+        proto.date.day = 1
+        proto.date.month = 1
+        proto.date.year = 2525
+        
         let responseData = try! proto.serializedData()
         mockClient.requestReturnValue = Single.just(responseData)
         
@@ -322,7 +331,12 @@ class PolarActivityUtilsTests: XCTestCase {
         let date = Date()
         var proto = Data_PbDailySummary()
         proto.activityCalories = 2000
-        
+
+        proto.date = PbDate()
+        proto.date.day = 1
+        proto.date.month = 1
+        proto.date.year = 2525
+
         let responseData = try! proto.serializedData()
         mockClient.requestReturnValue = Single.just(responseData)
         
@@ -345,6 +359,12 @@ class PolarActivityUtilsTests: XCTestCase {
         let date = Date()
         var proto = Data_PbDailySummary()
         proto.trainingCalories = 1500
+
+        proto.date = PbDate()
+        proto.date.day = 1
+        proto.date.month = 1
+        proto.date.year = 2525
+
         let responseData = try! proto.serializedData()
         mockClient.requestReturnValue = Single.just(responseData)
         
@@ -367,6 +387,12 @@ class PolarActivityUtilsTests: XCTestCase {
         let date = Date()
         var proto = Data_PbDailySummary()
         proto.bmrCalories = 1200
+
+        proto.date = PbDate()
+        proto.date.day = 1
+        proto.date.month = 1
+        proto.date.year = 2525
+
         let responseData = try! proto.serializedData()
         mockClient.requestReturnValue = Single.just(responseData)
         
@@ -538,6 +564,198 @@ class PolarActivityUtilsTests: XCTestCase {
 
         // Assert
         wait(for: [expectation], timeout: 5)
+        disposable.dispose()
+    }
+    
+    func testReadDailySummaryFromDayDirectory_SuccessfulResponse() {
+        // Arrange
+        let date = Date()
+        var proto = Data_PbDailySummary()
+
+        var activityClassTimes = Data_PbDailySummary().activityClassTimes
+
+        activityClassTimes.timeNonWear = PbDuration()
+        activityClassTimes.timeNonWear.hours = 1
+        activityClassTimes.timeNonWear.seconds = 30
+        activityClassTimes.timeNonWear.millis = 500
+
+        activityClassTimes.timeSleep = PbDuration()
+        activityClassTimes.timeSleep.hours = 7
+        activityClassTimes.timeSleep.minutes = 45
+        activityClassTimes.timeSleep.seconds = 30
+        activityClassTimes.timeSleep.millis = 200
+
+        activityClassTimes.timeSedentary = PbDuration()
+        activityClassTimes.timeSedentary.hours = 3
+        activityClassTimes.timeSedentary.minutes = 15
+        activityClassTimes.timeSedentary.seconds = 20
+
+        activityClassTimes.timeLightActivity = PbDuration()
+        activityClassTimes.timeLightActivity.hours = 2
+        activityClassTimes.timeLightActivity.seconds = 45
+
+        activityClassTimes.timeContinuousModerate = PbDuration()
+        activityClassTimes.timeContinuousModerate.hours = 1
+        activityClassTimes.timeContinuousModerate.minutes = 45
+        activityClassTimes.timeContinuousModerate.seconds = 10
+        activityClassTimes.timeContinuousModerate.millis = 100
+
+        activityClassTimes.timeIntermittentModerate = PbDuration()
+        activityClassTimes.timeIntermittentModerate.hours = 1
+        activityClassTimes.timeIntermittentModerate.minutes = 15
+        activityClassTimes.timeIntermittentModerate.seconds = 5
+
+        activityClassTimes.timeContinuousVigorous = PbDuration()
+        activityClassTimes.timeContinuousVigorous.minutes = 45
+        activityClassTimes.timeContinuousVigorous.seconds = 30
+
+        activityClassTimes.timeIntermittentVigorous = PbDuration()
+        activityClassTimes.timeIntermittentVigorous.minutes = 30
+        activityClassTimes.timeIntermittentVigorous.seconds = 15
+        activityClassTimes.timeIntermittentVigorous.millis = 50
+        proto.activityClassTimes = activityClassTimes
+        
+        proto.activityGoalSummary = Data_PbActivityGoalSummary.init()
+        proto.activityGoalSummary.achievedActivity = 100
+        proto.activityGoalSummary.activityGoal = 1000
+        proto.activityGoalSummary.timeToGoJog = PbDuration()
+        proto.activityGoalSummary.timeToGoJog.hours = 1
+        proto.activityGoalSummary.timeToGoJog.minutes = 1
+        proto.activityGoalSummary.timeToGoJog.seconds = 1
+        proto.activityGoalSummary.timeToGoJog.millis = 1
+
+        proto.activityGoalSummary.timeToGoUp.hours = 1
+        proto.activityGoalSummary.timeToGoUp.minutes = 1
+        proto.activityGoalSummary.timeToGoUp.seconds = 1
+        proto.activityGoalSummary.timeToGoUp.millis = 1
+
+        proto.activityGoalSummary.timeToGoWalk.hours = 1
+        proto.activityGoalSummary.timeToGoWalk.minutes = 1
+        proto.activityGoalSummary.timeToGoWalk.seconds = 1
+        proto.activityGoalSummary.timeToGoWalk.millis = 1
+
+        proto.dailyBalanceFeedback = PbDailyBalanceFeedback.dbFatigueTryToReduceTrainingLoad
+        proto.readinessForSpeedAndStrengthTraining = PbReadinessForSpeedAndStrengthTraining.rsstA1RecoveredReadyForAllTraining
+        proto.activityDistance = 100
+        proto.activityCalories = 100
+        proto.bmrCalories = 100
+        proto.trainingCalories = 500
+        
+        proto.date = PbDate()
+        proto.date.day = 1
+        proto.date.month = 1
+        proto.date.year = 2525
+        
+        let responseData = try! proto.serializedData()
+        mockClient.requestReturnValue = Single.just(responseData)
+        
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(abbreviation: "UTC")!
+        
+        var datecomponents = DateComponents()
+        datecomponents.year = 2525
+        datecomponents.month = 1
+        datecomponents.day = 1
+        datecomponents.hour = 0
+        datecomponents.minute = 0
+        datecomponents.second = 0
+        
+        let expectedDate = calendar.date(from: datecomponents)!
+
+        // Act
+        let expectation = XCTestExpectation(description: "Read daily summary from day directory")
+        
+        let result = PolarActivityUtils.readDailySummaryDataFromDayDirectory(client: mockClient, date: date)
+
+        var testResult: PolarDailySummary?
+
+        _ = result.subscribe(onSuccess: { data in
+            testResult = data
+            expectation.fulfill()
+        }, onError: { error in
+            XCTFail("Unexpected error: \(error)")
+        }, onCompleted: {
+            XCTFail("Completed without emitting a value")
+        })
+
+        wait(for: [expectation], timeout: 1.0)
+        
+        // Assert
+        XCTAssertEqual(testResult?.activityClassTimes.timeNonWear.hours, 1)
+        XCTAssertEqual(testResult?.activityClassTimes.timeNonWear.minutes, 0)
+        XCTAssertEqual(testResult?.activityClassTimes.timeNonWear.seconds, 30)
+        XCTAssertEqual(testResult?.activityClassTimes.timeNonWear.millis, 500)
+        
+        XCTAssertEqual(testResult?.activityClassTimes.timeSleep.hours, 7)
+        XCTAssertEqual(testResult?.activityClassTimes.timeSleep.minutes, 45)
+        XCTAssertEqual(testResult?.activityClassTimes.timeSleep.seconds, 30)
+        XCTAssertEqual(testResult?.activityClassTimes.timeSleep.millis, 200)
+        
+        XCTAssertEqual(testResult?.activityClassTimes.timeSedentary.hours, 3)
+        XCTAssertEqual(testResult?.activityClassTimes.timeSedentary.minutes, 15)
+        XCTAssertEqual(testResult?.activityClassTimes.timeSedentary.seconds, 20)
+        XCTAssertEqual(testResult?.activityClassTimes.timeSedentary.millis, 0)
+        
+        XCTAssertEqual(testResult?.activityClassTimes.timeLightActivity.hours, 2)
+        XCTAssertEqual(testResult?.activityClassTimes.timeLightActivity.minutes, 0)
+        XCTAssertEqual(testResult?.activityClassTimes.timeLightActivity.seconds, 45)
+        XCTAssertEqual(testResult?.activityClassTimes.timeLightActivity.millis, 0)
+        
+        XCTAssertEqual(testResult?.activityClassTimes.timeContinuousModerateActivity.hours, 1)
+        XCTAssertEqual(testResult?.activityClassTimes.timeContinuousModerateActivity.minutes, 45)
+        XCTAssertEqual(testResult?.activityClassTimes.timeContinuousModerateActivity.seconds, 10)
+        XCTAssertEqual(testResult?.activityClassTimes.timeContinuousModerateActivity.millis, 100)
+        
+        XCTAssertEqual(testResult?.activityClassTimes.timeIntermittentModerateActivity.hours, 1)
+        XCTAssertEqual(testResult?.activityClassTimes.timeIntermittentModerateActivity.minutes, 15)
+        XCTAssertEqual(testResult?.activityClassTimes.timeIntermittentModerateActivity.seconds, 5)
+        XCTAssertEqual(testResult?.activityClassTimes.timeIntermittentModerateActivity.millis, 0)
+        
+        XCTAssertEqual(testResult?.activityClassTimes.timeContinuousVigorousActivity.hours, 0)
+        XCTAssertEqual(testResult?.activityClassTimes.timeContinuousVigorousActivity.minutes, 45)
+        XCTAssertEqual(testResult?.activityClassTimes.timeContinuousVigorousActivity.seconds, 30)
+        XCTAssertEqual(testResult?.activityClassTimes.timeContinuousVigorousActivity.millis, 0)
+        
+        XCTAssertEqual(testResult?.activityClassTimes.timeIntermittentVigorousActivity.hours, 0)
+        XCTAssertEqual(testResult?.activityClassTimes.timeIntermittentVigorousActivity.minutes, 30)
+        XCTAssertEqual(testResult?.activityClassTimes.timeIntermittentVigorousActivity.seconds, 15)
+        XCTAssertEqual(testResult?.activityClassTimes.timeIntermittentVigorousActivity.millis, 50)
+        
+        XCTAssertEqual(testResult?.activityGoalSummary.timeToGoJog, PolarActiveTime.init(hours: 1,minutes: 1,seconds: 1, millis: 1))
+        XCTAssertEqual(testResult?.activityGoalSummary.timeToGoUp, PolarActiveTime.init(hours: 1,minutes: 1,seconds: 1, millis: 1))
+        XCTAssertEqual(testResult?.activityGoalSummary.timeToGoWalk, PolarActiveTime.init(hours: 1,minutes: 1,seconds: 1, millis: 1))
+        
+        XCTAssertEqual(testResult?.activityDistance, 100)
+        XCTAssertEqual(testResult?.activityCalories, 100)
+        XCTAssertEqual(testResult?.bmrCalories, 100)
+        XCTAssertEqual(testResult?.trainingCalories, 500)
+        XCTAssertEqual(testResult?.readinessForSpeedAndStrengthTraining, .RECOVERED_READY_FOR_ALL_TRAINING)
+        XCTAssertEqual(testResult?.dailyBalanceFeedback, .FATIGUE_TRY_TO_REDUCE_TRAINING_LOAD)
+        XCTAssertEqual(testResult?.date, expectedDate)
+    }
+    
+    func testReadDailySummaryFromDayDirectory_FileNotFound() {
+        // Arrange
+        let expectedError = NSError(domain: "File not found", code: 103, userInfo: nil)
+        mockClient.requestReturnValue = Single.error(expectedError)
+
+        // Act
+        let expectationSuccess = XCTestExpectation(description: "Read daily summary from day directory should complete if daily summary file is not found")
+        let expectationFailure = XCTestExpectation(description: "Read daily summary from day directory should fail.")
+        expectationFailure.isInverted = true
+        
+        let disposable = PolarActivityUtils.readDailySummaryDataFromDayDirectory(client: mockClient, date: Date())
+            .subscribe(onSuccess: { dailySummaryData in
+                XCTFail("Expected completion, but got data: \(dailySummaryData)")
+                expectationSuccess.fulfill()
+            }, onError: { error in
+                XCTFail("Expected completion, but got error: \(error)")
+                expectationFailure.fulfill()
+            }, onDisposed: {
+                expectationSuccess.fulfill()
+            })
+
+        wait(for: [expectationSuccess, expectationFailure], timeout: 5)
         disposable.dispose()
     }
 }

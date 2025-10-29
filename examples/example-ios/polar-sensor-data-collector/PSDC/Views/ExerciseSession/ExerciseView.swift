@@ -57,6 +57,25 @@ struct ExerciseView: View {
                     .disabled(!bleSdkManager.exerciseState.canStop)
                 }
 
+                let startTimeString: String? = {
+                    if let startTime = bleSdkManager.exerciseState.startTime {
+                        let formatter = DateFormatter()
+                        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                        formatter.timeZone = TimeZone.current
+                        let formatted = formatter.string(from: startTime)
+                        return formatted
+                    }
+                    return nil
+                }()
+
+                Group {
+                    if let startTimeString {
+                        Text("Exercise start time: \(startTimeString)")
+                            .font(.subheadline)
+                            .padding(.top, 8)
+                    }
+                }
+
                 Spacer()
             }
             .padding(16)

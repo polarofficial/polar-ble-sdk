@@ -70,6 +70,7 @@ public enum PolarActivityDataType: String, CaseIterable {
     case PEAKTOPEAKINTERVAL
     case ACTIVE_TIME
     case ACTIVITY_SAMPLES
+    case DAILY_SUMMARY
     case NONE
    }
 

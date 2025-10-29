@@ -3,6 +3,10 @@ import Foundation
 import CoreBluetooth
 import RxSwift
 
+public protocol BlePsFtpProgressCallback: AnyObject {
+    func onProgressUpdate(bytesReceived: Int)
+}
+
 public class BlePsFtpClient: BleGattClientBase {
     
     public static let PSFTP_SERVICE                         = CBUUID(string: "FEEE")
@@ -17,6 +21,8 @@ public class BlePsFtpClient: BleGattClientBase {
     private let PROTOCOL_TIMEOUT_EXTENDED = TimeInterval(900)
     private let extendedWriteTimeoutFilePaths: [String] = ["/SYNCPART.TGZ"]
     
+    internal var progressCallback: BlePsFtpProgressCallback?
+
     let mtuInputQueue=AtomicList<[Data: Int]>()
     let packetsWritten=AtomicInteger(initialValue:0)
     // packet chunks define which n packet shall use write with response (i.e. ATT write request), if set to 0 then all packets in frame are written with write without response (i.e. ATT write command)
@@ -91,6 +97,11 @@ public class BlePsFtpClient: BleGattClientBase {
                     // special case
                     self.packetsWritten.increment()
                 }
+
+                if let callback = progressCallback, data.count > 0 {
+                    callback.onProgressUpdate(bytesReceived: data.count)
+                }
+                
             } else if chr.isEqual(BlePsFtpClient.PSFTP_D2H_NOTIFICATION_CHARACTERISTIC) {
                 BleLogger.trace_hex("Processing PSFTP_D2H_NOTIFICATION_CHARACTERISTIC, data: ", data: data)
                 do {
@@ -277,7 +288,21 @@ public class BlePsFtpClient: BleGattClientBase {
     ///                    onError, @see BlePsFtpException
     ///                            @see BleGattException
     public func request(_ header: Data) -> Single<NSData>{
+        return request(header, progressCallback: nil)
+    }
+
+    func request(_ header: Data, progressCallback: BlePsFtpProgressCallback?) -> Single<NSData>{
         return Single.create{ observer in
+            var shouldClearProgressCallback = false
+            if let callback = progressCallback {
+                if self.progressCallback == nil {
+                    self.progressCallback = callback
+                    shouldClearProgressCallback = true
+                }
+            } else if self.progressCallback != nil {
+                shouldClearProgressCallback = false
+            }
+            
             let block = BlockOperation()
             block.addExecutionBlock { [unowned self, weak block] in
                 BleLogger.trace("PS-FTP new request operation")
@@ -306,15 +331,25 @@ public class BlePsFtpClient: BleGattClientBase {
                         switch ( error ){
                         case 0:
                             BleLogger.trace("PS-FTP request operation completed successfully")
+                            if shouldClearProgressCallback {
+                                self.progressCallback = nil
+                            }
                             observer(.success(outputStream))
                             return
                         default:
                             BleLogger.error("PS-FTP request operation failed with error code: \(error)")
+                            if shouldClearProgressCallback {
+                                self.progressCallback = nil
+                            }
                             observer(.failure(BlePsFtpException.responseError(errorCode: error)))
                             return
                         }
                     } catch let error {
                         BleLogger.error("PS-FTP request interrupted error: \(error)")
+                        if shouldClearProgressCallback {
+                            self.progressCallback = nil
+                        }
+                        
                         if !(self.gattServiceTransmitter?.isConnected() ?? false) {
                             BleLogger.error("Device disconnected during PS-FTP request")
                             observer(.failure(BleGattException.gattDisconnected))
@@ -336,6 +371,9 @@ public class BlePsFtpClient: BleGattClientBase {
                     }
                 } else {
                     BleLogger.error("PS-FTP request operation canceled")
+                    if shouldClearProgressCallback {
+                        self.progressCallback = nil
+                    }
                     observer(.failure(BlePsFtpException.operationCanceled))
                 }
             }
@@ -344,6 +382,9 @@ public class BlePsFtpClient: BleGattClientBase {
                 BleLogger.trace("PS-FTP request operation DISPOSED")
                 self.gattServiceTransmitter?.attributeOperationFinished()
                 block.cancel()
+                if shouldClearProgressCallback {
+                    self.progressCallback = nil
+                }
             }
         }
     }

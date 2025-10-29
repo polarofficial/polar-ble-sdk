@@ -216,3 +216,30 @@ sealed class PolarOfflineRecordingData(val startTime: Calendar, val settings: Po
         }
     }
 }
+
+/**
+ * Result wrapper for offline recording fetch operations with progress.
+ */
+sealed class PolarOfflineRecordingResult {
+    /**
+     * Progress update during download.
+     *
+     * @property bytesDownloaded Number of bytes downloaded so far
+     * @property totalBytes Total size of the recording in bytes
+     * @property progressPercent Progress as percentage (0-100)
+     */
+    data class Progress(
+        val bytesDownloaded: Long,
+        val totalBytes: Long,
+        val progressPercent: Int
+    ) : PolarOfflineRecordingResult()
+
+    /**
+     * Download completed successfully.
+     *
+     * @property data The downloaded offline recording data
+     */
+    data class Complete(
+        val data: PolarOfflineRecordingData
+    ) : PolarOfflineRecordingResult()
+}

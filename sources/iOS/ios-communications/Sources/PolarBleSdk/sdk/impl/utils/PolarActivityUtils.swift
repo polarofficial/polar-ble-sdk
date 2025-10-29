@@ -108,41 +108,41 @@ internal class PolarActivityUtils {
     static func readActiveTimeFromDayDirectory(client: BlePsFtpClient, date: Date) -> Single<PolarActiveTimeData> {
         BleLogger.trace(TAG, "readActiveTimeFromDayDirectory: \(date)")
         return Single<PolarActiveTimeData>.create { emitter in
-                let dailySummaryFilePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(DAILY_SUMMARY_DIRECTORY)\(DAILY_SUMMARY_PROTO)"
-                let operation = Protocol_PbPFtpOperation.with {
-                    $0.command = .get
-                    $0.path = dailySummaryFilePath
-                }
-                let disposable = client.request(try! operation.serializedData()).subscribe(
-                    onSuccess: { response in
-                        do {
-                            let proto = try Data_PbDailySummary(serializedData: Data(response))
-                            let polarActiveTimeData = PolarActiveTimeData(
-                                date: date,
-                                timeNonWear: polarActiveTimeFromProto(proto.activityClassTimes.timeNonWear),
-                                timeSleep: polarActiveTimeFromProto(proto.activityClassTimes.timeSleep),
-                                timeSedentary: polarActiveTimeFromProto(proto.activityClassTimes.timeSedentary),
-                                timeLightActivity: polarActiveTimeFromProto(proto.activityClassTimes.timeLightActivity),
-                                timeContinuousModerateActivity: polarActiveTimeFromProto(proto.activityClassTimes.timeContinuousModerate),
-                                timeIntermittentModerateActivity: polarActiveTimeFromProto(proto.activityClassTimes.timeIntermittentModerate),
-                                timeContinuousVigorousActivity: polarActiveTimeFromProto(proto.activityClassTimes.timeContinuousVigorous),
-                                timeIntermittentVigorousActivity: polarActiveTimeFromProto(proto.activityClassTimes.timeIntermittentVigorous)
-                            )
-                            emitter(.success(polarActiveTimeData))
-                        } catch {
-                            BleLogger.error("readActiveTimeFromDayDirectory() failed for path: \(dailySummaryFilePath), error: \(error)")
-                            emitter(.success(PolarActiveTimeData(date: date, timeNonWear: PolarActiveTime())))
-                        }
-                    },
-                    onFailure: { error in
+            let dailySummaryFilePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(DAILY_SUMMARY_DIRECTORY)\(DAILY_SUMMARY_PROTO)"
+            let operation = Protocol_PbPFtpOperation.with {
+                $0.command = .get
+                $0.path = dailySummaryFilePath
+            }
+            let disposable = client.request(try! operation.serializedData()).subscribe(
+                onSuccess: { response in
+                    do {
+                        let proto = try Data_PbDailySummary(serializedData: Data(response))
+                        let polarActiveTimeData = PolarActiveTimeData(
+                            date: date,
+                            timeNonWear: PolarActiveTime.fromProto(proto.activityClassTimes.timeNonWear),
+                            timeSleep: PolarActiveTime.fromProto(proto.activityClassTimes.timeSleep),
+                            timeSedentary: PolarActiveTime.fromProto(proto.activityClassTimes.timeSedentary),
+                            timeLightActivity: PolarActiveTime.fromProto(proto.activityClassTimes.timeLightActivity),
+                            timeContinuousModerateActivity: PolarActiveTime.fromProto(proto.activityClassTimes.timeContinuousModerate),
+                            timeIntermittentModerateActivity: PolarActiveTime.fromProto(proto.activityClassTimes.timeIntermittentModerate),
+                            timeContinuousVigorousActivity: PolarActiveTime.fromProto(proto.activityClassTimes.timeContinuousVigorous),
+                            timeIntermittentVigorousActivity: PolarActiveTime.fromProto(proto.activityClassTimes.timeIntermittentVigorous)
+                        )
+                        emitter(.success(polarActiveTimeData))
+                    } catch {
                         BleLogger.error("readActiveTimeFromDayDirectory() failed for path: \(dailySummaryFilePath), error: \(error)")
                         emitter(.success(PolarActiveTimeData(date: date, timeNonWear: PolarActiveTime())))
                     }
-                )
-                return Disposables.create {
-                    disposable.dispose()
+                },
+                onFailure: { error in
+                    BleLogger.error("readActiveTimeFromDayDirectory() failed for path: \(dailySummaryFilePath), error: \(error)")
+                    emitter(.success(PolarActiveTimeData(date: date, timeNonWear: PolarActiveTime())))
                 }
+            )
+            return Disposables.create {
+                disposable.dispose()
             }
+        }
     }
     
     /// Read calories for given date.
@@ -256,15 +256,44 @@ internal class PolarActivityUtils {
         }
     }
     
-    private static func polarActiveTimeFromProto(_ proto: PbDuration) -> PolarActiveTime {
-        return PolarActiveTime(
-            hours: Int(proto.hours),
-            minutes: Int(proto.minutes),
-            seconds: Int(proto.seconds),
-            millis: Int(proto.millis)
-        )
+    /// Read active time for given date.
+    static func readDailySummaryDataFromDayDirectory(client: BlePsFtpClient, date: Date) -> Maybe<PolarDailySummary> {
+        BleLogger.trace(TAG, "readDailySummaryDataFromDayDirectory: \(date)")
+        return Maybe<PolarDailySummary>.create { emitter in
+            let dailySummaryFilePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(DAILY_SUMMARY_DIRECTORY)\(DAILY_SUMMARY_PROTO)"
+            let operation = Protocol_PbPFtpOperation.with {
+                $0.command = .get
+                $0.path = dailySummaryFilePath
+            }
+            let disposable = client.request(try! operation.serializedData()).subscribe(
+                onSuccess: { response in
+                    do {
+                        let proto = try Data_PbDailySummary(serializedData: Data(response))
+                        let polarDailySummary = try PolarDailySummary.fromProto(proto: proto)
+                        emitter(.success(polarDailySummary))
+                    } catch let error {
+                        BleLogger.error("Read daily summary failed for date: \(date), error: \(error)")
+                        emitter(.error(PolarErrors.fileError(description: error.localizedDescription)))
+                    }
+                },
+                onFailure: { error in
+                        if error.localizedDescription.contains("103") { // Not found. Return empty list.
+                            BleLogger.error("No activity files found for date: \(dateFormat.string(from: date))")
+                            emitter(.completed)
+                        } else {
+                            BleLogger.error("Failed to list activity sample files.")
+                            emitter(.error(error))
+                        }
+                    BleLogger.error("Read daily summary failed for date: \(date), error: \(error)")
+                    emitter(.error(PolarErrors.fileError(description: error.localizedDescription)))
+                }
+            )
+            return Disposables.create {
+                disposable.dispose()
+            }
+        }
     }
-    
+
     private static func listFiles(client: BlePsFtpClient, folderPath: String = "/", condition: @escaping (_ p: String) -> Bool) -> Observable<String> {
         
         var path = folderPath

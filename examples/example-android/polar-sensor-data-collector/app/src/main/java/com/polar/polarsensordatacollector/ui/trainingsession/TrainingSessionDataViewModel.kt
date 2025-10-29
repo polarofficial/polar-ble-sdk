@@ -11,8 +11,9 @@ import com.polar.polarsensordatacollector.repository.DeviceConnectionState
 import com.polar.polarsensordatacollector.repository.PolarDeviceRepository
 import com.polar.polarsensordatacollector.repository.ResultOfRequest
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSession
+import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionFetchResult
+import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionProgress
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,13 +27,13 @@ internal data class TrainingSessionDataDevConnectionState(
 
 sealed class TrainingSessionDataUiState {
     data object IsFetching : TrainingSessionDataUiState()
-    class FetchedData(val data: PolarTrainingSession) : TrainingSessionDataUiState()
-    class Failure(
+    data class Fetching(val progress: PolarTrainingSessionProgress) : TrainingSessionDataUiState()
+    data class FetchedData(val data: PolarTrainingSession) : TrainingSessionDataUiState()
+    data class Failure(
         val message: String,
         val throwable: Throwable?
     ) : TrainingSessionDataUiState()
 }
-
 
 private const val TAG: String = "TrainingSessionDataViewModel"
 
@@ -72,26 +73,43 @@ class TrainingSessionDataViewModel @Inject constructor(
                 }
         }
 
-        fetchTrainingSession(deviceId, path)
+        fetchTrainingSessionWithProgress(deviceId, path)
     }
 
-    private fun fetchTrainingSession(deviceId: String, path: String) {
-        Log.d(TAG, "fetchTrainingSession path: $path, deviceId: $deviceId")
-        viewModelScope.launch(Dispatchers.IO) {
-            trainingSessionDataUiState = when (val trainingSession = polarDeviceStreamingRepository.getTrainingSession(deviceId, path)) {
-                is ResultOfRequest.Success -> {
-                    if (trainingSession.value != null) {
-                        TrainingSessionDataUiState.FetchedData(trainingSession.value)
-                    } else {
-                        TrainingSessionDataUiState.Failure("fetch TrainingSession responded with empty data", null)
+    private fun fetchTrainingSessionWithProgress(deviceId: String, path: String) {
+        Log.d(TAG, "fetchTrainingSessionWithProgress path: $path, deviceId: $deviceId")
+        viewModelScope.launch {
+            polarDeviceStreamingRepository.getTrainingSessionWithProgress(deviceId, path)
+                .collect { resultOfRequest ->
+                    trainingSessionDataUiState = when (resultOfRequest) {
+                        is ResultOfRequest.Success -> {
+                            when (val fetchResult = resultOfRequest.value) {
+                                is PolarTrainingSessionFetchResult.Progress -> {
+                                    Log.d(TAG, "Progress: ${fetchResult.progress.progressPercent}%")
+                                    TrainingSessionDataUiState.Fetching(fetchResult.progress)
+                                }
+                                is PolarTrainingSessionFetchResult.Complete -> {
+                                    Log.d(TAG, "Training session fetch complete")
+                                    TrainingSessionDataUiState.FetchedData(fetchResult.session)
+                                }
+                                null -> {
+                                    Log.e(TAG, "Received null result from fetch")
+                                    TrainingSessionDataUiState.Failure(
+                                        "Training session fetch returned empty result",
+                                        null
+                                    )
+                                }
+                            }
+                        }
+                        is ResultOfRequest.Failure -> {
+                            Log.e(TAG, "Failed to fetch training session: ${resultOfRequest.message}")
+                            TrainingSessionDataUiState.Failure(
+                                resultOfRequest.message,
+                                resultOfRequest.throwable
+                            )
+                        }
                     }
                 }
-
-                is ResultOfRequest.Failure -> {
-                    TrainingSessionDataUiState.Failure(trainingSession.message, trainingSession.throwable)
-                }
-            }
         }
     }
 }
-

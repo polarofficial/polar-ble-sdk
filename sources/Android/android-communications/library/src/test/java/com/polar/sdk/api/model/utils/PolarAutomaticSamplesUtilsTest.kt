@@ -13,7 +13,7 @@ import fi.polar.remote.representation.protobuf.AutomaticSamples.PbAutomaticSampl
 import fi.polar.remote.representation.protobuf.AutomaticSamples.PbMeasTriggerType
 import fi.polar.remote.representation.protobuf.AutomaticSamples.PbPpIntervalAutoSamples
 import fi.polar.remote.representation.protobuf.PpIntervals.PbPpIntervalSamples
-import fi.polar.remote.representation.protobuf.Types
+import fi.polar.remote.representation.protobuf.Types.PbDate
 import fi.polar.remote.representation.protobuf.Types.PbTime
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -24,6 +24,7 @@ import org.junit.Test
 import protocol.PftpResponse.PbPFtpDirectory
 import protocol.PftpResponse.PbPFtpEntry
 import java.io.ByteArrayOutputStream
+import java.time.LocalDate
 import java.time.LocalTime
 import java.util.Calendar
 
@@ -34,8 +35,8 @@ class PolarAutomaticSamplesUtilsTest {
     @Test
     fun `read247HrSamples() should correctly filter samples by date and parse all trigger types`() {
         // Arrange
-        val fromDate = Calendar.getInstance().apply { set(2024, 10, 10, 0, 0, 0); set(Calendar.MILLISECOND, 0) }.time
-        val toDate = Calendar.getInstance().apply { set(2024, 10, 18, 0, 0, 0); set(Calendar.MILLISECOND, 0) }.time
+        val fromDate = LocalDate.of(2024, 10,10)
+        val toDate = LocalDate.of(2024, 10,18)
 
         val mockDirectoryContent = ByteArrayOutputStream().apply {
             PbPFtpDirectory.newBuilder()
@@ -54,7 +55,7 @@ class PolarAutomaticSamplesUtilsTest {
                         PbAutomaticHeartRateSamples.newBuilder()
                             .addAllHeartRate(listOf(60, 61, 63))
                             .setTime(
-                                Types.PbTime.newBuilder()
+                                PbTime.newBuilder()
                                     .setHour(10)
                                     .setMinute(12)
                                     .setSeconds(34)
@@ -65,7 +66,7 @@ class PolarAutomaticSamplesUtilsTest {
                         PbAutomaticHeartRateSamples.newBuilder()
                             .addAllHeartRate(listOf(80, 81, 83))
                             .setTime(
-                                Types.PbTime.newBuilder()
+                                PbTime.newBuilder()
                                     .setHour(12)
                                     .setMinute(0)
                                     .setSeconds(0)
@@ -75,9 +76,9 @@ class PolarAutomaticSamplesUtilsTest {
                             .build()
                     )
                 ).setDay(
-                    Types.PbDate.newBuilder()
+                    PbDate.newBuilder()
                         .setYear(2024)
-                        .setMonth(11)
+                        .setMonth(10)
                         .setDay(18)
                         .build()
                 )
@@ -92,7 +93,7 @@ class PolarAutomaticSamplesUtilsTest {
                         PbAutomaticHeartRateSamples.newBuilder()
                             .addAllHeartRate(listOf(70, 72, 74))
                             .setTime(
-                                Types.PbTime.newBuilder()
+                                PbTime.newBuilder()
                                     .setHour(16)
                                     .setMinute(49)
                                     .setSeconds(36)
@@ -103,7 +104,7 @@ class PolarAutomaticSamplesUtilsTest {
                         PbAutomaticHeartRateSamples.newBuilder()
                             .addAllHeartRate(listOf(90, 91, 93))
                             .setTime(
-                                Types.PbTime.newBuilder()
+                                PbTime.newBuilder()
                                     .setHour(18)
                                     .setMinute(0)
                                     .setSeconds(0)
@@ -113,9 +114,9 @@ class PolarAutomaticSamplesUtilsTest {
                             .build()
                     )
                 ).setDay(
-                    Types.PbDate.newBuilder()
+                    PbDate.newBuilder()
                         .setYear(2024)
-                        .setMonth(11)
+                        .setMonth(10)
                         .setDay(15)
                         .build()
                 )
@@ -132,39 +133,40 @@ class PolarAutomaticSamplesUtilsTest {
         verify { mockClient.request(any<ByteArray>()) }
         confirmVerified(mockClient)
 
-        assert(result.size == 4)
-        val date1 = Calendar.getInstance().apply { set(2024, 10, 18, 10, 12, 34); set(Calendar.MILLISECOND, 0) }
-        assert(result[0].date == date1.time)
-        assert(result[0].hrSamples == listOf(60, 61, 63))
-        assert(result[0].triggerType == AutomaticSampleTriggerType.TRIGGER_TYPE_HIGH_ACTIVITY)
+        assert(result.size == 2)
+        val date1 = LocalDate.of(2024, 10,18)
+        assert(result[0].date == date1)
+        assert(result[0].samples[0].startTime == LocalTime.of(10, 12, 34))
+        assert(result[0].samples[0].hrSamples == listOf(60, 61, 63))
+        assert(result[0].samples[0].triggerType == AutomaticSampleTriggerType.TRIGGER_TYPE_HIGH_ACTIVITY)
+        assert(result[0].samples[1].startTime == LocalTime.of(12, 0, 0))
+        assert(result[0].samples[1].hrSamples == listOf(80, 81, 83))
+        assert(result[0].samples[1].triggerType == AutomaticSampleTriggerType.TRIGGER_TYPE_MANUAL)
 
-        val date2 = Calendar.getInstance().apply { set(2024, 10, 18, 12, 0, 0); set(Calendar.MILLISECOND, 0) }
-        assert(result[1].date == date2.time)
-        assert(result[1].hrSamples == listOf(80, 81, 83))
-        assert(result[1].triggerType == AutomaticSampleTriggerType.TRIGGER_TYPE_MANUAL)
+        val date2 = LocalDate.of(2024, 10,15)
+        assert(result[1].date == date2)
+        assert(result[1].samples[0].startTime == LocalTime.of(16, 49, 36))
+        assert(result[1].samples[0].hrSamples == listOf(70, 72, 74))
+        assert(result[1].samples[0].triggerType == AutomaticSampleTriggerType.TRIGGER_TYPE_LOW_ACTIVITY)
 
-        val date3 = Calendar.getInstance().apply { set(2024, 10, 15, 16, 49, 36); set(Calendar.MILLISECOND, 0) }
-        assert(result[2].date == date3.time)
-        assert(result[2].hrSamples == listOf(70, 72, 74))
-        assert(result[2].triggerType == AutomaticSampleTriggerType.TRIGGER_TYPE_LOW_ACTIVITY)
-
-        val date4 = Calendar.getInstance().apply { set(2024, 10, 15, 18, 0, 0); set(Calendar.MILLISECOND, 0) }
-        assert(result[3].date == date4.time)
-        assert(result[3].hrSamples == listOf(90, 91, 93))
-        assert(result[3].triggerType == AutomaticSampleTriggerType.TRIGGER_TYPE_TIMED)
+        assert(result[1].samples[1].startTime == LocalTime.of(18, 0, 0))
+        assert(result[1].samples[1].hrSamples == listOf(90, 91, 93))
+        assert(result[1].samples[1].triggerType == AutomaticSampleTriggerType.TRIGGER_TYPE_TIMED)
     }
 
     @Test
     fun `read247HrSamples() should filter out samples outside the date range`() {
         // Arrange
-        val fromDate = Calendar.getInstance().apply { set(2024, 10, 10, 0, 0, 0); set(Calendar.MILLISECOND, 0) }.time
-        val toDate = Calendar.getInstance().apply { set(2024, 10, 18, 0, 0, 0); set(Calendar.MILLISECOND, 0) }.time
+        val fromDate = LocalDate.of(2024, 10,10)
+        val toDate = LocalDate.of(2024, 10,18)
 
         val mockDirectoryContent = ByteArrayOutputStream().apply {
             PbPFtpDirectory.newBuilder()
                 .addAllEntries(
                     listOf(
-                        PbPFtpEntry.newBuilder().setName("AUTOS000.BPB").setSize(333L).build()
+                        PbPFtpEntry.newBuilder().setName("AUTOS000.BPB").setSize(333L).build(),
+                        PbPFtpEntry.newBuilder().setName("AUTOS001.BPB").setSize(333L).build(),
+                        PbPFtpEntry.newBuilder().setName("AUTOS002.BPB").setSize(333L).build()
                     )
                 ).build().writeTo(this)
         }
@@ -176,7 +178,7 @@ class PolarAutomaticSamplesUtilsTest {
                         PbAutomaticHeartRateSamples.newBuilder()
                             .addAllHeartRate(listOf(60, 61, 63))
                             .setTime(
-                                Types.PbTime.newBuilder()
+                                PbTime.newBuilder()
                                     .setHour(10)
                                     .setMinute(12)
                                     .setSeconds(34)
@@ -187,7 +189,7 @@ class PolarAutomaticSamplesUtilsTest {
                         PbAutomaticHeartRateSamples.newBuilder()
                             .addAllHeartRate(listOf(70, 72, 74))
                             .setTime(
-                                Types.PbTime.newBuilder()
+                                PbTime.newBuilder()
                                     .setHour(14)
                                     .setMinute(30)
                                     .setSeconds(0)
@@ -197,7 +199,7 @@ class PolarAutomaticSamplesUtilsTest {
                             .build()
                     )
                 ).setDay(
-                    Types.PbDate.newBuilder()
+                    PbDate.newBuilder()
                         .setYear(2024)
                         .setMonth(11)
                         .setDay(20)
@@ -212,7 +214,7 @@ class PolarAutomaticSamplesUtilsTest {
                         PbAutomaticHeartRateSamples.newBuilder()
                             .addAllHeartRate(listOf(80, 81, 83))
                             .setTime(
-                                Types.PbTime.newBuilder()
+                                PbTime.newBuilder()
                                     .setHour(16)
                                     .setMinute(45)
                                     .setSeconds(0)
@@ -222,7 +224,7 @@ class PolarAutomaticSamplesUtilsTest {
                             .build()
                     )
                 ).setDay(
-                    Types.PbDate.newBuilder()
+                    PbDate.newBuilder()
                         .setYear(2024)
                         .setMonth(11)
                         .setDay(9)
@@ -230,7 +232,32 @@ class PolarAutomaticSamplesUtilsTest {
                 ).build().writeTo(this)
         }
 
-        every { mockClient.request(any<ByteArray>()) } returns Single.just(mockDirectoryContent) andThen Single.just(mockFileContent) andThen Single.just(mockFileContent2)
+        val mockFileContent3 = ByteArrayOutputStream().apply {
+            PbAutomaticSampleSessions.newBuilder()
+                .addAllSamples(
+                    listOf(
+                        PbAutomaticHeartRateSamples.newBuilder()
+                            .addAllHeartRate(listOf(80, 81, 83))
+                            .setTime(
+                                PbTime.newBuilder()
+                                    .setHour(16)
+                                    .setMinute(45)
+                                    .setSeconds(0)
+                                    .build()
+                            )
+                            .setTriggerType(PbMeasTriggerType.TRIGGER_TYPE_MANUAL)
+                            .build()
+                    )
+                ).setDay(
+                    PbDate.newBuilder()
+                        .setYear(2024)
+                        .setMonth(10)
+                        .setDay(15)
+                        .build()
+                ).build().writeTo(this)
+        }
+
+        every { mockClient.request(any<ByteArray>()) } returns Single.just(mockDirectoryContent) andThen Single.just(mockFileContent) andThen Single.just(mockFileContent2) andThen Single.just(mockFileContent3)
 
         // Act
         val result = PolarAutomaticSamplesUtils.read247HrSamples(mockClient, fromDate, toDate).blockingGet()
@@ -238,8 +265,7 @@ class PolarAutomaticSamplesUtilsTest {
         // Assert
         verify { mockClient.request(any<ByteArray>()) }
         confirmVerified(mockClient)
-
-        assert(result.isEmpty())
+        assert(result.size == 1)
     }
 
     @Test
@@ -296,7 +322,7 @@ class PolarAutomaticSamplesUtilsTest {
                             .build()
                     )
                 ).setDay(
-                    Types.PbDate.newBuilder()
+                    PbDate.newBuilder()
                         .setYear(2024)
                         .setMonth(11)
                         .setDay(18)
@@ -328,7 +354,7 @@ class PolarAutomaticSamplesUtilsTest {
                             .build()
                     )
                 ).setDay(
-                    Types.PbDate.newBuilder()
+                    PbDate.newBuilder()
                         .setYear(2024)
                         .setMonth(11)
                         .setDay(12)
@@ -399,7 +425,7 @@ class PolarAutomaticSamplesUtilsTest {
                             .build()
                     )
                 ).setDay(
-                    Types.PbDate.newBuilder()
+                    PbDate.newBuilder()
                         .setYear(2024)
                         .setMonth(11)
                         .setDay(9)
@@ -431,7 +457,7 @@ class PolarAutomaticSamplesUtilsTest {
                             .build()
                     )
                 ).setDay(
-                    Types.PbDate.newBuilder()
+                    PbDate.newBuilder()
                         .setYear(2024)
                         .setMonth(11)
                         .setDay(19)
@@ -463,7 +489,7 @@ class PolarAutomaticSamplesUtilsTest {
                             .build()
                     )
                 ).setDay(
-                    Types.PbDate.newBuilder()
+                    PbDate.newBuilder()
                         .setYear(2024)
                         .setMonth(11)
                         .setDay(15)

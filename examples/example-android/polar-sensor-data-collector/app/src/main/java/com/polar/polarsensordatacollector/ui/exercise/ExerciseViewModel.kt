@@ -12,6 +12,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.addTo
+import java.util.Date
 
 interface StringProvider {
     fun get(id: Int, vararg args: Any): String
@@ -42,6 +43,9 @@ class ExerciseViewModel(
 
     private val _canStop = MutableLiveData(false)
     val canStop: LiveData<Boolean> = _canStop
+
+    private val _startTime = MutableLiveData<Date?>(null)
+    val startTime: LiveData<Date?> = _startTime
 
     val sportProfiles = listOf(
         PolarExerciseSession.SportProfile.RUNNING,
@@ -78,6 +82,8 @@ class ExerciseViewModel(
                 _canResume.value = info.status == PolarExerciseSession.ExerciseStatus.PAUSED
                 _canStop.value   = info.status == PolarExerciseSession.ExerciseStatus.IN_PROGRESS ||
                         info.status == PolarExerciseSession.ExerciseStatus.PAUSED
+
+                _startTime.value = info.startTime
             }, { /* swallow to UI */ })
             .addTo(disposables)
 

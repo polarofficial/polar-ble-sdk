@@ -14,6 +14,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -77,6 +78,16 @@ public class BlePsFtpClient extends BleGattBase {
         setIsPrimaryService(true);
     }
 
+    public interface ProgressCallback {
+        void onProgressUpdate(long bytesReceived);
+    }
+
+    private ProgressCallback progressCallback = null;
+
+    public void setProgressCallback(ProgressCallback callback) {
+        this.progressCallback = callback;
+    }
+
     /**
      * set amount of packets written consecutive with BLE ATT WRITE before adding the BLE ATT WRITE REQUEST
      * <p>
@@ -138,6 +149,11 @@ public class BlePsFtpClient extends BleGattBase {
                     mtuInputQueue.add(new Pair<>(data, status));
                     mtuInputQueue.notifyAll();
                 }
+
+                if (progressCallback != null) {
+                    progressCallback.onProgressUpdate(data.length);
+                }
+
                 if (currentOperationWrite.get() && mtuWaiting.get() && data.length == 3) {
                     // special case stream cancellation has been received before att response
                     synchronized (packetsWritten) {
@@ -213,43 +229,58 @@ public class BlePsFtpClient extends BleGattBase {
         return waitPsFtpClientReady(checkConnection);
     }
 
-    public Single<ByteArrayOutputStream> request(final byte[] header) {
-        return request(header, Schedulers.newThread());
+    // Add overload that accepts ProgressCallback
+    public Single<ByteArrayOutputStream> request(final byte[] header, ProgressCallback progressCallback) {
+        return request(header, Schedulers.newThread(), progressCallback);
     }
 
-    /**
-     * Sends a request to device (get, remove or put(create dir, without data)), atomic operation<BR>
-     *
-     * @param header    protobuf pftp operation bytes, GET , REMOVE or PUT(create dir etc... without data) <BR>
-     * @param scheduler scheduler where to start operation execution<BR>
-     * @return Observable Produces: onNext, only once when file has been successfully read<BR>
-     * onCompleted, called after onNext<BR>
-     * onError, if any error happens during file operation, @see BlePsFtpUtils for possible exceptions <BR>
-     */
-    public Single<ByteArrayOutputStream> request(final byte[] header, Scheduler scheduler) {
+    public Single<ByteArrayOutputStream> request(final byte[] header, Scheduler scheduler, ProgressCallback progressCallback) {
         return Single.create((SingleOnSubscribe<ByteArrayOutputStream>) emitter -> {
-                    // block, until previous operation has completed
+                    List<byte[]> requestData = new ArrayList<>();
+                    ProgressCallback previousCallback = null;
+
                     try {
                         synchronized (pftpOperationMutex) {
                             if (pftpMtuEnabled.get() == ATT_SUCCESS) {
                                 BleLogger.d(TAG, "Start request");
-                                resetMtuPipe();
-                                // transmit header first
-                                ByteArrayInputStream totalStream = BlePsFtpUtils.makeCompleteMessageStream(new ByteArrayInputStream(header), null, BlePsFtpUtils.MessageType.REQUEST, 0);
-                                BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();
-                                List<byte[]> requestData = BlePsFtpUtils.buildRfc76MessageFrameAll(totalStream, mtuSize.get(), sequenceNumber);
-                                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+                                previousCallback = this.progressCallback;
+                                if (progressCallback != null) {
+                                    this.progressCallback = progressCallback;
+                                }
+
                                 try {
-                                    txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, requestData, false);
+                                    resetMtuPipe();
+                                    ByteArrayInputStream totalStream = BlePsFtpUtils.makeCompleteMessageStream(
+                                            new ByteArrayInputStream(header), null,
+                                            BlePsFtpUtils.MessageType.REQUEST, 0
+                                    );
+                                    BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();
+                                    requestData = BlePsFtpUtils.buildRfc76MessageFrameAll(
+                                            totalStream, mtuSize.get(), sequenceNumber
+                                    );
+                                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+                                    txInterface.transmitMessages(
+                                            BlePsFtpUtils.RFC77_PFTP_SERVICE,
+                                            BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC,
+                                            requestData, false
+                                    );
                                     waitPacketsWritten(packetsWritten, mtuWaiting, requestData.size(), PROTOCOL_TIMEOUT_SECONDS);
                                     requestData.clear();
-                                    // start waiting for packets
                                     readResponse(outputStream, PROTOCOL_TIMEOUT_SECONDS);
+
+                                    this.progressCallback = previousCallback;
+
                                     emitter.onSuccess(outputStream);
+
                                 } catch (InterruptedException ex) {
                                     BleLogger.e(TAG, "Request interrupted. Exception: " + ex.getMessage());
-                                    // canceled, note make improvement, only wait amount of packets transmitted
+
+                                    this.progressCallback = previousCallback;
+
                                     handleMtuInterrupted(true, requestData.size());
+                                    throw ex;
                                 }
                             } else {
                                 BleLogger.e(TAG, "Request failed. PS-FTP MTU not enabled");
@@ -258,6 +289,11 @@ public class BlePsFtpClient extends BleGattBase {
                         }
                     } catch (Exception ex) {
                         BleLogger.e(TAG, "Request failed. Exception: " + ex.getMessage());
+
+                        if (previousCallback != this.progressCallback) {
+                            this.progressCallback = previousCallback;
+                        }
+
                         if (!emitter.isDisposed()) {
                             emitter.tryOnError(ex);
                         }
@@ -266,6 +302,15 @@ public class BlePsFtpClient extends BleGattBase {
                 .doOnSubscribe(disposable -> txInterface.gattClientRequestStopScanning())
                 .doFinally(txInterface::gattClientResumeScanning)
                 .subscribeOn(scheduler);
+    }
+
+    // Keep existing methods for backward compatibility
+    public Single<ByteArrayOutputStream> request(final byte[] header) {
+        return request(header, Schedulers.newThread(), null);
+    }
+
+    public Single<ByteArrayOutputStream> request(final byte[] header, Scheduler scheduler) {
+        return request(header, scheduler, null);
     }
 
     private void waitPacketsWritten(final AtomicInteger written, AtomicBoolean waiting, int count, long timeoutSeconds) throws InterruptedException, BleDisconnected, BlePsFtpUtils.PftpOperationTimeout {

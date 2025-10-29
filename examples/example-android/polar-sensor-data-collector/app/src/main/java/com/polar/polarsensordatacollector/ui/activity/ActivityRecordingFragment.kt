@@ -49,6 +49,7 @@ class ActivityRecordingFragment : Fragment(R.layout.fragment_activity_recording)
     private lateinit var skinTemperatureButton: Button
     private lateinit var activeTimeButton: Button
     private lateinit var activitySamplesButton: Button
+    private lateinit var dailySummaryButton: Button
     private lateinit var sleepRecordingStateHeader: TextView
     private lateinit var forceStopSleepButton: Button
 
@@ -154,6 +155,12 @@ class ActivityRecordingFragment : Fragment(R.layout.fragment_activity_recording)
             type = PolarBleApi.PolarActivityDataType.ACTIVITY_SAMPLES
             showDateRangePicker()
         }
+
+        dailySummaryButton.setOnClickListener {
+            viewModel.initView()
+            type = PolarBleApi.PolarActivityDataType.DAILY_SUMMARY
+            showDateRangePicker()
+        }
     }
 
     private fun showCaloriesTypePicker() {
@@ -222,5 +229,6 @@ class ActivityRecordingFragment : Fragment(R.layout.fragment_activity_recording)
         activeTimeButton = view.findViewById(R.id.active_time_button)
         trainingSessionsButton = view.findViewById(R.id.button_get_training_sessions)
         activitySamplesButton = view.findViewById(R.id.button_get_activity_samples)
+        dailySummaryButton = view.findViewById(R.id.button_get_daily_summary)
     }
 }

@@ -11,15 +11,16 @@ import androidx.lifecycle.viewModelScope
 import com.polar.polarsensordatacollector.repository.DeviceConnectionState
 import com.polar.polarsensordatacollector.repository.PolarDeviceRepository
 import com.polar.polarsensordatacollector.repository.ResultOfRequest
-import com.polar.sdk.api.model.PolarOfflineRecordingData
+import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.model.PolarSensorSetting
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
 import javax.inject.Inject
 
 internal data class RecordingDataDevConnectionState(
@@ -27,15 +28,26 @@ internal data class RecordingDataDevConnectionState(
 )
 
 sealed class RecordingDataUiState {
-    object IsFetching : RecordingDataUiState()
-    object IsDeleting : RecordingDataUiState()
-    object RecordingDeleted : RecordingDataUiState()
-    class FetchedData(val data: RecordingData) : RecordingDataUiState()
-    class Failure(
+    data object Idle : RecordingDataUiState()
+    data class Loading(
+        val totalSize: Long,
+        val recordingType: PolarBleApi.PolarDeviceDataType,
+        val progress: OfflineRecordingProgress? = null
+    ) : RecordingDataUiState()
+    data class FetchedData(val data: RecordingData) : RecordingDataUiState()
+    data object IsDeleting : RecordingDataUiState()
+    data object RecordingDeleted : RecordingDataUiState()
+    data class Failure(
         val message: String,
         val throwable: Throwable?
     ) : RecordingDataUiState()
 }
+
+data class OfflineRecordingProgress(
+    val completedBytes: Long,
+    val totalBytes: Long,
+    val progressPercent: Int
+)
 
 data class RecordingData(
     val startTime: String,
@@ -54,12 +66,19 @@ class RecordingDataViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _devConnectionState = MutableStateFlow(RecordingDataDevConnectionState(true))
-    internal var devConnectionState: StateFlow<RecordingDataDevConnectionState> = _devConnectionState.asStateFlow()
+    internal var devConnectionState: StateFlow<RecordingDataDevConnectionState> =
+        _devConnectionState.asStateFlow()
 
-    private val deviceId = state.get<String>("deviceIdFragmentArgument") ?: throw Exception("RecordingDataView model requires deviceId")
-    private val path = state.get<String>("recordingPathFragmentArgument") ?: throw Exception("RecordingDataView model requires path")
+    private val deviceId = state.get<String>("deviceIdFragmentArgument")
+        ?: throw Exception("RecordingDataViewModel requires deviceId")
+    private val path = state.get<String>("recordingPathFragmentArgument")
+        ?: throw Exception("RecordingDataViewModel requires path")
 
-    var recordingDataUiState: RecordingDataUiState by mutableStateOf(RecordingDataUiState.IsFetching)
+    var recordingDataUiState: RecordingDataUiState by mutableStateOf(
+        polarDeviceStreamingRepository.getOfflineEntryFromCache(deviceId, path)?.let { entry ->
+            RecordingDataUiState.Loading(entry.size, entry.type)
+        } ?: RecordingDataUiState.Loading(0L, PolarBleApi.PolarDeviceDataType.HR)
+    )
         private set
 
     init {
@@ -86,44 +105,90 @@ class RecordingDataViewModel @Inject constructor(
         fetchRecording(deviceId, path)
     }
 
-    private fun fetchRecording(deviceId: String, entry: String) {
-        Log.d(TAG, "fetchRecording $deviceId")
-        viewModelScope.launch(Dispatchers.IO) {
-            when (val offlineRecording = polarDeviceStreamingRepository.getOfflineRecording(deviceId, entry)) {
-                is ResultOfRequest.Success -> {
-                    if (offlineRecording.value != null) {
-                        updateRecordingDataUiState(offlineRecording.value.data, offlineRecording.value.uri, offlineRecording.value.fileSize, offlineRecording.value.downLoadSpeed)
-                    } else {
-                        recordingDataUiState = RecordingDataUiState.Failure("fetch recording responded with empty data", null)
+    private fun fetchRecording(deviceId: String, path: String) {
+        Log.d(TAG, "fetchRecording from device $deviceId, path: $path")
+        viewModelScope.launch {
+            polarDeviceStreamingRepository.getOfflineRecordingWithProgress(deviceId, path)
+                .collect { resultOfRequest ->
+                    recordingDataUiState = when (resultOfRequest) {
+                        is ResultOfRequest.Success -> {
+                            if (resultOfRequest.progress != null) {
+                                val progressInfo = resultOfRequest.progress
+                                Log.d(
+                                    TAG,
+                                    "Progress: ${progressInfo.progressPercent}% (${progressInfo.bytesDownloaded}/${progressInfo.totalBytes} bytes)"
+                                )
+
+                                val currentState = recordingDataUiState
+                                if (currentState is RecordingDataUiState.Loading) {
+                                    currentState.copy(
+                                        progress = OfflineRecordingProgress(
+                                            completedBytes = progressInfo.bytesDownloaded,
+                                            totalBytes = progressInfo.totalBytes,
+                                            progressPercent = progressInfo.progressPercent
+                                        )
+                                    )
+                                } else {
+                                    RecordingDataUiState.Loading(
+                                        totalSize = progressInfo.totalBytes,
+                                        recordingType = PolarBleApi.PolarDeviceDataType.ACC,
+                                        progress = OfflineRecordingProgress(
+                                            completedBytes = progressInfo.bytesDownloaded,
+                                            totalBytes = progressInfo.totalBytes,
+                                            progressPercent = progressInfo.progressPercent
+                                        )
+                                    )
+                                }
+                            } else if (resultOfRequest.value != null) {
+                                val offlineRecording = resultOfRequest.value
+                                Log.d(TAG, "Offline recording fetch complete")
+
+                                val formattedStartTime = SimpleDateFormat(
+                                    "yyyy-MM-dd HH:mm:ss",
+                                    Locale.getDefault()
+                                ).format(offlineRecording.data.startTime.time)
+
+                                RecordingDataUiState.FetchedData(
+                                    RecordingData(
+                                        startTime = formattedStartTime,
+                                        usedSettings = offlineRecording.data.settings,
+                                        uri = offlineRecording.uri,
+                                        size = offlineRecording.fileSize,
+                                        downloadSpeed = offlineRecording.downLoadSpeed
+                                    )
+                                )
+                            } else {
+                                RecordingDataUiState.Failure("Unexpected state: no progress or value", null)
+                            }
+                        }
+                        is ResultOfRequest.Failure -> {
+                            Log.e(TAG, "Failed to fetch recording: ${resultOfRequest.message}")
+                            RecordingDataUiState.Failure(
+                                resultOfRequest.message,
+                                resultOfRequest.throwable
+                            )
+                        }
                     }
                 }
-                is ResultOfRequest.Failure -> {
-                    recordingDataUiState = RecordingDataUiState.Failure(offlineRecording.message, offlineRecording.throwable)
-                }
-            }
         }
     }
 
     fun deleteRecording() {
-        Log.d(TAG, "deleteRecording from device $deviceId")
-        viewModelScope.launch(Dispatchers.IO) {
+        Log.d(TAG, "deleteRecording from device $deviceId, path: $path")
+        viewModelScope.launch {
             recordingDataUiState = RecordingDataUiState.IsDeleting
-            recordingDataUiState = when (val result = polarDeviceStreamingRepository.deleteRecording(deviceId, path)) {
-                is ResultOfRequest.Success -> RecordingDataUiState.RecordingDeleted
-                is ResultOfRequest.Failure -> RecordingDataUiState.Failure(result.message, result.throwable)
-            }
+            recordingDataUiState =
+                when (val result = polarDeviceStreamingRepository.deleteRecording(deviceId, path)) {
+                    is ResultOfRequest.Success -> {
+                        Log.d(TAG, "Recording deleted successfully")
+                        RecordingDataUiState.RecordingDeleted
+                    }
+
+                    is ResultOfRequest.Failure -> {
+                        Log.e(TAG, "Failed to delete recording: ${result.message}")
+                        RecordingDataUiState.Failure(result.message, result.throwable)
+                    }
+                }
         }
     }
-
-    private fun updateRecordingDataUiState(offlineRecording: PolarOfflineRecordingData, uri: Uri, fileSize: Long, downloadSpeed: Double) {
-        val recordingData = RecordingData(
-            startTime = offlineRecording.startTime.time.toString(),
-            usedSettings = offlineRecording.settings,
-            uri = uri,
-            size = fileSize,
-            downloadSpeed = downloadSpeed
-        )
-        recordingDataUiState = RecordingDataUiState.FetchedData(data = recordingData)
-    }
 }
-
