@@ -2,8 +2,8 @@
 
 # Polar 360 & Polar Loop
 
-- [Polar 360 & Polar Loop](#polar-360)
-  - [Polar 360 and Polar Loop features available by the SDK](#polar-360-and-polar-loop-features-available-by-the-sdk)
+- [Polar 360 \& Polar Loop](#polar-360--polar-loop)
+  - [Polar 360 and Polar loop features available by the SDK](#polar-360-and-polar-loop-features-available-by-the-sdk)
     - [Online streaming and offline recording](#online-streaming-and-offline-recording)
     - [Data export](#data-export)
     - [Device management](#device-management)
@@ -158,7 +158,7 @@ Activity and sleep data is passively recorded by the device overtime and will st
 | Data             |Operation mode     | Sampling Rate                         | Range (+-)                                           | Resolution |
 |:----------------:|:-----------------:|:-------------------------------------:|:----------------------------------------------------:|:----------:|
 | Acc              | Online streaming  | 12Hz, 25Hz, **50Hz**, 100Hz, 200Hz, 400Hz | 2g, 4g, **8g**, 16g                                      |16          |
-| Acc              | Offline recording | 12Hz, 26Hz, **52Hz**                      | 2g, 4g, **8g**, 16g                                      |16          |
+| Acc              | Offline recording | 12Hz, 25Hz, **50Hz**                      | 2g, 4g, **8g**, 16g                                      |16          |
 | PPG              | Online streaming  | **22Hz**, 50Hz, [1] 100Hz                 | -                                                        |24          |
 | PPG              | Offline recording | **22Hz**, 50Hz, [1] 100Hz                 | -                                                        |24          |
 | Skin temperature | Online streaming  | **1Hz**, 2Hz, 4Hz                         | -                                                    |32          |
