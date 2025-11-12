@@ -90,6 +90,7 @@ import com.polar.sdk.impl.utils.PolarDataUtils.mapPolarSecretToPmdSecret
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPolarSettingsToPmdSettings
 import com.polar.sdk.impl.utils.PolarFirmwareUpdateUtils
 import com.polar.sdk.impl.utils.PolarNightlyRechargeUtils
+import com.polar.sdk.impl.utils.PolarOfflineRecordingUtils
 import com.polar.sdk.impl.utils.PolarSkinTemperatureUtils
 import com.polar.sdk.impl.utils.PolarSleepUtils
 import com.polar.sdk.impl.utils.PolarTimeUtils
@@ -129,6 +130,7 @@ import com.polar.sdk.api.PolarTrainingSessionApi
 import com.polar.sdk.impl.utils.PolarTrainingSessionUtils
 import fi.polar.remote.representation.protobuf.UserDeviceSettings
 import fi.polar.remote.representation.protobuf.UserDeviceSettings.PbUserDeviceSettings
+import fi.polar.remote.representation.protobuf.UserDeviceSettings.PbUserDeviceTelemetrySettings
 import com.polar.sdk.api.model.activity.PolarActivitySamplesDayData
 import com.polar.sdk.api.model.activity.PolarDailySummaryData
 import java.io.ByteArrayInputStream
@@ -929,138 +931,35 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     override fun listOfflineRecordings(identifier: String): Flowable<PolarOfflineRecordingEntry> {
-        return deviceSupportsFasterOfflineRecordListing(identifier).map { supports ->
-            if (supports) {
-                listOfflineRecordingsV2(identifier).flattenAsFlowable { it }
-            } else {
-                listOfflineRecordingsV1(identifier)
-            }
-        }.flatMapPublisher { it }
-    }
-
-    private fun listOfflineRecordingsV1(identifier: String): Flowable<PolarOfflineRecordingEntry> {
         val session = try {
             sessionPsFtpClientReady(identifier)
         } catch (error: Throwable) {
             return Flowable.error(error)
         }
-        val client =
-            session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-                ?: return Flowable.error(PolarServiceNotAvailable())
 
-        return when (getFileSystemType(session.polarDeviceType)) {
-            FileSystemType.SAGRFC2_FILE_SYSTEM -> {
-                BleLogger.d(TAG, "Start offline recording listing in device: $identifier")
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: return Flowable.error(PolarServiceNotAvailable())
 
-                fetchRecursively(
-                    client = client,
-                    path = "/U/0/",
-                    condition = { entry ->
-                        entry.matches(Regex("^(\\d{8})(/)")) ||
-                                entry == "R/" ||
-                                entry.matches(Regex("^(\\d{6})(/)")) ||
-                                entry.contains(".REC")
-                    }
-                ).flatMap { entry: Pair<String, Long> ->
-                    try {
-                        val components = entry.first.split("/").toTypedArray()
-                        val format = SimpleDateFormat("yyyyMMdd HHmmss", Locale.getDefault())
-                        val date = format.parse(components[3] + " " + components[5])
-                            ?: throw PolarInvalidArgument(
-                                "Listing offline recording failed. Cannot parse create data from date ${components[3]} and time ${components[5]}"
-                            )
-                        val type = mapPmdClientFeatureToPolarFeature(
-                            mapOfflineRecordingFileNameToMeasurementType(components[6])
-                        )
-                        val recordingEntry = PolarOfflineRecordingEntry(
-                            path = entry.first,
-                            size = entry.second,
-                            date = date,
-                            type = type
-                        )
-                        Flowable.just(recordingEntry)
-                    } catch (e: Exception) {
-                        BleLogger.e(TAG, "Error processing offline recording entry ${entry.first}: ${e.message}")
-                        Flowable.empty<PolarOfflineRecordingEntry>()
-                    }
-                }.groupBy { entry ->
-                    entry.path.replace(Regex("\\d+\\.REC$"), ".REC")
-                }.onBackpressureBuffer(2048, null, BackpressureOverflowStrategy.DROP_LATEST)
-                    .flatMap { groupedEntries ->
-                        groupedEntries
-                            .toList()
-                            .flatMapPublisher { entriesList ->
-                                if (entriesList.isEmpty()) return@flatMapPublisher Flowable.empty<PolarOfflineRecordingEntry>()
+        // Remove this flagging once Polar360 4.0 firmware is public.
+        val allowV2Listing = false
 
-                                val totalSize = entriesList.sumOf { it.size.toInt() }
-                                val first = entriesList.first()
-
-                                val merged = PolarOfflineRecordingEntry(
-                                    path = first.path.replace(Regex("\\d+\\.REC$"), ".REC"),
-                                    size = totalSize.toLong(),
-                                    date = first.date,
-                                    type = first.type
-                                )
-
-                                Flowable.just(merged)
-                            }
-                            .onErrorResumeNext { throwable: Throwable ->
-                                Flowable.error(handleError(throwable))
-                            }
-                    }
-            }
-            else -> Flowable.error(PolarServiceNotAvailable())
-        }
-    }
-
-    private fun listOfflineRecordingsV2(identifier: String): Single<List<PolarOfflineRecordingEntry>>{
-        return Single.create { emitter ->
-            val disposable = getFile(identifier, PMDFilePath)
-                .subscribe(
-                    { byteArray ->
-                        try {
-                            val offlineRecordings = ByteArrayInputStream(byteArray)
-                                .bufferedReader()
-                                .useLines { lines ->
-                                lines.mapNotNull { line ->
-                                    try {
-                                        BleLogger.d(TAG, "Reading line: $line")
-                                        if (line.split(" ")[1].endsWith(".REC")) {
-                                            val recordingPath = line.split(" ")[1].replace(
-                                                    Regex("\\d*\\.REC$"), ".REC")
-                                            val deviceDataType = mapOfflineRecordingTypeToPolarDeviceDataType(
-                                                recordingPath.split("/")[6]
-                                                    .removeSuffix(".REC")
-                                                    .filter { !it.isDigit() })
-                                            val format = SimpleDateFormat("yyyyMMdd HHmmss", Locale.getDefault())
-                                            val dateFromFileName = format.parse(recordingPath.split("/")[3] + " " + recordingPath.split("/")[5])
-                                            PolarOfflineRecordingEntry(
-                                                recordingPath,
-                                                line.split(" ")[0].toLong(),
-                                                dateFromFileName,
-                                                deviceDataType
-                                            )
-                                        } else {
-                                            BleLogger.d(TAG, "Line does not contain offline recording information: $line")
-                                        }
-                                    } catch (e: Exception) {
-                                        BleLogger.e(TAG, "Failed to read line: $line, error: $e")
-                                        null
-                                    }
-                                }.toList()
-                            }
-                            emitter.onSuccess(offlineRecordings as List<PolarOfflineRecordingEntry>)
-                        } catch (e: Exception) {
-                            BleLogger.e(TAG, "Failed to read offline record listing from $PMDFilePath: $e")
-                            emitter.onError(e)
+        return if (allowV2Listing) {
+            deviceSupportsFasterOfflineRecordListing(identifier)
+                .flatMapPublisher { supports ->
+                    if (supports) {
+                        PolarOfflineRecordingUtils.listOfflineRecordingsV2(client) { _, path ->
+                            getFile(identifier, path)
+                        }.flattenAsFlowable { it }
+                    } else {
+                        PolarOfflineRecordingUtils.listOfflineRecordingsV1(client) { c, path, condition ->
+                            fetchRecursively(c, path) { entry -> condition(entry) }
                         }
-                    },
-                    { error ->
-                        BleLogger.e(TAG, "Failed to get file $PMDFilePath: $error")
-                        emitter.onError(error)
                     }
-                )
-            emitter.setCancellable { disposable.dispose() }
+                }
+        } else {
+            PolarOfflineRecordingUtils.listOfflineRecordingsV1(client) { c, path, condition ->
+                fetchRecursively(c, path) { entry -> condition(entry) }
+            }
         }
     }
 
@@ -4194,6 +4093,34 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
             .doOnError { error ->
                 BleLogger.e(TAG, "Failed to set automatic training detection settings: $error")
+            }
+    }
+
+    override fun setTelemetryEnabled(identifier: String, enabled: Boolean): Completable {
+        val session: BleDeviceSession
+        val client: BlePsFtpClient
+        try {
+            session = sessionPsFtpClientReady(identifier)
+            client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+        } catch (e: Throwable) {
+            return Completable.error(e)
+        }
+
+        return getUserDeviceSettingsProto(client, session.polarDeviceType)
+            .flatMapCompletable { currentProto ->
+                val builder = currentProto.toBuilder()
+                val telemetryBuilder = PbUserDeviceTelemetrySettings.newBuilder()
+                    .setTelemetryEnabled(enabled)
+                builder.setTelemetrySettings(telemetryBuilder)
+
+                setUserDeviceSettingsProto(identifier, builder.build())
+                    .doOnComplete {
+                        BleLogger.d(TAG, "Telemetry enabled=$enabled written for $identifier")
+                    }
+                    .doOnError { err ->
+                        BleLogger.e(TAG, "Failed to write telemetry setting: $err")
+                    }
             }
     }
 

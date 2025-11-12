@@ -22,6 +22,7 @@ struct ContentView: View {
     @EnvironmentObject private var bleDeviceManager: PolarBleDeviceManager
     @State private var appHeader: String = NSLocalizedString("APP_NAME", comment: "")
     @State private var localModifications: String = ""
+    @State private var presenting: Bool = false
     
     var body: some View {
         
@@ -135,10 +136,13 @@ struct ContentView: View {
             }.frame(maxWidth: .infinity)
             Spacer()
         }
-        .alert(item: $appState.bleSdkManager.generalMessage) { message in
-            Alert(
-                title: Text(message.text)
-            )
+        .alert("", isPresented: $presenting, actions: {
+            // do nothing
+        }, message: {
+            Text(appState.bleSdkManager.generalMessage?.text ?? "?")
+        })
+        .onChange(of: appState.bleSdkManager.generalMessage?.text) { text in
+           presenting = text != nil
         }
     }
     

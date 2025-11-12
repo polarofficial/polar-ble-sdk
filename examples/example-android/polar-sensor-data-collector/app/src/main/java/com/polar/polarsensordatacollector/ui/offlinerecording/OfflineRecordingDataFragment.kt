@@ -125,7 +125,7 @@ fun ShowIsLoading(progress: OfflineRecordingProgress?) {
 fun ShowData(onShare: () -> Unit, onDelete: () -> Unit, recording: RecordingDataUiState.FetchedData, path: String, modifier: Modifier = Modifier) {
     Column {
 
-        val sizeInKb = String.format("%.2f", (recording.data.size / 1000.0))
+        val sizeInKb = String.format("%.2f", (recording.data.size / 1024.0))
         Text(text = "Size", style = MaterialTheme.typography.h6)
         Text(
             text = "$sizeInKb kB", modifier = Modifier

@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.polar.polarsensordatacollector.ui.activity.ActivityRecordingFragment
 import com.polar.polarsensordatacollector.ui.devicesettings.DeviceSettingsFragment
+import com.polar.polarsensordatacollector.ui.h10exercise.H10ExerciseFragment
 import com.polar.polarsensordatacollector.ui.logging.LoggingFragment
 
 const val ONLINE_OFFLINE_KEY_DEVICE_ID = "com.polar.polarsensordatacollector.ONLINE_OFFLINE_KEY_DEVICE_ID"
@@ -107,6 +108,21 @@ class OnlineOfflineAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) 
             this.notifyItemInserted(items.size - 1)
         } else {
             Log.w(TAG, "trying to add ActivityFragment but found already")
+        }
+    }
+
+    fun addH10ExerciseFragment(deviceId: String) {
+        if (!items.any { it.second is H10ExerciseFragment }) {
+            Log.d(TAG, "Add H10ExerciseFragment")
+            val fragment = H10ExerciseFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId)
+                }
+            }
+            items.add(Pair("H10 EXERCISE", fragment))
+            this.notifyItemInserted(items.size - 1)
+        } else {
+            Log.w(TAG, "trying to add H10ExerciseFragment but found already")
         }
     }
 

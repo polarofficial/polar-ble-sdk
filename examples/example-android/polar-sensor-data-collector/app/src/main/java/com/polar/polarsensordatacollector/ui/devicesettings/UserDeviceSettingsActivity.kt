@@ -23,6 +23,8 @@ class UserDeviceSettingsActivity : AppCompatActivity() {
     private lateinit var atdMinimumTrainingDurationSeconds: EditText
     private lateinit var atdSensitivity: NumberPicker
 
+    private lateinit var telemetrySwitch: SwitchMaterial
+
     private lateinit var buttonOk: Button
     private lateinit var buttonCancel: Button
 
@@ -40,6 +42,7 @@ class UserDeviceSettingsActivity : AppCompatActivity() {
         initDeviceUserLocationComponents()
         initUSBSettingsComponents()
         initATDSettingsComponents()
+        initTelemetryComponents()
         initButtons()
     }
 
@@ -69,6 +72,10 @@ class UserDeviceSettingsActivity : AppCompatActivity() {
         atdSensitivity.maxValue = 100
     }
 
+    private fun initTelemetryComponents() {
+        telemetrySwitch = findViewById(R.id.telemetry_enable_switch)
+    }
+
     private fun initButtons() {
         buttonOk = findViewById(R.id.submit_device_settings_button)
 
@@ -90,6 +97,7 @@ class UserDeviceSettingsActivity : AppCompatActivity() {
                 atdSwitch.isChecked = state.atdEnabled
                 atdSensitivity.value = state.atdSensitivity
                 atdMinimumTrainingDurationSeconds.setText(state.atdMinDuration.toString())
+                telemetrySwitch.isChecked = state.telemetryEnabled
             }
         }
 
@@ -108,7 +116,8 @@ class UserDeviceSettingsActivity : AppCompatActivity() {
             atdSensitivity = if (atdSwitch.isChecked) atdSensitivity.value else 0,
             atdMinDuration = if (atdSwitch.isChecked)
                 atdMinimumTrainingDurationSeconds.text.toString().toIntOrNull() ?: 0
-            else 0
+            else 0,
+            telemetryEnabled = telemetrySwitch.isChecked
         )
     }
 

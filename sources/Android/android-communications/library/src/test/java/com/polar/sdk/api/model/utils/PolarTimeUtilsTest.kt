@@ -6,13 +6,15 @@ import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import protocol.PftpRequest
-import java.time.LocalDateTime
 import fi.polar.remote.representation.protobuf.Types.PbDate
 import fi.polar.remote.representation.protobuf.Types.PbDuration
 import fi.polar.remote.representation.protobuf.Types.PbLocalDateTime
 import fi.polar.remote.representation.protobuf.Types.PbSystemDateTime
 import fi.polar.remote.representation.protobuf.Types.PbTime
+import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -660,20 +662,19 @@ internal class PolarTimeUtilsTest {
         //Act
         val calendar = PolarTimeUtils.pbLocalTimeToJavaCalendar(pbLocalTime)
 
-        val timeZone = TimeZone.getTimeZone("Europe/Helsinki")
-        calendar.timeZone = timeZone
+        val zoneId = ZoneId.of("Europe/Helsinki")
+        calendar.timeZone = TimeZone.getTimeZone(zoneId)
 
-        val result =
-            org.joda.time.LocalDateTime(calendar.timeInMillis, org.joda.time.DateTimeZone.forID("Europe/Helsinki"))
+        val result = LocalDateTime.ofInstant(Instant.ofEpochMilli(calendar.timeInMillis), zoneId)
 
         //Assert
         Assert.assertEquals(pbLocalYear, result.year)
-        Assert.assertEquals(pbLocalMonth, result.monthOfYear)
+        Assert.assertEquals(pbLocalMonth, result.monthValue)
         Assert.assertEquals(pbLocalDayOfMonth, result.dayOfMonth)
-        Assert.assertEquals(4, result.hourOfDay)
-        Assert.assertEquals(pbLocalMinute, result.minuteOfHour)
-        Assert.assertEquals(pbLocalSecond, result.secondOfMinute)
-        Assert.assertEquals(pbLocalMilliSecond, result.millisOfSecond)
+        Assert.assertEquals(4, result.hour)
+        Assert.assertEquals(pbLocalMinute, result.minute)
+        Assert.assertEquals(pbLocalSecond, result.second)
+        Assert.assertEquals(pbLocalMilliSecond, result.nano / 1_000_000)
     }
 
     @Test

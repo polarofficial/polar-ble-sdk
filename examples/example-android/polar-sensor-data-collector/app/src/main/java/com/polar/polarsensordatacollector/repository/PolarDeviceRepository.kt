@@ -194,35 +194,6 @@ class PolarDeviceRepository @Inject constructor(
             .asFlow()
     }
 
-    @OptIn(ExperimentalTime::class)
-    suspend fun getOfflineRecording(deviceId: String, path: String): ResultOfRequest<OfflineRecordingData> {
-        Log.d(TAG, "getOfflineRecording from device $deviceId in $path")
-        val offlineRecEntry = offlineEntryCache[deviceId]?.find { it.path == path }
-        offlineRecEntry?.let { offlineEntry ->
-            return try {
-                val result = measureTimedValue {
-                    val secret = security.getSecretKey(deviceId)?.let { PolarRecordingSecret(it.encoded) }
-                    return@measureTimedValue api.getOfflineRecord(deviceId, offlineEntry, secret)
-                        .await()
-                }
-
-                val uri = saveData(deviceId, result.value)
-                ResultOfRequest.Success(
-                    OfflineRecordingData(
-                        data = result.value,
-                        uri = uri,
-                        fileSize = offlineEntry.size,
-                        downLoadSpeed = ((offlineEntry.size / 1000.0) / result.duration.inWholeMicroseconds) * 1000 * 1000
-                    )
-                )
-            } catch (e: Exception) {
-                Log.e(TAG, "Get offline recording fetch failed on entry $path error $e")
-                ResultOfRequest.Failure("Get offline recording fetch failed on entry $path", e)
-            }
-        }
-        return ResultOfRequest.Failure("Get offline recording fetch failed. Entry in path $path is not existing", null)
-    }
-
     fun getOfflineEntryFromCache(deviceId: String, path: String): PolarOfflineRecordingEntry? {
         return offlineEntryCache[deviceId]?.find { it.path == path }
     }
@@ -283,9 +254,9 @@ class PolarDeviceRepository @Inject constructor(
                                 )
                             }
                             is PolarOfflineRecordingResult.Complete -> {
-                                val downloadDuration = (System.currentTimeMillis() - startTime) / 1000.0
+                                val downloadDuration = (System.currentTimeMillis() - startTime) / 1024.0
                                 val downloadSpeed = if (downloadDuration > 0) {
-                                    (offlineRecEntry.size / 1000.0) / downloadDuration
+                                    (offlineRecEntry.size / 1024.0) / downloadDuration
                                 } else 0.0
 
                                 val uri = saveData(deviceId, result.data)
@@ -1227,6 +1198,12 @@ class PolarDeviceRepository @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "getBleMultiConnectionMode failed. Error $e")
             return  false
+        }
+    }
+
+    suspend fun setTelemetryEnabled(deviceId: String, enabled: Boolean) {
+        withContext(Dispatchers.IO) {
+            api.setTelemetryEnabled(deviceId, enabled).await()
         }
     }
 

@@ -7,7 +7,8 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSecret
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSetting
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.*
 import com.polar.androidcommunications.common.ble.TypeUtils
-import org.joda.time.DateTime
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 internal class OfflineRecordingData<out T>(
@@ -257,8 +258,10 @@ internal class OfflineRecordingData<out T>(
 
         private fun parseStartTime(startTimeBytes: List<Byte>): Calendar {
             val startTimeInIso8601 = String(startTimeBytes.dropLast(1).toByteArray()).replace(' ', 'T') + "Z"
-            val dt = DateTime(startTimeInIso8601)
-            return dt.toCalendar(null)
+            val odt = OffsetDateTime.parse(startTimeInIso8601, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            return Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+                timeInMillis = odt.toInstant().toEpochMilli()
+            }
         }
 
         private fun parsePacketSize(packetSize: List<Byte>): UInt {

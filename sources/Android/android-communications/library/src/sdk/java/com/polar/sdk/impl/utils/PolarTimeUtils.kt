@@ -5,13 +5,16 @@ import fi.polar.remote.representation.protobuf.Types.PbDuration
 import fi.polar.remote.representation.protobuf.Types.PbLocalDateTime
 import fi.polar.remote.representation.protobuf.Types.PbSystemDateTime
 import fi.polar.remote.representation.protobuf.Types.PbTime
-import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
 import java.time.LocalDate
 import java.time.LocalDateTime
 import protocol.PftpRequest
 import java.time.LocalTime
 import java.util.*
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import java.time.ZoneId
+import java.util.Calendar
+import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
 internal object PolarTimeUtils {
@@ -33,27 +36,29 @@ internal object PolarTimeUtils {
         builder
             .setDate(date)
             .setTime(time)
-            .tzOffset = TimeUnit.MINUTES.convert(calendar[Calendar.ZONE_OFFSET].toLong()
-                + calendar[Calendar.DST_OFFSET].toLong(), TimeUnit.MILLISECONDS).toInt()
+            .tzOffset = TimeUnit.MINUTES.convert(
+            calendar[Calendar.ZONE_OFFSET].toLong()
+                    + calendar[Calendar.DST_OFFSET].toLong(), TimeUnit.MILLISECONDS
+        ).toInt()
 
         return builder.build()
     }
 
     fun javaCalendarToPbPftpSetSystemTime(calendar: Calendar): PftpRequest.PbPFtpSetSystemTimeParams {
-        val dt = DateTime(calendar)
-        val utcTime: DateTime = dt.withZone(DateTimeZone.forID("UTC"))
+        val utcTime = calendar.toInstant().atZone(ZoneId.of("UTC"))
+
         val builder = PftpRequest.PbPFtpSetSystemTimeParams.newBuilder()
         val date = PbDate.newBuilder()
         val time = PbTime.newBuilder()
 
         date.day = utcTime.dayOfMonth
-        date.month = utcTime.monthOfYear
+        date.month = utcTime.monthValue
         date.year = utcTime.year
 
-        time.hour = utcTime.hourOfDay
-        time.minute = utcTime.minuteOfHour
-        time.seconds = utcTime.secondOfMinute
-        time.millis = utcTime.millisOfSecond
+        time.hour = utcTime.hour
+        time.minute = utcTime.minute
+        time.seconds = utcTime.second
+        time.millis = utcTime.nano / 1_000_000
 
         builder.setDate(date)
         builder.setTime(time)
@@ -62,19 +67,22 @@ internal object PolarTimeUtils {
     }
 
     fun pbLocalTimeToJavaCalendar(pbLocalTime: PftpRequest.PbPFtpSetLocalTimeParams): Calendar {
-        val offsetInMillis = TimeUnit.MILLISECONDS.convert(pbLocalTime.tzOffset.toLong(), TimeUnit.MINUTES)
-        val timeZone = DateTimeZone.forOffsetMillis(offsetInMillis.toInt())
-        val dt = DateTime(
+        val offsetInMillis =
+            TimeUnit.MILLISECONDS.convert(pbLocalTime.tzOffset.toLong(), TimeUnit.MINUTES)
+        val zoneOffset = ZoneOffset.ofTotalSeconds((offsetInMillis / 1000).toInt())
+        val zdt = ZonedDateTime.of(
             pbLocalTime.date.year,
             pbLocalTime.date.month,
             pbLocalTime.date.day,
             pbLocalTime.time.hour,
             pbLocalTime.time.minute,
             pbLocalTime.time.seconds,
-            pbLocalTime.time.millis,
-            timeZone
+            pbLocalTime.time.millis * 1_000_000,
+            zoneOffset
         )
-        return dt.toCalendar(null)
+        return Calendar.getInstance(TimeZone.getTimeZone(zoneOffset)).apply {
+            timeInMillis = zdt.toInstant().toEpochMilli()
+        }
     }
 
     fun pbLocalDateTimeToLocalDateTime(pbDateTime: PbLocalDateTime): LocalDateTime {
@@ -105,23 +113,6 @@ internal object PolarTimeUtils {
 
     fun pbDateToLocalDate(pbDate: PbDate): LocalDate {
         return LocalDate.of(pbDate.year, pbDate.month, pbDate.day)
-    }
-
-    private fun pbLocalTimeToJavaCalendarWithTimezone(pbLocalTime: PftpRequest.PbPFtpSetLocalTimeParams): Calendar {
-        val offsetInMillis = TimeUnit.MILLISECONDS.convert(pbLocalTime.tzOffset.toLong(), TimeUnit.MINUTES)
-        val timeZone = DateTimeZone.forOffsetMillis(offsetInMillis.toInt())
-        val dt = DateTime(
-            pbLocalTime.date.year,
-            pbLocalTime.date.month,
-            pbLocalTime.date.day,
-            pbLocalTime.time.hour,
-            pbLocalTime.time.minute,
-            pbLocalTime.time.seconds,
-            pbLocalTime.time.millis,
-            timeZone
-        )
-
-        return dt.toCalendar(null)
     }
 
     fun pbTimeToLocalTime(pbTime: PbTime): LocalTime {

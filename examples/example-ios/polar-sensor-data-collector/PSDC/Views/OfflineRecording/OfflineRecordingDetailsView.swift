@@ -151,12 +151,12 @@ struct OfflineRecordingDetailsView: View {
     
     private func sizeInKbString(size: UInt) -> String {
         let decimalPrecision = 2
-        return String(format: "%.\(decimalPrecision)f", (Double(size) / 1000.0))
+        return String(format: "%.\(decimalPrecision)f", (Double(size) / 1024.0))
     }
 
     private func downLoadSpeedInKbString(speed: Double) -> String {
         let decimalPrecision = 2
-        return String(format: "%.\(decimalPrecision)f", (speed / 1000.0))
+        return String(format: "%.\(decimalPrecision)f", (speed / 1024.0))
     }
 }
 

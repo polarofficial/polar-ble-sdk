@@ -45,7 +45,6 @@ class MockBleDeviceSession: BleDeviceSession {
     }
 }
 
-
 final class PolarOfflineRecordingApiTests: XCTestCase {
 
     var mockClient: MockBlePsFtpClient!
@@ -106,7 +105,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
-            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
+//            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),
@@ -212,7 +211,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
-            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
+//            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),
@@ -291,7 +290,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
-            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
+//            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),
@@ -369,7 +368,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
-            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
+//            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),
@@ -447,7 +446,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
-            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
+//            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),
@@ -523,7 +522,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
-            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
+//            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),

@@ -58,7 +58,7 @@ struct OfflineRecordingEntriesRow: View {
     
     private func sizeInKbString(size: UInt) -> String {
         let decimalPrecision = 2
-        return String(format: "%.\(decimalPrecision)f", (Double(size) / 1000.0))
+        return String(format: "%.\(decimalPrecision)f", (Double(size) / 1024.0))
     }
     
     private func getDataTypeColor(type: PolarDeviceDataType) -> Color {

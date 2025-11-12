@@ -206,7 +206,7 @@ fun Recording(
                     )
                 }
                 Row {
-                    val sizeInKb = String.format(Locale.ENGLISH, "%.2f", (recordingEntry.size / 1000.0))
+                    val sizeInKb = String.format(Locale.ENGLISH, "%.2f", (recordingEntry.size / 1024.0))
                     Text(text = "Size: $sizeInKb KB")
                 }
             }

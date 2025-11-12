@@ -497,6 +497,15 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
     abstract fun deleteStoredDeviceData(identifier: String, dataType: PolarStoredDataType, until: LocalDate?): Completable
 
     /**
+     * Enable or disable telemetry (trace logging / diagnostics) on the device.
+     *
+     * @param identifier Polar device ID or BT address
+     * @param enabled true = telemetry on, false = off
+     * @return Completable (success or error)
+     */
+    abstract fun setTelemetryEnabled(deviceId: String, enabled: Boolean): Completable
+
+    /**
      * Deletes device day (YYYMMDD) folders from the given date range from a device.
      * The date range is inclusive.
      * Deletes the day folder (plus all sub-folders with any contents).

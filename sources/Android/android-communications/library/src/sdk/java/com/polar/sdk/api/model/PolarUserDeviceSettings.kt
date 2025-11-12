@@ -7,14 +7,15 @@ import fi.polar.remote.representation.protobuf.Types.PbDeviceLocation
 import fi.polar.remote.representation.protobuf.UserDeviceSettings
 import fi.polar.remote.representation.protobuf.UserDeviceSettings.PbUserDeviceGeneralSettings
 import fi.polar.remote.representation.protobuf.UserDeviceSettings.PbUserDeviceSettings
-import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
+import java.time.ZonedDateTime
+import java.time.ZoneId
 import java.util.Calendar
 
 data class PolarUserDeviceSettings(val deviceLocation: Int? = null,
                                    val usbConnectionMode: Boolean? = null,
                                    val automaticTrainingDetectionMode: Boolean? = null,
                                    val automaticTrainingDetectionSensitivity: Int? = null,
+                                   val telemetryEnabled: Boolean? = null,
                                    val minimumTrainingDurationSeconds: Int? = null
 ) {
 
@@ -118,11 +119,18 @@ data class PolarUserDeviceSettings(val deviceLocation: Int? = null,
             0
         }
 
+        val telemetryEnabled = if (proto.hasTelemetrySettings() && proto.telemetrySettings.hasTelemetryEnabled()) {
+            proto.telemetrySettings.telemetryEnabled
+        } else {
+            null
+        }
+
         return PolarUserDeviceSettings(
             deviceLocation,
             usbConnectionMode,
             automaticTrainingDetectionMode = automaticTrainingDetectionMode,
             automaticTrainingDetectionSensitivity = automaticTrainingDetectionSensitivity,
+            telemetryEnabled = telemetryEnabled,
             minimumTrainingDurationSeconds = minimumTrainingDurationSeconds
         )
     }
@@ -134,17 +142,16 @@ private fun createTimeStamp(): PbSystemDateTime {
     val date = PbDate.newBuilder()
     val time = PbTime.newBuilder()
 
-    val dt = DateTime(Calendar.getInstance())
-    val utcTime: DateTime = dt.withZone(DateTimeZone.forID("UTC"))
+    val utcTime = ZonedDateTime.now(ZoneId.of("UTC"))
 
     date.day = utcTime.dayOfMonth
-    date.month = utcTime.monthOfYear
+    date.month = utcTime.monthValue
     date.year = utcTime.year
 
-    time.hour = utcTime.hourOfDay
-    time.minute = utcTime.minuteOfHour
-    time.seconds = utcTime.secondOfMinute
-    time.millis = utcTime.millisOfSecond
+    time.hour = utcTime.hour
+    time.minute = utcTime.minute
+    time.seconds = utcTime.second
+    time.millis = utcTime.nano / 1_000_000
 
     builder.setDate(date)
     builder.setTime(time)

@@ -647,12 +647,20 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         <tr id="i38" class="altColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setTelemetryEnabled(java.lang.String,java.lang.Boolean)>setTelemetryEnabled</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> enabled) </code>
+                                            </th>
+                                            <td class="colLast">Enable or disable telemetry (trace logging / diagnostics) on the device.</td>
+                                        </tr>
+                                        
+                                        <tr id="i39" class="rowColor">
+                                            <td class="colFirst"><code>abstract Completable</code>
+                                            </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#deleteDeviceDateFolders(java.lang.String,java.time.LocalDate,java.time.LocalDate)>deleteDeviceDateFolders</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate) </code>
                                             </th>
                                             <td class="colLast">Deletes device day (YYYMMDD) folders from the given date range from a device.</td>
                                         </tr>
                                         
-                                        <tr id="i39" class="rowColor">
+                                        <tr id="i40" class="altColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#waitForConnection(java.lang.String)>waitForConnection</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -660,7 +668,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Waits for a connection to the specified device.</td>
                                         </tr>
                                         
-                                        <tr id="i40" class="altColor">
+                                        <tr id="i41" class="rowColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setMultiBLEConnectionMode(java.lang.String,java.lang.Boolean)>setMultiBLEConnectionMode</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> enable) </code>
@@ -668,7 +676,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Enable multi BLE connection mode on a given device.</td>
                                         </tr>
                                         
-                                        <tr id="i41" class="rowColor">
+                                        <tr id="i42" class="altColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getMultiBLEConnectionMode(java.lang.String)>getMultiBLEConnectionMode</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -676,7 +684,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Request multi BLE connection mode status from device.</td>
                                         </tr>
                                         
-                                        <tr id="i42" class="altColor">
+                                        <tr id="i43" class="rowColor">
                                             <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#sendInitializationAndStartSyncNotifications(java.lang.String)>sendInitializationAndStartSyncNotifications</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -684,7 +692,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <td class="colLast">Notify device of the incoming data transfer operation(s).</td>
                                         </tr>
                                         
-                                        <tr id="i43" class="rowColor">
+                                        <tr id="i44" class="altColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#sendTerminateAndStopSyncNotifications(java.lang.String)>sendTerminateAndStopSyncNotifications</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -2031,6 +2039,41 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
                                             <dd><p>Flowable success with the paths of the deleted data or error</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="setTelemetryEnabled(java.lang.String,java.lang.Boolean)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>setTelemetryEnabled</h4>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#setTelemetryEnabled(java.lang.String,java.lang.Boolean)>setTelemetryEnabled</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> enabled)</pre>
+                                        <div class="block"><p>Enable or disable telemetry (trace logging / diagnostics) on the device.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            
+                                            
+                                            <dd><code>enabled</code> - true = telemetry on, false = off</dd>
+                                            
+                                            
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Completable (success or error)</p></dd>
                                         
 
                                         

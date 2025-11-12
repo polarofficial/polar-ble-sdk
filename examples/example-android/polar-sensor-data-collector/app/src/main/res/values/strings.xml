@@ -194,6 +194,9 @@
     <string name="atd_setting_minimum_duration">ATD minimum training duration (sec)</string>
     <string name="atd_setting_sensitivity">ATD sensitivity</string>
 
+    <!-- Telemetry / Trace logging -->
+    <string name="telemetry_setting">Trace logging (Telemetry)</string>
+
     <!-- Training session -->
     <string name="training_sessions_label">Training sessions</string>
     <string name="get">Get</string>
@@ -269,4 +272,21 @@
     <string name="user_device_settings_saved">User device settings saved</string>
     <string name="failed_to_load_settings">Failed to load settings: %1$s</string>
     <string name="failed_to_save_settings">Failed to save settings: %1$s</string>
+
+    <!-- H10 Exercise -->
+    <string name="list_exercises">List Exercises</string>
+    <string name="read_exercise">Read Exercise</string>
+    <string name="remove_exercise">Remove Exercise</string>
+    <string name="stop_h10_recording">Stop H10 Recording</string>
+    <string name="start_h10_recording">Start H10 Recording</string>
+    <string name="exercises_found">Exercises found</string>
+    <string name="no_exercise_found">No exercise found</string>
+    <string name="no_exercise_to_remove">No exercise to remove</string>
+    <string name="exercise_removed_successfully">Exercise removed successfully</string>
+    <string name="exported_exercise_data">Exported Exercise Data</string>
+    <string name="attached_is_your_exercise_data_in_json_format">
+    Attached is your exercise data in JSON format.
+</string>
+    <string name="share_exercise_data">Share Exercise Data</string>
+    <string name="failed_to_share">Failed to share: %1$s</string>
 </resources>

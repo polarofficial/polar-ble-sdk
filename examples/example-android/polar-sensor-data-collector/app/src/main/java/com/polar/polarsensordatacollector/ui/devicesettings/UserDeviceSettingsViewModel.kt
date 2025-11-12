@@ -42,7 +42,8 @@ internal class UserDeviceSettingsViewModel @Inject constructor(
         usbEnabled: Boolean,
         atdEnabled: Boolean,
         atdSensitivity: Int,
-        atdMinDuration: Int
+        atdMinDuration: Int,
+        telemetryEnabled: Boolean
     ) {
         viewModelScope.launch {
             try {
@@ -54,6 +55,7 @@ internal class UserDeviceSettingsViewModel @Inject constructor(
                     atdSensitivity,
                     atdMinDuration
                 )
+                repository.setTelemetryEnabled(deviceId, telemetryEnabled)
                 _message.value = application.getString(R.string.user_device_settings_saved)
             } catch (e: Exception) {
                 _message.value = application.getString(
@@ -74,6 +76,7 @@ internal class UserDeviceSettingsViewModel @Inject constructor(
                     atdEnabled = settings.automaticTrainingDetectionMode ?: false,
                     atdSensitivity = settings.automaticTrainingDetectionSensitivity ?: 0,
                     atdMinDuration = settings.minimumTrainingDurationSeconds ?: 0,
+                    telemetryEnabled = settings.telemetryEnabled ?: false,
                     isLoading = false
                 )
             } catch (e: Exception) {
@@ -92,6 +95,7 @@ internal class UserDeviceSettingsViewModel @Inject constructor(
         val atdEnabled: Boolean = false,
         val atdSensitivity: Int = 0,
         val atdMinDuration: Int = 0,
+        val telemetryEnabled: Boolean = false,
         val isLoading: Boolean = true
     )
 }

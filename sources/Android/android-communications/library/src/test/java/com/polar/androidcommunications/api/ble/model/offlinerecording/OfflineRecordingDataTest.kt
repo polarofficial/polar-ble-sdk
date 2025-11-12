@@ -5,13 +5,14 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSecret
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSetting
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.*
 import com.polar.androidcommunications.testrules.BleLoggerTestRule
-import org.joda.time.DateTime
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 internal class OfflineRecordingDataTest {
@@ -1134,7 +1135,10 @@ internal class OfflineRecordingDataTest {
         )
 
         private val startTimeInIso8601 = String(expectedStartTime.dropLast(1).toByteArray()).replace(' ', 'T') + "Z"
-        val startTime: Calendar = DateTime(startTimeInIso8601).toCalendar(null)
+        val odt = OffsetDateTime.parse(startTimeInIso8601, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        val startTime: Calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+            timeInMillis = odt.toInstant().toEpochMilli()
+        }
 
         // index       type                                           data:
         // 37..43      settings                                       34 00 10 00 08 00 03

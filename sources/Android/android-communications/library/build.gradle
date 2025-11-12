@@ -127,7 +127,6 @@ dependencies {
     implementation 'commons-io:commons-io:2.11.0'
     implementation 'androidx.annotation:annotation:1.6.0'
     implementation "androidx.core:core-ktx:1.9.0"
-    implementation "joda-time:joda-time:2.12.2"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
     implementation 'com.google.protobuf:protobuf-javalite:3.20.0'
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'

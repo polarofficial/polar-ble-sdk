@@ -300,6 +300,9 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     onlineOfflineAdapter.addLoggingFragment(deviceId)
                     onlineOfflineAdapter.addActivityFragment(deviceId)
                 }
+                if (selectedDevice?.name?.contains("H10") == true) {
+                    onlineOfflineAdapter.addH10ExerciseFragment(deviceId)
+                }
                 tabLayout.visibility = VISIBLE
                 viewPagerPagePerDevice[deviceId]?.let {
                     viewPager.setCurrentItem(it, false)

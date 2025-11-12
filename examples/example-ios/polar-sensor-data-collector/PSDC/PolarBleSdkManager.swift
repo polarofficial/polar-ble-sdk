@@ -1726,7 +1726,7 @@ extension PolarBleSdkManager {
                 
             } catch let err {
                 Task { @MainActor in
-                    self.somethingFailed(text: "doPhysicalConfig() error: \(err.localizedDescription)")
+                    self.somethingFailed(text: "doPhysicalConfig() error: \(err)")
                 }
             }
         } else {
