@@ -1,6 +1,6 @@
 [Back to main page](../../README.md)
 
-# Polar Vantage V3, Vantage M3 and Grit X2 Pro watches
+# Polar Vantage V3, Vantage M3, Grit X2 Pro and Grit X2 watches
 
 Polar Vantage V3 is a premium fitness and wellness watch.
 [Store page](https://www.polar.com/en/vantage/v3)
@@ -8,7 +8,7 @@ Polar Vantage V3 is a premium fitness and wellness watch.
 Polar Grit X2 Pro is a premium outdoor watch.
 [Store page](https://www.polar.com/en/grit-x2-pro)
 
-## Polar Vantage V3, Vantage M3 and Grit X2 Pro features available by the SDK
+## Polar Vantage V3, Vantage M3, Grit X2 Pro and Grit X2 features available by the SDK
 
 Online streaming
 * Heart rate as beats per minute.
