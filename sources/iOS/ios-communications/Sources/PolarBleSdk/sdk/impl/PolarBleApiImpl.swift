@@ -3048,7 +3048,21 @@ extension PolarBleApiImpl: PolarBleApi  {
                     
                     // Prepare device: factory reset
                     observer.onNext(.preparingDeviceForFwUpdate(details: "Performing factory reset"))
-                    try await self.doFactoryReset(identifier, preservePairingInformation: true).value
+                    try await self.doFactoryReset(identifier, preservePairingInformation: true)
+                        .catch { error in // Ignore gatt disconnect, see if it helps
+                            guard let gattException = error as? BleGattException else {
+                                return Completable.error(self.handleError(error))
+                            }
+                            switch gattException {
+                            case .gattDisconnected:
+                                BleLogger.trace("doFactoryReset(preservePairingInformation) gattDisconnected")
+                                return Completable.empty()
+                            default:
+                                BleLogger.error("doFactoryReset(preservePairingInformation) BleGattException error: \(error)" )
+                                return Completable.error(self.handleError(error))
+                            }
+                        }
+                        .value
 
                     // Wait for reconnection after factory reset
                     observer.onNext(.preparingDeviceForFwUpdate(details: "Reconnecting after factory reset"))
@@ -3107,7 +3121,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 } catch let error {
                     
                     BleLogger.error("Error during updateFirmware() to \(firmwareVersionInfo), error: \(error)")
-                    observer.onNext(FirmwareUpdateStatus.fwUpdateFailed(details: "Error: \(error.localizedDescription)"))
+                    observer.onNext(FirmwareUpdateStatus.fwUpdateFailed(details: "Error: \(error)"))
                     observer.onError(self.handleError(error))
                     
                 }
@@ -4194,6 +4208,43 @@ extension PolarBleApiImpl: PolarBleApi  {
                     )
         } catch {
             return Completable.error(self.handleError(error))
+        }
+    }
+    
+    public func setTelemetryEnabled(_ identifier: String, enabled: Bool) -> Completable {
+        return Completable.create { completable in
+            do {
+                let session = try self.sessionFtpClientReady(identifier)
+                let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
+
+                _ = self.getUserDeviceSettingsProto(client: client)
+                    .subscribe(
+                        onSuccess: { currentProto in
+                            var updated = currentProto
+                        
+                            updated.telemetrySettings.telemetryEnabled = enabled
+
+                            _ = self.setUserDeviceSettingsProto(client: client,
+                                                                polarUserDeviceSettings: updated)
+                                .subscribe(
+                                    onCompleted: {
+                                        BleLogger.trace("Telemetry enabled=\(enabled) written for \(identifier)")
+                                        completable(.completed)
+                                    },
+                                    onError: { error in
+                                        BleLogger.error("Failed to write telemetry setting: \(error)")
+                                        completable(.error(self.handleError(error)))
+                                    }
+                                )
+                        },
+                        onFailure: { error in
+                            completable(.error(self.handleError(error)))
+                        }
+                    )
+            } catch let err {
+                completable(.error(self.handleError(err)))
+            }
+            return Disposables.create()
         }
     }
     

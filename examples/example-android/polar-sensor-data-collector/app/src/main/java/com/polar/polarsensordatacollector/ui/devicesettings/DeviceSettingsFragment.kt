@@ -756,7 +756,10 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
             appendLine(getString(R.string.ftu_resting_hr, physInfo.restingHeartRate))
             appendLine(getString(R.string.ftu_training_background, physInfo.trainingBackground))
             appendLine(getString(R.string.ftu_typical_day, physInfo.typicalDay))
-            appendLine(getString(R.string.ftu_sleep_goal, physInfo.sleepGoalMinutes))
+            // If device does not support sleep goal it returns zero value. -> Hide TextField if value is zero.
+            if (physInfo.sleepGoalMinutes > 0) {
+                appendLine(getString(R.string.ftu_sleep_goal, physInfo.sleepGoalMinutes))
+            }
         }
 
         val dialog = MaterialAlertDialogBuilder(ctx)

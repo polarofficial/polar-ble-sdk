@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.*
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.polar.sdk.api.model.PolarFirstTimeUseConfig
@@ -40,6 +41,9 @@ class PhysicalConfigActivity : AppCompatActivity() {
     private lateinit var sleepGoalHoursPicker: NumberPicker
     private lateinit var sleepGoalMinutesPicker: NumberPicker
     private lateinit var buttonOk: Button
+    private lateinit var hoursText: TextView
+    private lateinit var minutesText: TextView
+    private lateinit var sleepGoalLabel: TextView
 
     private val api = PolarBleSdkModule.providePolarBleSdkApi(this)
     private val deviceSettingsViewModel: DeviceSettingsViewModel by viewModels()
@@ -112,8 +116,17 @@ class PhysicalConfigActivity : AppCompatActivity() {
             )
 
             val totalMinutes = info.sleepGoalMinutes
-            sleepGoalHoursPicker.value = totalMinutes / 60
-            sleepGoalMinutesPicker.value = totalMinutes % 60
+
+            if (totalMinutes > 0 ) {
+                sleepGoalHoursPicker.value = totalMinutes / 60
+                sleepGoalMinutesPicker.value = totalMinutes % 60
+            } else {
+                sleepGoalHoursPicker.isVisible = false
+                sleepGoalMinutesPicker.isVisible = false
+                sleepGoalLabel.isVisible = false
+                minutesText.isVisible = false
+                hoursText.isVisible = false
+            }
         }
     }
 
@@ -130,6 +143,10 @@ class PhysicalConfigActivity : AppCompatActivity() {
         sleepGoalHoursPicker = findViewById(R.id.sleepGoalPickerHours)
         sleepGoalMinutesPicker = findViewById(R.id.sleepGoalPickerMinutes)
         buttonOk = findViewById(R.id.submit_physical_button)
+
+        sleepGoalLabel = findViewById(R.id.sleep_goal_label)
+        hoursText = findViewById(R.id.hours_label)
+        minutesText = findViewById(R.id.minutes_label)
 
         initializeHeartRateSpinners()
         initializeNumberPickerVO2max()

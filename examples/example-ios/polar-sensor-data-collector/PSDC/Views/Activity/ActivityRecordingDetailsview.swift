@@ -7,6 +7,7 @@ import PolarBleSdk
 struct ActivityRecordingDetailsView: View {
     @EnvironmentObject var bleSdkManager: PolarBleSdkManager
     @State var showingShareSheet: Bool = false
+    @State var showingContents: Bool = false
     @Binding var isPresented: Bool
     
     private let dateFormatter: DateFormatter = {
@@ -74,13 +75,43 @@ struct ActivityRecordingDetailsView: View {
                                             .imageScale(.large)
                                         Text("Share")
                                     }.sheet(isPresented: $showingShareSheet) {
-                                        let dateString = dateFormatter.string(from: bleSdkManager.activityRecordingData.startDate)
-                                            .elementsEqual(dateFormatter.string(from: bleSdkManager.activityRecordingData.endDate)) ? dateFormatter.string(from: bleSdkManager.activityRecordingData.startDate) : "\(dateFormatter.string(from: bleSdkManager.activityRecordingData.startDate))-\(dateFormatter.string(from: bleSdkManager.activityRecordingData.endDate))"
+                                        let filename = activityDetailsTitle(for: bleSdkManager.activityRecordingData)
 
-                                        ActivityView(text: bleSdkManager.activityRecordingData.data, filename: "\(bleSdkManager.activityRecordingData.activityType)_\(dateString).json")
+                                        ActivityView(text: bleSdkManager.activityRecordingData.data, filename: "\(filename).json")
                                     }
                                     
                                     Spacer()
+                                    Button(action: {
+                                        self.showingContents = true
+                                    }) {
+                                        Image(systemName: "text.viewfinder")
+                                            .foregroundColor(.blue)
+                                            .imageScale(.large)
+                                        Text("Show")
+                                    }
+                                    .sheet(isPresented: $showingContents) {
+                                        NavigationView {
+                                            let title = activityDetailsTitle(for: bleSdkManager.activityRecordingData)
+                                            let data = bleSdkManager.activityRecordingData.data
+                                            TextViewerView(
+                                                title: title,
+                                                text: prettyPrintedJson(data)
+                                            )
+                                            .toolbar {
+                                                ToolbarItem(placement: .navigationBarTrailing) {
+                                                    Button(action: {
+                                                        self.showingContents = false
+                                                    }) {
+                                                        Image(systemName: "xmark.circle.fill")
+                                                            .foregroundColor(.blue)
+                                                    }.accessibility(identifier: "Close \(title)")
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Spacer()
+
                                 }
                             }
                         }
@@ -96,6 +127,23 @@ struct ActivityRecordingDetailsView: View {
             .padding(.bottom)
             .padding(.top)
 #endif
+        }
+    }
+
+    private func activityDetailsTitle(for activityRecordingData: ActivityRecordingData) -> String {
+        let dateString = dateFormatter.string(from: activityRecordingData.startDate)
+            .elementsEqual(dateFormatter.string(from: activityRecordingData.endDate)) ? dateFormatter.string(from: activityRecordingData.startDate) : "\(dateFormatter.string(from: activityRecordingData.startDate))-\(dateFormatter.string(from: activityRecordingData.endDate))"
+        return "\(activityRecordingData.activityType)_\(dateString)"
+    }
+    
+    private func prettyPrintedJson(_ string: String) -> String {
+        do {
+            let data = string.data(using: .utf8)!
+            let json = try JSONSerialization.jsonObject(with: data, options: [])
+            let prettyData = try JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted])
+            return String(data: prettyData, encoding: .utf8) ?? string
+        } catch {
+            return string
         }
     }
 }

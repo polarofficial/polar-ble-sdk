@@ -87,6 +87,7 @@ public class PolarUserDeviceSettings {
     public var usbConnectionMode: UsbConnectionMode? = nil
     public var automaticTrainingDetectionMode: AutomaticTrainingDetectionMode? = nil
     public var automaticTrainingDetectionSensitivity: UInt32? = nil
+    public var telemetryEnabled: Bool? = nil
     public var minimumTrainingDurationSeconds: UInt32? = nil
     
     public var deviceLocation: DeviceLocation {
@@ -103,6 +104,7 @@ public class PolarUserDeviceSettings {
         public var usbConnectionMode: UsbConnectionMode? = nil
         public var automaticTrainingDetectionMode: AutomaticTrainingDetectionMode? = nil
         public var automaticTrainingDetectionSensitivity: UInt32? = nil
+        public var telemetryEnabled: Bool? = nil
         public var minimumTrainingDurationSeconds: UInt32? = nil
     }
 
@@ -119,6 +121,12 @@ public class PolarUserDeviceSettings {
             usbConnectionSettings.mode = usbConnectionMode.toProto()
             proto.usbConnectionSettings = usbConnectionSettings
         }
+        
+        if let telemetryEnabled = userDeviceSettings.telemetryEnabled {
+                    var telemetry = Data_PbUserDeviceTelemetrySettings()
+                    telemetry.telemetryEnabled = telemetryEnabled
+                    proto.telemetrySettings = telemetry
+                }
         
         if let automaticTrainingDetectionMode = userDeviceSettings.automaticTrainingDetectionMode {
             var automaticTrainingDetectionSettings = Data_PbAutomaticTrainingDetectionSettings()
@@ -144,6 +152,13 @@ public class PolarUserDeviceSettings {
             result.automaticTrainingDetectionSensitivity = pbUserDeviceSettings.automaticMeasurementSettings.automaticTrainingDetectionSettings.sensitivity
             result.minimumTrainingDurationSeconds = pbUserDeviceSettings.automaticMeasurementSettings.automaticTrainingDetectionSettings.minimumTrainingDurationSeconds
         }
+        
+        if pbUserDeviceSettings.hasTelemetrySettings &&
+                       pbUserDeviceSettings.telemetrySettings.hasTelemetryEnabled {
+                        result.telemetryEnabled = pbUserDeviceSettings.telemetrySettings.telemetryEnabled
+                    } else {
+                        result.telemetryEnabled = nil
+                    }
         
         return result
     }

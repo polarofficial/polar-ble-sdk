@@ -7,6 +7,7 @@ import fi.polar.remote.representation.protobuf.Types
 import fi.polar.remote.representation.protobuf.Types.PbLocalDateTime
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 enum class SleepWakeState(val value: Int) {
     UNKNOWN(0),
@@ -42,13 +43,13 @@ data class SleepCycle(val secondsFromSleepStart: Int, val sleepDepthStart: Float
 data class OriginalSleepRange(val startTime: LocalDateTime, val endTime: LocalDateTime)
 
 data class PolarSleepAnalysisResult(
-    val sleepStartTime: LocalDateTime?,
-    val sleepEndTime: LocalDateTime?,
-    val lastModified: LocalDateTime?,
+    val sleepStartTime: ZonedDateTime?,
+    val sleepEndTime: ZonedDateTime?,
+    val lastModified: ZonedDateTime?,
     val sleepGoalMinutes: Int?,
     val sleepWakePhases: List<SleepWakePhase>?,
-    val snoozeTime: List<LocalDateTime>?,
-    val alarmTime: LocalDateTime?,
+    val snoozeTime: List<ZonedDateTime>?,
+    val alarmTime: ZonedDateTime?,
     val sleepStartOffsetSeconds: Int?,
     val sleepEndOffsetSeconds: Int?,
     val userSleepRating: SleepRating?,
@@ -87,22 +88,15 @@ fun fromPbOriginalSleepRange(pbOriginalSleepRange: Types.PbLocalDateTimeRange): 
     )
 }
 
-fun convertSnoozeTimeListToLocalTime(snoozeTimeList : List<PbLocalDateTime>): List<LocalDateTime> {
+fun convertSnoozeTimeListToZonedDateTimeList(snoozeTimeList : List<PbLocalDateTime>): List<ZonedDateTime> {
 
-    var snoozeTimes = mutableListOf<LocalDateTime>()
+    var snoozeTimes = mutableListOf<ZonedDateTime>()
 
     for (snoozeTime in snoozeTimeList) {
 
         snoozeTimes.add(
-            LocalDateTime.of(
-                snoozeTime.date.year,
-                snoozeTime.date.month,
-                snoozeTime.date.day,
-                snoozeTime.time.hour,
-                snoozeTime.time.minute,
-                snoozeTime.time.seconds,
-                snoozeTime.time.millis * 1000000
-            ))
+            PolarTimeUtils.pbLocalDateTimeToZonedDateTime(snoozeTime)
+        )
     }
 
     return snoozeTimes

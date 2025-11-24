@@ -85,6 +85,19 @@ internal object PolarTimeUtils {
         }
     }
 
+    fun pbLocalDateTimeToZonedDateTime(pbDateTime: PbLocalDateTime): ZonedDateTime {
+        val zoneId = ZoneOffset.ofTotalSeconds(pbDateTime.timeZoneOffset * 60)
+        return ZonedDateTime.of(
+            pbDateTime.date.year,
+            pbDateTime.date.month,
+            pbDateTime.date.day,
+            pbDateTime.time.hour,
+            pbDateTime.time.minute,
+            pbDateTime.time.seconds,
+            pbDateTime.time.millis * 1000000,
+            zoneId
+        )
+    }
     fun pbLocalDateTimeToLocalDateTime(pbDateTime: PbLocalDateTime): LocalDateTime {
         
         return LocalDateTime.of(
@@ -108,6 +121,20 @@ internal object PolarTimeUtils {
             pbSystemDateTime.time.minute,
             pbSystemDateTime.time.seconds,
             pbSystemDateTime.time.millis * 1000000
+        )
+    }
+
+    fun pbSystemDateTimeToZonedDateTime(pbSystemDateTime: PbSystemDateTime): ZonedDateTime {
+
+        return ZonedDateTime.of(
+            pbSystemDateTime.date.year,
+            pbSystemDateTime.date.month,
+            pbSystemDateTime.date.day,
+            pbSystemDateTime.time.hour,
+            pbSystemDateTime.time.minute,
+            pbSystemDateTime.time.seconds,
+            pbSystemDateTime.time.millis * 1000000,
+            ZoneOffset.UTC
         )
     }
 

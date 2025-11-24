@@ -324,6 +324,15 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - success: when enable or disable sent to device
     ///   - onError: see `PolarErrors` for possible errors invoked
     func setLedConfig(_ identifier: String, ledConfig: LedConfig) -> Completable
+    
+    /**
+     * Enable or disable telemetry (trace logging / diagnostics) on the device.
+     *
+     * - parameter identifier: Polar device ID or BT address
+     * - parameter enabled: true = telemetry on, false = off
+     * - returns: Completable (success or error)
+     */
+    func setTelemetryEnabled(_ identifier: String, enabled: Bool) -> Completable
 
     /// Perform factory reset to given device.
     ///

@@ -192,7 +192,6 @@ internal class PolarActivityUtils {
         return Single<PolarActivityDayData>.create { emitter in
             let activityFileDir = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(ACTIVITY_DIRECTORY)"
             var filePaths: [String] = []
-            let activityData: PolarActivityData = PolarActivityData()
             var polarActivityDataList: [PolarActivityData] = []
             return listFiles(client: client, folderPath: activityFileDir, condition: { (entry) -> Bool in
                 return entry.matches("^\(activityFileDir)") ||
@@ -235,6 +234,7 @@ internal class PolarActivityUtils {
                                             stepSamples: proto.stepsSamples,
                                             activityInfoList: try PolarActivityData.parsePbActivityInfoList(activityInfoList: proto.activityInfo)
                                         )
+                                        let activityData: PolarActivityData = PolarActivityData()
                                         activityData.samples = activitySamplesData
                                         polarActivityDataList.append(activityData)
                                         if (index == filePaths.count) {

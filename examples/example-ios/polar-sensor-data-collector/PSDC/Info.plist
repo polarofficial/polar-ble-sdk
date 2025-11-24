@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>APP_GIT_BRANCH</key>
-	<string>HEAD</string>
+	<string>master</string>
 	<key>APP_GIT_COMMIT</key>
-	<string>345b1a2</string>
+	<string>df15175</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -19,11 +19,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.37.0</string>
+	<string>1.38.0</string>
 	<key>CFBundleVersion</key>
-	<string>1.37.0</string>
+	<string>1.38.0</string>
 	<key>GIT_APP_LOCALLY_MODIFIED</key>
-	<string>PSDC/Info.plist</string>
+	<string>PSDC.xcodeproj/project.pbxproj</string>
 	<key>GIT_SDK_LOCALLY_MODIFIED</key>
 	<string></string>
 	<key>LSApplicationCategoryType</key>
@@ -37,7 +37,7 @@
 	<key>SDK_GIT_BRANCH</key>
 	<string>master</string>
 	<key>SDK_GIT_COMMIT</key>
-	<string>19861d3c</string>
+	<string>459c1511</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>

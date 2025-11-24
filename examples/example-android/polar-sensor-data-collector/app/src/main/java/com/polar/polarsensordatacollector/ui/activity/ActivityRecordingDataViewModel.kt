@@ -30,6 +30,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import javax.inject.Inject
@@ -127,6 +128,9 @@ class ActivityRecordingDataViewModel @Inject constructor(
                                     })
                                     .registerTypeAdapter(LocalDateTime::class.java, JsonSerializer<LocalDateTime> { src, _, _ ->
                                         JsonPrimitive(src?.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")))
+                                    })
+                                    .registerTypeAdapter(ZonedDateTime::class.java, JsonSerializer<ZonedDateTime> { src, _, _ ->
+                                        JsonPrimitive(src?.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")))
                                     })
                                     .create()
                                 val json = gson.toJson(sleepRecording.value)

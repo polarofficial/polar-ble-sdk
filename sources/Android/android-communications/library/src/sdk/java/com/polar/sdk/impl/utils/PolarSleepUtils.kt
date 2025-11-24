@@ -38,13 +38,13 @@ internal object PolarSleepUtils {
                     val proto = SleepanalysisResult.PbSleepAnalysisResult.parseFrom(response.toByteArray())
                     emitter.onSuccess(
                         PolarSleepAnalysisResult(
-                            PolarTimeUtils.pbLocalDateTimeToLocalDateTime(proto.sleepStartTime),
-                            PolarTimeUtils.pbLocalDateTimeToLocalDateTime(proto.sleepEndTime),
-                            PolarTimeUtils.pbSystemDateTimeToLocalDateTime(proto.lastModified),
+                            PolarTimeUtils.pbLocalDateTimeToZonedDateTime(proto.sleepStartTime),
+                            PolarTimeUtils.pbLocalDateTimeToZonedDateTime(proto.sleepEndTime),
+                            PolarTimeUtils.pbSystemDateTimeToZonedDateTime(proto.lastModified),
                             proto.sleepGoalMinutes,
                             fromPbSleepwakePhasesListProto(proto.sleepwakePhasesList),
-                            convertSnoozeTimeListToLocalTime(proto.snoozeTimeList),
-                            if (proto.hasAlarmTime()) { PolarTimeUtils.pbLocalDateTimeToLocalDateTime(proto.alarmTime) } else null,
+                            convertSnoozeTimeListToZonedDateTimeList(proto.snoozeTimeList),
+                            if (proto.hasAlarmTime()) { PolarTimeUtils.pbLocalDateTimeToZonedDateTime(proto.alarmTime) } else null,
                             proto.sleepStartOffsetSeconds ?: null,
                             proto.sleepEndOffsetSeconds ?: null,
                             if (proto.hasUserSleepRating()) { SleepRating.from(proto.userSleepRating.number) } else null,

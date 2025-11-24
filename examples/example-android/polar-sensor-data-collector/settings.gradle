@@ -1,6 +1,2 @@
 include ':polar-ble-sdk'
 include ':app'
-include ':polar-ble-sdk'
-include ':app'
-include ':polar-ble-sdk'
-include ':app'

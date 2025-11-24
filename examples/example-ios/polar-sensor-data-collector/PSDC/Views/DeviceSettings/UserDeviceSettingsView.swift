@@ -13,6 +13,7 @@ struct UserDeviceSettingsView: View {
     @State private var automaticTrainingDetectionSensitity: String = "" //UInt32 = 0
     @State private var automaticTrainingDetectionMinimumDuration: String = ""//UInt32 = 0
     @State private var settings = PolarUserDeviceSettingsData()
+    @State private var isTelemetryEnabled: Bool = false
 
     var deviceId: String
 
@@ -46,10 +47,16 @@ struct UserDeviceSettingsView: View {
                     isAutomaticTrainingDetectionEnabled = settings?.automaticTrainingDetectionMode ==  PolarUserDeviceSettings.AutomaticTrainingDetectionMode.ON ? true : false
                     automaticTrainingDetectionMinimumDuration = String(describing: settings?.minimumTrainingDurationSeconds ?? 0)
                     automaticTrainingDetectionSensitity = String(describing: settings?.automaticTrainingDetectionSensitivity ?? 0)
+                    isTelemetryEnabled = settings?.telemetryEnabled ?? false
                 }
 
                 Section(header: Text("USB settings")) {
                     Toggle("Enable USB connection", isOn: $isUSBConnectionEnabled)
+                        .toggleStyle(SwitchToggleStyle(tint: .blue))
+                }
+                
+                Section(header: Text("Telemetry / Trace logging")) {
+                    Toggle("Enable telemetry (trace logging)", isOn: $isTelemetryEnabled)
                         .toggleStyle(SwitchToggleStyle(tint: .blue))
                 }
 
@@ -122,6 +129,8 @@ struct UserDeviceSettingsView: View {
             rawValue: selectedUserDeviceLocation)?.toInt() ?? 0)
 
         await bleSdkManager.setUsbConnectionMode(enabled: isUSBConnectionEnabled)
+        
+        await bleSdkManager.setTelemetryEnabled(enabled: isTelemetryEnabled)
 
         await bleSdkManager.setAutomaticTrainingDetectionSettings(
             mode: isAutomaticTrainingDetectionEnabled,

@@ -24,6 +24,9 @@ import protocol.PftpRequest
 import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -43,9 +46,9 @@ class PolarSleepUtilsTest {
         val proto = SleepanalysisResult.PbSleepAnalysisResult.newBuilder()
             .addSleepwakePhases(createPbSleepWakePhasesMock())
             .addSleepCycles(createPbSleepCycleMock())
-            .addSnoozeTime(createPbLocalDateTime(23, 59, 59, 59, 1, 2, 2525))
-            .setSleepStartTime(createPbLocalDateTime(23, 45, 45, 1, 1, 2, 2525))
-            .setSleepEndTime(createPbLocalDateTime(7, 5, 7, 6, 2, 2, 2525))
+            .addSnoozeTime(createPbLocalDateTime(23, 59, 59, 59, 1, 2, 2525, 60))
+            .setSleepStartTime(createPbLocalDateTime(23, 45, 45, 1, 1, 2, 2525, 60))
+            .setSleepEndTime(createPbLocalDateTime(7, 5, 7, 6, 2, 2, 2525, 60))
             .setLastModified(Types.PbSystemDateTime.newBuilder()
                 .setTime(createPbTime(4,3,2,1))
                 .setDate(createPbDate(4,3,2525))
@@ -53,12 +56,12 @@ class PolarSleepUtilsTest {
                 .build()
             )
             .setSleepGoalMinutes(420)
-            .setAlarmTime(createPbLocalDateTime(7, 0, 0, 0, 2, 2, 2525))
+            .setAlarmTime(createPbLocalDateTime(7, 0, 0, 0, 2, 2, 2525, 60))
             .setSleepStartOffsetSeconds(1)
             .setSleepEndOffsetSeconds(1)
             .setOriginalSleepRange(Types.PbLocalDateTimeRange.newBuilder()
-                .setStartTime(createPbLocalDateTime(23, 59, 59, 59, 1, 2, 2525))
-                .setEndTime(createPbLocalDateTime(7, 0, 0, 0, 2, 2, 2525)).build()
+                .setStartTime(createPbLocalDateTime(23, 59, 59, 59, 1, 2, 2525, 60))
+                .setEndTime(createPbLocalDateTime(7, 0, 0, 0, 2, 2, 2525, 60)).build()
             )
             .setBatteryRanOut(false)
             .setRecordingDevice(Structures.PbDeviceId.newBuilder().setDeviceId("C8D9G10F11H12").build())
@@ -110,11 +113,11 @@ class PolarSleepUtilsTest {
             .setSecondsFromSleepStart(1).build()
     }
 
-    private fun createPbLocalDateTime(hour: Int, minute: Int, second: Int, millis: Int, day: Int, month: Int, year: Int): PbLocalDateTime {
+    private fun createPbLocalDateTime(hour: Int, minute: Int, second: Int, millis: Int, day: Int, month: Int, year: Int, zoneOffsetInMinutes: Int): PbLocalDateTime {
         return PbLocalDateTime.newBuilder()
             .setTime(PbTime.newBuilder().setHour(hour).setMinute(minute).setSeconds(second).setMillis(millis).build())
             .setDate(Types.PbDate.newBuilder().setDay(day).setMonth(month).setYear(year).build())
-            .setTimeZoneOffset(0)
+            .setTimeZoneOffset(zoneOffsetInMinutes)
             .setOBSOLETETrusted(true)
             .build()
     }
@@ -137,22 +140,21 @@ class PolarSleepUtilsTest {
     }
 
     private fun createSleepAnalysisResult(): PolarSleepAnalysisResult {
-
-        var snoozeTimes = mutableListOf<LocalDateTime>()
-        snoozeTimes.add(LocalDateTime.of(2525, 2, 1, 23, 59, 59, 59 * 1000000))
-            //.addSnoozeTime(createPbLocalDateTime(23, 59, 59, 59, 1, 2, 2525))
+        val zoneId = ZoneOffset.ofHoursMinutes(1, 0)
+        var snoozeTimes = mutableListOf<ZonedDateTime>()
+        snoozeTimes.add(ZonedDateTime.of(LocalDateTime.of(2525, 2, 1, 23, 59, 59, 59 * 1000000), zoneId))
 
         return PolarSleepAnalysisResult(
-            LocalDateTime.of(2525, 2, 1, 23, // Sleep start
-            45, 45, 1 * 1000000, ),
-            LocalDateTime.of(2525, 2, 2, 7, // Sleep end
-                5, 7, 6 * 1000000, ),
-            LocalDateTime.of(2525, 3, 4, 4, // Last modified
-                3, 2, 1 * 1000000, ),
+            ZonedDateTime.of(LocalDateTime.of(2525, 2, 1, 23, // Sleep start
+            45, 45, 1 * 1000000), zoneId),
+            ZonedDateTime.of(LocalDateTime.of(2525, 2, 2, 7, // Sleep end
+                5, 7, 6 * 1000000), zoneId),
+            ZonedDateTime.of(LocalDateTime.of(2525, 3, 4, 4, // Last modified
+                3, 2, 1 * 1000000), ZoneOffset.UTC),
             420,
             mockSleepWakePhases(),
             snoozeTimes,
-            LocalDateTime.of(2525, 2, 2, 7, 0, 0, 0),
+            ZonedDateTime.of(LocalDateTime.of(2525, 2, 2, 7, 0, 0, 0), zoneId),
             1,
             1,
             SleepRating.SLEPT_WELL,

@@ -261,6 +261,11 @@ struct DeviceSettingsView: View {
                                 let df = DateFormatter()
                                 df.dateFormat = "yyyy-MM-dd"
                                 
+                                let sleepMessage = if (info.sleepGoalMinutes > 0) {
+                                    "\nSleep goal: \(info.sleepGoalMinutes) min"
+                                } else {
+                                    ""
+                                }
                                 physicalInfoMessage = """
                         Gender: \(info.gender)
                         Birthdate: \(df.string(from: info.birthDate))
@@ -271,8 +276,7 @@ struct DeviceSettingsView: View {
                         Resting HR: \(info.restingHeartRate) bpm
                         Training background: \(info.trainingBackground)
                         Typical day: \(info.typicalDay)
-                        Sleep goal: \(info.sleepGoalMinutes) min
-                        """
+                        """ + sleepMessage
                                 showPhysicalInfo = true
                             }
                         }

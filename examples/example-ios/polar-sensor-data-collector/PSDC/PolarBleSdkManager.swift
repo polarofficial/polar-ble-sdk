@@ -1943,7 +1943,7 @@ extension PolarBleSdkManager {
                     .subscribe(onError: { [weak self] error in
                         Task { @MainActor [weak self] in
                             guard let self = self else { return }
-                            self.firmwareUpdateFeature.status = "Error: \(error.localizedDescription)"
+                            self.firmwareUpdateFeature.status = "Error: \(error)"
                             self.firmwareUpdateFeature.inProgress = false
                             self.updatingDevices.removeAll { $0.deviceId == device.deviceId }
                             self.connectToDevice(withId: device.deviceId)
@@ -2512,6 +2512,22 @@ extension PolarBleSdkManager {
             }
         }
     }
+    
+    func setTelemetryEnabled(enabled: Bool) async {
+            if case .connected(let device) = deviceConnectionState {
+                do {
+                    try await withCheckedThrowingContinuation { continuation in
+                        _ = api.setTelemetryEnabled(device.deviceId, enabled: enabled)
+                            .subscribe(
+                                onCompleted: { continuation.resume() },
+                                onError: { continuation.resume(throwing: $0) }
+                            )
+                    }
+                } catch {
+                    NSLog("Failed to set telemetry enabled: \(error.localizedDescription)")
+                }
+            }
+        }
 
     func setAutomaticTrainingDetectionSettings(
           mode: Bool,

@@ -8,6 +8,14 @@ struct OnlineStreamsView: View {
     @EnvironmentObject private var bleSdkManager: PolarBleSdkManager
     @State private var urlToShare: IdentifiableURL?
     
+    struct ShownData: Identifiable {
+        let dataType: String
+        let data: String
+        var id: String { return "\(dataType)\(data)" }
+    }
+    
+    @State private var shownData: ShownData? = nil
+    
     func shareURL(url: URL) {
         urlToShare = IdentifiableURL(url: url)
     }
@@ -20,12 +28,17 @@ struct OnlineStreamsView: View {
                 ForEach(PolarDeviceDataType.allCases) { dataType in
                     HStack {
                         OnlineStreamingButton(dataType: dataType)
-                        Spacer()
                         if case let .success(urlOptional) = bleSdkManager.onlineStreamingFeature.isStreaming[dataType],
                            let url = urlOptional {
                             
                             ShareButton() { shareURL(url: url) }
-                                .padding(.trailing)
+                            Spacer()
+                            ShowButton() {
+                                let data = (try? String(contentsOf: url, encoding: .utf8)) ?? ""
+                                shownData = ShownData(dataType: dataType.displayName, data: data)
+                            }
+                            .padding(.trailing)
+                            Spacer()
                         }
                     }
                 }
@@ -47,9 +60,29 @@ struct OnlineStreamsView: View {
                 ),
                 content: { identifiableURL in ActivityViewController(activityItems: [identifiableURL.url], applicationActivities: nil)}
             )
+            .sheet(
+                item: $shownData,
+                content: { shownData in
+                    NavigationView {
+                        TextViewerView(
+                            title: shownData.dataType,
+                            text: shownData.data
+                        )
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button(action: {
+                                    self.shownData = nil
+                                }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.blue)
+                                }.accessibility(identifier: "Close \(shownData.dataType)")
+                            }
+                        }
+                    }
+                })
+            }
         }
     }
-}
 
 struct OnlineStreamingButton: View {
     let dataType: PolarDeviceDataType
@@ -256,6 +289,18 @@ fileprivate struct ShareButton: View {
         Button(action: action) {
             Image(systemName: "square.and.arrow.up")
                 .font(.system(size: 28))
+        }
+    }
+}
+
+fileprivate struct ShowButton: View {
+    var action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "text.viewfinder")
+                .font(.system(size: 28))
+
         }
     }
 }

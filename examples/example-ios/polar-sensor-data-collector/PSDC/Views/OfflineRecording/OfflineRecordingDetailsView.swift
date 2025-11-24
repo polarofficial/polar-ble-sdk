@@ -8,6 +8,7 @@ struct OfflineRecordingDetailsView: View {
     var offlineRecordingEntry: PolarOfflineRecordingEntry
     @EnvironmentObject var bleSdkManager: PolarBleSdkManager
     @State var showingShareSheet: Bool = false
+    @State var showingContents: Bool = false
     
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -129,6 +130,33 @@ struct OfflineRecordingDetailsView: View {
                                         text: bleSdkManager.offlineRecordingData.data,
                                         filename: shareFileName
                                     )
+                                }
+                                Spacer()
+                                Button(action: {
+                                    self.showingContents = true
+                                }) {
+                                    Image(systemName: "text.viewfinder")
+                                        .foregroundColor(.blue)
+                                        .imageScale(.large)
+                                    Text("Show")
+                                }
+                                .sheet(isPresented: $showingContents) {
+                                    NavigationView {
+                                        TextViewerView(
+                                            title: shareFileName,
+                                            text: bleSdkManager.offlineRecordingData.data
+                                        )
+                                        .toolbar {
+                                            ToolbarItem(placement: .navigationBarTrailing) {
+                                                Button(action: {
+                                                    self.showingContents = false
+                                                }) {
+                                                    Image(systemName: "xmark.circle.fill")
+                                                        .foregroundColor(.blue)
+                                                }.accessibility(identifier: "Close \(shareFileName)")
+                                            }
+                                        }
+                                    }
                                 }
 
                                 Spacer()

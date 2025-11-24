@@ -214,6 +214,7 @@
                     android:orientation="horizontal">
 
                     <TextView
+                        android:id="@+id/sleep_goal_label"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -221,6 +222,7 @@
                         android:layout_gravity="center_vertical" />
 
                     <TextView
+                        android:id="@+id/hours_label"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/hours_label"
@@ -234,6 +236,7 @@
                         android:inputType="number" />
 
                     <TextView
+                        android:id="@+id/minutes_label"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/minutes_label"

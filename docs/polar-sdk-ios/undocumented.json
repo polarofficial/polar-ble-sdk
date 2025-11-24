@@ -1578,104 +1578,118 @@
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift",
       "line": 90,
+      "symbol": "PolarUserDeviceSettings.telemetryEnabled",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift",
+      "line": 91,
       "symbol": "PolarUserDeviceSettings.minimumTrainingDurationSeconds",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift",
-      "line": 92,
+      "line": 93,
       "symbol": "PolarUserDeviceSettings.deviceLocation",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift",
-      "line": 101,
+      "line": 102,
       "symbol": "PolarUserDeviceSettings.PolarUserDeviceSettingsResult",
       "symbol_kind": "source.lang.swift.decl.struct",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift",
-      "line": 102,
+      "line": 103,
       "symbol": "PolarUserDeviceSettings.PolarUserDeviceSettingsResult.deviceLocation",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift",
-      "line": 103,
+      "line": 104,
       "symbol": "PolarUserDeviceSettings.PolarUserDeviceSettingsResult.usbConnectionMode",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift",
-      "line": 104,
+      "line": 105,
       "symbol": "PolarUserDeviceSettings.PolarUserDeviceSettingsResult.automaticTrainingDetectionMode",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift",
-      "line": 105,
+      "line": 106,
       "symbol": "PolarUserDeviceSettings.PolarUserDeviceSettingsResult.automaticTrainingDetectionSensitivity",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift",
-      "line": 106,
+      "line": 107,
+      "symbol": "PolarUserDeviceSettings.PolarUserDeviceSettingsResult.telemetryEnabled",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift",
+      "line": 108,
       "symbol": "PolarUserDeviceSettings.PolarUserDeviceSettingsResult.minimumTrainingDurationSeconds",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift",
-      "line": 151,
+      "line": 166,
       "symbol": "PolarUserDeviceSettings.getStringValue(deviceLocationIndex:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift",
-      "line": 155,
+      "line": 170,
       "symbol": "PolarUserDeviceSettings.getDeviceLocation(deviceLocation:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift",
-      "line": 166,
+      "line": 181,
       "symbol": "PolarUserDeviceSettings.getAllAsString()",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift",
-      "line": 176,
+      "line": 191,
       "symbol": "PolarUserDeviceSettingsData",
       "symbol_kind": "source.lang.swift.decl.struct",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift",
-      "line": 179,
+      "line": 194,
       "symbol": "PolarUserDeviceSettingsData._polarUserDeviceSettings",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift",
-      "line": 181,
+      "line": 196,
       "symbol": "PolarUserDeviceSettingsData.init()",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarUserDeviceSettings.swift",
-      "line": 184,
+      "line": 199,
       "symbol": "PolarUserDeviceSettingsData.polarUserDeviceSettings",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
@@ -3348,7 +3362,7 @@
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/impl/PolarBleApiImpl.swift",
-      "line": 5089,
+      "line": 5140,
       "symbol": "PrimitiveSequence.asCompletable()",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"

@@ -25,6 +25,7 @@
 		84F749032C63559A00038A4B /* ActivityRecordingDetailsview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F749022C63559A00038A4B /* ActivityRecordingDetailsview.swift */; };
 		84F749052C6355C400038A4B /* ActivityRecordingData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F749042C6355C400038A4B /* ActivityRecordingData.swift */; };
 		9537D58B2CFF06E200B6A1E6 /* PolarBleDeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9537D58A2CFF06D900B6A1E6 /* PolarBleDeviceManager.swift */; };
+		957CBBE72EC74182000E008B /* TextViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957CBBE62EC74182000E008B /* TextViewerView.swift */; };
 		95B4F1032CEB7A880010E2B6 /* CheckFirmwareUpdateFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B4F1022CEB7A7C0010E2B6 /* CheckFirmwareUpdateFeature.swift */; };
 		95BA028D2D64B1030037F44E /* FilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BA028C2D64B1030037F44E /* FilePicker.swift */; };
 		95EA2BA22D40E7B200657DE5 /* SleepRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EA2BA12D40E7A800657DE5 /* SleepRecordingFeature.swift */; };
@@ -118,6 +119,7 @@
 		84F749042C6355C400038A4B /* ActivityRecordingData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityRecordingData.swift; sourceTree = "<group>"; };
 		9537D58A2CFF06D900B6A1E6 /* PolarBleDeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarBleDeviceManager.swift; sourceTree = "<group>"; };
 		9559A5F72D267B960003DC6F /* SkinTemperatureRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkinTemperatureRecordingFeature.swift; sourceTree = "<group>"; };
+		957CBBE62EC74182000E008B /* TextViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextViewerView.swift; sourceTree = "<group>"; };
 		95A381E52D27DEC9005DB1BA /* PSDC.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PSDC.entitlements; sourceTree = "<group>"; };
 		95B4F1022CEB7A7C0010E2B6 /* CheckFirmwareUpdateFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckFirmwareUpdateFeature.swift; sourceTree = "<group>"; };
 		95BA028C2D64B1030037F44E /* FilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePicker.swift; sourceTree = "<group>"; };
@@ -340,6 +342,7 @@
 				AA74C2202BDA377D005E0908 /* ContentView.swift */,
 				AA74C25B2BDA3F3E005E0908 /* UiHelper.swift */,
 				AA74C25F2BDA3FD5005E0908 /* SettingsView.swift */,
+				957CBBE62EC74182000E008B /* TextViewerView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -517,9 +520,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PSDC/Pods-PSDC-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PSDC/Pods-PSDC-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -603,6 +610,7 @@
 				84698A132DB77937006AD8FA /* TrainingSessionEntriesRow.swift in Sources */,
 				AA74C2682BDA7215005E0908 /* H10ExerciseView.swift in Sources */,
 				AAA0FE052BEA3769005368A7 /* AccRecordingFeature.swift in Sources */,
+				957CBBE72EC74182000E008B /* TextViewerView.swift in Sources */,
 				84698A172DB77D8C006AD8FA /* TrainingSessionData.swift in Sources */,
 				AA74C2562BDA3E9B005E0908 /* OfflineRecordingListView.swift in Sources */,
 				8415B05A2C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift in Sources */,

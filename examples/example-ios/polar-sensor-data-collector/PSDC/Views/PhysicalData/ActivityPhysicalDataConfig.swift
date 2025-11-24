@@ -52,65 +52,68 @@ struct PhysicalDataConfigView: View {
                         .font(.subheadline)
                         .padding()
 
-            Form {
-                Section(header: Text("Personal Information")) {
-                    Picker("Gender", selection: $gender) {
-                        ForEach(genders, id: \.self) { gender in
-                            Text(gender == .male ? "Male" : "Female")
+                    Form {
+                        Section(header: Text("Personal Information")) {
+                            Picker("Gender", selection: $gender) {
+                                ForEach(genders, id: \.self) { gender in
+                                    Text(gender == .male ? "Male" : "Female")
+                                }
+                            }
+                            DatePicker("Birth Date", selection: $birthDate, displayedComponents: [.date])
+                            TextField("Height (cm)", text: $height)
+                                .keyboardType(.numberPad)
+                                .validation((90...240).contains(Int(height) ?? 0),
+                                            guide: "90...240 cm",
+                                            formValidation: formValidation)
+                            TextField("Weight (kg)", text: $weight)
+                                .keyboardType(.numberPad)
+                                .validation((15...300).contains(Int(weight) ?? 0),
+                                            guide: "15...300 kg",
+                                            formValidation: formValidation)
+                        }
+
+                        Section(header: Text("Heart Rates")) {
+                            TextField("Max Heart Rate (bpm)", text: $maxHeartRate)
+                                .keyboardType(.numberPad)
+                                .validation((100...240).contains(Int(maxHeartRate) ?? 0),
+                                            guide: "100...240 bpm",
+                                            formValidation: formValidation)
+                            TextField("Resting Heart Rate (bpm)", text: $restingHeartRate)
+                                .keyboardType(.numberPad)
+                                .validation((20...120).contains(Int(restingHeartRate) ?? 0),
+                                            guide: "20...120 bpm",
+                                            formValidation: formValidation)
+                        }
+
+                        Section(header: Text("Fitness")) {
+                            TextField("VO2 Max", text: $vo2Max)
+                                .keyboardType(.numberPad)
+                                .validation((10...95).contains(Int(vo2Max) ?? 0),
+                                            guide: "10...95",
+                                            formValidation: formValidation)
+                            Picker("Training Background", selection: $trainingBackground) {
+                                ForEach(trainingBackgroundLevels, id: \.self) { level in
+                                    Text("\(level)")
+                                }
+                            }
+                        }
+
+                        Section(header: Text("Daily Activity")) {
+                            Picker("Typical Day", selection: $typicalDay) {
+                                ForEach(typicalDays, id: \.self) { day in
+                                    Text(day.description)
+                                }
+                            }
+                            // If device does not support sleep goal it returns zero value. -> Hide TextField if value is zero.
+                            if ( $sleepGoalMinutes.wrappedValue != "0" ) {
+                                TextField("Sleep Goal (minutes)", text: $sleepGoalMinutes)
+                                    .keyboardType(.numberPad)
+                                    .validation((300...650).contains (Int(sleepGoalMinutes) ?? 0),
+                                                guide: "300...650 min",
+                                                formValidation: formValidation)
+                            }
                         }
                     }
-                    DatePicker("Birth Date", selection: $birthDate, displayedComponents: [.date])
-                    TextField("Height (cm)", text: $height)
-                        .keyboardType(.numberPad)
-                        .validation((90...240).contains(Int(height) ?? 0),
-                                    guide: "90...240 cm",
-                                    formValidation: formValidation)
-                    TextField("Weight (kg)", text: $weight)
-                        .keyboardType(.numberPad)
-                        .validation((15...300).contains(Int(weight) ?? 0),
-                                    guide: "15...300 kg",
-                                    formValidation: formValidation)
-                }
-                
-                Section(header: Text("Heart Rates")) {
-                    TextField("Max Heart Rate (bpm)", text: $maxHeartRate)
-                        .keyboardType(.numberPad)
-                        .validation((100...240).contains(Int(maxHeartRate) ?? 0),
-                                    guide: "100...240 bpm",
-                                    formValidation: formValidation)
-                    TextField("Resting Heart Rate (bpm)", text: $restingHeartRate)
-                        .keyboardType(.numberPad)
-                        .validation((20...120).contains(Int(restingHeartRate) ?? 0),
-                                    guide: "20...120 bpm",
-                                    formValidation: formValidation)
-                }
-                
-                Section(header: Text("Fitness")) {
-                    TextField("VO2 Max", text: $vo2Max)
-                        .keyboardType(.numberPad)
-                        .validation((10...95).contains(Int(vo2Max) ?? 0),
-                                    guide: "10...95",
-                                    formValidation: formValidation)
-                    Picker("Training Background", selection: $trainingBackground) {
-                        ForEach(trainingBackgroundLevels, id: \.self) { level in
-                            Text("\(level)")
-                        }
-                    }
-                }
-                
-                Section(header: Text("Daily Activity")) {
-                    Picker("Typical Day", selection: $typicalDay) {
-                        ForEach(typicalDays, id: \.self) { day in
-                            Text(day.description)
-                        }
-                    }
-                    TextField("Sleep Goal (minutes)", text: $sleepGoalMinutes)
-                        .keyboardType(.numberPad)
-                        .validation((300...650).contains (Int(sleepGoalMinutes) ?? 0),
-                                    guide: "300...650 min",
-                                    formValidation: formValidation)
-                }
-            }
 
                     Button(action: { Task { await submitData() } }) {
                         Text("Submit")

@@ -249,9 +249,11 @@ public class BlePsFtpClient: BleGattClientBase {
     fileprivate func transmitMtuPacket(_ packet: Data, canceled: BlockOperation, response: Bool, timeout: TimeInterval) throws {
         if !canceled.isCancelled {
             if let transport = self.gattServiceTransmitter {
-                try transport.transmitMessage(self, serviceUuid: BlePsFtpClient.PSFTP_SERVICE, characteristicUuid: BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC, packet: packet, withResponse: response)
-                BleLogger.trace_hex("MTU send ", data: packet)
-                try self.waitPacketsWritten(self.packetsWritten, canceled: canceled, count: 1, timeout: timeout)
+                try DispatchQueue.global(qos: .userInitiated).sync {
+                    try transport.transmitMessage(self, serviceUuid: BlePsFtpClient.PSFTP_SERVICE, characteristicUuid: BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC, packet: packet, withResponse: response)
+                    BleLogger.trace_hex("MTU send ", data: packet)
+                    try self.waitPacketsWritten(self.packetsWritten, canceled: canceled, count: 1, timeout: timeout)
+                }
                 return
             }
             throw BleGattException.gattTransportNotAvailable
