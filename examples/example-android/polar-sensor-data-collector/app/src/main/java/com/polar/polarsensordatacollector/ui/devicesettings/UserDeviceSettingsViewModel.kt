@@ -56,6 +56,7 @@ internal class UserDeviceSettingsViewModel @Inject constructor(
                     atdMinDuration
                 )
                 repository.setTelemetryEnabled(deviceId, telemetryEnabled)
+                repository.setDaylightSavingTime(deviceId)
                 _message.value = application.getString(R.string.user_device_settings_saved)
             } catch (e: Exception) {
                 _message.value = application.getString(

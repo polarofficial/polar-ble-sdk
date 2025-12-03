@@ -22,12 +22,12 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.ChargeState
 import com.polar.androidcommunications.api.ble.model.gatt.client.PowerSourceState
 import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.model.Device
+import com.polar.polarsensordatacollector.ui.hrbroadcast.HrBroadcastDialogFragment
 import com.polar.polarsensordatacollector.ui.utils.DialogUtility.showSensorSelection
 import com.polar.sdk.api.errors.PolarInvalidArgument
 import com.polar.sdk.api.model.PolarDeviceInfo
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-
 
 @AndroidEntryPoint
 class MainFragment : Fragment(R.layout.fragment_main) {
@@ -51,6 +51,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private lateinit var searchText: EditText
     private lateinit var connectButton: Button
     private lateinit var disconnectButton: Button
+    private lateinit var listenHrBroadcastsButton: Button
 
     private lateinit var batteryStatus: TextView
     private lateinit var batteryChargingStatus: TextView
@@ -224,6 +225,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             }
         }
 
+        listenHrBroadcastsButton.setOnClickListener {
+            showHrBroadcastDialog()
+        }
+
         batteryChargingStatus.setOnClickListener { this.togglePowersourceState() }
         batteryStatus.setOnClickListener { this.togglePowersourceState() }
         batteryPresentStatus.setOnClickListener { this.hidePowerSourceState() }
@@ -247,6 +252,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         searchText = view.findViewById(R.id.search_device_name_prefix)
         connectButton = view.findViewById(R.id.search_connect_button)
         disconnectButton = view.findViewById(R.id.disconnect_button)
+        listenHrBroadcastsButton = view.findViewById(R.id.listen_hr_broadcasts_button)
         firmwareVersion = view.findViewById(R.id.firmware_version)
         batteryStatus = view.findViewById(R.id.battery)
         batteryChargingStatus = view.findViewById(R.id.battery_charging_status)
@@ -260,6 +266,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         outState.putInt(CURRENT_FRAGMENT, viewPager.currentItem)
     }
 
+    private fun showHrBroadcastDialog() {
+        val dialog = HrBroadcastDialogFragment.newInstance()
+        dialog.show(childFragmentManager, HrBroadcastDialogFragment.TAG)
+    }
+
     private fun deviceConnectionStateChange(state: DeviceConnectionUiState) {
         Log.d(TAG, "device connection state change to $state")
         connectionState = state.state
@@ -269,6 +280,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             MainViewModel.DeviceConnectionStates.NOT_CONNECTED -> {
                 Log.i(TAG, "Device not connected")
                 connectButton.visibility = VISIBLE
+                listenHrBroadcastsButton.visibility = VISIBLE
                 if (viewModel.isBluetoothEnabled()) {
                     phoneBleStatus.visibility = GONE
                 } else {
@@ -287,6 +299,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 deviceConnectionStatusGroup.visibility = VISIBLE
                 phoneBleStatus.visibility = GONE
                 disconnectButton.visibility = VISIBLE
+                listenHrBroadcastsButton.visibility = GONE
                 connectButton.setBackgroundColor(resources.getColor(R.color.colorButtonConnecting, null))
             }
             MainViewModel.DeviceConnectionStates.CONNECTED -> {
@@ -310,6 +323,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 viewPager.visibility = VISIBLE
                 deviceConnectionStatusGroup.visibility = VISIBLE
                 phoneBleStatus.visibility = GONE
+                listenHrBroadcastsButton.visibility = GONE
                 connectButton.setBackgroundColor(resources.getColor(R.color.colorButtonConnected, null))
                 disconnectButton.visibility = VISIBLE
                 selectedDevice?.let {
@@ -324,6 +338,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 viewPager.visibility = INVISIBLE
                 deviceConnectionStatusGroup.visibility = VISIBLE
                 phoneBleStatus.visibility = GONE
+                listenHrBroadcastsButton.visibility = GONE
                 connectButton.setBackgroundColor(resources.getColor(R.color.colorButtonConnecting, null))
                 onlineOfflineAdapter.removeFragments()
                 selectedDevice?.let {
@@ -347,6 +362,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 viewPager.visibility = INVISIBLE
                 connectButton.visibility = GONE
                 disconnectButton.visibility = GONE
+                listenHrBroadcastsButton.visibility = GONE
                 phoneBleStatus.visibility = VISIBLE
                 deviceConnectionStatusGroup.visibility = GONE
                 connectButton.setText(R.string.search_and_connect_search)

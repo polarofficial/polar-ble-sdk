@@ -487,6 +487,15 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
     ): Completable
 
     /**
+     * Set the next Daylight Saving Time (DST) settings on the device in the current timezone.
+     * Gets the current timezone from the device and sets DST value based on that.
+     *
+     * @param identifier Polar device ID or BT address.
+     * @return [Completable] emitting success or error.
+     */
+    abstract fun setDaylightSavingTime(identifier: String): Completable
+
+    /**
      * Delete data [PolarStoredDataType] from a device. Note that you will need to await for completion.
      *
      * @param identifier, Polar device ID or BT address
@@ -516,6 +525,14 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @return [Completable] emitting success or error
      */
     abstract fun deleteDeviceDateFolders(identifier: String, fromDate: LocalDate?, toDate: LocalDate?): Completable
+
+    /**
+     * Deletes all telemetry data files from a device
+     *
+     * @param identifier, Polar device ID or BT address
+     * @return [Completable] emitting success or error
+     */
+    abstract fun deleteTelemetryData(identifier: String): Completable
 
     /**
      * Waits for a connection to the specified device.

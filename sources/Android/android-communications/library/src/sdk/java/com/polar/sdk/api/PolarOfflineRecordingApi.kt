@@ -137,6 +137,7 @@ interface PolarOfflineRecordingApi {
      * <BR></BR> - onComplete the listing completed
      * <BR></BR> - onError listing request failed
      */
+    @Deprecated("Use listOfflineRecordings instead")
     fun listSplitOfflineRecordings(identifier: String): Flowable<PolarOfflineRecordingEntry>
 
     /**
@@ -154,6 +155,7 @@ interface PolarOfflineRecordingApi {
      * <BR></BR> - onSuccess the offline recording data
      * <BR></BR> - onError fetch recording request failed
      */
+    @Deprecated("Use getOfflineRecordWithProgress method instead")
     fun getSplitOfflineRecord(identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret? = null): Single<PolarOfflineRecordingData>
 
     /**

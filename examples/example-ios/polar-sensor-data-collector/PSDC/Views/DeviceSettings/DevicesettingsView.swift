@@ -31,6 +31,7 @@ struct DeviceSettingsView: View {
     @State private var showError = false
     @State private var selectedFirmwareFileURL: URL?
     @State private var showFactoryResetAlert = false
+    @State private var showTelemetryDeleteAlert = false
     @State private var showPhysicalInfo = false
     @State private var physicalInfoMessage = ""
 
@@ -384,6 +385,25 @@ struct DeviceSettingsView: View {
                                 }
                         }.padding(.top, 20)
                             .buttonStyle(SecondaryButtonStyle(buttonState: ButtonState.released))
+                    }
+                    if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                        HStack {
+                            Button("Delete telemetry data") {
+                                showTelemetryDeleteAlert = true
+                            }
+                            .buttonStyle(SecondaryButtonStyle(buttonState: .released))
+                        }
+                        .padding()
+                        .alert("Confirm telemetry data delete", isPresented: $showTelemetryDeleteAlert) {
+                            Button("Delete", role: .destructive) {
+                                Task {
+                                    await bleSdkManager.deleteTelemetryData()
+                                }
+                            }
+                            Button("Cancel", role: .cancel) {}
+                        } message: {
+                            Text("Are you sure you want to delete telemetry data?")
+                        }
                     }
                     if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
                         HStack {

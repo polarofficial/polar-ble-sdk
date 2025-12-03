@@ -138,6 +138,8 @@ struct UserDeviceSettingsView: View {
             minimumDuration: Int(automaticTrainingDetectionMinimumDuration) ?? 0
         )
 
+        await bleSdkManager.setDaylightSavingTime()
+
         await MainActor.run {
             presentationMode.wrappedValue.dismiss()
         }

@@ -11,8 +11,10 @@ import com.polar.polarsensordatacollector.model.Device
 import com.polar.polarsensordatacollector.repository.DeviceConnectionState
 import com.polar.polarsensordatacollector.repository.PolarDeviceRepository
 import com.polar.sdk.api.model.PolarDeviceInfo
+import com.polar.sdk.api.model.PolarHrBroadcastData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.core.Flowable
+import io.reactivex.rxjava3.disposables.Disposable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -67,6 +69,11 @@ class MainViewModel @Inject constructor(
     private val _uiOfflineRecordingState = MutableStateFlow(OfflineRecordingAvailabilityUiState())
     val uiOfflineRecordingState: StateFlow<OfflineRecordingAvailabilityUiState> = _uiOfflineRecordingState.asStateFlow()
 
+    private val _hrData = MutableStateFlow<PolarHrBroadcastData?>(null)
+    val hrData: StateFlow<PolarHrBroadcastData?> = _hrData.asStateFlow()
+
+    private var hrDisposable: Disposable? = null
+
     enum class DeviceConnectionStates {
         PHONE_BLE_OFF, NOT_CONNECTED, CONNECTING_TO_SELECTED_DEVICE, CONNECTED, DISCONNECTING_FROM_SELECTED_DEVICE
     }
@@ -118,15 +125,6 @@ class MainViewModel @Inject constructor(
                 }
         }
 
-        /*viewModelScope.launch {
-            polarDeviceStreamingRepository.offlineRecordingStates
-                .collect { offlineRecInfo ->
-                    offlineRecInfo?.let {
-                        updateOfflineRecordingUiState(deviceId = it.deviceId, isAvailable = it.isAvailable)
-                    }
-                }
-        }*/
-
         viewModelScope.launch {
             polarDeviceStreamingRepository.availableFeatures
                 .collect { deviceStreamsAvailable ->
@@ -152,6 +150,28 @@ class MainViewModel @Inject constructor(
 
     fun searchForDevice(withPrefix: String?): Flowable<PolarDeviceInfo> {
         return polarDeviceStreamingRepository.searchForDevice(withPrefix)
+    }
+
+    fun startListeningHr(excludeDeviceIds: Set<String>?) {
+        hrDisposable = polarDeviceStreamingRepository.listenHrBroadcasts(excludeDeviceIds)
+            .subscribe(
+                { hrData ->
+                    Log.d(TAG, "HR data received! Device=${hrData.polarDeviceInfo.deviceId}, HR=${hrData.hr} bpm")
+                    _hrData.value = hrData
+                },
+                { error ->
+                    Log.e(TAG, "HR stream error: ${error.message}", error)
+                },
+                {
+                    Log.d(TAG, "HR stream completed")
+                }
+            )
+    }
+
+    fun stopListeningHr() {
+        hrDisposable?.dispose()
+        hrDisposable = null
+        _hrData.value = null
     }
 
     fun isBluetoothEnabled(): Boolean {
@@ -208,6 +228,7 @@ class MainViewModel @Inject constructor(
     public override fun onCleared() {
         super.onCleared()
         Log.d(TAG, "ViewModel onCleared()")
+        hrDisposable?.dispose()
         polarDeviceStreamingRepository.sdkShutDown()
     }
 }

@@ -664,7 +664,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                           >
                                     <li class="blockList">
                                         <h4>listSplitOfflineRecordings</h4>
-                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a>&gt; <a href=PolarOfflineRecordingApi.html#listSplitOfflineRecordings(java.lang.String)>listSplitOfflineRecordings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <pre class="methodSignature">@<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-deprecated/index.html>Deprecated</a>(message = &quot;Use listOfflineRecordings instead&quot;) abstract Flowable&lt;<a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a>&gt; <a href=PolarOfflineRecordingApi.html#listSplitOfflineRecordings(java.lang.String)>listSplitOfflineRecordings</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
                                         <div class="block"><p>Lists all parts of all offline recordings (split and non-split) stored in the device. Use this method to list all parts of a recording when you need to read long offline recordings one file part at a time.</p></div>
 
                                         <dl>
@@ -697,7 +697,7 @@ public interface <span class="typeNameLabel"><a href=PolarOfflineRecordingApi.ht
                                           >
                                     <li class="blockList">
                                         <h4>getSplitOfflineRecord</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarOfflineRecordingData.html>PolarOfflineRecordingData</a>&gt; <a href=PolarOfflineRecordingApi.html#getSplitOfflineRecord(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingEntry,com.polar.sdk.api.model.PolarRecordingSecret)>getSplitOfflineRecord</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a> entry, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret)</pre>
+                                        <pre class="methodSignature">@<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-deprecated/index.html>Deprecated</a>(message = &quot;Use getOfflineRecordWithProgress method instead&quot;) abstract Single&lt;<a href=model/PolarOfflineRecordingData.html>PolarOfflineRecordingData</a>&gt; <a href=PolarOfflineRecordingApi.html#getSplitOfflineRecord(java.lang.String,com.polar.sdk.api.model.PolarOfflineRecordingEntry,com.polar.sdk.api.model.PolarRecordingSecret)>getSplitOfflineRecord</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarOfflineRecordingEntry.html>PolarOfflineRecordingEntry</a> entry, <a href=model/PolarRecordingSecret.html>PolarRecordingSecret</a> secret)</pre>
                                         <div class="block"><p>Fetch split recording from the Polar device.</p><p>Note, the fetching of the recording may take several seconds if the recording is big.</p></div>
 
                                         <dl>

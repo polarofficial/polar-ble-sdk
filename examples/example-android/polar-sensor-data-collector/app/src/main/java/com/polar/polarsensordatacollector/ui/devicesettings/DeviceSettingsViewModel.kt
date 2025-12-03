@@ -386,6 +386,19 @@ internal class DeviceSettingsViewModel @Inject constructor(
         }
     }
 
+    fun deleteTelemetryData() = viewModelScope.launch {
+        withContext(Dispatchers.IO) {
+            when (polarDeviceStreamingRepository.deleteTelemetryData(deviceId)) {
+                is ResultOfRequest.Success -> {
+                    showInfo("Successfully deleted all telemetry data files")
+                }
+                is ResultOfRequest.Failure -> {
+                    showError("Failure in deleting telemetry data files from device: $deviceId")
+                }
+            }
+        }
+    }
+
     fun setTime() {
         _uiWriteTimeStatus.value = StatusWriteTime.InProgress
 

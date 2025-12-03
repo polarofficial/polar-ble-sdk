@@ -2107,6 +2107,10 @@ extension PolarBleApiImpl: PolarBleApi  {
                         return PolarOfflineRecordingData.temperatureOfflineRecordingData(
                             (offlineRecData.data as! TemperatureData).mapToPolarData(),
                             startTime: offlineRecData.startTime)
+                    case is SkinTemperatureData:
+                        return PolarOfflineRecordingData.skinTemperatureOfflineRecordingData(
+                            (offlineRecData.data as! SkinTemperatureData).mapToPolarData(),
+                            startTime: offlineRecData.startTime)
                     case is EmptyData:
                         return PolarOfflineRecordingData.emptyData(startTime: offlineRecData.startTime)
                     default:
@@ -2996,11 +3000,16 @@ extension PolarBleApiImpl: PolarBleApi  {
         
     private func updateFirmware(_ identifier: String, firmwareURL: URL? = nil) -> Observable<FirmwareUpdateStatus> {
         
-        
         let session = try? self.sessionFtpClientReady(identifier)
         guard let client = session?.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
             return Observable.just(FirmwareUpdateStatus.fwUpdateFailed(details: "No BlePsFtpClient available"))
         }
+        
+        guard let filesystemType = session?.advertisementContent.polarDeviceType else {
+            return Observable.just(FirmwareUpdateStatus.fwUpdateFailed(details: "Could not get file system type"))
+        }
+        
+        let hasH10FileSystem = (BlePolarDeviceCapabilitiesUtility.fileSystemType(filesystemType) == BlePolarDeviceCapabilitiesUtility.FileSystemType.h10FileSystem)
 
         let backupManager = PolarBackupManager(client: client)
         var backupList:[PolarBackupManager.BackupFileData] = []
@@ -3033,7 +3042,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                     }
 
                     // Fetch firmware package
-                    observer.onNext(.fetchingFwUpdatePackage(details: "Fetching firmware packagte to \(firmwareVersionInfo)"))
+                    observer.onNext(.fetchingFwUpdatePackage(details: "Fetching firmware package to \(firmwareVersionInfo)"))
                     let firmwareFiles = try await self.getFirmwareUpdatePackage(firmwareUrl: url).value
                     guard firmwareFiles.count > 0 else {
                         BleLogger.error("No firmware files available, can not update")
@@ -3042,10 +3051,11 @@ extension PolarBleApiImpl: PolarBleApi  {
                         return
                     }
                     
-                    // Prepare device: backup
-                    observer.onNext(FirmwareUpdateStatus.preparingDeviceForFwUpdate(details: "Backing up"))
-                    backupList = try await backupManager.backupDevice().value
-                    
+                    // Prepare device: backup. H10 file system cannot be backed up.
+                    if (!hasH10FileSystem) {
+                        observer.onNext(FirmwareUpdateStatus.preparingDeviceForFwUpdate(details: "Backing up"))
+                        backupList = try await backupManager.backupDevice().value
+                    }
                     // Prepare device: factory reset
                     observer.onNext(.preparingDeviceForFwUpdate(details: "Performing factory reset"))
                     try await self.doFactoryReset(identifier, preservePairingInformation: true)
@@ -3063,14 +3073,19 @@ extension PolarBleApiImpl: PolarBleApi  {
                             }
                         }
                         .value
+                    
+                    // H10 seems to lose pairing after factory reset and image write on iOS operating system. If this happens -> re-pair.
+                    let disconnectedDueRemovedPairing = session?.disconnectedDueRemovedPairing
+                    if(disconnectedDueRemovedPairing ?? false) {
+                        try self.connectToDevice(identifier)
+                    }
 
                     // Wait for reconnection after factory reset
                     observer.onNext(.preparingDeviceForFwUpdate(details: "Reconnecting after factory reset"))
                     try await self.waitDeviceSessionWithPftpToOpen(deviceId: identifier, timeoutSeconds: 6*60, waitForDeviceDownSeconds: 10).value
-
+                    
                     // Speed up for file transfer by sending sync signal
                     try await self.sendInitializationAndStartSyncNotifications(identifier: identifier).value
-                    
                     // Write FW files
                     observer.onNext(.writingFwUpdatePackage(details: "Writing firmware files \(firmwareVersionInfo)"))
                     try await self.writeFirmwareFilesToDevice(identifier, firmwareFiles: firmwareFiles)
@@ -3078,20 +3093,22 @@ extension PolarBleApiImpl: PolarBleApi  {
                             observer.onNext(status)
                         }.takeLast(1).asSingle().asCompletable().value
                     
-                    // Wait for reconnection after device reboot
                     observer.onNext(.finalizingFwUpdate(details: "Waiting for device to update to \(firmwareVersionInfo)"))
                     try await self.waitDeviceSessionWithPftpToOpen(deviceId: identifier, timeoutSeconds: 6*60, waitForDeviceDownSeconds: 10).value
                     
-                    // Speed up for file transfer by sending sync signal
-                    try await self.sendInitializationAndStartSyncNotifications(identifier: identifier).value
-                    
-                    // Finalize: Restore backup
-                    observer.onNext(.finalizingFwUpdate(details: "Restoring backup to device"))
-                    try await backupManager.restoreBackup(backupFiles: backupList).value
-                    backupList = []
-                    
-                    // Terminate session, back to normal speed
-                    try await self.sendTerminateSessionNotification(identifier: identifier).value
+                    // Wait for reconnection after device reboot
+                    if (!hasH10FileSystem) {
+                        // Speed up for file transfer by sending sync signal
+                        try await self.sendInitializationAndStartSyncNotifications(identifier: identifier).value
+                        
+                        // Finalize: Restore backup
+                            observer.onNext(.finalizingFwUpdate(details: "Restoring backup to device"))
+                            try await backupManager.restoreBackup(backupFiles: backupList).value
+                        backupList = []
+                        
+                        // Terminate session, back to normal speed
+                        try await self.sendTerminateSessionNotification(identifier: identifier).value
+                    }
                     
                     // Finalize: Set local time
                     observer.onNext(.finalizingFwUpdate(details: "Setting device time"))
@@ -3121,9 +3138,13 @@ extension PolarBleApiImpl: PolarBleApi  {
                 } catch let error {
                     
                     BleLogger.error("Error during updateFirmware() to \(firmwareVersionInfo), error: \(error)")
-                    observer.onNext(FirmwareUpdateStatus.fwUpdateFailed(details: "Error: \(error)"))
-                    observer.onError(self.handleError(error))
-                    
+                    // gattDisconnected is expected for H10 FWU.
+                    if (!hasH10FileSystem) {
+                        observer.onNext(FirmwareUpdateStatus.fwUpdateFailed(details: "Error: \(error)"))
+                        observer.onError(self.handleError(error))
+                    } else {
+                        observer.onNext(FirmwareUpdateStatus.fwUpdateCompletedSuccessfully(details: "Firmware update to \(firmwareVersionInfo) completed successfully"))
+                    }
                 }
             }
             
@@ -4003,6 +4024,28 @@ extension PolarBleApiImpl: PolarBleApi  {
             BleLogger.trace("Started deleting date folders for device \(identifier).")
         })
     }
+
+    func deleteTelemetryData(_ identifier: String) -> Completable {
+
+        var condition: (_ p: String) -> Bool
+        condition = { (entry) -> Bool in
+            entry.contains("^([A-Za-z]{3}[0-9]{1,3})") &&
+            entry.contains("TRC") &&
+            entry.contains(".BIN")
+        }
+        return listFiles(identifier: identifier, folderPath: "/", condition: condition)
+            .flatMap { [self] (file) -> Completable in
+                return removeSingleFile(identifier: identifier, filePath: file)
+                    .asCompletable()
+                    .do(onError: { error in
+                        BleLogger.error("Error deleting telemetry data from device \(identifier). Error: \(error.localizedDescription)")
+                    }, onCompleted: {
+                        BleLogger.trace("Successfully completed deletion telemetry data from device \(identifier).")
+                    }, onSubscribe: {
+                        BleLogger.trace("Started deleting telemetry data from device \(identifier).")
+                    })
+            }.asCompletable()
+    }
     
     func getTrainingSessionReferences(
         identifier: String,
@@ -4211,6 +4254,37 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
+    func setDaylightSavingTime(_ identifier: String) -> Completable {
+        do {
+            let session = try self.sessionFtpClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Completable.error(PolarErrors.serviceNotFound)
+            }
+
+            return getUserDeviceSettingsProto(client: client)
+                    .flatMapCompletable { currentSettings in
+                        guard let nextDaylightSavingTimeTransition = TimeZone.current.nextDaylightSavingTimeTransition(after: Date()) else {
+                            return Completable.error(PolarErrors.polarBleSdkInternalException(description: "Could not get next daylight saving time transition for time zone \(TimeZone.current)."))
+                        }
+                        let nextDaylightSavingTimeOffset = TimeZone.current.daylightSavingTimeOffset(for: nextDaylightSavingTimeTransition.addingTimeInterval(24*60*60)) - TimeZone.current.daylightSavingTimeOffset(for: nextDaylightSavingTimeTransition.addingTimeInterval(-(24*60*60)))
+                        let nextDaylightSavingTimeProto = PolarTimeUtils.dateToPbSystemDateTime(date: nextDaylightSavingTimeTransition)
+                        var updatedSettings = currentSettings
+
+                        updatedSettings.daylightSaving.nextDaylightSavingTime = nextDaylightSavingTimeProto
+                        updatedSettings.daylightSaving.offset = Int32(nextDaylightSavingTimeOffset)
+
+                        return self.setUserDeviceSettingsProto(client: client, polarUserDeviceSettings: updatedSettings)
+                    }
+                    .do(
+                        onError: { error in
+                            BleLogger.error("Failed to set automatic training detection settings: \(error)")
+                        }
+                    )
+        } catch {
+            return Completable.error(self.handleError(error))
+        }
+    }
+
     public func setTelemetryEnabled(_ identifier: String, enabled: Bool) -> Completable {
         return Completable.create { completable in
             do {

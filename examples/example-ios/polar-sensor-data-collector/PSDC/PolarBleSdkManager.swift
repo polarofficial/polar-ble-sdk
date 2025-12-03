@@ -2234,7 +2234,24 @@ extension PolarBleSdkManager {
                   }
               }
           }
-      }
+    }
+
+    func deleteTelemetryData() async {
+        let badgeId = "Settings-\(deviceId ?? "")"
+        if case .connected(let device) = deviceConnectionState {
+          do {
+              try await api.deleteTelemetryData(device.deviceId).value
+              Task { @MainActor in
+                  self.generalMessage = Message(text: "Telemetry data deleted")
+              }
+          } catch let err {
+              NSLog("Failed to delete telemetry data: \(err)")
+              Task { @MainActor in
+                  self.somethingFailed(text: "Telemetry data deletion failed for device: \(err)")
+              }
+          }
+        }
+    }
 
     func getSkinTemperature(start: Date, end: Date) async {
         if case .connected(let device) = deviceConnectionState {
@@ -2554,6 +2571,22 @@ extension PolarBleSdkManager {
         }
     }
 
+    func setDaylightSavingTime() async {
+        if case .connected(let device) = deviceConnectionState {
+            do {
+                try await withCheckedThrowingContinuation { continuation in
+                    _ = api.setDaylightSavingTime(device.deviceId)
+                    .subscribe(
+                        onCompleted: { continuation.resume() },
+                        onError: { continuation.resume(throwing: $0) }
+                    )
+                }
+            } catch {
+                NSLog("Failed to set daylight saving time: \(error.localizedDescription)")
+            }
+        }
+    }
+
     private func somethingFailed(text: String) {
         self.generalMessage = Message(text: "Error: \(text)")
         NSLog("Error \(text)")
@@ -2793,6 +2826,25 @@ extension PolarBleSdkManager {
             }
         }
     }
+    
+   func startListenForPolarHrBroadcasts(_ deviceIds: Set<String>?) -> Observable<PolarHrBroadcastData> {
+       broadcastDisposable?.dispose()
+       let observable = api.startListenForPolarHrBroadcasts(deviceIds)
+           .do(
+               onNext: { hrData in
+                   NSLog("HR broadcast received, device: \(hrData.deviceInfo.deviceId), HR: \(hrData.hr)")
+               },
+               onError: { error in
+                   NSLog("HR broadcast error: \(error)")
+               }
+           )
+       return observable
+   }
+   
+   func stopListenForPolarHrBroadcasts() {
+       broadcastDisposable?.dispose()
+       broadcastDisposable = nil
+   }
 }
 
 fileprivate extension PolarDeviceDataType {

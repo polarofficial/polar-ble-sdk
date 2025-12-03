@@ -781,4 +781,31 @@ internal class PolarTimeUtilsTest {
 
         Assert.assertEquals(expectedMilliseconds, PolarTimeUtils.pbDurationToInt(pbDuration))
     }
+
+    @Test
+    fun `test Java instant conversion to pbSystemTime`() {
+        //Arrange
+        val pbUtcYear = 2525
+        val pbUtcMonth = 1
+        val pbUtcDate = 1
+        val pbUtcHourOfDay = 10
+        val pbUtcMinute = 0
+        val pbUtcSecond = 0
+        val pbUtcMilliSecond = 0
+
+        var instant = Instant.parse("2525-01-01T10:00:00Z")
+
+        //Act
+        val result = PolarTimeUtils.javaInstantToPbPftpSetSystemTime(instant)
+
+        //Assert
+        Assert.assertEquals(pbUtcYear, result.date.year)
+        Assert.assertEquals(pbUtcMonth, result.date.month)
+        Assert.assertEquals(pbUtcDate, result.date.day)
+        Assert.assertEquals(pbUtcHourOfDay, result.time.hour)
+        Assert.assertEquals(pbUtcMinute, result.time.minute)
+        Assert.assertEquals(pbUtcSecond, result.time.seconds)
+        Assert.assertEquals(pbUtcMilliSecond, result.time.millis)
+        Assert.assertTrue(result.trusted)
+    }
 }

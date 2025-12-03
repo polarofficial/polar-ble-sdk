@@ -17,7 +17,7 @@
     <a title="PolarBleApi Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">PolarBleSdk 6.10.1 Docs</a> (34% documented)</p>
+        <p><a href="../index.html">PolarBleSdk 6.11.1 Docs</a> (34% documented)</p>
         <div class="header-right">
           <form role="search" action="../search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -2263,6 +2263,61 @@ from the BLE advertisement</p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP19deleteTelemetryDatay7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF"></a>
+                    <a name="//apple_ref/swift/Method/deleteTelemetryData(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP19deleteTelemetryDatay7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF">deleteTelemetryData(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Delete telemetry data files from a device.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">deleteTelemetryData</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id or UUID</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Completable stream
+
+<ul>
+<li>success: when date folders successfully deleted</li>
+<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:11PolarBleSdk0aB3ApiP17waitForConnectiony7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF"></a>
                     <a name="//apple_ref/swift/Method/waitForConnection(_:)" class="dashAnchor"></a>
                     <a class="token" href="#/s:11PolarBleSdk0aB3ApiP17waitForConnectiony7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF">waitForConnection(_:<wbr>)</a>
@@ -2520,6 +2575,62 @@ from the BLE advertisement</p>
 
 <ul>
 <li>success: when settings are applied successfully</li>
+<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
+</ul></p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP21setDaylightSavingTimey7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF"></a>
+                    <a name="//apple_ref/swift/Method/setDaylightSavingTime(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP21setDaylightSavingTimey7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF">setDaylightSavingTime(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Set the next Daylight Saving Time (DST) settings on the device in the current timezone.
+Gets the current timezone from the device and sets DST value based on that.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setDaylightSavingTime</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id or UUID</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Completable stream
+
+<ul>
+<li>success: when DST has been successfully set to the device</li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
 </ul></p>
                       </div>
@@ -2988,7 +3099,7 @@ automatically when operation completes. One should not change this setting durin
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2025 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2025-11-24)</p>
+          <p>&copy; 2025 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2025-12-03)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

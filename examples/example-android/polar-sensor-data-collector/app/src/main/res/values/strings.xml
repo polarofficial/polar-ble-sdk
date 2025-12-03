@@ -24,6 +24,9 @@
     <string name="do_file_delete_header">Delete files</string>
     <string name="do_date_folder_delete_header">Delete date folders</string>
     <string name="do_date_folder_delete_button">Select dates to delete folders</string>
+    <string name="do_telemetry_delete_header">Delete telemetry data</string>
+    <string name="confirm_telemetry_data_delete">Confirm telemetry data delete</string>
+    <string name="delete_button">Delete</string>
     <string name="set_warehouse_sleep_button_header">Set warehouse sleep</string>
     <string name="set_warehouse_sleep_switch_header">Enable?</string>
     <string name="set_turn_device_off_header">Turn device off</string>
@@ -289,4 +292,13 @@
 </string>
     <string name="share_exercise_data">Share Exercise Data</string>
     <string name="failed_to_share">Failed to share: %1$s</string>
+
+    <!-- HR broadcast listener -->
+    <string name="listen_hr_broadcasts">Listen HR broadcasts</string>
+    <string name="hr_broadcast_listener">HR Broadcast Listener</string>
+    <string name="devices_will_appear_here_note">Devices will appear here when broadcast is received…</string>
+    <string name="stop_listening">Stop listening</string>
+    <string name="start_listening">Start listening</string>
+    <string name="hr_value">Hr: %1$s bpm</string>
+    <string name="close">CLOSE</string>
 </resources>

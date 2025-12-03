@@ -258,13 +258,47 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/set_turn_device_off_group"
+                    android:id="@+id/do_telemetry_delete_group"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/do_date_folder_delete_group">
+
+                    <TextView
+                        android:id="@+id/do_telemetry_delete_header"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/do_telemetry_delete_header"
+                        android:textAppearance="@android:style/TextAppearance.Material.Caption"
+                        app:layout_constraintBaseline_toBaselineOf="@+id/do_telemetry_delete_button"
+                        app:layout_constraintEnd_toStartOf="@+id/do_telemetry_delete_button"
+                        app:layout_constraintHorizontal_chainStyle="packed"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <Button
+                        android:id="@+id/do_telemetry_delete_button"
+                        style="@style/Widget.App.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/delete_button"
+                        android:textAppearance="?attr/textAppearanceSubtitle1"
+                        app:layout_constraintStart_toEndOf="@+id/do_telemetry_delete_header"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/set_turn_device_off_group"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/do_telemetry_delete_group">
 
                     <TextView
                         android:id="@+id/set_turn_device_off_header"

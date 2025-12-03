@@ -8,6 +8,7 @@ import fi.polar.remote.representation.protobuf.Types.PbTime
 import java.time.LocalDate
 import java.time.LocalDateTime
 import protocol.PftpRequest
+import java.time.Instant
 import java.time.LocalTime
 import java.util.*
 import java.time.ZoneOffset
@@ -48,6 +49,28 @@ internal object PolarTimeUtils {
         val utcTime = calendar.toInstant().atZone(ZoneId.of("UTC"))
 
         val builder = PftpRequest.PbPFtpSetSystemTimeParams.newBuilder()
+        val date = PbDate.newBuilder()
+        val time = PbTime.newBuilder()
+
+        date.day = utcTime.dayOfMonth
+        date.month = utcTime.monthValue
+        date.year = utcTime.year
+
+        time.hour = utcTime.hour
+        time.minute = utcTime.minute
+        time.seconds = utcTime.second
+        time.millis = utcTime.nano / 1_000_000
+
+        builder.setDate(date)
+        builder.setTime(time)
+        builder.trusted = true
+        return builder.build()
+    }
+
+    fun javaInstantToPbPftpSetSystemTime(instant: Instant): PbSystemDateTime {
+        val utcTime = instant.atZone(ZoneId.of("UTC"))
+
+        val builder = PbSystemDateTime.newBuilder()
         val date = PbDate.newBuilder()
         val time = PbTime.newBuilder()
 

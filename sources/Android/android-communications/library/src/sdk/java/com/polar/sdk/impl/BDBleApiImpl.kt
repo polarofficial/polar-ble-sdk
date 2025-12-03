@@ -150,7 +150,7 @@ import java.util.zip.ZipInputStream
 import fi.polar.remote.representation.protobuf.Structures
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Single
-
+import java.time.ZonedDateTime
 
 
 /**
@@ -1189,7 +1189,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                 ), startTime
                                             )
 
-                                            is SkinTemperatureData -> PolarOfflineRecordingData.TemperatureOfflineRecording(
+                                            is SkinTemperatureData -> PolarOfflineRecordingData.SkinTemperatureOfflineRecording(
                                                 mapPmdClientSkinTemperatureDataToPolarTemperatureData(
                                                     offlineData
                                                 ), startTime
@@ -1426,17 +1426,17 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                                 }
 
                                                 is SkinTemperatureData -> {
-                                                    polarTemperatureData?.let { existingData ->
-                                                        polarTemperatureData =
-                                                            existingData.appendTemperatureData(
+                                                    polarSkinTemperatureData?.let { existingData ->
+                                                        polarSkinTemperatureData =
+                                                            existingData.appendSkinTemperatureData(
                                                                 existingData,
                                                                 mapPmdClientSkinTemperatureDataToPolarTemperatureData(
                                                                     offlineData
                                                                 )
                                                             )
                                                     } ?: run {
-                                                        polarTemperatureData =
-                                                            PolarOfflineRecordingData.TemperatureOfflineRecording(
+                                                        polarSkinTemperatureData =
+                                                            PolarOfflineRecordingData.SkinTemperatureOfflineRecording(
                                                                 mapPmdClientSkinTemperatureDataToPolarTemperatureData(
                                                                     offlineData
                                                                 ),
@@ -2038,6 +2038,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                             startTime
                         )
 
+                        is SkinTemperatureData -> PolarOfflineRecordingData.SkinTemperatureOfflineRecording(
+                            mapPmdClientSkinTemperatureDataToPolarTemperatureData(offlineData),
+                            startTime
+                        )
+
                         else -> throw PolarOfflineRecordingError("getSplitOfflineRecord failed. Data type is not supported.")
                     }
                 }.onErrorResumeNext { throwable: Throwable -> Single.error(handleError(throwable)) }
@@ -2234,7 +2239,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     return@filter prefix == null || name.startsWith(prefix)
                 }
                 .map { bleDeviceSession: BleDeviceSession ->
-                    val hasSAGRFCFileSystem = BlePolarDeviceCapabilitiesUtility.getFileSystemType(bleDeviceSession.polarDeviceType) == FileSystemType.SAGRFC2_FILE_SYSTEM
+                    val hasSAGRFCFileSystem = getFileSystemType(bleDeviceSession.polarDeviceType) == FileSystemType.SAGRFC2_FILE_SYSTEM
                     PolarDeviceInfo(
                         deviceId = bleDeviceSession.polarDeviceId,
                         address = bleDeviceSession.address,
@@ -3283,9 +3288,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
     override fun updateFirmware(identifier: String, firmwareUrl: String): Flowable<FirmwareUpdateStatus> {
 
-        return Observable.create<FirmwareUpdateStatus> { emitter ->
+        return Observable.create { emitter ->
 
             val session = sessionPsFtpClientReady(identifier)
+            val hasH10FileSystem = getFileSystemType(session.polarDeviceType) == FileSystemType.H10_FILE_SYSTEM
             val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient
             sendInitializationAndStartSyncNotifications(identifier).blockingGet()
 
@@ -3342,9 +3348,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     throw Throwable("Firmware files were not available")
                 }
 
-                // Prepare device: backup
-                emitter.onNext(FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Backing up"))
-                backupList = backupManager.backupDevice().blockingGet()
+                // Prepare device: backup. Do not try to restore backup to H10 device. There is nothing to backup.
+                if (!hasH10FileSystem) {
+                    emitter.onNext(FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Backing up"))
+                    backupList = backupManager.backupDevice().blockingGet()
+                }
 
                 // Prepare device: factory reset
                 emitter.onNext(FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Performing factory reset"))
@@ -3359,10 +3367,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 ).blockingAwait()
 
                 // Speed up for file transfer
-                sendInitializationAndStartSyncNotifications(identifier).blockingGet()
+                sendInitializationAndStartSyncNotifications(identifier)
+                    .subscribeOn(Schedulers.io())
+                    .ignoreElement()
 
                 // Write FW files
-                var disconnectedDuringWrite = false
                 try {
                     writeFirmwareToDevice(client, firmwareFiles)
                         .doOnNext { emitter.onNext(it) }
@@ -3374,7 +3383,6 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                             TAG,
                             "Device disconnected as expected during firmware update, will continue to reconnection step"
                         )
-                        disconnectedDuringWrite = true
                     } else {
                         // throw to outer catch so the single restore/failed logic there handles it
                         throw t
@@ -3389,12 +3397,13 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     waitForDeviceDownSeconds = 10L
                 ).blockingAwait()
 
-                // Speed up for restoring backups
-                sendInitializationAndStartSyncNotifications(identifier).blockingGet()
-
                 // Finalize: Restore backups
-                emitter.onNext(FirmwareUpdateStatus.FinalizingFwUpdate("Restoring backup on device"))
-                backupManager.restoreBackup(backupList).blockingAwait()
+                if (!hasH10FileSystem) {
+                    // Speed up for restoring backups
+                    sendInitializationAndStartSyncNotifications(identifier).blockingGet()
+                    emitter.onNext(FirmwareUpdateStatus.FinalizingFwUpdate("Restoring backup on device"))
+                    backupManager.restoreBackup(backupList).blockingAwait()
+                }
                 backupList = listOf()
 
                 // Finalize: Set local time
@@ -3425,27 +3434,41 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 emitter.onComplete()
 
             } catch (error: Throwable) {
-                if (backupList.isNotEmpty()) {
-                    BleLogger.e(TAG,
-                        "Error during updateFirmware() to $firmwareVersionInfo, restoring backup, error: $error")
-                    sendInitializationAndStartSyncNotifications(identifier).blockingGet()
-                    backupManager.restoreBackup(backupList).blockingAwait()
-                    sendTerminateAndStopSyncNotifications(identifier)
-                    emitter.onNext(
-                        FirmwareUpdateStatus.FwUpdateFailed(
-                            "Error during updateFirmware() to $firmwareVersionInfo, backup restored, error: $error"
+                if (!hasH10FileSystem) {
+                    if (backupList.isNotEmpty()) {
+                        BleLogger.e(
+                            TAG,
+                            "Error during updateFirmware() to $firmwareVersionInfo, restoring backup, error: $error"
                         )
-                    )
-                } else {
-                    BleLogger.e(TAG,
-                        "Error during updateFirmware() to $firmwareVersionInfo, backup not available, error: $error")
-                    emitter.onNext(
-                        FirmwareUpdateStatus.FwUpdateFailed(
+                        sendInitializationAndStartSyncNotifications(identifier).blockingGet()
+                        backupManager.restoreBackup(backupList).blockingAwait()
+                        sendTerminateAndStopSyncNotifications(identifier)
+                        emitter.onNext(
+                            FirmwareUpdateStatus.FwUpdateFailed(
+                                "Error during updateFirmware() to $firmwareVersionInfo, backup restored, error: $error"
+                            )
+                        )
+                    } else {
+                        BleLogger.e(
+                            TAG,
                             "Error during updateFirmware() to $firmwareVersionInfo, backup not available, error: $error"
                         )
+                        emitter.onNext(
+                            FirmwareUpdateStatus.FwUpdateFailed(
+                                "Error during updateFirmware() to $firmwareVersionInfo, backup not available, error: $error"
+                            )
+                        )
+                    }
+                    emitter.onComplete()
+                } else {
+                    BleLogger.e(TAG, "Error during updateFirmware() to $firmwareVersionInfo, error: $error")
+                    emitter.onNext(
+                        FirmwareUpdateStatus.FwUpdateFailed(
+                            "Error during updateFirmware() to $firmwareVersionInfo, error: $error"
+                        )
                     )
+                    emitter.onComplete()
                 }
-                emitter.onComplete()
             }
 
             try {
@@ -4124,6 +4147,41 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
     }
 
+    override fun setDaylightSavingTime(identifier: String):  Completable = Completable.defer {
+
+        val session: BleDeviceSession
+        val client: BlePsFtpClient?
+        try {
+            session = sessionPsFtpClientReady(identifier)
+            client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+        } catch (error: Throwable) {
+            return@defer Completable.error(error)
+        }
+
+        getUserDeviceSettingsProto(client, session.polarDeviceType)
+            .flatMapCompletable { currentSettings ->
+                val zone = ZoneId.of(ZoneId.systemDefault().id)
+                val rules = zone.rules
+                val transition = rules.nextTransition(ZonedDateTime.now(zone).toInstant())
+                val transitionDate = transition.instant
+                val transitionOffsetSeconds = transition.offsetAfter.totalSeconds - transition.offsetBefore.totalSeconds
+                val updatedSettings = currentSettings.toBuilder()
+                    .setDaylightSaving(
+                        UserDeviceSettings.PbUserDeviceDaylightSaving.newBuilder()
+                            .setOffset(transitionOffsetSeconds)
+                            .setNextDaylightSavingTime(
+                                PolarTimeUtils.javaInstantToPbPftpSetSystemTime(transitionDate)
+                            ).build()
+                    ).build()
+
+                setUserDeviceSettingsProto(identifier, updatedSettings)
+            }
+            .doOnError { error ->
+                BleLogger.e(TAG, "Failed to set next Daylight Saving Time for $identifier: $error")
+            }
+    }
+
     override fun get247HrSamples(identifier: String, fromDate: Date, toDate: Date): Single<List<Polar247HrSamplesData>> {
         val session = try {
             sessionPsFtpClientReady(identifier)
@@ -4712,6 +4770,28 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
+    override fun deleteTelemetryData(identifier: String): Completable {
+        BleLogger.d(TAG, "Delete all telemetry data from device.")
+
+        var cond = FetchRecursiveCondition { entry: String ->
+            entry.matches(Regex("([A-Za-z]{3}[0-9]{1,3}).BIN$")) &&
+                    entry.startsWith("TRC")
+        }
+
+         return listFiles(identifier, "/", condition = cond)
+            .flatMap { filename ->
+                return@flatMap removeSingleFile(
+                    identifier,
+                    filename
+                ).flatMapPublisher { _: ByteArrayOutputStream ->
+                    Flowable.empty()
+                }
+            }.ignoreElements().onErrorResumeNext { error ->
+                BleLogger.e(TAG, "Error while trying to delete telemetry files from device $identifier, error: $error")
+                Completable.complete()
+            }
+    }
+
     override fun setMultiBLEConnectionMode(identifier: String, enable: Boolean): Completable {
         val session = try {
             sessionPsPfcClientReady(identifier)
@@ -4933,7 +5013,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             return@Consumer
         }
         deviceSessionState = sessionState
-        val hasSAGRFCFileSystem = BlePolarDeviceCapabilitiesUtility.getFileSystemType(session.polarDeviceType) == FileSystemType.SAGRFC2_FILE_SYSTEM
+        val hasSAGRFCFileSystem = getFileSystemType(session.polarDeviceType) == FileSystemType.SAGRFC2_FILE_SYSTEM
         val info = PolarDeviceInfo(session.polarDeviceId.ifEmpty { session.address }, session.address, session.rssi, session.name, true, hasSAGRFCFileSystem = hasSAGRFCFileSystem)
         when (Objects.requireNonNull(sessionState)) {
             DeviceSessionState.SESSION_OPEN -> {

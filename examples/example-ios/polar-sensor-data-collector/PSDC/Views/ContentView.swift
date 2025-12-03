@@ -17,6 +17,7 @@ struct ContentView: View {
     @State private var selectedTab: SelectedAction = .online
     @State private var isSearchingDevices = false
     @State private var connectedDevicesText = ""
+    @State private var showHrBroadcastView = false
 
     @EnvironmentObject private var bleSdkManager: PolarBleSdkManager
     @EnvironmentObject private var bleDeviceManager: PolarBleDeviceManager
@@ -97,6 +98,28 @@ struct ContentView: View {
                     .onTapGesture {
                         self.isSearchingDevices = !(self.isSearchingDevices)
                     }
+
+                if case .noDevice = bleSdkManager.deviceConnectionState {
+                    Button("Listen HR Broadcasts", action: {
+                        self.showHrBroadcastView = true
+                    })
+                    .buttonStyle(PrimaryButtonStyle(buttonState: getSearchButtonState()))
+                    .disabled(!bleSdkManager.isBluetoothOn)
+                    .sheet(isPresented: $showHrBroadcastView) {
+                        HrBroadcastView()
+                            .environmentObject(bleSdkManager)
+                    }
+                } else if case .disconnected = bleSdkManager.deviceConnectionState {
+                    Button("Listen HR Broadcasts", action: {
+                        self.showHrBroadcastView = true
+                    })
+                    .buttonStyle(PrimaryButtonStyle(buttonState: getSearchButtonState()))
+                    .disabled(!bleSdkManager.isBluetoothOn)
+                    .sheet(isPresented: $showHrBroadcastView) {
+                        HrBroadcastView()
+                            .environmentObject(bleSdkManager)
+                    }
+                }
                 
                 Text("\(bleSdkManager.connectedDevicesText)")
                 

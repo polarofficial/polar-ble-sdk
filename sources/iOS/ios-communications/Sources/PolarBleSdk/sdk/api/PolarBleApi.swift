@@ -482,6 +482,14 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - success: when date folders successfully deleted
     ///   - onError: see `PolarErrors` for possible errors invoked
     func deleteDeviceDateFolders(_ identifier: String, fromDate: Date?, toDate: Date?) -> Completable
+    
+    /// Delete telemetry data files from a device.
+    /// - Parameters:
+    ///   - identifier: Polar device id or UUID
+    /// - Returns: Completable stream
+    ///   - success: when date folders successfully deleted
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func deleteTelemetryData(_ identifier: String) -> Completable
 
     /// Waits for the device to establish a connection.
     /// - Parameters:
@@ -525,6 +533,15 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
          minimumDuration: Int
      ) -> Completable
     
+    /// Set the next Daylight Saving Time (DST) settings on the device in the current timezone.
+    /// Gets the current timezone from the device and sets DST value based on that.
+    /// - Parameters:
+    ///   - identifier: Polar device id or UUID
+    /// - Returns: Completable stream
+    ///   - success: when DST has been successfully set to the device
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func setDaylightSavingTime(_ identifier: String) -> Completable
+
     /// Request multi BLE connection mode status from device.
     /// - Parameters:
     ///   - identifier: Polar device id or UUID

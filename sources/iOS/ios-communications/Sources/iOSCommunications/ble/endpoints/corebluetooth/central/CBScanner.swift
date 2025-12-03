@@ -66,35 +66,56 @@ class CBScanner {
     }
     
     func setServices(_ services : [CBUUID]?){
-        self.commandState(ScanAction.adminStopScan)
-        self.services = services
-        self.commandState(ScanAction.adminStartScan)
+        scheduler.schedule(()) { _ in
+            self.commandState(ScanAction.adminStopScan)
+            self.services = services
+            self.commandState(ScanAction.adminStartScan)
+            return Disposables.create()
+        }
     }
     
     func addClient(_ scanner: RxObserver<BleDeviceSession>){
-        scanObservers.accessItem { $0.insert(scanner) }
-        self.commandState(ScanAction.clientStartScan)
+        scheduler.schedule(()) { _ in
+            self.scanObservers.accessItem { $0.insert(scanner) }
+            self.commandState(ScanAction.clientStartScan)
+            return Disposables.create()
+        }
     }
     
     func removeClient(_ scanner: RxObserver<BleDeviceSession>){
-        scanObservers.accessItem { $0.remove(scanner) }
-        self.commandState(ScanAction.clientRemoved)
+        scheduler.schedule(()) { _ in
+            self.scanObservers.accessItem { $0.remove(scanner) }
+            self.commandState(ScanAction.clientRemoved)
+            return Disposables.create()
+        }
     }
     
     func stopScan(){
-        self.commandState(ScanAction.adminStopScan)
+        scheduler.schedule(()) { _ in
+            self.commandState(ScanAction.adminStopScan)
+            return Disposables.create()
+        }
     }
     
     func startScan(){
-        self.commandState(ScanAction.adminStartScan)
+        scheduler.schedule(()) { _ in
+            self.commandState(ScanAction.adminStartScan)
+            return Disposables.create()
+        }
     }
     
     func powerOn(){
-        self.commandState(ScanAction.blePowerOn)
+        scheduler.schedule(()) { _ in
+            self.commandState(ScanAction.blePowerOn)
+            return Disposables.create()
+        }
     }
     
     func powerOff(){
-        self.commandState(ScanAction.blePowerOff)
+        scheduler.schedule(()) { _ in
+            self.commandState(ScanAction.blePowerOff)
+            return Disposables.create()
+        }
     }
     
     private func commandState(_ action: ScanAction){

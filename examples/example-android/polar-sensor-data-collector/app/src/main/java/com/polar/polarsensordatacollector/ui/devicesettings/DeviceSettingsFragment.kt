@@ -134,6 +134,8 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
     private lateinit var deleteDateFoldersText: TextView
     private lateinit var deleteDateFoldersGroup: ConstraintLayout
 
+    private lateinit var deleteTelemetryDataButton: Button
+
     private lateinit var waitForConnectionButton: Button
     private lateinit var waitForConnectionStatusText: TextView
     private lateinit var waitForConnectionStatusGroup: ConstraintLayout
@@ -395,6 +397,17 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
             })
         }
 
+        deleteTelemetryDataButton.setOnClickListener {
+            AlertDialog.Builder(requireContext())
+                .setTitle(getString(R.string.do_telemetry_delete_header))
+                .setMessage(getString(R.string.confirm_telemetry_data_delete))
+                .setPositiveButton(getString(R.string.confirm)) { _, _ ->
+                    viewModel.deleteTelemetryData()
+                }
+                .setNegativeButton(getString(R.string.cancel), null)
+                .show()
+        }
+
         waitForConnectionButton.setOnClickListener() {
             viewModel.waitForConnection()
         }
@@ -529,6 +542,8 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         deleteDateFoldersButton = view.findViewById(R.id.do_date_folder_delete_button)
         deleteDateFoldersText = view.findViewById(R.id.do_date_folder_delete_header)
         deleteDateFoldersGroup = view.findViewById(R.id.do_date_folder_delete_group)
+
+        deleteTelemetryDataButton = view.findViewById(R.id.do_telemetry_delete_button)
 
         waitForConnectionButton = view.findViewById(R.id.wait_connection_button)
         waitForConnectionStatusText = view.findViewById(R.id.wait_connection_status_text)

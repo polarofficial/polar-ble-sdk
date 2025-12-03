@@ -202,14 +202,14 @@ sealed class PolarOfflineRecordingData(val startTime: Calendar, val settings: Po
      */
     class SkinTemperatureOfflineRecording(val data: PolarTemperatureData, startTime: Calendar) :
         PolarOfflineRecordingData(startTime, null) {
-        internal fun appendTemperatureData(
-            existingTemperatureData: TemperatureOfflineRecording,
+        internal fun appendSkinTemperatureData(
+            existingSkinTemperatureData: SkinTemperatureOfflineRecording,
             newData: PolarTemperatureData
-        ): TemperatureOfflineRecording {
-            val mergedSamples = mutableListOf<PolarTemperatureData.PolarTemperatureDataSample>()
-            mergedSamples.addAll(existingTemperatureData.data.samples)
+        ): SkinTemperatureOfflineRecording {
+            val mergedSamples = mutableListOf<PolarTemperatureData. PolarTemperatureDataSample>()
+            mergedSamples.addAll(existingSkinTemperatureData. data.samples)
             mergedSamples.addAll(newData.samples)
-            return TemperatureOfflineRecording(
+            return SkinTemperatureOfflineRecording(
                 PolarTemperatureData(mergedSamples),
                 startTime
             )

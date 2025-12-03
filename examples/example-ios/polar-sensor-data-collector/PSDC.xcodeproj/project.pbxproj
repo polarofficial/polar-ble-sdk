@@ -16,6 +16,7 @@
 		84698A132DB77937006AD8FA /* TrainingSessionEntriesRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A122DB77937006AD8FA /* TrainingSessionEntriesRow.swift */; };
 		84698A152DB77D39006AD8FA /* TrainingSessionEntries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A142DB77D39006AD8FA /* TrainingSessionEntries.swift */; };
 		84698A172DB77D8C006AD8FA /* TrainingSessionData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A162DB77D8C006AD8FA /* TrainingSessionData.swift */; };
+		849400072ECC96C10093A8C8 /* HrBroadcastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849400062ECC96B50093A8C8 /* HrBroadcastView.swift */; };
 		84954BAD2E9E65C5000A5C0A /* DataLoadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84954BAC2E9E65C2000A5C0A /* DataLoadProgressView.swift */; };
 		8499A2DC2E01576D006FD70A /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8499A2DA2E01576D006FD70A /* Localizable.strings */; };
 		84B821432D6C908B005BB62C /* DateFolderDeletionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B821422D6C908B005BB62C /* DateFolderDeletionView.swift */; };
@@ -109,6 +110,7 @@
 		84698A122DB77937006AD8FA /* TrainingSessionEntriesRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionEntriesRow.swift; sourceTree = "<group>"; };
 		84698A142DB77D39006AD8FA /* TrainingSessionEntries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionEntries.swift; sourceTree = "<group>"; };
 		84698A162DB77D8C006AD8FA /* TrainingSessionData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionData.swift; sourceTree = "<group>"; };
+		849400062ECC96B50093A8C8 /* HrBroadcastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HrBroadcastView.swift; sourceTree = "<group>"; };
 		84954BAC2E9E65C2000A5C0A /* DataLoadProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataLoadProgressView.swift; sourceTree = "<group>"; };
 		8499A2DB2E01576D006FD70A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		84B821422D6C908B005BB62C /* DateFolderDeletionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFolderDeletionView.swift; sourceTree = "<group>"; };
@@ -255,6 +257,14 @@
 			path = TrainingSession;
 			sourceTree = "<group>";
 		};
+		849400052ECC96990093A8C8 /* HrBroadcast */ = {
+			isa = PBXGroup;
+			children = (
+				849400062ECC96B50093A8C8 /* HrBroadcastView.swift */,
+			);
+			path = HrBroadcast;
+			sourceTree = "<group>";
+		};
 		84F0A17E2CD0F74C009CF1A1 /* PhysicalData */ = {
 			isa = PBXGroup;
 			children = (
@@ -327,6 +337,7 @@
 		AA74C2442BDA3D6D005E0908 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				849400052ECC96990093A8C8 /* HrBroadcast */,
 				84954BAC2E9E65C2000A5C0A /* DataLoadProgressView.swift */,
 				CC57B5DA2E60617000E90F5B /* ExerciseSession */,
 				84698A0D2DB778B2006AD8FA /* TrainingSession */,
@@ -614,6 +625,7 @@
 				84698A172DB77D8C006AD8FA /* TrainingSessionData.swift in Sources */,
 				AA74C2562BDA3E9B005E0908 /* OfflineRecordingListView.swift in Sources */,
 				8415B05A2C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift in Sources */,
+				849400072ECC96C10093A8C8 /* HrBroadcastView.swift in Sources */,
 				95EA2BA22D40E7B200657DE5 /* SleepRecordingFeature.swift in Sources */,
 				AABC2A402C85BABB00BFC6BD /* SDLogConfiguration.swift in Sources */,
 				AA74C2342BDA3C08005E0908 /* OnlineStreamingFeature.swift in Sources */,
