@@ -3090,6 +3090,15 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
+    override fun requestRssi(identifier: String): Single<Int> {
+        return try {
+            val session = sessionPmdClientReady(identifier)
+            session.readRssiValue()
+        } catch (e: Throwable) {
+            Single.error(e)
+        }
+    }
+
     override fun enableSDKMode(identifier: String): Completable {
         try {
             val session = sessionPmdClientReady(identifier)
