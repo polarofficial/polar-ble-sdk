@@ -119,6 +119,14 @@
             android:name="deviceIdFragmentArgument"
             android:defaultValue=""
             app:argType="string" />
+        <argument
+            android:name="fromDateFragmentArgument"
+            android:defaultValue=""
+            app:argType="string" />
+        <argument
+            android:name="toDateFragmentArgument"
+            android:defaultValue=""
+            app:argType="string" />
         <action
             android:id="@+id/training_session_navigate_to_data_action"
             app:destination="@id/trainingSessionDataFragment"
@@ -139,6 +147,14 @@
         android:label="{trainingSessionFragmentArgument}">
         <argument
             android:name="deviceIdFragmentArgument"
+            android:defaultValue=""
+            app:argType="string" />
+        <argument
+            android:name="fromDateFragmentArgument"
+            android:defaultValue=""
+            app:argType="string" />
+        <argument
+            android:name="toDateFragmentArgument"
             android:defaultValue=""
             app:argType="string" />
         <argument

@@ -13,17 +13,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.ListItem
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.FilePresent
 import androidx.compose.runtime.Composable
@@ -46,6 +50,7 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.ui.theme.PolarsensordatacollectorTheme
 import com.polar.polarsensordatacollector.ui.utils.DataLoadProgressIndicator
+import com.polar.sdk.api.model.PolarOfflineRecordingEntry
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -53,6 +58,8 @@ import dagger.hilt.android.AndroidEntryPoint
 class TrainingSessionListFragment : Fragment() {
     private val viewModel: ListTrainingSessionsViewModel by viewModels()
     private lateinit var deviceId: String
+    private lateinit var fromDate: String
+    private lateinit var toDate: String
     private val args: TrainingSessionListFragmentArgs by navArgs()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -67,7 +74,9 @@ class TrainingSessionListFragment : Fragment() {
                             onClickItem = { filePath, fileName ->
                                 findNavController()
                                     .navigate(TrainingSessionListFragmentDirections
-                                        .trainingSessionNavigateToDataAction(deviceId, filePath, fileName))
+                                        .trainingSessionNavigateToDataAction(deviceId, filePath, fileName, fromDate, toDate))
+                            }, onDeleteItem = { entry ->
+                                viewModel.deleteTrainingSession(entry)
                             }
                         )
                     }
@@ -83,16 +92,17 @@ class TrainingSessionListFragment : Fragment() {
 }
 
 @Composable
-fun ListTrainingSessions(viewModel: ListTrainingSessionsViewModel = viewModel(), onClickItem: (String, String) -> Unit) {
+fun ListTrainingSessions(viewModel: ListTrainingSessionsViewModel = viewModel(), onClickItem: (String, String) -> Unit, onDeleteItem: (PolarTrainingSessionReference) -> Unit) {
     TrainingSessionItemsList(
         onRefresh = { viewModel.listTrainingSessions() },
         onClickItem = onClickItem,
-        viewModel.trainingSessionsUiState
+        viewModel.trainingSessionsUiState,
+        onDelete = onDeleteItem
     )
 }
 
 @Composable
-fun TrainingSessionItemsList(onRefresh: () -> Unit, onClickItem: (String, String) -> Unit, trainingSessionUiState: TrainingSessionsUiState) {
+fun TrainingSessionItemsList(onRefresh: () -> Unit, onClickItem: (String, String) -> Unit, trainingSessionUiState: TrainingSessionsUiState,  onDelete: (PolarTrainingSessionReference) -> Unit) {
     SwipeRefresh(
         state = rememberSwipeRefreshState(isRefreshing = trainingSessionUiState.fetchStatus is TrainingSessionFetch.InProgress),
         onRefresh = { onRefresh() },
@@ -115,7 +125,7 @@ fun TrainingSessionItemsList(onRefresh: () -> Unit, onClickItem: (String, String
                             .fillMaxWidth()
                     ) {
                         items(fetchStatus.fetchedTrainingSessions) { trainingSessionEntry ->
-                            TrainingSession(trainingSessionEntry, onClickItem)
+                            TrainingSession(trainingSessionEntry, onClickItem, onDelete = { })
                             Divider(startIndent = 72.dp)
                         }
                     }
@@ -132,7 +142,7 @@ fun TrainingSessionItemsList(onRefresh: () -> Unit, onClickItem: (String, String
                             .fillMaxWidth()
                     ) {
                         items(fetchStatus.fetchedTrainingSessions) { trainingSessionEntry ->
-                            TrainingSession(trainingSessionEntry, onClickItem)
+                            TrainingSession(trainingSessionEntry, onClickItem,  onDelete = { onDelete(trainingSessionEntry) })
                             Divider(startIndent = 72.dp)
                         }
                     }
@@ -182,13 +192,16 @@ private fun ListingEmpty() {
 fun TrainingSession(
     trainingSessionEntry: PolarTrainingSessionReference,
     onClick: (String, String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onDelete: (path: String) -> Unit,
+    isDeleting: Boolean = false,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
     ListItem(
         modifier = modifier
             .clickable(
+                enabled = !isDeleting,
                 interactionSource = interactionSource,
                 indication = LocalIndication.current
             ) {
@@ -207,6 +220,22 @@ fun TrainingSession(
         },
         secondaryText = {
             Text(text = trainingSessionEntry.date.toLocaleString())
+        },
+        trailing = {
+            if (isDeleting) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    strokeWidth = 2.dp
+                )
+            } else {
+                IconButton(onClick = { onDelete(trainingSessionEntry.path) }) {
+                    Icon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = "Delete file",
+                        tint = Color.Red
+                    )
+                }
+            }
         }
     )
 }

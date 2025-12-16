@@ -823,6 +823,7 @@ extension PolarBleApiImpl: BleLoggerProtocol {
 }
 
 extension PolarBleApiImpl: PolarBleApi  {
+    
     func cleanup() {
         _ = listener.removeAllSessions(
             Set(CollectionOfOne(BleDeviceSession.DeviceSessionState.sessionClosed)))
@@ -1224,30 +1225,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             var operation = Protocol_PbPFtpOperation()
             switch BlePolarDeviceCapabilitiesUtility.fileSystemType( session.advertisementContent.polarDeviceType) {
             case .sagRfc2FileSystem:
-                operation.command = .get
-                operation.path = "/U/0/" + components[2] + "/E/"
-                let request = try operation.serializedData()
-                return client.request(request)
-                    .flatMap { (content) -> Single<NSData> in
-                        do {
-                            let dir = try Protocol_PbPFtpDirectory(serializedData: content as Data)
-                            var removeOperation = Protocol_PbPFtpOperation()
-                            removeOperation.command = .remove
-                            if dir.entries.count <= 1 {
-                                removeOperation.path = "/U/0/" + components[2] + "/"
-                            } else {
-                                removeOperation.path = "/U/0/" + components[2] + "/E/" + components[4] + "/"
-                            }
-                            let request = try removeOperation.serializedData()
-                            return client.request(request)
-                        } catch {
-                            return Single.error(PolarErrors.messageDecodeFailed)
-                        }
-                    }
-                    .catch { (err) -> Single<NSData> in
-                        return Single.error(PolarErrors.deviceError(description: "\(err)"))
-                    }
-                    .asCompletable()
+                throw PolarErrors.polarBleSdkInternalException(description: "Other than H10 sensor is not supported by removeExercise API method. For other than H10 sensor use API deleteTrainingSession API method instead.")
             case .h10FileSystem:
                 operation.command = .remove
                 operation.path = entry.path
@@ -1455,7 +1433,6 @@ extension PolarBleApiImpl: PolarBleApi  {
     func listOfflineRecordings(_ identifier: String) -> Observable<PolarOfflineRecordingEntry> {
         // Remove this flagging once Polar360 4.0 firmware is public.
         // Remember to enable PMDFiles.txt usage in unit tests, too.
-        let allowV2Listing = false
         do {
             let session = try self.sessionFtpClientReady(identifier)
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -1468,31 +1445,25 @@ extension PolarBleApiImpl: PolarBleApi  {
                     .map { (name: $0.name, size: UInt($0.size)) }
             }
 
-            if allowV2Listing {
-                let getFile: (BlePsFtpClient, String) -> Single<Data> = { _, path in
-                    return self.getFile(identifier: identifier, filePath: path)
-                        .map { Data(referencing: $0) }
-                        .asSingle()
-                }
-
-                let obsV1: Observable<PolarOfflineRecordingEntry> = PolarOfflineRecordingUtils
-                    .listOfflineRecordingsV1(client: client, fetchRecursively: fetchRecursively)
-
-                let obsV2: Observable<PolarOfflineRecordingEntry> = PolarOfflineRecordingUtils
-                    .listOfflineRecordingsV2(client: client, getFile: getFile)
-                    .asObservable()
-                    .flatMap { entries in Observable.from(entries) }
-
-                return deviceSupportsFasterOfflineRecordListing(identifier: identifier)
-                    .asObservable()
-                    .flatMap { supports in
-                        supports ? obsV2 : obsV1
-                    }
-
-            } else {
-                return PolarOfflineRecordingUtils
-                    .listOfflineRecordingsV1(client: client, fetchRecursively: fetchRecursively)
+            let getFile: (BlePsFtpClient, String) -> Single<Data> = { _, path in
+                return self.getFile(identifier: identifier, filePath: path)
+                    .map { Data(referencing: $0) }
+                    .asSingle()
             }
+
+            let obsV1: Observable<PolarOfflineRecordingEntry> = PolarOfflineRecordingUtils
+                .listOfflineRecordingsV1(client: client, fetchRecursively: fetchRecursively)
+
+            let obsV2: Observable<PolarOfflineRecordingEntry> = PolarOfflineRecordingUtils
+                .listOfflineRecordingsV2(client: client, getFile: getFile)
+                .asObservable()
+                .flatMap { entries in Observable.from(entries) }
+
+            return deviceSupportsFasterOfflineRecordListing(identifier: identifier)
+                .asObservable()
+                .flatMap { supports in
+                    supports ? obsV2 : obsV1
+                }
 
         } catch {
             return Observable<PolarOfflineRecordingEntry>.error(error)
@@ -3675,6 +3646,48 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Single.error(error)
         }
     }
+    
+    func observeExerciseStatus(identifier: String) -> Observable<PolarExerciseSession.ExerciseInfo> {
+        BleLogger.trace("Start observing exercise status notifications for \(identifier)")
+        
+        return Observable.create { observer in
+            do {
+                let session = try self.sessionFtpClientReady(identifier)
+                guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                    observer.onError(PolarErrors.serviceNotFound)
+                    return Disposables.create()
+                }
+                
+                let disposable = client.waitNotification()
+                    .subscribe(
+                        onNext: { notification in
+                            if notification.id == Protocol_PbPFtpDevToHostNotification.exerciseStatus.rawValue {
+                                do {
+                                    let data = notification.parameters as Data
+                                    let info = try PolarExerciseSession.ExerciseInfo.parse(from: data)
+                                    BleLogger.trace("Exercise status changed: \(info)")
+                                    observer.onNext(info)
+                                } catch {
+                                    BleLogger.error("Failed to parse exercise status notification: \(error)")
+                                }
+                            }
+                        },
+                        onError: { error in
+                            BleLogger.error("Exercise status observation failed for \(identifier): \(error.localizedDescription)")
+                            observer.onError(error)
+                        }
+                    )
+                
+                return Disposables.create {
+                    BleLogger.trace("Stop observing exercise status notifications for \(identifier)")
+                    disposable.dispose()
+                }
+            } catch {
+                observer.onError(self.handleError(error))
+                return Disposables.create()
+            }
+        }
+    }
 
     @available(*, deprecated, message: "Use setWarehouseSleep(_ identifier: String) instead")
     func setWarehouseSleep(_ identifier: String, enableWarehouseSleep: Bool?) -> Completable {
@@ -4136,6 +4149,20 @@ extension PolarBleApiImpl: PolarBleApi  {
             }
         }
     }
+    
+    func deleteTrainingSession(identifier: String, reference: PolarTrainingSessionReference) -> Completable {
+        do {
+            let session = try sessionFtpClientReady(identifier)
+
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return Completable.error(PolarErrors.serviceNotFound)
+            }
+            BleLogger.trace("Delete training session with path '\(reference.path)' ")
+            return PolarTrainingSessionUtils.deleteTrainingSession(client: client, reference: reference)
+        } catch let err {
+            return Completable.error(handleError(err))
+        }
+    }
 
     func waitForConnection(_ identifier: String) -> Completable {
         return Completable.create { emitter in
@@ -4356,7 +4383,12 @@ extension PolarBleApiImpl: PolarBleApi  {
                     return .error(PolarErrors.serviceNotFound)
                 }
                 return client.sendControlPointCommand(BlePfcClient.PfcMessage.pfcRequestMultiConnectionSetting, value: 0)
-                    .map { $0.payload[0] == 1 }
+                    .map {
+                        if ($0.payload.isEmpty) {
+                            return false
+                        }
+                        return $0.payload[0] == 1
+                    }
             }
     }
     

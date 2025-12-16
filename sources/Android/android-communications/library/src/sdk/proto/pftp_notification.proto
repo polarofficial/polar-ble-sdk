@@ -22,6 +22,7 @@ message PbPFtpStopSyncParams {
 
 enum PbPFtpDevToHostNotification {
     REST_API_EVENT = 18;
+    EXERCISE_STATUS = 19;
 }
 
 message PbPftpDHRestApiEvent {

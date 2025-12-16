@@ -1074,6 +1074,24 @@ class PolarDeviceRepository @Inject constructor(
         }
     }
 
+    @OptIn(ExperimentalTime::class)
+    suspend fun deleteTrainingSession(deviceId: String, path: String): ResultOfRequest<Nothing> = withContext(Dispatchers.IO) {
+        val trainingSessionReferenceEntry = trainingSessionReferenceCache[deviceId]?.find { it.path == path }
+        trainingSessionReferenceEntry?.let { trainingSessionEntry ->
+            return@withContext try {
+                val result = measureTimedValue {
+                    api.deleteTrainingSession(deviceId, trainingSessionEntry).await()
+                }
+                Log.d(TAG, "delete of training session $path took ${TimeUnit.MICROSECONDS.toSeconds(result.duration.inWholeMicroseconds)} seconds")
+                trainingSessionReferenceCache[deviceId]?.remove(trainingSessionEntry)
+                ResultOfRequest.Success()
+            } catch (e: Exception) {
+                ResultOfRequest.Failure("Failed to remove training session $path", e)
+            }
+        }
+        ResultOfRequest.Failure("Tried to remove \"$path\", but no matching entry in repository", null)
+    }
+
     suspend fun getSkinTemperatureData(
         deviceId: String,
         from: LocalDate,
@@ -1087,9 +1105,9 @@ class PolarDeviceRepository @Inject constructor(
         }
     }
 
-    fun getTrainingSessionReferences(deviceId: String): Flow<PolarTrainingSessionReference> {
+    fun getTrainingSessionReferences(deviceId: String, fromDate: Date, toDate: Date): Flow<PolarTrainingSessionReference> {
         Log.d(TAG, "getTrainingSessionReferences from device $deviceId")
-        return api.getTrainingSessionReferences(deviceId)
+        return api.getTrainingSessionReferences(deviceId, fromDate, toDate)
             .doOnSubscribe {
                 trainingSessionReferenceCache[deviceId] = mutableListOf()
             }

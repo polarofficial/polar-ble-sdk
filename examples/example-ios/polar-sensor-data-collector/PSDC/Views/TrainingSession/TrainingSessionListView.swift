@@ -33,9 +33,7 @@ struct TrainingSessionListView: View {
                     .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
             }
         }
-        .task {
-            await bleSdkManager.listTrainingSessions()
-        }.onDisappear() {
+        .onDisappear() {
             bleSdkManager.trainingSessionEntries.isFetching = true
             bleSdkManager.trainingSessionEntries.entries.removeAll()
         }

@@ -40,6 +40,10 @@ class ExerciseService : Service() {
             autoRefresh?.dispose()
             autoRefresh = repo.startAutoRefresh(intervalSec = 5)
             observeState(deviceId)
+
+            exerciseNotificationSub?.dispose()
+            exerciseNotificationSub = repo.startObservingExerciseStatus()
+
             startForeground(
                 NOTIF_ID,
                 buildNotification(
@@ -92,6 +96,7 @@ class ExerciseService : Service() {
     override fun onDestroy() {
         stateSub?.dispose()
         autoRefresh?.dispose()
+        exerciseNotificationSub?.dispose()
         ops.clear()
         super.onDestroy()
     }
@@ -152,6 +157,7 @@ class ExerciseService : Service() {
     private lateinit var repo: ExerciseRepository
     private var autoRefresh: Disposable? = null
     private var stateSub: Disposable? = null
+    private var exerciseNotificationSub: Disposable? = null
     private val ops = CompositeDisposable()
 
     companion object {

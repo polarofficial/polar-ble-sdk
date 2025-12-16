@@ -465,6 +465,9 @@ extension Error {
             if cbError.code == .peerRemovedPairingInformation {
                 return true
             }
+            if cbError.code == .uuidNotAllowed {
+                return true
+            }
         }
         // Add more conditions indicating need to re-pair(bond) BLE devices ...
         

@@ -31,7 +31,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.zip.GZIPOutputStream
 
-class PolarTrainingSessionUtilsTest {
+    class PolarTrainingSessionUtilsTest {
 
     private val dateTimeFormatter = SimpleDateFormat("yyyyMMddHHmmss", Locale.ENGLISH)
 
@@ -43,7 +43,7 @@ class PolarTrainingSessionUtilsTest {
         val dateDirectories = ByteArrayOutputStream().apply {
             PbPFtpDirectory.newBuilder()
                 .addAllEntries(
-                    listOf(
+                    mutableListOf(
                         PbPFtpEntry.newBuilder().setName("20250101/").setSize(8192L).build(),
                         PbPFtpEntry.newBuilder().setName("20250202/").setSize(8192L).build()
                     )
@@ -68,15 +68,6 @@ class PolarTrainingSessionUtilsTest {
                 ).build().writeTo(this)
         }
 
-        val trainingSessionSummaryEntry = ByteArrayOutputStream().apply {
-            PbPFtpDirectory.newBuilder()
-                .addAllEntries(
-                    listOf(
-                        PbPFtpEntry.newBuilder().setName("TSESS.BPB").setSize(1024L).build()
-                    )
-                ).build().writeTo(this)
-        }
-
         val timeDirectory2 = ByteArrayOutputStream().apply {
             PbPFtpDirectory.newBuilder()
                 .addAllEntries(
@@ -86,10 +77,20 @@ class PolarTrainingSessionUtilsTest {
                 ).build().writeTo(this)
         }
 
-        val exerciseIndexDirectory = ByteArrayOutputStream().apply {
+        val trainingSessionEntry = ByteArrayOutputStream().apply {
             PbPFtpDirectory.newBuilder()
                 .addAllEntries(
                     listOf(
+                        PbPFtpEntry.newBuilder().setName("TSESS.BPB").setSize(1024L).build()
+                    )
+                ).build().writeTo(this)
+        }
+
+        val trainingSessionEntry2 = ByteArrayOutputStream().apply {
+            PbPFtpDirectory.newBuilder()
+                .addAllEntries(
+                    listOf(
+                        PbPFtpEntry.newBuilder().setName("TSESS.BPB").setSize(1024L).build(),
                         PbPFtpEntry.newBuilder().setName("00/").setSize(1024L).build(),
                         PbPFtpEntry.newBuilder().setName("01/").setSize(1024L).build()
                     )
@@ -125,8 +126,8 @@ class PolarTrainingSessionUtilsTest {
             dateTimeFormatter.parse("20250202163020")?.let {
                 PolarTrainingSessionReference(
                     date = it,
-                    path = "/U/0/20250202/E/163020/00/BASE.BPB",
-                    trainingDataTypes = emptyList(),
+                    path = "/U/0/20250202/E/163020/TSESS.BPB",
+                    trainingDataTypes = listOf(PolarTrainingSessionDataTypes.TRAINING_SESSION_SUMMARY),
                     exercises = listOf(
                         PolarExercise(
                             index = 0,
@@ -179,7 +180,7 @@ class PolarTrainingSessionUtilsTest {
                             )
                         )
                     ),
-                    fileSize = 8192L
+                    fileSize = 9216L
                 )
             }
         )
@@ -187,11 +188,10 @@ class PolarTrainingSessionUtilsTest {
         every { client.request(any<ByteArray>()) } returns Single.just(dateDirectories) andThen
                 Single.just(exerciseDirectory) andThen
                 Single.just(timeDirectory) andThen
-                Single.just(trainingSessionSummaryEntry) andThen
+                Single.just(trainingSessionEntry) andThen
                 Single.just(exerciseDirectory) andThen
                 Single.just(timeDirectory2) andThen
-                Single.just(exerciseIndexDirectory) andThen
-                Single.just(exerciseBaseEntry) andThen
+                Single.just(trainingSessionEntry2) andThen
                 Single.just(exerciseBaseEntry)
 
         // Act
@@ -260,11 +260,11 @@ class PolarTrainingSessionUtilsTest {
                     .toByteArray()
             )
             client.request(
-                PftpRequest.PbPFtpOperation.newBuilder()
-                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                    .setPath("/U/0/20250202/E/163020/01/")
-                    .build()
-                    .toByteArray()
+                  PftpRequest.PbPFtpOperation.newBuilder()
+                      .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                      .setPath("/U/0/20250202/E/163020/01/")
+                      .build()
+                      .toByteArray()
             )
         }
 

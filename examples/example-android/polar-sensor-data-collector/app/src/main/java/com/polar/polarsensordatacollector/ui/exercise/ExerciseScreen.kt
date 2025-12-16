@@ -32,6 +32,10 @@ fun ExerciseScreen(
     val canResume by vm.canResume.observeAsState(false)
     val canStop by vm.canStop.observeAsState(false)
     val startTime by vm.startTime.observeAsState()
+
+    val isObserving by vm.isObservingNotifications.observeAsState(false)
+    val notificationEvent by vm.notificationEvent.observeAsState()
+
     val context = LocalContext.current
 
     var expanded by remember { mutableStateOf(false) }
@@ -190,6 +194,32 @@ fun ExerciseScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 4.dp)
+            )
+        }
+
+        Spacer(Modifier.height(24.dp))
+        Divider()
+        Spacer(Modifier.height(16.dp))
+
+        Button(
+            onClick = { vm.toggleNotificationObservation() },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                if (isObserving)
+                    stringResource(R.string.stop_observing_button)
+                else
+                    stringResource(R.string.observe_exercise_state_button)
+            )
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        notificationEvent?.let { event ->
+            Text(
+                text = event,
+                style = MaterialTheme.typography.body1,
+                color = MaterialTheme.colors.primary
             )
         }
     }

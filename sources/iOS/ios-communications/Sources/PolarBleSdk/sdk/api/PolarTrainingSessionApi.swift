@@ -5,7 +5,7 @@ import RxSwift
 
 /// Protocol defining methods to access training session data.
 public protocol PolarTrainingSessionApi {
-    /// Get training session references for a given period.
+    /// Get training session references for a given period. If fromDate and/or toDate are not given this method will return all training session references in the device.
     ///
     /// - Parameters:
     ///   - identifier: The Polar device ID or BT address.
@@ -40,6 +40,16 @@ public protocol PolarTrainingSessionApi {
         trainingSessionReference: PolarTrainingSessionReference
     ) -> Observable<PolarTrainingSessionFetchResult>
     
+    /// Api for removing single training session from a Polar device. You can get a list of training sessions with `getTrainingSessionReferences` API.
+    ///
+    /// - Parameters:
+    ///   - identifier: The Polar device ID or BT address.
+    ///   - reference: PolarTrainingSessionReference with path in device to the training session to be removed.
+    /// - Returns: Completable
+    ///   - success: When the training session has been deleted from the device
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func deleteTrainingSession(identifier: String, reference: PolarTrainingSessionReference) -> Completable
+    
     /// Start an exercise session on the device.
     ///
     /// - Parameters:
@@ -73,4 +83,10 @@ public protocol PolarTrainingSessionApi {
     /// - Parameter identifier: The Polar device ID or BT address.
     /// - Returns: A `Single` emitting the current `PolarExerciseSession.ExerciseInfo` for the device.
     func getExerciseStatus(identifier: String) -> Single<PolarExerciseSession.ExerciseInfo>
+    
+    /// Observe exercise session status notifications from the device.
+    ///
+    /// - Parameter identifier: The Polar device ID or BT address.
+    /// - Returns: An `Observable` emitting `PolarExerciseSession.ExerciseInfo` whenever the session status changes.
+    func observeExerciseStatus(identifier:  String) -> Observable<PolarExerciseSession.ExerciseInfo>
 }

@@ -30,6 +30,15 @@ interface PolarTrainingSessionApi {
     ): Flowable<PolarTrainingSessionReference>
 
     /**
+     * Api for removing single training session from a Polar device. You can get a list of training sessions with [getTrainingSessionReferences] API.
+     *
+     * @param identifier The Polar device ID or BT address.
+     * @param reference PolarTrainingSessionReference with path in device to the training session to be removed.
+     * @return Completable stream
+     */
+    fun deleteTrainingSession(identifier: String, reference: PolarTrainingSessionReference): Completable
+
+    /**
      * Get training session.
      *
      * @param identifier The Polar device ID or BT address.
@@ -95,4 +104,15 @@ interface PolarTrainingSessionApi {
      * @return A [Single] emitting the current [PolarExerciseSession.ExerciseInfo] for the device.
      */
     fun getExerciseStatus(identifier: String): Single<PolarExerciseSession.ExerciseInfo>
+
+    /**
+     * Observe exercise session status changes from the device.
+     *
+     * @param identifier The Polar device ID or BT address.
+     * @return A [Flowable] emitting [PolarExerciseSession.ExerciseInfo] whenever the session status changes.
+     *         - onNext: emitted when exercise status changes
+     *         - onError:  see [PolarErrors] for possible errors
+     *         - onComplete: when the device disconnects or observation is disposed
+     */
+    fun observeExerciseStatus(identifier: String): Flowable<PolarExerciseSession.ExerciseInfo>
 }

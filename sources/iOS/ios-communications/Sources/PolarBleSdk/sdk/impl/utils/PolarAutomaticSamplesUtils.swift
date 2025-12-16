@@ -23,7 +23,7 @@ internal class PolarAutomaticSamplesUtils {
         return client.request(try! listOperation.serializedData())
             .flatMap { response -> Single<[Polar247HrSamplesData]> in
                 do {
-                    let dir = try Protocol_PbPFtpDirectory(serializedBytes: Data(response))
+                    let dir = try Protocol_PbPFtpDirectory(serializedData: Data(response))
                     let regex = try NSRegularExpression(pattern: AUTOMATIC_SAMPLES_PATTERN)
                     let filteredFiles = dir.entries.compactMap { entry -> String? in
                         let range = NSRange(location: 0, length: entry.name.count)
@@ -42,7 +42,7 @@ internal class PolarAutomaticSamplesUtils {
                                 .asObservable()
                                 .map { fileResponse -> Polar247HrSamplesData? in
                                     do {
-                                        let sampleSessions = try Data_PbAutomaticSampleSessions(serializedBytes: Data(fileResponse))
+                                        let sampleSessions = try Data_PbAutomaticSampleSessions(serializedData: Data(fileResponse))
                                         let sampleDateProto = sampleSessions.day
                                         let sampleDate = Calendar.current.date(from: DateComponents(
                                             year: Int(sampleDateProto.year),
@@ -82,7 +82,7 @@ internal class PolarAutomaticSamplesUtils {
         return client.request(try! operation.serializedData())
             .flatMap { response -> Single<[Polar247PPiSamplesData]> in
                 do {
-                    let dir = try Protocol_PbPFtpDirectory(serializedBytes: Data(response))
+                    let dir = try Protocol_PbPFtpDirectory(serializedData: Data(response))
                     let regex = try NSRegularExpression(pattern: AUTOMATIC_SAMPLES_PATTERN)
                     let filteredFiles = dir.entries.compactMap { entry -> String? in
                         let range = NSRange(location: 0, length: entry.name.count)
@@ -101,7 +101,7 @@ internal class PolarAutomaticSamplesUtils {
                                 .asObservable()
                                 .map { fileResponse -> Polar247PPiSamplesData? in
                                     do {
-                                        let sampleSessions = try Data_PbAutomaticSampleSessions(serializedBytes: Data(fileResponse))
+                                        let sampleSessions = try Data_PbAutomaticSampleSessions(serializedData: Data(fileResponse))
                                         let sampleDateProto = sampleSessions.day
                                         let sampleDate = Calendar.current.date(from: DateComponents(
                                             year: Int(sampleDateProto.year),

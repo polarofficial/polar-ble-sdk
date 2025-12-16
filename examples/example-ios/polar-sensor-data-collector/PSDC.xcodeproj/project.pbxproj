@@ -61,6 +61,7 @@
 		AA74C2602BDA3FD5005E0908 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C25F2BDA3FD5005E0908 /* SettingsView.swift */; };
 		AA74C2632BDA4FBA005E0908 /* SensorDatalogSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2622BDA4FBA005E0908 /* SensorDatalogSettingsView.swift */; };
 		AA74C2682BDA7215005E0908 /* H10ExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2672BDA7215005E0908 /* H10ExerciseView.swift */; };
+		AA80477A2EDEB22700B66B10 /* TrainingSessionDatePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8047792EDEB21C00B66B10 /* TrainingSessionDatePickerView.swift */; };
 		AAA0FE012BE9EF22005368A7 /* HrRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA0FE002BE9EF22005368A7 /* HrRecordingFeature.swift */; };
 		AAA0FE032BEA354A005368A7 /* EcgRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA0FE022BEA354A005368A7 /* EcgRecordingFeature.swift */; };
 		AAA0FE052BEA3769005368A7 /* AccRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA0FE042BEA3769005368A7 /* AccRecordingFeature.swift */; };
@@ -160,6 +161,7 @@
 		AA74C2622BDA4FBA005E0908 /* SensorDatalogSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensorDatalogSettingsView.swift; sourceTree = "<group>"; };
 		AA74C2672BDA7215005E0908 /* H10ExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = H10ExerciseView.swift; sourceTree = "<group>"; };
 		AA7C73292BC4F871006C0645 /* Alamofire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Alamofire.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA8047792EDEB21C00B66B10 /* TrainingSessionDatePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionDatePickerView.swift; sourceTree = "<group>"; };
 		AAA0FE002BE9EF22005368A7 /* HrRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HrRecordingFeature.swift; sourceTree = "<group>"; };
 		AAA0FE022BEA354A005368A7 /* EcgRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EcgRecordingFeature.swift; sourceTree = "<group>"; };
 		AAA0FE042BEA3769005368A7 /* AccRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccRecordingFeature.swift; sourceTree = "<group>"; };
@@ -250,6 +252,7 @@
 		84698A0D2DB778B2006AD8FA /* TrainingSession */ = {
 			isa = PBXGroup;
 			children = (
+				AA8047792EDEB21C00B66B10 /* TrainingSessionDatePickerView.swift */,
 				84698A0E2DB778E2006AD8FA /* TrainingSessionListView.swift */,
 				84698A102DB77922006AD8FA /* TrainingSessionDetailsView.swift */,
 				84698A122DB77937006AD8FA /* TrainingSessionEntriesRow.swift */,
@@ -611,6 +614,7 @@
 				84954BAD2E9E65C5000A5C0A /* DataLoadProgressView.swift in Sources */,
 				AA74C2402BDA3C8C005E0908 /* LedAnimationFeature.swift in Sources */,
 				AA74C25A2BDA3ED8005E0908 /* OfflineRecordingEntriesRow.swift in Sources */,
+				AA80477A2EDEB22700B66B10 /* TrainingSessionDatePickerView.swift in Sources */,
 				AAA0FE012BE9EF22005368A7 /* HrRecordingFeature.swift in Sources */,
 				AAFA1C6C2C97EB74004DC8C8 /* MenuStyle.swift in Sources */,
 				AA74C23E2BDA3C78005E0908 /* BatteryStatusFeature.swift in Sources */,

@@ -19,6 +19,9 @@ struct ExerciseUIState {
     
     var startTime: Date? = nil
 
+    var isObservingNotifications: Bool = false
+    var notificationEvent: String? = nil
+
     mutating func apply(status new: PolarExerciseSession.ExerciseStatus,
                         sport: PolarExerciseSession.SportProfile,
                         startTime newStartTime: Date? = nil) {
@@ -42,5 +45,21 @@ struct ExerciseUIState {
         canPause  = (new == .inProgress)
         canResume = (new == .paused)
         canStop   = (new == .inProgress || new == .paused)
+    }
+    
+    mutating func applyNotificationEvent(status: PolarExerciseSession.ExerciseStatus,
+                                         sport: PolarExerciseSession.SportProfile) {
+        switch status {
+        case .notStarted:
+            notificationEvent = "Not started"
+        case .inProgress:
+            notificationEvent = "In progress (\(sport.displayName))"
+        case .paused:
+            notificationEvent = "Paused (\(sport.displayName))"
+        case .stopped:
+            notificationEvent = "Stopped"
+        case .syncRequired:
+            notificationEvent = "Sync required"
+        }
     }
 }

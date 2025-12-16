@@ -36,7 +36,7 @@ internal class PolarTrainingSessionUtils {
             let fetchRecursiveObservable = fetchRecursive(ARABICA_USER_ROOT_FOLDER, client: client) { name in
                 return name.range(of: #"^(\d{8}/|\d{6}/|.*\.BPB|.*\.GZB|E/|\d+/)$"#, options: .regularExpression) != nil
             }
-
+            
             fetchRecursiveObservable
                 .subscribe(onNext: { (path, size) in
                     let fileName = (path as NSString).lastPathComponent
@@ -47,28 +47,41 @@ internal class PolarTrainingSessionUtils {
                             let dateStr = String(path[Range(match.range(at: 1), in: path)!])
                             let timeStr = String(path[Range(match.range(at: 2), in: path)!])
                             let dateTimeStr = dateStr + timeStr
-                            let date = dateTimeFormatter.date(from: dateTimeStr) ?? Date()
-                            trainingSessionSummaryPaths.insert(path)
-                            if let index = updatedReferences.firstIndex(where: { $0.path.contains(dateStr) && $0.path.contains(timeStr) }) {
-                                if !updatedReferences[index].trainingDataTypes.contains(dataType) {
-                                    updatedReferences[index].trainingDataTypes.append(dataType)
-                                }
-                                updatedReferences[index].fileSize += Int64(size)
-                                BleLogger.trace("Added \(size) bytes to existing session, new total: \(updatedReferences[index].fileSize)")
-                            } else {
-                                updatedReferences.append(
-                                    PolarTrainingSessionReference(
-                                        date: date,
-                                        path: path,
-                                        trainingDataTypes: [dataType],
-                                        exercises: [],
-                                        fileSize: Int64(size)
-                                    )
-                                )
-                            }
-                            BleLogger.trace("Matched TSESS.BPB at \(path)")
-                        }
+                            let dateTime = dateTimeFormatter.date(from: dateTimeStr) ?? Date()
+                            let dateAtPath = Calendar.current.dateComponents([.year, .month, .day], from: dateFormatter.date(from: dateStr) ?? Date())
 
+                            var dateMatches = false
+
+                            if (fromDate != nil && toDate != nil) {
+                                if (dateAtPath >= Calendar.current.dateComponents([.year, .month, .day], from: fromDate ?? Date())
+                                    && dateAtPath <= Calendar.current.dateComponents([.year, .month, .day], from: toDate ?? Date())) {
+                                    dateMatches = true
+                                }
+                            } else if (fromDate == nil || toDate == nil) {
+                                dateMatches = true
+                            }
+                            if (dateMatches) {
+                                    trainingSessionSummaryPaths.insert(path)
+                                    if let index = updatedReferences.firstIndex(where: { $0.path.contains(dateStr) && $0.path.contains(timeStr) }) {
+                                        if !updatedReferences[index].trainingDataTypes.contains(dataType) {
+                                            updatedReferences[index].trainingDataTypes.append(dataType)
+                                            updatedReferences[index].fileSize += Int64(size)
+                                            BleLogger.trace("Added \(size) bytes to existing session, new total: \(updatedReferences[index].fileSize)")
+                                        }
+                                    } else {
+                                        updatedReferences.append(
+                                            PolarTrainingSessionReference(
+                                                date: dateTime,
+                                                path: path,
+                                                trainingDataTypes: [dataType],
+                                                exercises: [],
+                                                fileSize: Int64(size)
+                                            )
+                                        )
+                                    }
+                                    BleLogger.trace("Matched TSESS.BPB at \(path)")
+                                }
+                        }
                     } else if let exerciseDataType = PolarExerciseDataTypes(rawValue: fileName) {
 
                         let regex = try! NSRegularExpression(pattern: "/U/0/(\\d{8})/E/(\\d{6})/(\\d{2})/\(exerciseDataType.rawValue)$")
@@ -85,7 +98,7 @@ internal class PolarTrainingSessionUtils {
 
                                 updatedReferences[index].fileSize += Int64(size)
                                 BleLogger.trace("Added exercise file \(exerciseDataType.rawValue) size: \(size) bytes, new total: \(updatedReferences[index].fileSize)")
-                                
+
                                 let exercises = updatedReferences[index].exercises
 
                                 if let existingIndex = exercises.firstIndex(where: { $0.path == fullExercisePath }) {
@@ -107,7 +120,6 @@ internal class PolarTrainingSessionUtils {
                             BleLogger.trace("Regex did not match exercise path: \(path)")
                         }
                     }
-
                 }, onError: { error in
                     BleLogger.error("Error while fetching session references: \(error)")
                     observer.onError(error)
@@ -452,6 +464,37 @@ internal class PolarTrainingSessionUtils {
                 emitter(.failure(error))
                 return Disposables.create()
             }
+        }
+    }
+    
+    static func deleteTrainingSession(client: BlePsFtpClient, reference: PolarTrainingSessionReference) -> Completable {
+        do {
+            let components = reference.path.split(separator: "/")
+            var operation = Protocol_PbPFtpOperation()
+            operation.command = .get
+            operation.path = "/U/0/" + components[2] + "/E/"
+            let request = try operation.serializedData()
+        
+            return client.request(request)
+                .flatMap { content -> Single<NSData> in
+                    do {
+                        let dir = try Protocol_PbPFtpDirectory(serializedData: content as Data)
+                        var removeOperation = Protocol_PbPFtpOperation()
+                        removeOperation.command = .remove
+                        if dir.entries.count <= 1 {
+                            removeOperation.path = "/U/0/" + components[2] + "/E/"
+                        } else {
+                            removeOperation.path = "/U/0/" + components[2] + "/E/" + components[4] + "/"
+                        }
+                        let request = try removeOperation.serializedData()
+                        
+                        return client.request(request)
+                    } catch {
+                        return Single.error(PolarErrors.messageDecodeFailed)
+                    }
+                }.asCompletable()
+        } catch let err {
+            return Completable.error(err)
         }
     }
     

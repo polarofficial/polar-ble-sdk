@@ -68,12 +68,28 @@ struct ExerciseView: View {
                     return nil
                 }()
 
-                Group {
-                    if let startTimeString {
-                        Text("Exercise start time: \(startTimeString)")
-                            .font(.subheadline)
-                            .padding(.top, 8)
-                    }
+                if let startTimeString {
+                    Text("Exercise start time: \(startTimeString)")
+                        .font(.subheadline)
+                        .padding(.top, 8)
+                }
+
+                Divider()
+                    .padding(.top, 16)
+
+                Button(
+                    bleSdkManager.exerciseState.isObservingNotifications
+                    ? "Stop observing"
+                    : "Observe exercise state notifications"
+                ) {
+                    bleSdkManager.toggleExerciseNotificationObservation()
+                }
+                .buttonStyle(.bordered)
+
+                if let notificationEvent = bleSdkManager.exerciseState.notificationEvent {
+                    Text(notificationEvent)
+                        .font(.body)
+                        .foregroundColor(.blue)
                 }
 
                 Spacer()
@@ -107,6 +123,7 @@ struct ExerciseView: View {
         }
         .onDisappear {
             bleSdkManager.stopExerciseAutoRefresh()
+            bleSdkManager.stopObservingExerciseNotifications()
         }
         .onChange(of: bleSdkManager.exerciseState.status) { newStatus in
             switch newStatus {

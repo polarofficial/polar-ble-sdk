@@ -17,7 +17,7 @@
     <a title="PolarTrainingSessionApi Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">PolarBleSdk 6.11.1 Docs</a> (34% documented)</p>
+        <p><a href="../index.html">PolarBleSdk 6.12.2 Docs</a> (35% documented)</p>
         <div class="header-right">
           <form role="search" action="../search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -497,7 +497,7 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Get training session references for a given period.</p>
+                        <p>Get training session references for a given period. If fromDate and/or toDate are not given this method will return all training session references in the device.</p>
 
                       </div>
                       <div class="declaration">
@@ -688,6 +688,73 @@
                       <div>
                         <h4>Return Value</h4>
                         <p>An Observable emitting <code><a href="../Enums/PolarTrainingSessionFetchResult.html">PolarTrainingSessionFetchResult</a></code> containing either progress updates or the complete session data.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP06deletedE010identifier9reference7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_AA0adE9ReferenceVtF"></a>
+                    <a name="//apple_ref/swift/Method/deleteTrainingSession(identifier:reference:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP06deletedE010identifier9reference7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_AA0adE9ReferenceVtF">deleteTrainingSession(identifier:<wbr>reference:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Api for removing single training session from a Polar device. You can get a list of training sessions with <code>getTrainingSessionReferences</code> API.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">deleteTrainingSession</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">reference</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarTrainingSessionReference.html">PolarTrainingSessionReference</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The Polar device ID or BT address.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>reference</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>PolarTrainingSessionReference with path in device to the training session to be removed.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Completable
+
+<ul>
+<li>success: When the training session has been deleted from the device</li>
+<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
+</ul></p>
                       </div>
                     </section>
                   </div>
@@ -956,12 +1023,62 @@
                     </section>
                   </div>
                 </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP21observeExerciseStatus10identifier7RxSwift10ObservableCyAA0ahE0O0H4InfoVGSS_tF"></a>
+                    <a name="//apple_ref/swift/Method/observeExerciseStatus(identifier:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP21observeExerciseStatus10identifier7RxSwift10ObservableCyAA0ahE0O0H4InfoVGSS_tF">observeExerciseStatus(identifier:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Observe exercise session status notifications from the device.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">observeExerciseStatus</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Enums/PolarExerciseSession.html">PolarExerciseSession</a></span><span class="o">.</span><span class="kt">ExerciseInfo</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The Polar device ID or BT address.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>An <code>Observable</code> emitting <code><a href="../Enums/PolarExerciseSession/ExerciseInfo.html">PolarExerciseSession.ExerciseInfo</a></code> whenever the session status changes.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
               </ul>
             </div>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2025 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2025-12-03)</p>
+          <p>&copy; 2025 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2025-12-16)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

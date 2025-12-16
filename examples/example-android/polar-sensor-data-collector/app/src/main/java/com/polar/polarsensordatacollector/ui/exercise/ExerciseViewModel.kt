@@ -11,7 +11,9 @@ import com.polar.sdk.api.model.PolarExerciseSession
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.kotlin.addTo
+import io.reactivex.rxjava3.schedulers.Schedulers
 import java.util.Date
 
 interface StringProvider {
@@ -47,6 +49,12 @@ class ExerciseViewModel(
     private val _startTime = MutableLiveData<Date?>(null)
     val startTime: LiveData<Date?> = _startTime
 
+    private val _isObservingNotifications = MutableLiveData(false)
+    val isObservingNotifications: LiveData<Boolean> = _isObservingNotifications
+
+    private val _notificationEvent = MutableLiveData<String?>(null)
+    val notificationEvent: LiveData<String?> = _notificationEvent
+
     val sportProfiles = listOf(
         PolarExerciseSession.SportProfile.RUNNING,
         PolarExerciseSession.SportProfile.CYCLING,
@@ -55,6 +63,8 @@ class ExerciseViewModel(
     private var selectedSport: PolarExerciseSession.SportProfile = PolarExerciseSession.SportProfile.RUNNING
 
     private val disposables = CompositeDisposable()
+    private var notificationDisposable: Disposable? = null
+    private var notificationEventDisposable: Disposable? = null
 
     init {
         repo.state()
@@ -94,6 +104,52 @@ class ExerciseViewModel(
         selectedSport = profile
     }
 
+    fun toggleNotificationObservation() {
+        if (_isObservingNotifications.value == true) {
+            stopNotificationObservation()
+        } else {
+            startNotificationObservation()
+        }
+    }
+
+    private fun startNotificationObservation() {
+        _notificationEvent.value = null
+        notificationDisposable?.dispose()
+        notificationEventDisposable?.dispose()
+
+        notificationDisposable = repo.startObservingExerciseStatus()
+
+        notificationEventDisposable = repo.state()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { info ->
+                val eventText = when (info.status) {
+                    PolarExerciseSession.ExerciseStatus.NOT_STARTED ->
+                        sp.get(R.string.status_not_started)
+                    PolarExerciseSession.ExerciseStatus.IN_PROGRESS ->
+                        sp.get(R.string.status_in_progress, info.sportProfile.name)
+                    PolarExerciseSession.ExerciseStatus.PAUSED ->
+                        sp.get(R.string.status_paused, info.sportProfile.name)
+                    PolarExerciseSession.ExerciseStatus.STOPPED ->
+                        sp.get(R.string.status_stopped, info.sportProfile.name)
+                    PolarExerciseSession.ExerciseStatus.SYNC_REQUIRED ->
+                        sp.get(R.string.status_sync_required)
+                }
+                _notificationEvent.value = eventText
+            }
+
+        _isObservingNotifications.value = true
+    }
+
+    private fun stopNotificationObservation() {
+        repo.stopObservingExerciseStatus()
+        notificationDisposable?.dispose()
+        notificationDisposable = null
+        notificationEventDisposable?.dispose()
+        notificationEventDisposable = null
+        _isObservingNotifications.value = false
+    }
+
     fun start() = run { repo.start(selectedSport) }
     fun pause() = run { repo.pause() }
     fun resume() = run { repo.resume() }
@@ -104,6 +160,7 @@ class ExerciseViewModel(
     }
 
     override fun onCleared() {
+        stopNotificationObservation()
         disposables.clear()
     }
 }

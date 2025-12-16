@@ -463,8 +463,6 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - onError: see `PolarErrors` for possible errors invoked
     func setPolarUserDeviceSettings(_ identifier: String, polarUserDeviceSettings: PolarUserDeviceSettings) -> Completable
 
-
-
     /// Delete data [PolarStoredDataType] from a device.
     ///
     /// @param identifier, Polar device ID or BT address

@@ -14,6 +14,7 @@ struct TrainingSessionData: Identifiable {
     let id = UUID()
     var loadState: TrainingSessionDataLoadingState = .notStarted
     var startTime: Date = Date()
+    var endTime: Date = Date()
     var data: String = ""
     var progress: PolarTrainingSessionProgress? = nil
 }

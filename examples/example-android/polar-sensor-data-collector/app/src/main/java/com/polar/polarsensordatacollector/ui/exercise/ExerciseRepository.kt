@@ -25,6 +25,8 @@ class ExerciseRepository(
         )
     )
 
+    private var exerciseStatusDisposable: Disposable? = null
+
     private var lastKnownSport: PolarExerciseSession.SportProfile
         get() = prefs.getInt(KEY_LAST_SPORT_ID, PolarExerciseSession.SportProfile.OTHER_OUTDOOR.id)
             .let { id -> PolarExerciseSession.SportProfile.fromId(id) }
@@ -56,6 +58,28 @@ class ExerciseRepository(
         } else {
             newInfo
         }
+    }
+
+    fun startObservingExerciseStatus(): Disposable {
+        exerciseStatusDisposable?.dispose()
+
+        exerciseStatusDisposable = api.observeExerciseStatus(deviceId)
+            .subscribe(
+                { info ->
+                    Log.d(TAG, "Exercise status notification received: $info")
+                    stateSubject.onNext(info)
+                },
+                { error ->
+                    Log.w(TAG, "Exercise status observation error: ${error.message}")
+                }
+            )
+
+        return exerciseStatusDisposable!!
+    }
+
+    fun stopObservingExerciseStatus() {
+        exerciseStatusDisposable?.dispose()
+        exerciseStatusDisposable = null
     }
 
     fun refresh(): Completable =

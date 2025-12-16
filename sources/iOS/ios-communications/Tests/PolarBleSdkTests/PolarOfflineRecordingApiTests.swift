@@ -46,7 +46,7 @@ class MockBleDeviceSession: BleDeviceSession {
 }
 
 final class PolarOfflineRecordingApiTests: XCTestCase {
-
+    
     var mockClient: MockBlePsFtpClient!
     var mockSession: MockBleDeviceSession!
     var mockGattServiceTransmitterImpl: MockGattServiceTransmitterImpl!
@@ -60,7 +60,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
     override func tearDownWithError() throws {
         mockClient = nil
         mockSession = nil
-       
+        
     }
     
     // Tests to check that listing offline recordings does not throw errors when date/time
@@ -105,8 +105,8 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
-//            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
+            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),
             Single.just(mockRecordingDirectoryContent),
@@ -119,7 +119,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         let expectation = self.expectation(description: "List offline recordings should return data")
         
         _ = result.subscribe(onNext: { entry in
-    
+            
             // Assert
             // Time should be shifted one hour forward
             let dateFormatter = DateFormatter()
@@ -132,17 +132,17 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
             XCTAssertEqual(entry.path, "/U/0/20250309/R/020130/HR.REC")
             XCTAssertEqual(entry.size, 444)
             XCTAssertEqual(entry.type, PolarDeviceDataType.hr)
-
+            
             expectation.fulfill()
             
         }, onError: { error in
-            XCTFail("Unexpected error: \(error)")
+            // Do nothing. Po§larErrors.fileError was ecpected
         }, onCompleted: {
             // Do nothing.
         })
         
         wait(for: [expectation], timeout: 1.0)
-    
+        
         restoreTimeZone(originalTimeZone)
         if #available(iOS 17.0, *) {
             setenv("TZ", originalTimeZone.identifier, 1)
@@ -175,7 +175,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }
     }
     
-    func testReadOfflineRecordingBeforeDaylightSavingsTimeShiftHourBackwardInNewYork2025_shouldReturnListing() {
+    func testReadOfflineRecordingV1BeforeDaylightSavingsTimeShiftHourBackwardInNewYork2025_shouldReturnListing() {
         
         // Sunday, 2 November 2025, 02:00:00 clocks are turned backward 1 hour to
         // Sunday, 2 November 2025, 01:00:00 local standard time instead.
@@ -211,8 +211,8 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
-//            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
+            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),
             Single.just(mockRecordingDirectoryContent),
@@ -226,9 +226,9 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         let expectation = self.expectation(description: "List offline recordings should return data")
         
         _ = result.subscribe(onNext: { entry in
-    
+            
             // Assert
-           
+            
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .iso8601)
             dateFormatter.timeZone = testTimeZone
@@ -240,7 +240,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
             XCTAssertEqual(entry.path, "/U/0/20251102/R/013007/HR.REC")
             XCTAssertEqual(entry.size, 444)
             XCTAssertEqual(entry.type, PolarDeviceDataType.hr)
-
+            
             expectation.fulfill()
             
         }, onError: { error in
@@ -254,7 +254,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
     }
     
     
-    func testReadOfflineRecordingsAfterDaylightSavingsTimeShiftHourBackwardInNewYork2025_shouldReturnListing() {
+    func testReadOfflineRecordingsV1AfterDaylightSavingsTimeShiftHourBackwardInNewYork2025_shouldReturnListing() {
         
         // Sunday, 2 November 2025, 02:00:00 clocks are turned backward 1 hour to
         // Sunday, 2 November 2025, 01:00:00 local standard time instead.
@@ -290,8 +290,8 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
-//            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
+            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),
             Single.just(mockRecordingDirectoryContent),
@@ -305,7 +305,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         let expectation = self.expectation(description: "List offline recordings should return data")
         
         _ = result.subscribe(onNext: { entry in
-    
+            
             // Assert
             
             let dateFormatter = DateFormatter()
@@ -319,7 +319,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
             XCTAssertEqual(entry.path, "/U/0/20251102/R/020130/HR.REC")
             XCTAssertEqual(entry.size, 444)
             XCTAssertEqual(entry.type, PolarDeviceDataType.hr)
-
+            
             expectation.fulfill()
             
         }, onError: { error in
@@ -334,7 +334,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
     }
     
     
-    func testReadOfflineRecordingsAfterDaylightSavingsTimeShiftHourForwardInHelsinki2025_shouldReturnListing() {
+    func testReadOfflineRecordingsV1AfterDaylightSavingsTimeShiftHourForwardInHelsinki2025_shouldReturnListing() {
         
         //Sunday, 30 March 2025, 03:00:00 clocks are turned forward 1 hour to
         //Sunday, 30 March 2025, 04:00:00 local daylight time instead.
@@ -368,8 +368,8 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
-//            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
+            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),
             Single.just(mockRecordingDirectoryContent),
@@ -383,9 +383,9 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         let expectation = self.expectation(description: "List offline recordings should return data")
         
         _ = result.subscribe(onNext: { entry in
-    
+            
             // Assert
-           
+            
             // Time should be shifted one hour forward
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .iso8601)
@@ -398,7 +398,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
             XCTAssertEqual(entry.path, "/U/0/20250330/R/031500/HR.REC")
             XCTAssertEqual(entry.size, 444)
             XCTAssertEqual(entry.type, PolarDeviceDataType.hr)
-
+            
             expectation.fulfill()
             
         }, onError: { error in
@@ -412,7 +412,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         
     }
     
-    func testReadOfflineRecordingsBeforeDaylightSavingsTimeShiftHourBackwardInHelsinki2025_shouldReturnListing() {
+    func testReadOfflineRecordingsV1BeforeDaylightSavingsTimeShiftHourBackwardInHelsinki2025_shouldReturnListing() {
         
         //Sunday, 26 October 2025, 04:00:00 clocks are turned backward 1 hour to
         //Sunday, 26 October 2025, 03:00:00 local standard time instead.
@@ -420,7 +420,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         let api = PolarBleApiImplWithMockSession(mockDeviceSession: mockSession)
         let testTimeZone = TimeZone(identifier: "Europe/Helsinki")!
         let originalTimeZone = mockTimeZoneReturningCurrent(testTimeZone)
-
+        
         let mockUserDirectoryContent = try! Protocol_PbPFtpDirectory.with {
             $0.entries = [
                 Protocol_PbPFtpEntry.with { $0.name = "20251026/"; $0.size = 0 }
@@ -446,8 +446,8 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
-//            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
+            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),
             Single.just(mockRecordingDirectoryContent),
@@ -461,7 +461,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         let expectation = self.expectation(description: "List offline recordings should return data")
         
         _ = result.subscribe(onNext: { entry in
-    
+            
             // Assert
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .iso8601)
@@ -474,7 +474,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
             XCTAssertEqual(entry.path, "/U/0/20251026/R/031500/HR.REC")
             XCTAssertEqual(entry.size, 444)
             XCTAssertEqual(entry.type, PolarDeviceDataType.hr)
-
+            
             expectation.fulfill()
             
         }, onError: { error in
@@ -488,7 +488,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         
     }
     
-    func testReadOfflineRecordingsAfterDaylightSavingsTimeShiftHourBackwardInHelsinki2025_shouldReturnListing() {
+    func testReadOfflineRecordingsV1AfterDaylightSavingsTimeShiftHourBackwardInHelsinki2025_shouldReturnListing() {
         
         //Sunday, 26 October 2025, 04:00:00 clocks are turned backward 1 hour to
         //Sunday, 26 October 2025, 03:00:00 local standard time instead.
@@ -522,8 +522,8 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         }.serializedData()
         
         mockClient.requestReturnValues = [
-//            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockUserDirectoryContent),
+            Single.error(PolarErrors.fileError(description: "NO PMDFILES.TXT FILE")),
             Single.just(mockDateDirectoryContent),
             Single.just(mockRecordingsDirectoryContent),
             Single.just(mockRecordingDirectoryContent),
@@ -537,9 +537,9 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         let expectation = self.expectation(description: "List offline recordings should return data")
         
         _ = result.subscribe(onNext: { entry in
-    
+            
             // Assert
-
+            
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .iso8601)
             dateFormatter.timeZone = testTimeZone
@@ -551,7 +551,7 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
             XCTAssertEqual(entry.path, "/U/0/20251026/R/041000/HR.REC")
             XCTAssertEqual(entry.size, 444)
             XCTAssertEqual(entry.type, PolarDeviceDataType.hr)
-
+            
             expectation.fulfill()
             
         }, onError: { error in
@@ -561,6 +561,76 @@ final class PolarOfflineRecordingApiTests: XCTestCase {
         })
         
         wait(for: [expectation], timeout: 1.0)
+        restoreTimeZone(originalTimeZone)
+    }
+    
+    func testReadOfflineRecordingsV2_should_return_listing() {
+
+        let api = PolarBleApiImplWithMockSession(mockDeviceSession: mockSession)
+        let testTimeZone = TimeZone(identifier: "Europe/Helsinki")!
+        let originalTimeZone = mockTimeZoneReturningCurrent(testTimeZone)
+        
+        let mockPMDFilesContent = try! Protocol_PbPFtpDirectory.with {
+            $0.entries = [
+                Protocol_PbPFtpEntry.with { $0.name = "/U/0/20251026/%/021000/ACC0.REC"; $0.size = 1999 }
+            ]
+        }
+
+        let pmdTxtContent = """
+       500120 /U/0/20250730/R/101010/ACC0.REC
+       500103 /U/0/20250730/R/101010/ACC1.REC
+       102325 /U/0/20250730/R/101010/ACC2.REC
+       500000 /U/0/20250730/R/101010/HR0.REC
+       500050 /U/0/20250730/R/101010/HR1.REC
+       300 /U/0/20250730/R/101010/PPG0.REC
+       """.trimmingCharacters(in: .controlCharacters).data(using: .utf8)
+
+        mockClient.requestReturnValues = [
+            Single.just(pmdTxtContent!),
+            Single.just(pmdTxtContent!),
+            Single.just(pmdTxtContent!)
+        ]
+
+        // Act
+        let result = api.listOfflineRecordings("123456")
+        let expectation = self.expectation(description: "List offline recordings should return data")
+
+        _ = result.subscribe(onNext: { entry in
+
+            // Assert
+            let dateFormatter = DateFormatter()
+            dateFormatter.calendar = Calendar(identifier: .iso8601)
+            dateFormatter.timeZone = testTimeZone
+            dateFormatter.locale = Locale(identifier: "fi_FI")
+            dateFormatter.dateFormat = "yyyy-MM-dd, HH:mm:ss zzzz"
+            let dateAsString = dateFormatter.string(from: entry.date)
+
+            if (entry.type == .acc) {
+                XCTAssertEqual(dateAsString, "2025-07-30, 10:10:10 Itä-Euroopan kesäaika")
+                XCTAssertEqual(entry.path, "/U/0/20250730/R/101010/ACC0.REC")
+                XCTAssertEqual(entry.size, 1102548)
+                XCTAssertEqual(entry.type, PolarDeviceDataType.acc)
+            } else if (entry.type == .hr) {
+                XCTAssertEqual(dateAsString, "2025-07-30, 10:10:10 Itä-Euroopan kesäaika")
+                XCTAssertEqual(entry.path, "/U/0/20250730/R/101010/HR0.REC")
+                XCTAssertEqual(entry.size, 1000050)
+                XCTAssertEqual(entry.type, PolarDeviceDataType.hr)
+            } else if (entry.type == .ppg) {
+                XCTAssertEqual(dateAsString, "2025-07-30, 10:10:10 Itä-Euroopan kesäaika")
+                XCTAssertEqual(entry.path, "/U/0/20250730/R/101010/PPG0.REC")
+                XCTAssertEqual(entry.size, 300)
+                XCTAssertEqual(entry.type, PolarDeviceDataType.ppg)
+            } else{
+                XCTFail("No such data type \(entry.type)")
+            }
+        }, onError: { error in
+            XCTFail("Unexpected error: \(error)")
+        }, onCompleted: {
+            // Do nothing.
+            expectation.fulfill()
+        })
+
+        wait(for: [expectation], timeout: 5.0)
         restoreTimeZone(originalTimeZone)
     }
 }

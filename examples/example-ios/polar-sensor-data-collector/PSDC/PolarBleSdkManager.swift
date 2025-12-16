@@ -100,6 +100,7 @@ class PolarBleSdkManager : ObservableObject {
     private var broadcastDisposable: Disposable?
     private var autoConnectDisposable: Disposable?
     private var onlineStreamingDisposables: [PolarDeviceDataType: Disposable?] = [:]
+    private var exerciseNotificationDisposable: Disposable?
     
     private let disposeBag = DisposeBag()
     private var h10ExerciseEntry: PolarExerciseEntry?
@@ -1505,6 +1506,28 @@ extension PolarBleSdkManager {
         }
     }
     
+    func deleteTrainingSession(reference: PolarTrainingSessionReference) {
+        if case .connected(let device) = deviceConnectionState {
+            NSLog("start training session removal")
+
+            api.deleteTrainingSession(identifier: device.deviceId, reference: reference)
+                .observe(on: MainScheduler.instance)
+                .subscribe{ e in
+                    switch e {
+                    case .completed:
+                        NSLog("Training session deleted successfully")
+                        Task { @MainActor in
+                            self.trainingSessionEntries.entries.removeAll{$0 == reference}
+                        }
+                    case .error(let err):
+                        NSLog("Failed to delete training session: \(err)")
+                    }
+                }.disposed(by: disposeBag)
+        } else {
+            somethingFailed(text: "Device is not connected \(deviceConnectionState)")
+        }
+    }
+
     func h10RecordingToggle() {
         if case .connected(let device) = deviceConnectionState {
             if self.h10RecordingFeature.isEnabled {
@@ -2375,6 +2398,33 @@ extension PolarBleSdkManager {
         }
     }
     
+    func listTrainingSessions(start: Date, end: Date) async {
+        if case .connected(let device) = deviceConnectionState {
+            
+            Task { @MainActor in
+                self.trainingSessionEntries.entries.removeAll()
+                self.offlineRecordingEntries.isFetching = true
+            }
+            NSLog("Start training session listing from start date: \(start) to end date: \(end)")
+            api.getTrainingSessionReferences(identifier: device.deviceId, fromDate: start, toDate: end)
+                .observe(on: MainScheduler.instance)
+                .do(
+                    onDispose: {
+                        self.trainingSessionEntries.isFetching = false
+                    })
+                .subscribe{ e in
+                    switch e {
+                    case .next(let entry):
+                        self.trainingSessionEntries.entries.append(entry)
+                    case .error(let err):
+                        NSLog("Training session listing error: \(err)")
+                    case .completed:
+                        NSLog("Training session listing completed")
+                    }
+                }.disposed(by: disposeBag)
+        }
+    }
+    
     func getTrainingSession(trainingSessionReference: PolarTrainingSessionReference) async {
         if case .connected(let device) = deviceConnectionState {
             await MainActor.run {
@@ -2845,6 +2895,43 @@ extension PolarBleSdkManager {
        broadcastDisposable?.dispose()
        broadcastDisposable = nil
    }
+    
+    func startObservingExerciseNotifications() {
+        guard case .connected(let device) = deviceConnectionState else { return }
+        
+        exerciseNotificationDisposable?.dispose()
+        exerciseState.isObservingNotifications = true
+        exerciseState.notificationEvent = nil
+        
+        exerciseNotificationDisposable = api.observeExerciseStatus(identifier: device.deviceId)
+            .observe(on: MainScheduler.instance)
+            .subscribe(
+                onNext: { [weak self] info in
+                    NSLog("Exercise notification received: \(info.status)")
+                    self?.exerciseState.apply(status: info.status, sport: info.sportProfile, startTime:  info.startTime)
+                    self?.exerciseState.applyNotificationEvent(status: info.status, sport: info.sportProfile)
+                },
+                onError: { [weak self] error in
+                    NSLog("Exercise notification observation failed: \(error)")
+                    self?.exerciseState.isObservingNotifications = false
+                    self?.exerciseState.notificationEvent = "Error:  \(error.localizedDescription)"
+                }
+            )
+    }
+
+    func stopObservingExerciseNotifications() {
+        exerciseNotificationDisposable?.dispose()
+        exerciseNotificationDisposable = nil
+        exerciseState.isObservingNotifications = false
+    }
+
+    func toggleExerciseNotificationObservation() {
+        if exerciseState.isObservingNotifications {
+            stopObservingExerciseNotifications()
+        } else {
+            startObservingExerciseNotifications()
+        }
+    }
 }
 
 fileprivate extension PolarDeviceDataType {
@@ -2993,7 +3080,7 @@ extension PolarBleSdkManager : PolarBleApiDeviceFeaturesObserver {
                             self.onlineStreamingFeature.availableOnlineDataTypes[dataType] = true
                         }
                     case .failure(let err):
-                        self.somethingFailed(text: "Failed to get available online streaming data types: \(err)")
+                        BleLogger.trace("Failed to get available online streaming data types: \(err)")
                     }
                 }.disposed(by: disposeBag)
             break
@@ -3050,7 +3137,7 @@ extension PolarBleSdkManager : PolarBleApiDeviceFeaturesObserver {
                             self.onlineStreamingFeature.availableOnlineDataTypes[dataType] = true
                         }
                     case .failure(let err):
-                        self.somethingFailed(text: "Failed to get available online streaming data types: \(err)")
+                        BleLogger.trace("Failed to get available online streaming data types: \(err)")
                     }
                 }.disposed(by: disposeBag)
             break

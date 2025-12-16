@@ -101,6 +101,9 @@
 
     <string name="exercise_start_time">Exercise start time: %1$s</string>
 
+    <string name="observe_exercise_state_button">Observe exercise state notifications</string>
+    <string name="stop_observing_button">Stop observing</string>
+
     <!-- Phone bluetooth status -->
     <string name="phone_ble_on">Phone Bluetooth on</string>
     <string name="phone_ble_off">Phone Bluetooth off</string>

@@ -16,9 +16,10 @@ struct ActivityRecordingView: View {
     @State private var caloriesTitle = "Get calories data"
     @State private var ppiSamplesTextTitle = "Get 24/7 PPi samples data"
     @State private var trainingSessionsTitle = "Get training sessions"
-    @State private var showDatePickerView = false
+    @State private var showActivityDatePickerView = false
+    @State private var showTrainingSessionDatePickerView = false
     @State private var showActivityView = false
-    @State private var showTrainingSessionList = false
+    @State private var showTrainingSessionView = false
     @State private var selectedCaloriesType: CaloriesType = .activity
     @State private var activeTimeTitle = "Get active time data"
     @State private var activitySamplesTitle = "Get activity samples data"
@@ -46,13 +47,13 @@ struct ActivityRecordingView: View {
                     }
                     
                     Button(sleepTextTitle) {
-                        showDatePickerView = true
+                        showActivityDatePickerView = true
                         showActivityView = false
                         bleSdkManager.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.inProgress
                         bleSdkManager.activityRecordingData.activityType = PolarActivityDataType.SLEEP
                     }.alignmentGuide(.leading) { d in d[.leading] }
-                    .sheet(isPresented: $showDatePickerView) {
-                        ActivityDatePickerView(isPresented: $showDatePickerView, showActivityView: $showActivityView)
+                    .sheet(isPresented: $showActivityDatePickerView) {
+                        ActivityDatePickerView(isPresented: $showActivityDatePickerView, showActivityView: $showActivityView)
                     }
                     .sheet(isPresented: $showActivityView) {
                         ActivityRecordingDetailsView(isPresented: $showActivityView)
@@ -60,13 +61,13 @@ struct ActivityRecordingView: View {
                     }
 
                     Button(stepsTextTitle) {
-                        showDatePickerView = true
+                        showActivityDatePickerView = true
                         showActivityView = false
                         bleSdkManager.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.inProgress
                         bleSdkManager.activityRecordingData.activityType = PolarActivityDataType.STEPS
                     }.alignmentGuide(.leading) { d in d[.leading] }
-                    .sheet(isPresented: $showDatePickerView) {
-                        ActivityDatePickerView(isPresented: $showDatePickerView, showActivityView: $showActivityView)
+                    .sheet(isPresented: $showActivityDatePickerView) {
+                        ActivityDatePickerView(isPresented: $showActivityDatePickerView, showActivityView: $showActivityView)
                     }
                     .sheet(isPresented: $showActivityView) {
                         ActivityRecordingDetailsView(isPresented: $showActivityView)
@@ -74,13 +75,13 @@ struct ActivityRecordingView: View {
                     }
                     
                     Button(hrSamplesTextTitle) {
-                        showDatePickerView = true
+                        showActivityDatePickerView = true
                         showActivityView = false
                         bleSdkManager.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.inProgress
                         bleSdkManager.activityRecordingData.activityType = PolarActivityDataType.HR_SAMPLES
                     }.alignmentGuide(.leading) { d in d[.leading] }
-                    .sheet(isPresented: $showDatePickerView) {
-                        ActivityDatePickerView(isPresented: $showDatePickerView, showActivityView: $showActivityView)
+                    .sheet(isPresented: $showActivityDatePickerView) {
+                        ActivityDatePickerView(isPresented: $showActivityDatePickerView, showActivityView: $showActivityView)
                     }
                     .sheet(isPresented: $showActivityView) {
                         ActivityRecordingDetailsView(isPresented: $showActivityView)
@@ -88,13 +89,13 @@ struct ActivityRecordingView: View {
                     }
 
                     Button(ppiSamplesTextTitle) {
-                        showDatePickerView = true
+                        showActivityDatePickerView = true
                         showActivityView = false
                         bleSdkManager.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.inProgress
                         bleSdkManager.activityRecordingData.activityType = PolarActivityDataType.PEAKTOPEAKINTERVAL
                     }.alignmentGuide(.leading) { d in d[.leading] }
-                    .sheet(isPresented: $showDatePickerView) {
-                        ActivityDatePickerView(isPresented: $showDatePickerView, showActivityView: $showActivityView)
+                    .sheet(isPresented: $showActivityDatePickerView) {
+                        ActivityDatePickerView(isPresented: $showActivityDatePickerView, showActivityView: $showActivityView)
                     }
                     .sheet(isPresented: $showActivityView) {
                         ActivityRecordingDetailsView(isPresented: $showActivityView)
@@ -102,13 +103,13 @@ struct ActivityRecordingView: View {
                     }
 
                     Button(nightlyRechargeTitle) {
-                        showDatePickerView = true
+                        showActivityDatePickerView = true
                         showActivityView = false
                         bleSdkManager.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.inProgress
                         bleSdkManager.activityRecordingData.activityType = PolarActivityDataType.NIGHTLY_RECHARGE
                     }.alignmentGuide(.leading) { d in d[.leading] }
-                    .sheet(isPresented: $showDatePickerView) {
-                        ActivityDatePickerView(isPresented: $showDatePickerView, showActivityView: $showActivityView)
+                    .sheet(isPresented: $showActivityDatePickerView) {
+                        ActivityDatePickerView(isPresented: $showActivityDatePickerView, showActivityView: $showActivityView)
                     }
                     .sheet(isPresented: $showActivityView) {
                         ActivityRecordingDetailsView(isPresented: $showActivityView)
@@ -116,13 +117,13 @@ struct ActivityRecordingView: View {
                     }
 
                     Button(skinTemperatureTitle) {
-                        showDatePickerView = true
+                        showActivityDatePickerView = true
                         showActivityView = false
                         bleSdkManager.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.inProgress
                         bleSdkManager.activityRecordingData.activityType = PolarActivityDataType.SKINTEMPERATURE
                     }.alignmentGuide(.leading) { d in d[.leading] }
-                    .sheet(isPresented: $showDatePickerView) {
-                        ActivityDatePickerView(isPresented: $showDatePickerView, showActivityView: $showActivityView)
+                    .sheet(isPresented: $showActivityDatePickerView) {
+                        ActivityDatePickerView(isPresented: $showActivityDatePickerView, showActivityView: $showActivityView)
                     }
                     .sheet(isPresented: $showActivityView) {
                         ActivityRecordingDetailsView(isPresented: $showActivityView)
@@ -130,13 +131,13 @@ struct ActivityRecordingView: View {
                     }
 
                     Button(activeTimeTitle) {
-                        showDatePickerView = true
+                        showActivityDatePickerView = true
                         showActivityView = false
                         bleSdkManager.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.inProgress
                         bleSdkManager.activityRecordingData.activityType = PolarActivityDataType.ACTIVE_TIME
                     }.alignmentGuide(.leading) { d in d[.leading] }
-                    .sheet(isPresented: $showDatePickerView) {
-                        ActivityDatePickerView(isPresented: $showDatePickerView, showActivityView: $showActivityView)
+                    .sheet(isPresented: $showActivityDatePickerView) {
+                        ActivityDatePickerView(isPresented: $showActivityDatePickerView, showActivityView: $showActivityView)
                     }
                     .sheet(isPresented: $showActivityView) {
                         ActivityRecordingDetailsView(isPresented: $showActivityView)
@@ -144,13 +145,13 @@ struct ActivityRecordingView: View {
                     }
 
                     Button(activitySamplesTitle) {
-                        showDatePickerView = true
+                        showActivityDatePickerView = true
                         showActivityView = false
                         bleSdkManager.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.inProgress
                         bleSdkManager.activityRecordingData.activityType = PolarActivityDataType.ACTIVITY_SAMPLES
                     }.alignmentGuide(.leading) { d in d[.leading] }
-                    .sheet(isPresented: $showDatePickerView) {
-                        ActivityDatePickerView(isPresented: $showDatePickerView, showActivityView: $showActivityView)
+                    .sheet(isPresented: $showActivityDatePickerView) {
+                        ActivityDatePickerView(isPresented: $showActivityDatePickerView, showActivityView: $showActivityView)
                     }
                     .sheet(isPresented: $showActivityView) {
                         ActivityRecordingDetailsView(isPresented: $showActivityView)
@@ -158,13 +159,13 @@ struct ActivityRecordingView: View {
                     }
 
                     Button(dailySummaryTitle) {
-                        showDatePickerView = true
+                        showActivityDatePickerView = true
                         showActivityView = false
                         bleSdkManager.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.inProgress
                         bleSdkManager.activityRecordingData.activityType = PolarActivityDataType.DAILY_SUMMARY
                     }.alignmentGuide(.leading) { d in d[.leading] }
-                    .sheet(isPresented: $showDatePickerView) {
-                        ActivityDatePickerView(isPresented: $showDatePickerView, showActivityView: $showActivityView)
+                    .sheet(isPresented: $showActivityDatePickerView) {
+                        ActivityDatePickerView(isPresented: $showActivityDatePickerView, showActivityView: $showActivityView)
                     }
                     .sheet(isPresented: $showActivityView) {
                         ActivityRecordingDetailsView(isPresented: $showActivityView)
@@ -173,18 +174,18 @@ struct ActivityRecordingView: View {
 
                     HStack {
                         Button(caloriesTitle) {
-                            showDatePickerView = true
+                            showActivityDatePickerView = true
                             showActivityView = false
                             bleSdkManager.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.inProgress
                             bleSdkManager.activityRecordingData.caloriesType = selectedCaloriesType
                             bleSdkManager.activityRecordingData.activityType = PolarActivityDataType.CALORIES
                         }
                         .alignmentGuide(.leading) { d in d[.leading] }
-                        .sheet(isPresented: $showDatePickerView) {
-                            ActivityDatePickerView(isPresented: $showDatePickerView, showActivityView: $showActivityView)
+                        .sheet(isPresented: $showActivityDatePickerView) {
+                            ActivityDatePickerView(isPresented: $showActivityDatePickerView, showActivityView: $showActivityView)
                         }
                         .sheet(isPresented: $showActivityView) {
-                            ActivityRecordingDetailsView(isPresented: $showDatePickerView)
+                            ActivityRecordingDetailsView(isPresented: $showActivityDatePickerView)
                         }
 
                         Text("Type:")
@@ -199,12 +200,16 @@ struct ActivityRecordingView: View {
                     }
     
                     Button(trainingSessionsTitle) {
-                        showTrainingSessionList = true
+                        showTrainingSessionDatePickerView = true
+                        showTrainingSessionView = false
+                        showActivityView = false
                     }
                     .alignmentGuide(.leading) { d in d[.leading] }
-                    .sheet(isPresented: $showTrainingSessionList) {
-                        TrainingSessionListView()
-                            .environmentObject(bleSdkManager)
+                    .sheet(isPresented: $showTrainingSessionDatePickerView) {
+                        TrainingSessionDatePickerView(isPresented: $showTrainingSessionDatePickerView, showTrainingSessionView: $showTrainingSessionView)
+                    }
+                    .sheet(isPresented: $showTrainingSessionView) {
+                        TrainingSessionListView().environmentObject(bleSdkManager)
                     }
                 }
                 .padding(.vertical, 20)

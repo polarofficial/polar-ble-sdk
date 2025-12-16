@@ -4,15 +4,12 @@ import android.app.AlertDialog
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
-import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.util.Pair
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.CalendarConstraints.DateValidator
@@ -24,6 +21,7 @@ import com.polar.polarsensordatacollector.ui.landing.MainFragmentDirections
 import com.polar.polarsensordatacollector.ui.landing.ONLINE_OFFLINE_KEY_DEVICE_ID
 import com.polar.polarsensordatacollector.ui.utils.showSnackBar
 import com.polar.sdk.api.PolarBleApi
+import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionDataTypes
 import com.polar.sdk.impl.utils.CaloriesType
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -34,12 +32,10 @@ import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
-
 @AndroidEntryPoint
 class ActivityRecordingFragment : Fragment(R.layout.fragment_activity_recording) {
 
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd", Locale.ENGLISH)
-    private lateinit var activityDataView: View
     private lateinit var sleepDataButton: Button
     private lateinit var stepsDataButton: Button
     private lateinit var caloriesDataButton: Button
@@ -50,14 +46,12 @@ class ActivityRecordingFragment : Fragment(R.layout.fragment_activity_recording)
     private lateinit var activeTimeButton: Button
     private lateinit var activitySamplesButton: Button
     private lateinit var dailySummaryButton: Button
-    private lateinit var sleepRecordingStateHeader: TextView
-    private lateinit var forceStopSleepButton: Button
 
     private lateinit var trainingSessionsButton: Button
 
     private var fromDate: LocalDate? = null
     private var toDate: LocalDate? = null
-    private lateinit var type: PolarBleApi.PolarActivityDataType
+    private lateinit var type: Any
 
     private val viewModel: ActivityRecordingViewModel by viewModels()
     private var selectedCaloriesType: CaloriesType = CaloriesType.ACTIVITY
@@ -134,14 +128,14 @@ class ActivityRecordingFragment : Fragment(R.layout.fragment_activity_recording)
         }
 
         skinTemperatureButton.setOnClickListener {
-            viewModel.initView()
             type = PolarBleApi.PolarActivityDataType.SKIN_TEMPERATURE
             showDateRangePicker()
         }
 
         trainingSessionsButton.setOnClickListener {
-            val navigateActionToDevice = MainFragmentDirections.loadNavigateToListAction(selectedDeviceId)
-            it.findNavController().navigate(navigateActionToDevice)
+            viewModel.initView()
+            type = PolarTrainingSessionDataTypes.TRAINING_SESSION_SUMMARY
+            showDateRangePicker()
         }
 
         activeTimeButton.setOnClickListener {
@@ -183,7 +177,6 @@ class ActivityRecordingFragment : Fragment(R.layout.fragment_activity_recording)
         val constraints = CalendarConstraints.Builder()
         val dateValidatorMax: DateValidator = DateValidatorPointBackward.before(Date().toInstant().toEpochMilli())
         val listValidators = ArrayList<DateValidator>()
-
         listValidators.apply {
             add(dateValidatorMax)
         }
@@ -203,14 +196,25 @@ class ActivityRecordingFragment : Fragment(R.layout.fragment_activity_recording)
             this.toDate = Instant.ofEpochMilli(it.second.toLong()).atZone(ZoneId.systemDefault()).toLocalDate()
 
             if (fromDate != null && toDate != null) {
-                val navigateAction = MainFragmentDirections.activityToActivityTriggerAction(
-                    viewModel.deviceId,
-                    fromDate!!.format(this.dateFormatter),
-                    toDate!!.format(this.dateFormatter),
-                    type.name,
-                    selectedCaloriesType.name
-                )
-                findNavController().navigate(navigateAction)
+                if (type is PolarTrainingSessionDataTypes) {
+                    val navigateAction = MainFragmentDirections.loadNavigateToListAction(
+                        selectedDeviceId,
+                        fromDate!!.format(this.dateFormatter),
+                        toDate!!.format(this.dateFormatter)
+                    )
+                    findNavController().navigate(navigateAction)
+                } else {
+                    val polarActivityDataType = type as PolarBleApi.PolarActivityDataType
+                    val navigateAction = MainFragmentDirections.activityToActivityTriggerAction(
+                        viewModel.deviceId,
+                        fromDate!!.format(this.dateFormatter),
+                        toDate!!.format(this.dateFormatter),
+                        polarActivityDataType.name,
+                        selectedCaloriesType.name
+                    )
+                    findNavController().navigate(navigateAction)
+                }
+
             }
         }
         dateRange.addOnCancelListener {

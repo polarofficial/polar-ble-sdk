@@ -7,6 +7,7 @@ import PolarBleSdk
 struct TrainingSessionEntriesRow: View {
     @EnvironmentObject private var bleSdkManager: PolarBleSdkManager
     var trainingSessionEntry: PolarTrainingSessionReference
+    @State private var isPerformingDelete = false
     
     var body: some View {
         HStack {
@@ -29,6 +30,24 @@ struct TrainingSessionEntriesRow: View {
                 HStack {
                     Text("Path: \(trainingSessionEntry.path)")
                         .font(.caption)
+                    Spacer()
+                }
+                HStack {
+                    Button("Delete", role: .destructive,
+                           action: {
+                        isPerformingDelete = true
+                        Task {
+                            bleSdkManager.deleteTrainingSession(reference: trainingSessionEntry)
+                            isPerformingDelete = false
+                        }
+                    }
+                    ).buttonStyle(.bordered)
+                        .disabled(isPerformingDelete)
+                        .overlay {
+                            if isPerformingDelete {
+                                ProgressView()
+                            }
+                        }
                     Spacer()
                 }
             }

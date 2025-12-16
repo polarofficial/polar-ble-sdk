@@ -9,20 +9,17 @@ import com.polar.sdk.api.model.trainingsession.PolarExerciseDataTypes
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSession
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionDataTypes
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference
-import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionProgress
-import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionFetchResult
 import fi.polar.remote.representation.protobuf.ExerciseSamples
 import fi.polar.remote.representation.protobuf.ExerciseSamples2
 import fi.polar.remote.representation.protobuf.Training
 import fi.polar.remote.representation.protobuf.TrainingSession
+import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
-import io.reactivex.rxjava3.schedulers.Schedulers
-import io.reactivex.rxjava3.subjects.BehaviorSubject
 import protocol.PftpRequest
 import protocol.PftpResponse
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -47,6 +44,7 @@ internal object PolarTrainingSessionUtils {
         val endDateInt = toDate?.let { dateFormatter.format(it).toInt() } ?: Int.MAX_VALUE
 
         val references = mutableListOf<PolarTrainingSessionReference>()
+        var trainingSessionSummaryPaths = hashSetOf<String>()
 
         return fetchRecursively(
             client = client,
@@ -65,7 +63,9 @@ internal object PolarTrainingSessionUtils {
             .collectInto(references) { refs, (path, fileSize) ->
                 BleLogger.d(TAG, "path: $path, size: $fileSize bytes")
                 val dataType =
-                    PolarTrainingSessionDataTypes.entries.firstOrNull { path.endsWith(it.deviceFileName) }
+                    PolarTrainingSessionDataTypes.entries.firstOrNull {
+                        path.endsWith(it.deviceFileName)
+                    }
                         ?: PolarExerciseDataTypes.entries.firstOrNull { path.endsWith(it.deviceFileName) }
 
                 if (dataType != null) {
@@ -81,8 +81,8 @@ internal object PolarTrainingSessionUtils {
                         BleLogger.d(TAG, "Parsed date: $date")
 
                         val existingReference = refs.find { it.date == date }
-
                         if (dataType is PolarTrainingSessionDataTypes) {
+                            trainingSessionSummaryPaths.add(path)
                             if (existingReference != null) {
                                 if (!existingReference.trainingDataTypes.contains(dataType)) {
                                     val updatedReference = existingReference.copy(
@@ -105,45 +105,55 @@ internal object PolarTrainingSessionUtils {
                         } else if (dataType is PolarExerciseDataTypes) {
                             val exIndex = exerciseIndex ?: 0
                             val fileName = path.substringAfterLast("/")
+                            val summaryPrefix = "/U/0/$dateStr/E/$timeStr"
+                            val possibleSummaries = trainingSessionSummaryPaths.find {
+                                path.startsWith(summaryPrefix)
+                            }
 
-                            val newExercise = PolarExercise(
-                                index = exIndex,
-                                path = path,
-                                exerciseDataTypes = listOf(dataType),
-                                fileSizes = mapOf(fileName to fileSize)
-                            )
+                            if (possibleSummaries != null) {
+                                val newExercise = PolarExercise(
+                                    index = exIndex,
+                                    path = path,
+                                    exerciseDataTypes = listOf(dataType),
+                                    fileSizes = mapOf(fileName to fileSize)
+                                )
+                                if (existingReference != null) {
+                                    val updatedExercises =
+                                        existingReference.exercises.toMutableList()
+                                    val existingExercise =
+                                        updatedExercises.find { it.index == exIndex }
 
-                            if (existingReference != null) {
-                                val updatedExercises = existingReference.exercises.toMutableList()
-                                val existingExercise = updatedExercises.find { it.index == exIndex }
+                                    if (existingExercise != null) {
+                                        val mergedDataTypes =
+                                            (existingExercise.exerciseDataTypes + dataType).distinct()
+                                        val mergedFileSizes =
+                                            existingExercise.fileSizes + (fileName to fileSize)
+                                        val mergedExercise = existingExercise.copy(
+                                            exerciseDataTypes = mergedDataTypes,
+                                            fileSizes = mergedFileSizes
+                                        )
+                                        updatedExercises[updatedExercises.indexOf(existingExercise)] =
+                                            mergedExercise
+                                    } else {
+                                        updatedExercises.add(newExercise)
+                                    }
 
-                                if (existingExercise != null) {
-                                    val mergedDataTypes = (existingExercise.exerciseDataTypes + dataType).distinct()
-                                    val mergedFileSizes = existingExercise.fileSizes + (fileName to fileSize)
-                                    val mergedExercise = existingExercise.copy(
-                                        exerciseDataTypes = mergedDataTypes,
-                                        fileSizes = mergedFileSizes
+                                    val updatedReference = existingReference.copy(
+                                        exercises = updatedExercises,
+                                        fileSize = existingReference.fileSize + fileSize
                                     )
-                                    updatedExercises[updatedExercises.indexOf(existingExercise)] = mergedExercise
+                                    refs[refs.indexOf(existingReference)] = updatedReference
                                 } else {
-                                    updatedExercises.add(newExercise)
-                                }
-
-                                val updatedReference = existingReference.copy(
-                                    exercises = updatedExercises,
-                                    fileSize = existingReference.fileSize + fileSize
-                                )
-                                refs[refs.indexOf(existingReference)] = updatedReference
-                            } else {
-                                refs.add(
-                                    PolarTrainingSessionReference(
-                                        date = date,
-                                        path = path,
-                                        trainingDataTypes = emptyList(),
-                                        exercises = listOf(newExercise),
-                                        fileSize = fileSize
+                                    refs.add(
+                                        PolarTrainingSessionReference(
+                                            date = date,
+                                            path = path,
+                                            trainingDataTypes = emptyList(),
+                                            exercises = listOf(newExercise),
+                                            fileSize = fileSize
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
                     }
@@ -329,6 +339,38 @@ internal object PolarTrainingSessionUtils {
         reference: PolarTrainingSessionReference
     ): Single<PolarTrainingSession> {
         return readTrainingSessionWithProgress(client, reference)
+    }
+
+    fun deleteTrainingSession(client: BlePsFtpClient, reference: PolarTrainingSessionReference): Completable {
+
+        val builder = PftpRequest.PbPFtpOperation.newBuilder()
+        builder.command = PftpRequest.PbPFtpOperation.Command.GET
+        val components = reference.path.split("/").toTypedArray()
+        val exerciseParent = ARABICA_USER_ROOT_FOLDER + components[3] + "/E/"
+        builder.path = exerciseParent
+
+        return client.request(builder.build().toByteArray())
+            .flatMap { byteArrayOutputStream: ByteArrayOutputStream ->
+                val directory =
+                    PftpResponse.PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray())
+                val removeBuilder = PftpRequest.PbPFtpOperation.newBuilder()
+                removeBuilder.command = PftpRequest.PbPFtpOperation.Command.REMOVE
+                if (directory.entriesCount <= 1) {
+                    // remove entire training session directory
+                    removeBuilder.path = "/U/0/" + components[3] + "/E/"
+                } else {
+                    // remove only training session time directory (/hhmmss/)
+                    removeBuilder.path =
+                        "/U/0/" + components[3] + "/E/" + components[5] + "/"
+                }
+                client.request(removeBuilder.build().toByteArray())
+            }
+            .toObservable()
+            .ignoreElements()
+            .onErrorResumeNext { throwable: Throwable ->
+                BleLogger.e(TAG, "Failed to delete: ${throwable.message}")
+                return@onErrorResumeNext Completable.error(throwable)
+            }
     }
 
     private fun fetchRecursively(

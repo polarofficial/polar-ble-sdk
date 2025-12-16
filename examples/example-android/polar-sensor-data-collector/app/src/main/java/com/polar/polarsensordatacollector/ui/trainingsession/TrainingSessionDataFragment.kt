@@ -49,11 +49,15 @@ class TrainingSessionDataFragment : Fragment() {
     private val viewModel: TrainingSessionDataViewModel by viewModels()
     private lateinit var deviceId: String
     private lateinit var sessionPath: String
+    private lateinit var fromDate: LocalDate
+    private lateinit var toDate: LocalDate
     private val args: TrainingSessionDataFragmentArgs by navArgs()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         deviceId = args.deviceIdFragmentArgument
         sessionPath = args.trainingSessionPathFragmentArgument
+        fromDate = LocalDate.parse(args.fromDateFragmentArgument)
+        toDate = LocalDate.parse(args.toDateFragmentArgument)
 
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
