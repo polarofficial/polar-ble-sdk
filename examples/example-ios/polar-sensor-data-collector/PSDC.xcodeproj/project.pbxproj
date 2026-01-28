@@ -10,7 +10,15 @@
 		6C2EDE8922B9FE370031AA17 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6C2EDE8822B9FE370031AA17 /* Assets.xcassets */; };
 		6C2EDE8C22B9FE370031AA17 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6C2EDE8A22B9FE370031AA17 /* LaunchScreen.storyboard */; };
 		8415B05A2C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8415B0592C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift */; };
+		843A2B8C2F0E76A400F3B2EC /* HrDataHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843A2B8B2F0E769B00F3B2EC /* HrDataHolder.swift */; };
+		843A2B8E2F0E775300F3B2EC /* HrGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843A2B8D2F0E774C00F3B2EC /* HrGraphView.swift */; };
+		843A2B902F0E78C800F3B2EC /* HrGraphViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843A2B8F2F0E78B200F3B2EC /* HrGraphViewController.swift */; };
 		8443CFAE2DD47953002AFBB9 /* UserDeviceSettingsFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8443CFAD2DD47948002AFBB9 /* UserDeviceSettingsFeature.swift */; };
+		8446A2622F0E918F00141093 /* HrGraphViewWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8446A2612F0E918400141093 /* HrGraphViewWrapper.swift */; };
+		845358382F166ACB00FCA56F /* AccGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845358372F166AC600FCA56F /* AccGraphView.swift */; };
+		8453583A2F166AE800FCA56F /* AccGraphViewWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845358392F166AE000FCA56F /* AccGraphViewWrapper.swift */; };
+		8453583C2F166B0600FCA56F /* AccGraphViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8453583B2F166AFF00FCA56F /* AccGraphViewController.swift */; };
+		8453583E2F166B1000FCA56F /* AccDataHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8453583D2F166B0A00FCA56F /* AccDataHolder.swift */; };
 		84698A0F2DB778E2006AD8FA /* TrainingSessionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A0E2DB778E2006AD8FA /* TrainingSessionListView.swift */; };
 		84698A112DB77922006AD8FA /* TrainingSessionDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A102DB77922006AD8FA /* TrainingSessionDetailsView.swift */; };
 		84698A132DB77937006AD8FA /* TrainingSessionEntriesRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A122DB77937006AD8FA /* TrainingSessionEntriesRow.swift */; };
@@ -105,7 +113,15 @@
 		715294F1BBD29D04D81C64D1 /* Pods-PSDC.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PSDC.debug.xcconfig"; path = "Target Support Files/Pods-PSDC/Pods-PSDC.debug.xcconfig"; sourceTree = "<group>"; };
 		75E61F152F496A99F4257C7F /* Pods_PSDC.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PSDC.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8415B0592C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareUpdateFeature.swift; sourceTree = "<group>"; };
+		843A2B8B2F0E769B00F3B2EC /* HrDataHolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HrDataHolder.swift; sourceTree = "<group>"; };
+		843A2B8D2F0E774C00F3B2EC /* HrGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HrGraphView.swift; sourceTree = "<group>"; };
+		843A2B8F2F0E78B200F3B2EC /* HrGraphViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HrGraphViewController.swift; sourceTree = "<group>"; };
 		8443CFAD2DD47948002AFBB9 /* UserDeviceSettingsFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDeviceSettingsFeature.swift; sourceTree = "<group>"; };
+		8446A2612F0E918400141093 /* HrGraphViewWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HrGraphViewWrapper.swift; sourceTree = "<group>"; };
+		845358372F166AC600FCA56F /* AccGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccGraphView.swift; sourceTree = "<group>"; };
+		845358392F166AE000FCA56F /* AccGraphViewWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccGraphViewWrapper.swift; sourceTree = "<group>"; };
+		8453583B2F166AFF00FCA56F /* AccGraphViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccGraphViewController.swift; sourceTree = "<group>"; };
+		8453583D2F166B0A00FCA56F /* AccDataHolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccDataHolder.swift; sourceTree = "<group>"; };
 		84698A0E2DB778E2006AD8FA /* TrainingSessionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionListView.swift; sourceTree = "<group>"; };
 		84698A102DB77922006AD8FA /* TrainingSessionDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionDetailsView.swift; sourceTree = "<group>"; };
 		84698A122DB77937006AD8FA /* TrainingSessionEntriesRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionEntriesRow.swift; sourceTree = "<group>"; };
@@ -249,6 +265,21 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		843A2B8A2F0E767F00F3B2EC /* Graph */ = {
+			isa = PBXGroup;
+			children = (
+				845358372F166AC600FCA56F /* AccGraphView.swift */,
+				845358392F166AE000FCA56F /* AccGraphViewWrapper.swift */,
+				8453583B2F166AFF00FCA56F /* AccGraphViewController.swift */,
+				8453583D2F166B0A00FCA56F /* AccDataHolder.swift */,
+				8446A2612F0E918400141093 /* HrGraphViewWrapper.swift */,
+				843A2B8F2F0E78B200F3B2EC /* HrGraphViewController.swift */,
+				843A2B8D2F0E774C00F3B2EC /* HrGraphView.swift */,
+				843A2B8B2F0E769B00F3B2EC /* HrDataHolder.swift */,
+			);
+			path = Graph;
+			sourceTree = "<group>";
+		};
 		84698A0D2DB778B2006AD8FA /* TrainingSession */ = {
 			isa = PBXGroup;
 			children = (
@@ -340,6 +371,7 @@
 		AA74C2442BDA3D6D005E0908 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				843A2B8A2F0E767F00F3B2EC /* Graph */,
 				849400052ECC96990093A8C8 /* HrBroadcast */,
 				84954BAC2E9E65C2000A5C0A /* DataLoadProgressView.swift */,
 				CC57B5DA2E60617000E90F5B /* ExerciseSession */,
@@ -584,6 +616,8 @@
 				AA74C24F2BDA3E2F005E0908 /* OnlineStreamsView.swift in Sources */,
 				AA74C22A2BDA3B99005E0908 /* Messages.swift in Sources */,
 				95B4F1032CEB7A880010E2B6 /* CheckFirmwareUpdateFeature.swift in Sources */,
+				8453583C2F166B0600FCA56F /* AccGraphViewController.swift in Sources */,
+				8453583A2F166AE800FCA56F /* AccGraphViewWrapper.swift in Sources */,
 				AA74C2492BDA3DAF005E0908 /* DeviceSearchRow.swift in Sources */,
 				9537D58B2CFF06E200B6A1E6 /* PolarBleDeviceManager.swift in Sources */,
 				AA74C22E2BDA3BC4005E0908 /* OfflineRecordingFeature.swift in Sources */,
@@ -596,8 +630,10 @@
 				AA74C2322BDA3BED005E0908 /* OfflineRecordingData.swift in Sources */,
 				AA74C2382BDA3C35005E0908 /* SdkModeFeature.swift in Sources */,
 				AACBC92C2BEB5C89003A5D1B /* TemperatureRecordingFeature.swift in Sources */,
+				845358382F166ACB00FCA56F /* AccGraphView.swift in Sources */,
 				AAA0FE0B2BEA3D00005368A7 /* GyroRecordingFeature.swift in Sources */,
 				AA74C2282BDA3B67005E0908 /* DeviceSearch.swift in Sources */,
+				843A2B8E2F0E775300F3B2EC /* HrGraphView.swift in Sources */,
 				84B821432D6C908B005BB62C /* DateFolderDeletionView.swift in Sources */,
 				AAB841F42E13A5F000810B09 /* MultiBleFeature.swift in Sources */,
 				84F748FF2C63553400038A4B /* ActivityRecordingView.swift in Sources */,
@@ -614,6 +650,7 @@
 				84954BAD2E9E65C5000A5C0A /* DataLoadProgressView.swift in Sources */,
 				AA74C2402BDA3C8C005E0908 /* LedAnimationFeature.swift in Sources */,
 				AA74C25A2BDA3ED8005E0908 /* OfflineRecordingEntriesRow.swift in Sources */,
+				843A2B902F0E78C800F3B2EC /* HrGraphViewController.swift in Sources */,
 				AA80477A2EDEB22700B66B10 /* TrainingSessionDatePickerView.swift in Sources */,
 				AAA0FE012BE9EF22005368A7 /* HrRecordingFeature.swift in Sources */,
 				AAFA1C6C2C97EB74004DC8C8 /* MenuStyle.swift in Sources */,
@@ -621,6 +658,7 @@
 				AA74C2212BDA377D005E0908 /* ContentView.swift in Sources */,
 				AA74C25E2BDA3F77005E0908 /* PSDCApp.swift in Sources */,
 				95BA028D2D64B1030037F44E /* FilePicker.swift in Sources */,
+				843A2B8C2F0E76A400F3B2EC /* HrDataHolder.swift in Sources */,
 				84698A152DB77D39006AD8FA /* TrainingSessionEntries.swift in Sources */,
 				84698A132DB77937006AD8FA /* TrainingSessionEntriesRow.swift in Sources */,
 				AA74C2682BDA7215005E0908 /* H10ExerciseView.swift in Sources */,
@@ -630,9 +668,11 @@
 				AA74C2562BDA3E9B005E0908 /* OfflineRecordingListView.swift in Sources */,
 				8415B05A2C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift in Sources */,
 				849400072ECC96C10093A8C8 /* HrBroadcastView.swift in Sources */,
+				8453583E2F166B1000FCA56F /* AccDataHolder.swift in Sources */,
 				95EA2BA22D40E7B200657DE5 /* SleepRecordingFeature.swift in Sources */,
 				AABC2A402C85BABB00BFC6BD /* SDLogConfiguration.swift in Sources */,
 				AA74C2342BDA3C08005E0908 /* OnlineStreamingFeature.swift in Sources */,
+				8446A2622F0E918F00141093 /* HrGraphViewWrapper.swift in Sources */,
 				AAA0FE0D2BEA3E1A005368A7 /* MagnetometerRecordingFeature.swift in Sources */,
 				84698A0F2DB778E2006AD8FA /* TrainingSessionListView.swift in Sources */,
 				AA74C23A2BDA3C56005E0908 /* H10ExerciseRecordingFeature.swift in Sources */,

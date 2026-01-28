@@ -66,11 +66,7 @@ class PolarNightlyRechargeUtilsTest {
         }
 
         val createdTimestamp = LocalDateTime.of(2023, 12, 5, 10, 0, 0, 0)
-        val calendar = Calendar.getInstance().apply {
-            set(2024, Calendar.DECEMBER, 5, 0, 0, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        val sleepResultDate = calendar.time
+        val sleepResultDate = LocalDate.of(2024, Calendar.DECEMBER + 1, 5)
 
         val expectedResult = PolarNightlyRechargeData(
                 createdTimestamp = createdTimestamp,

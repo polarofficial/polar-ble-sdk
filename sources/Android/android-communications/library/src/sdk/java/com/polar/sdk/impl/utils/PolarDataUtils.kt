@@ -33,76 +33,87 @@ internal object PolarDataUtils {
                 is PpgData.PpgDataFrameType0 -> {
                     type = PolarPpgData.PpgDataType.PPG3_AMBIENT1
                     val channelsData = mutableListOf<Int>()
+                    val statusData = mutableListOf<Int>() // No channel status available for PPG frame type 0. Put empty into listOfSamples.
                     channelsData.addAll(sample.ppgDataSamples)
                     channelsData.add(sample.ambientSample)
-                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), channelsData))
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), channelsData, statusData))
                 }
                 is PpgData.PpgDataFrameType7 -> {
                     type = PolarPpgData.PpgDataType.FRAME_TYPE_7
                     val channelsData = mutableListOf<Int>()
+                    val statusData = mutableListOf<Int>()
                     channelsData.addAll(sample.ppgDataSamples)
-                    channelsData.add(sample.status.toInt())
-                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), channelsData))
+                    statusData.addAll(sample.statusBits)
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), channelsData, statusData))
                 }
                 is PpgData.PpgDataFrameType8 -> {
                     type = PolarPpgData.PpgDataType.FRAME_TYPE_8
                     val channelsData = mutableListOf<Int>()
+                    val statusData = mutableListOf<Int>()
                     channelsData.addAll(sample.ppgDataSamples)
-                    channelsData.add(sample.status.toInt())
-                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), channelsData))
+                    statusData.addAll(sample.statusBits)
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), channelsData, statusData))
                 }
                 is PpgData.PpgDataSampleSportId -> {
                     type = PolarPpgData.PpgDataType.SPORT_ID
                     val samplesData = mutableListOf<Int>()
+                    val statusData = mutableListOf<Int>() // No channel status available for PPG frame type 6. Put empty into listOfSamples.
                     samplesData.addAll(listOf(sample.sportId.toInt()))
-                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData))
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData, statusData))
                 }
                 is PpgData.PpgDataFrameType4 -> {
                     type = PolarPpgData.PpgDataType.FRAME_TYPE_4
                     val samplesData = mutableListOf<Int>()
+                    val statusData = mutableListOf<Int>() // No channel status available for PPG frame type 4. Put empty into listOfSamples.
                     samplesData.addAll(sample.channel1GainTs.map { it.toInt() })
                     samplesData.addAll(sample.channel2GainTs.map { it.toInt() })
                     samplesData.addAll(sample.numIntTs.map { it.toInt() })
-                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData))
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData, statusData))
                 }
                 is PpgData.PpgDataFrameType5 -> {
                     type = PolarPpgData.PpgDataType.FRAME_TYPE_5
                     val samplesData = mutableListOf<Int>()
+                    val statusData = mutableListOf<Int>() // No channel status available for PPG frame type 5. Put empty into listOfSamples.
                     samplesData.addAll(listOf((sample.operationMode).toInt()))
-                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData))
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData, statusData))
                 }
                 is PpgData.PpgDataFrameType9 -> {
                     type = PolarPpgData.PpgDataType.FRAME_TYPE_9
                     val samplesData = mutableListOf<Int>()
+                    val statusData = mutableListOf<Int>() // No channel status available for PPG frame type 9. Put empty into listOfSamples.
                     samplesData.addAll(sample.channel1GainTs.map { it.toInt() })
                     samplesData.addAll(sample.channel2GainTs.map { it.toInt() })
                     samplesData.addAll(sample.numIntTs.map { it.toInt() })
-                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData))
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData,statusData))
                 }
                 is PpgData.PpgDataFrameType10 -> {
                     type = PolarPpgData.PpgDataType.FRAME_TYPE_10
                     val samplesData = mutableListOf<Int>()
+                    val statusData = mutableListOf<Int>()
                     samplesData.addAll(sample.greenSamples.map { it })
                     samplesData.addAll(sample.redSamples.map { it })
                     samplesData.addAll(sample.irSamples.map { it })
-                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData))
+                    statusData.addAll(sample.statusBits)
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData, statusData))
                 }
                 is PpgData.PpgDataFrameType13 -> {
                     type = PolarPpgData.PpgDataType.FRAME_TYPE_13
                     val samplesData = mutableListOf<Int>()
+                    val statusData = mutableListOf<Int>()
                     samplesData.addAll(sample.ppgChannel0.map { it })
                     samplesData.addAll(sample.ppgChannel1.map { it })
-                    samplesData.add(sample.status)
-                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData))
+                    statusData.addAll(sample.statusBits)
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData, statusData))
                 }
 
                 is PpgData.PpgDataFrameType14 -> {
                     type = PolarPpgData.PpgDataType.FRAME_TYPE_14
                     val samplesData = mutableListOf<Int>()
+                    val statusData = mutableListOf<Int>() // No channel status available for PPG frame type 14. Put empty into listOfSamples.
                     samplesData.addAll(sample.channel1GainTs1.map { it.toInt() })
                     samplesData.addAll(sample.channel2GainTs1.map { it.toInt() })
                     samplesData.addAll(sample.numIntTs1.map { it.toInt() })
-                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData))
+                    listOfSamples.add(PolarPpgData.PolarPpgSample(sample.timeStamp.toLong(), samplesData, statusData))
                 }
             }
         }

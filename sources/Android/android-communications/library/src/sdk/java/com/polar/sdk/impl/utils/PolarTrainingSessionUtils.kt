@@ -20,8 +20,8 @@ import protocol.PftpRequest
 import protocol.PftpResponse
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.zip.GZIPInputStream
 
@@ -30,13 +30,13 @@ private const val TAG = "PolarTrainingSessionUtils"
 
 internal object PolarTrainingSessionUtils {
 
-    private val dateFormatter = SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
-    private val dateTimeFormatter = SimpleDateFormat("yyyyMMddHHmmss", Locale.ENGLISH)
+    private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ENGLISH)
+    private val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd", Locale.ENGLISH)
 
     fun getTrainingSessionReferences(
         client: BlePsFtpClient,
-        fromDate: Date? = null,
-        toDate: Date? = null
+        fromDate: LocalDate? = null,
+        toDate: LocalDate? = null
     ): Flowable<PolarTrainingSessionReference> {
         BleLogger.d(TAG, "getTrainingSessions: fromDate=$fromDate, toDate=$toDate")
 
@@ -77,7 +77,7 @@ internal object PolarTrainingSessionUtils {
                     val dateInt = dateStr?.toIntOrNull()
 
                     if (dateStr != null && timeStr != null && dateInt != null && dateInt in startDateInt..endDateInt) {
-                        val date = dateTimeFormatter.parse("$dateStr$timeStr") ?: Date(0)
+                        val date = LocalDate.parse("$dateStr$timeStr", dateTimeFormatter)
                         BleLogger.d(TAG, "Parsed date: $date")
 
                         val existingReference = refs.find { it.date == date }

@@ -184,6 +184,12 @@ public final class <span class="typeNameLabel"><a href=PolarPpgData.PolarPpgSamp
                                             <td class="colLast"></td>
                                         </tr>
                                         
+                                        <tr class="altColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt;</code></td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarPpgData.PolarPpgSample.html#statusBits>statusBits</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
                                     </table>
                                 </div>
                             </li>
@@ -210,7 +216,7 @@ public final class <span class="typeNameLabel"><a href=PolarPpgData.PolarPpgSamp
                                         
                                             <tr class="altColor">
                                                 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a
-                                                        href="#PolarPpgData.PolarPpgSample(java.lang.Long,java.util.List)">PolarPpgData.PolarPpgSample</a></span>(<a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> timeStamp, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; channelSamples)</code></th>
+                                                        href="#PolarPpgData.PolarPpgSample(java.lang.Long,java.util.List,java.util.List)">PolarPpgData.PolarPpgSample</a></span>(<a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> timeStamp, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; channelSamples, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; statusBits)</code></th>
                                                 <td class="colLast"></td>
                                             </tr>
                                         
@@ -279,6 +285,14 @@ public final class <span class="typeNameLabel"><a href=PolarPpgData.PolarPpgSamp
                                             <td class="colLast">is the PPG (Photoplethysmography) raw value received from the optical sensor.</td>
                                         </tr>
                                         
+                                        <tr id="i2" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt;</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarPpgData.PolarPpgSample.html#getStatusBits()>getStatusBits</a>() </code>
+                                            </th>
+                                            <td class="colLast">List of statuses for the PPG samples, available for frame types 7, 8, 10 and 13.</td>
+                                        </tr>
+                                        
                                         </tbody>
                                     </table>
                                 </div>
@@ -310,11 +324,11 @@ public final class <span class="typeNameLabel"><a href=PolarPpgData.PolarPpgSamp
                             </a>
                                 <h3>Constructor Detail</h3>
                                 
-                                <a name="PolarPpgData.PolarPpgSample(java.lang.Long,java.util.List)"></a>
+                                <a name="PolarPpgData.PolarPpgSample(java.lang.Long,java.util.List,java.util.List)"></a>
                                 <ul class="blockList">
                                     <li class="blockList">
                                         <h4>PolarPpgData.PolarPpgSample</h4>
-                                        <pre>PolarPpgData.PolarPpgSample(<a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> timeStamp, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; channelSamples)</pre>
+                                        <pre>PolarPpgData.PolarPpgSample(<a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> timeStamp, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; channelSamples, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; statusBits)</pre>
                                         <div class="block"></div>
                                         
                                     </li>
@@ -360,12 +374,35 @@ public final class <span class="typeNameLabel"><a href=PolarPpgData.PolarPpgSamp
                                     <!--   -->
                                 </a>
                                 <ul class=
-                                              "blockListLast"
+                                              "blockList"
                                           >
                                     <li class="blockList">
                                         <h4>getChannelSamples</h4>
                                         <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; <a href=PolarPpgData.PolarPpgSample.html#getChannelSamples()>getChannelSamples</a>()</pre>
                                         <div class="block"><p>is the PPG (Photoplethysmography) raw value received from the optical sensor. Based on <a href=PolarPpgData.html#type>type</a> the amount of channels varies. Typically ppg(n) channel + n ambient(s).</p></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="getStatusBits()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getStatusBits</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt; <a href=PolarPpgData.PolarPpgSample.html#getStatusBits()>getStatusBits</a>()</pre>
+                                        <div class="block"><p>List of statuses for the PPG samples, available for frame types 7, 8, 10 and 13. Status bits of each sample: 0 for no valid data, 1 for valid data.</p></div>
 
                                         <dl>
 

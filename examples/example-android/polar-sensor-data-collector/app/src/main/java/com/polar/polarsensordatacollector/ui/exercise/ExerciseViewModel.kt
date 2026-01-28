@@ -14,7 +14,7 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.kotlin.addTo
 import io.reactivex.rxjava3.schedulers.Schedulers
-import java.util.Date
+import java.time.LocalDateTime
 
 interface StringProvider {
     fun get(id: Int, vararg args: Any): String
@@ -46,8 +46,8 @@ class ExerciseViewModel(
     private val _canStop = MutableLiveData(false)
     val canStop: LiveData<Boolean> = _canStop
 
-    private val _startTime = MutableLiveData<Date?>(null)
-    val startTime: LiveData<Date?> = _startTime
+    private val _startTime = MutableLiveData<LocalDateTime?>(null)
+    val startTime: LiveData<LocalDateTime?> = _startTime
 
     private val _isObservingNotifications = MutableLiveData(false)
     val isObservingNotifications: LiveData<Boolean> = _isObservingNotifications

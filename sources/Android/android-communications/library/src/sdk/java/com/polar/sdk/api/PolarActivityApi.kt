@@ -12,7 +12,6 @@ import io.reactivex.rxjava3.core.Single
 import com.polar.sdk.api.model.activity.PolarActivitySamplesDayData
 import com.polar.sdk.api.model.activity.PolarDailySummaryData
 import java.time.LocalDate
-import java.util.Date
 
 /**
  * Polar activity API.
@@ -91,7 +90,7 @@ interface PolarActivityApi {
      * @param toDate The ending date of the period to retrieve heart rate samples from.
      * @return A [Single] emitting a list of [Polar247HrSamplesData] representing the heart rate samples for the specified period.
      */
-    fun get247HrSamples(identifier: String, fromDate: Date, toDate: Date): Single<List<Polar247HrSamplesData>>
+    fun get247HrSamples(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<Polar247HrSamplesData>>
 
     /**
      * Get nightly recharge for a given period.
@@ -111,5 +110,5 @@ interface PolarActivityApi {
      * @param toDate The ending date of the period to retrieve 24/7 PPi data from.
      * @return A [Single] emitting a list of [Polar247PPiSamplesData] representing the 24/7 PPi data for the specified period.
      */
-    abstract fun get247PPiSamples(identifier: String, fromDate: Date, toDate: Date): Single<List<Polar247PPiSamplesData>>
+    fun get247PPiSamples(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<Polar247PPiSamplesData>>
 }

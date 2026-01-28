@@ -1,14 +1,14 @@
 // Copyright © 2022 Polar Electro Oy. All rights reserved.
 package com.polar.sdk.api.model
 
-import java.util.Calendar
+import java.time.LocalDateTime
 
 /**
  * Polar Offline recording data
  *
  * @property startTime the time recording was started in UTC time
  */
-sealed class PolarOfflineRecordingData(val startTime: Calendar, val settings: PolarSensorSetting?) {
+sealed class PolarOfflineRecordingData(val startTime: LocalDateTime, val settings: PolarSensorSetting?) {
     /**
      * Accelerometer offline recording data
      *
@@ -18,7 +18,7 @@ sealed class PolarOfflineRecordingData(val startTime: Calendar, val settings: Po
      */
     class AccOfflineRecording(
         val data: PolarAccelerometerData,
-        startTime: Calendar,
+        startTime: LocalDateTime,
         settings: PolarSensorSetting
     ) : PolarOfflineRecordingData(startTime, settings) {
         internal fun appendAccData(
@@ -48,7 +48,7 @@ sealed class PolarOfflineRecordingData(val startTime: Calendar, val settings: Po
      */
     class GyroOfflineRecording(
         val data: PolarGyroData,
-        startTime: Calendar,
+        startTime: LocalDateTime,
         settings: PolarSensorSetting
     ) : PolarOfflineRecordingData(startTime, settings) {
         internal fun appendGyroData(
@@ -78,7 +78,7 @@ sealed class PolarOfflineRecordingData(val startTime: Calendar, val settings: Po
      */
     class MagOfflineRecording(
         val data: PolarMagnetometerData,
-        startTime: Calendar,
+        startTime: LocalDateTime,
         settings: PolarSensorSetting?
     ) : PolarOfflineRecordingData(startTime, settings) {
         internal fun appendMagData(
@@ -107,7 +107,7 @@ sealed class PolarOfflineRecordingData(val startTime: Calendar, val settings: Po
      */
     class PpgOfflineRecording(
         val data: PolarPpgData,
-        startTime: Calendar,
+        startTime: LocalDateTime,
         settings: PolarSensorSetting?
     ) : PolarOfflineRecordingData(startTime, settings) {
         internal fun appendPpgData(
@@ -134,7 +134,7 @@ sealed class PolarOfflineRecordingData(val startTime: Calendar, val settings: Po
      * @property data ppi data
      * @property startTime the time recording was started in UTC time
      */
-    class PpiOfflineRecording(val data: PolarPpiData, startTime: Calendar) :
+    class PpiOfflineRecording(val data: PolarPpiData, startTime: LocalDateTime) :
         PolarOfflineRecordingData(startTime, null) {
         internal fun appendPpiData(
             existingRecording: PpiOfflineRecording,
@@ -156,7 +156,7 @@ sealed class PolarOfflineRecordingData(val startTime: Calendar, val settings: Po
      * @property data heart rate data
      * @property startTime the time recording was started in UTC time
      */
-    class HrOfflineRecording(val data: PolarHrData, startTime: Calendar) :
+    class HrOfflineRecording(val data: PolarHrData, startTime: LocalDateTime) :
         PolarOfflineRecordingData(startTime, null) {
         internal fun appendHrData(
             existingRecording: HrOfflineRecording,
@@ -178,7 +178,7 @@ sealed class PolarOfflineRecordingData(val startTime: Calendar, val settings: Po
      * @property data temperature data
      * @property startTime the time recording was started in UTC time
      */
-    class TemperatureOfflineRecording(val data: PolarTemperatureData, startTime: Calendar) :
+    class TemperatureOfflineRecording(val data: PolarTemperatureData, startTime: LocalDateTime) :
         PolarOfflineRecordingData(startTime, null) {
         internal fun appendTemperatureData(
             existingTemperatureData: TemperatureOfflineRecording,
@@ -200,7 +200,7 @@ sealed class PolarOfflineRecordingData(val startTime: Calendar, val settings: Po
      * @property data skin temperature data
      * @property startTime the time recording was started in UTC time
      */
-    class SkinTemperatureOfflineRecording(val data: PolarTemperatureData, startTime: Calendar) :
+    class SkinTemperatureOfflineRecording(val data: PolarTemperatureData, startTime: LocalDateTime) :
         PolarOfflineRecordingData(startTime, null) {
         internal fun appendSkinTemperatureData(
             existingSkinTemperatureData: SkinTemperatureOfflineRecording,

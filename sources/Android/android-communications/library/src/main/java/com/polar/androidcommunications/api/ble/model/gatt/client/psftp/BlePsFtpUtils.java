@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import protocol.PftpError;
+
 /**
  * RFC76 and RFC 60 related utils
  */
@@ -57,12 +59,35 @@ public class BlePsFtpUtils {
         private final int error;
 
         public PftpResponseError(String detailMessage, int error) {
-            super(detailMessage + " Error: " + error);
+            super(formatMessage(detailMessage, error));
             this.error = error;
         }
 
         public int getError() {
             return error;
+        }
+
+        /**
+         * Return typed enum for the error code, or null if the code is unknown
+         */
+        public PftpError.PbPFtpError getErrorCode() {
+            return PftpError.PbPFtpError.forNumber(error);
+        }
+
+        /**
+         * Return enum name or null if unknown.
+         */
+        public String getErrorName() {
+            PftpError.PbPFtpError errorEnum = getErrorCode();
+            return errorEnum != null ? errorEnum.name() : null;
+        }
+
+        private static String formatMessage(String detailMessage, int error) {
+            PftpError.PbPFtpError errorEnum = PftpError.PbPFtpError.forNumber(error);
+            if (errorEnum != null) {
+                return detailMessage + " Error: " + error + " (" + errorEnum.name() + ")";
+            }
+            return detailMessage + " Error: " + error;
         }
     }
 

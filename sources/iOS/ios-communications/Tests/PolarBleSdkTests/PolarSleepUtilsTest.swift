@@ -24,7 +24,7 @@ class PolarSleepUtilsTests: XCTestCase {
         // Arrange
         let date = Date()
         
-        let proto = Data_PbSleepAnalysisResult.with {
+        let sleepProto = Data_PbSleepAnalysisResult.with {
             $0.alarmTime = PbLocalDateTime.with {
                 $0.date = PbDate.with { $0.day = 28; $0.month = 2; $0.year = 2525 };
                 $0.time = PbTime.with{ $0.hour = 7; $0.minute = 0; $0.seconds = 0 };
@@ -95,8 +95,18 @@ class PolarSleepUtilsTests: XCTestCase {
             $0.userSleepRating = PbSleepUserRating.pbSleptWell;
         }
         
-        let responseData = try! proto.serializedData()
-        mockClient.requestReturnValue = Single.just(responseData)
+        let sleepSkinTemperatureProto = Data_PbSleepSkinTemperatureResult.with {
+            $0.sleepDate = PbDateProto3.with {
+                $0.day = 28; $0.month = 2; $0.year = 2525;
+            };
+            $0.deviationFromBaselineCelsius = -0.111111;
+            $0.sleepSkinTemperatureCelsius = 35.123456;
+        }
+            
+        let sleepResponseData = try! sleepProto.serializedData()
+        let sleepSkinTemperatureData = try! sleepSkinTemperatureProto.serializedData()
+        mockClient.requestReturnValues.append(Single.just(sleepResponseData))
+        mockClient.requestReturnValues.append(Single.just(sleepSkinTemperatureData))
 
         // Act
         let mockSleepData: PolarSleepData.PolarSleepAnalysisResult
@@ -121,6 +131,7 @@ class PolarSleepUtilsTests: XCTestCase {
                 XCTAssertEqual(sleepData.sleepCycles.first?.secondsFromSleepStart, mockSleepData.sleepCycles.first?.secondsFromSleepStart)
                 XCTAssertEqual(sleepData.sleepCycles.first?.sleepDepthStart, mockSleepData.sleepCycles.first?.sleepDepthStart)
                 XCTAssertEqual(sleepData.sleepWakePhases.first?.secondsFromSleepStart, mockSleepData.sleepWakePhases.first?.secondsFromSleepStart)
+                XCTAssertEqual(sleepData.sleepWakePhases.first?.state, mockSleepData.sleepWakePhases.first?.state)
                 XCTAssertEqual(sleepData.sleepWakePhases.first?.state, mockSleepData.sleepWakePhases.first?.state)
                 expectation.fulfill()
             }, onFailure: { error in
@@ -173,13 +184,16 @@ class PolarSleepUtilsTests: XCTestCase {
             originalSleepRange: PolarSleepData.OriginalSleepRange(
                 startTime: try createDate(hour: 23, minute: 59, second: 59, day: 27, month: 2, year: 2525),
                 endTime: try createDate(hour: 7, minute: 0, second: 0, day: 28, month: 2, year: 2525)
+            ),
+            sleepSkinTemperatureResult: PolarSleepData.SleepSkinTemperatureResult(
+                sleepResultDate: try createDate(hour: nil, minute: nil, second: nil, day: 28, month: 2, year: 2525)!, sleepSkinTemperatureCelsius: 35.123456, deviationFromBaseLine: -0.111111
             )
         )
         
         return polarSleepAnalysisData
     }
 
-    private static func createDate(hour: Int, minute: Int, second: Int, day: Int, month: Int, year: Int) throws -> Date! {
+    private static func createDate(hour: Int?, minute: Int?, second: Int?, day: Int, month: Int, year: Int) throws -> Date! {
 
         var dateComponents = DateComponents()
         dateComponents.year = year

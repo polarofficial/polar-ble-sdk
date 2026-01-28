@@ -76,6 +76,11 @@
             android:label="@string/title_activity_user_device_settings"
             android:theme="@style/AppTheme" />
         <activity
+            android:name=".ui.utils.DataViewer"
+            android:exported="false"
+            android:label="@string/title_data_viewer"
+            android:theme="@style/AppTheme" />
+        <activity
             android:name=".ui.landing.MainActivity"
             android:configChanges="orientation"
             android:exported="true"
@@ -85,6 +90,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.graph.HrGraphActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:exported="false" />
+        <activity
+            android:name=".ui.graph.AccGraphActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:exported="false" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

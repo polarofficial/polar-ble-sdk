@@ -25,6 +25,8 @@ class UserDeviceSettingsActivity : AppCompatActivity() {
 
     private lateinit var telemetrySwitch: SwitchMaterial
 
+    private lateinit var autosFileSwitch: SwitchMaterial
+
     private lateinit var buttonOk: Button
     private lateinit var buttonCancel: Button
 
@@ -43,6 +45,7 @@ class UserDeviceSettingsActivity : AppCompatActivity() {
         initUSBSettingsComponents()
         initATDSettingsComponents()
         initTelemetryComponents()
+        initAutosFileComponents()
         initButtons()
     }
 
@@ -76,6 +79,10 @@ class UserDeviceSettingsActivity : AppCompatActivity() {
         telemetrySwitch = findViewById(R.id.telemetry_enable_switch)
     }
 
+    private fun initAutosFileComponents() {
+        autosFileSwitch = findViewById(R.id.autos_enable_switch)
+    }
+
     private fun initButtons() {
         buttonOk = findViewById(R.id.submit_device_settings_button)
 
@@ -98,6 +105,7 @@ class UserDeviceSettingsActivity : AppCompatActivity() {
                 atdSensitivity.value = state.atdSensitivity
                 atdMinimumTrainingDurationSeconds.setText(state.atdMinDuration.toString())
                 telemetrySwitch.isChecked = state.telemetryEnabled
+                autosFileSwitch.isChecked = state.autosFilesEnabled
             }
         }
 
@@ -117,7 +125,8 @@ class UserDeviceSettingsActivity : AppCompatActivity() {
             atdMinDuration = if (atdSwitch.isChecked)
                 atdMinimumTrainingDurationSeconds.text.toString().toIntOrNull() ?: 0
             else 0,
-            telemetryEnabled = telemetrySwitch.isChecked
+            telemetryEnabled = telemetrySwitch.isChecked,
+            autosFilesEnabled = autosFileSwitch.isChecked
         )
     }
 

@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package data;
+
+import "types_proto3.proto";
+
+option java_package = "com.polar.services.datamodels.protobuf";
+option java_outer_classname = "SleepSkinTemperatureResult";
+
+/*
+*   Sleep skin temperature result during sleep.
+*/
+message PbSleepSkinTemperatureResult {
+    // Sleep result date what this sleep time temperature is calculated for
+    PbDateProto3 sleep_date = 1;
+
+    // Filtered sleep time skin temperature (Celsius).
+    // range [-40.0 - 125.0] C
+    float sleep_skin_temperature_celsius = 2;
+
+    // Deviation from baseline. -1000.0 when not calculated.
+    float deviation_from_baseline_celsius = 3;
+}

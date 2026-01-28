@@ -36,6 +36,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.rx3.rxSingle
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 sealed class StatusReadTime {
     object Completed : StatusReadTime()
@@ -403,13 +405,13 @@ internal class DeviceSettingsViewModel @Inject constructor(
         _uiWriteTimeStatus.value = StatusWriteTime.InProgress
 
         coroutineScope.launch {
-            val timeNow = Calendar.getInstance()
+            val timeNow = LocalDateTime.now()
 
             when (val result = polarDeviceStreamingRepository.setTime(deviceId, timeNow)) {
                 is ResultOfRequest.Success -> {
                     withContext(Dispatchers.Main) {
                         _uiWriteTimeStatus.value = StatusWriteTime.Completed
-                        showInfo("Device time set", timeNow.time.toString())
+                        showInfo("Device time set", DateTimeFormatter.ISO_DATE_TIME.format(timeNow))
                     }
                 }
                 is ResultOfRequest.Failure -> {
@@ -429,9 +431,9 @@ internal class DeviceSettingsViewModel @Inject constructor(
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
-                { calendar ->
+                { dateTime ->
                     _uiReadTimeStatus.value = StatusReadTime.Completed
-                    showInfo("Device time read", calendar.time.toString())
+                    showInfo("Device time set", DateTimeFormatter.ISO_DATE_TIME.format(dateTime))
                 },
                 { error ->
                     _uiReadTimeStatus.value = StatusReadTime.Completed

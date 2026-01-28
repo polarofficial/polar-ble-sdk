@@ -1,5 +1,6 @@
 package com.polar.polarsensordatacollector.ui.activity
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -9,11 +10,13 @@ import android.view.ViewGroup
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DataObject
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
@@ -30,7 +33,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.ui.theme.PolarsensordatacollectorTheme
+import com.polar.polarsensordatacollector.ui.utils.DataViewer
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.model.PolarSensorSetting
 import dagger.hilt.android.AndroidEntryPoint
@@ -89,7 +94,8 @@ fun ShowActivityData(viewModel: ActivityRecordingDataViewModel = viewModel(), on
             }
             ShowData(
                 onShare = { context.startActivity(intent) },
-                uiState
+                uiState,
+                context
             )
         }
         ActivityDataUiState.IsFetching -> ShowIsLoading()
@@ -111,7 +117,7 @@ fun ShowIsLoading() {
 }
 
 @Composable
-fun ShowData(onShare: () -> Unit, recording: ActivityDataUiState.FetchedData) {
+fun ShowData(onShare: () -> Unit, recording: ActivityDataUiState.FetchedData, context: Context) {
     Column {
 
         Text(text = "Path", style = MaterialTheme.typography.h6)
@@ -128,28 +134,62 @@ fun ShowData(onShare: () -> Unit, recording: ActivityDataUiState.FetchedData) {
             Text(text = recording.data.startDate)
         }
 
-        Button(
-            onClick = { onShare() },
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue),
-            contentPadding = PaddingValues(
-                start = 20.dp,
-                top = 12.dp,
-                end = 20.dp,
-                bottom = 12.dp
+        Row(modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center) {
+            Button(
+                onClick = { onShare() },
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue),
+                contentPadding = PaddingValues(
+                    start = 20.dp,
+                    top = 12.dp,
+                    end = 20.dp,
+                    bottom = 12.dp
 
-            ),
-            modifier = Modifier.align(CenterHorizontally)
-        ) {
-            // Inner content including an icon and a text label
-            Icon(
-                Icons.Filled.Share,
-                contentDescription = "Share",
-                modifier = Modifier.size(ButtonDefaults.IconSize)
-            )
+                ),
+                modifier = Modifier.align(CenterVertically)
+            ) {
+                // Inner content including an icon and a text label
+                Icon(
+                    Icons.Filled.Share,
+                    contentDescription = context.getString(R.string.activity_data_share),
+                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                )
+                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                Text(context.getString(R.string.activity_data_share))
+            }
+
             Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-            Text("Share")
+
+            Button(
+                onClick = { openDataTextView(context, recording.data.uri) },
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue),
+                contentPadding = PaddingValues(
+                    start = 20.dp,
+                    top = 12.dp,
+                    end = 20.dp,
+                    bottom = 12.dp
+
+                ),
+                modifier = Modifier.align(CenterVertically)
+            ) {
+                Icon(
+                    Icons.Filled.DataObject,
+                    contentDescription = context.getString(R.string.activity_data_view),
+                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                )
+                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                Text(context.getString(R.string.activity_data_view) )
+            }
         }
     }
+}
+
+fun openDataTextView(context: Context, uri: Uri) {
+    val intent = Intent(context, DataViewer::class.java)
+    intent.putExtra("DATA_FILES_DIR_PATH", context.filesDir.path)
+    intent.putExtra("DATA_URI", uri.toString())
+    intent.putExtra("TOAST_TEXT", context.getString(R.string.toast_data_viewer_failed))
+    context.startActivity(intent)
 }
 
 @Composable
@@ -206,7 +246,8 @@ private fun ShowDataPreview() {
                         uri = Uri.EMPTY,
                         dataType = PolarBleApi.PolarActivityDataType.HR_SAMPLES
                     )
-                )
+                ),
+                context = LocalContext.current
             )
         }
     })
@@ -226,12 +267,12 @@ private fun ShowDataWithOutSettingsPreview() {
                         uri = Uri.EMPTY,
                         dataType = PolarBleApi.PolarActivityDataType.HR_SAMPLES
                     )
-                )
+                ),
+                context = LocalContext.current
             )
         }
     })
 }
-
 
 @Preview("Recording entries fetch failed")
 @Composable

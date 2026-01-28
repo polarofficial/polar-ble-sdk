@@ -14,3 +14,9 @@ enum SensorLocation {
   SL_DISTAL = 1; // Distal from core
   SL_PROXIMAL = 2; // Proximal from core
 };
+
+message PbDateProto3 {
+  uint32 year = 1;
+  uint32 month = 2;
+  uint32 day = 3;
+};

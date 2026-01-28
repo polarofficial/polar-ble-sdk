@@ -19,7 +19,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
 
@@ -143,14 +144,9 @@ class RecordingDataViewModel @Inject constructor(
                                 val offlineRecording = resultOfRequest.value
                                 Log.d(TAG, "Offline recording fetch complete")
 
-                                val formattedStartTime = SimpleDateFormat(
-                                    "yyyy-MM-dd HH:mm:ss",
-                                    Locale.getDefault()
-                                ).format(offlineRecording.data.startTime.time)
-
                                 RecordingDataUiState.FetchedData(
                                     RecordingData(
-                                        startTime = formattedStartTime,
+                                        startTime = offlineRecording.data.startTime.toString(),
                                         usedSettings = offlineRecording.data.settings,
                                         uri = offlineRecording.uri,
                                         size = offlineRecording.fileSize,

@@ -1,7 +1,7 @@
 // Copyright © 2019 Polar Electro Oy. All rights reserved.
 package com.polar.sdk.api.model
 
-import java.util.*
+import java.time.LocalDateTime
 
 /**
  * Polar exercise entry container.
@@ -14,7 +14,7 @@ class PolarExerciseEntry(
     /**
      * Date object contains the date and time of the exercise. Only valid with OH1 and Verity Sense.
      */
-    val date: Date,
+    val date: LocalDateTime,
     /**
      * unique identifier. Only valid with H10
      */

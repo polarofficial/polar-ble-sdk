@@ -1,5 +1,6 @@
 package com.polar.polarsensordatacollector.ui.landing
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
@@ -17,8 +18,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.polar.polarsensordatacollector.DataCollector
 import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.service.OnlineStreamService
+import com.polar.polarsensordatacollector.ui.graph.AccGraphActivity
+import com.polar.polarsensordatacollector.ui.graph.HrGraphActivity
+import com.polar.polarsensordatacollector.ui.utils.DataViewer
 import com.polar.polarsensordatacollector.ui.utils.DialogUtility.showAllSettingsDialog
 import com.polar.polarsensordatacollector.ui.utils.showSnackBar
 import com.polar.sdk.api.PolarBleApi.PolarDeviceDataType
@@ -29,6 +34,8 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
 import java.text.DecimalFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @AndroidEntryPoint
 class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
@@ -73,12 +80,20 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
     private lateinit var temperatureRecordingLive: View
     private lateinit var skinTemperatureRecordingLive: View
 
+    private lateinit var hrGraphButton: Button
+    private lateinit var accGraphButton: Button
+
+    private lateinit var viewButton: ImageButton
+    private lateinit var shareButton: ImageButton
+
     private var marker = false
 
     private lateinit var selectedDeviceId: String
+    private val outputFileUris = ArrayList<Uri>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        selectedDeviceId = arguments?.getString(ONLINE_OFFLINE_KEY_DEVICE_ID) ?: throw Exception("OnlineRecFragment has no deviceId")
+        selectedDeviceId = arguments?.getString(ONLINE_OFFLINE_KEY_DEVICE_ID)
+            ?: throw Exception("OnlineRecFragment has no deviceId")
 
         setupViews(view)
 
@@ -102,7 +117,12 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 onlineViewModel.uiShowError.collect {
                     if (it.header.isNotEmpty()) {
-                        showSnackBar(rootView = requireView(), it.header, it.description ?: "", showAsError = true)
+                        showSnackBar(
+                            rootView = requireView(),
+                            it.header,
+                            it.description ?: "",
+                            showAsError = true
+                        )
                     }
                 }
             }
@@ -222,19 +242,23 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
     }
 
     private fun shareFilesToUser(fileUris: ArrayList<Uri>) {
-        val outputFileUris = ArrayList<Uri>()
         val readMode = "r"
-
         for (fileUri in fileUris) {
             try {
-                requireContext().contentResolver.openFileDescriptor(fileUri, readMode)?.use { descriptor ->
-                    if (descriptor.statSize > 0) {
-                        outputFileUris.add(fileUri)
-                    } else {
-                        val deleted = requireContext().contentResolver.delete(fileUri, null, null)
-                        Log.d(TAG, "Deleted empty file: $fileUri (result=$deleted)")
+                requireContext().contentResolver.openFileDescriptor(fileUri, readMode)
+                    ?.use { descriptor ->
+                        if (descriptor.statSize > 0) {
+                            if ( !outputFileUris.contains(fileUri) ) {
+                               outputFileUris.add(fileUri)
+                            } else {
+                                // DO NOT ADD THEN
+                            }
+                        } else {
+                            val deleted =
+                                requireContext().contentResolver.delete(fileUri, null, null)
+                            Log.d(TAG, "Deleted empty file: $fileUri (result=$deleted)")
+                        }
                     }
-                }
             } catch (e: Exception) {
                 Log.e(TAG, "Error handling file: $fileUri", e)
                 try {
@@ -244,20 +268,6 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                     Log.e(TAG, "Failed to delete file after exception: $fileUri", inner)
                 }
             }
-        }
-
-        if (outputFileUris.isNotEmpty()) {
-            val intent = Intent().apply {
-                action = Intent.ACTION_SEND_MULTIPLE
-                putExtra(Intent.EXTRA_SUBJECT, "Stream data")
-                type = "plain/text"
-                putParcelableArrayListExtra(Intent.EXTRA_STREAM, outputFileUris)
-            }
-            startActivity(intent)
-            onlineViewModel.fileShareCompleted()
-            Log.d(TAG, "Shared ${outputFileUris.size} files")
-        } else {
-            Log.i(TAG, "No valid files to share")
         }
     }
 
@@ -295,7 +305,8 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                 Log.e(TAG, settingsSelectionFailed, e)
                 showToast(settingsSelectionFailed)
             } finally {
-                getOnlineRecSettingsButtonView(availableStreamSettingsUiState.feature)?.isEnabled = true
+                getOnlineRecSettingsButtonView(availableStreamSettingsUiState.feature)?.isEnabled =
+                    true
             }
         }
     }
@@ -310,14 +321,16 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
 
         hrStatusAndSettings = view.findViewById(R.id.hr_online_recording_setup)
         // Hr do not have settings
-        hrStatusAndSettings.findViewById<Button>(R.id.recording_controls_settings_button)?.visibility = GONE
+        hrStatusAndSettings.findViewById<Button>(R.id.online_recording_controls_settings_button)?.visibility =
+            GONE
 
         accStatusAndSettings = view.findViewById(R.id.acc_online_recording_setup)
         ppgStatusAndSettings = view.findViewById(R.id.ppg_online_recording_setup)
         ecgStatusAndSettings = view.findViewById(R.id.ecg_online_recording_setup)
         ppiStatusAndSettings = view.findViewById(R.id.ppi_online_recording_setup)
         // PPI do not have settings
-        ppiStatusAndSettings.findViewById<Button>(R.id.recording_controls_settings_button)?.visibility = GONE
+        ppiStatusAndSettings.findViewById<Button>(R.id.online_recording_controls_settings_button)?.visibility =
+            GONE
 
         magStatusAndSettings = view.findViewById(R.id.mag_online_recording_setup)
         gyrStatusAndSettings = view.findViewById(R.id.gyr_online_recording_setup)
@@ -336,6 +349,14 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
         magRecordingLive = view.findViewById(R.id.magnetometer_data_section)
         accRecordingLive = view.findViewById(R.id.acc_data_section)
         hrRecordingLive = view.findViewById(R.id.hr_data_section)
+        hrGraphButton = hrRecordingLive.findViewById(R.id.open_hr_graph_button)
+        hrGraphButton?.setOnClickListener {
+            openHrGraph()
+        }
+        accGraphButton = accRecordingLive.findViewById(R.id.open_acc_graph_button)
+        accGraphButton?.setOnClickListener {
+            openAccGraph()
+        }
         ppgRecordingLive = view.findViewById(R.id.ppg_data_section)
         ecgRecordingLive = view.findViewById(R.id.ecg_data_section)
         ppiRecordingLive = view.findViewById(R.id.ppi_data_section)
@@ -363,6 +384,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                 onlineViewModel.startStream(feature)
             } else {
                 onlineViewModel.stopStream(feature)
+                setupOnlineRecShareButtons(feature, true)
                 OnlineStreamService.stopService(requireContext())
             }
         }
@@ -379,6 +401,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                         val cb = getOnlineRecordingCheckBox(feature)
                         if (cb.isChecked) {
                             onlineViewModel.stopStream(feature)
+                            setupOnlineRecShareButtons(feature, true)
                             OnlineStreamService.stopService(requireContext())
                         }
                         streamingFeatureSettingsToggle(feature, true)
@@ -460,11 +483,19 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                     } else {
                         setupOnlineRecStatusAndSettingsView(it.key, makeVisible = false)
                     }
+                    setupOnlineRecShareButtons(it.key, makeVisible = false)
                 }
         } else {
             recordingStartGroup.visibility = GONE
             recordingGroup.visibility = GONE
             streamSettingHeader.visibility = GONE
+        }
+
+        if (outputFileUris.isNotEmpty()) {
+            for (fileUri in outputFileUris) {
+                val dataType = PolarDeviceDataType.valueOf(fileUri.path?.split("/")?.get(2).toString())
+                setupOnlineRecShareButtons(dataType, makeVisible = true)
+            }
         }
     }
 
@@ -505,7 +536,13 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
     private fun hrNotificationReceived(heartRateInformationUiState: HeartRateInformationUiState) {
         Log.d(TAG, "HR notification received. ID: ${heartRateInformationUiState.deviceId} HR: ${heartRateInformationUiState.heartRate}")
         heartRateInformationUiState.heartRate?.let {
-            printHrLiveData(hr = it.hr, rrAvailable = it.rrAvailable, rrsMs = it.rrsMs, contactSupported = it.contactStatusSupported, contactStatus = it.contactStatus)
+            printHrLiveData(
+                hr = it.hr,
+                rrAvailable = it.rrAvailable,
+                rrsMs = it.rrsMs,
+                contactSupported = it.contactStatusSupported,
+                contactStatus = it.contactStatus
+            )
         }
     }
 
@@ -578,7 +615,6 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             temperatureSampleDataUiState.sampleData?.let {
                 printTemperatureLiveData(it)
             }
-
         }
     }
 
@@ -588,7 +624,6 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             skinTemperatureSampleDataUiState.sampleData?.let {
                 printSkinTemperatureLiveData(it)
             }
-
         }
     }
 
@@ -648,6 +683,8 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
         } else {
             recordingLiveData2.text = "N/A"
         }
+
+        hrGraphButton?.visibility = VISIBLE
     }
 
     private fun printMagLiveData(magData: PolarMagnetometerData) {
@@ -716,6 +753,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                 recordingLiveHeader2.text = "Lon:"
                 recordingLiveData2.text = formatter.format(sample.longitude)
             }
+
             else -> {
                 //NOP
             }
@@ -753,6 +791,8 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
         recordingLiveDataY.text = accData.samples.last().y.toString()
         recordingLiveHeaderZ.text = "Z:"
         recordingLiveDataZ.text = accData.samples.last().z.toString()
+
+        accGraphButton.visibility = VISIBLE
     }
 
     private fun printEcgLiveData(polarEcgData: PolarEcgData) {
@@ -763,6 +803,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                 recordingLiveHeader0.text = "Ecg uV:"
                 recordingLiveData0.text = ecgSample.voltage.toString()
             }
+
             is FecgSample -> {
                 val recordingLiveData1 = ecgRecordingLive.findViewById<TextView>(R.id.data_1)
                 val recordingLiveHeader1 = ecgRecordingLive.findViewById<TextView>(R.id.data_1_header)
@@ -816,6 +857,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                     recordingLiveHeader3.text = "ambient:"
                     recordingLiveData3.text = polarPpgData.samples.last().channelSamples[3].toString()
                 }
+
                 PolarPpgData.PpgDataType.FRAME_TYPE_7 -> {
                     recordingLiveHeader0.visibility = VISIBLE
                     recordingLiveHeader1.visibility = VISIBLE
@@ -834,6 +876,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                     recordingLiveHeader3.text = "ppg3:"
                     recordingLiveData3.text = polarPpgData.samples.last().channelSamples[3].toString()
                 }
+
                 PolarPpgData.PpgDataType.FRAME_TYPE_10 -> {
                     recordingLiveHeader0.visibility = VISIBLE
                     recordingLiveHeader1.visibility = VISIBLE
@@ -848,20 +891,26 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                     recordingLiveHeader2.text = "ir:"
                     recordingLiveData2.text = polarPpgData.samples.last().channelSamples[19].toString()
                 }
+
                 PolarPpgData.PpgDataType.FRAME_TYPE_13 -> {
                     recordingLiveHeader0.visibility = VISIBLE
                     recordingLiveHeader1.visibility = VISIBLE
                     recordingLiveHeader2.visibility = VISIBLE
+                    recordingLiveHeader3.visibility = VISIBLE
                     recordingLiveData0.visibility = VISIBLE
                     recordingLiveData1.visibility = VISIBLE
                     recordingLiveData2.visibility = VISIBLE
+                    recordingLiveData3.visibility = VISIBLE
                     recordingLiveHeader0.text = "PPG0:"
                     recordingLiveData0.text = polarPpgData.samples.last().channelSamples[0].toString()
                     recordingLiveHeader1.text = "PPG1:"
                     recordingLiveData1.text = polarPpgData.samples.last().channelSamples[1].toString()
-                    recordingLiveHeader2.text = "Status:"
-                    recordingLiveData2.text = polarPpgData.samples.last().channelSamples[2].toString()
+                    recordingLiveHeader2.text = "Status0"
+                    recordingLiveData2.text = polarPpgData.samples.last().statusBits[0].toString()
+                    recordingLiveHeader3.text = "Status1"
+                    recordingLiveData3.text = polarPpgData.samples.last().statusBits[1].toString()
                 }
+
                 PolarPpgData.PpgDataType.FRAME_TYPE_14 -> {
                     recordingLiveHeader0.visibility = VISIBLE
                     recordingLiveHeader1.visibility = VISIBLE
@@ -907,7 +956,10 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
         recordingLiveHeader.text = newText
     }
 
-    private fun setupStreamLiveRecording(feature: PolarDeviceDataType, settings: Map<SettingType, Int> = emptyMap()) {
+    private fun setupStreamLiveRecording(
+        feature: PolarDeviceDataType,
+        settings: Map<SettingType, Int> = emptyMap()
+    ) {
         val liveSection = getLiveSectionView(feature)
         liveSection.visibility = VISIBLE
         recordingLiveSettingsView(liveSection, settings)
@@ -946,6 +998,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                 recordingLiveHeader2.visibility = VISIBLE
                 recordingLiveData2.visibility = VISIBLE
             }
+
             PolarDeviceDataType.ACC -> {
                 recordingLiveHeader.text = "ACC"
                 recordingLiveHeader0.visibility = VISIBLE
@@ -955,9 +1008,11 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                 recordingLiveData1.visibility = VISIBLE
                 recordingLiveData2.visibility = VISIBLE
             }
+
             PolarDeviceDataType.PPG -> {
                 recordingLiveHeader.text = "PPG"
             }
+
             PolarDeviceDataType.PPI -> {
                 recordingLiveHeader.text = "PPI"
                 recordingLiveHeader0.visibility = VISIBLE
@@ -967,6 +1022,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                 measSampleRateHeader.visibility = GONE
                 measSampleRate.visibility = GONE
             }
+
             PolarDeviceDataType.GYRO -> {
                 recordingLiveHeader.text = "GYR"
                 recordingLiveHeader0.visibility = VISIBLE
@@ -976,6 +1032,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                 recordingLiveData1.visibility = VISIBLE
                 recordingLiveData2.visibility = VISIBLE
             }
+
             PolarDeviceDataType.MAGNETOMETER -> {
                 recordingLiveHeader.text = "MAGN"
                 recordingLiveHeader0.visibility = VISIBLE
@@ -985,11 +1042,13 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                 recordingLiveData1.visibility = VISIBLE
                 recordingLiveData2.visibility = VISIBLE
             }
+
             PolarDeviceDataType.PRESSURE -> {
                 recordingLiveHeader.text = "BARO"
                 recordingLiveHeader0.visibility = VISIBLE
                 recordingLiveData0.visibility = VISIBLE
             }
+
             PolarDeviceDataType.LOCATION -> {
                 recordingLiveHeader.text = "LOCATION"
                 recordingLiveHeader0.visibility = VISIBLE
@@ -1107,23 +1166,18 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
         return when (feature) {
             PolarDeviceDataType.HR,
             PolarDeviceDataType.PPI -> null
-            else -> recordingSettingsView.findViewById(R.id.recording_controls_settings_button)
+            else -> recordingSettingsView.findViewById(R.id.online_recording_controls_settings_button)
         }
     }
 
     private fun getOnlineRecordingCheckBox(feature: PolarDeviceDataType): CheckBox {
         val recordingSettingsView = getRecStatusAndSettingsView(feature)
-        return recordingSettingsView.findViewById(R.id.recording_controls_select_check_box)
-    }
-
-    private fun getOnlineHrRecordingCheckBox(): CheckBox {
-        val hrRecording = hrStatusAndSettings
-        return hrRecording.findViewById(R.id.recording_controls_select_check_box)
+        return recordingSettingsView.findViewById(R.id.online_recording_controls_select_check_box)
     }
 
     private fun getOnlineRecStartStopButton(feature: PolarDeviceDataType): Button {
         val recordingSettingsView = getRecStatusAndSettingsView(feature)
-        return recordingSettingsView.findViewById(R.id.recording_controls_start_stop_button)
+        return recordingSettingsView.findViewById(R.id.online_recording_controls_start_stop_button)
     }
 
     private fun getOnlineRecHeaderText(feature: PolarDeviceDataType): String {
@@ -1142,10 +1196,13 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
         }
     }
 
-    private fun setupOnlineRecStatusAndSettingsView(feature: PolarDeviceDataType, makeVisible: Boolean) {
+    private fun setupOnlineRecStatusAndSettingsView(
+        feature: PolarDeviceDataType,
+        makeVisible: Boolean
+    ) {
         val view = getRecStatusAndSettingsView(feature)
         if (makeVisible) {
-            val header: TextView = view.findViewById(R.id.recording_controls_header)
+            val header: TextView = view.findViewById(R.id.online_recording_controls_header)
             header.text = getOnlineRecHeaderText(feature)
             view.visibility = VISIBLE
             getOnlineRecStartStopButton(feature).visibility = GONE
@@ -1153,5 +1210,109 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
         } else {
             view.visibility = GONE
         }
+    }
+
+    private fun setupOnlineRecShareButtons(feature: PolarDeviceDataType, makeVisible: Boolean) {
+        if (makeVisible) {
+            setupShareButton(feature)
+            setupViewButton(feature)
+        } else {
+            val view = getRecStatusAndSettingsView(feature)
+            shareButton = view.findViewById(R.id.online_recording_controls_share_button)
+            viewButton = view.findViewById(R.id.online_recording_controls_view_button)
+            shareButton.visibility = GONE
+            viewButton.visibility = GONE
+        }
+    }
+
+    private fun setupViewButton(feature: PolarDeviceDataType) {
+
+        val view = getRecStatusAndSettingsView(feature)
+
+        viewButton = view.findViewById(R.id.online_recording_controls_view_button)
+        viewButton.visibility = VISIBLE
+        viewButton.isEnabled = true
+        viewButton.setOnClickListener {
+            var fileUri = getUriByDataType(feature)
+            if (fileUri != null) {
+                openDataTextView(
+                    requireContext(),
+                    fileUri
+                )
+            }
+        }
+    }
+
+    private fun setupShareButton(feature: PolarDeviceDataType) {
+
+        val view = getRecStatusAndSettingsView(feature)
+        shareButton = view.findViewById(R.id.online_recording_controls_share_button)
+        shareButton.visibility = VISIBLE
+        shareButton.isEnabled = true
+        shareButton.setOnClickListener {
+            if (outputFileUris.isNotEmpty()) {
+                val dataUri = getUriByDataType(feature)
+                if (dataUri != null) {
+                    val uriArrWithOneUri = ArrayList<Uri>()
+                    uriArrWithOneUri.add(dataUri)
+                    val intent = Intent().apply {
+                        action = Intent.ACTION_SEND_MULTIPLE
+                        putExtra(Intent.EXTRA_SUBJECT, "Stream data")
+                        type = "plain/text"
+                        putParcelableArrayListExtra(Intent.EXTRA_STREAM, uriArrWithOneUri)
+                    }
+                    startActivity(intent)
+                    onlineViewModel.fileShareCompleted()
+                    Log.d(TAG, "Shared ${outputFileUris.size} files")
+                }
+            } else {
+                Log.i(TAG, "No valid files to share")
+            }
+        }
+    }
+
+    fun openDataTextView(context: Context, uri: Uri) {
+        val intent = Intent(context, DataViewer::class.java)
+        intent.putExtra("DATA_FILES_DIR_PATH", context.filesDir.path)
+        intent.putExtra("DATA_URI", uri.toString())
+        intent.putExtra("TOAST_TEXT", context.getString(R.string.toast_data_viewer_failed))
+        context.startActivity(intent)
+    }
+
+    /**
+     * Finds the newest Uri for the desired PolarDeviceDataType
+     */
+    private fun getUriByDataType(desiredDataType: PolarDeviceDataType): Uri? {
+
+        var matchingFileUris = ArrayList<Uri>()
+        var fileurisWithDateKey = mutableMapOf<LocalDateTime, Uri>()
+        for (fileUri in outputFileUris) {
+            val streamType = DataCollector.StreamType.valueOf(fileUri.path?.split("/")?.get(2).toString())
+            if (streamType.name == desiredDataType.name) {
+                matchingFileUris.add(fileUri)
+            }
+        }
+
+        for (fileUri in matchingFileUris) {
+            val dateString = fileUri.path?.split("/")?.get(3).toString().split("_").get(1)
+            val dateInUri = LocalDateTime.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            fileurisWithDateKey.put(dateInUri, fileUri)
+        }
+
+        if (fileurisWithDateKey.isEmpty()) {
+            return null
+        }
+
+        return fileurisWithDateKey.entries.sortedWith(compareBy( { it.key})).reversed().first().value
+    }
+
+    private fun openHrGraph() {
+        val intent = Intent(requireContext(), HrGraphActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun openAccGraph() {
+        val intent = Intent(requireContext(), AccGraphActivity::class.java)
+        startActivity(intent)
     }
 }

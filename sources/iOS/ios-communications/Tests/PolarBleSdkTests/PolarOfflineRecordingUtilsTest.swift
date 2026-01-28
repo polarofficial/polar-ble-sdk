@@ -172,15 +172,9 @@ final class PolarOfflineRecordingUtilsTest: XCTestCase {
         300 /U/0/20250730/R/101010/PPG0.REC
         """.data(using: .utf8)!
 
-        let mockGetFile: (BlePsFtpClient, String) -> Single<Data> = { _, path in
-            XCTAssertEqual(path, "/PMDFILES.TXT")
-            return Single.just(pmdTxt)
-        }
-
         // Act
         let emitted = try PolarOfflineRecordingUtils.listOfflineRecordingsV2(
-            client: mockClient,
-            getFile: mockGetFile
+            fileData: pmdTxt
         )
         .toBlocking()
         .single()

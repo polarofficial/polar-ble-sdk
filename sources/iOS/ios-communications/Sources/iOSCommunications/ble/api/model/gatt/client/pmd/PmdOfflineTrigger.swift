@@ -38,9 +38,18 @@ public struct PmdOfflineTrigger {
     private static let TRIGGER_MEASUREMENT_TYPE_FIELD_LENGTH = 1
     private static let TRIGGER_MEASUREMENT_SETTINGS_SIZE_FIELD_LENGTH = 1
     
+    enum PmdOfflineTriggerError: Error {
+        case invalidDataLength(expected: Int, actual: Int)
+        case unexpectedEndOfData(offset: Int, dataCount: Int)
+    }
+    
     static func fromResponse(data: Data) throws -> PmdOfflineTrigger {
         BleLogger.trace("parse offline trigger from response")
         var offset = TRIGGER_MODE_INDEX
+        
+        guard data.count > TRIGGER_MODE_INDEX else {
+            throw PmdOfflineTriggerError.invalidDataLength(expected: 1, actual: data.count)
+        }
         
         let triggerMode = try PmdOfflineRecTriggerMode.fromResponse(byte: data[TRIGGER_MODE_INDEX])
         offset += TRIGGER_MODE_FIELD_LENGTH
@@ -48,15 +57,28 @@ public struct PmdOfflineTrigger {
         var triggers = [PmdMeasurementType : (status: PmdOfflineRecTriggerStatus, setting: PmdSetting?)]()
         
         while (offset < data.count) {
-            let triggerStatus = try PmdOfflineRecTriggerStatus.fromResponse(byte: data[offset])
+            guard offset + TRIGGER_STATUS_FIELD_LENGTH + TRIGGER_MEASUREMENT_TYPE_FIELD_LENGTH <= data.count else {
+                throw PmdOfflineTriggerError.unexpectedEndOfData(offset: offset, dataCount: data.count)
+            }
+            
+            let triggerStatus = try PmdOfflineRecTriggerStatus.fromResponse(byte:  data[offset])
             offset += TRIGGER_STATUS_FIELD_LENGTH
             
             let triggerMeasurementType = PmdMeasurementType.fromId(id: data[offset])
             offset += TRIGGER_MEASUREMENT_TYPE_FIELD_LENGTH
             
             if (triggerStatus == PmdOfflineRecTriggerStatus.enabled) {
+                guard offset < data.count else {
+                    throw PmdOfflineTriggerError.unexpectedEndOfData(offset: offset, dataCount: data.count)
+                }
+                
                 let triggerSettingsLength = Int(data[offset])
                 offset += TRIGGER_MEASUREMENT_SETTINGS_SIZE_FIELD_LENGTH
+                
+                guard offset + triggerSettingsLength <= data.count else {
+                    throw PmdOfflineTriggerError.unexpectedEndOfData(offset: offset + triggerSettingsLength, dataCount: data.count)
+                }
+                
                 let settingBytes = data.subdata(in: offset..<(offset + triggerSettingsLength))
                 let pmdSetting: PmdSetting?
                 if settingBytes.isEmpty {

@@ -243,6 +243,29 @@ internal class PolarTimeUtils {
         
         return proto
     }
+    
+    static func pbDateProto3ToDate(pbDate: PbDateProto3?) throws -> Date {
+        
+        guard let year = pbDate?.year,
+              let month = pbDate?.month,
+              let day = pbDate?.day else {
+            
+            BleLogger.error("pbDateProto3ToDate failed, pbDate is missing parameters")
+            throw PolarErrors.dateTimeFormatFailed(description: "pbDate failed, pbDate is missing parameters")
+        }
+
+        var dateComponents = DateComponents()
+        dateComponents.year = Int(year)
+        dateComponents.month = Int(month)
+        dateComponents.day = Int(day)
+
+        let userCalendar = Calendar(identifier: .gregorian)
+        guard let date = userCalendar.date(from: dateComponents) else {
+            BleLogger.error("pbDateProto3ToDate failed, cannot create date from dateComponents")
+            throw PolarErrors.dateTimeFormatFailed(description: "pbDateProto3ToDate failed, cannot create date from dateComponents")
+        }
+        return date
+    }
 
     static func pbDurationToMillis(pbDuration: PbDuration) -> Int {
         return hoursToMillis(hours: Int(pbDuration.hours)) + minutesToMillis(minutes: Int(pbDuration.minutes)) + secondsToMillis(seconds: Int(pbDuration.seconds)) + Int(pbDuration.millis)

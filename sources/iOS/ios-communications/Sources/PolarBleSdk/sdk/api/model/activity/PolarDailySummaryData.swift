@@ -232,12 +232,7 @@ public struct PolarActiveTime: Codable, Equatable {
         self.seconds = seconds
         self.millis = millis
     }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(hours*3600 + minutes*60 + seconds + millis/1000)
-    }
-    
+
     static func fromProto(_ proto: PbDuration) -> PolarActiveTime {
         return PolarActiveTime(
             hours: Int(proto.hours),

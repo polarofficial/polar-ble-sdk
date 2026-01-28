@@ -10,7 +10,7 @@ import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Maybe
 import io.reactivex.rxjava3.core.Single
 import java.time.LocalDate
-import java.util.*
+import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
 /**
@@ -283,19 +283,19 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * Set the device time. Requires feature [PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP]
      *
      * @param identifier polar device id or bt address
-     * @param calendar   time to set
+     * @param dateAndTime time to set
      * @return Completable stream
      */
-    abstract fun setLocalTime(identifier: String, calendar: Calendar): Completable
+    abstract fun setLocalTime(identifier: String, dateAndTime: LocalDateTime): Completable
 
     /**
      * Get current time in device. Requires feature [PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP].
      * Note, the H10 is not supporting time read.
      *
      * @param identifier polar device id or bt address
-     * @return Single observable which emits device time in Calendar instance when observable is subscribed
+     * @return Single observable which emits device time in LocalDateTime instance when observable is subscribed
      */
-    abstract fun getLocalTime(identifier: String): Single<Calendar>
+    abstract fun getLocalTime(identifier: String): Single<LocalDateTime>
 
     /**
      * Start listening the heart rate from Polar devices when subscribed. This observable listens BLE
@@ -579,4 +579,15 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @return [Completable], true if stop sync notifications sending was successful, false otherwise.
      */
     abstract fun sendTerminateAndStopSyncNotifications(identifier: String): Completable
+
+    /**
+     * Enable or disable AUTOS file generation on the device.
+     * AUTOS files contain 24/7 OHR data.
+     * Status of this setting can be read with getUserDeviceSettings().
+     *
+     * @param identifier Polar device ID or BT address
+     * @param enabled true = AUTOS files enabled, false = disabled
+     * @return Completable (success or error)
+     */
+    abstract fun setAutomaticOHRMeasurementEnabled(identifier: String, enabled: Boolean): Completable
 }

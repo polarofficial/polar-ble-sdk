@@ -27,13 +27,14 @@ import protocol.PftpRequest
 import protocol.PftpResponse.PbPFtpDirectory
 import protocol.PftpResponse.PbPFtpEntry
 import java.io.ByteArrayOutputStream
-import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.zip.GZIPOutputStream
 
     class PolarTrainingSessionUtilsTest {
 
-    private val dateTimeFormatter = SimpleDateFormat("yyyyMMddHHmmss", Locale.ENGLISH)
+    private val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ENGLISH)
 
     @Test
     fun `getTrainingSessionReferences() should return all training session references`() {
@@ -114,7 +115,7 @@ import java.util.zip.GZIPOutputStream
         }
 
         val expectedReferences = listOf(
-            dateTimeFormatter.parse("20250101204507")?.let {
+            LocalDate.parse("20250101204507", dateFormatter)?.let {
                 PolarTrainingSessionReference(
                     date = it,
                     path = "/U/0/20250101/E/204507/TSESS.BPB",
@@ -123,7 +124,7 @@ import java.util.zip.GZIPOutputStream
                     fileSize = 1024L
                 )
             },
-            dateTimeFormatter.parse("20250202163020")?.let {
+            LocalDate.parse("20250202163020", dateFormatter)?.let {
                 PolarTrainingSessionReference(
                     date = it,
                     path = "/U/0/20250202/E/163020/TSESS.BPB",
@@ -276,7 +277,7 @@ import java.util.zip.GZIPOutputStream
         // Arrange
         val client = mockk<BlePsFtpClient>()
         val reference = PolarTrainingSessionReference(
-            date = dateTimeFormatter.parse("20250101101200")!!,
+            date = LocalDate.parse("20250101101200", dateFormatter),
             path = "/U/0/20250101/E/101200/TSESS.BPB",
             trainingDataTypes = listOf(PolarTrainingSessionDataTypes.TRAINING_SESSION_SUMMARY),
             exercises = listOf(

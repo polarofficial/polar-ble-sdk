@@ -5,9 +5,12 @@ import com.polar.sdk.api.model.sleep.OriginalSleepRange
 import com.polar.sdk.api.model.sleep.PolarSleepAnalysisResult
 import com.polar.sdk.api.model.sleep.SleepCycle
 import com.polar.sdk.api.model.sleep.SleepRating
+import com.polar.sdk.api.model.sleep.SleepSkinTemperatureResult
 import com.polar.sdk.api.model.sleep.SleepWakePhase
 import com.polar.sdk.api.model.sleep.SleepWakeState
 import com.polar.sdk.impl.utils.PolarSleepUtils
+import com.polar.services.datamodels.protobuf.SleepSkinTemperatureResult.PbSleepSkinTemperatureResult
+import com.polar.services.datamodels.protobuf.Types.PbDateProto3
 import fi.polar.remote.representation.protobuf.SleepanalysisResult
 import fi.polar.remote.representation.protobuf.Structures
 import fi.polar.remote.representation.protobuf.Types
@@ -39,11 +42,13 @@ class PolarSleepUtilsTest {
 
         val mockClient = mockk<BlePsFtpClient>()
         val date = LocalDate.now()
-        val outputStream = ByteArrayOutputStream()
-        val expectedPath = "/U/0/${date.format(dateFormatter)}/SLEEP/SLEEPRES.BPB"
+        val sleepOutputStream = ByteArrayOutputStream()
+        val skintempOutputStream = ByteArrayOutputStream()
+        val expectedSleepPath = "/U/0/${date.format(dateFormatter)}/SLEEP/SLEEPRES.BPB"
+        val expectedSkintemperaturePath = "/U/0/${date.format(dateFormatter)}/NSTRESUL/NSTRCONT.BPB"
         val expectedResult = createSleepAnalysisResult()
 
-        val proto = SleepanalysisResult.PbSleepAnalysisResult.newBuilder()
+        val sleepProto = SleepanalysisResult.PbSleepAnalysisResult.newBuilder()
             .addSleepwakePhases(createPbSleepWakePhasesMock())
             .addSleepCycles(createPbSleepCycleMock())
             .addSnoozeTime(createPbLocalDateTime(23, 59, 59, 59, 1, 2, 2525, 60))
@@ -73,12 +78,19 @@ class PolarSleepUtilsTest {
                 .setTrusted(true)
                 .build()
                 )
-
             .build()
 
-        proto.writeTo(outputStream)
+        sleepProto.writeTo(sleepOutputStream)
 
-        every { mockClient.request(any()) } returns Single.just(outputStream)
+        val skinTempProto = PbSleepSkinTemperatureResult.newBuilder()
+            .setSleepDate(createPbDateProto3(4,3,2525))
+            .setSleepSkinTemperatureCelsius(35.123455f)
+            .setDeviationFromBaselineCelsius(-0.111111f)
+            .build()
+
+        skinTempProto.writeTo(skintempOutputStream)
+
+        every { mockClient.request(any()) } returns Single.just(sleepOutputStream) andThen Single.just(skintempOutputStream)
 
         // Act
         val testObserver = PolarSleepUtils.readSleepDataFromDayDirectory(mockClient, date).test()
@@ -92,7 +104,16 @@ class PolarSleepUtilsTest {
             mockClient.request(
                 PftpRequest.PbPFtpOperation.newBuilder()
                     .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                    .setPath(expectedPath)
+                    .setPath(expectedSleepPath)
+                    .build()
+                    .toByteArray()
+            )
+        }
+        verify {
+            mockClient.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath(expectedSkintemperaturePath)
                     .build()
                     .toByteArray()
             )
@@ -139,6 +160,14 @@ class PolarSleepUtilsTest {
             .build()
     }
 
+    private fun createPbDateProto3(day: Int, month: Int, year: Int): PbDateProto3 {
+        return PbDateProto3.newBuilder()
+            .setDay(day)
+            .setMonth(month)
+            .setYear(year)
+            .build()
+    }
+
     private fun createSleepAnalysisResult(): PolarSleepAnalysisResult {
         val zoneId = ZoneOffset.ofHoursMinutes(1, 0)
         var snoozeTimes = mutableListOf<ZonedDateTime>()
@@ -162,7 +191,7 @@ class PolarSleepUtilsTest {
             false,
             mockSleepCycles(),
             LocalDate.of(2525, 2, 1),
-            mockOriginalSleepRange()
+            mockOriginalSleepRange(), mockSleepSkinTemperatureResult()
         )
     }
 
@@ -189,6 +218,14 @@ class PolarSleepUtilsTest {
         return OriginalSleepRange(
             LocalDateTime.of(2525, 2, 1, 23, 59,59,59 * 1000000),
             LocalDateTime.of(2525, 2, 2, 7, 0, 0, 0)
+        )
+    }
+
+    private fun mockSleepSkinTemperatureResult(): SleepSkinTemperatureResult {
+        return SleepSkinTemperatureResult(
+            LocalDate.of(2525, 3, 4),
+            35.123456f,
+            -0.111111f
         )
     }
 }

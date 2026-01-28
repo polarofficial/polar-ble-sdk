@@ -14,6 +14,7 @@ struct UserDeviceSettingsView: View {
     @State private var automaticTrainingDetectionMinimumDuration: String = ""//UInt32 = 0
     @State private var settings = PolarUserDeviceSettingsData()
     @State private var isTelemetryEnabled: Bool = false
+    @State private var isAutoOHREnabled: Bool = false
 
     var deviceId: String
 
@@ -48,6 +49,7 @@ struct UserDeviceSettingsView: View {
                     automaticTrainingDetectionMinimumDuration = String(describing: settings?.minimumTrainingDurationSeconds ?? 0)
                     automaticTrainingDetectionSensitity = String(describing: settings?.automaticTrainingDetectionSensitivity ?? 0)
                     isTelemetryEnabled = settings?.telemetryEnabled ?? false
+                    isAutoOHREnabled = settings?.autosFilesEnabled ?? false
                 }
 
                 Section(header: Text("USB settings")) {
@@ -83,6 +85,11 @@ struct UserDeviceSettingsView: View {
                     TextField("ATD minimum duration (seconds)", text: $automaticTrainingDetectionMinimumDuration)
                         .keyboardType(.numberPad)
                     }
+                }
+                
+                Section(header: Text("AUTOS file generation")) {
+                    Toggle("Enable AUTOS file generation", isOn: $isAutoOHREnabled)
+                        .toggleStyle(SwitchToggleStyle(tint: .blue))
                 }
             }
 
@@ -137,6 +144,8 @@ struct UserDeviceSettingsView: View {
             sensitivity: Int(automaticTrainingDetectionSensitity) ?? 0,
             minimumDuration: Int(automaticTrainingDetectionMinimumDuration) ?? 0
         )
+        
+        await bleSdkManager.setAutomaticOHRMeasurementEnabled(enabled: isAutoOHREnabled)
 
         await bleSdkManager.setDaylightSavingTime()
 

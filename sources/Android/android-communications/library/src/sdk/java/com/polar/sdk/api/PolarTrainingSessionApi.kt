@@ -8,7 +8,7 @@ import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
-import java.util.Date
+import java.time.LocalDate
 
 /**
 * Polar training session API.
@@ -25,8 +25,8 @@ interface PolarTrainingSessionApi {
      */
     fun getTrainingSessionReferences(
         identifier: String,
-        fromDate: Date? = null,
-        toDate: Date? = null
+        fromDate: LocalDate? = null,
+        toDate: LocalDate? = null
     ): Flowable<PolarTrainingSessionReference>
 
     /**

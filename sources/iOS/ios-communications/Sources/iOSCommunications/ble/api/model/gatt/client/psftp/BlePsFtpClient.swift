@@ -208,7 +208,11 @@ public class BlePsFtpClient: BleGattClientBase {
                     throw BlePsFtpException.protocolError
                 }
             }else{
-                BleLogger.error("Response error with code: \(packet.first!.1)")
+                logPsFtpError(
+                    "PS-FTP response error",
+                    BlePsFtpException.responseError(errorCode: packet.first!.1)
+                )
+
                 throw BlePsFtpException.responseError(errorCode: packet.first!.1)
             }
         } while frameStatus == BlePsFtpUtility.RFC76_STATUS_MORE
@@ -347,7 +351,7 @@ public class BlePsFtpClient: BleGattClientBase {
                             return
                         }
                     } catch let error {
-                        BleLogger.error("PS-FTP request interrupted error: \(error)")
+                        logPsFtpError("PS-FTP request interrupted", error)
                         if shouldClearProgressCallback {
                             self.progressCallback = nil
                         }
@@ -485,7 +489,7 @@ public class BlePsFtpClient: BleGattClientBase {
                             }
                             observer.onNext(UInt(transferred))
                         } catch let error {
-                            BleLogger.error("PS-FTP write interrupted error: \(error)")
+                            logPsFtpError("PS-FTP write interrupted", error)
                             if !(self.gattServiceTransmitter?.isConnected() ?? false) {
                                 observer.onError(BleGattException.gattDisconnected)
                             } else {
@@ -516,7 +520,10 @@ public class BlePsFtpClient: BleGattClientBase {
                             observer.onCompleted()
                             return
                         default:
-                            BleLogger.error("PS-FTP write operation failed with error code: \(error)")
+                            logPsFtpError(
+                                "PS-FTP write failed",
+                                BlePsFtpException.responseError(errorCode: error)
+                            )
                             observer.onError(BlePsFtpException.responseError(errorCode: error))
                             return
                         }
@@ -601,7 +608,7 @@ public class BlePsFtpClient: BleGattClientBase {
                             return
                         }
                     } catch let error {
-                        BleLogger.error("PS-FTP query operation interrupted with error for ID: \(id) - \(error)")
+                        logPsFtpError("PS-FTP query failed for ID=\(id)", error)
                         if !(self.gattServiceTransmitter?.isConnected() ?? false) {
                             BleLogger.error("Device disconnected during PS-FTP query operation for ID: \(id)")
                             observer(.failure(BleGattException.gattDisconnected))
@@ -752,7 +759,7 @@ public class BlePsFtpClient: BleGattClientBase {
                             }
                         } while true
                     } catch let error {
-                        BleLogger.error("PS-FTP wait notification operation interrupted with error: \(error)")
+                        logPsFtpError("PS-FTP waitNotification interrupted", error)
                         observer.onError(error)
                     }
                 } else {
@@ -777,5 +784,13 @@ public class BlePsFtpClient: BleGattClientBase {
     
     public override func clientReady(_ checkConnection: Bool) -> Completable {
         return waitPsFtpReady(checkConnection)
+    }
+    
+    private func logPsFtpError(_ prefix: String, _ error: Error) {
+        if let psftp = error as? BlePsFtpException {
+            BleLogger.error("\(prefix): \(psftp.errorName) (code=\(psftp._code))")
+        } else {
+            BleLogger.error("\(prefix): \(error)")
+        }
     }
 }

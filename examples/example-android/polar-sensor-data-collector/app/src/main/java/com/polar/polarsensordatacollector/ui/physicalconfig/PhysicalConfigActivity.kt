@@ -11,7 +11,6 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.polar.sdk.api.model.PolarFirstTimeUseConfig
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
-import java.text.SimpleDateFormat
 import java.util.*
 import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.di.PolarBleSdkModule
@@ -22,7 +21,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 private const val TAG = "PhysicalConfigActivity"
 
@@ -47,6 +51,7 @@ class PhysicalConfigActivity : AppCompatActivity() {
 
     private val api = PolarBleSdkModule.providePolarBleSdkApi(this)
     private val deviceSettingsViewModel: DeviceSettingsViewModel by viewModels()
+    private val formatter = DateTimeFormatter.ofPattern("yyyyMMdd", Locale.ENGLISH)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +67,7 @@ class PhysicalConfigActivity : AppCompatActivity() {
                 showToast(getString(R.string.ftu_failed_to_get_user_physical_information_from_device_using_defaults))
                 PolarPhysicalConfiguration(
                     gender = PolarFirstTimeUseConfig.Gender.MALE,
-                    birthDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse("2000-01-01")!!,
+                    birthDate = LocalDate.parse("2000-01-01", formatter),
                     height = 185f,
                     weight = 85f,
                     maxHeartRate = 180,
@@ -79,15 +84,13 @@ class PhysicalConfigActivity : AppCompatActivity() {
             initViews()
             setupListeners()
 
-            val df = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-
             when (info.gender) {
                 PolarFirstTimeUseConfig.Gender.MALE -> radioGroupSex.check(R.id.radioButtonMale)
                 PolarFirstTimeUseConfig.Gender.FEMALE -> radioGroupSex.check(R.id.radioButtonFemale)
             }
 
             val birthDate = info.birthDate
-            textViewBirthday.text = df.format(birthDate)
+            textViewBirthday.text = birthDate.toString()
 
             editTextHeight.setText(info.height.toString())
             editTextWeight.run { setText(info.weight.toString()) }
@@ -165,16 +168,8 @@ class PhysicalConfigActivity : AppCompatActivity() {
             datePicker.show(supportFragmentManager, "MATERIAL_DATE_PICKER")
 
             datePicker.addOnPositiveButtonClickListener { selection ->
-                val selectedDate = Calendar.getInstance()
-                selectedDate.timeInMillis = selection
-
-                val formattedDate = String.format(
-                    Locale.getDefault(),
-                    "%d-%02d-%02d",
-                    selectedDate.get(Calendar.YEAR),
-                    selectedDate.get(Calendar.MONTH) + 1,
-                    selectedDate.get(Calendar.DAY_OF_MONTH)
-                )
+                val selectedDate = Instant.ofEpochMilli(selection).atZone(ZoneId.systemDefault()).toLocalDate();
+                val formattedDate = selectedDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
                 textViewBirthday.text = formattedDate
             }
         }
@@ -225,10 +220,6 @@ class PhysicalConfigActivity : AppCompatActivity() {
         sleepGoalHoursPicker.value = 8
     }
 
-    private fun parseBirthday(birthdayStr: String): Date {
-        return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(birthdayStr) ?: Date()
-    }
-
     private fun saveUserData() {
         val selectedGenderId = radioGroupSex.checkedRadioButtonId
         val genderValue = when (selectedGenderId) {
@@ -236,7 +227,7 @@ class PhysicalConfigActivity : AppCompatActivity() {
             R.id.radioButtonFemale -> PolarFirstTimeUseConfig.Gender.FEMALE
             else -> throw IllegalStateException("Invalid gender selection")
         }
-        val birthDate = parseBirthday(textViewBirthday.text.toString())
+        val birthDate = LocalDate.parse(textViewBirthday.text.toString(), DateTimeFormatter.ofPattern("yyyy-MM-dd"))
         val height = editTextHeight.text.toString().toFloatOrNull() ?: 0.0f
         val weight = editTextWeight.text.toString().toFloatOrNull() ?: 0.0f
         val maxHeartRate = spinnerMaxHeartRate.selectedItem.toString().toInt()
@@ -257,9 +248,8 @@ class PhysicalConfigActivity : AppCompatActivity() {
                 trainingBackground = trainingBackground,
                 typicalDay = typicalDay,
                 sleepGoalMinutes = sleepGoalMinutes,
-                deviceTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()).apply {
-                    timeZone = TimeZone.getTimeZone("UTC")
-                }.format(Calendar.getInstance().time))
+                deviceTime = LocalDateTime.now().atOffset(ZoneOffset.UTC).withNano(0).toString()
+        )
 
         val deviceId = intent.getStringExtra(ONLINE_OFFLINE_KEY_DEVICE_ID) ?: run {
             showToast("Device ID not found")

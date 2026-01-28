@@ -58,7 +58,8 @@ public class PolarSleepData {
         public let batteryRanOut: Bool?
         public let sleepCycles: [SleepCycle]!
         public let sleepResultDate: DateComponents?
-        public  let originalSleepRange: OriginalSleepRange?
+        public let originalSleepRange: OriginalSleepRange?
+        public var sleepSkinTemperatureResult: SleepSkinTemperatureResult?
     }
 
     public struct SleepWakePhase: Codable {
@@ -75,6 +76,17 @@ public class PolarSleepData {
         public let startTime: Date?
         public let endTime: Date?
         
+    }
+
+    /// Polar sleep time skin temperature data.
+    ///
+    ///     - sleepResultDate (year, month, day) of the sleep skin temperature data
+    ///     - deviationFromBaseLine: Deviation to users sleep body temperature history. Unit=celsius. Value is -1000.0 when not calculated.
+    ///     - sleepTimeSkinTemperatureCelsius: unit=celsius
+    public struct SleepSkinTemperatureResult: Codable {
+        public let sleepResultDate: Date?
+        public let sleepSkinTemperatureCelsius: Float
+        public let deviationFromBaseLine: Float
     }
 
     static func fromPbSleepwakePhasesListProto(pbSleepwakePhasesList: [Data_PbSleepWakePhase]) -> [PolarSleepData.SleepWakePhase] {
@@ -102,12 +114,20 @@ public class PolarSleepData {
 
     static func fromPbOriginalSleepRange(pbOriginalSleepRange: PbLocalDateTimeRange) throws -> OriginalSleepRange {
 
-        var startTime = pbOriginalSleepRange.hasStartTime ? try PolarTimeUtils.pbLocalDateTimeToDate(pbLocalDateTime: pbOriginalSleepRange.startTime) : nil
-        var endTime = pbOriginalSleepRange.hasEndTime ?  try PolarTimeUtils.pbLocalDateTimeToDate(pbLocalDateTime: pbOriginalSleepRange.endTime) : nil
+        let startTime = pbOriginalSleepRange.hasStartTime ? try PolarTimeUtils.pbLocalDateTimeToDate(pbLocalDateTime: pbOriginalSleepRange.startTime) : nil
+        let endTime = pbOriginalSleepRange.hasEndTime ?  try PolarTimeUtils.pbLocalDateTimeToDate(pbLocalDateTime: pbOriginalSleepRange.endTime) : nil
 
         return OriginalSleepRange(
             startTime: startTime,
             endTime: endTime)
+    }
+
+    static func fromPbSleepTemperatureResult(pbSleepTemperatureResult: Data_PbSleepSkinTemperatureResult) throws -> SleepSkinTemperatureResult {
+
+        let sleepResultDate = pbSleepTemperatureResult.hasSleepDate ? try PolarTimeUtils.pbDateProto3ToDate(pbDate: pbSleepTemperatureResult.sleepDate) : nil
+        let sleepSkinTemperatureCelsius = pbSleepTemperatureResult.sleepSkinTemperatureCelsius
+        let deviationFromBaseLine = pbSleepTemperatureResult.deviationFromBaselineCelsius
+        return SleepSkinTemperatureResult(sleepResultDate: sleepResultDate, sleepSkinTemperatureCelsius: sleepSkinTemperatureCelsius, deviationFromBaseLine: deviationFromBaseLine)
     }
 
     static func convertSnoozeTimeListToLocalTime(snoozeTimeList: [PbLocalDateTime]) throws -> [Date] {
@@ -116,7 +136,7 @@ public class PolarSleepData {
 
         for snoozeTime in snoozeTimeList {
 
-            var date = try PolarTimeUtils.pbLocalDateTimeToDate(pbLocalDateTime: snoozeTime)
+            let date = try PolarTimeUtils.pbLocalDateTimeToDate(pbLocalDateTime: snoozeTime)
             snoozeTimes.append(date)
         }
 

@@ -6,12 +6,8 @@ import com.polar.sdk.api.model.sleep.PolarNightlyRechargeData
 import fi.polar.remote.representation.protobuf.NightlyRecovery.PbNightlyRecoveryStatus
 import io.reactivex.rxjava3.core.Maybe
 import protocol.PftpRequest
-import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 
 private const val ARABICA_USER_ROOT_FOLDER = "/U/0/"
 private const val NIGHTLY_RECOVERY_DIRECTORY = "NR/"
@@ -36,11 +32,10 @@ internal object PolarNightlyRechargeUtils {
             ).subscribe(
                     { response ->
                         val recoveryStatus = PbNightlyRecoveryStatus.parseFrom(response.toByteArray())
-                        val recoveryDateProto = recoveryStatus.sleepResultDate
-                        val recoveryDate = Calendar.getInstance().apply {
-                            set(recoveryDateProto.year, recoveryDateProto.month - 1, recoveryDateProto.day, 0, 0, 0)
-                            set(Calendar.MILLISECOND, 0)
-                        }.time
+                        val recoveryDate = LocalDate.of(
+                            recoveryStatus.sleepResultDate.year,
+                            recoveryStatus.sleepResultDate.month,
+                            recoveryStatus.sleepResultDate.day)
 
                         val createdTimestamp = PolarTimeUtils.pbSystemDateTimeToLocalDateTime(recoveryStatus.createdTimestamp)
                         val modifiedTimestamp = if (recoveryStatus.hasModifiedTimestamp()) {

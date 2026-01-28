@@ -26,7 +26,8 @@ import protocol.PftpResponse.PbPFtpEntry
 import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.Calendar
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 class PolarAutomaticSamplesUtilsTest {
 
@@ -271,8 +272,8 @@ class PolarAutomaticSamplesUtilsTest {
     @Test
     fun `read247ppiSamples() should correctly calculate ppi samples and parse all sample status types`() {
         // Arrange
-        val fromDate = Calendar.getInstance().apply { set(2024, 10, 10, 0, 0, 0); set(Calendar.MILLISECOND, 0) }.time
-        val toDate = Calendar.getInstance().apply { set(2024, 10, 18, 0, 0, 0); set(Calendar.MILLISECOND, 0) }.time
+        val fromDate = LocalDate.of(2024, 11, 10)
+        val toDate = LocalDate.of(2024, 11, 18)
 
         val mockDirectoryContent = ByteArrayOutputStream().apply {
             PbPFtpDirectory.newBuilder()
@@ -368,15 +369,14 @@ class PolarAutomaticSamplesUtilsTest {
 
         // Act
         val result = PolarAutomaticSamplesUtils.read247PPiSamples(mockClient, fromDate, toDate).blockingGet()
-
         // Assert
         verify { mockClient.request(any<ByteArray>()) }
         confirmVerified(mockClient)
 
         assert(result.size == 3)
-        val date = Calendar.getInstance().apply { set(2024, 10, 18, 0, 0, 0); set(Calendar.MILLISECOND, 0) }
-        assert(result[0].date == date.time)
-        assert(result[0].samples.startTime == LocalTime.parse("01:01:01"))
+        val date = LocalDate.of(2024, 11, 18)
+        assert(result[0].date == date)
+        assert(result[0].samples.startTime == LocalTime.of(1, 1, 1, 1000000))
         assert(result[0].samples.ppiValueList == listOf(2500, 1866, 1886, 1786))
         assert(result[0].samples.ppiErrorEstimateList == listOf(700, 700, 1300, 1250))
         assert(result[0].samples.triggerType == PPiSampleTriggerType.TRIGGER_TYPE_AUTOMATIC)
@@ -389,8 +389,8 @@ class PolarAutomaticSamplesUtilsTest {
     @Test
     fun `read247ppiSamples() should filter out dates outside of range`() {
         // Arrange
-        val fromDate = Calendar.getInstance().apply { set(2024, 10, 10, 0, 0, 0); set(Calendar.MILLISECOND, 0) }.time
-        val toDate = Calendar.getInstance().apply { set(2024, 10, 18, 0, 0, 0); set(Calendar.MILLISECOND, 0) }.time
+        val fromDate = LocalDate.of(2024, 11, 10)
+        val toDate = LocalDate.of(2024, 11, 18)
 
         val mockDirectoryContent = ByteArrayOutputStream().apply {
             PbPFtpDirectory.newBuilder()

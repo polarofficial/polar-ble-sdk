@@ -1,7 +1,7 @@
 package com.polar.sdk.api.model.sleep
 
+import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.Date
 
 data class PolarNightlyRechargeData(
         // Date and time of the result was created
@@ -62,5 +62,5 @@ data class PolarNightlyRechargeData(
         val exerciseTip: String?,
 
         // Date for which the sleep result and nightly recovery result is for
-        val sleepResultDate: Date?
+        val sleepResultDate: LocalDate?
 )

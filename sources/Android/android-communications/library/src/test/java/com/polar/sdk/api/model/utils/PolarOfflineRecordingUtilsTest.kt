@@ -66,11 +66,8 @@ class PolarOfflineRecordingUtilsTest {
             300 /U/0/20250730/R/101010/PPG0.REC
         """.trimIndent().toByteArray(StandardCharsets.UTF_8)
 
-        val mockGetFile = mockk<(BlePsFtpClient, String) -> Single<ByteArray>>()
-        every { mockGetFile(mockClient, "/PMDFILES.TXT") } returns Single.just(pmdTxtContent)
-
         val emitted = mutableListOf<PolarOfflineRecordingEntry>()
-        PolarOfflineRecordingUtils.listOfflineRecordingsV2(mockClient, mockGetFile)
+        PolarOfflineRecordingUtils.listOfflineRecordingsV2(pmdTxtContent)
             .doOnSuccess { emitted.addAll(it) }
             .test()
             .awaitDone(1, java.util.concurrent.TimeUnit.SECONDS)
@@ -92,7 +89,5 @@ class PolarOfflineRecordingUtilsTest {
         assert(ppgEntries[0].path.endsWith(".REC"))
 
         emitted.forEach { assert(it.date != null) }
-
-        verify { mockGetFile(mockClient, "/PMDFILES.TXT") }
     }
 }

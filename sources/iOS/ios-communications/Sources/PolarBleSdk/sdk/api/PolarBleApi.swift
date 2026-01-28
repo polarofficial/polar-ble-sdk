@@ -174,9 +174,9 @@ public enum PpgDataType: Int, CaseIterable {
 ///     - samples: Photoplethysmography samples
 ///         - timeStamp: moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000
 ///         - channelSamples is the PPG (Photoplethysmography) raw value received from the optical sensor. Based on [OhrDataType] the amount of channels varies. Typically ppg(n) channel + n ambient(s).
+///     - status: List of statuses for the PPG samples, available for frametypes 7, 8, 10 and 13. Status bits of each sample: 0 for no valid data, 1 for valid data.
 ///
-public typealias PolarPpgData = (type: PpgDataType, samples: [(timeStamp:UInt64, channelSamples: [Int32])])
-
+public typealias PolarPpgData = (type: PpgDataType, samples: [(timeStamp:UInt64, channelSamples: [Int32], statusBits: [Int8]?)])
 
 /// Polar ppi data
 ///
@@ -577,6 +577,17 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - onError: see `PolarErrors` for possible errors invoked
     ///
     func sendTerminateAndStopSyncNotifications(identifier: String) -> Completable
+    
+    /**
+     * Enable or disable AUTOS file generation on the device.
+     * AUTOS files contain 24/7 OHR data.
+     * Status of this setting can be read with getUserDeviceSettings().
+     *
+     * - parameter identifier: Polar device ID or BT address
+     * - parameter enabled: true = AUTOS files enabled, false = disabled
+     * - returns: Completable (success or error)
+     */
+    func setAutomaticOHRMeasurementEnabled(_ identifier: String, enabled: Bool) -> Completable
 
     /// Common GAP (Generic access profile) observer
     var observer: PolarBleApiObserver? { get set }

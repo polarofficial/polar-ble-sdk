@@ -150,19 +150,19 @@
             android:defaultValue=""
             app:argType="string" />
         <argument
-            android:name="fromDateFragmentArgument"
-            android:defaultValue=""
-            app:argType="string" />
-        <argument
-            android:name="toDateFragmentArgument"
-            android:defaultValue=""
-            app:argType="string" />
-        <argument
             android:name="trainingSessionPathFragmentArgument"
             android:defaultValue=""
             app:argType="string" />
         <argument
             android:name="trainingSessionNameFragmentArgument"
+            android:defaultValue=""
+            app:argType="string" />
+        <argument
+            android:name="fromDateFragmentArgument"
+            android:defaultValue=""
+            app:argType="string" />
+        <argument
+            android:name="toDateFragmentArgument"
             android:defaultValue=""
             app:argType="string" />
         <argument

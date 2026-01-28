@@ -6,10 +6,10 @@ import fi.polar.remote.representation.protobuf.ExerciseSamples
 import fi.polar.remote.representation.protobuf.ExerciseSamples2
 import fi.polar.remote.representation.protobuf.Training
 import fi.polar.remote.representation.protobuf.TrainingSession
-import java.util.Date
+import java.time.LocalDate
 
 data class PolarTrainingSessionReference(
-    val date: Date,
+    val date: LocalDate,
     val path: String,
     val trainingDataTypes: List<PolarTrainingSessionDataTypes>,
     val exercises: List<PolarExercise>,

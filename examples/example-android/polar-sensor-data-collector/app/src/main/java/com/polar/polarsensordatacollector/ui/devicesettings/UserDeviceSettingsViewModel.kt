@@ -43,7 +43,8 @@ internal class UserDeviceSettingsViewModel @Inject constructor(
         atdEnabled: Boolean,
         atdSensitivity: Int,
         atdMinDuration: Int,
-        telemetryEnabled: Boolean
+        telemetryEnabled: Boolean,
+        autosFilesEnabled: Boolean
     ) {
         viewModelScope.launch {
             try {
@@ -57,6 +58,7 @@ internal class UserDeviceSettingsViewModel @Inject constructor(
                 )
                 repository.setTelemetryEnabled(deviceId, telemetryEnabled)
                 repository.setDaylightSavingTime(deviceId)
+                repository.setAutosFilesEnabled(deviceId, autosFilesEnabled)
                 _message.value = application.getString(R.string.user_device_settings_saved)
             } catch (e: Exception) {
                 _message.value = application.getString(
@@ -78,6 +80,7 @@ internal class UserDeviceSettingsViewModel @Inject constructor(
                     atdSensitivity = settings.automaticTrainingDetectionSensitivity ?: 0,
                     atdMinDuration = settings.minimumTrainingDurationSeconds ?: 0,
                     telemetryEnabled = settings.telemetryEnabled ?: false,
+                    autosFilesEnabled = settings.autosFilesEnabled ?: false,
                     isLoading = false
                 )
             } catch (e: Exception) {
@@ -97,6 +100,7 @@ internal class UserDeviceSettingsViewModel @Inject constructor(
         val atdSensitivity: Int = 0,
         val atdMinDuration: Int = 0,
         val telemetryEnabled: Boolean = false,
+        val autosFilesEnabled: Boolean = false,
         val isLoading: Boolean = true
     )
 }

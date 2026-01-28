@@ -4,6 +4,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClien
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrameUtils
 import com.polar.androidcommunications.common.ble.TypeUtils
+import java.nio.ByteBuffer
 import kotlin.experimental.and
 
 /**
@@ -23,7 +24,7 @@ internal class PpgData {
     data class PpgDataFrameType8 internal constructor(
         val timeStamp: ULong,
         val ppgDataSamples: List<Int>,
-        val status: UInt
+        val statusBits: List<Int>
     ) : PpgDataSample()
 
     // PPG Data frame type 4
@@ -44,7 +45,7 @@ internal class PpgData {
     data class PpgDataFrameType7 internal constructor(
         val timeStamp: ULong,
         val ppgDataSamples: List<Int>,
-        val status: UInt
+        val statusBits: List<Int>
     ) : PpgDataSample()
 
     data class PpgDataFrameType9 internal constructor(
@@ -59,14 +60,14 @@ internal class PpgData {
         val greenSamples: List<Int>,
         val redSamples: List<Int>,
         val irSamples: List<Int>,
-        val status: Int
+        val statusBits: List<Int>
     ) : PpgDataSample()
 
     data class PpgDataFrameType13 internal constructor(
         val timeStamp: ULong,
         val ppgChannel0: List<Int>,
         val ppgChannel1: List<Int>,
-        val status: Int
+        val statusBits: List<Int>
     ) : PpgDataSample()
 
     data class PpgDataFrameType14 internal constructor(
@@ -345,6 +346,15 @@ internal class PpgData {
                 val status =
                     frame.dataContent.sliceArray(offset until (offset + TYPE_10_STATUS_SIZE))
                         .map { it.toUByte().toInt() }.last()
+
+                var statusBits = Integer.toBinaryString(status).map { it.digitToInt() }.toMutableList()
+                // Frame type10 status bits are expected to be 20-bit of length but may come in
+                // with less bits (e.g. 18-bit status data) as wrist units can omit MSB zero bits.
+                // We will append the missing bits here.
+                while (statusBits.size < 20) {
+                    statusBits.add(0,0)
+                }
+
                 offset += TYPE_10_STATUS_SIZE
 
                 ppgData.ppgSamples.add(
@@ -353,7 +363,7 @@ internal class PpgData {
                         redSamples = red,
                         greenSamples = grn,
                         irSamples = ir,
-                        status = status
+                        statusBits = statusBits
                     )
                 )
                 timeStampIndex++
@@ -454,11 +464,13 @@ internal class PpgData {
                     if (frame.factor != 1.0f) (it.toFloat() * frame.factor).toInt() else it
                 }
                 val status = (sample[16] and 0xFFFFFF).toUInt()
+                val statusBits = Integer.toBinaryString(status.toInt()).toList().map { it.digitToInt() }
+
                 ppgData.ppgSamples.add(
                     PpgDataFrameType7(
                         timeStamp = timeStamps[index],
                         ppgDataSamples = channels,
-                        status
+                        statusBits = statusBits
                     )
                 )
             }
@@ -486,11 +498,12 @@ internal class PpgData {
                     if (frame.factor != 1.0f) (it.toFloat() * frame.factor).toInt() else it
                 }
                 val status = (sample[24] and 0xFFFFFF).toUInt()
+                val statusBits = Integer.toBinaryString(status.toInt()).toList().map { it.digitToInt() }
                 ppgData.ppgSamples.add(
                     PpgDataFrameType8(
                         timeStamp = timeStamps[index],
                         ppgDataSamples = channels,
-                        status
+                        statusBits = statusBits
                     )
                 )
             }
@@ -527,6 +540,17 @@ internal class PpgData {
                 }
 
                 val status = sample.last()
+                val statusBits = Integer.toBinaryString(status)
+                    .toList()
+                    .map { it.digitToInt() }
+                    .toMutableList()
+
+                // Frame type10 status bits are expected to be 20-bit of length but may come in
+                // with less bits (e.g. 18-bit status data) as wrist units can omit MSB zero bits.
+                // We will append the missing bits here.
+                while (statusBits.size < 20) {
+                    statusBits.add(0,0)
+                }
 
                 ppgData.ppgSamples.add(
                     PpgDataFrameType10(
@@ -534,7 +558,7 @@ internal class PpgData {
                         greenSamples = greenSamples,
                         redSamples = redSamples,
                         irSamples = irSamples,
-                        status
+                        statusBits = statusBits
                     )
                 )
             }
@@ -566,13 +590,14 @@ internal class PpgData {
                     if (frame.factor != 1.0f) (it.toFloat() * frame.factor).toInt() else it
                 }
                 val status = (sample[2] and 0xFFFFFF).toUInt()
+                val statusBits = Integer.toBinaryString(status.toInt()).toList().map { it.digitToInt() }
 
                 ppgData.ppgSamples.add(
                     PpgDataFrameType13(
                         timeStamp = timeStamps[index],
                         ppgChannel0 = ppgChannel0Sample,
                         ppgChannel1 = ppgChannel1Sample,
-                        status = status.toInt()
+                        statusBits = statusBits
                     )
                 )
             }

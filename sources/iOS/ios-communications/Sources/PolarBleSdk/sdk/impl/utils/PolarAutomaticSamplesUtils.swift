@@ -37,23 +37,24 @@ internal class PolarAutomaticSamplesUtils {
                                 $0.command = .get
                                 $0.path = filePath
                             }
-
+                            let dateFrom = Calendar.current.dateComponents([.year, .month, .day], from: fromDate)
+                            let dateTo = Calendar.current.dateComponents([.year, .month, .day], from: toDate)
                             return client.request(try! fileOperation.serializedData())
                                 .asObservable()
                                 .map { fileResponse -> Polar247HrSamplesData? in
                                     do {
                                         let sampleSessions = try Data_PbAutomaticSampleSessions(serializedData: Data(fileResponse))
                                         let sampleDateProto = sampleSessions.day
-                                        let sampleDate = Calendar.current.date(from: DateComponents(
+                                        let sampleDate = DateComponents(
                                             year: Int(sampleDateProto.year),
                                             month: Int(sampleDateProto.month),
                                             day: Int(sampleDateProto.day)
-                                        )) ?? Date.distantPast
+                                        )
 
-                                        guard sampleDate >= fromDate && sampleDate <= toDate else { return nil }
+                                        guard sampleDate >= dateFrom && sampleDate <= dateTo else { return nil }
 
                                         let samples = try Polar247HrSamplesData.fromPbHrDataSamples(samples: sampleSessions.samples)
-                                        return Polar247HrSamplesData(date: Calendar.current.dateComponents([.year, .month, .day], from: sampleDate), samples: samples)
+                                        return Polar247HrSamplesData(date: Calendar.current.dateComponents([.year, .month, .day], from: Calendar.current.date(from: sampleDate)!), samples: samples)
                                     } catch {
                                         BleLogger.error(TAG, "Failed to parse HR in \(fileName): \(error)")
                                         return nil
@@ -79,6 +80,9 @@ internal class PolarAutomaticSamplesUtils {
             $0.path = autoSamplesPath
         }
 
+        let dateFrom = Calendar.current.dateComponents([.year, .month, .day], from: fromDate)
+        let dateTo = Calendar.current.dateComponents([.year, .month, .day], from: toDate)
+
         return client.request(try! operation.serializedData())
             .flatMap { response -> Single<[Polar247PPiSamplesData]> in
                 do {
@@ -103,16 +107,16 @@ internal class PolarAutomaticSamplesUtils {
                                     do {
                                         let sampleSessions = try Data_PbAutomaticSampleSessions(serializedData: Data(fileResponse))
                                         let sampleDateProto = sampleSessions.day
-                                        let sampleDate = Calendar.current.date(from: DateComponents(
+                                        let sampleDate = DateComponents(
                                             year: Int(sampleDateProto.year),
                                             month: Int(sampleDateProto.month),
                                             day: Int(sampleDateProto.day)
-                                        )) ?? Date.distantPast
+                                        )
 
-                                        guard sampleDate >= fromDate && sampleDate <= toDate else { return nil }
+                                        guard sampleDate >= dateFrom && sampleDate <= dateTo else { return nil }
 
                                         let samples = sampleSessions.ppiSamples.map { Polar247PPiSamplesData.fromPbPPiDataSamples(ppiData: $0) }
-                                        return Polar247PPiSamplesData(date: Calendar.current.dateComponents([.year, .month, .day], from: sampleDate), samples: samples)
+                                        return Polar247PPiSamplesData(date: Calendar.current.dateComponents([.year, .month, .day], from: Calendar.current.date(from: sampleDate)!), samples: samples)
                                     } catch {
                                         BleLogger.error(TAG, "Failed to parse PPI in \(fileName): \(error)")
                                         return nil

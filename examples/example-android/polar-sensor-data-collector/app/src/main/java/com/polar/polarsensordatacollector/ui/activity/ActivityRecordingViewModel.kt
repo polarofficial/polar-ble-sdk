@@ -7,9 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.polar.polarsensordatacollector.repository.PolarDeviceRepository
-import com.polar.polarsensordatacollector.repository.ResultOfRequest
 import com.polar.polarsensordatacollector.ui.landing.ONLINE_OFFLINE_KEY_DEVICE_ID
 import com.polar.polarsensordatacollector.ui.utils.MessageUiState
 import com.polar.sdk.api.PolarBleApi
@@ -17,19 +15,13 @@ import com.polar.sdk.api.model.PolarSkinTemperatureData
 import com.polar.sdk.api.model.activity.PolarStepsData
 import com.polar.sdk.api.model.activity.PolarCaloriesData
 import com.polar.sdk.api.model.sleep.PolarSleepData
-import com.polar.sdk.impl.utils.CaloriesType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.disposables.CompositeDisposable
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
-import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel

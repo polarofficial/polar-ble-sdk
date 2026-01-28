@@ -162,6 +162,27 @@
                         android:textAppearance="?attr/textAppearanceSubtitle1" />
                 </LinearLayout>
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginStart="10dp">
+
+                    <TextView
+                        android:id="@+id/autos_label"
+                        android:layout_width="250dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/autos_file_generation"
+                        android:textAppearance="@android:style/TextAppearance.Material.Caption" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/autos_enable_switch"
+                        style="@style/Widget.App.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceSubtitle1" />
+                </LinearLayout>
+
                 <Button
                     android:id="@+id/submit_device_settings_button"
                     android:layout_width="match_parent"

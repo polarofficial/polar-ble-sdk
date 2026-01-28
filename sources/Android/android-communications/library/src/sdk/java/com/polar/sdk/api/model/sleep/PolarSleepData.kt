@@ -1,6 +1,7 @@
 package com.polar.sdk.api.model.sleep
 
 import com.polar.sdk.impl.utils.PolarTimeUtils
+import com.polar.services.datamodels.protobuf.SleepSkinTemperatureResult.PbSleepSkinTemperatureResult
 import fi.polar.remote.representation.protobuf.SleepanalysisResult.PbSleepCycle
 import fi.polar.remote.representation.protobuf.SleepanalysisResult.PbSleepWakePhase
 import fi.polar.remote.representation.protobuf.Types
@@ -57,7 +58,19 @@ data class PolarSleepAnalysisResult(
     val batteryRanOut: Boolean?,
     val sleepCycles: List<SleepCycle>?,
     val sleepResultDate: LocalDate?,
-    val originalSleepRange: OriginalSleepRange?
+    val originalSleepRange: OriginalSleepRange?,
+    var sleepSkinTemperatureResult: SleepSkinTemperatureResult?
+)
+
+/*
+ *  sleepResultDate (year, month, day) of the sleep skin temperature data
+ *  sleepTimeSkinTemperatureCelsius: unit=celsius
+ *  deviationFromBaseLine: Deviation to users sleep body temperature history. Unit=celsius. Value is -1000.0 when not calculated.
+ */
+data class SleepSkinTemperatureResult (
+    val sleepResultDate: LocalDate?,
+    val sleepSkinTemperatureCelsius: Float,
+    val deviationFromBaseLine: Float
 )
 
 fun fromPbSleepwakePhasesListProto(pbSleepwakePhasesList: List<PbSleepWakePhase>): List<SleepWakePhase> {
@@ -85,6 +98,14 @@ fun fromPbOriginalSleepRange(pbOriginalSleepRange: Types.PbLocalDateTimeRange): 
     return OriginalSleepRange(
         PolarTimeUtils.pbLocalDateTimeToLocalDateTime(pbOriginalSleepRange.startTime),
         PolarTimeUtils.pbLocalDateTimeToLocalDateTime(pbOriginalSleepRange.endTime)
+    )
+}
+
+fun fromPbSleepSkinTemperatureResult(pbSleepSkinTemperatureResult: PbSleepSkinTemperatureResult): SleepSkinTemperatureResult {
+    return SleepSkinTemperatureResult(
+        PolarTimeUtils.pbDateToLocalDate(pbSleepSkinTemperatureResult.sleepDate),
+        pbSleepSkinTemperatureResult.sleepSkinTemperatureCelsius,
+        pbSleepSkinTemperatureResult.deviationFromBaselineCelsius
     )
 }
 

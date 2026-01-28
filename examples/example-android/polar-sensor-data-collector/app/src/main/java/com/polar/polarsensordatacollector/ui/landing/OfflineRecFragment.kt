@@ -175,14 +175,14 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
     private fun setupViews(view: View) {
         hrStatusAndSettings = view.findViewById(R.id.hr_status_and_settings)
         // HR do not have settings
-        hrStatusAndSettings.findViewById<Button>(R.id.recording_controls_settings_button)?.visibility = GONE
+        hrStatusAndSettings.findViewById<Button>(R.id.offline_recording_controls_settings_button)?.visibility = GONE
 
         accStatusAndSettings = view.findViewById(R.id.acc_status_and_settings)
         ecgStatusAndSettings = view.findViewById(R.id.ecg_status_and_settings)
         ppgStatusAndSettings = view.findViewById(R.id.ppg_status_and_settings)
         ppiStatusAndSettings = view.findViewById(R.id.ppi_status_and_settings)
         // PPI do not have settings
-        ppiStatusAndSettings.findViewById<Button>(R.id.recording_controls_settings_button)?.visibility = GONE
+        ppiStatusAndSettings.findViewById<Button>(R.id.offline_recording_controls_settings_button)?.visibility = GONE
 
         magStatusAndSettings = view.findViewById(R.id.mag_status_and_settings)
         gyrStatusAndSettings = view.findViewById(R.id.gyr_status_and_settings)
@@ -275,12 +275,12 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
 
     private fun getOfflineRecCheckBox(feature: PolarDeviceDataType): CheckBox {
         val recordingSettingsView = getRecStatusAndSettingsView(feature)
-        return recordingSettingsView.findViewById(R.id.recording_controls_select_check_box)
+        return recordingSettingsView.findViewById(R.id.offline_recording_controls_select_check_box)
     }
 
     private fun getOfflineRecStartStopButton(feature: PolarDeviceDataType): Button {
         val recordingSettingsView = getRecStatusAndSettingsView(feature)
-        return recordingSettingsView.findViewById(R.id.recording_controls_start_stop_button)
+        return recordingSettingsView.findViewById(R.id.offline_recording_controls_start_stop_button)
     }
 
     private fun getOfflineRecSettingsButtonView(feature: PolarDeviceDataType): Button? {
@@ -288,7 +288,7 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
         return when (feature) {
             PolarDeviceDataType.HR,
             PolarDeviceDataType.PPI -> null
-            else -> recordingSettingsView.findViewById(R.id.recording_controls_settings_button)
+            else -> recordingSettingsView.findViewById(R.id.offline_recording_controls_settings_button)
         }
     }
 
@@ -311,7 +311,7 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
     private fun setOfflineRecStatusAndSettingsView(feature: PolarDeviceDataType, enable: Boolean) {
         val view = getRecStatusAndSettingsView(feature)
         if (enable) {
-            val header: TextView = view.findViewById(R.id.recording_controls_header)
+            val header: TextView = view.findViewById(R.id.offline_recording_controls_header)
             header.text = getRecStatusHeaderText(feature)
             view.visibility = VISIBLE
         } else {

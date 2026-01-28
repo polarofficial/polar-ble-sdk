@@ -1,5 +1,7 @@
 package com.polar.sdk.impl.utils
 
+import com.polar.services.datamodels.protobuf.SleepSkinTemperatureResult.PbSleepSkinTemperatureResult
+import com.polar.services.datamodels.protobuf.Types.PbDateProto3
 import fi.polar.remote.representation.protobuf.Types.PbDate
 import fi.polar.remote.representation.protobuf.Types.PbDuration
 import fi.polar.remote.representation.protobuf.Types.PbLocalDateTime
@@ -10,7 +12,6 @@ import java.time.LocalDateTime
 import protocol.PftpRequest
 import java.time.Instant
 import java.time.LocalTime
-import java.util.*
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.ZoneId
@@ -41,6 +42,27 @@ internal object PolarTimeUtils {
             calendar[Calendar.ZONE_OFFSET].toLong()
                     + calendar[Calendar.DST_OFFSET].toLong(), TimeUnit.MILLISECONDS
         ).toInt()
+
+        return builder.build()
+    }
+
+    fun javaLocalDateTimeToPbPftpSetLocalTime(localDateTime: LocalDateTime): PftpRequest.PbPFtpSetLocalTimeParams {
+        val builder = PftpRequest.PbPFtpSetLocalTimeParams.newBuilder()
+        val date = PbDate.newBuilder()
+        val time = PbTime.newBuilder()
+        date.day = localDateTime.dayOfMonth
+        date.month = localDateTime.monthValue
+        date.year = localDateTime.year
+
+        time.hour = localDateTime.hour
+        time.minute = localDateTime.minute
+        time.seconds = localDateTime.second
+        time.millis = (localDateTime.nano / 1_000_000) % 1000
+
+        builder
+            .setDate(date)
+            .setTime(time)
+            .tzOffset = localDateTime.atZone(ZoneId.systemDefault()).offset.totalSeconds / 60
 
         return builder.build()
     }
@@ -108,6 +130,20 @@ internal object PolarTimeUtils {
         }
     }
 
+    fun pbLocalTimeToJavaLocalDateTime(pbLocalTime: PftpRequest.PbPFtpSetLocalTimeParams): LocalDateTime {
+        val zoneId = ZoneOffset.ofTotalSeconds(pbLocalTime.tzOffset * 60)
+        return ZonedDateTime.of(
+            pbLocalTime.date.year,
+            pbLocalTime.date.month,
+            pbLocalTime.date.day,
+            pbLocalTime.time.hour,
+            pbLocalTime.time.minute,
+            pbLocalTime.time.seconds,
+            pbLocalTime.time.millis * 1000000,
+            zoneId
+        ).toLocalDateTime()
+    }
+
     fun pbLocalDateTimeToZonedDateTime(pbDateTime: PbLocalDateTime): ZonedDateTime {
         val zoneId = ZoneOffset.ofTotalSeconds(pbDateTime.timeZoneOffset * 60)
         return ZonedDateTime.of(
@@ -121,6 +157,7 @@ internal object PolarTimeUtils {
             zoneId
         )
     }
+
     fun pbLocalDateTimeToLocalDateTime(pbDateTime: PbLocalDateTime): LocalDateTime {
         
         return LocalDateTime.of(
@@ -170,12 +207,21 @@ internal object PolarTimeUtils {
         return LocalTime.of(
             pbTime.hour,
             pbTime.minute,
-            pbTime.seconds
+            pbTime.seconds,
+            pbTime.millis * 1000000
         )
     }
 
     // Returns duration in milliseconds
     fun pbDurationToInt(pbDuration: PbDuration): Int {
         return (pbDuration.hours*3.6E6+pbDuration.minutes*6E4+pbDuration.seconds*1E3+pbDuration.millis).toInt()
+    }
+
+    fun pbDateToLocalDate(pbDate: PbDateProto3): LocalDate {
+        return LocalDate.of(
+            pbDate.year,
+            pbDate.month,
+            pbDate.day,
+        )
     }
 }

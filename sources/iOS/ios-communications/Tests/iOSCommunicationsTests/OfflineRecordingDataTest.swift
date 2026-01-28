@@ -102,12 +102,13 @@ final class OfflineRecordingDataTest: XCTestCase {
         
         // Assert
         XCTAssertTrue(offlinePpgData.data is PpgData)
-        let sample0 = (offlinePpgData.data as! PpgData).samples
+        let ppgData = offlinePpgData.data as! PpgData
+        let sample = ppgData.samples[0] as! PpgData.PpgDataFrameType0
         
-        XCTAssertEqual(PpgOfflineMockData.sample0Channel0, sample0[0].ppgDataSamples[0])
-        XCTAssertEqual(PpgOfflineMockData.sample0Channel1, sample0[0].ppgDataSamples[1])
-        XCTAssertEqual(PpgOfflineMockData.sample0Channel2, sample0[0].ppgDataSamples[2])
-        XCTAssertEqual(PpgOfflineMockData.sample0Ambient, sample0[0].ambientSample)
+        XCTAssertEqual(PpgOfflineMockData.sample0Channel0, sample.ppgDataSamples[0])
+        XCTAssertEqual(PpgOfflineMockData.sample0Channel1, sample.ppgDataSamples[1])
+        XCTAssertEqual(PpgOfflineMockData.sample0Channel2, sample.ppgDataSamples[2])
+        XCTAssertEqual(PpgOfflineMockData.sample0Ambient, sample.ambientSample)
     }
     
     func testParsePpiFromOfflineRecordingData() throws {

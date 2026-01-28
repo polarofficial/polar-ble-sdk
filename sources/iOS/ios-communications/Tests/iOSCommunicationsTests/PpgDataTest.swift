@@ -47,20 +47,22 @@ final class PpgDataTest: XCTestCase {
 
         // Act
         let result = try PpgData.parseDataFromDataFrame(frame: dataFrame)
+        let sample0 = result.samples[0] as! PpgData.PpgDataFrameType0
+        let sample1 = result.samples[1] as! PpgData.PpgDataFrameType0
         
         // Assert
         XCTAssertEqual(2, result.samples.count)
-        XCTAssertEqual(3, result.samples[0].ppgDataSamples.count)
-        XCTAssertEqual(ppg0Sample0, result.samples[0].ppgDataSamples[0])
-        XCTAssertEqual(ppg1Sample0, result.samples[0].ppgDataSamples[1])
-        XCTAssertEqual(ppg2Sample0, result.samples[0].ppgDataSamples[2])
-        XCTAssertEqual(ambientSample0, result.samples[0].ambientSample)
+        XCTAssertEqual(3, sample0.ppgDataSamples.count)
+        XCTAssertEqual(ppg0Sample0, sample0.ppgDataSamples[0])
+        XCTAssertEqual(ppg1Sample0, sample0.ppgDataSamples[1])
+        XCTAssertEqual(ppg2Sample0, sample0.ppgDataSamples[2])
+        XCTAssertEqual(ambientSample0, sample0.ambientSample)
         
-        XCTAssertEqual(3, result.samples[1].ppgDataSamples.count)
-        XCTAssertEqual(ppg0Sample1, result.samples[1].ppgDataSamples[0])
-        XCTAssertEqual(ppg1Sample1, result.samples[1].ppgDataSamples[1])
-        XCTAssertEqual(ppg2Sample1, result.samples[1].ppgDataSamples[2])
-        XCTAssertEqual(ambientSample1, result.samples[1].ambientSample)
+        XCTAssertEqual(3, sample1.ppgDataSamples.count)
+        XCTAssertEqual(ppg0Sample1, sample1.ppgDataSamples[0])
+        XCTAssertEqual(ppg1Sample1, sample1.ppgDataSamples[1])
+        XCTAssertEqual(ppg2Sample1, sample1.ppgDataSamples[2])
+        XCTAssertEqual(ambientSample1, sample1.ambientSample)
         
         XCTAssertEqual(timeStamp, result.timeStamp)
         XCTAssertEqual(timeStamp, result.samples.last?.timeStamp)
@@ -123,25 +125,30 @@ final class PpgDataTest: XCTestCase {
 
         // Act
         let result = try PpgData.parseDataFromDataFrame(frame: dataFrame)
+        let sample0 = result.samples[0] as! PpgData.PpgDataFrameType4
+        let sample1 = result.samples[1] as! PpgData.PpgDataFrameType4
+        let sample2 = result.samples[2] as! PpgData.PpgDataFrameType4
 
         // Assert
         XCTAssertEqual(3, result.samples.count)
         
-        XCTAssertEqual(expectedNumIntTs1, result.samples[0].ppgDataSamples[0])
-        XCTAssertEqual(expectedNumIntTs2, result.samples[0].ppgDataSamples[1])
-        XCTAssertEqual(expectedNumIntTs12, result.samples[0].ppgDataSamples[2])
+        XCTAssertEqual(expectedNumIntTs1, sample0.ppgDataSamples[0])
+        XCTAssertEqual(expectedNumIntTs2, sample0.ppgDataSamples[1])
+        XCTAssertEqual(expectedNumIntTs12, sample0.ppgDataSamples[2])
 
-        XCTAssertEqual(12, result.samples[1].ppgDataSamples.count)
-        XCTAssertEqual(expectedChannel1GainTs1, result.samples[1].ppgDataSamples[0])
-        XCTAssertEqual(expectedChannel1GainTs2, result.samples[1].ppgDataSamples[1])
-        XCTAssertEqual(expectedChannel1GainTs11, result.samples[1].ppgDataSamples[10])
-        XCTAssertEqual(expectedChannel1GainTs12, result.samples[1].ppgDataSamples[11])
+        XCTAssertEqual(12, sample1.ppgDataSamples.count)
+        XCTAssertEqual(expectedChannel1GainTs1, sample1.ppgDataSamples[0])
+        XCTAssertEqual(expectedChannel1GainTs2, sample1.ppgDataSamples[1])
+        XCTAssertEqual(expectedChannel1GainTs11, sample1.ppgDataSamples[10])
+        XCTAssertEqual(expectedChannel1GainTs12, sample1.ppgDataSamples[11])
 
-        XCTAssertEqual(12, result.samples[2].ppgDataSamples.count)
-        XCTAssertEqual(expectedChannel2GainTs1, result.samples[2].ppgDataSamples[0])
-        XCTAssertEqual(expectedChannel2GainTs2, result.samples[2].ppgDataSamples[1])
-        XCTAssertEqual(expectedChannel2GainTs11, result.samples[2].ppgDataSamples[10])
-        XCTAssertEqual(expectedChannel2GainTs12, result.samples[2].ppgDataSamples[11])
+        XCTAssertEqual(12, sample2.ppgDataSamples.count)
+        XCTAssertEqual(expectedChannel2GainTs1, sample2.ppgDataSamples[0])
+        XCTAssertEqual(expectedChannel2GainTs2, sample2.ppgDataSamples[1])
+        XCTAssertEqual(expectedChannel2GainTs11, sample2.ppgDataSamples[10])
+        XCTAssertEqual(expectedChannel2GainTs12, sample2.ppgDataSamples[11])
+        
+        XCTAssertEqual(timeStamp, result.timeStamp)
         
         XCTAssertEqual(timeStamp, result.timeStamp)
     }
@@ -201,11 +208,13 @@ final class PpgDataTest: XCTestCase {
 
         // Act
         let ppgData = try PpgData.parseDataFromDataFrame(frame: dataFrame)
+        let result = try PpgData.parseDataFromDataFrame(frame: dataFrame)
+        let sample = result.samples[0] as! PpgData.PpgDataFrameType5
 
         // Assert
         XCTAssertEqual(1, ppgData.samples.count)
-        XCTAssertEqual(expectedOperationMode, ppgData.samples[0].operationMode)
-        XCTAssertEqual(timeStamp, ppgData.samples.last?.timeStamp)
+        XCTAssertEqual(expectedOperationMode, sample.operationMode)
+        XCTAssertEqual(timeStamp, sample.timeStamp)
     }
     
     func testCompressedPpgFrameType5Throws() throws {
@@ -261,12 +270,12 @@ final class PpgDataTest: XCTestCase {
         
         // Act
         let result = try PpgData.parseDataFromDataFrame(frame: dataFrame)
+        let sample = result.samples[0] as! PpgData.PpgDataFrameType6
         
         // Assert
         XCTAssertEqual(1, result.samples.count)
-        XCTAssertEqual(1, result.samples[0].ppgDataSamples.count)
-        XCTAssertEqual(expectedSportId, result.samples[0].ppgDataSamples[0])
-        XCTAssertEqual(timeStamp, result.timeStamp)
+        XCTAssertEqual(expectedSportId, sample.sportId)
+        XCTAssertEqual(timeStamp, sample.timeStamp)
     }
     
     func testCompressedPpgFrameType6ThrowsException() throws {
@@ -378,21 +387,25 @@ final class PpgDataTest: XCTestCase {
             { _ in 13 })
 
         // Act
-        let ppgData = try PpgData.parseDataFromDataFrame(frame: dataFrame)
+        let result = try PpgData.parseDataFromDataFrame(frame: dataFrame)
+        let sample0 = result.samples[0] as! PpgData.PpgDataFrameType8
+        let sample1 = result.samples[1] as! PpgData.PpgDataFrameType8
+        var expectedtatusBits = [Int8]()
+        let _ = String(Int32(sample0ChannelStatus & 0xFFFFFF), radix: 2).map(String.init).forEach { expectedtatusBits.append(Int8($0)!) }
 
         // Assert
-        XCTAssertEqual(amountOfSamples, ppgData.samples.count)
-        XCTAssertEqual(24, ppgData.samples[0].ppgDataSamples.count)
-        XCTAssertEqual(sample0Channel0, ppgData.samples[0].ppgDataSamples[0])
-        XCTAssertEqual(sample0Channel1, ppgData.samples[0].ppgDataSamples[1])
-        XCTAssertEqual(sample0Channel2, ppgData.samples[0].ppgDataSamples[2])
-        XCTAssertEqual(sample0Channel23, ppgData.samples[0].ppgDataSamples[23])
-        XCTAssertEqual(sample0ChannelStatus, ppgData.samples[0].status)
-        XCTAssertEqual(sample1Channel0, ppgData.samples[1].ppgDataSamples[0])
-        XCTAssertEqual(sample1Channel1, ppgData.samples[1].ppgDataSamples[1])
+        XCTAssertEqual(amountOfSamples, result.samples.count)
+        XCTAssertEqual(24, sample0.ppgDataSamples.count)
+        XCTAssertEqual(sample0Channel0, sample0.ppgDataSamples[0])
+        XCTAssertEqual(sample0Channel1, sample0.ppgDataSamples[1])
+        XCTAssertEqual(sample0Channel2, sample0.ppgDataSamples[2])
+        XCTAssertEqual(sample0Channel23, sample0.ppgDataSamples[23])
+        XCTAssertEqual(expectedtatusBits, sample0.statusBits)
+        XCTAssertEqual(sample1Channel0, sample1.ppgDataSamples[0])
+        XCTAssertEqual(sample1Channel1, sample1.ppgDataSamples[1])
         
-        XCTAssertEqual(timeStamp, ppgData.timeStamp)
-        XCTAssertEqual(timeStamp, ppgData.samples.last?.timeStamp)
+        XCTAssertEqual(timeStamp, result.timeStamp)
+        XCTAssertEqual(timeStamp, result.samples.last?.timeStamp)
     }
     
     func testUncompressedPpgFrameType8ThrowsException() throws {
@@ -476,25 +489,28 @@ final class PpgDataTest: XCTestCase {
 
         // Act
         let result = try PpgData.parseDataFromDataFrame(frame: dataFrame)
+        let sample0 = result.samples[0] as! PpgData.PpgDataFrameType9
+        let sample1 = result.samples[1] as! PpgData.PpgDataFrameType9
+        let sample2 = result.samples[2] as! PpgData.PpgDataFrameType9
 
         // Assert
         XCTAssertEqual(3, result.samples.count)
         
-        XCTAssertEqual(expectedNumIntTs1, result.samples[0].ppgDataSamples[0])
-        XCTAssertEqual(expectedNumIntTs2, result.samples[0].ppgDataSamples[1])
-        XCTAssertEqual(expectedNumIntTs12, result.samples[0].ppgDataSamples[2])
+        XCTAssertEqual(expectedNumIntTs1, sample0.ppgDataSamples[0])
+        XCTAssertEqual(expectedNumIntTs2, sample0.ppgDataSamples[1])
+        XCTAssertEqual(expectedNumIntTs12, sample0.ppgDataSamples[2])
 
-        XCTAssertEqual(12, result.samples[1].ppgDataSamples.count)
-        XCTAssertEqual(expectedChannel1GainTs1, result.samples[1].ppgDataSamples[0])
-        XCTAssertEqual(expectedChannel1GainTs2, result.samples[1].ppgDataSamples[1])
-        XCTAssertEqual(expectedChannel1GainTs11, result.samples[1].ppgDataSamples[10])
-        XCTAssertEqual(expectedChannel1GainTs12, result.samples[1].ppgDataSamples[11])
+        XCTAssertEqual(12, sample1.ppgDataSamples.count)
+        XCTAssertEqual(expectedChannel1GainTs1, sample1.ppgDataSamples[0])
+        XCTAssertEqual(expectedChannel1GainTs2, sample1.ppgDataSamples[1])
+        XCTAssertEqual(expectedChannel1GainTs11, sample1.ppgDataSamples[10])
+        XCTAssertEqual(expectedChannel1GainTs12, sample1.ppgDataSamples[11])
 
-        XCTAssertEqual(12, result.samples[2].ppgDataSamples.count)
-        XCTAssertEqual(expectedChannel2GainTs1, result.samples[2].ppgDataSamples[0])
-        XCTAssertEqual(expectedChannel2GainTs2, result.samples[2].ppgDataSamples[1])
-        XCTAssertEqual(expectedChannel2GainTs11, result.samples[2].ppgDataSamples[10])
-        XCTAssertEqual(expectedChannel2GainTs12, result.samples[2].ppgDataSamples[11])
+        XCTAssertEqual(12, sample2.ppgDataSamples.count)
+        XCTAssertEqual(expectedChannel2GainTs1, sample2.ppgDataSamples[0])
+        XCTAssertEqual(expectedChannel2GainTs2, sample2.ppgDataSamples[1])
+        XCTAssertEqual(expectedChannel2GainTs11, sample2.ppgDataSamples[10])
+        XCTAssertEqual(expectedChannel2GainTs12, sample2.ppgDataSamples[11])
         
         XCTAssertEqual(timeStamp, result.timeStamp)
     }
@@ -604,20 +620,22 @@ final class PpgDataTest: XCTestCase {
         
         // Act
         let result = try PpgData.parseDataFromDataFrame(frame: dataFrame)
+        let sample0 = result.samples[0] as! PpgData.PpgDataFrameType0
+        let sample1 = result.samples[1] as! PpgData.PpgDataFrameType0
         
         // Assert
         XCTAssertEqual(amountOfSamples, result.samples.count)
-        XCTAssertEqual(3, result.samples[0] .ppgDataSamples.count)
-        XCTAssertEqual(refSample0Channel0, result.samples[0] .ppgDataSamples[0])
-        XCTAssertEqual(refSample0Channel1, result.samples[0].ppgDataSamples[1])
-        XCTAssertEqual(refSample0Channel2, result.samples[0].ppgDataSamples[2])
-        XCTAssertEqual(refSample0Channel3, result.samples[0].ambientSample)
+        XCTAssertEqual(3, sample0.ppgDataSamples.count)
+        XCTAssertEqual(refSample0Channel0, sample0 .ppgDataSamples[0])
+        XCTAssertEqual(refSample0Channel1, sample0.ppgDataSamples[1])
+        XCTAssertEqual(refSample0Channel2, sample0.ppgDataSamples[2])
+        XCTAssertEqual(refSample0Channel3, sample0.ambientSample)
         
-        XCTAssertEqual(3, result.samples[1].ppgDataSamples.count)
-        XCTAssertEqual(refSample0Channel0 + refSample1Channel0, result.samples[1].ppgDataSamples[0])
-        XCTAssertEqual(refSample0Channel1 + refSample1Channel1, result.samples[1].ppgDataSamples[1])
-        XCTAssertEqual(refSample0Channel2 + refSample1Channel2, result.samples[1].ppgDataSamples[2])
-        XCTAssertEqual(refSample0Channel3 + refSample1Channel3, result.samples[1].ambientSample)
+        XCTAssertEqual(3, sample1.ppgDataSamples.count)
+        XCTAssertEqual(refSample0Channel0 + refSample1Channel0, sample1.ppgDataSamples[0])
+        XCTAssertEqual(refSample0Channel1 + refSample1Channel1, sample1.ppgDataSamples[1])
+        XCTAssertEqual(refSample0Channel2 + refSample1Channel2, sample1.ppgDataSamples[2])
+        XCTAssertEqual(refSample0Channel3 + refSample1Channel3, sample1.ambientSample)
         
         XCTAssertEqual(timeStamp, result.timeStamp)
         XCTAssertEqual(timeStamp, result.samples.last?.timeStamp)
@@ -723,27 +741,32 @@ final class PpgDataTest: XCTestCase {
         
         // Act
         let result = try PpgData.parseDataFromDataFrame(frame: dataFrame)
+        let sample = result.samples[0] as! PpgData.PpgDataFrameType10
+        var expectedtatusBits = [Int8]()
+        let _ = String(Int32(expectedStatus & 0xFFFFFF), radix: 2).map(String.init).forEach { expectedtatusBits.append(Int8($0)!) }
+        var statusString = ""
+        let _ = sample.statusBits?.makeIterator().map { statusString += String($0) }
         
         // Assert
         XCTAssertNotNil(result)
-        XCTAssertEqual(expectedStatus, result.samples.first?.status)
+        XCTAssertEqual(expectedStatus, Int32(statusString, radix: 2))
         XCTAssertEqual(7, result.samples.count)
-        XCTAssertEqual(expectedTimeStamp, result.samples[0].timeStamp)
+        XCTAssertEqual(expectedTimeStamp, sample.timeStamp)
 
         var index = 0;
-        for sample in result.samples[0].ppgDataSamples[0..<8] {
+        for sample in sample.greenSamples[0..<8] {
            let expected = expectedGreenSamples[index]
            XCTAssertEqual(expected, sample)
            index+=1
         }
         index = 0
-        for sample in result.samples[0].ppgDataSamples[8..<14] {
+        for sample in sample.redSamples[0..<6] {
            let expected = expectedRedSamples[index]
            XCTAssertEqual(expected, sample)
            index+=1
         }
         index = 0
-        for sample in result.samples[0].ppgDataSamples[14..<20] {
+        for sample in sample.irSamples[0..<6] {
            let expected = expectedIrSamples[index]
            XCTAssertEqual(expected, sample)
            index+=1
@@ -823,18 +846,20 @@ final class PpgDataTest: XCTestCase {
             { _,_ in previousTimeStamp },
             { _ in 1.0 },
             { _ in 13 })
-        
+
         // Act
         let result = try PpgData.parseDataFromDataFrame(frame: dataFrame)
-        
+        let sample = result.samples[0] as! PpgData.PpgDataFrameType13
+        var expectedtatusBits = [Int8]()
+        let _ = String(Int32(expectedStatus & 0xFFFFFF), radix: 2).map(String.init).forEach { expectedtatusBits.append(Int8($0)!) }
+
         // Assert
         XCTAssertNotNil(result)
-        XCTAssertEqual(expectedStatus, result.samples.first?.status)
+        XCTAssertEqual(expectedtatusBits, sample.statusBits)
         XCTAssertEqual(84, result.samples.count)
-        XCTAssertEqual(expectedTimeStamp, result.samples[0].timeStamp)
-        XCTAssertEqual(expectedPPGChannel0, result.samples[0].ppgDataSamples[0])
-        XCTAssertEqual(expectedPPGChannel1, result.samples[0].ppgDataSamples[1])
-        XCTAssertEqual(expectedStatus, result.samples[0].status)
+        XCTAssertEqual(expectedTimeStamp, sample.timeStamp)
+        XCTAssertEqual(expectedPPGChannel0, sample.ppgDataSamples[0])
+        XCTAssertEqual(expectedPPGChannel1, sample.ppgDataSamples[1])
    }
 
    func testUnCompressedPpgFrameType13ThrowsException() throws {
@@ -896,13 +921,14 @@ final class PpgDataTest: XCTestCase {
 
         // Act
         let result = try PpgData.parseDataFromDataFrame(frame: dataFrame)
+        let sample = result.samples[0] as! PpgData.PpgDataFrameType14
 
         // Assert
         XCTAssertEqual(1, result.samples.count)
-        XCTAssertEqual(3, result.samples[0].ppgDataSamples.count)
-        XCTAssertEqual(expectedNumIntTs1, result.samples[0].ppgDataSamples[0])
-        XCTAssertEqual(expectedChannel1GainTs1, result.samples[0].ppgDataSamples[1])
-        XCTAssertEqual(expectedChannel2GainTs1, result.samples[0].ppgDataSamples[2])
+        XCTAssertEqual(3, sample.ppgDataSamples.count)
+        XCTAssertEqual(expectedNumIntTs1, sample.ppgDataSamples[0])
+        XCTAssertEqual(expectedChannel1GainTs1, sample.ppgDataSamples[1])
+        XCTAssertEqual(expectedChannel2GainTs1, sample.ppgDataSamples[2])
         
         XCTAssertEqual(timeStamp, result.timeStamp)
     }

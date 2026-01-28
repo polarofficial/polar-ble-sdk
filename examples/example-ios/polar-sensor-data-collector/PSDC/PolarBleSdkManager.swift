@@ -579,6 +579,13 @@ extension PolarBleSdkManager {
             dataType == feature
         }
         onlineStreamingDisposables[feature]??.dispose()
+        
+        if feature == .hr {
+            HrDataHolder.shared.clear()
+        }
+        if feature == .acc {
+            AccDataHolder.shared.clear()
+        }
     }
     
     func listOfflineRecordings() async {
@@ -896,10 +903,11 @@ extension PolarBleSdkManager {
                         self.closeOnlineStreamLogFile(fileHandle)
                     }
                     Task { @MainActor in
-                        self.onlineStreamingFeature.isStreaming[.acc] = OnlineStreamingState.success(url: logFile?.url)
+                        self.onlineStreamingFeature.isStreaming[.acc] =
+                            OnlineStreamingState.success(url: logFile?.url)
                     }
                 })
-                .subscribe{ e in
+                .subscribe { e in
                     switch e {
                     case .next(let data):
                         if let fileHandle = logFile?.fileHandle {
@@ -909,10 +917,18 @@ extension PolarBleSdkManager {
                             NSLog("ACC    x: \(item.x) y: \(item.y) z: \(item.z) timeStamp: \(item.timeStamp)")
                         }
                         Task { @MainActor in
+                            for sample in data {
                             self.accRecordingData.x = data.last!.x
                             self.accRecordingData.y = data.last!.y
                             self.accRecordingData.z = data.last!.z
                             self.accRecordingData.timestamp = data.last!.timeStamp
+
+                                AccDataHolder.shared.updateAcc(
+                                    x: sample.x,
+                                    y: sample.y,
+                                    z: sample.z
+                                )
+                            }
                         }
                     case .error(let err):
                         NSLog("ACC stream failed: \(err)")
@@ -1124,12 +1140,12 @@ extension PolarBleSdkManager {
                             }
                             
                             for item in data.samples {
-                                NSLog("PPG  ppg0: \(item.channelSamples[0]) ppg1: \(item.channelSamples[1]) status: \(item.channelSamples[2]) timeStamp: \(item.timeStamp)")
+                                NSLog("PPG  ppg0: \(item.channelSamples[0]) ppg1: \(item.channelSamples[1]) status: \(String(describing: item.statusBits)) timeStamp: \(item.timeStamp)")
                             }
                             Task { @MainActor in
                                 self.ppgRecordingData.ppg0 = data.samples[0].channelSamples[0]
                                 self.ppgRecordingData.ppg1 = data.samples[0].channelSamples[1]
-                                self.ppgRecordingData.status = data.samples[0].channelSamples[2]
+                                self.ppgRecordingData.status = data.samples[0].statusBits
                             }
                         }
                     case .error(let err):
@@ -1225,6 +1241,8 @@ extension PolarBleSdkManager {
                             self.hrRecordingData.rrAvailable = data[0].rrAvailable
                             self.hrRecordingData.contactStatus = data[0].contactStatus
                             self.hrRecordingData.contactStatusSupported = data[0].contactStatusSupported
+                            
+                            HrDataHolder.shared.updateHr(Int(data[0].hr))
                         }
                     case .error(let err):
                         NSLog("Hr stream failed: \(err)")
@@ -2166,7 +2184,7 @@ extension PolarBleSdkManager {
     func getActivitySamplesData(start: Date, end: Date) async {
         if case .connected(let device) = deviceConnectionState {
             do {
-                dateFormatter.dateFormat = "yyyy-MM-dd"
+                dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
                 encoder.dateEncodingStrategy = .formatted(dateFormatter)
                 let activitySamplesData = try await api.getActivitySampleData(identifier: device.deviceId, fromDate: start, toDate: end).value
                 Task {@MainActor in
@@ -2187,7 +2205,7 @@ extension PolarBleSdkManager {
     func getDailySummaryData(start: Date, end: Date) async {
         if case .connected(let device) = deviceConnectionState {
             do {
-                dateFormatter.dateFormat = "yyyy-MM-dd"
+                dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
                 encoder.dateEncodingStrategy = .formatted(dateFormatter)
                 let dailySummaryData = try await api.getDailySummaryData(identifier: device.deviceId, fromDate: start, toDate: end).value
                 Task {@MainActor in
@@ -2620,6 +2638,22 @@ extension PolarBleSdkManager {
             }
         }
     }
+    
+    func setAutomaticOHRMeasurementEnabled(enabled: Bool) async {
+            if case .connected(let device) = deviceConnectionState {
+                do {
+                    try await withCheckedThrowingContinuation { continuation in
+                        _ = api.setAutomaticOHRMeasurementEnabled(device.deviceId, enabled: enabled)
+                            .subscribe(
+                                onCompleted: { continuation.resume() },
+                                onError: { continuation.resume(throwing: $0) }
+                            )
+                    }
+                } catch {
+                    NSLog("Failed to set automatic OHR measurement state: \(error.localizedDescription)")
+                }
+            }
+        }
 
     func setDaylightSavingTime() async {
         if case .connected(let device) = deviceConnectionState {
@@ -2675,7 +2709,7 @@ extension PolarBleSdkManager {
         case .ppg1:
             result =  "TIMESTAMP SPORT_ID\n"
         case .ppg2:
-            result =  "TIMESTAMP PPG0 PPG1 Status\n"
+            result =  "TIMESTAMP PPG0 PPG1 STATUS0 STATUS1\n"
         case .ppg3:
             result =  "TIMESTAMP PPG0 PPG1 PPG2\n"
         case .ppg3_ambient1:
@@ -2712,10 +2746,10 @@ extension PolarBleSdkManager {
                 result += polarPpgData.samples.map{ "\($0.timeStamp) \($0.channelSamples[0]) \($0.channelSamples[1]) \($0.channelSamples[2]) \($0.channelSamples[3])" }.joined(separator: "\n")
             }
             if polarPpgData.type == PpgDataType.ppg21 {
-                result += polarPpgData.samples.map{ "\($0.timeStamp) \($0.channelSamples[0]) \($0.channelSamples[1]) \($0.channelSamples[2]) \($0.channelSamples[3]), \($0.channelSamples[4]) \($0.channelSamples[5]) \($0.channelSamples[6]) \($0.channelSamples[7]) \($0.channelSamples[8]) \($0.channelSamples[9]) \($0.channelSamples[10]) \($0.channelSamples[11]) \($0.channelSamples[12]) \($0.channelSamples[13]) \($0.channelSamples[14]) \($0.channelSamples[15]) \($0.channelSamples[16]) \($0.channelSamples[17]) \($0.channelSamples[18]) \($0.channelSamples[19])" }.joined(separator: "\n")
+                result += polarPpgData.samples.map{ "\($0.timeStamp) \($0.channelSamples[0]) \($0.channelSamples[1]) \($0.channelSamples[2]) \($0.channelSamples[3]), \($0.channelSamples[4]) \($0.channelSamples[5]) \($0.channelSamples[6]) \($0.channelSamples[7]) \($0.channelSamples[8]) \($0.channelSamples[9]) \($0.channelSamples[10]) \($0.channelSamples[11]) \($0.channelSamples[12]) \($0.channelSamples[13]) \($0.channelSamples[14]) \($0.channelSamples[15]) \($0.channelSamples[16]) \($0.channelSamples[17]) \($0.channelSamples[18]) \($0.channelSamples[19]) \($0.statusBits![0]) \($0.statusBits![1]) \($0.statusBits![2]) \($0.statusBits![3]) \($0.statusBits![4]) \($0.statusBits![5]) \($0.statusBits![6]) \($0.statusBits![7]) \($0.statusBits![8]) \($0.statusBits![9]) \($0.statusBits![10]) \($0.statusBits![11]) \($0.statusBits![12]) \($0.statusBits![13]) \($0.statusBits![14]) \($0.statusBits![15])  \($0.statusBits![16]) \($0.statusBits![17]) \($0.statusBits![18]) \($0.statusBits![19])" }.joined(separator: "\n")
             }
             if polarPpgData.type == PpgDataType.ppg2 {
-                result += polarPpgData.samples.map{ "\($0.timeStamp) \($0.channelSamples[0]) \($0.channelSamples[1]) \($0.channelSamples[2])" }.joined(separator: "\n")
+                result += polarPpgData.samples.map{ "\($0.timeStamp) \($0.channelSamples[0]) \($0.channelSamples[1]) \($0.statusBits![0]) \($0.statusBits![1])" }.joined(separator: "\n")
             }
         case let polarPpiData as PolarPpiData:
             result += polarPpiData.samples.map{ "\($0.timeStamp) \($0.ppInMs) \($0.hr) \($0.ppErrorEstimate) \($0.blockerBit) \($0.skinContactSupported) \($0.skinContactStatus)" }.joined(separator: "\n")

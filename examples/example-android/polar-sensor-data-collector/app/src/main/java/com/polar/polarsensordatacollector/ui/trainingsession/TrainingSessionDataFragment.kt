@@ -1,6 +1,8 @@
 package com.polar.polarsensordatacollector.ui.trainingsession
 
+import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,11 +10,13 @@ import android.view.ViewGroup
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DataObject
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
@@ -20,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -32,6 +37,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializer
 import com.polar.polarsensordatacollector.R
+import com.polar.polarsensordatacollector.ui.activity.openDataTextView
 import com.polar.polarsensordatacollector.ui.theme.PolarsensordatacollectorTheme
 import com.polar.polarsensordatacollector.ui.utils.DataLoadProgress
 import com.polar.polarsensordatacollector.ui.utils.DataLoadProgressIndicator
@@ -49,15 +55,11 @@ class TrainingSessionDataFragment : Fragment() {
     private val viewModel: TrainingSessionDataViewModel by viewModels()
     private lateinit var deviceId: String
     private lateinit var sessionPath: String
-    private lateinit var fromDate: LocalDate
-    private lateinit var toDate: LocalDate
     private val args: TrainingSessionDataFragmentArgs by navArgs()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         deviceId = args.deviceIdFragmentArgument
         sessionPath = args.trainingSessionPathFragmentArgument
-        fromDate = LocalDate.parse(args.fromDateFragmentArgument)
-        toDate = LocalDate.parse(args.toDateFragmentArgument)
 
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -117,13 +119,11 @@ fun ShowTrainingSessionData(
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
 
-            context.startActivity(Intent.createChooser(intent,
-                stringResource(R.string.share_training_session)))
-
             ShowData(
                 onShare = { context.startActivity(Intent.createChooser(intent, "Share Training Session")) },
                 uiState,
-                fileUri.path ?: ""
+                fileUri,
+                context
             )
         }
         TrainingSessionDataUiState.IsFetching -> ShowIsLoading(null, sessionPath)
@@ -153,7 +153,8 @@ fun ShowIsLoading(progress: PolarTrainingSessionProgress?, sessionPath: String) 
 fun ShowData(
     onShare: () -> Unit,
     trainingSession: TrainingSessionDataUiState.FetchedData,
-    path: String
+    fileUri: Uri,
+    context: Context?
 ) {
     Column(
         modifier = Modifier
@@ -162,7 +163,7 @@ fun ShowData(
     ) {
         Text(text = stringResource(R.string.path), style = MaterialTheme.typography.h6)
         Text(
-            text = path,
+            text = fileUri.path ?: "",
             modifier = Modifier.padding(8.dp)
         )
 
@@ -175,24 +176,55 @@ fun ShowData(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = { onShare() },
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue),
-            contentPadding = PaddingValues(
-                start = 20.dp,
-                top = 12.dp,
-                end = 20.dp,
-                bottom = 12.dp
-            ),
-            modifier = Modifier.align(CenterHorizontally)
-        ) {
-            Icon(
-                Icons.Filled.Share,
-                contentDescription = stringResource(R.string.share),
-                modifier = Modifier.size(ButtonDefaults.IconSize)
-            )
-            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-            Text("Share")
+        Row(modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center) {
+            Button(
+                onClick = { onShare() },
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue),
+                contentPadding = PaddingValues(
+                    start = 20.dp,
+                    top = 12.dp,
+                    end = 20.dp,
+                    bottom = 12.dp
+                ),
+                modifier = Modifier.align(CenterVertically)
+            ) {
+                Icon(
+                    Icons.Filled.Share,
+                    contentDescription = stringResource(R.string.share),
+                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                )
+                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                Text("Share")
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Button(
+                onClick = {
+                    if (context != null) {
+                        openDataTextView(context, fileUri)
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue),
+                contentPadding = PaddingValues(
+                    start = 20.dp,
+                    top = 12.dp,
+                    end = 20.dp,
+                    bottom = 12.dp
+                ),
+                modifier = Modifier.align(CenterVertically)
+            ) {
+                Icon(
+                    Icons.Filled.DataObject,
+                    contentDescription = context?.getString(R.string.activity_data_view),
+                    modifier = Modifier.size(ButtonDefaults.IconSize)
+                )
+                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                if (context != null) {
+                    Text(context.getString(R.string.activity_data_view) )
+                }
+            }
         }
     }
 }

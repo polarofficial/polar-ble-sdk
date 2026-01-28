@@ -1,5 +1,6 @@
 package com.polar.polarsensordatacollector.ui.offlinerecording
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -10,6 +11,7 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DataObject
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
@@ -32,6 +34,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.polar.polarsensordatacollector.R
+import com.polar.polarsensordatacollector.ui.activity.openDataTextView
 import com.polar.polarsensordatacollector.ui.theme.PolarsensordatacollectorTheme
 import com.polar.polarsensordatacollector.ui.utils.DataLoadProgress
 import com.polar.polarsensordatacollector.ui.utils.DataLoadProgressIndicator
@@ -42,7 +46,7 @@ import kotlinx.coroutines.launch
 private lateinit var path: String
 
 @AndroidEntryPoint
-class OfflineRecordingDataFragment : Fragment() {
+class OfflineRecordingDataFragment : Fragment(R.layout.fragment_offline_rec) {
     private val viewModel: RecordingDataViewModel by viewModels()
     private lateinit var deviceId: String
     private val args: OfflineRecordingDataFragmentArgs by navArgs()
@@ -90,7 +94,8 @@ fun ShowRecordingData(viewModel: RecordingDataViewModel = viewModel(), onNavigat
                 onShare = { context.startActivity(intent) },
                 onDelete = { viewModel.deleteRecording() },
                 uiState,
-                path
+                path,
+                context = context
             )
         }
         RecordingDataUiState.IsDeleting -> ShowIsLoading(null)
@@ -122,7 +127,11 @@ fun ShowIsLoading(progress: OfflineRecordingProgress?) {
 }
 
 @Composable
-fun ShowData(onShare: () -> Unit, onDelete: () -> Unit, recording: RecordingDataUiState.FetchedData, path: String, modifier: Modifier = Modifier) {
+fun ShowData(onShare: () -> Unit,
+             onDelete: () -> Unit,
+             recording: RecordingDataUiState.FetchedData,
+             path: String, modifier: Modifier = Modifier,
+             context: Context?) {
     Column {
 
         val sizeInKb = String.format("%.2f", (recording.data.size / 1024.0))
@@ -201,6 +210,34 @@ fun ShowData(onShare: () -> Unit, onDelete: () -> Unit, recording: RecordingData
             Spacer(Modifier.size(ButtonDefaults.IconSpacing))
             Text("Share")
         }
+
+        Button(
+            onClick = {
+                if (context != null) {
+                    openDataTextView(context, recording.data.uri)
+                }
+            },
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue),
+            contentPadding = PaddingValues(
+                start = 20.dp,
+                top = 12.dp,
+                end = 20.dp,
+                bottom = 12.dp
+            ),
+            modifier = Modifier.align(CenterHorizontally)
+        ) {
+            Icon(
+                Icons.Filled.DataObject,
+                contentDescription = context?.getString(R.string.activity_data_view),
+                modifier = Modifier.size(ButtonDefaults.IconSize)
+            )
+            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+            if (context != null) {
+                Text(context.getString(R.string.activity_data_view) )
+            }
+        }
+
+        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
 
         Button(
             onClick = { onDelete() },
@@ -283,7 +320,8 @@ private fun ShowDataPreview() {
                         downloadSpeed = 10.0
                     )
                 ),
-                path = "/U/0/192992/"
+                path = "/U/0/192992/",
+                context = null
             )
         }
     })
@@ -306,7 +344,8 @@ private fun ShowDataWithOutSettingsPreview() {
                         downloadSpeed = 20.0
                     )
                 ),
-                path = "/U/0/192992/"
+                path = "/U/0/192992/",
+                context = null
             )
         }
     })

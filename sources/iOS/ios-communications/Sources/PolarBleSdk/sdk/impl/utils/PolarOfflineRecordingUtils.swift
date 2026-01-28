@@ -117,125 +117,109 @@ class PolarOfflineRecordingUtils {
         }
     }
 
-    static func listOfflineRecordingsV2(
-        client: BlePsFtpClient,
-        getFile: @escaping (BlePsFtpClient, String) -> Single<Data>
-    ) -> Single<[PolarOfflineRecordingEntry]> {
+    static func listOfflineRecordingsV2(fileData: Data) -> Single<[PolarOfflineRecordingEntry]> {
 
         return Single.create { emitter in
-            let disposable = getFile(client, "/PMDFILES.TXT")
-                .subscribe(onSuccess: { data in
-                    do {
-                        let formatter = DateFormatter()
-                        formatter.dateFormat = "yyyyMMdd HHmmss"
-                        formatter.locale = Locale(identifier: "en_US_POSIX")
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyyMMdd HHmmss"
+            formatter.locale = Locale(identifier: "en_US_POSIX")
 
-                        let stream = InputStream(data: data)
-                        let bufferSize = 1024
-                        let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
-                        var offlineFileLines: [String] = []
-                        var accumulatedString = ""
-                        var entries = [PolarOfflineRecordingEntry]()
+            let stream = InputStream(data: fileData)
+            let bufferSize = 1024
+            let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
+            var offlineFileLines: [String] = []
+            var accumulatedString = ""
+            var entries = [PolarOfflineRecordingEntry]()
 
-                        stream.open()
-                        defer { stream.close() }
-                        defer { buffer.deallocate() }
+            stream.open()
+            defer { stream.close() }
+            defer { buffer.deallocate() }
 
-                        while stream.hasBytesAvailable {
-                            let bytesRead = stream.read(buffer, maxLength: bufferSize)
-                            if bytesRead > 0,
-                               let chunk = String(bytesNoCopy: buffer, length: bytesRead, encoding: .utf8, freeWhenDone: false) {
-                                accumulatedString += chunk
-                                while let range = accumulatedString.range(of: "\n") {
-                                    let line = String(accumulatedString[..<range.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
-                                    if !line.isEmpty {
-                                        offlineFileLines.append(line)
-                                    }
-                                    accumulatedString.removeSubrange(..<range.upperBound)
-                                }
-                            }
+            while stream.hasBytesAvailable {
+                let bytesRead = stream.read(buffer, maxLength: bufferSize)
+                if bytesRead > 0,
+                   let chunk = String(bytesNoCopy: buffer, length: bytesRead, encoding: .utf8, freeWhenDone: false) {
+                    accumulatedString += chunk
+                    while let range = accumulatedString.range(of: "\n") {
+                        let line = String(accumulatedString[..<range.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !line.isEmpty {
+                            offlineFileLines.append(line)
                         }
-
-                        if !accumulatedString.isEmpty {
-                            let line = accumulatedString.trimmingCharacters(in: .whitespacesAndNewlines)
-                            if !line.isEmpty {
-                                offlineFileLines.append(line)
-                            }
-                        }
-
-                        for line in offlineFileLines {
-                            guard !line.isEmpty else { continue }
-
-                            let parts = line.split(separator: " ")
-                            guard parts.count >= 2 else {
-                                BleLogger.error("Invalid line format in PMDFILES.TXT: \(line)")
-                                continue
-                            }
-
-                            let fileSize = parts[0]
-                            let recordingPath = parts[1]
-
-                            let pathComponents = recordingPath.split(separator: "/")
-                            guard pathComponents.count >= 6 else {
-                                BleLogger.error("Invalid path format: \(recordingPath)")
-                                continue
-                            }
-
-                            guard let deviceDataType = try? PolarOfflineRecordingUtils.mapOfflineRecordingFileNameToDeviceDataType(fileName: String(pathComponents[5])) else {
-                                BleLogger.error("Failed to parse device data type from: \(pathComponents[5])")
-                                continue
-                            }
-
-                            guard let date = formatter.date(from: String(pathComponents[2]) + " " + String(pathComponents[4])) else {
-                                BleLogger.error("Failed to parse date from: \(pathComponents[2]) \(pathComponents[4])")
-                                continue
-                            }
-
-                            entries.append(PolarOfflineRecordingEntry(
-                                path: String(recordingPath),
-                                size: UInt(String(fileSize)) ?? 0,
-                                date: date,
-                                type: deviceDataType
-                            ))
-                        }
-
-                        let merged: [PolarOfflineRecordingEntry] = Dictionary(
-                            grouping: entries,
-                            by: { entry in
-                                entry.path.replacingOccurrences(
-                                    of: "\\d+\\.REC$",
-                                    with: ".REC",
-                                    options: .regularExpression
-                                )
-                            }
-                        ).compactMap { (_, grouped) in
-                            guard let first = grouped.first else { return nil }
-
-                            let representativePath = grouped.sorted { $0.path < $1.path }.first?.path ?? first.path
-                            let totalSize = grouped.reduce(0) { $0 + $1.size }
-                            let latestDate = grouped.map(\.date).max() ?? first.date
-
-                            return PolarOfflineRecordingEntry(
-                                path: representativePath,
-                                size: totalSize,
-                                date: latestDate,
-                                type: first.type
-                            )
-                        }
-
-                        emitter(.success(merged))
-                    } catch {
-                        BleLogger.error("Failed to parse PMDFILES.TXT: \(error.localizedDescription)")
-                        emitter(.failure(PolarErrors.polarBleSdkInternalException(description: "Failed to parse PMDFILES.TXT: \(error.localizedDescription)")))
+                        accumulatedString.removeSubrange(..<range.upperBound)
                     }
-                }, onFailure: { error in
-                    BleLogger.error("Failed to get file /PMDFILES.TXT: \(error.localizedDescription)")
-                    emitter(.failure(error))
-                })
-
-            return Disposables.create {
-                disposable.dispose()
+                }
             }
+
+            if !accumulatedString.isEmpty {
+                let line = accumulatedString.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !line.isEmpty {
+                    offlineFileLines.append(line)
+                }
+            }
+
+            for line in offlineFileLines {
+                guard !line.isEmpty else { continue }
+
+                let parts = line.split(separator: " ")
+                guard parts.count >= 2 else {
+                    BleLogger.error("Invalid line format in PMDFILES.TXT: \(line)")
+                    continue
+                }
+
+                let fileSize = parts[0]
+                let recordingPath = parts[1]
+
+                let pathComponents = recordingPath.split(separator: "/")
+                guard pathComponents.count >= 6 else {
+                    BleLogger.error("Invalid path format: \(recordingPath)")
+                    continue
+                }
+
+                guard let deviceDataType = try? PolarOfflineRecordingUtils.mapOfflineRecordingFileNameToDeviceDataType(fileName: String(pathComponents[5])) else {
+                    BleLogger.error("Failed to parse device data type from: \(pathComponents[5])")
+                    continue
+                }
+
+                guard let date = formatter.date(from: String(pathComponents[2]) + " " + String(pathComponents[4])) else {
+                    BleLogger.error("Failed to parse date from: \(pathComponents[2]) \(pathComponents[4])")
+                    continue
+                }
+
+                entries.append(PolarOfflineRecordingEntry(
+                    path: String(recordingPath),
+                    size: UInt(String(fileSize)) ?? 0,
+                    date: date,
+                    type: deviceDataType
+                ))
+            }
+
+            let merged: [PolarOfflineRecordingEntry] = Dictionary(
+                grouping: entries,
+                by: { entry in
+                    entry.path.replacingOccurrences(
+                        of: "\\d+\\.REC$",
+                        with: ".REC",
+                        options: .regularExpression
+                    )
+                }
+            ).compactMap { (_, grouped) in
+                guard let first = grouped.first else { return nil }
+
+                let representativePath = grouped.sorted { $0.path < $1.path }.first?.path ?? first.path
+                let totalSize = grouped.reduce(0) { $0 + $1.size }
+                let latestDate = grouped.map(\.date).max() ?? first.date
+
+                return PolarOfflineRecordingEntry(
+                    path: representativePath,
+                    size: totalSize,
+                    date: latestDate,
+                    type: first.type
+                )
+            }
+
+            emitter(.success(merged))
+
+            return Disposables.create()
         }
     }
 }

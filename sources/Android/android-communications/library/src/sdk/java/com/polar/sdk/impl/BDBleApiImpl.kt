@@ -93,9 +93,6 @@ import com.polar.sdk.impl.utils.PolarNightlyRechargeUtils
 import com.polar.sdk.impl.utils.PolarOfflineRecordingUtils
 import com.polar.sdk.impl.utils.PolarSkinTemperatureUtils
 import com.polar.sdk.impl.utils.PolarSleepUtils
-import com.polar.sdk.impl.utils.PolarTimeUtils
-import com.polar.sdk.impl.utils.PolarTimeUtils.javaCalendarToPbPftpSetLocalTime
-import com.polar.sdk.impl.utils.PolarTimeUtils.javaCalendarToPbPftpSetSystemTime
 import com.polar.sdk.impl.utils.PolarTimeUtils.pbLocalTimeToJavaCalendar
 import com.polar.sdk.impl.utils.receiveRestApiEvents
 import com.polar.sdk.impl.utils.toObject
@@ -133,11 +130,14 @@ import fi.polar.remote.representation.protobuf.UserDeviceSettings.PbUserDeviceSe
 import fi.polar.remote.representation.protobuf.UserDeviceSettings.PbUserDeviceTelemetrySettings
 import com.polar.sdk.api.model.activity.PolarActivitySamplesDayData
 import com.polar.sdk.api.model.activity.PolarDailySummaryData
+import com.polar.sdk.impl.utils.PolarTimeUtils
+import com.polar.sdk.impl.utils.PolarTimeUtils.javaLocalDateTimeToPbPftpSetLocalTime
+import com.polar.sdk.impl.utils.PolarTimeUtils.pbLocalDateTimeToLocalDateTime
+import com.polar.sdk.impl.utils.PolarTimeUtils.pbLocalTimeToJavaLocalDateTime
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.text.ParseException
-import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -150,6 +150,7 @@ import java.util.zip.ZipInputStream
 import fi.polar.remote.representation.protobuf.Structures
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Single
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
 
@@ -416,7 +417,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         return listener?.getAutomaticReconnection();
     }
 
-    override fun setLocalTime(identifier: String, calendar: Calendar): Completable {
+    override fun setLocalTime(identifier: String, localTime: LocalDateTime): Completable {
         val session = try {
             sessionPsFtpClientReady(identifier)
         } catch (error: Throwable) {
@@ -425,26 +426,25 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
             ?: return Completable.error(PolarServiceNotAvailable())
 
-        BleLogger.d(TAG, "set local time to ${calendar.time} device $identifier")
-        val pbLocalTime = javaCalendarToPbPftpSetLocalTime(calendar)
-        return setSystemTime(client, calendar)
+        BleLogger.d(TAG, "set local time to $localTime device $identifier")
+        val pbLocalTime = javaLocalDateTimeToPbPftpSetLocalTime(localTime)
+        return setSystemTime(client, localTime)
             .onErrorComplete()
             .andThen(
                 client.query(
                     PftpRequest.PbPFtpQuery.SET_LOCAL_TIME_VALUE,
                     pbLocalTime.toByteArray()
-                )
-                    .ignoreElement()
+                ).ignoreElement()
             )
     }
 
-    private fun setSystemTime(client: BlePsFtpClient, calendar: Calendar): Completable {
-        val pbTime = javaCalendarToPbPftpSetSystemTime(calendar)
+    private fun setSystemTime(client: BlePsFtpClient, localDataTime: LocalDateTime): Completable {
+        val pbTime = javaLocalDateTimeToPbPftpSetLocalTime(localDataTime)
         return client.query(PftpRequest.PbPFtpQuery.SET_SYSTEM_TIME_VALUE, pbTime.toByteArray())
             .ignoreElement()
     }
 
-    override fun getLocalTime(identifier: String): Single<Calendar> {
+    override fun getLocalTime(identifier: String): Single<LocalDateTime> {
         val session = try {
             sessionPsFtpClientReady(identifier)
         } catch (error: Throwable) {
@@ -456,14 +456,19 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         BleLogger.d(TAG, "get local time from device $identifier")
         return client.query(PftpRequest.PbPFtpQuery.GET_LOCAL_TIME_VALUE, null)
             .map {
-                val dateTime: PftpRequest.PbPFtpSetLocalTimeParams =
-                    PftpRequest.PbPFtpSetLocalTimeParams.parseFrom(it.toByteArray())
-                pbLocalTimeToJavaCalendar(dateTime)
-            }.onErrorResumeNext {
-                if (it is PftpResponseError && it.error == 201) {
-                    Single.error(BleNotSupported("${session.name} do not support getTime"))
+                val dateTime = PftpRequest.PbPFtpSetLocalTimeParams.parseFrom(it.toByteArray())
+                pbLocalTimeToJavaLocalDateTime(dateTime)
+            }
+            .onErrorResumeNext { throwable ->
+                if (
+                    throwable is PftpResponseError &&
+                    throwable.errorCode == PbPFtpError.NOT_IMPLEMENTED
+                ) {
+                    Single.error(
+                        BleNotSupported("${session.name} does not support getTime")
+                    )
                 } else {
-                    Single.error(it)
+                    Single.error(throwable)
                 }
             }
     }
@@ -941,11 +946,9 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             ?: return Flowable.error(PolarServiceNotAvailable())
 
         return deviceSupportsFasterOfflineRecordListing(identifier)
-            .flatMapPublisher { supports ->
-                if (supports) {
-                    PolarOfflineRecordingUtils.listOfflineRecordingsV2(client) { _, path ->
-                        getFile(identifier, path)
-                    }.flattenAsFlowable { it }
+            .flatMapPublisher { data ->
+                if (data.isNotEmpty()) {
+                    PolarOfflineRecordingUtils.listOfflineRecordingsV2(data).flattenAsFlowable { it }
                 } else {
                     PolarOfflineRecordingUtils.listOfflineRecordingsV1(client) { c, path, condition ->
                         fetchRecursively(c, path) { entry -> condition(entry) }
@@ -954,16 +957,16 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
     }
 
-    private fun deviceSupportsFasterOfflineRecordListing(identifier: String): Single<Boolean> {
+    private fun deviceSupportsFasterOfflineRecordListing(identifier: String): Single<ByteArray> {
         return Single.create { emitter ->
             try {
                 getFile(identifier, PMDFilePath)
                     .subscribe(
-                        { _ ->
-                            emitter.onSuccess(true)
+                        { file ->
+                            emitter.onSuccess(file)
                         },
                         { _ ->
-                            emitter.onSuccess(false)
+                            emitter.onSuccess(byteArrayOf())
                         })
             } catch (e: Exception) {
                 BleLogger.e(TAG, "Failed to check if device supports fast offline record listing: $e")
@@ -1001,8 +1004,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     })
                     .map { entry: Pair<String, Long> ->
                         val components = entry.first.split("/").toTypedArray()
-                        val format = SimpleDateFormat("yyyyMMdd HHmmss", Locale.getDefault())
-                        val date = format.parse(components[3] + " " + components[5])
+                        val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.getDefault());
+                        val date = LocalDateTime.parse(components[3] + " " + components[5], dateTimeFormatter)
                         PolarExerciseEntry(entry.first, date, components[3] + components[5])
                     }
                     .onErrorResumeNext { throwable: Throwable ->
@@ -1020,7 +1023,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     condition = { entry -> entry.endsWith("/") || entry == "SAMPLES.BPB" })
                     .map { entry: Pair<String, Long> ->
                         val components = entry.first.split("/").toTypedArray()
-                        PolarExerciseEntry(entry.first, Date(), components[1])
+                        PolarExerciseEntry(entry.first, LocalDateTime.now(), components[1])
                     }
                     .onErrorResumeNext { throwable: Throwable ->
                         Flowable.error(
@@ -1465,8 +1468,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     }
                 ).map { entry: Pair<String, Long> ->
                     val components = entry.first.split("/").toTypedArray()
-                    val format = SimpleDateFormat("yyyyMMdd HHmmss", Locale.getDefault())
-                    val date = format.parse(components[3] + " " + components[5])
+                    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.getDefault());
+                    val date = LocalDateTime.parse(components[3] + " " + components[5], dateTimeFormatter)
                         ?: throw PolarInvalidArgument("Listing offline recording failed. Cannot parse create data from date ${components[3]} and time ${components[5]}")
                     val type = mapPmdClientFeatureToPolarFeature(
                         mapOfflineRecordingFileNameToMeasurementType(components[6])
@@ -1477,7 +1480,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         date = date,
                         type = type
                     )
-                }.groupBy { entry -> Pair(entry.date.time, entry.type) }
+                }.groupBy { entry -> Pair(entry.date, entry.type) }
                     .onBackpressureBuffer(2048, null, BackpressureOverflowStrategy.DROP_LATEST)
                     .flatMap { groupedEntries ->
                         groupedEntries
@@ -1848,7 +1851,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 val proto = PftpResponse.PbPFtpDiskSpaceResult.parseFrom(it.toByteArray())
                 PolarDiskSpaceData.fromProto(proto)
             }.onErrorResumeNext {
-                if (it is PftpResponseError && it.error == 201) {
+                if (it is PftpResponseError && it.errorCode == PbPFtpError.NOT_IMPLEMENTED) {
                     Single.error(BleNotSupported("${session.name} do not support getDiskSpace"))
                 } else {
                     Single.error(it)
@@ -2084,24 +2087,15 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     path = UserIdentifierType.USER_IDENTIFIER_FILENAME
                 }
 
-                val calendar = Calendar.getInstance().apply {
-                    val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
-                    isoFormat.timeZone = TimeZone.getTimeZone("UTC")
-                    time = try {
-                        isoFormat.parse(ftuConfig.deviceTime)
-                    } catch (e: ParseException) {
-                        throw IllegalArgumentException(
-                            "Invalid deviceTime format: ${ftuConfig.deviceTime}", e
-                        )
-                    }
-                }
+                val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH)
+                val localTime = LocalDateTime.parse(ftuConfig.deviceTime, dateTimeFormatter)
 
                 return@defer sendInitializationAndStartSyncNotifications(identifier)
                     .ignoreElement()
                     .andThen(
                         Completable.defer {
                             BleLogger.d(TAG, "doFirstTimeUse(identifier: $identifier): set local time")
-                            setLocalTime(identifier, calendar)
+                            setLocalTime(identifier, localTime)
                         }
                     )
                     .andThen(
@@ -2362,29 +2356,20 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             PolarExerciseSession.SportProfile.UNKNOWN
         }
 
-        val startTime: Date? = if (proto.hasStartTime()) {
-            val dt = proto.startTime
-            val date = dt.date
-            val time = dt.time
-
-            val tz = if (dt.hasTimeZoneOffset()) {
-                val offsetMinutes = dt.timeZoneOffset
-                val hours = offsetMinutes / 60
-                val minutes = kotlin.math.abs(offsetMinutes % 60)
-                TimeZone.getTimeZone(String.format("GMT%+03d:%02d", hours, minutes))
+        val startTime: LocalDateTime? = if (proto.hasStartTime()) {
+            val tz = if (proto.startTime.hasTimeZoneOffset()) {
+                ZoneId.ofOffset("", ZoneOffset.ofTotalSeconds(proto.startTime.timeZoneOffset*60*60))
             } else {
-                TimeZone.getDefault()
+                ZoneId.systemDefault()
             }
-
-            Calendar.getInstance(tz).apply {
-                set(Calendar.YEAR, date.year)
-                set(Calendar.MONTH, date.month - 1)
-                set(Calendar.DAY_OF_MONTH, date.day)
-                set(Calendar.HOUR_OF_DAY, time.hour)
-                set(Calendar.MINUTE, time.minute)
-                set(Calendar.SECOND, time.seconds)
-                set(Calendar.MILLISECOND, time.millis)
-            }.time
+            LocalDateTime.of(proto.startTime.date.year,
+                proto.startTime.date.month,
+                proto.startTime.date.day,
+                proto.startTime.time.hour,
+                proto.startTime.time.minute,
+                proto.startTime.time.seconds,
+                proto.startTime.time.millis*1E6.toInt()
+            ).atZone(tz).toLocalDateTime()
         } else null
 
         return PolarExerciseSession.ExerciseInfo(
@@ -2981,7 +2966,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
                 // Finalize: Set local time
                 emitter.onNext(FirmwareUpdateStatus.FinalizingFwUpdate("Setting device time"))
-                setLocalTime(identifier, Calendar.getInstance()).blockingAwait()
+                setLocalTime(identifier, LocalDateTime.now()).blockingAwait()
 
                 // Completing FWU based on device type
                 if (BlePolarDeviceCapabilitiesUtility.isDeviceSensor(session.polarDeviceType)) {
@@ -3292,8 +3277,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         return Observable.fromIterable(datesList)
             .flatMapSingle { date ->
                 PolarActivityUtils.readActivitySamplesDataFromDayDirectory(
-                    client, Date.from(date.atZone(ZoneId.systemDefault()).toInstant())
-                )}.map { activitySamplesDataList ->
+                    client, date.toLocalDate())
+                }.map { activitySamplesDataList ->
                     activitySamplesDataList
                 }.toList()
     }
@@ -3432,8 +3417,6 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             ?: return Single.error(PolarServiceNotAvailable())
 
         val caloriesDataList = mutableListOf<Pair<LocalDate, Int>>()
-
-        val calendar = Calendar.getInstance()
         val datesList = getDatesBetween(fromDate, toDate)
 
         return Observable.fromIterable(datesList)
@@ -3755,7 +3738,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
     }
 
-    override fun get247HrSamples(identifier: String, fromDate: Date, toDate: Date): Single<List<Polar247HrSamplesData>> {
+    override fun get247HrSamples(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<Polar247HrSamplesData>> {
         val session = try {
             sessionPsFtpClientReady(identifier)
         } catch (error: Throwable) {
@@ -3763,12 +3746,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
             ?: return Single.error(PolarServiceNotAvailable())
-        return PolarAutomaticSamplesUtils.read247HrSamples(client, LocalDate.from(fromDate.toInstant().atZone(
-            ZoneId.systemDefault()).toLocalDate()), LocalDate.from(toDate.toInstant().atZone(
-            ZoneId.systemDefault()).toLocalDate()))
+        return PolarAutomaticSamplesUtils.read247HrSamples(client, fromDate, toDate)
     }
 
-    override fun get247PPiSamples(identifier: String, fromDate: Date, toDate: Date): Single<List<Polar247PPiSamplesData>> {
+    override fun get247PPiSamples(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<Polar247PPiSamplesData>> {
         val session = try {
             sessionPsFtpClientReady(identifier)
         } catch (error: Throwable) {
@@ -3842,7 +3823,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             }
     }
 
-    override fun getTrainingSessionReferences(identifier: String, fromDate: Date?, toDate: Date?): Flowable<PolarTrainingSessionReference> {
+    override fun getTrainingSessionReferences(identifier: String, fromDate: LocalDate?, toDate: LocalDate?): Flowable<PolarTrainingSessionReference> {
 
         val client: BlePsFtpClient?
 
@@ -3869,7 +3850,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         emitter.onNext(trainingSession)
                     },
                     { error ->
-                                       emitter.onError(error)
+                        emitter.onError(error)
                     },
                     {
                         emitter.onComplete()
@@ -4398,6 +4379,50 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         return client.sendControlPointCommand (PfcMessage.PFC_REQUEST_MULTI_CONNECTION_SETTING, null)
             .map { pfcResponse: PfcResponse ->
                 pfcResponse.payload[0].toInt() == 1
+            }
+    }
+
+    override fun setAutomaticOHRMeasurementEnabled(identifier: String, enabled: Boolean): Completable {
+        val session: BleDeviceSession
+        val client: BlePsFtpClient
+        try {
+            session = sessionPsFtpClientReady(identifier)
+            client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+        } catch (e: Throwable) {
+            return Completable.error(e)
+        }
+
+        return getUserDeviceSettingsProto(client, session.polarDeviceType)
+            .flatMapCompletable { currentProto ->
+                val builder = currentProto.toBuilder()
+                val automaticMeasurementBuilder = if (currentProto.hasAutomaticMeasurementSettings()) {
+                    currentProto.automaticMeasurementSettings.toBuilder()
+                } else {
+                    UserDeviceSettings.PbUserAutomaticMeasurementSettings.newBuilder()
+                }
+
+                val autosBuilder = UserDeviceSettings.PbAutomaticMeasurementSettings.newBuilder()
+                    .setState(
+                        if (enabled) UserDeviceSettings.PbAutomaticMeasurementSettings.PbAutomaticMeasurementState.ALWAYS_ON
+                        else UserDeviceSettings.PbAutomaticMeasurementSettings.PbAutomaticMeasurementState.OFF
+                    )
+
+                if (!enabled) {
+                    autosBuilder.clearTimedSettings()
+                    autosBuilder.clearIntelligentTimedSettings()
+                }
+
+                automaticMeasurementBuilder.setAutomaticOhrMeasurement(autosBuilder.build())
+                builder.setAutomaticMeasurementSettings(automaticMeasurementBuilder)
+
+                setUserDeviceSettingsProto(identifier, builder.build())
+                    .doOnComplete {
+                        BleLogger.d(TAG, "AUTOS files enabled = $enabled written for $identifier")
+                    }
+                    .doOnError { err ->
+                        BleLogger.e(TAG, "Failed to write AUTOS setting: $err")
+                    }
             }
     }
 

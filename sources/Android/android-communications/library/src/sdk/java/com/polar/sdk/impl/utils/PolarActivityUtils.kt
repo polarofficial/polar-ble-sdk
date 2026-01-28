@@ -21,17 +21,13 @@ import org.reactivestreams.Publisher
 import protocol.PftpRequest
 import protocol.PftpResponse.PbPFtpDirectory
 import java.io.ByteArrayOutputStream
-import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
 import java.time.LocalDate
-import java.util.Date
-import java.util.Locale
 
 private const val ARABICA_USER_ROOT_FOLDER = "/U/0/"
 private const val ACTIVITY_DIRECTORY = "ACT/"
 private const val DAILY_SUMMARY_DIRECTORY = "DSUM/"
 private const val DAILY_SUMMARY_PROTO = "DSUM.BPB"
-private val dateFormat = SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
 private val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
 private const val TAG = "PolarActivityUtils"
 
@@ -193,10 +189,10 @@ internal object PolarActivityUtils {
     /**
      * Read and return activity samples data for a given date.
      */
-    fun readActivitySamplesDataFromDayDirectory(client: BlePsFtpClient, date: Date): Single<PolarActivitySamplesDayData> {
+    fun readActivitySamplesDataFromDayDirectory(client: BlePsFtpClient, date: LocalDate): Single<PolarActivitySamplesDayData> {
         BleLogger.d(TAG, "readActivitySamplesDataFromDayDirectory: $date")
         return Single.create { emitter ->
-            val activityFileDir = "$ARABICA_USER_ROOT_FOLDER${dateFormat.format(date)}/${ACTIVITY_DIRECTORY}"
+            val activityFileDir = "$ARABICA_USER_ROOT_FOLDER${date.format(dateFormatter)}/${ACTIVITY_DIRECTORY}"
             var fileList = mutableListOf<String>()
             var activitySamplesDataList: MutableList<PolarActivitySamplesData> = mutableListOf()
             var activitySamplesDayData = PolarActivitySamplesDayData()

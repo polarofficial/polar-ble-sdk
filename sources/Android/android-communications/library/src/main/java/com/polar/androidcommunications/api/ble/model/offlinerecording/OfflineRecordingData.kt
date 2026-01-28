@@ -7,13 +7,13 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSecret
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSetting
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.*
 import com.polar.androidcommunications.common.ble.TypeUtils
-import java.time.OffsetDateTime
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.*
 
 internal class OfflineRecordingData<out T>(
     val offlineRecordingHeader: OfflineRecordingHeader,
-    val startTime: Calendar,
+    val startTime: LocalDateTime,
     val recordingSettings: PmdSetting?,
     val data: T
 ) {
@@ -27,7 +27,7 @@ internal class OfflineRecordingData<out T>(
 
     data class OfflineRecordingMetaData internal constructor(
         val offlineRecordingHeader: OfflineRecordingHeader,
-        val startTime: Calendar,
+        val startTime: LocalDateTime,
         val recordingSettings: PmdSetting?,
         val securityInfo: PmdSecret,
         val dataPayloadSize: Int
@@ -256,12 +256,9 @@ internal class OfflineRecordingData<out T>(
             return OfflineRecordingHeader(magic = magic, version = version, free = free, eswHash = eswHash)
         }
 
-        private fun parseStartTime(startTimeBytes: List<Byte>): Calendar {
+        private fun parseStartTime(startTimeBytes: List<Byte>): LocalDateTime {
             val startTimeInIso8601 = String(startTimeBytes.dropLast(1).toByteArray()).replace(' ', 'T') + "Z"
-            val odt = OffsetDateTime.parse(startTimeInIso8601, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-            return Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
-                timeInMillis = odt.toInstant().toEpochMilli()
-            }
+            return LocalDateTime.parse(startTimeInIso8601, DateTimeFormatter.ISO_OFFSET_DATE_TIME).atZone(ZoneId.of("UTC")).toLocalDateTime()
         }
 
         private fun parsePacketSize(packetSize: List<Byte>): UInt {

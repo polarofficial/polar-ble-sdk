@@ -41,8 +41,8 @@ import com.polar.polarsensordatacollector.ui.theme.PolarsensordatacollectorTheme
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.model.PolarOfflineRecordingEntry
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 private const val TAG = "OfflineRecordingsListFragment"
@@ -201,8 +201,7 @@ fun Recording(
             Column {
                 Row {
                     Text(
-                        text = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                            .format(recordingEntry.date)
+                        text = recordingEntry.date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH))
                     )
                 }
                 Row {
@@ -302,37 +301,37 @@ private fun RecordingListPreview() {
                             PolarOfflineRecordingEntry(
                                 path = "/U/0/20220824/R/075122/ACC.REC",
                                 size = 50000L,
-                                date = Date(),
+                                date = LocalDateTime.now(),
                                 type = PolarBleApi.PolarDeviceDataType.ACC
                             ),
                             PolarOfflineRecordingEntry(
                                 path = "/U/0/20220824/R/075122/GYRO.REC",
                                 size = 50000L,
-                                date = Date(),
+                                date = LocalDateTime.now(),
                                 type = PolarBleApi.PolarDeviceDataType.GYRO
                             ),
                             PolarOfflineRecordingEntry(
                                 path = "/U/0/20220824/R/075122/MAG.REC",
                                 size = 50000L,
-                                date = Date(),
+                                date = LocalDateTime.now(),
                                 type = PolarBleApi.PolarDeviceDataType.MAGNETOMETER
                             ),
                             PolarOfflineRecordingEntry(
                                 path = "/U/0/20220824/R/075122/PPG.REC",
                                 size = 50000L,
-                                date = Date(),
+                                date = LocalDateTime.now(),
                                 type = PolarBleApi.PolarDeviceDataType.PPG
                             ),
                             PolarOfflineRecordingEntry(
                                 path = "/U/0/20220824/R/075122/PPI.REC",
                                 size = 50000L,
-                                date = Date(),
+                                date = LocalDateTime.now(),
                                 type = PolarBleApi.PolarDeviceDataType.PPI
                             ),
                             PolarOfflineRecordingEntry(
                                 path = "/U/0/20220824/R/075122/HR.REC",
                                 size = 50000L,
-                                date = Date(),
+                                date = LocalDateTime.now(),
                                 type = PolarBleApi.PolarDeviceDataType.HR
                             ),
                         )
@@ -352,7 +351,7 @@ private fun RecordingPreview() {
                 PolarOfflineRecordingEntry(
                     path = "/U/0/20220824/R/075122/ACC.REC",
                     size = 50,
-                    date = Date(),
+                    date = LocalDateTime.now(),
                     type = PolarBleApi.PolarDeviceDataType.ACC
                 ),
                 onClick = { _: String, _: String -> },

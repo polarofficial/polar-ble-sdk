@@ -89,6 +89,7 @@ public class PolarUserDeviceSettings {
     public var automaticTrainingDetectionSensitivity: UInt32? = nil
     public var telemetryEnabled: Bool? = nil
     public var minimumTrainingDurationSeconds: UInt32? = nil
+    public var autosFilesEnabled: Bool? = nil
     
     public var deviceLocation: DeviceLocation {
         set (newValue) {
@@ -106,6 +107,7 @@ public class PolarUserDeviceSettings {
         public var automaticTrainingDetectionSensitivity: UInt32? = nil
         public var telemetryEnabled: Bool? = nil
         public var minimumTrainingDurationSeconds: UInt32? = nil
+        public var autosFilesEnabled: Bool? = nil
     }
 
     static func toProto(userDeviceSettings: PolarUserDeviceSettings) -> Data_PbUserDeviceSettings {
@@ -135,6 +137,12 @@ public class PolarUserDeviceSettings {
         
         proto.automaticMeasurementSettings.automaticTrainingDetectionSettings.sensitivity = userDeviceSettings.automaticTrainingDetectionSensitivity ?? 50
         proto.automaticMeasurementSettings.automaticTrainingDetectionSettings.minimumTrainingDurationSeconds = userDeviceSettings.minimumTrainingDurationSeconds ?? 600
+        
+        if let autosFilesEnabled = userDeviceSettings.autosFilesEnabled {
+            var ohr = Data_PbAutomaticMeasurementSettings()
+            ohr.state = autosFilesEnabled ? .alwaysOn : .off
+            proto.automaticMeasurementSettings.automaticOhrMeasurement = ohr
+        }
 
         return proto
     }
@@ -159,6 +167,14 @@ public class PolarUserDeviceSettings {
                     } else {
                         result.telemetryEnabled = nil
                     }
+        
+        if pbUserDeviceSettings.hasAutomaticMeasurementSettings &&
+            pbUserDeviceSettings.automaticMeasurementSettings.hasAutomaticOhrMeasurement &&
+            pbUserDeviceSettings.automaticMeasurementSettings.automaticOhrMeasurement.hasState
+        {
+            let state = pbUserDeviceSettings.automaticMeasurementSettings.automaticOhrMeasurement.state
+            result.autosFilesEnabled = (state != .off)
+        }
         
         return result
     }

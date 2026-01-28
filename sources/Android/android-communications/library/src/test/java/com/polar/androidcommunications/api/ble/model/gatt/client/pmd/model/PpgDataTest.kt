@@ -469,7 +469,7 @@ class PpgDataTest {
         Assert.assertEquals(sample0Channel0, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType7).ppgDataSamples[0])
         Assert.assertEquals(sample0Channel1, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType7).ppgDataSamples[1])
         Assert.assertEquals(sample0Channel15, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType7).ppgDataSamples[15])
-        Assert.assertEquals(sample0ChannelStatus, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType7).status)
+        Assert.assertEquals(Integer.toBinaryString(sample0ChannelStatus.toInt()).toList().map { it.digitToInt() }, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType7).statusBits)
         Assert.assertEquals(sample1Channel0, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType7).ppgDataSamples[0])
         Assert.assertEquals(sample1Channel1, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType7).ppgDataSamples[1])
 
@@ -571,7 +571,7 @@ class PpgDataTest {
         Assert.assertEquals(sample0Channel1, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType8).ppgDataSamples[1])
         Assert.assertEquals(sample0Channel2, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType8).ppgDataSamples[2])
         Assert.assertEquals(sample0Channel23, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType8).ppgDataSamples[23])
-        Assert.assertEquals(sample0ChannelStatus, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType8).status)
+        Assert.assertEquals(Integer.toBinaryString(sample0ChannelStatus.toInt()).toList().map { it.digitToInt() }, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType8).statusBits)
         Assert.assertEquals(sample1Channel0, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType8).ppgDataSamples[0])
         Assert.assertEquals(sample1Channel1, (ppgData.ppgSamples[1] as PpgData.PpgDataFrameType8).ppgDataSamples[1])
 
@@ -676,8 +676,10 @@ class PpgDataTest {
 
         val ppgData = PpgData.parseDataFromDataFrame(dataFrame)
 
+        var statusString = ""
+        (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType10).statusBits.map { statusString += it.toString() }
         assertNotNull(ppgData)
-        assertEquals(expectedStatus, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType10).status)
+        assertEquals(expectedStatus,  statusString.toInt(2))
         assertEquals(7, ppgData.ppgSamples.size)
         assertEquals(expectedTimeStamp, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType10).timeStamp)
 
@@ -839,7 +841,7 @@ class PpgDataTest {
         assertEquals(amountOfSamples, ppgData.ppgSamples.size)
         assertEquals(sample0Channel0, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType13).ppgChannel0.first())
         assertEquals(sample0Channel1, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType13).ppgChannel1.first())
-        assertEquals(sample0ChannelStatus, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType13).status)
+        assertEquals(Integer.toBinaryString(sample0ChannelStatus).toList().map { it.digitToInt() }, (ppgData.ppgSamples[0] as PpgData.PpgDataFrameType13).statusBits)
     }
 
     @Test

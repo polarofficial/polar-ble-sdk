@@ -2,18 +2,17 @@ package com.polar.sdk.impl.utils
 
 import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
-import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.errors.PolarInvalidArgument
-import com.polar.sdk.api.errors.PolarServiceNotAvailable
 import com.polar.sdk.api.model.PolarOfflineRecordingEntry
 import io.reactivex.rxjava3.core.BackpressureOverflowStrategy
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.ByteArrayInputStream
-import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 internal object PolarOfflineRecordingUtils {
@@ -64,8 +63,8 @@ internal object PolarOfflineRecordingUtils {
             .flatMap { entry ->
                 try {
                     val components = entry.first.split("/")
-                    val format = SimpleDateFormat("yyyyMMdd HHmmss", Locale.getDefault())
-                    val date = format.parse("${components[3]} ${components[5]}")
+                    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ENGLISH)
+                    val date = LocalDateTime.parse("${components[3]}${components[5]}", dateTimeFormatter)
                         ?: throw PolarInvalidArgument("Cannot parse date from ${components[3]} and ${components[5]}")
 
                     val type = mapPmdMeasurementTypeToPolarDeviceDataType(
@@ -107,23 +106,17 @@ internal object PolarOfflineRecordingUtils {
             }
     }
 
-    fun listOfflineRecordingsV2(
-        client: BlePsFtpClient,
-        getFile: (BlePsFtpClient, String) -> Single<ByteArray>
-    ): Single<List<PolarOfflineRecordingEntry>> {
+    fun listOfflineRecordingsV2(file: ByteArray): Single<List<PolarOfflineRecordingEntry>> {
 
         return Single.create { emitter ->
-            val disposable = getFile(client, PMD_FILE_PATH)
-                .subscribe(
-                    { byteArray ->
-                        try {
-                            val offlineRecordings = ByteArrayInputStream(byteArray)
-                                .bufferedReader()
-                                .useLines { lines ->
-                                    lines.mapNotNull { line ->
-                                        try {
-                                            val parts = line.split(" ")
-                                            if (parts.size < 2 || !parts[1].endsWith(".REC")) return@mapNotNull null
+            try {
+                val offlineRecordings = ByteArrayInputStream(file)
+                    .bufferedReader()
+                    .useLines { lines ->
+                        lines.mapNotNull { line ->
+                            try {
+                                val parts = line.split(" ")
+                                if (parts.size < 2 || !parts[1].endsWith(".REC")) return@mapNotNull null
 
                                             val path = parts[1].replace(Regex("(\\w*?)\\d+\\.REC$"), "$1.REC")
                                             val type = mapPmdMeasurementTypeToPolarDeviceDataType(
@@ -131,39 +124,30 @@ internal object PolarOfflineRecordingUtils {
                                                     path.split("/")[6].substringBefore(".").filter { !it.isDigit() }
                                                 )
                                             )
+                                            val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ENGLISH)
+                                            val date = LocalDateTime.parse("${path.split("/")[3]}${path.split("/")[5]}", dateTimeFormatter)
 
-                                            val format = SimpleDateFormat("yyyyMMdd HHmmss", Locale.getDefault())
-                                            val date = format.parse("${path.split("/")[3]} ${path.split("/")[5]}")
-
-                                            PolarOfflineRecordingEntry(path, parts[0].toLong(), date, type)
-                                        } catch (e: Exception) {
-                                            BleLogger.e(TAG, "Failed to parse line: $line (${e.message})")
-                                            null
-                                        }
-                                    }.toList()
-                                }
-
-                            val merged = offlineRecordings
-                                .groupBy { it.path to it.date }
-                                .map { (_, entries) ->
-                                    val totalSize = entries.sumOf { it.size }
-                                    val first = entries.first()
-                                    first.copy(size = totalSize)
-                                }
-
-                            emitter.onSuccess(merged)
-                        } catch (e: Exception) {
-                            BleLogger.e(TAG, "Failed to parse PMD.TXT: ${e.message}")
-                            emitter.onError(e)
-                        }
-                    },
-                    { error ->
-                        BleLogger.e(TAG, "Failed to get file $PMD_FILE_PATH: ${error.message}")
-                        emitter.onError(error)
+                                PolarOfflineRecordingEntry(path, parts[0].toLong(), date, type)
+                            } catch (e: Exception) {
+                                BleLogger.e(TAG, "Failed to parse line: $line (${e.message})")
+                                null
+                            }
+                        }.toList()
                     }
-                )
 
-            emitter.setCancellable { disposable.dispose() }
+                val merged = offlineRecordings
+                    .groupBy { it.path to it.date }
+                    .map { (_, entries) ->
+                        val totalSize = entries.sumOf { it.size }
+                        val first = entries.first()
+                        first.copy(size = totalSize)
+                    }
+
+                emitter.onSuccess(merged)
+            } catch (e: Exception) {
+                BleLogger.e(TAG, "Failed to parse PMD.TXT: ${e.message}")
+                emitter.onError(e)
+            }
         }
     }
 }

@@ -2,19 +2,14 @@ package com.polar.sdk.impl.utils
 
 import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
-import com.polar.sdk.api.model.activity.AutomaticSampleTriggerType
-import com.polar.sdk.api.model.activity.Polar247HrSamples
 import com.polar.sdk.api.model.activity.Polar247HrSamplesData
 import com.polar.sdk.api.model.activity.Polar247PPiSamplesData
 import com.polar.sdk.api.model.activity.fromPbPPiDataSamples
-import fi.polar.remote.representation.protobuf.AutomaticSamples
 import fi.polar.remote.representation.protobuf.AutomaticSamples.PbAutomaticSampleSessions
 import io.reactivex.rxjava3.core.Single
 import protocol.PftpRequest
 import protocol.PftpResponse.PbPFtpDirectory
 import java.time.LocalDate
-import java.util.Calendar
-import java.util.Date
 import java.util.regex.Pattern
 
 private const val ARABICA_USER_ROOT_FOLDER = "/U/0/"
@@ -80,7 +75,7 @@ internal object PolarAutomaticSamplesUtils {
         }
     }
 
-    fun read247PPiSamples(client: BlePsFtpClient, fromDate: Date, toDate: Date): Single<List<Polar247PPiSamplesData>> {
+    fun read247PPiSamples(client: BlePsFtpClient, fromDate: LocalDate, toDate: LocalDate): Single<List<Polar247PPiSamplesData>> {
         BleLogger.d(TAG, "read247PPiSamples: from $fromDate to $toDate")
         return Single.create { emitter ->
             val autoSamplesPath = "$ARABICA_USER_ROOT_FOLDER$AUTOMATIC_SAMPLES_DIRECTORY"
@@ -108,10 +103,7 @@ internal object PolarAutomaticSamplesUtils {
                             val sampleDateProto = sampleSessions.day
                             sampleSessions.ppiSamplesList.forEach { sample ->
 
-                                val sampleDateForCheck = Calendar.getInstance().apply {
-                                    set(sampleDateProto.year, sampleDateProto.month - 1, sampleDateProto.day, 0, 0, 0)
-                                    set(Calendar.MILLISECOND, 0)
-                                }.time
+                                val sampleDateForCheck = LocalDate.of(sampleDateProto.year, sampleDateProto.month, sampleDateProto.day)
 
                                 if (sampleDateForCheck in fromDate..toDate) {
                                     ppiSamplesDataList.add(Polar247PPiSamplesData(sampleDateForCheck, fromPbPPiDataSamples(sample)))

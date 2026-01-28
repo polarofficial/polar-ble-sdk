@@ -68,7 +68,7 @@
 
                     <include
                         android:id="@+id/hr_status_and_settings"
-                        layout="@layout/recording_controls_view"
+                        layout="@layout/offline_recording_controls_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
@@ -80,7 +80,7 @@
 
                     <include
                         android:id="@+id/acc_status_and_settings"
-                        layout="@layout/recording_controls_view"
+                        layout="@layout/offline_recording_controls_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
@@ -92,7 +92,7 @@
 
                     <include
                         android:id="@+id/ecg_status_and_settings"
-                        layout="@layout/recording_controls_view"
+                        layout="@layout/offline_recording_controls_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
@@ -104,7 +104,7 @@
 
                     <include
                         android:id="@+id/ppg_status_and_settings"
-                        layout="@layout/recording_controls_view"
+                        layout="@layout/offline_recording_controls_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
@@ -117,7 +117,7 @@
 
                     <include
                         android:id="@+id/ppi_status_and_settings"
-                        layout="@layout/recording_controls_view"
+                        layout="@layout/offline_recording_controls_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
@@ -129,7 +129,7 @@
 
                     <include
                         android:id="@+id/mag_status_and_settings"
-                        layout="@layout/recording_controls_view"
+                        layout="@layout/offline_recording_controls_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
@@ -141,7 +141,7 @@
 
                     <include
                         android:id="@+id/gyr_status_and_settings"
-                        layout="@layout/recording_controls_view"
+                        layout="@layout/offline_recording_controls_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
@@ -153,7 +153,7 @@
 
                     <include
                         android:id="@+id/pressure_status_and_settings"
-                        layout="@layout/recording_controls_view"
+                        layout="@layout/offline_recording_controls_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
@@ -165,7 +165,7 @@
 
                     <include
                         android:id="@+id/loc_status_and_settings"
-                        layout="@layout/recording_controls_view"
+                        layout="@layout/offline_recording_controls_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
@@ -177,7 +177,7 @@
 
                     <include
                         android:id="@+id/temperature_status_and_settings"
-                        layout="@layout/recording_controls_view"
+                        layout="@layout/offline_recording_controls_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
@@ -189,7 +189,7 @@
 
                     <include
                         android:id="@+id/skin_temperature_status_and_settings"
-                        layout="@layout/recording_controls_view"
+                        layout="@layout/offline_recording_controls_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"

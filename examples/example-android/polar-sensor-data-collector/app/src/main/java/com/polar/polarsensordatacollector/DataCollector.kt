@@ -11,8 +11,9 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
-import java.text.SimpleDateFormat
+import java.time.LocalDateTime
 import java.util.*
+import kotlin.math.log
 
 class DataCollector(private val context: Context) {
     companion object {
@@ -131,10 +132,9 @@ class DataCollector(private val context: Context) {
     private val logStreams: MutableMap<StreamType, FileOperations> = EnumMap(StreamType::class.java)
     private var latestTimeStamp: Long = 0
     private var ppgTimeStamp: Long = 0
-    private val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
 
-    private fun startNewLogWithTag(tag: String, logId: String, startTime: Calendar): FileOperations {
-        val timeTag = dateFormat.format(startTime.time)
+    private fun startNewLogWithTag(tag: String, logId: String, startTime: LocalDateTime = LocalDateTime.now()): FileOperations {
+        val timeTag = startTime.toString()
         val fileName = logId + "_" + timeTag + "_" + tag + ".txt"
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
         val isBackUpEnabled = sharedPreferences.getBoolean(context.getString(R.string.back_up_enabled), false)
@@ -147,98 +147,68 @@ class DataCollector(private val context: Context) {
     }
 
     @Throws(IOException::class)
-    fun startAccLog(logId: String, startTime: Calendar = Calendar.getInstance()) {
+    fun startAccLog(logId: String, startTime: LocalDateTime = LocalDateTime.now()) {
         if (!logStreams.containsKey(StreamType.ACC)) {
             logStreams[StreamType.ACC] = startNewLogWithTag("ACC", logId, startTime)
         }
     }
 
     @Throws(IOException::class)
-    fun startPpgLog(logId: String, startTime: Calendar = Calendar.getInstance()) {
-        if (!logStreams.containsKey(StreamType.PPG)) {
-            logStreams[StreamType.PPG] = startNewLogWithTag("PPG", logId, startTime)
-        }
-        if (!logStreams.containsKey(StreamType.PPG_DATA_16)) {
-            logStreams[StreamType.PPG_DATA_16] = startNewLogWithTag("PPG_DATA_16", logId, startTime)
-        }
-        if (!logStreams.containsKey(StreamType.PPG_DATA_24)) {
-            logStreams[StreamType.PPG_DATA_24] = startNewLogWithTag("PPG_DATA_24", logId, startTime)
-        }
-        if (!logStreams.containsKey(StreamType.PPG_GREEN)) {
-            logStreams[StreamType.PPG_GREEN] = startNewLogWithTag("PPG_GRN", logId, startTime)
-        }
-        if (!logStreams.containsKey(StreamType.PPG_RED)) {
-            logStreams[StreamType.PPG_RED] = startNewLogWithTag("PPG_RED", logId, startTime)
-        }
-        if (!logStreams.containsKey(StreamType.PPG_IR)) {
-            logStreams[StreamType.PPG_IR] = startNewLogWithTag("PPG_IR", logId, startTime)
-        }
-
-        if (!logStreams.containsKey(StreamType.SPORT_ID)) {
-            logStreams[StreamType.SPORT_ID] = startNewLogWithTag("SPORT_ID", logId, startTime)
-        }
-        if (!logStreams.containsKey(StreamType.PPG_ADPD4000)) {
-            logStreams[StreamType.PPG_ADPD4000] = startNewLogWithTag("PPG_ADPD_4000", logId, startTime)
-        }
-        if (!logStreams.containsKey(StreamType.PPG_ADPD4100)) {
-            logStreams[StreamType.PPG_ADPD4100] = startNewLogWithTag("PPG_ADPD_4100", logId, startTime)
-        }
-        if (!logStreams.containsKey(StreamType.PPG_OPERATION_MODE)) {
-            logStreams[StreamType.PPG_OPERATION_MODE] = startNewLogWithTag("PPG_OPERATION_MODE", logId, startTime)
-        }
+    fun startPpgLog(logId: String, startTime: LocalDateTime = LocalDateTime.now()) {
+        logStreams[StreamType.PPG] = startNewLogWithTag("PPG", logId, startTime)
     }
 
     @Throws(IOException::class)
-    fun startPpiLog(deviceId: String, startTime: Calendar = Calendar.getInstance()) {
+    fun startPpiLog(deviceId: String, startTime: LocalDateTime = LocalDateTime.now()) {
         if (!logStreams.containsKey(StreamType.PPI)) {
             logStreams[StreamType.PPI] = startNewLogWithTag("PPI", deviceId, startTime)
         }
     }
 
     @Throws(IOException::class)
-    fun startEcgLog(deviceId: String, startTime: Calendar = Calendar.getInstance()) {
+    fun startEcgLog(deviceId: String, startTime: LocalDateTime = LocalDateTime.now()) {
         if (!logStreams.containsKey(StreamType.ECG)) {
             logStreams[StreamType.ECG] = startNewLogWithTag("ECG", deviceId, startTime)
         }
     }
 
     @Throws(IOException::class)
-    fun startHrLog(deviceId: String, startTime: Calendar = Calendar.getInstance()) {
+    fun startHrLog(deviceId: String, startTime: LocalDateTime = LocalDateTime.now()) {
         if (!logStreams.containsKey(StreamType.HR)) {
             logStreams[StreamType.HR] = startNewLogWithTag("HR", deviceId, startTime)
         }
     }
 
     @Throws(IOException::class)
-    private fun startMarkerLog(deviceId: String, startTime: Calendar = Calendar.getInstance()) {
+    private fun startMarkerLog(deviceId: String, startTime: LocalDateTime = LocalDateTime.now()) {
         if (!logStreams.containsKey(StreamType.MARKER)) {
             logStreams[StreamType.MARKER] = startNewLogWithTag("MARKER", deviceId, startTime)
         }
     }
 
     @Throws(IOException::class)
-    fun startMagnetometerLog(deviceId: String, startTime: Calendar = Calendar.getInstance()) {
+    fun startMagnetometerLog(deviceId: String, startTime: LocalDateTime = LocalDateTime.now()) {
         if (!logStreams.containsKey(StreamType.MAGNETOMETER)) {
             logStreams[StreamType.MAGNETOMETER] = startNewLogWithTag("MAGNETOMETER", deviceId, startTime)
         }
     }
 
     @Throws(IOException::class)
-    fun startGyroLog(deviceId: String, startTime: Calendar = Calendar.getInstance()) {
+    fun startGyroLog(deviceId: String, startTime: LocalDateTime = LocalDateTime.now()) {
         if (!logStreams.containsKey(StreamType.GYRO)) {
             logStreams[StreamType.GYRO] = startNewLogWithTag("GYRO", deviceId, startTime)
         }
     }
 
     @Throws(IOException::class)
-    fun startPressureLog(deviceId: String, startTime: Calendar = Calendar.getInstance()) {
+    fun startPressureLog(deviceId: String, startTime: LocalDateTime = LocalDateTime.now()) {
         if (!logStreams.containsKey(StreamType.PRESSURE)) {
             logStreams[StreamType.PRESSURE] = startNewLogWithTag("PRESSURE", deviceId, startTime)
         }
     }
 
     @Throws(IOException::class)
-    fun startLocationLog(deviceId: String, startTime: Calendar = Calendar.getInstance()) {
+    fun startLocationLog(deviceId: String, startTime: LocalDateTime = LocalDateTime.now()) {
         if (!logStreams.containsKey(StreamType.LOCATION_COORDINATES)) {
             logStreams[StreamType.LOCATION_COORDINATES] = startNewLogWithTag("LOCATION_COORDINATES", deviceId, startTime)
         }
@@ -254,14 +224,14 @@ class DataCollector(private val context: Context) {
     }
 
     @Throws(IOException::class)
-    fun startTemperatureLog(deviceId: String, startTime: Calendar = Calendar.getInstance()) {
+    fun startTemperatureLog(deviceId: String, startTime: LocalDateTime = LocalDateTime.now()) {
         if (!logStreams.containsKey(StreamType.TEMPERATURE)) {
             logStreams[StreamType.TEMPERATURE] = startNewLogWithTag("TEMPERATURE", deviceId, startTime)
         }
     }
 
     @Throws(IOException::class)
-    fun startSkinTemperatureLog(deviceId: String, startTime: Calendar = Calendar.getInstance()) {
+    fun startSkinTemperatureLog(deviceId: String, startTime: LocalDateTime = LocalDateTime.now()) {
         if (!logStreams.containsKey(StreamType.SKIN_TEMPERATURE)) {
             logStreams[StreamType.SKIN_TEMPERATURE] = startNewLogWithTag("SKIN_TEMPERATURE", deviceId, startTime)
         }
@@ -319,198 +289,39 @@ class DataCollector(private val context: Context) {
     }
 
     @Throws(IOException::class)
-    fun logPpg(timeStamp: Long, ppgs: List<Int>, ambient: Int) {
-        latestTimeStamp = timeStamp
-        ppgTimeStamp = timeStamp
+    fun logPpgData(ppgData: PolarPpgData) {
         logStreams[StreamType.PPG]?.let { stream ->
             if (!stream.isStarted()) {
-                val ppgChannels = mutableListOf<String>()
-                for (index in ppgs.indices) {
-                    ppgChannels.add("PPG$index")
+                stream.write("PPG FRAME TYPE ${ppgData.type}\n")
+                val ppgChannels = ppgData.samples[0].channelSamples
+                val ppgStatuses = ppgData.samples[0].statusBits
+                var headerLine = "TIMESTAMP"
+                var index = 0
+                for (channel in ppgChannels) {
+                    headerLine = headerLine.plus(" ")
+                    headerLine = headerLine.plus("CHANNEL${index++}")
                 }
-                val headerLine = "TIMESTAMP ${ppgChannels.joinToString(separator = " ")} AMBIENT\n"
+                index = 0
+                for (status in ppgStatuses) {
+                    headerLine = headerLine.plus(" ")
+                    headerLine = headerLine.plus("STATUS${index++}")
+                }
+                headerLine = headerLine.plus("\n")
                 stream.write(headerLine)
             }
-            val logLine = "$timeStamp ${ppgs.joinToString(separator = " ")} $ambient\n"
-            stream.write(logLine)
-        }
-    }
 
-    @Throws(IOException::class)
-    fun logPpg2Channels(timeStamp: Long, ppgs: List<Int>, status: Int) {
-        latestTimeStamp = timeStamp
-        ppgTimeStamp = timeStamp
-        logStreams[StreamType.PPG]?.let { stream ->
-            if (!stream.isStarted()) {
-                val ppgChannels = mutableListOf<String>()
-                for (index in ppgs.indices) {
-                    ppgChannels.add("PPG$index")
+            for (ppgData in ppgData.samples) {
+                var logLine = "${ppgData.timeStamp} "
+                for (sample in ppgData.channelSamples) {
+                    logLine = logLine.plus(" ")
+                    logLine = logLine.plus(sample)
                 }
-                val headerLine = "TIMESTAMP ${ppgChannels.joinToString(separator = " ")} Status\n"
-                stream.write(headerLine)
-            }
-            val logLine = "$timeStamp ${ppgs.joinToString(separator = " ")} $status\n"
-            stream.write(logLine)
-        }
-    }
-
-    @Throws(IOException::class)
-    fun logPpg2ChannelsAutoGain(timeStamp: Long, ppgs: List<Int>, numints: Int) {
-        latestTimeStamp = timeStamp
-        ppgTimeStamp = timeStamp
-        logStreams[StreamType.PPG]?.let { stream ->
-            if (!stream.isStarted()) {
-                val ppgChannels = mutableListOf<String>()
-                for (index in ppgs.indices) {
-                    ppgChannels.add("TIA_GAIN_CH${index}_TS1")
+                for (status in ppgData.statusBits) {
+                    logLine = logLine.plus(" ")
+                    logLine = logLine.plus(status)
                 }
-                val headerLine = "TIMESTAMP ${ppgChannels.joinToString(separator = " ")} NUMINT_TS1\n"
-                stream.write(headerLine)
+                stream.write(logLine)
             }
-            val logLine = "$timeStamp ${ppgs.joinToString(separator = " ")} $numints\n"
-            stream.write(logLine)
-        }
-    }
-
-    @Throws(IOException::class)
-    fun logPpgData16Channels(timeStamp: Long, ppgs: List<Int>, status: Long) {
-        latestTimeStamp = timeStamp
-        logStreams[StreamType.PPG_DATA_16]?.let { stream ->
-            if (!stream.isStarted()) {
-                val ppgChannels = mutableListOf<String>()
-                for (index in ppgs.indices) {
-                    ppgChannels.add("PPG$index")
-                }
-                val headerLine = "TIMESTAMP ${ppgChannels.joinToString(separator = " ")} STATUS\n"
-                stream.write(headerLine)
-            }
-            val logLine = "$timeStamp ${ppgs.joinToString(separator = " ")} $status\n"
-            stream.write(logLine)
-        }
-    }
-
-    @Throws(IOException::class)
-    fun logPpgGreen(timeStamp: Long, ppgs: List<Int>) {
-        latestTimeStamp = timeStamp
-        logStreams[StreamType.PPG_GREEN]?.let { stream ->
-            if (!stream.isStarted()) {
-                val ppgChannels = mutableListOf<String>()
-                for (index in ppgs.indices) {
-                    ppgChannels.add("GREEN${index + 1}")
-                }
-                val headerLine = "TIMESTAMP ${ppgChannels.joinToString(separator = " ")}\n"
-                stream.write(headerLine)
-            }
-            val logLine = "$timeStamp ${ppgs.joinToString(separator = " ")}\n"
-            stream.write(logLine)
-        }
-    }
-
-    @Throws(IOException::class)
-    fun logPpgRed(timeStamp: Long, ppgs: List<Int>) {
-        latestTimeStamp = timeStamp
-        logStreams[StreamType.PPG_RED]?.let { stream ->
-            if (!stream.isStarted()) {
-                val ppgChannels = mutableListOf<String>()
-                for (index in ppgs.indices) {
-                    ppgChannels.add("RED${index + 1}")
-                }
-                val headerLine = "TIMESTAMP ${ppgChannels.joinToString(separator = " ")}\n"
-                stream.write(headerLine)
-            }
-            val logLine = "$timeStamp ${ppgs.joinToString(separator = " ")}\n"
-            stream.write(logLine)
-        }
-    }
-
-    @Throws(IOException::class)
-    fun logPpgIr(timeStamp: Long, ppgs: List<Int>) {
-        latestTimeStamp = timeStamp
-        logStreams[StreamType.PPG_IR]?.let { stream ->
-            if (!stream.isStarted()) {
-                val ppgChannels = mutableListOf<String>()
-                for (index in ppgs.indices) {
-                    ppgChannels.add("IR${index + 1}")
-                }
-                val headerLine = "TIMESTAMP ${ppgChannels.joinToString(separator = " ")}\n"
-                stream.write(headerLine)
-            }
-            val logLine = "$timeStamp ${ppgs.joinToString(separator = " ")}\n"
-            stream.write(logLine)
-        }
-    }
-
-    @Throws(IOException::class)
-    fun logPpgSportIdData(timeStamp: Long, sportId: Long) {
-        latestTimeStamp = timeStamp
-        logStreams[StreamType.SPORT_ID]?.let { stream ->
-            if (!stream.isStarted()) {
-                val headerLine = "TIMESTAMP SPORT_ID\n"
-                stream.write(headerLine)
-            }
-            val logLine = "$timeStamp ${sportId}\n"
-            stream.write(logLine)
-        }
-    }
-
-    @Throws(IOException::class)
-    fun logPpgAdpd4000Data(timeStamp: Long, channel1GainTs: List<Int>, channel2GainTs: List<Int>, numIntTs: List<Int>) {
-        latestTimeStamp = timeStamp
-        logStreams[StreamType.PPG_ADPD4000]?.let { stream ->
-            if (!stream.isStarted()) {
-                val numIntTsArray = mutableListOf<String>()
-                for (value in 1..12) {
-                    numIntTsArray.add("NUMINT_TS$value")
-                }
-                val tiaGainChTsArray = mutableListOf<String>()
-                for (value in 1..12) {
-                    tiaGainChTsArray.add("TIA_GAIN_CH1_TS$value")
-                    tiaGainChTsArray.add("TIA_GAIN_CH2_TS$value")
-                }
-
-                val headerLine = "TIMESTAMP ${numIntTsArray.joinToString(separator = " ")} ${tiaGainChTsArray.joinToString(separator = " ")}\n"
-                stream.write(headerLine)
-            }
-            val channelGainTs = channel1GainTs.zip(channel2GainTs)
-            val logLine = "$timeStamp ${numIntTs.joinToString(separator = " ")} ${channelGainTs.toList().joinToString(separator = " ") { "${it.first} ${it.second}" }}\n"
-            stream.write(logLine)
-        }
-    }
-
-    @Throws(IOException::class)
-    fun logPpgAdpd4100Data(timeStamp: Long, channel1GainTs: List<Int>, channel2GainTs: List<Int>, numIntTs: List<Int>) {
-        latestTimeStamp = timeStamp
-        logStreams[StreamType.PPG_ADPD4100]?.let { stream ->
-            if (!stream.isStarted()) {
-                val numIntTsArray = mutableListOf<String>()
-                for (value in 1..12) {
-                    numIntTsArray.add("NUMINT_TS$value")
-                }
-                val tiaGainChTsArray = mutableListOf<String>()
-                for (value in 1..12) {
-                    tiaGainChTsArray.add("TIA_GAIN_CH1_TS$value")
-                    tiaGainChTsArray.add("TIA_GAIN_CH2_TS$value")
-                }
-
-                val headerLine = "TIMESTAMP ${numIntTsArray.joinToString(separator = " ")} ${tiaGainChTsArray.joinToString(separator = " ")}\n"
-                stream.write(headerLine)
-            }
-            val channelGainTs = channel1GainTs.zip(channel2GainTs)
-            val logLine = "$timeStamp ${numIntTs.joinToString(separator = " ")} ${channelGainTs.toList().joinToString(separator = " ") { "${it.first} ${it.second}" }}\n"
-            stream.write(logLine)
-        }
-    }
-
-    @Throws(IOException::class)
-    fun logPpgOperationMode(timeStamp: Long, operationMode: UInt) {
-        latestTimeStamp = timeStamp
-        logStreams[StreamType.PPG_OPERATION_MODE]?.let { stream ->
-            if (!stream.isStarted()) {
-                val headerLine = "TIMESTAMP OPERATION_MODE\n"
-                stream.write(headerLine)
-            }
-            val logLine = "$timeStamp $operationMode\n"
-            stream.write(logLine)
         }
     }
 
@@ -734,7 +545,7 @@ class DataCollector(private val context: Context) {
         } else {
             timeStamp
         }
-        startMarkerLog(deviceId)
+        startMarkerLog(deviceId, )
         logStreams[StreamType.MARKER]?.let { stream ->
             val logLine = "MARKER_${if (isStartMark) "START" else "STOP"} $markerStamp\n"
             stream.write(logLine)

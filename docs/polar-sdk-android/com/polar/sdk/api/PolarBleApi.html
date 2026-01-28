@@ -471,13 +471,13 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         <tr id="i16" class="altColor">
                                             <td class="colFirst"><code>abstract Completable</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setLocalTime(java.lang.String,java.util.Calendar)>setLocalTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Calendar.html>Calendar</a> calendar) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setLocalTime(java.lang.String,java.time.LocalDateTime)>setLocalTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDateTime.html>LocalDateTime</a> dateAndTime) </code>
                                             </th>
                                             <td class="colLast">Set the device time.</td>
                                         </tr>
                                         
                                         <tr id="i17" class="rowColor">
-                                            <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/Calendar.html>Calendar</a>&gt;</code>
+                                            <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/time/LocalDateTime.html>LocalDateTime</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#getLocalTime(java.lang.String)>getLocalTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
@@ -714,6 +714,14 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#sendTerminateAndStopSyncNotifications(java.lang.String)>sendTerminateAndStopSyncNotifications</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
                                             <td class="colLast">Notify device that data transfer operations are completed.</td>
+                                        </tr>
+                                        
+                                        <tr id="i47" class="rowColor">
+                                            <td class="colFirst"><code>abstract Completable</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setAutomaticOHRMeasurementEnabled(java.lang.String,java.lang.Boolean)>setAutomaticOHRMeasurementEnabled</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> enabled) </code>
+                                            </th>
+                                            <td class="colLast">Enable or disable AUTOS file generation on the device.</td>
                                         </tr>
                                         
                                         </tbody>
@@ -1293,7 +1301,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                     </li>
                                 </ul>
                                 
-                                <a id="setLocalTime(java.lang.String,java.util.Calendar)">
+                                <a id="setLocalTime(java.lang.String,java.time.LocalDateTime)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -1301,7 +1309,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                           >
                                     <li class="blockList">
                                         <h4>setLocalTime</h4>
-                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#setLocalTime(java.lang.String,java.util.Calendar)>setLocalTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/Calendar.html>Calendar</a> calendar)</pre>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#setLocalTime(java.lang.String,java.time.LocalDateTime)>setLocalTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDateTime.html>LocalDateTime</a> dateAndTime)</pre>
                                         <div class="block"><p>Set the device time. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_DEVICE_TIME_SETUP>PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP</a></p></div>
 
                                         <dl>
@@ -1314,7 +1322,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             
                                             
                                             
-                                            <dd><code>calendar</code> - time to set</dd>
+                                            <dd><code>dateAndTime</code> - time to set</dd>
                                             
                                             
                                         
@@ -1338,7 +1346,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                           >
                                     <li class="blockList">
                                         <h4>getLocalTime</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/Calendar.html>Calendar</a>&gt; <a href=PolarBleApi.html#getLocalTime(java.lang.String)>getLocalTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/time/LocalDateTime.html>LocalDateTime</a>&gt; <a href=PolarBleApi.html#getLocalTime(java.lang.String)>getLocalTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
                                         <div class="block"><p>Get current time in device. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_DEVICE_TIME_SETUP>PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP</a>. Note, the H10 is not supporting time read.</p></div>
 
                                         <dl>
@@ -1354,7 +1362,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
 
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>Single observable which emits device time in Calendar instance when observable is subscribed</p></dd>
+                                            <dd><p>Single observable which emits device time in LocalDateTime instance when observable is subscribed</p></dd>
                                         
 
                                         
@@ -2345,7 +2353,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                     <!--   -->
                                 </a>
                                 <ul class=
-                                              "blockListLast"
+                                              "blockList"
                                           >
                                     <li class="blockList">
                                         <h4>sendTerminateAndStopSyncNotifications</h4>
@@ -2366,6 +2374,43 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
                                             <dd><p>Completable, true if stop sync notifications sending was successful, false otherwise.</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="setAutomaticOHRMeasurementEnabled(java.lang.String,java.lang.Boolean)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>setAutomaticOHRMeasurementEnabled</h4>
+                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleApi.html#setAutomaticOHRMeasurementEnabled(java.lang.String,java.lang.Boolean)>setAutomaticOHRMeasurementEnabled</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> enabled)</pre>
+                                        <div class="block"><p>Enable or disable AUTOS file generation on the device. AUTOS files contain 24/7 OHR data. Status of this setting can be read with getUserDeviceSettings().</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device ID or BT address</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>enabled</code> - true = AUTOS files enabled, false = disabled</dd>
+                                            
+                                            
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Completable (success or error)</p></dd>
                                         
 
                                         

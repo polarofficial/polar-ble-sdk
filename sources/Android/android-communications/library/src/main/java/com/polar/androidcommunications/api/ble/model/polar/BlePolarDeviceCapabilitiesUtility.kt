@@ -30,7 +30,7 @@ class BlePolarDeviceCapabilitiesUtility {
          */
         @JvmStatic
         fun getFileSystemType(deviceType: String): FileSystemType {
-            return when (deviceType.lowercase(Locale.getDefault())) {
+            return when (deviceType.lowercase(Locale.ENGLISH)) {
                 "h10" -> FileSystemType.H10_FILE_SYSTEM
                 else -> FileSystemType.SAGRFC2_FILE_SYSTEM
             }
@@ -44,7 +44,7 @@ class BlePolarDeviceCapabilitiesUtility {
          */
         @JvmStatic
         fun isRecordingSupported(deviceType: String): Boolean {
-            return when (deviceType.lowercase(Locale.getDefault())) {
+            return when (deviceType.lowercase(Locale.ENGLISH)) {
                 DEVICE_TYPE_H10 -> true
                 else -> false
             }
@@ -52,7 +52,7 @@ class BlePolarDeviceCapabilitiesUtility {
 
         @JvmStatic
         fun isFirmwareUpdateSupported(deviceType: String): Boolean {
-            return when (deviceType.lowercase(Locale.getDefault())) {
+            return when (deviceType.lowercase(Locale.ENGLISH)) {
                 DEVICE_TYPE_OH1 -> false
                 else -> true
             }
@@ -60,7 +60,7 @@ class BlePolarDeviceCapabilitiesUtility {
 
         @JvmStatic
         fun isDeviceSensor(deviceType: String): Boolean {
-            return when (deviceType.lowercase(Locale.getDefault())) {
+            return when (deviceType.lowercase(Locale.ENGLISH)) {
                 DEVICE_TYPE_OH1 -> true
                 DEVICE_TYPE_H10 -> true
                 DEVICE_TYPE_SENSE -> true
@@ -73,7 +73,7 @@ class BlePolarDeviceCapabilitiesUtility {
 
         @JvmStatic
         fun isActivityDataSupported(deviceType: String): Boolean {
-            return when (deviceType.lowercase(Locale.getDefault())) {
+            return when (deviceType.lowercase(Locale.ENGLISH)) {
                 DEVICE_TYPE_360 -> true
                 DEVICE_TYPE_LOOP_GEN_2 -> true
                 DEVICE_TYPE_INW5T -> true

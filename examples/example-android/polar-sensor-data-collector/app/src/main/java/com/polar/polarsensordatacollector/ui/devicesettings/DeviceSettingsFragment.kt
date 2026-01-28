@@ -46,21 +46,18 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.util.Date
 import com.polar.polarsensordatacollector.ui.exercise.ExerciseActivity
 import com.polar.sdk.api.model.PolarPhysicalConfiguration
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
-import java.text.SimpleDateFormat
-import java.util.Locale
+import java.time.LocalTime
+import java.time.ZoneOffset
 
 @AndroidEntryPoint
 class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
     companion object {
         private const val TAG = "DeviceSettingsFragment"
-        private const val INTENSITY_SELECTION_ENABLED_ALPHA = 1.0f
-        private const val INTENSITY_SELECTION_DISABLED_ALPHA = 0.4f
     }
 
     private val viewModel: DeviceSettingsViewModel by viewModels()
@@ -697,7 +694,7 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
 
     private fun showDateRangePicker(listener: DateRangeSelectedListener) {
         val constraints = CalendarConstraints.Builder()
-        val dateValidatorMax: DateValidator = DateValidatorPointBackward.before(Date().toInstant().toEpochMilli())
+        val dateValidatorMax: DateValidator = DateValidatorPointBackward.before(LocalDate.now().toEpochSecond(LocalTime.MAX, ZoneOffset.of(ZoneId.systemDefault().id)))
         val listValidators = ArrayList<DateValidator>()
 
         listValidators.apply {
@@ -758,12 +755,11 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
     }
 
     private fun showUserPhysicalInfoDialog(physInfo: PolarPhysicalConfiguration) {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val ctx = requireContext()
 
         val message = buildString {
             appendLine(getString(R.string.ftu_gender, physInfo.gender))
-            appendLine(getString(R.string.ftu_birthdate, dateFormat.format(physInfo.birthDate)))
+            appendLine(getString(R.string.ftu_birthdate, physInfo.birthDate.toString()))
             appendLine(getString(R.string.ftu_height, physInfo.height))
             appendLine(getString(R.string.ftu_weight, physInfo.weight))
             appendLine(getString(R.string.ftu_max_hr, physInfo.maxHeartRate))

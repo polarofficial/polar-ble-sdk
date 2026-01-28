@@ -10,6 +10,8 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurem
 import com.polar.polarsensordatacollector.DataCollector
 import com.polar.polarsensordatacollector.repository.DeviceConnectionState
 import com.polar.polarsensordatacollector.repository.PolarDeviceRepository
+import com.polar.polarsensordatacollector.ui.graph.AccDataHolder
+import com.polar.polarsensordatacollector.ui.graph.HrDataHolder
 import com.polar.polarsensordatacollector.ui.utils.MessageUiState
 import com.polar.polarsensordatacollector.utils.StreamUtils
 import com.polar.sdk.api.PolarBleApi
@@ -27,7 +29,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -299,11 +300,16 @@ class OnlineRecordingViewModel @Inject constructor(
                 polarDeviceStreamingRepository.startHrStreaming(deviceId)
             }
             .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { polarHrData: PolarHrData ->
                     logHrData(polarHrData)
+
+                    val hrSample = polarHrData.samples.first()
+                    HrDataHolder.updateHr(hrSample.hr)
+
                     _uiHeartRateInfoState.update {
-                        it.copy(deviceId = deviceId, heartRate = polarHrData.samples.first())
+                        it.copy(deviceId = deviceId, heartRate = hrSample)
                     }
                 },
                 { error: Throwable ->
@@ -405,6 +411,7 @@ class OnlineRecordingViewModel @Inject constructor(
                         it
                     )
                 }
+                AccDataHolder.clear()
             }
             PolarBleApi.PolarDeviceDataType.PPG -> {
                 polarDeviceStreamingRepository.stopStreaming(deviceId, PmdMeasurementType.PPG)
@@ -471,6 +478,7 @@ class OnlineRecordingViewModel @Inject constructor(
             PolarBleApi.PolarDeviceDataType.HR -> {
                 polarDeviceStreamingRepository.stopHrStreaming(deviceId)
                 updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.HR, StreamingFeatureState.STATES.STOPPED, emptyMap())
+                HrDataHolder.clear()
             }
         }
         finalizeCollector()
@@ -538,6 +546,10 @@ class OnlineRecordingViewModel @Inject constructor(
                     }
                     _uiAccStreamDataState.update {
                         AccSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = accData)
+                    }
+
+                    accData.samples.forEach { s ->
+                        AccDataHolder.updateAcc(s.x, s.y, s.z)
                     }
                 },
                 { error: Throwable ->
@@ -698,7 +710,7 @@ class OnlineRecordingViewModel @Inject constructor(
             .subscribeOn(Schedulers.io())
             .subscribe(
                 { polarPpgData: PolarPpgData ->
-                    logPpgFrameType7(polarPpgData)
+                    logPpgData(polarPpgData)
                     val sampleRate = if (polarPpgData.samples.size > 1) {
                         StreamUtils.calculateSampleRate(timeStampEarlier = polarPpgData.samples[0].timeStamp, timeStampLater = polarPpgData.samples[1].timeStamp)
                     } else {
@@ -719,7 +731,7 @@ class OnlineRecordingViewModel @Inject constructor(
             .subscribeOn(Schedulers.io())
             .subscribe(
                 { polarPpgData: PolarPpgData ->
-                    logPpgFrameType8(polarPpgData)
+                    logPpgData(polarPpgData)
                     val sampleRate = if (polarPpgData.samples.size > 1) {
                         StreamUtils.calculateSampleRate(timeStampEarlier = polarPpgData.samples[0].timeStamp, timeStampLater = polarPpgData.samples[1].timeStamp)
                     } else {
@@ -740,7 +752,7 @@ class OnlineRecordingViewModel @Inject constructor(
             .subscribeOn(Schedulers.io())
             .subscribe(
                 { polarPpgData: PolarPpgData ->
-                    logPpgFrameType13(polarPpgData)
+                    logPpgData(polarPpgData)
                     val sampleRate = if (polarPpgData.samples.size > 1) {
                         StreamUtils.calculateSampleRate(timeStampEarlier = polarPpgData.samples[0].timeStamp, timeStampLater = polarPpgData.samples[1].timeStamp)
                     } else {
@@ -761,7 +773,7 @@ class OnlineRecordingViewModel @Inject constructor(
             .subscribeOn(Schedulers.io())
             .subscribe(
                 { polarPpgData: PolarPpgData ->
-                    logPpgFrameType14(polarPpgData)
+                    logPpgData(polarPpgData)
                     val sampleRate = if (polarPpgData.samples.size > 1) {
                         StreamUtils.calculateSampleRate(timeStampEarlier = polarPpgData.samples[0].timeStamp, timeStampLater = polarPpgData.samples[1].timeStamp)
                     } else {
@@ -783,7 +795,7 @@ class OnlineRecordingViewModel @Inject constructor(
             .subscribeOn(Schedulers.io())
             .subscribe(
                 { ohrData: PolarPpgData ->
-                    logPpgSportIdData(ohrData)
+                    logPpgData(ohrData)
                 },
                 { error: Throwable ->
                     if (error !is PolarDeviceDisconnected) {
@@ -796,7 +808,7 @@ class OnlineRecordingViewModel @Inject constructor(
             .subscribeOn(Schedulers.io())
             .subscribe(
                 { ohrData: PolarPpgData ->
-                    logPpgFrameType4(ohrData)
+                    logPpgData(ohrData)
                 },
                 { error: Throwable ->
                     if (error !is PolarDeviceDisconnected) {
@@ -809,7 +821,7 @@ class OnlineRecordingViewModel @Inject constructor(
             .subscribeOn(Schedulers.io())
             .subscribe(
                 { ohrData: PolarPpgData ->
-                    logPpgFrameType5(ohrData)
+                    logPpgData(ohrData)
                 },
                 { error: Throwable ->
                     if (error !is PolarDeviceDisconnected) {
@@ -822,7 +834,7 @@ class OnlineRecordingViewModel @Inject constructor(
             .subscribeOn(Schedulers.io())
             .subscribe(
                 { ohrData: PolarPpgData ->
-                    logPpgFrameType9(ohrData)
+                    logPpgData(ohrData)
                 },
                 { error: Throwable ->
                     if (error !is PolarDeviceDisconnected) {
@@ -835,7 +847,7 @@ class OnlineRecordingViewModel @Inject constructor(
             .subscribeOn(Schedulers.io())
             .subscribe(
                 { ppgData: PolarPpgData ->
-                    logPpgFrameType10(ppgData)
+                    logPpgData(ppgData)
                     val sampleRate = if (ppgData.samples.size > 1) {
                         StreamUtils.calculateSampleRate(timeStampEarlier = ppgData.samples[0].timeStamp, timeStampLater = ppgData.samples[1].timeStamp)
                     } else {
@@ -1109,100 +1121,7 @@ class OnlineRecordingViewModel @Inject constructor(
     @Throws(IOException::class)
     private fun logPpgData(polarPpgData: PolarPpgData) {
         for (sample in polarPpgData.samples) {
-            check(sample.channelSamples.size == 4) { "Received UNKNOWN PPG Data" }
-            val ppgs: List<Int> =
-                sample.channelSamples.subList(0, 3)
-            val ambient = sample.channelSamples[3]
-            collector.logPpg(sample.timeStamp, ppgs, ambient)
-        }
-    }
-
-    @Throws(IOException::class)
-    private fun logPpgFrameType7(polarPpgData: PolarPpgData) {
-        for (sample in polarPpgData.samples) {
-            check(sample.channelSamples.size == 17) { "Received UNKNOWN PPG Frame Type 7 Data" }
-            val ppgs: List<Int> = sample.channelSamples.subList(0, 16)
-            val status = sample.channelSamples[16].toUInt().toLong()
-            collector.logPpgData16Channels(sample.timeStamp, ppgs, status)
-        }
-    }
-
-    @Throws(IOException::class)
-    private fun logPpgFrameType8(polarPpgData: PolarPpgData) {
-        for (sample in polarPpgData.samples) {
-            check(sample.channelSamples.size == 25) { "Received UNKNOWN PPG Frame Type 8 Data" }
-            val ppgGreen: List<Int> = sample.channelSamples.subList(0, 8)
-            val ppgRed: List<Int> = sample.channelSamples.subList(8, 20)
-            val ppgIr: List<Int> = sample.channelSamples.subList(20, 24)
-            collector.logPpgGreen(sample.timeStamp, ppgGreen)
-            collector.logPpgRed(sample.timeStamp, ppgRed)
-            collector.logPpgIr(sample.timeStamp, ppgIr)
-        }
-    }
-
-    @Throws(IOException::class)
-    private fun logPpgFrameType13(polarPpgData: PolarPpgData) {
-        for (sample in polarPpgData.samples) {
-            check(sample.channelSamples.size == 3) { "Received UNKNOWN PPG Frame Type 13 Data" }
-            val ppgs: List<Int> =
-                sample.channelSamples.subList(0, 2)
-            val status = sample.channelSamples[2]
-            collector.logPpg2Channels(sample.timeStamp, ppgs, status)
-        }
-    }
-
-    @Throws(IOException::class)
-    private fun logPpgFrameType14(polarPpgData: PolarPpgData) {
-        for (sample in polarPpgData.samples) {
-            check(sample.channelSamples.size == 3) { "Received UNKNOWN PPG Frame Type 14 Data" }
-            val ppgs: List<Int> =
-                sample.channelSamples.subList(1, 2)
-            val numInt = sample.channelSamples[2]
-            collector.logPpg2ChannelsAutoGain(sample.timeStamp, ppgs, numInt)
-        }
-    }
-
-    @Throws(IOException::class)
-    private fun logPpgSportIdData(polarPpgData: PolarPpgData) {
-        check(polarPpgData.samples[0].channelSamples.size == 1) { "Received UNKNOWN PPG Sport Id Data" }
-        val sportId = polarPpgData.samples[0].channelSamples[0].toUInt().toLong()
-        collector.logPpgSportIdData(polarPpgData.samples[0].timeStamp, sportId = sportId)
-    }
-
-    @Throws(IOException::class)
-    private fun logPpgFrameType4(polarPpgData: PolarPpgData) {
-        check(polarPpgData.samples[0].channelSamples.size == 36) { "Received UNKNOWN PPG Frame Type 4 Data" }
-        val channel1GainTs: List<Int> = polarPpgData.samples[0].channelSamples.subList(0, 12)
-        val channel2GainTs: List<Int> = polarPpgData.samples[0].channelSamples.subList(12, 24)
-        val numIntTs: List<Int> = polarPpgData.samples[0].channelSamples.subList(24, 36)
-        collector.logPpgAdpd4000Data(polarPpgData.samples[0].timeStamp, channel1GainTs = channel1GainTs, channel2GainTs = channel2GainTs, numIntTs = numIntTs)
-    }
-
-    @Throws(IOException::class)
-    private fun logPpgFrameType5(polarPpgData: PolarPpgData) {
-        check(polarPpgData.samples[0].channelSamples.size == 1) { "Received UNKNOWN PPG Frame Type 5 Data" }
-        val operationMode = polarPpgData.samples[0].channelSamples[0].toUInt()
-        collector.logPpgOperationMode(polarPpgData.samples[0].timeStamp, operationMode = operationMode)
-    }
-
-    @Throws(IOException::class)
-    private fun logPpgFrameType9(polarPpgData: PolarPpgData) {
-        check(polarPpgData.samples[0].channelSamples.size == 36) { "Received UNKNOWN PPG Frame Type 9 Data" }
-        val channel1GainTs: List<Int> = polarPpgData.samples[0].channelSamples.subList(0, 12)
-        val channel2GainTs: List<Int> = polarPpgData.samples[0].channelSamples.subList(12, 24)
-        val numIntTs: List<Int> = polarPpgData.samples[0].channelSamples.subList(24, 36)
-        collector.logPpgAdpd4100Data(polarPpgData.samples[0].timeStamp, channel1GainTs = channel1GainTs, channel2GainTs = channel2GainTs, numIntTs = numIntTs)
-    }
-
-    @Throws(IOException::class)
-    private fun logPpgFrameType10(polarPpgData: PolarPpgData) {
-        for (sample in polarPpgData.samples) {
-            val ppgGreen: List<Int> = sample.channelSamples.subList(0, 8)
-            val ppgRed: List<Int> = sample.channelSamples.subList(8, 14)
-            val ppgIr: List<Int> = sample.channelSamples.subList(14, 20)
-            collector.logPpgGreen(sample.timeStamp, ppgGreen)
-            collector.logPpgRed(sample.timeStamp, ppgRed)
-            collector.logPpgIr(sample.timeStamp, ppgIr)
+            collector.logPpgData(polarPpgData)
         }
     }
 

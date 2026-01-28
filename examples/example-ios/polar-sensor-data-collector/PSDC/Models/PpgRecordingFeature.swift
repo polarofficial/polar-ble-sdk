@@ -11,5 +11,5 @@ struct PpgRecordingFeature {
     var ambient: Int32 = 0
     var timestamp: UInt64 = 0
     var sportId: Int32 = 0
-    var status: Int32? = 0
+    var status: [Int8]? = []
 }

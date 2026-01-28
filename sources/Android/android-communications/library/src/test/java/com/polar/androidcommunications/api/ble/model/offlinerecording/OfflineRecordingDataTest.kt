@@ -5,15 +5,16 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSecret
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSetting
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.*
 import com.polar.androidcommunications.testrules.BleLoggerTestRule
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+
 
 internal class OfflineRecordingDataTest {
 
@@ -28,10 +29,10 @@ internal class OfflineRecordingDataTest {
 
         // Assert
         assertTrue(offlineAccData.data is AccData)
-        Assert.assertEquals(MockAccOfflineRecordingData.headerMagic, offlineAccData.offlineRecordingHeader.magic)
-        Assert.assertEquals(MockAccOfflineRecordingData.headerVersion, offlineAccData.offlineRecordingHeader.version)
-        Assert.assertEquals(MockAccOfflineRecordingData.headerFree, offlineAccData.offlineRecordingHeader.free)
-        Assert.assertEquals(MockAccOfflineRecordingData.headerEswHash, offlineAccData.offlineRecordingHeader.eswHash)
+        assertEquals(MockAccOfflineRecordingData.headerMagic, offlineAccData.offlineRecordingHeader.magic)
+        assertEquals(MockAccOfflineRecordingData.headerVersion, offlineAccData.offlineRecordingHeader.version)
+        assertEquals(MockAccOfflineRecordingData.headerFree, offlineAccData.offlineRecordingHeader.free)
+        assertEquals(MockAccOfflineRecordingData.headerEswHash, offlineAccData.offlineRecordingHeader.eswHash)
     }
 
     @Test
@@ -40,7 +41,9 @@ internal class OfflineRecordingDataTest {
         val offlineAccData = OfflineRecordingData.parseDataFromOfflineFile(MockAccOfflineRecordingData.accOfflineFrame, PmdMeasurementType.ACC)
 
         // Assert
-        Assert.assertEquals(MockAccOfflineRecordingData.startTime, offlineAccData.startTime)
+        val expectedDate =
+            LocalDateTime.ofInstant(MockAccOfflineRecordingData.startTime.toInstant(), MockAccOfflineRecordingData.startTime.getTimeZone().toZoneId())
+        assertEquals(expectedDate, offlineAccData.startTime)
     }
 
     @Test
@@ -49,10 +52,10 @@ internal class OfflineRecordingDataTest {
         val offlineAccData = OfflineRecordingData.parseDataFromOfflineFile(MockAccOfflineRecordingData.accOfflineFrame, PmdMeasurementType.ACC)
 
         // Assert
-        Assert.assertEquals(MockAccOfflineRecordingData.expectedSampleRate, offlineAccData.recordingSettings?.settings?.get(PmdSetting.PmdSettingType.SAMPLE_RATE)?.first())
-        Assert.assertEquals(MockAccOfflineRecordingData.expectedRange, offlineAccData.recordingSettings?.settings?.get(PmdSetting.PmdSettingType.RANGE)?.first())
-        Assert.assertEquals(MockAccOfflineRecordingData.expectedResolution, offlineAccData.recordingSettings?.settings?.get(PmdSetting.PmdSettingType.RESOLUTION)?.first())
-        Assert.assertEquals(MockAccOfflineRecordingData.expectedChannels, offlineAccData.recordingSettings?.settings?.get(PmdSetting.PmdSettingType.CHANNELS)?.first())
+        assertEquals(MockAccOfflineRecordingData.expectedSampleRate, offlineAccData.recordingSettings?.settings?.get(PmdSetting.PmdSettingType.SAMPLE_RATE)?.first())
+        assertEquals(MockAccOfflineRecordingData.expectedRange, offlineAccData.recordingSettings?.settings?.get(PmdSetting.PmdSettingType.RANGE)?.first())
+        assertEquals(MockAccOfflineRecordingData.expectedResolution, offlineAccData.recordingSettings?.settings?.get(PmdSetting.PmdSettingType.RESOLUTION)?.first())
+        assertEquals(MockAccOfflineRecordingData.expectedChannels, offlineAccData.recordingSettings?.settings?.get(PmdSetting.PmdSettingType.CHANNELS)?.first())
     }
 
     @Test
@@ -62,15 +65,15 @@ internal class OfflineRecordingDataTest {
 
         // Assert
         assertTrue(offlineAccData.data is AccData)
-        Assert.assertEquals(MockAccOfflineRecordingData.sample0Channel0, (offlineAccData.data as AccData).accSamples[0].x)
-        Assert.assertEquals(MockAccOfflineRecordingData.sample0Channel1, offlineAccData.data.accSamples[0].y)
-        Assert.assertEquals(MockAccOfflineRecordingData.sample0Channel2, offlineAccData.data.accSamples[0].z)
+        assertEquals(MockAccOfflineRecordingData.sample0Channel0, (offlineAccData.data as AccData).accSamples[0].x)
+        assertEquals(MockAccOfflineRecordingData.sample0Channel1, offlineAccData.data.accSamples[0].y)
+        assertEquals(MockAccOfflineRecordingData.sample0Channel2, offlineAccData.data.accSamples[0].z)
 
-        Assert.assertEquals(MockAccOfflineRecordingData.sample1Channel0, offlineAccData.data.accSamples[1].x)
-        Assert.assertEquals(MockAccOfflineRecordingData.sample1Channel1, offlineAccData.data.accSamples[1].y)
-        Assert.assertEquals(MockAccOfflineRecordingData.sample1Channel2, offlineAccData.data.accSamples[1].z)
+        assertEquals(MockAccOfflineRecordingData.sample1Channel0, offlineAccData.data.accSamples[1].x)
+        assertEquals(MockAccOfflineRecordingData.sample1Channel1, offlineAccData.data.accSamples[1].y)
+        assertEquals(MockAccOfflineRecordingData.sample1Channel2, offlineAccData.data.accSamples[1].z)
 
-        Assert.assertEquals(MockAccOfflineRecordingData.expectedLastSampleTimeStamp, offlineAccData.data.accSamples.last().timeStamp)
+        assertEquals(MockAccOfflineRecordingData.expectedLastSampleTimeStamp, offlineAccData.data.accSamples.last().timeStamp)
     }
 
     @Test
@@ -80,15 +83,15 @@ internal class OfflineRecordingDataTest {
 
         // Assert
         assertTrue(offlineGyroData.data is GyrData)
-        Assert.assertEquals(GyroOfflineMockData.sample0Channel0, (offlineGyroData.data as GyrData).gyrSamples[0].x)
-        Assert.assertEquals(GyroOfflineMockData.sample0Channel1, offlineGyroData.data.gyrSamples[0].y)
-        Assert.assertEquals(GyroOfflineMockData.sample0Channel2, offlineGyroData.data.gyrSamples[0].z)
+        assertEquals(GyroOfflineMockData.sample0Channel0, (offlineGyroData.data as GyrData).gyrSamples[0].x)
+        assertEquals(GyroOfflineMockData.sample0Channel1, offlineGyroData.data.gyrSamples[0].y)
+        assertEquals(GyroOfflineMockData.sample0Channel2, offlineGyroData.data.gyrSamples[0].z)
 
-        Assert.assertEquals(GyroOfflineMockData.sample1Channel0, offlineGyroData.data.gyrSamples[1].x)
-        Assert.assertEquals(GyroOfflineMockData.sample1Channel1, offlineGyroData.data.gyrSamples[1].y)
-        Assert.assertEquals(GyroOfflineMockData.sample1Channel2, offlineGyroData.data.gyrSamples[1].z)
+        assertEquals(GyroOfflineMockData.sample1Channel0, offlineGyroData.data.gyrSamples[1].x)
+        assertEquals(GyroOfflineMockData.sample1Channel1, offlineGyroData.data.gyrSamples[1].y)
+        assertEquals(GyroOfflineMockData.sample1Channel2, offlineGyroData.data.gyrSamples[1].z)
 
-        Assert.assertEquals(GyroOfflineMockData.expectedLastSampleTimeStamp, offlineGyroData.data.gyrSamples.last().timeStamp)
+        assertEquals(GyroOfflineMockData.expectedLastSampleTimeStamp, offlineGyroData.data.gyrSamples.last().timeStamp)
     }
 
     @Test
@@ -98,15 +101,15 @@ internal class OfflineRecordingDataTest {
 
         // Assert
         assertTrue(offlineMagData.data is MagData)
-        Assert.assertEquals(MagOfflineMockData.sample0Channel0, (offlineMagData.data as MagData).magSamples[0].x)
-        Assert.assertEquals(MagOfflineMockData.sample0Channel1, offlineMagData.data.magSamples[0].y)
-        Assert.assertEquals(MagOfflineMockData.sample0Channel2, offlineMagData.data.magSamples[0].z)
+        assertEquals(MagOfflineMockData.sample0Channel0, (offlineMagData.data as MagData).magSamples[0].x)
+        assertEquals(MagOfflineMockData.sample0Channel1, offlineMagData.data.magSamples[0].y)
+        assertEquals(MagOfflineMockData.sample0Channel2, offlineMagData.data.magSamples[0].z)
 
-        Assert.assertEquals(MagOfflineMockData.sample1Channel0, offlineMagData.data.magSamples[1].x)
-        Assert.assertEquals(MagOfflineMockData.sample1Channel1, offlineMagData.data.magSamples[1].y)
-        Assert.assertEquals(MagOfflineMockData.sample1Channel2, offlineMagData.data.magSamples[1].z)
+        assertEquals(MagOfflineMockData.sample1Channel0, offlineMagData.data.magSamples[1].x)
+        assertEquals(MagOfflineMockData.sample1Channel1, offlineMagData.data.magSamples[1].y)
+        assertEquals(MagOfflineMockData.sample1Channel2, offlineMagData.data.magSamples[1].z)
 
-        Assert.assertEquals(MagOfflineMockData.expectedLastSampleTimeStamp, offlineMagData.data.magSamples.last().timeStamp)
+        assertEquals(MagOfflineMockData.expectedLastSampleTimeStamp, offlineMagData.data.magSamples.last().timeStamp)
     }
 
     @Test
@@ -118,10 +121,10 @@ internal class OfflineRecordingDataTest {
         assertTrue(offlinePpgData.data is PpgData)
         val sample0 = (offlinePpgData.data as PpgData).ppgSamples as MutableList<PpgData.PpgDataFrameType0>
 
-        Assert.assertEquals(PpgOfflineMockData.sample0Channel0, sample0[0].ppgDataSamples[0])
-        Assert.assertEquals(PpgOfflineMockData.sample0Channel1, sample0[0].ppgDataSamples[1])
-        Assert.assertEquals(PpgOfflineMockData.sample0Channel2, sample0[0].ppgDataSamples[2])
-        Assert.assertEquals(PpgOfflineMockData.sample0Ambient, sample0[0].ambientSample)
+        assertEquals(PpgOfflineMockData.sample0Channel0, sample0[0].ppgDataSamples[0])
+        assertEquals(PpgOfflineMockData.sample0Channel1, sample0[0].ppgDataSamples[1])
+        assertEquals(PpgOfflineMockData.sample0Channel2, sample0[0].ppgDataSamples[2])
+        assertEquals(PpgOfflineMockData.sample0Ambient, sample0[0].ambientSample)
     }
 
     @Test
@@ -131,22 +134,22 @@ internal class OfflineRecordingDataTest {
 
         // Assert
         assertTrue(offlinePpiData.data is PpiData)
-        Assert.assertEquals(PpiOfflineMockData.expectedHeartRate, (offlinePpiData.data as PpiData).ppiSamples[0].hr)
-        Assert.assertEquals(PpiOfflineMockData.expectedBlockerBit, (offlinePpiData.data).ppiSamples[0].blockerBit)
-        Assert.assertEquals(PpiOfflineMockData.expectedIntervalInMs, (offlinePpiData.data).ppiSamples[0].ppInMs)
-        Assert.assertEquals(PpiOfflineMockData.expectedErrorEstimate, (offlinePpiData.data).ppiSamples[0].ppErrorEstimate)
-        Assert.assertEquals(PpiOfflineMockData.expectedSkinContactStatus, (offlinePpiData.data).ppiSamples[0].skinContactStatus)
-        Assert.assertEquals(PpiOfflineMockData.expectedSkinContactSupported, (offlinePpiData.data).ppiSamples[0].skinContactSupported)
+        assertEquals(PpiOfflineMockData.expectedHeartRate, (offlinePpiData.data as PpiData).ppiSamples[0].hr)
+        assertEquals(PpiOfflineMockData.expectedBlockerBit, (offlinePpiData.data).ppiSamples[0].blockerBit)
+        assertEquals(PpiOfflineMockData.expectedIntervalInMs, (offlinePpiData.data).ppiSamples[0].ppInMs)
+        assertEquals(PpiOfflineMockData.expectedErrorEstimate, (offlinePpiData.data).ppiSamples[0].ppErrorEstimate)
+        assertEquals(PpiOfflineMockData.expectedSkinContactStatus, (offlinePpiData.data).ppiSamples[0].skinContactStatus)
+        assertEquals(PpiOfflineMockData.expectedSkinContactSupported, (offlinePpiData.data).ppiSamples[0].skinContactSupported)
 
-        Assert.assertEquals(PpiOfflineMockData.expectedHeartRate2, (offlinePpiData.data).ppiSamples[1].hr)
-        Assert.assertEquals(PpiOfflineMockData.expectedBlockerBit2, (offlinePpiData.data).ppiSamples[1].blockerBit)
-        Assert.assertEquals(PpiOfflineMockData.expectedIntervalInMs2, (offlinePpiData.data).ppiSamples[1].ppInMs)
-        Assert.assertEquals(PpiOfflineMockData.expectedErrorEstimate2, (offlinePpiData.data).ppiSamples[1].ppErrorEstimate)
-        Assert.assertEquals(PpiOfflineMockData.expectedSkinContactStatus2, (offlinePpiData.data).ppiSamples[1].skinContactStatus)
-        Assert.assertEquals(PpiOfflineMockData.expectedSkinContactSupported2, (offlinePpiData.data).ppiSamples[1].skinContactSupported)
+        assertEquals(PpiOfflineMockData.expectedHeartRate2, (offlinePpiData.data).ppiSamples[1].hr)
+        assertEquals(PpiOfflineMockData.expectedBlockerBit2, (offlinePpiData.data).ppiSamples[1].blockerBit)
+        assertEquals(PpiOfflineMockData.expectedIntervalInMs2, (offlinePpiData.data).ppiSamples[1].ppInMs)
+        assertEquals(PpiOfflineMockData.expectedErrorEstimate2, (offlinePpiData.data).ppiSamples[1].ppErrorEstimate)
+        assertEquals(PpiOfflineMockData.expectedSkinContactStatus2, (offlinePpiData.data).ppiSamples[1].skinContactStatus)
+        assertEquals(PpiOfflineMockData.expectedSkinContactSupported2, (offlinePpiData.data).ppiSamples[1].skinContactSupported)
 
         // calculated manually from ppiOfflineFrame
-        Assert.assertEquals(11, (offlinePpiData.data).ppiSamples.size)
+        assertEquals(11, (offlinePpiData.data).ppiSamples.size)
     }
 
     @Test
@@ -157,11 +160,11 @@ internal class OfflineRecordingDataTest {
         // Assert
         assertTrue(offlineHrData.data is OfflineHrData)
 
-        Assert.assertEquals(HrOfflineMockData.expectedSize, (offlineHrData.data as OfflineHrData).hrSamples.size)
-        Assert.assertEquals(HrOfflineMockData.hrSample0, offlineHrData.data.hrSamples.first().hr)
-        Assert.assertEquals(HrOfflineMockData.hrSample1, offlineHrData.data.hrSamples[1].hr)
-        Assert.assertEquals(HrOfflineMockData.hrSample2, offlineHrData.data.hrSamples[2].hr)
-        Assert.assertEquals(HrOfflineMockData.hrSampleLast, offlineHrData.data.hrSamples.last().hr)
+        assertEquals(HrOfflineMockData.expectedSize, (offlineHrData.data as OfflineHrData).hrSamples.size)
+        assertEquals(HrOfflineMockData.hrSample0, offlineHrData.data.hrSamples.first().hr)
+        assertEquals(HrOfflineMockData.hrSample1, offlineHrData.data.hrSamples[1].hr)
+        assertEquals(HrOfflineMockData.hrSample2, offlineHrData.data.hrSamples[2].hr)
+        assertEquals(HrOfflineMockData.hrSampleLast, offlineHrData.data.hrSamples.last().hr)
     }
 
     @Test

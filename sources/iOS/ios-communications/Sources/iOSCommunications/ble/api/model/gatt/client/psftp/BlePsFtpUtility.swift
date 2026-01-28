@@ -14,7 +14,26 @@ public enum BlePsFtpException: Error {
     /// Indicating some fatal protocol layer error, typically when streams are not in sync.
     /// File transfer should recover after this error
     case protocolError
-    
+
+    public var errorName: String {
+        switch self {
+        case .undefinedError:
+            return "UndefinedError"
+        case .operationTimeout:
+            return "OperationTimeout"
+        case .operationCanceled:
+            return "OperationCanceled"
+        case .protocolError:
+            return "ProtocolError"
+        case .responseError(let errorCode):
+            if let protoError = Communications_PbPFtpError(rawValue: errorCode) {
+                return "ResponseError.\(protoError)"
+            } else {
+                return "ResponseError.unknown(\(errorCode))"
+            }
+        }
+    }
+
     public var _domain: String {
         switch self {
         case .undefinedError:
@@ -304,3 +323,5 @@ public class BlePsFtpUtility {
         }
     }
 }
+
+public extension BlePsFtpException { var localizedDescription: String { return "The operation couldn't be completed. (PolarBleSdk.BleGattException.\(self)" } }

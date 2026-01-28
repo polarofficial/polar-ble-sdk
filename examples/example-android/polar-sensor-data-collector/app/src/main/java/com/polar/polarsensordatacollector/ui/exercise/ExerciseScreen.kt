@@ -1,6 +1,5 @@
 package com.polar.polarsensordatacollector.ui.exercise
 
-import android.text.format.DateFormat
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -13,7 +12,6 @@ import com.polar.sdk.api.model.PolarExerciseSession
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.polar.polarsensordatacollector.R
-
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -181,12 +179,8 @@ fun ExerciseScreen(
         }
 
         Spacer(Modifier.height(16.dp))
-
         startTime?.let { date ->
-            val formatted: String = DateFormat.format(
-                "yyyy-MM-dd HH:mm:ss",
-                date
-            ).toString()
+            val formatted: String = date.toString()
             Text(
                 text = stringResource(R.string.exercise_start_time, formatted),
                 style = MaterialTheme.typography.body2,

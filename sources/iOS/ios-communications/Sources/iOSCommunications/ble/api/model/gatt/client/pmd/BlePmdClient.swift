@@ -51,6 +51,13 @@ public struct Pmd {
         var samples = [[Int32]]()
         samples.append(contentsOf: [refSamples])
         while offset < data.count {
+            guard offset + 2 <= data.count else {
+                BleLogger.error(
+                    "parseDeltaFramesToSamples() truncated header. offset=\(offset), data.count=\(data.count)"
+                )
+                BleLogger.trace_hex("Truncated PMD data:", data: data)
+                return samples
+            }
             let deltaSize = UInt32(data[offset])
             offset += 1
             let sampleCount = UInt32(data[offset])

@@ -86,6 +86,7 @@
     <string name="toast_no_device">No device connected</string>
     <string name="toast_controlling">Controlling device %1$s</string>
     <string name="toast_notif_disabled">Notifications disabled – status not shown</string>
+    <string name="toast_data_viewer_failed">Failed to load data from file</string>
 
     <string name="label_sport">Sport</string>
     <string name="btn_start">Start</string>
@@ -242,6 +243,12 @@
     <string name="calories_analysis_result_text">"Calories analysis result"</string>
     <string name="sleep_analysis_result_text">"Sleep analysis result"</string>
     <string name="skin_temperature_result_text">"Skin temperature result"</string>
+    <string name="title_data_viewer">Loaded data</string>
+    <string name="activity_data_share">Share</string>
+    <string name="activity_data_view">View</string>
+
+    <!-- Data view -->
+    <string name="data_wait">Loading data from file, please wait</string>
 
     <!-- Online recording service -->
     <string name="online_recording_notification_title">PSDC online recording</string>
@@ -278,6 +285,7 @@
     <string name="user_device_settings_saved">User device settings saved</string>
     <string name="failed_to_load_settings">Failed to load settings: %1$s</string>
     <string name="failed_to_save_settings">Failed to save settings: %1$s</string>
+    <string name="autos_file_generation">AUTOS file generation</string>
 
     <!-- H10 Exercise -->
     <string name="list_exercises">List Exercises</string>
@@ -304,4 +312,8 @@
     <string name="start_listening">Start listening</string>
     <string name="hr_value">Hr: %1$s bpm</string>
     <string name="close">CLOSE</string>
+
+    <!-- Graphs -->
+    <string name="graph">Graph</string>
+    <string name="acc_value">ACC  x:%1$s  y:%2$s  z:%3$s</string>
 </resources>

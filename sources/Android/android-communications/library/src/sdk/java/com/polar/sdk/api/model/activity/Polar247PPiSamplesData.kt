@@ -4,14 +4,14 @@ import com.polar.sdk.impl.utils.PolarTimeUtils
 import fi.polar.remote.representation.protobuf.AutomaticSamples
 import fi.polar.remote.representation.protobuf.AutomaticSamples.PbPpIntervalAutoSamples.PbPpIntervalRecordingTriggerType
 import java.time.LocalTime
-import java.util.Date
+import java.time.LocalDate
 
 /**
  * Polar Peak-to-peak interval data
  * @property samples from sensor. Each sample contains PPi value, PPi error estimate and status.
  */
 data class Polar247PPiSamplesData(
-    val date: Date,
+    val date: LocalDate,
     val samples: PolarPpiDataSample
 )
 

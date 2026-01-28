@@ -46,8 +46,9 @@ import io.reactivex.rxjava3.core.BackpressureStrategy
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.awaitSingleOrNull
 import java.time.LocalDate
-import java.time.ZoneId
-import java.util.*
+import java.time.LocalDateTime
+import java.util.EnumMap
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -284,16 +285,16 @@ class PolarDeviceRepository @Inject constructor(
         }
     }
 
-    suspend fun setTime(deviceId: String, calendar: Calendar): ResultOfRequest<Nothing> = withContext(Dispatchers.IO) {
+    suspend fun setTime(deviceId: String, localDateTime: LocalDateTime): ResultOfRequest<Nothing> = withContext(Dispatchers.IO) {
         return@withContext try {
-            api.setLocalTime(deviceId, calendar).await()
+            api.setLocalTime(deviceId, localDateTime).await()
             ResultOfRequest.Success()
         } catch (e: Exception) {
             ResultOfRequest.Failure("Set time failed", e)
         }
     }
 
-    suspend fun getTime(deviceId: String): Calendar {
+    suspend fun getTime(deviceId: String): LocalDateTime {
         return withContext(Dispatchers.IO) {
             api.getLocalTime(deviceId).await()
         }
@@ -342,27 +343,7 @@ class PolarDeviceRepository @Inject constructor(
             }
             is PolarOfflineRecordingData.PpgOfflineRecording -> {
                 collector.startPpgLog(logIdentifier, startTime = offlineRecData.startTime)
-                for (sample in offlineRecData.data.samples) {
-                    var ppgs: List<Int>
-                    when(sample.channelSamples.size) {
-                        17 -> {
-                            ppgs = sample.channelSamples.subList(0, 16)
-                            val status = sample.channelSamples[16].toUInt().toLong()
-                            collector.logPpgData16Channels(sample.timeStamp, ppgs, status)
-                        }
-                        3 -> {
-                            ppgs = sample.channelSamples.subList(0, 2)
-                            val status = sample.channelSamples[2].toUInt().toLong()
-                            collector.logPpg2Channels(sample.timeStamp, ppgs, status.toInt())
-                        }
-                        else -> {
-                            ppgs = sample.channelSamples.subList(0, 3)
-                            val ambient = sample.channelSamples[3]
-                            collector.logPpg(sample.timeStamp, ppgs, ambient)
-                        }
-                    }
-
-                }
+                collector.logPpgData(offlineRecData.data)
                 return collector.finalizeAllStreams().toList().first()
             }
             is PolarOfflineRecordingData.PpiOfflineRecording -> {
@@ -997,7 +978,7 @@ class PolarDeviceRepository @Inject constructor(
         }
     }
 
-    suspend fun get247HrSamplesData(deviceId: String, from: Date, to: Date): ResultOfRequest<List<Polar247HrSamplesData>> = withContext(Dispatchers.IO) {
+    suspend fun get247HrSamplesData(deviceId: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<Polar247HrSamplesData>> = withContext(Dispatchers.IO) {
         return@withContext try {
             val result = api.get247HrSamples(deviceId, from, to).await()
             ResultOfRequest.Success(result)
@@ -1015,7 +996,7 @@ class PolarDeviceRepository @Inject constructor(
         }
     }
 
-    suspend fun get247PPiSamples(deviceId: String, from: Date, to: Date): ResultOfRequest<List<Polar247PPiSamplesData>> = withContext(Dispatchers.IO) {
+    suspend fun get247PPiSamples(deviceId: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<Polar247PPiSamplesData>> = withContext(Dispatchers.IO) {
         return@withContext try {
             val result = api.get247PPiSamples(deviceId, from, to).await()
             ResultOfRequest.Success(result)
@@ -1105,7 +1086,7 @@ class PolarDeviceRepository @Inject constructor(
         }
     }
 
-    fun getTrainingSessionReferences(deviceId: String, fromDate: Date, toDate: Date): Flow<PolarTrainingSessionReference> {
+    fun getTrainingSessionReferences(deviceId: String, fromDate: LocalDate, toDate: LocalDate): Flow<PolarTrainingSessionReference> {
         Log.d(TAG, "getTrainingSessionReferences from device $deviceId")
         return api.getTrainingSessionReferences(deviceId, fromDate, toDate)
             .doOnSubscribe {
@@ -1176,12 +1157,9 @@ class PolarDeviceRepository @Inject constructor(
         return api.setMultiBLEConnectionMode(deviceId, enable)
     }
 
-    suspend fun getActivitySamplesData(deviceId: String, from: Date, to: Date): ResultOfRequest<List<PolarActivitySamplesDayData>> = withContext(Dispatchers.IO) {
+    suspend fun getActivitySamplesData(deviceId: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<PolarActivitySamplesDayData>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            var result = api.getActivitySampleData(deviceId,
-                from.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
-                to.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
-            ).await()
+            var result = api.getActivitySampleData(deviceId, from, to).await()
             ResultOfRequest.Success(result)
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
@@ -1269,4 +1247,9 @@ class PolarDeviceRepository @Inject constructor(
                 Log.d(TAG, "HR Broadcast stream completed")
             }
     }
+
+    suspend fun setAutosFilesEnabled(deviceId: String, enabled: Boolean) =
+        withContext(Dispatchers.IO) {
+            api.setAutomaticOHRMeasurementEnabled(deviceId, enabled).await()
+        }
 }

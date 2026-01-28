@@ -50,7 +50,6 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.ui.theme.PolarsensordatacollectorTheme
 import com.polar.polarsensordatacollector.ui.utils.DataLoadProgressIndicator
-import com.polar.sdk.api.model.PolarOfflineRecordingEntry
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -64,6 +63,8 @@ class TrainingSessionListFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         deviceId = args.deviceIdFragmentArgument
+        fromDate = args.fromDateFragmentArgument
+        toDate = args.toDateFragmentArgument
 
         return ComposeView(requireContext()).apply {
             setContent {
@@ -219,7 +220,7 @@ fun TrainingSession(
             Text(text = trainingSessionEntry.path)
         },
         secondaryText = {
-            Text(text = trainingSessionEntry.date.toLocaleString())
+            Text(text = trainingSessionEntry.date.toString())
         },
         trailing = {
             if (isDeleting) {

@@ -295,7 +295,7 @@ public class BlePsFtpClient extends BleGattBase {
                         }
 
                         if (!emitter.isDisposed()) {
-                            emitter.tryOnError(ex);
+                            emitter.tryOnError(toPftpError(ex));
                         }
                     }
                 })
@@ -533,7 +533,7 @@ public class BlePsFtpClient extends BleGattBase {
             } catch (Exception ex) {
                 BleLogger.e(TAG, "Query " + id + " failed. Exception: " + ex.getMessage());
                 if (!emitter.isDisposed()) {
-                    emitter.tryOnError(ex);
+                    emitter.tryOnError(toPftpError(ex));
                 }
             }
         }).subscribeOn(scheduler);
@@ -578,7 +578,7 @@ public class BlePsFtpClient extends BleGattBase {
             } catch (Exception ex) {
                 BleLogger.e(TAG, "Send notification id: " + id + " failed. Exception: " + ex.getMessage());
                 if (!emitter.isDisposed()) {
-                    emitter.tryOnError(ex);
+                    emitter.tryOnError(toPftpError(ex));
                 }
             }
         }).subscribeOn(scheduler);
@@ -759,5 +759,17 @@ public class BlePsFtpClient extends BleGattBase {
         } else {
             throw new BlePsFtpUtils.PftpResponseError("Response error: " + packet.second, packet.second);
         }
+    }
+
+    /**
+     * Converts any PftpResponseError into a descriptive Throwable with enum name.
+     */
+    private Throwable toPftpError(final Throwable throwable) {
+        if (throwable instanceof BlePsFtpUtils.PftpResponseError e) {
+            String name = e.getErrorName();
+            int code = e.getError();
+            return new Throwable("PFTP error: " + (name != null ? name : "UNKNOWN") + " (" + code + ")", throwable);
+        }
+        return throwable;
     }
 }

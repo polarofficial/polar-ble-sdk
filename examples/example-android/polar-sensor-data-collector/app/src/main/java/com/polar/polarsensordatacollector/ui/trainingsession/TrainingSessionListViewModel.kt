@@ -10,15 +10,15 @@ import androidx.lifecycle.viewModelScope
 import com.polar.polarsensordatacollector.repository.DeviceConnectionState
 import com.polar.polarsensordatacollector.repository.PolarDeviceRepository
 import com.polar.polarsensordatacollector.repository.ResultOfRequest
-import com.polar.polarsensordatacollector.ui.offlinerecording.OfflineRecordingFetch
-import com.polar.sdk.api.model.PolarOfflineRecordingEntry
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import javax.inject.Inject
 
 internal data class TrainingSessionListDevConnectionState(
@@ -49,12 +49,12 @@ class ListTrainingSessionsViewModel @Inject constructor(
     private val polarDeviceStreamingRepository: PolarDeviceRepository,
     state: SavedStateHandle
 ) : ViewModel() {
-    val format = SimpleDateFormat("yyyyMMdd")
+    private val formatter = DateTimeFormatter.ofPattern("yyyyMMdd", Locale.ENGLISH)
     private val deviceId = state.get<String>("deviceIdFragmentArgument") ?: throw Exception("ListTrainingSessionsViewModel model requires deviceId")
     private val fromDateString = state.get<String>("fromDateFragmentArgument") ?: throw Exception("ListTrainingSessionsViewModel model requires fromDate")
     private val toDateString = state.get<String>("toDateFragmentArgument") ?: throw Exception("ListTrainingSessionsViewModel model requires toDate")
-    private val fromDate = format.parse(fromDateString)
-    private val toDate = format.parse(toDateString)
+    private val fromDate = LocalDate.parse(fromDateString, formatter)
+    private val toDate = LocalDate.parse(toDateString, formatter)
     var trainingSessionsUiState by mutableStateOf(TrainingSessionsUiState(TrainingSessionFetch.InProgress(fetchedTrainingSessions = emptyList())))
         private set
 

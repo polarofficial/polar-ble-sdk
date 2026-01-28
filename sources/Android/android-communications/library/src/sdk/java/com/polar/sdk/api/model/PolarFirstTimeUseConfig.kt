@@ -2,8 +2,7 @@ package com.polar.sdk.api.model
 
 import com.polar.sdk.api.model.PolarFirstTimeUseConfig.Gender
 import com.polar.sdk.api.model.PolarFirstTimeUseConfig.TypicalDay
-import java.util.Date
-import java.util.Calendar
+import java.time.LocalDate
 
 import fi.polar.remote.representation.protobuf.Types
 import java.time.format.DateTimeFormatter
@@ -12,10 +11,9 @@ import fi.polar.remote.representation.protobuf.PhysData.PbUserTypicalDay.Typical
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
-
 data class PolarFirstTimeUseConfig(
     val gender: Gender, // MALE or FEMALE
-    val birthDate: Date, // String
+    val birthDate: LocalDate, // String
     val height: Float, // cm, valid range [90-240]
     val weight: Float, // kg, valid range [15-300]
     val maxHeartRate: Int, // bpm, valid range [100-240]
@@ -79,12 +77,11 @@ data class PolarFirstTimeUseConfig(
             .setTrusted(true)
             .build()
 
-        val birthdayParsed = Calendar.getInstance().apply { time = birthDate }
         val birthday = PhysData.PbUserBirthday.newBuilder().apply {
             setValue(Types.PbDate.newBuilder()
-                .setYear(birthdayParsed.get(Calendar.YEAR))
-                .setMonth(birthdayParsed.get(Calendar.MONTH) + 1)
-                .setDay(birthdayParsed.get(Calendar.DAY_OF_MONTH))
+                .setYear(birthDate.year)
+                .setMonth(birthDate.month.value)
+                .setDay(birthDate.dayOfMonth)
                 .build())
             setLastModified(lastModified)
         }.build()
@@ -159,10 +156,7 @@ fun PhysData.PbUserPhysData.toPolarPhysicalConfiguration(): PolarPhysicalConfigu
         else -> throw IllegalArgumentException("Unknown gender: ${gender.value}")
     }
 
-    val birthDate = Calendar.getInstance().apply {
-        val date = birthday.value
-        set(date.year, date.month - 1, date.day)
-    }.time
+    val birthDate = LocalDate.of(birthday.value.year, birthday.value.month, birthday.value.day)
 
     val deviceTime = lastModified?.let {
         ZonedDateTime.of(
@@ -201,7 +195,7 @@ fun PhysData.PbUserPhysData.toPolarPhysicalConfiguration(): PolarPhysicalConfigu
 
 data class PolarPhysicalConfiguration(
     val gender: Gender,
-    val birthDate: Date,
+    val birthDate: LocalDate,
     val height: Float,
     val weight: Float,
     val maxHeartRate: Int,

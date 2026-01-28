@@ -1445,37 +1445,29 @@ extension PolarBleApiImpl: PolarBleApi  {
                     .map { (name: $0.name, size: UInt($0.size)) }
             }
 
-            let getFile: (BlePsFtpClient, String) -> Single<Data> = { _, path in
-                return self.getFile(identifier: identifier, filePath: path)
-                    .map { Data(referencing: $0) }
-                    .asSingle()
-            }
-
             let obsV1: Observable<PolarOfflineRecordingEntry> = PolarOfflineRecordingUtils
                 .listOfflineRecordingsV1(client: client, fetchRecursively: fetchRecursively)
 
-            let obsV2: Observable<PolarOfflineRecordingEntry> = PolarOfflineRecordingUtils
-                .listOfflineRecordingsV2(client: client, getFile: getFile)
-                .asObservable()
-                .flatMap { entries in Observable.from(entries) }
-
             return deviceSupportsFasterOfflineRecordListing(identifier: identifier)
                 .asObservable()
-                .flatMap { supports in
-                    supports ? obsV2 : obsV1
+                .flatMap { data in
+                    if data.count > 0 {
+                        PolarOfflineRecordingUtils
+                            .listOfflineRecordingsV2(fileData: Data(data))
+                            .asObservable()
+                            .flatMap { entries in Observable.from(entries) }
+                    } else {
+                        obsV1
+                    }
                 }
-
         } catch {
             return Observable<PolarOfflineRecordingEntry>.error(error)
         }
     }
 
-    private func deviceSupportsFasterOfflineRecordListing(identifier: String) -> Single<Bool> {
+    private func deviceSupportsFasterOfflineRecordListing(identifier: String) -> Single<[UInt8]> {
         
         do {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyyMMdd HHmmss"
-            
             let session = try sessionFtpClientReady(identifier)
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
                 throw PolarErrors.serviceNotFound
@@ -1485,13 +1477,13 @@ extension PolarBleApiImpl: PolarBleApi  {
                 return try loadFileorEmpty(path: PMDFilePath, client: client)
                     .map { data in
                         if (data.isEmpty == true) {
-                            false
+                            [UInt8]()
                         } else {
-                            true
+                            data
                         }
                     }
             } catch {
-                return Single.just(false)
+                return Single.just([UInt8]())
             }
         } catch let err {
             return Single.error(handleError(err))
@@ -3674,7 +3666,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                         },
                         onError: { error in
                             BleLogger.error("Exercise status observation failed for \(identifier): \(error.localizedDescription)")
-                            observer.onError(error)
+                            observer.onError(PolarErrors.polarBleSdkInternalException(description: "Exercise status observation failed for \(identifier): \(error.localizedDescription)"))
                         }
                     )
                 
@@ -3683,7 +3675,11 @@ extension PolarBleApiImpl: PolarBleApi  {
                     disposable.dispose()
                 }
             } catch {
-                observer.onError(self.handleError(error))
+                if (error as? BlePsFtpException)?.errorName == "OperationCanceled" {
+                    observer.onError(PolarErrors.polarBleSdkInternalException(description: "Exercise status observation operation cancelled for \(identifier): \(error.localizedDescription)"))
+                } else {
+                    observer.onError(PolarErrors.polarBleSdkInternalException(description: "Exercise status observation failed for \(identifier): \(error.localizedDescription)"))
+                }
                 return Disposables.create()
             }
         }
@@ -4489,6 +4485,53 @@ extension PolarBleApiImpl: PolarBleApi  {
             return Disposables.create()
         }
     }
+    
+    public func setAutomaticOHRMeasurementEnabled(_ identifier: String, enabled: Bool) -> Completable {
+        return Completable.create { completable in
+            do {
+                let session = try self.sessionFtpClientReady(identifier)
+                let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
+
+                _ = self.getUserDeviceSettingsProto(client: client)
+                    .subscribe(
+                        onSuccess: { currentProto in
+                            var updated = currentProto
+                            
+                            var autosSettings = Data_PbAutomaticMeasurementSettings()
+                            autosSettings.state = enabled ?
+                            Data_PbAutomaticMeasurementSettings.PbAutomaticMeasurementState.alwaysOn
+                            : Data_PbAutomaticMeasurementSettings.PbAutomaticMeasurementState.off
+                            
+                            if !enabled {
+                                autosSettings.clearTimedSettings()
+                                autosSettings.clearIntelligentTimedSettings()
+                            }
+                            
+                            updated.automaticMeasurementSettings.automaticOhrMeasurement = autosSettings
+
+                            _ = self.setUserDeviceSettingsProto(client: client,
+                                                                polarUserDeviceSettings: updated)
+                                .subscribe(
+                                    onCompleted: {
+                                        BleLogger.trace("AUTOS files enabled=\(enabled) written for \(identifier)")
+                                        completable(.completed)
+                                    },
+                                    onError: { error in
+                                        BleLogger.error("Failed to write AUTOS setting: \(error)")
+                                        completable(.error(self.handleError(error)))
+                                    }
+                                )
+                        },
+                        onFailure: { error in
+                            completable(.error(self.handleError(error)))
+                        }
+                    )
+            } catch let err {
+                completable(.error(self.handleError(err)))
+            }
+            return Disposables.create()
+        }
+    }
 
     private func getUserDeviceSettingsProto(client: BlePsFtpClient) -> Single<Data_PbUserDeviceSettings> {
 
@@ -4552,7 +4595,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 case .orderedSame:
                     canDelete = true
                 case .orderedAscending:
-                    break
+                    canDelete = true
                 case .orderedDescending:
                     break
                 }
@@ -5313,29 +5356,33 @@ private extension EcgData {
 
 private extension PpgData {
     func mapToPolarData() -> PolarPpgData {
-        var polarSamples: [(timeStamp:UInt64, channelSamples: [Int32])] = []
-        var dataType: PpgDataType!
+        var polarSamples: [(timeStamp:UInt64, channelSamples: [Int32], statusBits: [Int8]?) ] = []
+        var dataType: PpgDataType! = .unknown
 
         for sample in self.samples {
             if (sample.frameType == PmdDataFrameType.type_0) {
-                polarSamples.append((timeStamp: sample.timeStamp!, channelSamples: [sample.ppgDataSamples[0], sample.ppgDataSamples[1], sample.ppgDataSamples[2], sample.ambientSample ] ))
+                let ppgData = sample as! PpgDataFrameType0
+                polarSamples.append((timeStamp: sample.timeStamp!, channelSamples: [ppgData.ppgDataSamples[0], ppgData.ppgDataSamples[1], ppgData.ppgDataSamples[2], ppgData.ambientSample ], statusBits: nil ))
                 dataType = PpgDataType.ppg3_ambient1
             }  else if (sample.frameType == PmdDataFrameType.type_6) {
-                polarSamples.append((timeStamp: sample.timeStamp!, channelSamples: sample.ppgDataSamples))
+                let ppgData = sample as! PpgDataFrameType6
+                polarSamples.append((timeStamp: sample.timeStamp!, channelSamples: [ppgData.sportId], statusBits: nil))
                 dataType = PpgDataType.ppg1
             } else if (sample.frameType == PmdDataFrameType.type_7) {
-                polarSamples.append((timeStamp: sample.timeStamp!, channelSamples: sample.ppgDataSamples))
+                let ppgData = sample as! PpgDataFrameType7
+                polarSamples.append((timeStamp: sample.timeStamp!, channelSamples: ppgData.ppgDataSamples, statusBits: nil))
                 dataType = PpgDataType.ppg17
             } else if (sample.frameType == PmdDataFrameType.type_10) {
-                var samples = sample.ppgDataSamples
-                samples!.append(sample.status)
-                polarSamples.append((timeStamp: sample.timeStamp!, channelSamples: samples!))
+                let ppgData = sample as! PpgDataFrameType10
+                polarSamples.append((timeStamp: sample.timeStamp!, channelSamples: ppgData.greenSamples + ppgData.redSamples + ppgData.irSamples, statusBits: ppgData.statusBits))
                 dataType = PpgDataType.ppg21
             } else if (sample.frameType == PmdDataFrameType.type_9) {
-                polarSamples.append((timeStamp: sample.timeStamp!, channelSamples: sample.ppgDataSamples))
+                let ppgData = sample as! PpgDataFrameType9
+                polarSamples.append((timeStamp: sample.timeStamp!, channelSamples: ppgData.ppgDataSamples, statusBits: nil))
                 dataType = PpgDataType.ppg3
             } else if (sample.frameType == PmdDataFrameType.type_13) {
-                polarSamples.append((timeStamp: sample.timeStamp!, channelSamples: [sample.ppgDataSamples[0], sample.ppgDataSamples[1], sample.status ]))
+                let ppgData = sample as! PpgDataFrameType13
+                polarSamples.append((timeStamp: sample.timeStamp!, channelSamples: [ppgData.ppgDataSamples[0], ppgData.ppgDataSamples[1]], statusBits: ppgData.statusBits ))
                 dataType = PpgDataType.ppg2
             }
         }

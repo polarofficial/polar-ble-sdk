@@ -16,10 +16,13 @@ data class PolarPpgData(
      *  @property timeStamp moment sample is taken in nanoseconds. The epoch of timestamp is 1.1.2000
      *  @property channelSamples is the PPG (Photoplethysmography) raw value received from the optical sensor. Based on [type] the amount of
      *  channels varies. Typically ppg(n) channel + n ambient(s).
+     *  @property statusBits List of statuses for the PPG samples, available for frame types 7, 8, 10 and 13.
+     *  Status bits of each sample: 0 for no valid data, 1 for valid data.
      */
     data class PolarPpgSample(
         val timeStamp: Long,
         val channelSamples: List<Int>,
+        val statusBits: List<Int>
     )
 
     enum class PpgDataType {

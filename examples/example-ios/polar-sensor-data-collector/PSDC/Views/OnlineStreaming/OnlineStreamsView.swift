@@ -7,7 +7,9 @@ import PolarBleSdk
 struct OnlineStreamsView: View {
     @EnvironmentObject private var bleSdkManager: PolarBleSdkManager
     @State private var urlToShare: IdentifiableURL?
-    
+    @State private var showHrGraph = false
+    @State private var showAccGraph = false
+
     struct ShownData: Identifiable {
         let dataType: String
         let data: String
@@ -42,7 +44,10 @@ struct OnlineStreamsView: View {
                         }
                     }
                 }
-                OnlineStreamValues()
+                OnlineStreamValues(
+                    showHrGraph: $showHrGraph,
+                    showAccGraph: $showAccGraph
+                )
             }
             .fullScreenCover(item: $bleSdkManager.onlineStreamSettings) { streamSettings in
                 let settings = streamSettings
@@ -80,9 +85,61 @@ struct OnlineStreamsView: View {
                         }
                     }
                 })
+            .onChange(of: showHrGraph) { newValue in
+                if newValue {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        presentHrGraph()
+                    }
+                }
+            }
+            .onChange(of: showAccGraph) { newValue in
+                if newValue {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        presentAccGraph()
+                    }
+                }
             }
         }
     }
+    
+    private func presentHrGraph() {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first?.rootViewController else {
+            showHrGraph = false
+            return
+        }
+
+        var topController = rootViewController
+        while let presented = topController.presentedViewController {
+            topController = presented
+        }
+
+        let hrGraphVC = HrGraphViewController(onClose: {
+            showHrGraph = false
+        })
+        hrGraphVC.modalPresentationStyle = .fullScreen
+        topController.present(hrGraphVC, animated: true)
+    }
+    
+    private func presentAccGraph() {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first?.rootViewController else {
+            showAccGraph = false
+            return
+        }
+
+        var topController = rootViewController
+        while let presented = topController.presentedViewController {
+            topController = presented
+        }
+
+        let accGraphVC = AccGraphViewController(onClose: {
+            showAccGraph = false
+        })
+        accGraphVC.modalPresentationStyle = .fullScreen
+        topController.present(accGraphVC, animated: true)
+    }
+}
 
 struct OnlineStreamingButton: View {
     let dataType: PolarDeviceDataType
@@ -146,11 +203,14 @@ struct OnlineStreamingButton: View {
 
 struct OnlineStreamValues: View {
     @EnvironmentObject private var bleSdkManager: PolarBleSdkManager
+    @Binding var showHrGraph: Bool
+    @Binding var showAccGraph: Bool
+
     var body: some View {
         
         VStack(alignment: .leading, spacing: 6) {
-            ForEach(bleSdkManager.onlineRecordingDataTypes) { (dataType: PolarDeviceDataType) in
-                    
+            ForEach(bleSdkManager.onlineRecordingDataTypes, id: \.self) { dataType in
+
                 switch dataType {
                 case .ecg:
                     VStack(alignment: .leading, spacing: 6) {
@@ -168,6 +228,11 @@ struct OnlineStreamValues: View {
                                 .font(.system(size: 16)).bold()
                             Text("Accelerometer: x: \(bleSdkManager.accRecordingData.x), y: \(bleSdkManager.accRecordingData.y), z: \(bleSdkManager.accRecordingData.z)")
                                 .font(.system(size: 14))
+
+                            GraphButton {
+                                showAccGraph = true
+                            }
+                            .padding(.top, 4)
                         }
                     }
                 case .ppg:
@@ -196,8 +261,10 @@ struct OnlineStreamValues: View {
                             }
                             
                             if (bleSdkManager.ppgRecordingData.status != nil) {
-                                Text("Status: \(String(describing: bleSdkManager.ppgRecordingData.status ?? 0))")
-                                    .font(.system(size: 14))
+                                ForEach(0 ..< bleSdkManager.ppgRecordingData.status!.count, id: \.self) { index in
+                                    Text("Status\(index): \(String(describing: bleSdkManager.ppgRecordingData.status![index]))")
+                                        .font(.system(size: 14))
+                                }
                             }
                         }
                     }
@@ -235,18 +302,27 @@ struct OnlineStreamValues: View {
                 case .hr:
                     VStack(alignment: .leading, spacing: 6) {
                         if ((bleSdkManager.onlineStreamingFeature.isStreaming[PolarDeviceDataType.hr]) != nil) {
-                            Text("Heart rate values:")
-                                .font(.system(size: 16)).bold()
-                            Text("Heart rate: \(bleSdkManager.hrRecordingData.hr)")
-                                .font(.system(size: 14))
-                            Text("RR available: \(bleSdkManager.hrRecordingData.rrAvailable)")
-                                .font(.system(size: 14))
-                            Text("RRs: \(bleSdkManager.hrRecordingData.rrs)")
-                                .font(.system(size: 14))
-                            Text("Contact status supported: \(bleSdkManager.hrRecordingData.contactStatusSupported)")
-                                .font(.system(size: 14))
-                            Text("Contact status: \(bleSdkManager.hrRecordingData.contactStatus)")
-                                .font(.system(size: 14))
+                            HStack {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("Heart rate values:")
+                                        .font(.system(size: 16)).bold()
+                                    Text("Heart rate: \(bleSdkManager.hrRecordingData.hr)")
+                                        .font(.system(size: 14))
+                                    Text("RR available: \(bleSdkManager.hrRecordingData.rrAvailable)")
+                                        .font(.system(size: 14))
+                                    Text("RRs: \(bleSdkManager.hrRecordingData.rrs)")
+                                        .font(.system(size: 14))
+                                    Text("Contact status supported: \(bleSdkManager.hrRecordingData.contactStatusSupported)")
+                                        .font(.system(size: 14))
+                                    Text("Contact status: \(bleSdkManager.hrRecordingData.contactStatus)")
+                                        .font(.system(size: 14))
+                                    
+                                      GraphButton {
+                                          showHrGraph = true
+                                      }
+                                      .padding(.top, 4)
+                                }
+                            }
                         }
                     }
                 case .temperature:
@@ -304,6 +380,25 @@ fileprivate struct ShowButton: View {
         }
     }
 }
+
+fileprivate struct GraphButton: View {
+    var action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Text("Graph")
+                .font(.system(size: 14))
+                .foregroundColor(.red)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 4)
+                        .stroke(Color.red, lineWidth: 1)
+                )
+        }
+    }
+}
+
 
 fileprivate struct ActivityViewController: UIViewControllerRepresentable {
     let activityItems: [Any]
