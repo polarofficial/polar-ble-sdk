@@ -1,0 +1,93 @@
+--- a/sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/impl/PolarBleApiImpl.swift
++++ b/sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/impl/PolarBleApiImpl.swift
+@@ -1533,9 +1533,13 @@
+          do {
+              let session = try sessionFtpClientReady(identifier)
+              guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
++                 BleLogger.error("getOfflineRecord: PSFTP service not found")
+                  throw PolarErrors.serviceNotFound
+              }
+-             guard .sagRfc2FileSystem == BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType) else {
++             let fileSystemType = BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType)
++             BleLogger.trace("getOfflineRecord: Device=\(identifier) Entry=\(entry.type) Path=\(entry.path) Size=\(entry.size) FileSystemType=\(fileSystemType)")
++             guard .sagRfc2FileSystem == fileSystemType else {
++                 BleLogger.error("getOfflineRecord: Unsupported file system type: \(fileSystemType)")
+                  throw PolarErrors.operationNotSupported
+              }
+
+@@ -1579,18 +1583,23 @@
+                                               Single.deferred { client.request(request) }
+                                              .map { dataResult -> OfflineRecordingData<Any> in
+                                                  do {
++                                                     BleLogger.trace("getOfflineRecord: Received \(dataResult.count) bytes for \(entry.type)")
+                                                      let pmdSecret = try secret.map { try PolarDataUtils.mapToPmdSecret(from: $0) }
++                                                     let pmdType = PolarDataUtils.mapToPmdClientMeasurementType(from: entry.type)
++                                                     BleLogger.trace("getOfflineRecord: Parsing as PMD type: \(pmdType)")
+                                                      return try OfflineRecordingData<Any>.parseDataFromOfflineFile(
+                                                          fileData: dataResult as Data,
+-                                                         type: PolarDataUtils.mapToPmdClientMeasurementType(from: entry.type),
++                                                         type: pmdType,
+                                                          secret: pmdSecret,
+                                                          lastTimestamp: lastTimestamp
+                                                      )
+                                                  } catch {
+-                                                     throw PolarErrors.polarOfflineRecordingError(description: "Failed to parse data")
++                                                     BleLogger.error("getOfflineRecord: Parse failed for \(entry.type): \(error)")
++                                                     throw PolarErrors.polarOfflineRecordingError(description: "Failed to parse data: \(error)")
+                                                  }
+                                              }
+
+                                          _ = requestResult.subscribe(
+                                              onSuccess: { offlineRecordingData in
++                                                 BleLogger.trace("getOfflineRecord: Successfully parsed data for \(entry.type)")
+                                                  let settings: PolarSensorSetting = offlineRecordingData.recordingSettings?.mapToPolarSettings() ?? PolarSensorSetting()
+
+                                                  switch offlineRecordingData.data {
+@@ -1624,15 +1633,18 @@
+                                                      polarEmptyData = self.processEmptyData(offlineRecordingData)
+                                                      observer.onNext(polarEmptyData!)
+                                                  default:
++                                                     BleLogger.error("getOfflineRecord: Unsupported data type: \(type(of: offlineRecordingData.data))")
+                                                      observer.onError(PolarErrors.polarOfflineRecordingError(description: "GetOfflineRecording failed. Data type is not supported."))
+                                                      return
+                                                  }
+                                                  observer.onCompleted()
+                                              },
+                                              onFailure: { error in
++                                                 BleLogger.error("getOfflineRecord: Request failed: \(error)")
+                                                  observer.onError(self.handleError(error))
+                                              }
+                                          )
+                                      } catch {
++                                         BleLogger.error("getOfflineRecord: Exception in processing: \(error)")
+                                          observer.onError(self.handleError(error))
+                                      }
+
+@@ -1683,6 +1695,7 @@
+                 let directoryPath = entry.path.components(separatedBy: "/").dropLast().joined(separator: "/") + "/"
+                 let fileType = try self.mapDeviceDataTypeToOfflineRecordingFileName(type: entry.type)
+                 operation.path = directoryPath
++                BleLogger.trace("getSubRecordingCount: Requesting directory=\(directoryPath) fileType=\(fileType)")
+                 _ = client.request(try operation.serializedData())
+                     .subscribe(
+                         onSuccess: { content in
+                             do {
+                                 let directory = try Protocol_PbPFtpDirectory(serializedData: content as Data)
+                                 let subrecordingCount = directory.entries.filter { $0.name.hasPrefix(fileType) }.count
++                                BleLogger.trace("getSubRecordingCount: Found \(subrecordingCount) sub-recordings for \(fileType)")
+                                 single(.success(subrecordingCount))
+                             } catch {
++                                BleLogger.error("getSubRecordingCount: Failed to parse directory: \(error)")
+                                 single(.failure(self.handleError(error)))
+                             }
+                         },
+                         onFailure: { error in
++                            BleLogger.error("getSubRecordingCount: Request failed: \(error)")
+                             single(.failure(self.handleError(error)))
+                         }
+                     )
+             } catch {
++                BleLogger.error("getSubRecordingCount: Exception: \(error)")
+                 single(.failure(self.handleError(error)))
+             }
+             return Disposables.create()
