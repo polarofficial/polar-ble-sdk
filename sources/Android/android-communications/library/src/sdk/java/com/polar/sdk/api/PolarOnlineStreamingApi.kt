@@ -266,4 +266,15 @@ interface PolarOnlineStreamingApi {
     ): Flowable<PolarTemperatureData>
 
     fun stopStreaming(identifier: String, type: PmdMeasurementType)
+
+    /**
+     * Request current RSSI value. This can be used to monitor the signal strength of the device.
+     *
+     * @param identifier polar device id or bt address
+     * @return Single stream
+     */
+    fun requestRssi(
+        identifier: String,
+    ): Single<Int>
+
 }
