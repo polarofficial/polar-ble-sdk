@@ -1,0 +1,81 @@
+{
+  "defaults": {
+    "fileSystemType": "POLAR_FILE_SYSTEM_V2",
+    "recordingSupported": false,
+    "firmwareUpdateSupported": true,
+    "activityDataSupported": false,
+    "isDeviceSensor": false
+  },
+  "devices": {
+    "h10": {
+      "fileSystemType": "H10_FILE_SYSTEM",
+      "recordingSupported": true,
+      "firmwareUpdateSupported": true,
+      "activityDataSupported": false,
+      "isDeviceSensor": true
+    },
+    "oh1": {
+      "fileSystemType": "POLAR_FILE_SYSTEM_V2",
+      "recordingSupported": false,
+      "firmwareUpdateSupported": false,
+      "activityDataSupported": false,
+      "isDeviceSensor": true
+    },
+    "sense": {
+      "fileSystemType": "POLAR_FILE_SYSTEM_V2",
+      "recordingSupported": false,
+      "firmwareUpdateSupported": true,
+      "activityDataSupported": false,
+      "isDeviceSensor": true
+    },
+    "inw4j": {
+      "fileSystemType": "POLAR_FILE_SYSTEM_V2",
+      "recordingSupported": false,
+      "firmwareUpdateSupported": true,
+      "activityDataSupported": false,
+      "isDeviceSensor": true
+    },
+    "360": {
+      "fileSystemType": "POLAR_FILE_SYSTEM_V2",
+      "recordingSupported": false,
+      "firmwareUpdateSupported": true,
+      "activityDataSupported": true,
+      "isDeviceSensor": true
+    },
+    "loop gen 2": {
+      "fileSystemType": "POLAR_FILE_SYSTEM_V2",
+      "recordingSupported": false,
+      "firmwareUpdateSupported": true,
+      "activityDataSupported": true,
+      "isDeviceSensor": true
+    },
+    "ignite 3": {
+      "fileSystemType": "POLAR_FILE_SYSTEM_V2",
+      "recordingSupported": false,
+      "firmwareUpdateSupported": true,
+      "activityDataSupported": true,
+      "isDeviceSensor": false
+    },
+    "grit x2 pro": {
+      "fileSystemType": "POLAR_FILE_SYSTEM_V2",
+      "recordingSupported": false,
+      "firmwareUpdateSupported": true,
+      "activityDataSupported": true,
+      "isDeviceSensor": false
+    },
+    "vantage v3": {
+      "fileSystemType": "POLAR_FILE_SYSTEM_V2",
+      "recordingSupported": false,
+      "firmwareUpdateSupported": true,
+      "activityDataSupported": true,
+      "isDeviceSensor": false
+    },
+    "vantage m3": {
+      "fileSystemType": "POLAR_FILE_SYSTEM_V2",
+      "recordingSupported": false,
+      "firmwareUpdateSupported": true,
+      "activityDataSupported": true,
+      "isDeviceSensor": false
+    }
+  }
+}
