@@ -7,7 +7,7 @@ Most accurate Heart rate sensor in the markets. The H10 is used in the Getting s
 
 ## Polar H10 features available by the SDK
 
-* Heart rate as beats per minute and RR Interval in ms.
+* Heart rate as beats per minute and RR Interval in ms. Sample rate 1Hz.
 * Heart rate broadcast.
 * Electrocardiography (ECG) data in µV with sample rate 130Hz.
 * Accelerometer data with sample rates of 25Hz, 50Hz, 100Hz and 200Hz and range of 2G, 4G and 8G. Axis specific acceleration data in mG.
