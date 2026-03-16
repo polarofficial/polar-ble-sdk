@@ -19,7 +19,7 @@ import io.reactivex.rxjava3.core.Single
 interface PolarSdkModeApi {
 
     /**
-     * Enables SDK mode.
+     * Enables SDK mode. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE]
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
      * @return Completable stream produces:
@@ -29,7 +29,7 @@ interface PolarSdkModeApi {
     fun enableSDKMode(identifier: String): Completable
 
     /**
-     * Disables SDK mode.
+     * Disables SDK mode. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE]
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
      * @return Completable stream produces:
@@ -39,7 +39,7 @@ interface PolarSdkModeApi {
     fun disableSDKMode(identifier: String): Completable
 
     /**
-     * Check if SDK mode currently enabled.
+     * Check if SDK mode currently enabled. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE]
      *
      * Note, SDK status check is supported by VeritySense starting from firmware 2.1.0
      *

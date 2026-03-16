@@ -21,9 +21,21 @@ import java.util.regex.Pattern
 
 def getVersion = { ->
     def stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'describe', '--tags'
-        standardOutput = stdout
+    def stderr = new ByteArrayOutputStream()
+    try {
+        def result = exec {
+            commandLine 'git', 'describe', '--tags'
+            standardOutput = stdout
+            errorOutput = stderr
+            ignoreExitValue = true
+        }
+        if (result.exitValue != 0) {
+            logger.warn("WARNING: 'git describe --tags' failed (exit ${result.exitValue}). Version information from git is not available. Using fallback version.")
+            return "unknown"
+        }
+    } catch (Exception e) {
+        logger.warn("WARNING: git command is not available or failed: ${e.message}. Version information from git is not possible to detect. Using fallback version.")
+        return "unknown"
     }
     def pattern = Pattern.compile("^(\\d*)(\\.)(\\d*)(\\.)(\\d*)(-.*)")
     def matcher = pattern.matcher(stdout.toString().trim())
@@ -39,21 +51,60 @@ def getVersion = { ->
     }
 }
 
+// Version of the Polar BLE SDK declared as the JitPack dependency (see dependencies block below).
+// Set this to select SDK version to use with PSDC app
+def POLAR_SDK_VERSION = '6.16.0' // e.g. '6.15.0'
+
+// Returns the SDK version string to embed in BuildConfig.SDK_VERSION:
+//   - JitPack mode  → the declared POLAR_SDK_VERSION constant (always reliable)
+//   - Local SDK mode → git describe --tags (falls back to "unknown" with a build warning)
+def getSdkVersion = { ->
+    if (!localSdk.toBoolean()) {
+        return POLAR_SDK_VERSION
+    }
+    // Local AAR: derive version from git tags (same repo as the SDK source)
+    def stdout = new ByteArrayOutputStream()
+    def stderr = new ByteArrayOutputStream()
+    try {
+        def result = exec {
+            commandLine 'git', 'describe', '--tags'
+            standardOutput = stdout
+            errorOutput = stderr
+            ignoreExitValue = true
+        }
+        if (result.exitValue != 0) {
+            logger.warn("WARNING: 'git describe --tags' failed (exit ${result.exitValue}). SDK version from git is not available. Using fallback version.")
+            return "unknown"
+        }
+    } catch (Exception e) {
+        logger.warn("WARNING: git command is not available or failed: ${e.message}. SDK version from git is not possible to detect. Using fallback version.")
+        return "unknown"
+    }
+    // Match both plain tags ("6.15.0") and post-commit describe output ("6.15.0-43-gabcdef")
+    def pattern = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)(-.*)?\$")
+    def matcher = pattern.matcher(stdout.toString().trim())
+    if (matcher.matches()) {
+        return "${matcher.group(1)}.${matcher.group(2)}.${matcher.group(3)}"
+    } else {
+        return stdout.toString().trim()
+    }
+}
+
 android {
     namespace 'com.polar.polarsensordatacollector'
     compileSdkVersion 35
     buildTypes.all { buildType ->
-        def version = getVersion()
-        buildConfigField 'String', 'GIT_VERSION', "\"$version\""
+        def version = getSdkVersion()
+        buildConfigField 'String', 'SDK_VERSION', "\"$version\""
     }
 
     defaultConfig {
         applicationId "com.polar.polarsensordatacollector"
         minSdkVersion 26
-        targetSdkVersion 33
-    	versionCode 75600
+        targetSdkVersion 34
+    	versionCode 75800
         // version code from semantic version in format [2 digits of major][2 digits of minor][2 digits of batch]
-    	versionName "7.56.0"
+    	versionName "7.58.0"
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
@@ -71,17 +122,22 @@ android {
     }
 
     signingConfigs {
-        release {
-            storeFile file(requireEnv("PSDC_ANDROID_KEYSTORE_PATH"))
-            storePassword requireEnv("PSDC_ANDROID_KEYSTORE_PASSWORD")
-            keyAlias (System.getenv("PSDC_ANDROID_KEY_ALIAS") ?: "release")
-            keyPassword requireEnv("PSDC_ANDROID_KEY_PASSWORD")
+        if (System.getenv("PSDC_ANDROID_KEYSTORE_PATH")) {
+            release {
+                storeFile file(System.getenv("PSDC_ANDROID_KEYSTORE_PATH"))
+                storePassword System.getenv("PSDC_ANDROID_KEYSTORE_PASSWORD")
+                keyAlias (System.getenv("PSDC_ANDROID_KEY_ALIAS") ?: "release")
+                keyPassword System.getenv("PSDC_ANDROID_KEY_PASSWORD")
+            }
         }
     }
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            def releaseSigningConfig = signingConfigs.findByName('release')
+            if (releaseSigningConfig) {
+                signingConfig releaseSigningConfig
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 
@@ -155,7 +211,13 @@ if (project.hasProperty("artifactoryUser") && project.hasProperty("artifactoryPa
 }
 
 dependencies {
-    implementation files('../polarBleSdk/polar-ble-sdk.aar')
+    // Default: resolve Polar BLE SDK from JitPack (requires internet access).
+    // To use the local AAR bundled with this ZIP, set localSdk=true in gradle.properties.
+    if (localSdk.toBoolean()) {
+        implementation files('../polarBleSdk/polar-ble-sdk.aar')
+    } else {
+        implementation "com.github.polarofficial:polar-ble-sdk:${POLAR_SDK_VERSION}"
+    }
 
     if (leakCanary.toBoolean()) {
         debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
@@ -231,3 +293,12 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
 apply plugin: 'com.google.gms.google-services'
+
+gradle.taskGraph.whenReady { taskGraph ->
+    def releaseTaskRequested = taskGraph.allTasks.any { task ->
+        task.name ==~ /.*[Rr]elease.*/
+    }
+    if (releaseTaskRequested && !android.signingConfigs.findByName('release')) {
+        throw new GradleException("Release signing not configured. Set PSDC_ANDROID_KEYSTORE_PATH, PSDC_ANDROID_KEYSTORE_PASSWORD, and PSDC_ANDROID_KEY_PASSWORD.")
+    }
+}

@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		482CAADA065AF442710A7800 /* Pods_PSDC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DD16CF04AD20FECFCA0114D /* Pods_PSDC.framework */; };
 		6C2EDE8922B9FE370031AA17 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6C2EDE8822B9FE370031AA17 /* Assets.xcassets */; };
 		6C2EDE8C22B9FE370031AA17 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6C2EDE8A22B9FE370031AA17 /* LaunchScreen.storyboard */; };
 		8415B05A2C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8415B0592C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift */; };
@@ -16,16 +15,17 @@
 		843A2B902F0E78C800F3B2EC /* HrGraphViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843A2B8F2F0E78B200F3B2EC /* HrGraphViewController.swift */; };
 		8443CFAE2DD47953002AFBB9 /* UserDeviceSettingsFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8443CFAD2DD47948002AFBB9 /* UserDeviceSettingsFeature.swift */; };
 		8446A2622F0E918F00141093 /* HrGraphViewWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8446A2612F0E918400141093 /* HrGraphViewWrapper.swift */; };
-		8446B9272F3A122200310FA0 /* polar_device_capabilities.json in Resources */ = {isa = PBXBuildFile; fileRef = 8446B9262F3A122200310FA0 /* polar_device_capabilities.json */; };
 		845358382F166ACB00FCA56F /* AccGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845358372F166AC600FCA56F /* AccGraphView.swift */; };
 		8453583A2F166AE800FCA56F /* AccGraphViewWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845358392F166AE000FCA56F /* AccGraphViewWrapper.swift */; };
 		8453583C2F166B0600FCA56F /* AccGraphViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8453583B2F166AFF00FCA56F /* AccGraphViewController.swift */; };
 		8453583E2F166B1000FCA56F /* AccDataHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8453583D2F166B0A00FCA56F /* AccDataHolder.swift */; };
+		845402372F4DC22000C460A2 /* OfflineExerciseV2View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845402362F4DC21800C460A2 /* OfflineExerciseV2View.swift */; };
 		84698A0F2DB778E2006AD8FA /* TrainingSessionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A0E2DB778E2006AD8FA /* TrainingSessionListView.swift */; };
 		84698A112DB77922006AD8FA /* TrainingSessionDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A102DB77922006AD8FA /* TrainingSessionDetailsView.swift */; };
 		84698A132DB77937006AD8FA /* TrainingSessionEntriesRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A122DB77937006AD8FA /* TrainingSessionEntriesRow.swift */; };
 		84698A152DB77D39006AD8FA /* TrainingSessionEntries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A142DB77D39006AD8FA /* TrainingSessionEntries.swift */; };
 		84698A172DB77D8C006AD8FA /* TrainingSessionData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A162DB77D8C006AD8FA /* TrainingSessionData.swift */; };
+		847AAF4F2F5EF71E00D65222 /* OfflineExerciseV2Feature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 847AAF4E2F5EF70400D65222 /* OfflineExerciseV2Feature.swift */; };
 		849400072ECC96C10093A8C8 /* HrBroadcastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849400062ECC96B50093A8C8 /* HrBroadcastView.swift */; };
 		84954BAD2E9E65C5000A5C0A /* DataLoadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84954BAC2E9E65C2000A5C0A /* DataLoadProgressView.swift */; };
 		8499A2DC2E01576D006FD70A /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8499A2DA2E01576D006FD70A /* Localizable.strings */; };
@@ -92,6 +92,7 @@
 		AAFD0B282F35C146009E833A /* GenericApiUIState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFD0B272F35C13D009E833A /* GenericApiUIState.swift */; };
 		CC57B5DC2E60618900E90F5B /* ExerciseUIState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC57B5DB2E60617F00E90F5B /* ExerciseUIState.swift */; };
 		CC57B5DE2E60619400E90F5B /* ExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC57B5DD2E60618D00E90F5B /* ExerciseView.swift */; };
+		F9B1CE83F94C22994E7E94FB /* Pods_PSDC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DB6CA70D5331AD54376FE25A /* Pods_PSDC.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -108,28 +109,28 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0BF6D5D0D8E23FA1C5C3A8CB /* Pods-PSDC.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PSDC.debug.xcconfig"; path = "Target Support Files/Pods-PSDC/Pods-PSDC.debug.xcconfig"; sourceTree = "<group>"; };
-		3DD16CF04AD20FECFCA0114D /* Pods_PSDC.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PSDC.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C2EDE7E22B9FE360031AA17 /* PSDC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PSDC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C2EDE8822B9FE370031AA17 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6C2EDE8B22B9FE370031AA17 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		6C2EDE8D22B9FE370031AA17 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		823E19644F6097858925618B /* Pods-PSDC.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PSDC.debug.xcconfig"; path = "Target Support Files/Pods-PSDC/Pods-PSDC.debug.xcconfig"; sourceTree = "<group>"; };
 		8415B0592C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareUpdateFeature.swift; sourceTree = "<group>"; };
 		843A2B8B2F0E769B00F3B2EC /* HrDataHolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HrDataHolder.swift; sourceTree = "<group>"; };
 		843A2B8D2F0E774C00F3B2EC /* HrGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HrGraphView.swift; sourceTree = "<group>"; };
 		843A2B8F2F0E78B200F3B2EC /* HrGraphViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HrGraphViewController.swift; sourceTree = "<group>"; };
 		8443CFAD2DD47948002AFBB9 /* UserDeviceSettingsFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDeviceSettingsFeature.swift; sourceTree = "<group>"; };
 		8446A2612F0E918400141093 /* HrGraphViewWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HrGraphViewWrapper.swift; sourceTree = "<group>"; };
-		8446B9262F3A122200310FA0 /* polar_device_capabilities.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = polar_device_capabilities.json; sourceTree = "<group>"; };
 		845358372F166AC600FCA56F /* AccGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccGraphView.swift; sourceTree = "<group>"; };
 		845358392F166AE000FCA56F /* AccGraphViewWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccGraphViewWrapper.swift; sourceTree = "<group>"; };
 		8453583B2F166AFF00FCA56F /* AccGraphViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccGraphViewController.swift; sourceTree = "<group>"; };
 		8453583D2F166B0A00FCA56F /* AccDataHolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccDataHolder.swift; sourceTree = "<group>"; };
+		845402362F4DC21800C460A2 /* OfflineExerciseV2View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineExerciseV2View.swift; sourceTree = "<group>"; };
 		84698A0E2DB778E2006AD8FA /* TrainingSessionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionListView.swift; sourceTree = "<group>"; };
 		84698A102DB77922006AD8FA /* TrainingSessionDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionDetailsView.swift; sourceTree = "<group>"; };
 		84698A122DB77937006AD8FA /* TrainingSessionEntriesRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionEntriesRow.swift; sourceTree = "<group>"; };
 		84698A142DB77D39006AD8FA /* TrainingSessionEntries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionEntries.swift; sourceTree = "<group>"; };
 		84698A162DB77D8C006AD8FA /* TrainingSessionData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionData.swift; sourceTree = "<group>"; };
+		847AAF4E2F5EF70400D65222 /* OfflineExerciseV2Feature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineExerciseV2Feature.swift; sourceTree = "<group>"; };
 		849400062ECC96B50093A8C8 /* HrBroadcastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HrBroadcastView.swift; sourceTree = "<group>"; };
 		84954BAC2E9E65C2000A5C0A /* DataLoadProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataLoadProgressView.swift; sourceTree = "<group>"; };
 		8499A2DB2E01576D006FD70A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -139,6 +140,7 @@
 		84F749002C63556500038A4B /* ActivityDatePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityDatePickerView.swift; sourceTree = "<group>"; };
 		84F749022C63559A00038A4B /* ActivityRecordingDetailsview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityRecordingDetailsview.swift; sourceTree = "<group>"; };
 		84F749042C6355C400038A4B /* ActivityRecordingData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityRecordingData.swift; sourceTree = "<group>"; };
+		8D49C292FB86AB16E94BDDD5 /* Pods-PSDC.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PSDC.release.xcconfig"; path = "Target Support Files/Pods-PSDC/Pods-PSDC.release.xcconfig"; sourceTree = "<group>"; };
 		9537D58A2CFF06D900B6A1E6 /* PolarBleDeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarBleDeviceManager.swift; sourceTree = "<group>"; };
 		9559A5F72D267B960003DC6F /* SkinTemperatureRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkinTemperatureRecordingFeature.swift; sourceTree = "<group>"; };
 		957CBBE62EC74182000E008B /* TextViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextViewerView.swift; sourceTree = "<group>"; };
@@ -201,7 +203,7 @@
 		AAFD0B272F35C13D009E833A /* GenericApiUIState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericApiUIState.swift; sourceTree = "<group>"; };
 		CC57B5DB2E60617F00E90F5B /* ExerciseUIState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseUIState.swift; sourceTree = "<group>"; };
 		CC57B5DD2E60618D00E90F5B /* ExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseView.swift; sourceTree = "<group>"; };
-		EB604408B4225FE7ECC74193 /* Pods-PSDC.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PSDC.release.xcconfig"; path = "Target Support Files/Pods-PSDC/Pods-PSDC.release.xcconfig"; sourceTree = "<group>"; };
+		DB6CA70D5331AD54376FE25A /* Pods_PSDC.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PSDC.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -209,7 +211,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				482CAADA065AF442710A7800 /* Pods_PSDC.framework in Frameworks */,
+				F9B1CE83F94C22994E7E94FB /* Pods_PSDC.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -237,7 +239,6 @@
 		6C2EDE8022B9FE360031AA17 /* PSDC */ = {
 			isa = PBXGroup;
 			children = (
-				8446B9262F3A122200310FA0 /* polar_device_capabilities.json */,
 				AA74C2222BDA39D6005E0908 /* PolarBleSdkManager.swift */,
 				9537D58A2CFF06D900B6A1E6 /* PolarBleDeviceManager.swift */,
 				AA74C25D2BDA3F77005E0908 /* PSDCApp.swift */,
@@ -258,7 +259,7 @@
 				AA7C73292BC4F871006C0645 /* Alamofire.framework */,
 				A588B0DE25B81B7D00F6D7A3 /* RxSwift.xcframework */,
 				A588B0DB25B81B7800F6D7A3 /* PolarBleSdk.xcframework */,
-				3DD16CF04AD20FECFCA0114D /* Pods_PSDC.framework */,
+				DB6CA70D5331AD54376FE25A /* Pods_PSDC.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -266,8 +267,8 @@
 		6F9B5877CFCD0DFD62DE31CA /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				0BF6D5D0D8E23FA1C5C3A8CB /* Pods-PSDC.debug.xcconfig */,
-				EB604408B4225FE7ECC74193 /* Pods-PSDC.release.xcconfig */,
+				823E19644F6097858925618B /* Pods-PSDC.debug.xcconfig */,
+				8D49C292FB86AB16E94BDDD5 /* Pods-PSDC.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -285,6 +286,14 @@
 				843A2B8B2F0E769B00F3B2EC /* HrDataHolder.swift */,
 			);
 			path = Graph;
+			sourceTree = "<group>";
+		};
+		845402352F4DC1C900C460A2 /* OfflineExerciseV2 */ = {
+			isa = PBXGroup;
+			children = (
+				845402362F4DC21800C460A2 /* OfflineExerciseV2View.swift */,
+			);
+			path = OfflineExerciseV2;
 			sourceTree = "<group>";
 		};
 		84698A0D2DB778B2006AD8FA /* TrainingSession */ = {
@@ -327,6 +336,7 @@
 		AA74C2242BDA3A2C005E0908 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				847AAF4E2F5EF70400D65222 /* OfflineExerciseV2Feature.swift */,
 				AAB841F32E13A5F000810B09 /* MultiBleFeature.swift */,
 				8443CFAD2DD47948002AFBB9 /* UserDeviceSettingsFeature.swift */,
 				95EA2BA12D40E7A800657DE5 /* SleepRecordingFeature.swift */,
@@ -378,6 +388,7 @@
 		AA74C2442BDA3D6D005E0908 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				845402352F4DC1C900C460A2 /* OfflineExerciseV2 */,
 				AAFD0B242F35C099009E833A /* GenericApi */,
 				843A2B8A2F0E767F00F3B2EC /* Graph */,
 				849400052ECC96990093A8C8 /* HrBroadcast */,
@@ -483,13 +494,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6C2EDE9022B9FE370031AA17 /* Build configuration list for PBXNativeTarget "PSDC" */;
 			buildPhases = (
-				4DE366E9271E96F55245073E /* [CP] Check Pods Manifest.lock */,
+				0C47387CFC1F38762BC7108A /* [CP] Check Pods Manifest.lock */,
 				9517B91A2E3A03E10079D6FA /* ShellScript */,
 				6C2EDE7A22B9FE360031AA17 /* Sources */,
 				6C2EDE7B22B9FE360031AA17 /* Frameworks */,
 				6C2EDE7C22B9FE360031AA17 /* Resources */,
 				A5560E23256400EF00C3F75D /* Embed Frameworks */,
-				9177D42479B630B04EB93E1C /* [CP] Embed Pods Frameworks */,
+				68ECC2C211252023B1D26013 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -544,7 +555,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8446B9272F3A122200310FA0 /* polar_device_capabilities.json in Resources */,
 				6C2EDE8C22B9FE370031AA17 /* LaunchScreen.storyboard in Resources */,
 				8499A2DC2E01576D006FD70A /* Localizable.strings in Resources */,
 				6C2EDE8922B9FE370031AA17 /* Assets.xcassets in Resources */,
@@ -554,7 +564,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		4DE366E9271E96F55245073E /* [CP] Check Pods Manifest.lock */ = {
+		0C47387CFC1F38762BC7108A /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -576,7 +586,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		9177D42479B630B04EB93E1C /* [CP] Embed Pods Frameworks */ = {
+		68ECC2C211252023B1D26013 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -584,9 +594,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PSDC/Pods-PSDC-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-PSDC/Pods-PSDC-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -681,6 +695,7 @@
 				AAA0FE052BEA3769005368A7 /* AccRecordingFeature.swift in Sources */,
 				957CBBE72EC74182000E008B /* TextViewerView.swift in Sources */,
 				84698A172DB77D8C006AD8FA /* TrainingSessionData.swift in Sources */,
+				847AAF4F2F5EF71E00D65222 /* OfflineExerciseV2Feature.swift in Sources */,
 				AA74C2562BDA3E9B005E0908 /* OfflineRecordingListView.swift in Sources */,
 				8415B05A2C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift in Sources */,
 				849400072ECC96C10093A8C8 /* HrBroadcastView.swift in Sources */,
@@ -697,6 +712,7 @@
 				AAE726462CB654A700007C6C /* DataDeletionSelections.swift in Sources */,
 				AA74C2582BDA3EBF005E0908 /* OfflineRecordingDetailsView.swift in Sources */,
 				AA74C2602BDA3FD5005E0908 /* SettingsView.swift in Sources */,
+				845402372F4DC22000C460A2 /* OfflineExerciseV2View.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -848,7 +864,7 @@
 		};
 		6C2EDE9122B9FE370031AA17 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0BF6D5D0D8E23FA1C5C3A8CB /* Pods-PSDC.debug.xcconfig */;
+			baseConfigurationReference = 823E19644F6097858925618B /* Pods-PSDC.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = PSDC/PSDC.entitlements;
@@ -882,7 +898,7 @@
 		};
 		6C2EDE9222B9FE370031AA17 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = EB604408B4225FE7ECC74193 /* Pods-PSDC.release.xcconfig */;
+			baseConfigurationReference = 8D49C292FB86AB16E94BDDD5 /* Pods-PSDC.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = PSDC/PSDC.entitlements;

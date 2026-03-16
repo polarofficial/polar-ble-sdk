@@ -11,12 +11,14 @@ import io.reactivex.rxjava3.core.Single
 import java.time.LocalDate
 
 /**
-* Polar training session API.
-*/
+ * Polar training session API.
+ *
+ * Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA]
+ */
 interface PolarTrainingSessionApi {
 
     /**
-     * Get training session references for a given period.
+     * Get training session references for a given period. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA]
      *
      * @param identifier The Polar device ID or BT address.
      * @param fromDate The starting date of the period to retrieve training session references from. Optional.
@@ -30,7 +32,7 @@ interface PolarTrainingSessionApi {
     ): Flowable<PolarTrainingSessionReference>
 
     /**
-     * Api for removing single training session from a Polar device. You can get a list of training sessions with [getTrainingSessionReferences] API.
+     * Api for removing single training session from a Polar device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA] You can get a list of training sessions with [getTrainingSessionReferences] API.
      *
      * @param identifier The Polar device ID or BT address.
      * @param reference PolarTrainingSessionReference with path in device to the training session to be removed.
@@ -39,7 +41,7 @@ interface PolarTrainingSessionApi {
     fun deleteTrainingSession(identifier: String, reference: PolarTrainingSessionReference): Completable
 
     /**
-     * Get training session.
+     * Get training session. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA]
      *
      * @param identifier The Polar device ID or BT address.
      * @param trainingSessionReference The reference to the training session to retrieve.
@@ -51,7 +53,7 @@ interface PolarTrainingSessionApi {
     ): Single<PolarTrainingSession>
 
     /**
-     * Get training session with progress tracking.
+     * Get training session with progress tracking. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA]
      *
      * @param identifier The Polar device ID or BT address.
      * @param trainingSessionReference The reference to the training session to retrieve.
@@ -63,7 +65,7 @@ interface PolarTrainingSessionApi {
     ): Observable<PolarTrainingSessionFetchResult>
     
     /**
-     * Start an exercise session on the device.
+     * Start an exercise session on the device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA]
      *
      * @param identifier The Polar device ID or BT address.
      * @param profile The sport profile to use for the exercise session.
@@ -72,7 +74,7 @@ interface PolarTrainingSessionApi {
     fun startExercise(identifier: String, profile: PolarExerciseSession.SportProfile): Completable
 
     /**
-     * Pause an ongoing exercise session.
+     * Pause an ongoing exercise session. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA]
      *
      * @param identifier The Polar device ID or BT address.
      * @return A [Completable] that completes when the command has been delivered to the device.
@@ -80,7 +82,7 @@ interface PolarTrainingSessionApi {
     fun pauseExercise(identifier: String): Completable
 
     /**
-     * Resume a paused exercise session.
+     * Resume a paused exercise session. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA]
      *
      * @param identifier The Polar device ID or BT address.
      * @return A [Completable] that completes when the command has been delivered to the device.
@@ -88,7 +90,7 @@ interface PolarTrainingSessionApi {
     fun resumeExercise(identifier: String): Completable
 
     /**
-     * Stop the current exercise session.
+     * Stop the current exercise session. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA]
      *
      * By default, the session is saved on the device.
      *
@@ -98,7 +100,7 @@ interface PolarTrainingSessionApi {
     fun stopExercise(identifier: String): Completable
 
     /**
-     * Get the current exercise session status from the device.
+     * Get the current exercise session status from the device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA]
      *
      * @param identifier The Polar device ID or BT address.
      * @return A [Single] emitting the current [PolarExerciseSession.ExerciseInfo] for the device.
@@ -106,7 +108,7 @@ interface PolarTrainingSessionApi {
     fun getExerciseStatus(identifier: String): Single<PolarExerciseSession.ExerciseInfo>
 
     /**
-     * Observe exercise session status changes from the device.
+     * Observe exercise session status changes from the device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA]
      *
      * @param identifier The Polar device ID or BT address.
      * @return A [Flowable] emitting [PolarExerciseSession.ExerciseInfo] whenever the session status changes.

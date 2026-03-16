@@ -360,7 +360,7 @@ public interface <span class="typeNameLabel"><a href=PolarH10OfflineExerciseApi.
                                     <li class="blockList">
                                         <h4>startRecording</h4>
                                         <pre class="methodSignature"> abstract Completable <a href=PolarH10OfflineExerciseApi.html#startRecording(java.lang.String,java.lang.String,com.polar.sdk.api.PolarH10OfflineExerciseApi.RecordingInterval,com.polar.sdk.api.PolarH10OfflineExerciseApi.SampleType)>startRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, @<a href=https://developer.android.com/reference/kotlin/androidx/annotation/Size.html>Size</a>(min = 1, max = 64) <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> exerciseId, <a href=PolarH10OfflineExerciseApi.RecordingInterval.html>PolarH10OfflineExerciseApi.RecordingInterval</a> interval, <a href=PolarH10OfflineExerciseApi.SampleType.html>PolarH10OfflineExerciseApi.SampleType</a> type)</pre>
-                                        <div class="block"><p>Request start recording.</p></div>
+                                        <div class="block"><p>Request start recording. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_H10_EXERCISE_RECORDING>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING</a></p></div>
 
                                         <dl>
 
@@ -405,7 +405,7 @@ public interface <span class="typeNameLabel"><a href=PolarH10OfflineExerciseApi.
                                     <li class="blockList">
                                         <h4>stopRecording</h4>
                                         <pre class="methodSignature"> abstract Completable <a href=PolarH10OfflineExerciseApi.html#stopRecording(java.lang.String)>stopRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Request to stop recording.</p></div>
+                                        <div class="block"><p>Request to stop recording. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_H10_EXERCISE_RECORDING>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING</a></p></div>
 
                                         <dl>
 
@@ -438,7 +438,7 @@ public interface <span class="typeNameLabel"><a href=PolarH10OfflineExerciseApi.
                                     <li class="blockList">
                                         <h4>requestRecordingStatus</h4>
                                         <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/androidx/core/util/Pair.html>Pair</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt;&gt; <a href=PolarH10OfflineExerciseApi.html#requestRecordingStatus(java.lang.String)>requestRecordingStatus</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Request current recording status.</p></div>
+                                        <div class="block"><p>Request current recording status. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_H10_EXERCISE_RECORDING>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING</a></p></div>
 
                                         <dl>
 
@@ -471,7 +471,7 @@ public interface <span class="typeNameLabel"><a href=PolarH10OfflineExerciseApi.
                                     <li class="blockList">
                                         <h4>listExercises</h4>
                                         <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarExerciseEntry.html>PolarExerciseEntry</a>&gt; <a href=PolarH10OfflineExerciseApi.html#listExercises(java.lang.String)>listExercises</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>List exercises stored in the device Polar H10 device.</p></div>
+                                        <div class="block"><p>List exercises stored in the device Polar H10 device. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_H10_EXERCISE_RECORDING>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING</a></p></div>
 
                                         <dl>
 
@@ -504,7 +504,7 @@ public interface <span class="typeNameLabel"><a href=PolarH10OfflineExerciseApi.
                                     <li class="blockList">
                                         <h4>fetchExercise</h4>
                                         <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarExerciseData.html>PolarExerciseData</a>&gt; <a href=PolarH10OfflineExerciseApi.html#fetchExercise(java.lang.String,com.polar.sdk.api.model.PolarExerciseEntry)>fetchExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarExerciseEntry.html>PolarExerciseEntry</a> entry)</pre>
-                                        <div class="block"><p>Api for fetching a single exercise from Polar H10 device.</p></div>
+                                        <div class="block"><p>Api for fetching a single exercise from Polar H10 device. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_H10_EXERCISE_RECORDING>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING</a></p></div>
 
                                         <dl>
 
@@ -541,7 +541,7 @@ public interface <span class="typeNameLabel"><a href=PolarH10OfflineExerciseApi.
                                     <li class="blockList">
                                         <h4>removeExercise</h4>
                                         <pre class="methodSignature"> abstract Completable <a href=PolarH10OfflineExerciseApi.html#removeExercise(java.lang.String,com.polar.sdk.api.model.PolarExerciseEntry)>removeExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarExerciseEntry.html>PolarExerciseEntry</a> entry)</pre>
-                                        <div class="block"><p>Api for removing single exercise from Polar H10 device.</p></div>
+                                        <div class="block"><p>Api for removing single exercise from Polar H10 device. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_H10_EXERCISE_RECORDING>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING</a></p></div>
 
                                         <dl>
 

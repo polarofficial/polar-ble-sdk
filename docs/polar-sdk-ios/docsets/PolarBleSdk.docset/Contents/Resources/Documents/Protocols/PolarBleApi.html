@@ -17,7 +17,7 @@
     <a title="PolarBleApi Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">PolarBleSdk 6.14.3 Docs</a> (37% documented)</p>
+        <p><a href="../index.html">PolarBleSdk 6.15.1 Docs</a> (40% documented)</p>
         <div class="header-right">
           <form role="search" action="../search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -165,6 +165,9 @@
                 <a href="../Enums/FirmwareUpdateStatus.html">FirmwareUpdateStatus</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/OfflineExerciseStartResultType.html">OfflineExerciseStartResultType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/PolarActivityDataType.html">PolarActivityDataType</a>
               </li>
               <li class="nav-group-task">
@@ -277,6 +280,9 @@
                 <a href="../Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Protocols/PolarOfflineExerciseV2Api.html">PolarOfflineExerciseV2Api</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a>
               </li>
               <li class="nav-group-task">
@@ -292,6 +298,9 @@
                 <a href="../Protocols/PolarSleepApi.html">PolarSleepApi</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Protocols/PolarTemperatureApi.html">PolarTemperatureApi</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a>
               </li>
             </ul>
@@ -304,6 +313,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/LedConfig.html">LedConfig</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/OfflineExerciseStartResult.html">OfflineExerciseStartResult</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Polar247HrSamplesData.html">Polar247HrSamplesData</a>
@@ -495,7 +507,7 @@
               <div class="declaration">
                 <div class="language">
                   
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">PolarBleApi</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/PolarActivityApi.html">PolarActivityApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarBleLowLevelApi.html">PolarBleLowLevelApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarDeviceToHostNotificationsApi.html">PolarDeviceToHostNotificationsApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarFirmwareUpdateApi.html">PolarFirmwareUpdateApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarOnlineStreamingApi.html">PolarOnlineStreamingApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarSdkModeApi.html">PolarSdkModeApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarSleepApi.html">PolarSleepApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a></span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">PolarBleApi</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/PolarActivityApi.html">PolarActivityApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarBleLowLevelApi.html">PolarBleLowLevelApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarDeviceToHostNotificationsApi.html">PolarDeviceToHostNotificationsApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarFirmwareUpdateApi.html">PolarFirmwareUpdateApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarOfflineExerciseV2Api.html">PolarOfflineExerciseV2Api</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarOnlineStreamingApi.html">PolarOnlineStreamingApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarRestServiceApi.html">PolarRestServiceApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarSdkModeApi.html">PolarSdkModeApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarSleepApi.html">PolarSleepApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarTemperatureApi.html">PolarTemperatureApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a></span></code></pre>
 
                 </div>
               </div>
@@ -519,6 +531,11 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>remove all known devices, which are not in use</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): None (core API).
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -546,6 +563,11 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Enable or disable polar filter.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): None (core API).
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -593,6 +615,11 @@
                       <div class="abstract">
                         <p>Start connecting to a nearby device. <code>PolarBleApiObservers</code> polarDeviceConnected is
 invoked when a connection is established.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): None (core API).
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -667,7 +694,11 @@ invoked when a connection is established.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Request a connection to a Polar device. Invokes <code>PolarBleApiObservers</code> polarDeviceConnected.</p>
-<div class="aside aside-throws">
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): None (core API).
+
+</div><div class="aside aside-throws">
     <p class="aside-title">Throws</p>
     InvalidArgument if identifier is invalid polar device id or invalid uuid
 
@@ -718,7 +749,11 @@ invoked when a connection is established.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Disconnect from the current Polar device.</p>
-<div class="aside aside-throws">
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): None (core API).
+
+</div><div class="aside aside-throws">
     <p class="aside-title">Throws</p>
     InvalidArgument if identifier is invalid polar device id or invalid uuid
 
@@ -769,6 +804,11 @@ invoked when a connection is established.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Start searching for Polar device(s)</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): None (core API).
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -823,6 +863,11 @@ invoked when a connection is established.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Start searching for compatible device(s) with given device  name prefix</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): None (core API).
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -880,6 +925,11 @@ invoked when a connection is established.</p>
 This observable listens BLE broadcast and parses heart rate from BLE broadcast. The
 BLE device don&rsquo;t need to be connected when using this function, the heart rate is parsed
 from the BLE advertisement</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): None (core API).
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -930,6 +980,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Check if the feature is ready.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): None (core API).
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -992,8 +1047,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Set local time to device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_device_time_setupyA2CmF">PolarBleSdkFeature.feature_polar_device_time_setup</a></code>
 
-<p>Requires feature <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_device_time_setupyA2CmF">PolarBleSdkFeature.feature_polar_device_time_setup</a></code>.</p>
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1073,8 +1131,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Get current time in device. Note, the H10 is not supporting time read.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_device_time_setupyA2CmF">PolarBleSdkFeature.feature_polar_device_time_setup</a></code>
 
-<p>Requires feature <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_device_time_setupyA2CmF">PolarBleSdkFeature.feature_polar_device_time_setup</a></code></p>
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1155,8 +1216,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Get current time and timezone from device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_device_time_setupyA2CmF">PolarBleSdkFeature.feature_polar_device_time_setup</a></code>
 
-<p>Requires feature <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_device_time_setupyA2CmF">PolarBleSdkFeature.feature_polar_device_time_setup</a></code></p>
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1212,6 +1276,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Get <code><a href="../Structs/PolarDiskSpaceData.html">PolarDiskSpaceData</a></code> from device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1267,6 +1336,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Set [LedConfig] to enable or disable blinking LEDs (Verity Sense 2.2.1+).</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_led_animationyA2CmF">PolarBleSdkFeature.feature_polar_led_animation</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1334,6 +1408,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Enable or disable telemetry (trace logging / diagnostics) on the device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1396,6 +1475,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Perform factory reset to given device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1464,6 +1548,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Perform factory reset to given device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1519,6 +1608,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Perform restart to given device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1587,6 +1681,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Perform restart to given device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1642,6 +1741,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Get SD log configuration from a device (SDLOGS.BPB)</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1697,6 +1801,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Set SD log configuration to a device (SDLOGS.BPB)</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1764,6 +1873,25 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Set [FtuConfig] for device</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div><ul>
+<li>[PolarFirstTimeUseConfig] class enforces specific ranges and valid values for each parameter:
+
+<ul>
+<li>Gender: &ldquo;Male&rdquo; or &ldquo;Female&rdquo;</li>
+<li>Height: 90 to 240 cm</li>
+<li>Weight: 15 to 300 kg</li>
+<li>Max heart rate: 100 to 240 bpm</li>
+<li>Resting heart rate: 20 to 120 bpm</li>
+<li>VO2 max: 10 to 95</li>
+<li>Training background: One of the predefined levels (10, 20, 30, 40, 50, 60)</li>
+<li>Typical day: One of [TypicalDay] values</li>
+<li>Sleep goal: Minutes, valid range [300-660]</li>
+</ul></li>
+</ul>
 
                       </div>
                       <div class="declaration">
@@ -1812,16 +1940,6 @@ from the BLE advertisement</p>
 <ul>
 <li>success: when enable or disable sent to device</li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-<li>[PolarFirstTimeUseConfig] class enforces specific ranges and valid values for each parameter:</li>
-<li>Gender: &ldquo;Male&rdquo; or &ldquo;Female&rdquo;</li>
-<li>Height: 90 to 240 cm</li>
-<li>Weight: 15 to 300 kg</li>
-<li>Max heart rate: 100 to 240 bpm</li>
-<li>Resting heart rate: 20 to 120 bpm</li>
-<li>VO2 max: 10 to 95</li>
-<li>Training background: One of the predefined levels (10, 20, 30, 40, 50, 60)</li>
-<li>Typical day: One of [TypicalDay] values</li>
-<li>Sleep goal: Minutes, valid range [300-660]</li>
 </ul></p>
                       </div>
                     </section>
@@ -1841,6 +1959,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Check if the First Time Use has been done for the given Polar device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1896,6 +2019,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Get the user¨s physical data from the given Polar device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1952,6 +2080,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Set the device to warehouse sleep state. Factory reset will be performed in order to enable the setting.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2007,6 +2140,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Turn of device by setting the device to sleep state.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2062,6 +2200,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Get Device User Settings to a device from proto in device (UDEVSET.BPB)</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2117,6 +2260,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Set Device User Settings to a device (UDEVSET.BPB)</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2184,11 +2332,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Delete data [PolarStoredDataType] from a device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
-<p>@param identifier, Polar device ID or BT address
-@param dataType, [PolarStoredDataType] A specific data type that shall be deleted
-@param until, Data will be deleted from device from history until this date.
-@return [Completable] emitting success or error</p>
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2198,6 +2346,53 @@ from the BLE advertisement</p>
                           <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">deleteStoredDeviceData</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">dataType</span><span class="p">:</span> <span class="kt"><a href="../Classes/PolarStoredDataType.html">PolarStoredDataType</a></span><span class="o">.</span><span class="kt">StoredDataType</span><span class="p">,</span> <span class="nv">until</span><span class="p">:</span> <span class="kt">Date</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
 
                         </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device ID or BT address</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>dataType</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p><code><a href="../Classes/PolarStoredDataType.html">PolarStoredDataType</a></code> — a specific data type that shall be deleted</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>until</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Data will be deleted from device from history until this date.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Completable emitting success or error</p>
                       </div>
                     </section>
                   </div>
@@ -2216,6 +2411,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Delete device date folders from a device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2295,6 +2495,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Delete telemetry data files from a device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2350,6 +2555,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Waits for the device to establish a connection.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): None (core API).
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2386,6 +2596,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Set user device location on a device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2453,6 +2668,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Set USB connection mode on a device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2520,6 +2740,11 @@ from the BLE advertisement</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Set automatic training detection settings on a device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2531,7 +2756,7 @@ from the BLE advertisement</p>
     <span class="nv">mode</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">,</span>
     <span class="nv">sensitivity</span><span class="p">:</span> <span class="kt">Int</span><span class="p">,</span>
     <span class="nv">minimumDuration</span><span class="p">:</span> <span class="kt">Int</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+ <span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
 
                         </div>
                       </div>
@@ -2617,6 +2842,11 @@ from the BLE advertisement</p>
                       <div class="abstract">
                         <p>Set the next Daylight Saving Time (DST) settings on the device in the current timezone.
 Gets the current timezone from the device and sets DST value based on that.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2672,6 +2902,11 @@ Gets the current timezone from the device and sets DST value based on that.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Request multi BLE connection mode status from device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO44feature_polar_features_configuration_serviceyA2CmF">PolarBleSdkFeature.feature_polar_features_configuration_service</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2727,6 +2962,11 @@ Gets the current timezone from the device and sets DST value based on that.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Enable multi BLE connection mode on a given device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO44feature_polar_features_configuration_serviceyA2CmF">PolarBleSdkFeature.feature_polar_features_configuration_service</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2795,6 +3035,11 @@ Gets the current timezone from the device and sets DST value based on that.</p>
                       <div class="abstract">
                         <p>Notify device of the incoming data transfer operation(s). By using this method the device will handle data transfer operations more efficiently by setting it to faster data transfer mode.
 It also will cause the device to flush the latest data to files giving you the most up-to-date data.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2850,6 +3095,11 @@ It also will cause the device to flush the latest data to files giving you the m
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Notify device that data transfer operations are completed. By calling this API device will set itself back to normal data transfer mode that will use less battery.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2905,8 +3155,13 @@ It also will cause the device to flush the latest data to files giving you the m
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Enable or disable AUTOS file generation on the device.
- AUTOS files contain 24/7 OHR data.
- Status of this setting can be read with getUserDeviceSettings().</p>
+AUTOS files contain 24/7 OHR data.
+Status of this setting can be read with getUserDeviceSettings().</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2969,8 +3224,13 @@ It also will cause the device to flush the latest data to files giving you the m
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Get last received RSSI (Received Signal Strength Indicator) value for the connected device.
- The value is obtained from iOS BLE in 1 second interval.
- The value is typically between -40 to -55 dBm when the device is nearby.</p>
+The value is obtained from iOS BLE in 1 second interval.
+The value is typically between -40 to -55 dBm when the device is nearby.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): None (core API).
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -3021,7 +3281,13 @@ It also will cause the device to flush the latest data to files giving you the m
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Check if the device did disconnect from BLE due to removed pairing. If the device did disconnect due to removed pairing,
- the device will not be available for connection until it is paired again. It may be required to forget the device from iOS Bluetooth settings and pair it again.</p>
+the device will not be available for connection until it is paired again. It may be required to forget the device from iOS Bluetooth
+settings and pair it again.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): None (core API).
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -3238,7 +3504,7 @@ It also will cause the device to flush the latest data to files giving you the m
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>optional logger set to get traces from sdk</p>
+                        <p>Optional logger set to get traces from sdk</p>
 
                       </div>
                       <div class="declaration">
@@ -3265,7 +3531,7 @@ It also will cause the device to flush the latest data to files giving you the m
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>optional disable or enable automatic reconnection, by default it is enabled.</p>
+                        <p>Optional disable or enable automatic reconnection, by default it is enabled.</p>
 
 <p>Note that firmware update (FWU) turns on automatic reconnection automatically, and restores the setting
 automatically when operation completes. One should not change this setting during FWU.</p>
@@ -3295,7 +3561,12 @@ automatically when operation completes. One should not change this setting durin
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Request last observed battery level value from device. Requires feature[PolarBleSdkFeature.feature_battery_info]</p>
+                        <p>Request last observed battery level value from device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO20feature_battery_infoyA2CmF">PolarBleSdkFeature.feature_battery_info</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -3327,7 +3598,12 @@ Will return -1 if battery battery level is not available.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Request last observed charging status value from device. Requires feature [PolarBleSdkFeature.feature_battery_info]</p>
+                        <p>Request last observed charging status value from device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO20feature_battery_infoyA2CmF">PolarBleSdkFeature.feature_battery_info</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -3351,7 +3627,7 @@ Will return -1 if battery battery charging percentage level is not available.</p
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-02-23)</p>
+          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-03-16)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

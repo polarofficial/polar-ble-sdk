@@ -7,6 +7,8 @@ import RxSwift
 public protocol PolarActivityApi {
     /// Get steps for a given period.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_activity_data`
+    ///
     /// - Parameters:
     ///   - identifier: The Polar device ID or BT address.
     ///   - fromDate: The starting date of the period to retrieve steps from.
@@ -15,6 +17,8 @@ public protocol PolarActivityApi {
     func getSteps(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarStepsData]>
     
     /// Get distance for a given period.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_activity_data`
     ///
     /// - Parameters:
     ///   - identifier: The Polar device ID or BT address.
@@ -25,6 +29,8 @@ public protocol PolarActivityApi {
 
     /// Get active time for a given period.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_activity_data`
+    ///
     /// - Parameters:
     ///   - identifier: The Polar device ID or BT address.
     ///   - fromDate: The starting date of the period to retrieve active time from.
@@ -33,6 +39,8 @@ public protocol PolarActivityApi {
     func getActiveTime(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarActiveTimeData]>
 
     /// Get calories for a given period.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_activity_data`
     ///
     /// - Parameters:
     ///   - identifier: The Polar device ID or BT address.
@@ -44,6 +52,8 @@ public protocol PolarActivityApi {
     
     /// Get 24/7 heart rate samples for a given period.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_activity_data`
+    ///
     /// - Parameters:
     ///   - identifier: The Polar device ID or BT address.
     ///   - fromDate: The starting date of the period to retrieve heart rate samples from.
@@ -53,6 +63,8 @@ public protocol PolarActivityApi {
 
     /// Get nightly recharge for a given period.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_activity_data`
+    ///
     /// - Parameters:
     ///   - identifier: The Polar device ID or BT address.
     ///   - fromDate: The starting date of the period to retrieve nightly recharge from.
@@ -60,16 +72,9 @@ public protocol PolarActivityApi {
     /// - Returns: A Single emitting an array of `PolarNightlyRechargeData` representing the nightly recharge data for the specified period.
     func getNightlyRecharge(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarNightlyRechargeData]>
 
-    /// Get skin temperature for a given period.
-    ///
-    /// - Parameters:
-    ///   - identifier: The Polar device ID or BT address.
-    ///   - fromDate: The starting date of the period to retrive skin temperature from.
-    ///   - toDate: The ending date of the period to retrieve skin temperature from.
-    /// - Returns: A Single emitting an array of `PolarSkinTemperatureResult` representing the skin temperature data for the specified period.
-    func getSkinTemperature(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarSkinTemperatureData.PolarSkinTemperatureResult]>
-    
     /// Load 24/7 PPi data from a device for a given period.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_activity_data`
     ///
     /// - Parameters:
     ///   - identifier: Polar device ID or BT address
@@ -80,6 +85,8 @@ public protocol PolarActivityApi {
 
     /// Load activity sample data from a device for a given period.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_activity_data`
+    ///
     /// - Parameters:
     ///   - identifier: Polar device ID or BT address
     ///   - fromDate: The starting date of the period to retrieve activity sample data from
@@ -89,6 +96,8 @@ public protocol PolarActivityApi {
     
     
     /// Load daily summary data from a device for a given period. Daily summary is a cumulative sum for activity per given date.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_activity_data`
     ///
     /// - Parameters:
     ///   - identifier: Polar device ID or BT address

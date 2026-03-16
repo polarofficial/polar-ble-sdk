@@ -17,7 +17,7 @@
     <a title="PolarH10OfflineExerciseApi Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">PolarBleSdk 6.14.3 Docs</a> (37% documented)</p>
+        <p><a href="../index.html">PolarBleSdk 6.15.1 Docs</a> (40% documented)</p>
         <div class="header-right">
           <form role="search" action="../search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -165,6 +165,9 @@
                 <a href="../Enums/FirmwareUpdateStatus.html">FirmwareUpdateStatus</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/OfflineExerciseStartResultType.html">OfflineExerciseStartResultType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/PolarActivityDataType.html">PolarActivityDataType</a>
               </li>
               <li class="nav-group-task">
@@ -277,6 +280,9 @@
                 <a href="../Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Protocols/PolarOfflineExerciseV2Api.html">PolarOfflineExerciseV2Api</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a>
               </li>
               <li class="nav-group-task">
@@ -292,6 +298,9 @@
                 <a href="../Protocols/PolarSleepApi.html">PolarSleepApi</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Protocols/PolarTemperatureApi.html">PolarTemperatureApi</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a>
               </li>
             </ul>
@@ -304,6 +313,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/LedConfig.html">LedConfig</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/OfflineExerciseStartResult.html">OfflineExerciseStartResult</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Polar247HrSamplesData.html">Polar247HrSamplesData</a>
@@ -504,8 +516,11 @@
 <p>H10 Exercise recording makes it possible to record Hr or Rr data to H10 device memory.
 With H10 Exercise recording the H10 and phone don&rsquo;t need to be connected all the time, as H10 exercise recording
 continues in Polar device even the BLE disconnects.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO36feature_polar_h10_exercise_recordingyA2CmF">PolarBleSdkFeature.feature_polar_h10_exercise_recording</a></code>
 
-<p>Requires features <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO36feature_polar_h10_exercise_recordingyA2CmF">PolarBleSdkFeature.feature_polar_h10_exercise_recording</a></code></p>
+</div>
 
 <p>Note, API is working only with Polar H10 device</p>
 
@@ -527,6 +542,11 @@ continues in Polar device even the BLE disconnects.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Request start recording. Supported only by Polar H10. Requires <code>polarFileTransfer</code> feature.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO36feature_polar_h10_exercise_recordingyA2CmF">PolarBleSdkFeature.feature_polar_h10_exercise_recording</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -594,12 +614,12 @@ continues in Polar device even the BLE disconnects.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Completable stream
+                        <p>Completable stream</p>
 
 <ul>
 <li>success: recording started</li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+</ul>
                       </div>
                     </section>
                   </div>
@@ -618,6 +638,11 @@ continues in Polar device even the BLE disconnects.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Request stop for current recording. Supported only by Polar H10. Requires <code>polarFileTransfer</code> feature.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO36feature_polar_h10_exercise_recordingyA2CmF">PolarBleSdkFeature.feature_polar_h10_exercise_recording</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -649,12 +674,12 @@ continues in Polar device even the BLE disconnects.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Completable stream
+                        <p>Completable stream</p>
 
 <ul>
 <li>success: recording stopped</li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+</ul>
                       </div>
                     </section>
                   </div>
@@ -673,6 +698,11 @@ continues in Polar device even the BLE disconnects.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Request current recording status. Supported only by Polar H10. Requires <code>polarFileTransfer</code> feature.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO36feature_polar_h10_exercise_recordingyA2CmF">PolarBleSdkFeature.feature_polar_h10_exercise_recording</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -704,12 +734,12 @@ continues in Polar device even the BLE disconnects.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single stream
+                        <p>Single stream</p>
 
 <ul>
 <li>success: see <code><a href="../Typealiases.html#/s:11PolarBleSdk0A15RecordingStatusa">PolarRecordingStatus</a></code></li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+</ul>
                       </div>
                     </section>
                   </div>
@@ -717,9 +747,9 @@ continues in Polar device even the BLE disconnects.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A21H10OfflineExerciseApiP011fetchStoredF4Listy7RxSwift10ObservableCySS4path_10Foundation4DateV4dateSS7entryIdtGSSF"></a>
-                    <a name="//apple_ref/swift/Method/fetchStoredExerciseList(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A21H10OfflineExerciseApiP011fetchStoredF4Listy7RxSwift10ObservableCySS4path_10Foundation4DateV4dateSS7entryIdtGSSF">fetchStoredExerciseList(_:<wbr>)</a>
+                    <a name="/s:11PolarBleSdk0A21H10OfflineExerciseApiP13listExercisesy7RxSwift10ObservableCySS4path_10Foundation4DateV4dateSS7entryIdtGSSF"></a>
+                    <a name="//apple_ref/swift/Method/listExercises(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A21H10OfflineExerciseApiP13listExercisesy7RxSwift10ObservableCySS4path_10Foundation4DateV4dateSS7entryIdtGSSF">listExercises(_:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -727,14 +757,20 @@ continues in Polar device even the BLE disconnects.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Api for fetching stored exercises list from Polar H10 device. Requires <code>polarFileTransfer</code> feature. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.</p>
+                        <p>List exercises stored in the Polar H10 device. This API is working for Polar OH1 and Polar Verity Sense devices too,
+however in those devices recording of exercise requires that sensor is registered to Polar Flow account.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO36feature_polar_h10_exercise_recordingyA2CmF">PolarBleSdkFeature.feature_polar_h10_exercise_recording</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">fetchStoredExerciseList</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">listExercises</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -759,12 +795,44 @@ continues in Polar device even the BLE disconnects.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Observable stream
+                        <p>Observable stream</p>
 
 <ul>
 <li>onNext: see <code><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></code></li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+</ul>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0A21H10OfflineExerciseApiP011fetchStoredF4Listy7RxSwift10ObservableCySS4path_10Foundation4DateV4dateSS7entryIdtGSSF"></a>
+                    <a name="//apple_ref/swift/Method/fetchStoredExerciseList(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A21H10OfflineExerciseApiP011fetchStoredF4Listy7RxSwift10ObservableCySS4path_10Foundation4DateV4dateSS7entryIdtGSSF">fetchStoredExerciseList(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO36feature_polar_h10_exercise_recordingyA2CmF">PolarBleSdkFeature.feature_polar_h10_exercise_recording</a></code>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"listExercises"</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">fetchStoredExerciseList</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></span><span class="o">&gt;</span></code></pre>
+
+                        </div>
                       </div>
                     </section>
                   </div>
@@ -783,6 +851,11 @@ continues in Polar device even the BLE disconnects.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Api for fetching a single exercise from Polar H10 device. Requires <code>polarFileTransfer</code> feature. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO36feature_polar_h10_exercise_recordingyA2CmF">PolarBleSdkFeature.feature_polar_h10_exercise_recording</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -826,12 +899,12 @@ continues in Polar device even the BLE disconnects.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single stream
+                        <p>Single stream</p>
 
 <ul>
 <li>success: invoked after exercise data has been fetched from the device. see <code><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></code></li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+</ul>
                       </div>
                     </section>
                   </div>
@@ -850,6 +923,11 @@ continues in Polar device even the BLE disconnects.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Api for removing single exercise from Polar H10 device. Requires <code>polarFileTransfer</code> feature. This API is working for Polar OH1 and Polar Verity Sense devices too, however in those devices recording of exercise requires that sensor is registered to Polar Flow account.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO36feature_polar_h10_exercise_recordingyA2CmF">PolarBleSdkFeature.feature_polar_h10_exercise_recording</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -893,12 +971,12 @@ continues in Polar device even the BLE disconnects.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Completable stream
+                        <p>Completable stream</p>
 
 <ul>
 <li>complete: entry successfully removed</li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+</ul>
                       </div>
                     </section>
                   </div>
@@ -908,7 +986,7 @@ continues in Polar device even the BLE disconnects.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-02-23)</p>
+          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-03-16)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

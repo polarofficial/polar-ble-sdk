@@ -8,12 +8,12 @@ import java.time.LocalDate
 
 /**
  * Polar sleep API.
- * Requires features FEATURE_POLAR_SLEEP_DATA, FEATURE_POLAR_FILE_TRANSFER
+ * Requires feature FEATURE_POLAR_SLEEP_DATA
  */
 interface PolarSleepApi {
 
     /**
-     * Get sleep recording state
+     * Get sleep recording state. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA]
      *
      * @param identifier The Polar device ID or BT address
      * @return A [Single] boolean value indicating if sleep recording is ongoing
@@ -21,7 +21,7 @@ interface PolarSleepApi {
     fun getSleepRecordingState(identifier: String): Single<Boolean>
 
     /**
-     * Observe sleep recording state
+     * Observe sleep recording state. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA]
      *
      * @param identifier The Polar device ID or BT address
      * @return [Flowable] of boolean values indicating if sleep recording is ongoing
@@ -29,7 +29,7 @@ interface PolarSleepApi {
     fun observeSleepRecordingState(identifier: String):  Flowable<Array<Boolean>>
 
     /**
-     * Stop sleep recording
+     * Stop sleep recording. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA]
      *
      * @param identifier The Polar device ID or BT address
      * @return [Completable] success when sleep recording stop action has been succesfully
@@ -38,7 +38,7 @@ interface PolarSleepApi {
      fun stopSleepRecording(identifier: String): Completable
 
     /**
-     * Get sleep stages and duration for a given period.
+     * Get sleep stages and duration for a given period. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA]
      *
      * @param identifier The Polar device ID or BT address.
      * @param fromDate The starting date of the period to retrieve sleep data from.

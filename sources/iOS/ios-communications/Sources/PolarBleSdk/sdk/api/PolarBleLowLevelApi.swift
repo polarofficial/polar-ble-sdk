@@ -10,6 +10,7 @@ public protocol PolarBleLowLevelApi {
     /// Note that not all files in device are readable by this API.
     /// API user must also take care of parsing the returned ByteArray payload to the desired data object.
     /// NOTE: this is an experimental API intended for Polar internal use only. Polar will not support 3rd party users with this API.
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_file_transfer`
     /// - Parameters:
     ///  - identifier Polar device ID or BT address
     ///  - filePath Path to the desired file in a Polar device.
@@ -24,6 +25,7 @@ public protocol PolarBleLowLevelApi {
     /// Write any file over PFtp BLE client. API user must know the exact path to the desired file.
     /// API user must also take care of parsing the returned ByteArray payload to the desired data object.
     /// NOTE: this is an experimental API intended for Polar internal use only. Polar will not support 3rd party users with this API.
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_file_transfer`
     /// - Parameters:
     ///  -  identifier Polar device ID or BT address
     ///  -  filePath Path to the directory in device  in a Polar device.
@@ -40,6 +42,7 @@ public protocol PolarBleLowLevelApi {
     /// Delete any file or directory over PFtp BLE client. API user must know the exact path to the desired file.
     /// API user must also take care of parsing the returned ByteArray payload to the desired data object.
     /// NOTE: this is an experimental API intended for Polar internal use only. Polar will not support 3rd party users with this API.
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_file_transfer`
     /// - Parameters:
     ///  -  identifier Polar device ID or BT address
     ///  -  filePath Path of the file or directory to be deleted at a Polar device.
@@ -53,6 +56,7 @@ public protocol PolarBleLowLevelApi {
     ///
     /// List all files in the given path
     /// NOTE: this is an experimental API intended for Polar internal use only. Polar will not support 3rd party users with this API.
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_file_transfer`
     /// - Parameters:
     ///  -  identifier Polar device ID or BT address
     ///  -  directoryPath Path to the desired directory in a Polar device from which to list all files.

@@ -72,6 +72,10 @@ internal object PolarOfflineRecordingUtils {
                             components[6].substringBefore(".").filter { !it.isDigit() }
                         )
                     )
+                    if (entry.second <= 0) {
+                        BleLogger.e(TAG, "Encountered zero size entry in path ${entry.first}. Ignoring empty recording.")
+                        return@flatMap Flowable.empty()
+                    }
 
                     Flowable.just(PolarOfflineRecordingEntry(entry.first, entry.second, date, type))
                 } catch (e: Exception) {
@@ -117,15 +121,18 @@ internal object PolarOfflineRecordingUtils {
                             try {
                                 val parts = line.split(" ")
                                 if (parts.size < 2 || !parts[1].endsWith(".REC")) return@mapNotNull null
-
-                                            val path = parts[1].replace(Regex("(\\w*?)\\d+\\.REC$"), "$1.REC")
-                                            val type = mapPmdMeasurementTypeToPolarDeviceDataType(
-                                                mapOfflineRecordingFileNameToMeasurementType(
-                                                    path.split("/")[6].substringBefore(".").filter { !it.isDigit() }
-                                                )
-                                            )
-                                            val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ENGLISH)
-                                            val date = LocalDateTime.parse("${path.split("/")[3]}${path.split("/")[5]}", dateTimeFormatter)
+                                val path = parts[1].replace(Regex("(\\w*?)\\d+\\.REC$"), "$1.REC")
+                                if ( parts[0].toInt() <= 0) {
+                                    BleLogger.e(TAG, "Encountered zero size entry in path $path. Ignoring empty recording.")
+                                    return@mapNotNull null
+                                }
+                                val type = mapPmdMeasurementTypeToPolarDeviceDataType(
+                                    mapOfflineRecordingFileNameToMeasurementType(
+                                        path.split("/")[6].substringBefore(".").filter { !it.isDigit() }
+                                    )
+                                )
+                                val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ENGLISH)
+                                val date = LocalDateTime.parse("${path.split("/")[3]}${path.split("/")[5]}", dateTimeFormatter)
 
                                 PolarOfflineRecordingEntry(path, parts[0].toLong(), date, type)
                             } catch (e: Exception) {

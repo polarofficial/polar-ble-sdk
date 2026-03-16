@@ -13,12 +13,14 @@ import RxSwift
 ///  The `PolarRecordingSecret` with same key must be provided in `getOfflineRecord` to correctly
 ///  decrypt the data in the device.
 ///
-/// Requires feature `PolarBleSdkFeature.feature_polar_offline_recording`
+/// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
 ///
 /// Note, offline recording is supported in Polar Verity Sense device (starting from firmware version 2.1.0)
 ///
 public protocol PolarOfflineRecordingApi {
     ///  Get the data types available in this device for offline recording
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
     ///
     /// - Parameters:
     ///   - identifier: polar device id
@@ -30,6 +32,8 @@ public protocol PolarOfflineRecordingApi {
     ///  Request the offline recording settings available in current operation mode. This request shall be used before the offline recording is started
     ///  to decide currently available settings. The available settings depend on the state of the device.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
+    ///
     /// - Parameters:
     ///   - identifier: polar device id
     ///   - feature: selected feature from`PolarDeviceDataType`
@@ -39,6 +43,8 @@ public protocol PolarOfflineRecordingApi {
     func requestOfflineRecordingSettings(_ identifier: String, feature: PolarDeviceDataType) -> Single<PolarSensorSetting>
     
     ///  Request all the settings available in the device. The request returns the all capabilities of the requested streaming feature not limited by the current operation mode.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
     ///
     /// - Parameters:
     ///   - identifier: polar device id
@@ -50,6 +56,8 @@ public protocol PolarOfflineRecordingApi {
     
     /// Get status of offline recordings.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
+    ///
     /// - Parameters:
     ///   - identifier: polar device id
     /// - Returns: Single stream
@@ -58,6 +66,8 @@ public protocol PolarOfflineRecordingApi {
     func getOfflineRecordingStatus(_ identifier: String)-> Single<[PolarDeviceDataType:Bool]>
     
     /// List offline recordings stored in the device.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
     ///
     /// - Parameters:
     ///   - identifier: polar device id
@@ -70,6 +80,8 @@ public protocol PolarOfflineRecordingApi {
     /// Fetch recording from the  device.
     ///
     /// Note, the fetching of the recording may take several seconds if the recording is big.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
     ///
     /// - Parameters:
     ///   - identifier: polar device id
@@ -84,6 +96,8 @@ public protocol PolarOfflineRecordingApi {
     ///
     /// Note, the fetching of the recording may take several seconds if the recording is big.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
+    ///
     /// - Parameters:
     ///   - identifier: polar device id
     ///   - entry:  The offline recording to be fetched
@@ -95,6 +109,7 @@ public protocol PolarOfflineRecordingApi {
 
     /// Fetch number sub recordings in recording from the  device.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
     ///
     /// - Parameters:
     ///   - identifier: polar device id
@@ -106,6 +121,8 @@ public protocol PolarOfflineRecordingApi {
     func getSubRecordingCount(identifier: String, entry: PolarOfflineRecordingEntry) -> Single<Int>
 
     /// List split offline recordings stored in the device.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
     ///
     /// - Parameters:
     ///   - identifier: polar device id
@@ -120,6 +137,8 @@ public protocol PolarOfflineRecordingApi {
     ///
     /// Note, the fetching of the recording may take several seconds if the recording is big.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
+    ///
     /// - Parameters:
     ///   - identifier: polar device id
     ///   - entry:  The split offline recording to be fetched
@@ -132,6 +151,8 @@ public protocol PolarOfflineRecordingApi {
 
     /// Removes offline recording from the device. Empty parent directories are removed up to day directory.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
+    ///
     /// - Parameters:
     ///   - identifier: polar device id
     ///   - entry: entry to be removed
@@ -141,6 +162,8 @@ public protocol PolarOfflineRecordingApi {
     func removeOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry) -> Completable
 
     /// Removes offline recording with all the subrecordings from the device. Empty parent directories are removed up to day directory.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
     ///
     /// - Parameters:
     ///   - identifier: polar device id
@@ -153,6 +176,8 @@ public protocol PolarOfflineRecordingApi {
 
     /// Start offline recording.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
+    ///
     /// - Parameters:
     ///   - identifier: polar device id
     ///   - feature: the feature to be started
@@ -164,6 +189,8 @@ public protocol PolarOfflineRecordingApi {
     func startOfflineRecording(_ identifier: String, feature: PolarDeviceDataType, settings: PolarSensorSetting?, secret: PolarRecordingSecret?) -> Completable
     
     /// Request to stop offline recording.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
     ///
     /// - Parameters:
     ///   - identifier:  polar device id
@@ -182,6 +209,8 @@ public protocol PolarOfflineRecordingApi {
     /// Trigger functionality can be disabled by setting `PolarOfflineRecordingTriggerMode.TRIGGER_DISABLED`, the already running offline
     /// recording is not stopped by disable.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
+    ///
     /// - Parameters:
     ///   - identifier: Polar device ID
     ///   - trigger: type of trigger to set
@@ -196,6 +225,8 @@ public protocol PolarOfflineRecordingApi {
     ) -> Completable
     
     /// Retrieves the current offline recording trigger setup in the device.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
     ///
     /// - Parameters:
     ///   - identifier: polar device id

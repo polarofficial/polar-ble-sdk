@@ -14,9 +14,9 @@ import io.reactivex.rxjava3.core.Single
  *
  * Online streaming makes it possible to stream live online data from Polar device.
  *
- * Requires features [FEATURE_POLAR_ONLINE_STREAMING]
+ * Requires features [FEATURE_POLAR_ONLINE_STREAMING] or [PolarBleApi.PolarBleSdkFeature.FEATURE_HR]
  *
- * Note, online streaming is supported by VeritySense, H10 and OH1 devices
+ * Note, online streaming is supported by VeritySense, H10, OH1, Polar 360, Polar Loop Gen2 devices
  */
 interface PolarOnlineStreamingApi {
     /**
@@ -34,6 +34,8 @@ interface PolarOnlineStreamingApi {
      * Find out if the HR service is available in the device.
      * Use this API method in a case where the device does not support Polar Measurement Data service.
      * In such a case using 'getAvailableOnlineStreamDataTypes' will return error; use this method instead.
+     *
+     * Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_HR]
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
      * @return [Single]
@@ -76,6 +78,8 @@ interface PolarOnlineStreamingApi {
     /**
      * Start heart rate stream. Heart rate stream is stopped if
      * the connection is closed, error occurs or stream is disposed.
+     *
+     * Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_HR]
      *
      * @param identifier    Polar device id found printed on the sensor/device or bt address
      * @return Flowable stream of heart rate data.

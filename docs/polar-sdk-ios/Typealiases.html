@@ -17,7 +17,7 @@
     <a title="Type Aliases  Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="index.html">PolarBleSdk 6.14.3 Docs</a> (37% documented)</p>
+        <p><a href="index.html">PolarBleSdk 6.15.1 Docs</a> (40% documented)</p>
         <div class="header-right">
           <form role="search" action="search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -163,6 +163,9 @@
                 <a href="Enums/FirmwareUpdateStatus.html">FirmwareUpdateStatus</a>
               </li>
               <li class="nav-group-task">
+                <a href="Enums/OfflineExerciseStartResultType.html">OfflineExerciseStartResultType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Enums/PolarActivityDataType.html">PolarActivityDataType</a>
               </li>
               <li class="nav-group-task">
@@ -275,6 +278,9 @@
                 <a href="Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a>
               </li>
               <li class="nav-group-task">
+                <a href="Protocols/PolarOfflineExerciseV2Api.html">PolarOfflineExerciseV2Api</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a>
               </li>
               <li class="nav-group-task">
@@ -290,6 +296,9 @@
                 <a href="Protocols/PolarSleepApi.html">PolarSleepApi</a>
               </li>
               <li class="nav-group-task">
+                <a href="Protocols/PolarTemperatureApi.html">PolarTemperatureApi</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a>
               </li>
             </ul>
@@ -302,6 +311,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="Structs/LedConfig.html">LedConfig</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/OfflineExerciseStartResult.html">OfflineExerciseStartResult</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/Polar247HrSamplesData.html">Polar247HrSamplesData</a>
@@ -860,6 +872,36 @@
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:11PolarBleSdk0A15RecordingStatusa"></a>
+                    <a name="//apple_ref/swift/Alias/PolarRecordingStatus" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A15RecordingStatusa">PolarRecordingStatus</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Polar Recording status</p>
+<pre class="highlight swift"><code><span class="o">-</span> <span class="nv">ongoing</span><span class="p">:</span> <span class="kc">true</span> <span class="n">recording</span> <span class="n">running</span>
+<span class="o">-</span> <span class="nv">entryId</span><span class="p">:</span> <span class="n">unique</span> <span class="n">identifier</span>
+</code></pre>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">typealias</span> <span class="kt">PolarRecordingStatus</span> <span class="o">=</span> <span class="p">(</span><span class="nv">ongoing</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">,</span> <span class="nv">entryId</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:11PolarBleSdk0A13ExerciseEntrya"></a>
                     <a name="//apple_ref/swift/Alias/PolarExerciseEntry" class="dashAnchor"></a>
                     <a class="token" href="#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a>
@@ -870,9 +912,9 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Polar exercise entry</p>
-<pre class="highlight swift"><code><span class="o">-</span> <span class="nv">path</span><span class="p">:</span> <span class="kt">Resource</span> <span class="n">location</span> <span class="k">in</span> <span class="n">the</span> <span class="n">device</span><span class="p">,</span>
-<span class="o">-</span> <span class="nv">date</span><span class="p">:</span> <span class="kt">Entry</span> <span class="n">date</span> <span class="n">and</span> <span class="n">time</span><span class="o">.</span> <span class="kt">Only</span> <span class="kt">OH1</span> <span class="n">and</span> <span class="kt">Polar</span> <span class="kt">Verity</span> <span class="kt">Sense</span> <span class="n">supports</span> <span class="n">date</span> <span class="n">and</span> <span class="n">time</span>
+                        <p>Polar exercise entry.</p>
+<pre class="highlight swift"><code><span class="o">-</span> <span class="nv">path</span><span class="p">:</span> <span class="kt">Resource</span> <span class="n">location</span> <span class="k">in</span> <span class="n">the</span> <span class="n">device</span>
+<span class="o">-</span> <span class="nv">date</span><span class="p">:</span> <span class="kt">Entry</span> <span class="n">date</span> <span class="n">and</span> <span class="n">time</span>
 <span class="o">-</span> <span class="nv">entryId</span><span class="p">:</span> <span class="n">unique</span> <span class="n">identifier</span>
 </code></pre>
 
@@ -918,42 +960,12 @@
                     </section>
                   </div>
                 </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:11PolarBleSdk0A15RecordingStatusa"></a>
-                    <a name="//apple_ref/swift/Alias/PolarRecordingStatus" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A15RecordingStatusa">PolarRecordingStatus</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Polar Recording status</p>
-<pre class="highlight swift"><code><span class="o">-</span> <span class="nv">ongoing</span><span class="p">:</span> <span class="kc">true</span> <span class="n">recording</span> <span class="n">running</span>
-<span class="o">-</span> <span class="nv">entryId</span><span class="p">:</span> <span class="n">unique</span> <span class="n">identifier</span>
-</code></pre>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">typealias</span> <span class="kt">PolarRecordingStatus</span> <span class="o">=</span> <span class="p">(</span><span class="nv">ongoing</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">,</span> <span class="nv">entryId</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
               </ul>
             </div>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-02-23)</p>
+          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-03-16)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

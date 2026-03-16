@@ -88,4 +88,16 @@ abstract class PolarBleApiCallback : PolarBleApiCallbackProvider {
      */
     override fun hrNotificationReceived(identifier: String, data: PolarHrData.PolarHrSample) {
     }
+
+    /**
+     * Called once all requested features have been evaluated after a device connection.
+     *
+     * The [ready] list contains features confirmed ready for use.
+     * The [unavailable] list contains features not supported by this device.
+     *
+     * @param identifier Polar device id
+     * @param ready features confirmed ready for use on this device
+     * @param unavailable features not supported by this device
+     */
+    override fun bleSdkFeaturesReadiness(identifier: String, ready: List<PolarBleApi.PolarBleSdkFeature>, unavailable: List<PolarBleApi.PolarBleSdkFeature>) {}
 }

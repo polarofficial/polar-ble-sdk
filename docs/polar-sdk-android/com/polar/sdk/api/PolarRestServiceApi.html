@@ -250,7 +250,7 @@ public interface <span class="typeNameLabel"><a href=PolarRestServiceApi.html>Po
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarRestServiceApi.html#listRestApiServices(java.lang.String)>listRestApiServices</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
-                                            <td class="colLast">Discover available services from device</td>
+                                            <td class="colLast">Discover available services from deviceRequires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FILE_TRANSFER>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER</a></td>
                                         </tr>
                                         
                                         <tr id="i1" class="rowColor">
@@ -330,7 +330,7 @@ public interface <span class="typeNameLabel"><a href=PolarRestServiceApi.html>Po
                                     <li class="blockList">
                                         <h4>listRestApiServices</h4>
                                         <pre class="methodSignature"> abstract Single&lt;<a href=model/restapi/PolarDeviceRestApiServices.html>PolarDeviceRestApiServices</a>&gt; <a href=PolarRestServiceApi.html#listRestApiServices(java.lang.String)>listRestApiServices</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Discover available services from device</p></div>
+                                        <div class="block"><p>Discover available services from device</p><p>Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FILE_TRANSFER>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER</a></p></div>
 
                                         <dl>
 
@@ -363,7 +363,7 @@ public interface <span class="typeNameLabel"><a href=PolarRestServiceApi.html>Po
                                     <li class="blockList">
                                         <h4>getRestApiDescription</h4>
                                         <pre class="methodSignature"> abstract Single&lt;<a href=model/restapi/PolarDeviceRestApiServiceDescription.html>PolarDeviceRestApiServiceDescription</a>&gt; <a href=PolarRestServiceApi.html#getRestApiDescription(java.lang.String,java.lang.String)>getRestApiDescription</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> path)</pre>
-                                        <div class="block"><p>Get details related to particular REST API.</p></div>
+                                        <div class="block"><p>Get details related to particular REST API.</p><p>Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FILE_TRANSFER>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER</a></p></div>
 
                                         <dl>
 
@@ -400,7 +400,7 @@ public interface <span class="typeNameLabel"><a href=PolarRestServiceApi.html>Po
                                     <li class="blockList">
                                         <h4>putNotification</h4>
                                         <pre class="methodSignature"> abstract Completable <a href=PolarRestServiceApi.html#putNotification(java.lang.String,java.lang.String,java.lang.String)>putNotification</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> notification, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> path)</pre>
-                                        <div class="block"><p>Notify device via a REST API in the device.</p></div>
+                                        <div class="block"><p>Notify device via a REST API in the device.</p><p>Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FILE_TRANSFER>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER</a></p></div>
 
                                         <dl>
 
@@ -441,7 +441,7 @@ public interface <span class="typeNameLabel"><a href=PolarRestServiceApi.html>Po
                                     <li class="blockList">
                                         <h4>receiveRestApiEvents</h4>
                                         <pre class="methodSignature"> abstract &lt;T extends <a href=RestApiEventPayload.html>RestApiEventPayload</a>&gt; Flowable&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>T</a>&gt;&gt; <a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>receiveRestApiEvents</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, Function1&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>, <a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>T</a>&gt; mapper)</pre>
-                                        <div class="block"><p>Streams for received device REST API events  parameters decoded as given type T endlessly. Only dispose , take(1) etc ... stops stream. Normally requires event action that subscribes to the events using putNotification()</p></div>
+                                        <div class="block"><p>Streams for received device REST API events  parameters decoded as given type T endlessly. Only dispose , take(1) etc ... stops stream.</p><p>Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FILE_TRANSFER>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER</a></p><p>Normally requires event action that subscribes to the events using putNotification()</p></div>
 
                                         <dl>
 

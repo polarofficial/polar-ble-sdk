@@ -14,7 +14,7 @@ import java.time.LocalDate
 interface PolarTemperatureApi {
 
     /**
-     * Get skin temperature from a device for a given period.
+     * Get skin temperature from a device for a given period. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TEMPERATURE_DATA]
      *
      * @param identifier The Polar device ID or BT address.
      * @param fromDate The starting date of the period to retrieve skin temperature data from.

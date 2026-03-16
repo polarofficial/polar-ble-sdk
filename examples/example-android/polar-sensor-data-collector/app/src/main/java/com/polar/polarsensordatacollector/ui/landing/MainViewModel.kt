@@ -34,6 +34,11 @@ data class OfflineRecordingAvailabilityUiState(
     val isAvailable: Boolean = false
 )
 
+data class OfflineRecordingV2AvailabilityUiState(
+    val deviceId: String = "",
+    val isAvailable: Boolean = false
+)
+
 data class DeviceInformationUiState(
     val deviceId: String = "",
     val firmwareVersion: String = "",
@@ -69,6 +74,12 @@ class MainViewModel @Inject constructor(
     private val _uiOfflineRecordingState = MutableStateFlow(OfflineRecordingAvailabilityUiState())
     val uiOfflineRecordingState: StateFlow<OfflineRecordingAvailabilityUiState> = _uiOfflineRecordingState.asStateFlow()
 
+    private val _uiOfflineRecordingV2State =
+        MutableStateFlow(OfflineRecordingV2AvailabilityUiState())
+
+    val uiOfflineRecordingV2State: StateFlow<OfflineRecordingV2AvailabilityUiState> =
+        _uiOfflineRecordingV2State.asStateFlow()
+
     private val _hrData = MutableStateFlow<PolarHrBroadcastData?>(null)
     val hrData: StateFlow<PolarHrBroadcastData?> = _hrData.asStateFlow()
 
@@ -89,7 +100,6 @@ class MainViewModel @Inject constructor(
                     }
                 }
         }
-
         viewModelScope.launch {
             polarDeviceStreamingRepository.deviceConnectionStatus
                 .collect { deviceConnectionState ->
@@ -97,24 +107,23 @@ class MainViewModel @Inject constructor(
                         is DeviceConnectionState.DeviceConnected -> {
                             Log.d(TAG, "Connected: " + deviceConnectionState.deviceId)
                             updateDeviceConnectionUiState(deviceConnectionState.deviceId, DeviceConnectionStates.CONNECTED)
+                            checkOfflineExerciseV2Support(deviceConnectionState.deviceId)
                         }
                         is DeviceConnectionState.DeviceConnecting -> {
                             Log.d(TAG, "Connecting: " + deviceConnectionState.deviceId)
                             updateDeviceConnectionUiState(deviceConnectionState.deviceId, DeviceConnectionStates.CONNECTING_TO_SELECTED_DEVICE)
-
                         }
                         is DeviceConnectionState.DeviceDisconnecting -> {
-                            //NOP
                         }
                         is DeviceConnectionState.DeviceNotConnected -> {
                             Log.d(TAG, "Not connected: " + deviceConnectionState.deviceId)
                             updateDeviceConnectionUiState(deviceConnectionState.deviceId, DeviceConnectionStates.NOT_CONNECTED)
                             deviceDisconnected(deviceConnectionState.deviceId)
+                            _uiOfflineRecordingV2State.value = OfflineRecordingV2AvailabilityUiState()
                         }
                     }
                 }
         }
-
         viewModelScope.launch {
             polarDeviceStreamingRepository.deviceInformation
                 .collect { deviceInformation ->
@@ -124,7 +133,6 @@ class MainViewModel @Inject constructor(
                     updateDeviceFirmwareVersionUiState(deviceId = deviceInformation.deviceId, firmwareVersion = deviceInformation.firmwareVersion)
                 }
         }
-
         viewModelScope.launch {
             polarDeviceStreamingRepository.availableFeatures
                 .collect { deviceStreamsAvailable ->
@@ -222,6 +230,29 @@ class MainViewModel @Inject constructor(
     private fun updateOfflineRecordingUiState(deviceId: String, isAvailable: Boolean = false) {
         _uiOfflineRecordingState.update {
             it.copy(deviceId = deviceId, isAvailable = isAvailable)
+        }
+    }
+
+
+    private fun checkOfflineExerciseV2Support(deviceId: String) {
+        viewModelScope.launch {
+            try {
+                val isSupported = withContext(Dispatchers.IO) {
+                    polarDeviceStreamingRepository.isOfflineExerciseV2Supported(deviceId)
+                }
+                _uiOfflineRecordingV2State.value =
+                    OfflineRecordingV2AvailabilityUiState(
+                        deviceId = deviceId,
+                        isAvailable = isSupported
+                    )
+            } catch (e: Exception) {
+                Log.e(TAG, "Offline Exercise V2 support check failed: ${e.message}", e)
+                _uiOfflineRecordingV2State.value =
+                    OfflineRecordingV2AvailabilityUiState(
+                        deviceId = deviceId,
+                        isAvailable = false
+                    )
+            }
         }
     }
 

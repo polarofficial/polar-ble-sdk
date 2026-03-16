@@ -322,7 +322,7 @@ public interface <span class="typeNameLabel"><a href=PolarFirmwareUpdateApi.html
                                     <li class="blockList">
                                         <h4>checkFirmwareUpdate</h4>
                                         <pre class="methodSignature"> abstract Observable&lt;<a href=model/CheckFirmwareUpdateStatus.html>CheckFirmwareUpdateStatus</a>&gt; <a href=PolarFirmwareUpdateApi.html#checkFirmwareUpdate(java.lang.String)>checkFirmwareUpdate</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Checks if a firmware update is available for the given device identifier.</p></div>
+                                        <div class="block"><p>Checks if a firmware update is available for the given device identifier. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FIRMWARE_UPDATE>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FIRMWARE_UPDATE</a></p></div>
 
                                         <dl>
 
@@ -355,7 +355,7 @@ public interface <span class="typeNameLabel"><a href=PolarFirmwareUpdateApi.html
                                     <li class="blockList">
                                         <h4>updateFirmware</h4>
                                         <pre class="methodSignature"> abstract Flowable&lt;<a href=model/FirmwareUpdateStatus.html>FirmwareUpdateStatus</a>&gt; <a href=PolarFirmwareUpdateApi.html#updateFirmware(java.lang.String)>updateFirmware</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Updates firmware to given device.</p></div>
+                                        <div class="block"><p>Updates firmware to given device. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FIRMWARE_UPDATE>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FIRMWARE_UPDATE</a></p></div>
 
                                         <dl>
 
@@ -388,7 +388,7 @@ public interface <span class="typeNameLabel"><a href=PolarFirmwareUpdateApi.html
                                     <li class="blockList">
                                         <h4>updateFirmware</h4>
                                         <pre class="methodSignature"> abstract Flowable&lt;<a href=model/FirmwareUpdateStatus.html>FirmwareUpdateStatus</a>&gt; <a href=PolarFirmwareUpdateApi.html#updateFirmware(java.lang.String,java.lang.String)>updateFirmware</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> firmwareUrl)</pre>
-                                        <div class="block"><p>Updates firmware to given device from specific URL.</p></div>
+                                        <div class="block"><p>Updates firmware to given device from specific URL. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FIRMWARE_UPDATE>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FIRMWARE_UPDATE</a></p></div>
 
                                         <dl>
 

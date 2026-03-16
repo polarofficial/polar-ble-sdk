@@ -1,0 +1,50 @@
+{
+  "version": "1.0",
+  "devices": {
+    "h10": {
+      "fileSystemType": "H10_FILE_SYSTEM",
+      "recordingSupported": true,
+      "firmwareUpdateSupported": true,
+      "isDeviceSensor": true,
+      "activityDataSupported": false
+    },
+    "oh1": {
+      "isDeviceSensor": true,
+      "firmwareUpdateSupported": false
+    },
+    "sense": {
+      "isDeviceSensor": true
+    },
+    "360": {
+      "isDeviceSensor": true,
+      "activityDataSupported": true
+    },
+    "loop gen 2": {
+      "isDeviceSensor": true,
+      "activityDataSupported": true
+    },
+    "polar_inw5t": {
+      "isDeviceSensor": true,
+      "activityDataSupported": true
+    },
+    "ignite 3": {
+      "activityDataSupported": true
+    },
+    "grit x2 pro": {
+      "activityDataSupported": true
+    },
+    "vantage v3": {
+      "activityDataSupported": true
+    },
+    "vantage m3": {
+      "activityDataSupported": true
+    }
+  },
+  "defaults": {
+    "fileSystemType": "POLAR_FILE_SYSTEM_V2",
+    "recordingSupported": false,
+    "firmwareUpdateSupported": true,
+    "isDeviceSensor": false,
+    "activityDataSupported": false
+  }
+}

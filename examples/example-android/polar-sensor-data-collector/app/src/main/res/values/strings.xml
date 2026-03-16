@@ -340,4 +340,32 @@
     <!-- Battery API texts -->
     <string name="charge_state_header">Read charge state</string>
 
+    <!-- Exercise V2 -->
+    <string name="exercise_v2_start_exercise">Start Exercise</string>
+    <string name="exercise_v2_stop_exercise">Stop Exercise</string>
+    <string name="exercise_v2_check_status">Check Status</string>
+    <string name="exercise_v2_fetch_exercise">Fetch Exercise</string>
+    <string name="exercise_v2_remove_exercise">Remove Exercise</string>
+
+    <string name="exercise_v2_status_exercise_started">Exercise started</string>
+    <string name="exercise_v2_status_exercise_stopped">Exercise stopped</string>
+    <string name="exercise_v2_status_running">Exercise is running</string>
+    <string name="exercise_v2_status_not_running">No exercise running</string>
+    <string name="exercise_v2_status_fetching_exercise">Fetching exercise…</string>
+    <string name="exercise_v2_status_removing_exercise">Removing exercise…</string>
+    <string name="exercise_v2_status_removed_exercise">Exercise removed</string>
+    <string name="exercise_v2_status_share_opened">Share dialog opened</string>
+    <string name="exercise_v2_status_no_exercises">No exercises found</string>
+
+    <string name="exercise_v2_status_failed_to_start">Failed to start: %1$s</string>
+    <string name="exercise_v2_status_failed_to_stop">Failed to stop: %1$s</string>
+    <string name="exercise_v2_status_failed_to_get_status">Failed to get status: %1$s</string>
+    <string name="exercise_v2_status_failed_to_fetch">Failed to fetch: %1$s</string>
+    <string name="exercise_v2_status_failed_to_remove">Failed to remove: %1$s</string>
+
+    <string name="exercise_v2_share_title">Share Exercise Data</string>
+    <string name="exercise_v2_share_text">Exercise: %1$s\nSamples: %2$s</string>
+    <string name="exercise_v2_status_exercise_found">Exercise in device</string>
+    <string name="exercise_v2_prefix_fetch">Fetch</string>
+    <string name="exercise_v2_prefix_remove">Remove</string>
 </resources>

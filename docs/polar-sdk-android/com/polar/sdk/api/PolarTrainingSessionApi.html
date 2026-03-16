@@ -117,7 +117,7 @@ var pathtoroot = "../../../../";
 public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.html>PolarTrainingSessionApi</a></span>
 
                     </pre>
-                    <div class="block"><p>Polar training session API.</p></div>
+                    <div class="block"><p>Polar training session API.</p><p>Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_TRAINING_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA</a></p></div>
 
                     <dl>
 
@@ -378,7 +378,7 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                     <li class="blockList">
                                         <h4>getTrainingSessionReferences</h4>
                                         <pre class="methodSignature"> abstract Flowable&lt;<a href=model/trainingsession/PolarTrainingSessionReference.html>PolarTrainingSessionReference</a>&gt; <a href=PolarTrainingSessionApi.html#getTrainingSessionReferences(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getTrainingSessionReferences</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate)</pre>
-                                        <div class="block"><p>Get training session references for a given period.</p></div>
+                                        <div class="block"><p>Get training session references for a given period. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_TRAINING_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA</a></p></div>
 
                                         <dl>
 
@@ -419,7 +419,7 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                     <li class="blockList">
                                         <h4>deleteTrainingSession</h4>
                                         <pre class="methodSignature"> abstract Completable <a href=PolarTrainingSessionApi.html#deleteTrainingSession(java.lang.String,com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference)>deleteTrainingSession</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/trainingsession/PolarTrainingSessionReference.html>PolarTrainingSessionReference</a> reference)</pre>
-                                        <div class="block"><p>Api for removing single training session from a Polar device. You can get a list of training sessions with <a href=PolarTrainingSessionApi.html#getTrainingSessionReferences(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getTrainingSessionReferences</a> API.</p></div>
+                                        <div class="block"><p>Api for removing single training session from a Polar device. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_TRAINING_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA</a> You can get a list of training sessions with <a href=PolarTrainingSessionApi.html#getTrainingSessionReferences(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getTrainingSessionReferences</a> API.</p></div>
 
                                         <dl>
 
@@ -456,7 +456,7 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                     <li class="blockList">
                                         <h4>getTrainingSession</h4>
                                         <pre class="methodSignature"> abstract Single&lt;<a href=model/trainingsession/PolarTrainingSession.html>PolarTrainingSession</a>&gt; <a href=PolarTrainingSessionApi.html#getTrainingSession(java.lang.String,com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference)>getTrainingSession</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/trainingsession/PolarTrainingSessionReference.html>PolarTrainingSessionReference</a> trainingSessionReference)</pre>
-                                        <div class="block"><p>Get training session.</p></div>
+                                        <div class="block"><p>Get training session. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_TRAINING_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA</a></p></div>
 
                                         <dl>
 
@@ -493,7 +493,7 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                     <li class="blockList">
                                         <h4>getTrainingSessionWithProgress</h4>
                                         <pre class="methodSignature"> abstract Observable&lt;<a href=model/trainingsession/PolarTrainingSessionFetchResult.html>PolarTrainingSessionFetchResult</a>&gt; <a href=PolarTrainingSessionApi.html#getTrainingSessionWithProgress(java.lang.String,com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference)>getTrainingSessionWithProgress</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/trainingsession/PolarTrainingSessionReference.html>PolarTrainingSessionReference</a> trainingSessionReference)</pre>
-                                        <div class="block"><p>Get training session with progress tracking.</p></div>
+                                        <div class="block"><p>Get training session with progress tracking. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_TRAINING_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA</a></p></div>
 
                                         <dl>
 
@@ -530,7 +530,7 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                     <li class="blockList">
                                         <h4>startExercise</h4>
                                         <pre class="methodSignature"> abstract Completable <a href=PolarTrainingSessionApi.html#startExercise(java.lang.String,com.polar.sdk.api.model.PolarExerciseSession.SportProfile)>startExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarExerciseSession.SportProfile.html>PolarExerciseSession.SportProfile</a> profile)</pre>
-                                        <div class="block"><p>Start an exercise session on the device.</p></div>
+                                        <div class="block"><p>Start an exercise session on the device. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_TRAINING_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA</a></p></div>
 
                                         <dl>
 
@@ -567,7 +567,7 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                     <li class="blockList">
                                         <h4>pauseExercise</h4>
                                         <pre class="methodSignature"> abstract Completable <a href=PolarTrainingSessionApi.html#pauseExercise(java.lang.String)>pauseExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Pause an ongoing exercise session.</p></div>
+                                        <div class="block"><p>Pause an ongoing exercise session. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_TRAINING_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA</a></p></div>
 
                                         <dl>
 
@@ -600,7 +600,7 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                     <li class="blockList">
                                         <h4>resumeExercise</h4>
                                         <pre class="methodSignature"> abstract Completable <a href=PolarTrainingSessionApi.html#resumeExercise(java.lang.String)>resumeExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Resume a paused exercise session.</p></div>
+                                        <div class="block"><p>Resume a paused exercise session. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_TRAINING_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA</a></p></div>
 
                                         <dl>
 
@@ -633,7 +633,7 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                     <li class="blockList">
                                         <h4>stopExercise</h4>
                                         <pre class="methodSignature"> abstract Completable <a href=PolarTrainingSessionApi.html#stopExercise(java.lang.String)>stopExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Stop the current exercise session.</p><p>By default, the session is saved on the device.</p></div>
+                                        <div class="block"><p>Stop the current exercise session. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_TRAINING_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA</a></p><p>By default, the session is saved on the device.</p></div>
 
                                         <dl>
 
@@ -666,7 +666,7 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                     <li class="blockList">
                                         <h4>getExerciseStatus</h4>
                                         <pre class="methodSignature"> abstract Single&lt;<a href=model/PolarExerciseSession.ExerciseInfo.html>PolarExerciseSession.ExerciseInfo</a>&gt; <a href=PolarTrainingSessionApi.html#getExerciseStatus(java.lang.String)>getExerciseStatus</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Get the current exercise session status from the device.</p></div>
+                                        <div class="block"><p>Get the current exercise session status from the device. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_TRAINING_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA</a></p></div>
 
                                         <dl>
 
@@ -699,7 +699,7 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                     <li class="blockList">
                                         <h4>observeExerciseStatus</h4>
                                         <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarExerciseSession.ExerciseInfo.html>PolarExerciseSession.ExerciseInfo</a>&gt; <a href=PolarTrainingSessionApi.html#observeExerciseStatus(java.lang.String)>observeExerciseStatus</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Observe exercise session status changes from the device.</p></div>
+                                        <div class="block"><p>Observe exercise session status changes from the device. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_TRAINING_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA</a></p></div>
 
                                         <dl>
 

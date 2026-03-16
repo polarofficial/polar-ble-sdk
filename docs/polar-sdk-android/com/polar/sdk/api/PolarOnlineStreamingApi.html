@@ -117,7 +117,7 @@ var pathtoroot = "../../../../";
 public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.html>PolarOnlineStreamingApi</a></span>
 
                     </pre>
-                    <div class="block"><p>Online steaming API.</p><p>Online streaming makes it possible to stream live online data from Polar device.</p><p>Requires features <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_ONLINE_STREAMING>FEATURE_POLAR_ONLINE_STREAMING</a></p><p>Note, online streaming is supported by VeritySense, H10 and OH1 devices</p></div>
+                    <div class="block"><p>Online steaming API.</p><p>Online streaming makes it possible to stream live online data from Polar device.</p><p>Requires features <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_ONLINE_STREAMING>FEATURE_POLAR_ONLINE_STREAMING</a> or <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_HR>PolarBleApi.PolarBleSdkFeature.FEATURE_HR</a></p><p>Note, online streaming is supported by VeritySense, H10, OH1, Polar 360, Polar Loop Gen2 devices</p></div>
 
                     <dl>
 
@@ -467,7 +467,7 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                     <li class="blockList">
                                         <h4>getAvailableHRServiceDataTypes</h4>
                                         <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=PolarBleApi.PolarDeviceDataType.html>PolarBleApi.PolarDeviceDataType</a>&gt;&gt; <a href=PolarOnlineStreamingApi.html#getAvailableHRServiceDataTypes(java.lang.String)>getAvailableHRServiceDataTypes</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Find out if the HR service is available in the device. Use this API method in a case where the device does not support Polar Measurement Data service. In such a case using 'getAvailableOnlineStreamDataTypes' will return error; use this method instead.</p></div>
+                                        <div class="block"><p>Find out if the HR service is available in the device. Use this API method in a case where the device does not support Polar Measurement Data service. In such a case using 'getAvailableOnlineStreamDataTypes' will return error; use this method instead.</p><p>Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_HR>PolarBleApi.PolarBleSdkFeature.FEATURE_HR</a></p></div>
 
                                         <dl>
 
@@ -574,7 +574,7 @@ public interface <span class="typeNameLabel"><a href=PolarOnlineStreamingApi.htm
                                     <li class="blockList">
                                         <h4>startHrStreaming</h4>
                                         <pre class="methodSignature"> abstract Flowable&lt;<a href=model/PolarHrData.html>PolarHrData</a>&gt; <a href=PolarOnlineStreamingApi.html#startHrStreaming(java.lang.String)>startHrStreaming</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Start heart rate stream. Heart rate stream is stopped if the connection is closed, error occurs or stream is disposed.</p></div>
+                                        <div class="block"><p>Start heart rate stream. Heart rate stream is stopped if the connection is closed, error occurs or stream is disposed.</p><p>Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_HR>PolarBleApi.PolarBleSdkFeature.FEATURE_HR</a></p></div>
 
                                         <dl>
 

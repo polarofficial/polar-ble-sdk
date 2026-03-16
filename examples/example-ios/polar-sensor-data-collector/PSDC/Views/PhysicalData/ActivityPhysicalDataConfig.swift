@@ -168,7 +168,7 @@ struct PhysicalDataConfigView: View {
             trainingBackground: trainingBackground,
             deviceTime: ISO8601DateFormatter().string(from: Date()),
             typicalDay: typicalDay,
-            sleepGoalMinutes: Int(sleepGoalMinutes) ?? 0
+            sleepGoalMinutes: Int(sleepGoalMinutes) ?? 0 > 0 ? Int(sleepGoalMinutes)! : 60*8
         )
         await bleSdkManager.sendPhysicalConfig(ftuConfig: ftuConfig)
         await MainActor.run { presentationMode.wrappedValue.dismiss() }

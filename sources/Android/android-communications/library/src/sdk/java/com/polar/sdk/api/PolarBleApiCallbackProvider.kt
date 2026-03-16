@@ -50,6 +50,24 @@ interface PolarBleApiCallbackProvider {
     fun bleSdkFeatureReady(identifier: String, feature: PolarBleApi.PolarBleSdkFeature)
 
     /**
+     * Called once all requested features have been evaluated after a device connection.
+     * This is the simplest way to wait for the device to become fully ready for further operations.
+     *
+     * Constructing [PolarBleApi] with an empty feature set causes the SDK to evaluate all SDK features by default.
+     * SDK calls this method after a device is connected.
+     *
+     * The [ready] list contains features that are confirmed ready for use.
+     * The [unavailable] list contains features that are not supported by this device.
+     * Features absent from both lists timed out before their readiness could be established;
+     * they can still become ready later and will be reported via [bleSdkFeatureReady].
+     *
+     * @param identifier Polar device id
+     * @param ready features that are confirmed ready for use on this device
+     * @param unavailable features that are not supported by this device
+     */
+    fun bleSdkFeaturesReadiness(identifier: String, ready: List<PolarBleApi.PolarBleSdkFeature>, unavailable: List<PolarBleApi.PolarBleSdkFeature>)
+
+    /**
      * DIS information received. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO]
      *
      * @param identifier Polar device id or bt address

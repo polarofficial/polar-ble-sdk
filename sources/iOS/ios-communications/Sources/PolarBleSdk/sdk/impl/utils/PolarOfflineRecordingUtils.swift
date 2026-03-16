@@ -43,6 +43,11 @@ class PolarOfflineRecordingUtils {
             dateFormatter.calendar = .init(identifier: .iso8601)
             dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 
+            guard size > 0 else {
+                BleLogger.trace("Encountered zero size entry in path \(path). Ignoring empty recording.")
+                return Observable.empty()
+            }
+
             guard components.count == 6 else {
                 BleLogger.error("Listing offline recording failed. Unexpected number of path components for entry: \(path)")
                 return Observable.empty()
@@ -167,6 +172,11 @@ class PolarOfflineRecordingUtils {
                 }
 
                 let fileSize = parts[0]
+                guard Int(fileSize) ?? 0 > 0 else {
+                    BleLogger.trace("Encountered zero size entry in PMDFILES.TXT: \(line). Ignoring empty recording.")
+                    continue
+                }
+
                 let recordingPath = parts[1]
 
                 let pathComponents = recordingPath.split(separator: "/")

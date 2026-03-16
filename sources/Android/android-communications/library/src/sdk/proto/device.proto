@@ -12,4 +12,6 @@ message PbDeviceInfo {
   optional PbVersion device_version     = 3;
   optional string model_name = 7;
   optional string hardware_code = 8;
+
+  repeated string capabilities = 18;
 };

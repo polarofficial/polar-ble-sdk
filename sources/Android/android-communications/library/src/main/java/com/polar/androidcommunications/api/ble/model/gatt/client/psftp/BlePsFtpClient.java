@@ -22,6 +22,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import io.reactivex.rxjava3.core.BackpressureOverflowStrategy;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
@@ -31,7 +32,6 @@ import io.reactivex.rxjava3.core.FlowableOnSubscribe;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.core.SingleOnSubscribe;
-import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import com.polar.androidcommunications.api.ble.model.proto.CommunicationsPftpRequest;
 
@@ -66,7 +66,7 @@ public class BlePsFtpClient extends BleGattBase {
     private final Object pftpNotificationMutex = new Object();
     private final Object pftpWaitNotificationMutex = new Object();
     private final Object pftpWaitNotificationSharedMutex = new Object();
-    private Flowable<BlePsFtpUtils.PftpNotificationMessage> _sharedWaitNotificationFlowable = null;
+    private volatile Flowable<BlePsFtpUtils.PftpNotificationMessage> _sharedWaitNotificationFlowable = null;
 
     public BlePsFtpClient(BleGattTxInterface txInterface) {
         super(txInterface, BlePsFtpUtils.RFC77_PFTP_SERVICE, true);
@@ -593,17 +593,35 @@ public class BlePsFtpClient extends BleGattBase {
      * onComplete, non produced
      */
     public Flowable<BlePsFtpUtils.PftpNotificationMessage> waitForNotification(Scheduler scheduler) {
-        if (_sharedWaitNotificationFlowable != null) {
-            return _sharedWaitNotificationFlowable.subscribeOn(scheduler, false);
+        Flowable<BlePsFtpUtils.PftpNotificationMessage> sharedFlowable = _sharedWaitNotificationFlowable;
+        if (sharedFlowable == null) {
+            synchronized (pftpWaitNotificationSharedMutex) {
+                sharedFlowable = _sharedWaitNotificationFlowable;
+                if (sharedFlowable == null) {
+                    sharedFlowable = createSharedWaitNotificationFlowable();
+                    _sharedWaitNotificationFlowable = sharedFlowable;
+                }
+            }
         }
-        synchronized(pftpWaitNotificationSharedMutex) {
-            _sharedWaitNotificationFlowable =
-                    waitForNotificationFlowable()
-                            .doOnError(
-                                    (error) -> _sharedWaitNotificationFlowable = null
-                            ).share();
+        return sharedFlowable.subscribeOn(scheduler, false);
+    }
+
+    private Flowable<BlePsFtpUtils.PftpNotificationMessage> createSharedWaitNotificationFlowable() {
+        AtomicReference<Flowable<BlePsFtpUtils.PftpNotificationMessage>> sharedRef = new AtomicReference<>();
+        Flowable<BlePsFtpUtils.PftpNotificationMessage> shared =
+                waitForNotificationFlowable()
+                        .doFinally(() -> clearSharedWaitNotificationFlowable(sharedRef.get()))
+                        .share();
+        sharedRef.set(shared);
+        return shared;
+    }
+
+    private void clearSharedWaitNotificationFlowable(Flowable<BlePsFtpUtils.PftpNotificationMessage> flowable) {
+        synchronized (pftpWaitNotificationSharedMutex) {
+            if (_sharedWaitNotificationFlowable == flowable) {
+                _sharedWaitNotificationFlowable = null;
+            }
         }
-        return _sharedWaitNotificationFlowable.subscribeOn(scheduler, false);
     }
 
     private Flowable<BlePsFtpUtils.PftpNotificationMessage> waitForNotificationFlowable() {
@@ -620,7 +638,18 @@ public class BlePsFtpClient extends BleGattBase {
                                         }
                                     }
                                 } catch (InterruptedException ex) {
-                                    BleLogger.e(TAG, "Wait notification interrupted");
+                                    boolean cancelled = subscriber.isCancelled();
+                                    if (cancelled) {
+                                        BleLogger.d(TAG, "Wait notification interrupted due to stream cancellation");
+                                    } else {
+                                        BleLogger.e(TAG, "Wait notification interrupted");
+                                    }
+                                    Thread.currentThread().interrupt();
+                                    if (!cancelled) {
+                                        InterruptedException interrupted = new InterruptedException("Wait notification interrupted");
+                                        interrupted.initCause(ex);
+                                        subscriber.tryOnError(interrupted);
+                                    }
                                     return;
                                 }
                             } else {
@@ -665,12 +694,23 @@ public class BlePsFtpClient extends BleGattBase {
                                     return;
                                 }
                             } catch (InterruptedException ex) {
-                                BleLogger.e(TAG, "wait notification interrupted");
+                                boolean cancelled = subscriber.isCancelled();
+                                if (cancelled) {
+                                    BleLogger.d(TAG, "Wait notification interrupted due to stream cancellation");
+                                } else {
+                                    BleLogger.e(TAG, "Wait notification interrupted");
+                                }
+                                Thread.currentThread().interrupt();
+                                if (!cancelled) {
+                                    InterruptedException interrupted = new InterruptedException("Wait notification interrupted");
+                                    interrupted.initCause(ex);
+                                    subscriber.tryOnError(interrupted);
+                                }
                                 return;
                             } catch (Exception throwable) {
                                 // continue to next notification or stop?
                                 if (!subscriber.isCancelled()) {
-                                    subscriber.tryOnError(new Exception("Notification receive failed"));
+                                    subscriber.tryOnError(new Exception("Notification receive failed", throwable));
                                 }
                                 return;
                             }

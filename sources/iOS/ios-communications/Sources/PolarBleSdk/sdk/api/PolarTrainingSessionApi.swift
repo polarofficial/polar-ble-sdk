@@ -11,6 +11,7 @@ public protocol PolarTrainingSessionApi {
     ///   - identifier: The Polar device ID or BT address.
     ///   - fromDate: The starting date of the period to retrieve training session references from. Optional.
     ///   - toDate: The ending date of the period to retrieve training session references from. Optional.
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_training_data`
     /// - Returns: An Observable emitting `PolarTrainingSessionReference` objects for the specified period.
     func getTrainingSessionReferences(
         identifier: String,
@@ -23,6 +24,7 @@ public protocol PolarTrainingSessionApi {
     /// - Parameters:
     ///   - identifier: The Polar device ID or BT address.
     ///   - trainingSessionReference: The reference to the training session to retrieve.
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_training_data`
     /// - Returns: A Single emitting a `PolarTrainingSession` containing the session data.
     func getTrainingSession(
         identifier: String,
@@ -34,6 +36,7 @@ public protocol PolarTrainingSessionApi {
     /// - Parameters:
     ///   - identifier: The Polar device ID or BT address.
     ///   - trainingSessionReference: The reference to the training session to retrieve.
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_training_data`
     /// - Returns: An Observable emitting `PolarTrainingSessionFetchResult` containing either progress updates or the complete session data.
     func getTrainingSessionWithProgress(
         identifier: String,
@@ -45,6 +48,7 @@ public protocol PolarTrainingSessionApi {
     /// - Parameters:
     ///   - identifier: The Polar device ID or BT address.
     ///   - reference: PolarTrainingSessionReference with path in device to the training session to be removed.
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_training_data`
     /// - Returns: Completable
     ///   - success: When the training session has been deleted from the device
     ///   - onError: see `PolarErrors` for possible errors invoked
@@ -55,18 +59,21 @@ public protocol PolarTrainingSessionApi {
     /// - Parameters:
     ///   - identifier: The Polar device ID or BT address.
     ///   - profile: The sport profile to use for the exercise session.
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_training_data`
     /// - Returns: A `Completable` that completes when the command has been delivered to the device.
     func startExercise(identifier: String, profile: PolarExerciseSession.SportProfile) -> Completable
 
     /// Pause an ongoing exercise session.
     ///
     /// - Parameter identifier: The Polar device ID or BT address.
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_training_data`
     /// - Returns: A `Completable` that completes when the command has been delivered to the device.
     func pauseExercise(identifier: String) -> Completable
 
     /// Resume a paused exercise session.
     ///
     /// - Parameter identifier: The Polar device ID or BT address.
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_training_data`
     /// - Returns: A `Completable` that completes when the command has been delivered to the device.
     func resumeExercise(identifier: String) -> Completable
 
@@ -75,18 +82,21 @@ public protocol PolarTrainingSessionApi {
     /// By default, the session is saved on the device.
     ///
     /// - Parameter identifier: The Polar device ID or BT address.
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_training_data`
     /// - Returns: A `Completable` that completes when the command has been delivered to the device.
     func stopExercise(identifier: String) -> Completable
 
     /// Get the current exercise session status from the device.
     ///
     /// - Parameter identifier: The Polar device ID or BT address.
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_training_data`
     /// - Returns: A `Single` emitting the current `PolarExerciseSession.ExerciseInfo` for the device.
     func getExerciseStatus(identifier: String) -> Single<PolarExerciseSession.ExerciseInfo>
     
     /// Observe exercise session status notifications from the device.
     ///
     /// - Parameter identifier: The Polar device ID or BT address.
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_training_data`
     /// - Returns: An `Observable` emitting `PolarExerciseSession.ExerciseInfo` whenever the session status changes.
     func observeExerciseStatus(identifier:  String) -> Observable<PolarExerciseSession.ExerciseInfo>
 }

@@ -10,12 +10,28 @@ class PolarServiceClientUtils {
     required init(listener: CBDeviceListenerImpl) {
         self.listener = listener
     }
-    
+
+    /// Returns `true` when both PMD control-point and data notifications are enabled for the given session.
+    static func pmdNotificationsEnabled(_ session: BleDeviceSession) -> Bool {
+        guard let pmdClient = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else {
+            return false
+        }
+        return pmdClient.isCharacteristicNotificationEnabled(BlePmdClient.PMD_CP) &&
+               pmdClient.isCharacteristicNotificationEnabled(BlePmdClient.PMD_DATA)
+    }
+
+    /// Returns `true` when both PSFTP MTU and D2H notifications are enabled for the given session.
+    static func psFtpNotificationsEnabled(_ session: BleDeviceSession) -> Bool {
+        guard let ftpClient = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+            return false
+        }
+        return ftpClient.isCharacteristicNotificationEnabled(BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC) &&
+               ftpClient.isCharacteristicNotificationEnabled(BlePsFtpClient.PSFTP_D2H_NOTIFICATION_CHARACTERISTIC)
+    }
+
     func sessionPmdClientReady(_ identifier: String) throws -> BleDeviceSession {
         let session = try sessionServiceReady(identifier, service: BlePmdClient.PMD_SERVICE)
-        let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
-        if client.isCharacteristicNotificationEnabled(BlePmdClient.PMD_CP) &&
-            client.isCharacteristicNotificationEnabled(BlePmdClient.PMD_DATA) {
+        if PolarServiceClientUtils.pmdNotificationsEnabled(session) {
             return session
         }
         throw PolarErrors.notificationNotEnabled
@@ -33,7 +49,6 @@ class PolarServiceClientUtils {
     
     internal func sessionFtpClientReady(_ identifier: String) throws -> BleDeviceSession {
         let session = try sessionServiceReady(identifier, service: BlePsFtpClient.PSFTP_SERVICE)
-        let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
         
         // Poll for up to 5 seconds waiting for FTP notifications to be enabled
         // This handles the case where service is discovered but automatic notification
@@ -43,9 +58,7 @@ class PolarServiceClientUtils {
         let timeout: TimeInterval = 5.0
         
         while Date().timeIntervalSince(startTime) < timeout {
-            let mtuEnabled = client.isCharacteristicNotificationEnabled(BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC)
-            let d2hEnabled = client.isCharacteristicNotificationEnabled(BlePsFtpClient.PSFTP_D2H_NOTIFICATION_CHARACTERISTIC)
-            if mtuEnabled && d2hEnabled {
+            if PolarServiceClientUtils.psFtpNotificationsEnabled(session) {
                 BleLogger.trace("sessionFtpClientReady - Notifications ready after \(Date().timeIntervalSince(startTime))s")
                 return session
             }
@@ -96,9 +109,7 @@ class PolarServiceClientUtils {
                         .take(10)
                         .flatMap { (_: Int64) -> Observable<BleDeviceSession> in
                             do {
-                                let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
-                                if client.isCharacteristicNotificationEnabled(BlePmdClient.PMD_CP) &&
-                                    client.isCharacteristicNotificationEnabled(BlePmdClient.PMD_DATA) {
+                                if PolarServiceClientUtils.pmdNotificationsEnabled(session) {
                                     observer.onNext(session)
                                     observer.onCompleted()
                                     return Observable.just(session)

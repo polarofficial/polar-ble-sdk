@@ -49,6 +49,11 @@ import UIKit
     let queue: DispatchQueue
     let scheduler: SerialDispatchQueueScheduler
     var connectSubscriptions = [String : Disposable]()
+    var featureCheckSubscriptions = [String: Disposable]()
+    /// Tracks which SDK features are currently ready, keyed by device identifier.
+    /// Populated as features become ready during device setup; cleared on disconnect.
+    private var readyFeaturesMap = [String: Set<PolarBleSdkFeature>]()
+    private let readyFeaturesLock = NSLock()
     var serviceList = [CBUUID.init(string: "180D")]
     let features:Set<PolarBleSdkFeature>
     let dateFormatter = ISO8601DateFormatter()
@@ -57,43 +62,58 @@ import UIKit
     var fileUtils: PolarFileUtils
     
     required public init(_ queue: DispatchQueue, features: Set<PolarBleSdkFeature>) {
+        let resolvedFeatures = features.isEmpty ? Set(PolarBleSdkFeature.allCases) : features
         var clientList: [(_ gattServiceTransmitter: BleAttributeTransportProtocol) -> BleGattClientBase] = []
-        self.features = features
+        self.features = resolvedFeatures
         
         // BleHrClient
-        if(features.contains(PolarBleSdkFeature.feature_hr) ||
-           features.contains(PolarBleSdkFeature.feature_polar_online_streaming) ) {
+        if(resolvedFeatures.contains(PolarBleSdkFeature.feature_hr) ||
+           resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_online_streaming) ) {
             clientList.append(BleHrClient.init)
         }
         
         // BleDisClient
-        if(features.contains(PolarBleSdkFeature.feature_device_info)) {
+        if(resolvedFeatures.contains(PolarBleSdkFeature.feature_device_info)) {
             clientList.append(BleDisClient.init)
         }
         
         // BleBasClient
-        if(features.contains(PolarBleSdkFeature.feature_battery_info)) {
+        if(resolvedFeatures.contains(PolarBleSdkFeature.feature_battery_info)) {
             clientList.append(BleBasClient.init)
         }
         
         // BlePmdClient
-        if(features.contains(PolarBleSdkFeature.feature_polar_online_streaming) ||
-           features.contains(PolarBleSdkFeature.feature_polar_offline_recording) ||
-           features.contains(PolarBleSdkFeature.feature_polar_sdk_mode)) {
+        if(resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_online_streaming) ||
+           resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_offline_recording) ||
+              resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_sdk_mode) ||
+              resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_led_animation)) {
             clientList.append(BlePmdClient.init)
         }
         
         // BlePsFtpClient
-        if(features.contains(PolarBleSdkFeature.feature_polar_offline_recording) ||
-           features.contains(PolarBleSdkFeature.feature_polar_h10_exercise_recording) ||
-           features.contains(PolarBleSdkFeature.feature_polar_device_time_setup)) {
+        if(resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_offline_recording) ||
+           resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_h10_exercise_recording) ||
+           resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_device_time_setup) ||
+           resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_activity_data) ||
+           resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_training_data) ||
+           resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_sleep_data) ||
+           resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_device_control) ||
+           resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_file_transfer) ||
+           resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_temperature_data) ||
+           resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_firmware_update) ||
+           resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_led_animation)) {
             clientList.append(BlePsFtpClient.init)
             //TODO, why this is needed?
             serviceList.append(CBUUID.init(string: "FEEE"))
         }
         
+        // BleHtsClient
+        if (resolvedFeatures.contains(PolarBleSdkFeature.feature_hts)) {
+            clientList.append(BleHtsClient.init)
+        }
+        
         // BlePsPFCClient
-        if (features.contains(PolarBleSdkFeature.feature_polar_features_configuration_service)) {
+        if (resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_features_configuration_service)) {
             clientList.append(BlePfcClient.init)
         }
         
@@ -153,10 +173,25 @@ import UIKit
         case .sessionOpenPark where session.previousState == .sessionOpen: fallthrough
         case .sessionClosed where session.previousState == .sessionOpen: fallthrough
         case .sessionClosed where session.previousState == .sessionClosing:
+            let dis1 = readyFeaturesLock.withLock {
+                readyFeaturesMap.removeValue(forKey: info.deviceId)
+                return featureCheckSubscriptions.removeValue(forKey: info.deviceId)
+            }
+            dis1?.dispose()
             self.observer?.deviceDisconnected(info, pairingError: session.error?.indicatesBLEPairingProblem ?? false)
         case .sessionOpenPark where session.previousState == .sessionOpening:
+            let dis2 = readyFeaturesLock.withLock {
+                readyFeaturesMap.removeValue(forKey: info.deviceId)
+                return featureCheckSubscriptions.removeValue(forKey: info.deviceId)
+            }
+            dis2?.dispose()
             self.observer?.deviceDisconnected(info, pairingError: false)
         case .sessionClosed where session.disconnectedDueRemovedPairing:
+            let dis3 = readyFeaturesLock.withLock {
+                readyFeaturesMap.removeValue(forKey: info.deviceId)
+                return featureCheckSubscriptions.removeValue(forKey: info.deviceId)
+            }
+            dis3?.dispose()
             self.observer?.deviceDisconnected(info, pairingError: session.error?.indicatesBLEPairingProblem ?? false)
         case .sessionOpening:
             self.observer?.deviceConnecting(info)
@@ -177,290 +212,464 @@ import UIKit
         listener.servicesToScanFor = serviceList
     }
     
+    private enum FeatureState {
+        case notAvailable
+        case notReady
+        case ready
+    }
+    
     fileprivate func deviceFilter(_ content: BleAdvertisementContent) -> Bool {
         return content.polarDeviceId.count != 0 && content.polarDeviceType != "mobile"
     }
-    
-    private func isHeartRateFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
-        if (discoveredServices.contains(BleHrClient.HR_SERVICE)) {
-            guard let client = session.fetchGattClient(BleHrClient.HR_SERVICE) as? BleHrClient else {
-                return Single.just(false)
-            }
-            return client.clientReady(true)
-                .andThen(Single.just(true))
-        } else {
-            return Single.just(false)
-        }
-    }
-    
-    private func isDeviceInfoFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
-        if (discoveredServices.contains(BleDisClient.DIS_SERVICE)) {
-            guard let client = session.fetchGattClient(BleDisClient.DIS_SERVICE) as? BleDisClient else {
-                return Single.just(false)
-            }
-            return client.clientReady(true)
-                .andThen(Single.just(true))
-        } else {
-            return Single.just(false)
-        }
-    }
-    
-    private func isBatteryInfoFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
-        if (discoveredServices.contains(BleBasClient.BATTERY_SERVICE)) {
-            guard let client = session.fetchGattClient(BleBasClient.BATTERY_SERVICE) as? BleBasClient else {
-                return Single.just(false)
-            }
-            return client.clientReady(true)
-                .andThen(Single.just(true))
-        } else {
-            return Single.just(false)
-        }
+
+    private func hasHrClient(_ session: BleDeviceSession) -> Bool {
+        return session.fetchGattClient(BleHrClient.HR_SERVICE) as? BleHrClient != nil
     }
 
-    private func isFeatureConfigurationServiceFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
-        if (discoveredServices.contains(BlePfcClient.PFC_SERVICE)) {
-            guard let client = session.fetchGattClient(BlePfcClient.PFC_SERVICE) as? BlePfcClient else {
-                return Single.just(false)
-            }
-            return client.clientReady(true)
-                .andThen(Single.just(true))
-        } else {
-            return Single.just(false)
-        }
+    private func hasDisClient(_ session: BleDeviceSession) -> Bool {
+        return session.fetchGattClient(BleDisClient.DIS_SERVICE) as? BleDisClient != nil
     }
 
-    private func isH10ExerciseFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
-        if (discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE) && BlePolarDeviceCapabilitiesUtility.isRecordingSupported(session.advertisementContent.polarDeviceType)) {
-            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                return Single.just(false)
-            }
-            return client.clientReady(true)
-                .andThen(Single.just(true))
-        } else {
-            return Single.just(false)
-        }
-    }
-    
-    private func isSdkModeFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
-        if (discoveredServices.contains(BlePmdClient.PMD_SERVICE)) {
-            guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else {
-                return Single.just(false)
-            }
-            return client.clientReady(true)
-                .andThen(
-                    client.readFeature(true)
-                        .map { (pmdFeatures) -> Bool in
-                            if(pmdFeatures.contains(PmdMeasurementType.sdkMode)) {
-                                return true
-                            } else {
-                                return false
-                            }
-                        }
-                )
-        } else {
-            return Single.just(false)
-        }
+    private func hasBasClient(_ session: BleDeviceSession) -> Bool {
+        return session.fetchGattClient(BleBasClient.BATTERY_SERVICE) as? BleBasClient != nil
     }
 
-    private func isLedAnimationFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
-        if (discoveredServices.contains(BlePmdClient.PMD_SERVICE) && discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE)) {
-
-            guard let pmdClient = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else {
-                return Single.just(false)
-            }
-            guard let psftpClient = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                return Single.just(false)
-            }
-
-            let isPmdClientAvailable = pmdClient.clientReady(true)
-                .andThen(
-                    pmdClient.readFeature(true)
-                        .map { (pmdFeatures) -> Bool in
-                            if (pmdFeatures.contains(PmdMeasurementType.sdkMode)) {
-                                return true
-                            } else {
-                                return false
-                            }
-                        }
-                )
-
-            let isFtpClientAvailable = psftpClient.clientReady(true)
-                .andThen(Single.just(true))
-
-            return Observable.combineLatest(isPmdClientAvailable.asObservable(), isFtpClientAvailable.asObservable()) { isPmdClientAvailable, isFtpClientAvailable -> Bool in
-                return (isPmdClientAvailable && isFtpClientAvailable)
-            }.asSingle()
-        } else {
-            return Single.just(false)
-        }
+    private func hasPmdClient(_ session: BleDeviceSession) -> Bool {
+        return session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient != nil
     }
 
-    private func isPolarFirmwareUpdateFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
-        if (discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE) && BlePolarDeviceCapabilitiesUtility.isFirmwareUpdateSupported(session.advertisementContent.polarDeviceType)) {
-            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                return Single.just(false)
-            }
-            return client.clientReady(true)
-                .andThen(Single.just(true))
-        } else {
-            return Single.just(false)
-        }
+    private func hasPsFtpClient(_ session: BleDeviceSession) -> Bool {
+        return session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient != nil
     }
 
-    private func isPolarDeviceTimeFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
-        if (discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE)) {
-            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                return Single.just(false)
-            }
-            return client.clientReady(true)
-                .andThen(Single.just(true))
-        } else {
-            return Single.just(false)
+    private func hasPfcClient(_ session: BleDeviceSession) -> Bool {
+        return session.fetchGattClient(BlePfcClient.PFC_SERVICE) as? BlePfcClient != nil
+    }
+
+    private func hasHtsClient(_ session: BleDeviceSession) -> Bool {
+        return session.fetchGattClient(HealthThermometer.HTS_SERVICE) as? BleHtsClient != nil
+    }
+
+    private func isHeartRateFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(BleHrClient.HR_SERVICE) && hasHrClient(session)
+    }
+
+    private func isHeartRateFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        guard let hrClient = session.fetchGattClient(BleHrClient.HR_SERVICE) as? BleHrClient else {
+            return Single.just(FeatureState.notAvailable)
         }
+        let state = hrClient.isCharacteristicNotificationEnabled(BleHrClient.HR_MEASUREMENT) ? FeatureState.ready : FeatureState.notReady
+        return Single.just(state)
+    }
+
+    private func isDeviceInfoFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(BleDisClient.DIS_SERVICE) && hasDisClient(session)
+    }
+
+    private func isDeviceInfoFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        return Single.just(hasDisClient(session) ? FeatureState.ready : FeatureState.notAvailable)
+    }
+
+    private func isBatteryInfoFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(BleBasClient.BATTERY_SERVICE) && hasBasClient(session)
+    }
+
+    private func isBatteryInfoFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        return Single.just(hasBasClient(session) ? FeatureState.ready : FeatureState.notAvailable)
+    }
+
+    private func isOnlineStreamingFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        let hrAvailable = discoveredServices.contains(BleHrClient.HR_SERVICE) && hasHrClient(session)
+        let pmdAvailable = discoveredServices.contains(BlePmdClient.PMD_SERVICE) && hasPmdClient(session)
+        return hrAvailable || pmdAvailable
     }
     
-    private func isOnlineStreamingAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
-        let isHrClientAvailable:Single<Bool>
-        if (discoveredServices.contains(BleHrClient.HR_SERVICE)) {
-            if let client = session.fetchGattClient(BleHrClient.HR_SERVICE) as? BleHrClient {
-                
-                //TODO test this
-                isHrClientAvailable = client.clientReady(true)
-                    .andThen(Single.just(true))
-                    .catchAndReturn(false)
-            } else {
-                isHrClientAvailable = Single.just(false)
-            }
-        } else {
-            isHrClientAvailable = Single.just(false)
-        }
-        
-        let isPmdClientAvailable:Single<Bool>
-        if (discoveredServices.contains(BlePmdClient.PMD_SERVICE)) {
-            if let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient {
-                isPmdClientAvailable = client.clientReady(true)
-                    .andThen(
-                        client.readFeature(true)
-                            .map { (pmdFeatures) -> Bool in
-                                var anyDataTypes = false
-                                for feature in pmdFeatures {
-                                    if (feature.isDataType()) {
-                                        anyDataTypes = true
-                                        break
-                                    }
-                                }
-                                return anyDataTypes
-                            }
-                    )
-            } else {
-                isPmdClientAvailable = Single.just(false)
-            }
-        } else {
-            isPmdClientAvailable = Single.just(false)
-        }
-        
-        return Observable.combineLatest(isHrClientAvailable.asObservable(), isPmdClientAvailable.asObservable()) { isHrClientAvailable, isPmdClientAvailable -> Bool in
-            return (isHrClientAvailable || isPmdClientAvailable)
-        }.asSingle()
-    }
-    
-    
-    private func isOfflineRecordingAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
-        if (discoveredServices.contains(BlePmdClient.PMD_SERVICE) && discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE)) {
-            
-            guard let pmdClient = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else {
-                return Single.just(false)
-            }
-            guard let psftpClient = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                return Single.just(false)
-            }
-            
-            let isPmdClientAvailable = pmdClient.clientReady(true)
-                .andThen(
-                    pmdClient.readFeature(true)
-                        .map { (pmdFeatures) -> Bool in
-                            if(pmdFeatures.contains(PmdMeasurementType.offline_recording)) {
-                                return true
-                            } else {
-                                return false
-                            }
-                        }
-                )
-            
-            let isFtpClientAvailable = psftpClient.clientReady(true)
-                .andThen(Single.just(true))
-            
-            return Observable.combineLatest(isPmdClientAvailable.asObservable(), isFtpClientAvailable.asObservable()) { isPmdClientAvailable, isFtpClientAvailable -> Bool in
-                return (isPmdClientAvailable && isFtpClientAvailable)
-            }.asSingle()
-        } else {
-            return Single.just(false)
-        }
-    }
-
-    private func isPolarActivityDataFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Single<Bool> {
-        if (discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE) && BlePolarDeviceCapabilitiesUtility.isActivityDataSupported(session.advertisementContent.polarDeviceType)) {
-            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                return Single.just(false)
-            }
-            return client.clientReady(true)
-                .andThen(Single.just(true))
-        } else {
-            return Single.just(false)
-        }
-    }
-
-    private func makeFeatureCallbackIfNeeded(session: BleDeviceSession, discoveredServices: [CBUUID], featurePolarOfflineRecording: PolarBleSdkFeature) -> Completable {
-        let isFeatureAvailable: Single<Bool>
-        switch(featurePolarOfflineRecording) {
-        case .feature_hr:
-            isFeatureAvailable = isHeartRateFeatureAvailable(session, discoveredServices)
-        case .feature_device_info:
-            isFeatureAvailable = isDeviceInfoFeatureAvailable(session, discoveredServices)
-        case .feature_battery_info:
-            isFeatureAvailable = isBatteryInfoFeatureAvailable(session, discoveredServices)
-        case .feature_polar_online_streaming:
-            isFeatureAvailable = isOnlineStreamingAvailable(session, discoveredServices)
-        case .feature_polar_offline_recording:
-            isFeatureAvailable = isOfflineRecordingAvailable(session, discoveredServices)
-        case .feature_polar_h10_exercise_recording:
-            isFeatureAvailable = isH10ExerciseFeatureAvailable(session, discoveredServices)
-        case .feature_polar_device_time_setup:
-            isFeatureAvailable = isPolarDeviceTimeFeatureAvailable(session, discoveredServices)
-        case .feature_polar_sdk_mode:
-            isFeatureAvailable = isSdkModeFeatureAvailable(session, discoveredServices)
-        case .feature_polar_led_animation:
-            isFeatureAvailable = isLedAnimationFeatureAvailable(session, discoveredServices)
-        case .feature_polar_activity_data:
-            isFeatureAvailable = isPolarActivityDataFeatureAvailable(session, discoveredServices)
-        case .feature_polar_firmware_update:
-            isFeatureAvailable = isPolarFirmwareUpdateFeatureAvailable(session, discoveredServices)
-        case .feature_polar_features_configuration_service:
-            isFeatureAvailable = isFeatureConfigurationServiceFeatureAvailable(session, discoveredServices)
-        }
-        
-        return isFeatureAvailable.flatMapCompletable { (isReady: Bool) -> Completable in
-            if (isReady) {
-                return Completable.create {[weak self] observer in
-                    guard let self = self else {
-                        observer(.completed)
-                        return Disposables.create {}
+    private func isPmdReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        if let pmdClient = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient {
+            if PolarServiceClientUtils.pmdNotificationsEnabled(session) {
+                return pmdClient.readFeature(true)
+                    .map { pmdFeatures in
+                        pmdFeatures.contains { $0.isDataType() } ? FeatureState.ready : FeatureState.notAvailable
                     }
-                    let deviceId = session.advertisementContent.polarDeviceIdUntouched.count != 0 ?
-                    session.advertisementContent.polarDeviceIdUntouched :
-                    session.address.uuidString
-                    
-                    self.deviceFeaturesObserver?.bleSdkFeatureReady(deviceId, feature: featurePolarOfflineRecording)
-                    
-                    observer(.completed)
-                    return Disposables.create {}
-                }
+                    .catchAndReturn(FeatureState.notAvailable)
             } else {
-                return Completable.empty()
+                return Single.just(FeatureState.notReady)
             }
+        } else {
+            return Single.just(FeatureState.notAvailable)
         }
     }
+
+    private func isAnyPmdMeasurementTypeReady(_ session: BleDeviceSession, types: [PmdMeasurementType]) -> Single<FeatureState> {
+        if let pmdClient = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient {
+            if PolarServiceClientUtils.pmdNotificationsEnabled(session) {
+                return pmdClient.readFeature(true)
+                    .map { pmdFeatures in
+                        pmdFeatures.contains(where: { types.contains($0) }) ? FeatureState.ready : FeatureState.notAvailable
+                    }
+                    .catchAndReturn(FeatureState.notAvailable)
+            } else {
+                return Single.just(FeatureState.notReady)
+            }
+        } else {
+            return Single.just(FeatureState.notAvailable)
+        }
+    }
+
+    private func isOnlineStreamingFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        
+        let hrReady = isHeartRateFeatureReady(session)
+        let pmdReady = isPmdReady(session)
+      
+        return Single.zip(hrReady, pmdReady)
+            .map { hrState, pmdState in
+                if hrState == .ready || pmdState == .ready {
+                    return FeatureState.ready
+                }
+                if hrState == .notAvailable && pmdState == .notAvailable {
+                    return FeatureState.notAvailable
+                }
+                return FeatureState.notReady
+            }
+    }
     
+    private func isFtpReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        guard session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient != nil else {
+            return Single.just(FeatureState.notAvailable)
+        }
+        return Single.just(PolarServiceClientUtils.psFtpNotificationsEnabled(session) ? FeatureState.ready : FeatureState.notReady)
+    }
+
+    private func isOfflineRecordingFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(BlePmdClient.PMD_SERVICE) &&
+               discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE) &&
+               hasPmdClient(session) &&
+               hasPsFtpClient(session)
+    }
+
+    private func isOfflineRecordingFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        let pmdReady = isAnyPmdMeasurementTypeReady(session, types: [.offline_recording, .offline_hr])
+        let ftpReady = isFtpReady(session)
+        return Single.zip(ftpReady, pmdReady)
+            .map { ftpState, pmdState in
+                if ftpState == .notAvailable || pmdState == .notAvailable {
+                    return FeatureState.notAvailable
+                }
+                if ftpState == .ready && pmdState == .ready {
+                    return FeatureState.ready
+                }
+                return FeatureState.notReady
+            }
+    }
+
+    private func isH10ExerciseFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE) &&
+               hasPsFtpClient(session) &&
+               BlePolarDeviceCapabilitiesUtility.isRecordingSupported(session.advertisementContent.polarDeviceType)
+    }
+
+    private func isH10ExerciseFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        guard BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType) == .h10FileSystem else {
+            return Single.just(FeatureState.notAvailable)
+        }
+        return Single.just(PolarServiceClientUtils.psFtpNotificationsEnabled(session) ? .ready : .notReady)
+    }
+    
+    private func isOfflineExerciseV2FeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        guard hasPsFtpClient(session) else { return Single.just(.notAvailable) }
+        
+        let ready = PolarServiceClientUtils.psFtpNotificationsEnabled(session)
+        guard ready else { return Single.just(.notReady) }
+        
+        guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+            return Single.just(.notAvailable)
+        }
+        
+        var operation = Protocol_PbPFtpOperation()
+        operation.command = .get
+        operation.path = "/DEVICE.BPB"
+        
+        do {
+            let request = try operation.serializedData()
+            return client.request(request)
+                .map { response in
+                    let deviceInfo = try Data_PbDeviceInfo(serializedBytes: Data(response))
+                    return deviceInfo.capabilities.contains("dm_exercise") ? .ready : .notAvailable
+                }
+                .catchAndReturn(.notAvailable)
+        } catch {
+            return Single.just(.notAvailable)
+        }
+    }
+
+    private func isPolarDeviceTimeFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE) && hasPsFtpClient(session)
+    }
+
+    private func isPolarDeviceTimeFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        return Single.just(PolarServiceClientUtils.psFtpNotificationsEnabled(session) ? .ready : .notReady)
+    }
+
+    private func isSdkModeFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(BlePmdClient.PMD_SERVICE) && hasPmdClient(session)
+    }
+
+    private func isSdkModeFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        return isAnyPmdMeasurementTypeReady(session, types: [.sdkMode])
+    }
+
+    private func isLedAnimationFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(BlePmdClient.PMD_SERVICE) &&
+               discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE) &&
+               hasPmdClient(session) &&
+               hasPsFtpClient(session)
+    }
+
+    private func isLedAnimationFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        let pmdReady = isAnyPmdMeasurementTypeReady(session, types: [.sdkMode])
+        let ftpReady = isFtpReady(session)
+        return Single.zip(ftpReady, pmdReady)
+            .map { ftpState, pmdState in
+                if ftpState == .notAvailable || pmdState == .notAvailable {
+                    return FeatureState.notAvailable
+                }
+                if ftpState == .ready && pmdState == .ready {
+                    return FeatureState.ready
+                }
+                return FeatureState.notReady
+            }
+    }
+
+    private func isPolarActivityDataFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE) &&
+               hasPsFtpClient(session) &&
+               BlePolarDeviceCapabilitiesUtility.isActivityDataSupported(session.advertisementContent.polarDeviceType)
+    }
+
+    private func isPolarActivityDataFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        return isFtpReady(session)
+    }
+
+    private func isPolarTrainingDataFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE) && hasPsFtpClient(session)
+    }
+
+    private func isPolarTrainingDataFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        return isFtpReady(session)
+    }
+
+    private func isPolarSleepFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE) &&
+               hasPsFtpClient(session) &&
+               BlePolarDeviceCapabilitiesUtility.isActivityDataSupported(session.advertisementContent.polarDeviceType)
+    }
+
+    private func isPolarSleepFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        return isFtpReady(session)
+    }
+
+    private func isPolarDeviceControlFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE) && hasPsFtpClient(session)
+    }
+
+    private func isPolarDeviceControlFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        return isFtpReady(session)
+    }
+
+    private func isPolarFileTransferFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE) && hasPsFtpClient(session)
+    }
+
+    private func isPolarFileTransferFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        return isFtpReady(session)
+    }
+
+    private func isHtsFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(HealthThermometer.HTS_SERVICE) && hasHtsClient(session)
+    }
+
+    private func isHtsFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        guard let htsClient = session.fetchGattClient(HealthThermometer.HTS_SERVICE) as? BleHtsClient else {
+            return Single.just(FeatureState.notAvailable)
+        }
+        let state = htsClient.isCharacteristicNotificationEnabled(HealthThermometer.TEMPERATURE_MEASUREMENT) ? FeatureState.ready : FeatureState.notReady
+        return Single.just(state)
+    }
+
+    private func isPolarTemperatureDataFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE) &&
+               hasPsFtpClient(session) &&
+               BlePolarDeviceCapabilitiesUtility.isActivityDataSupported(session.advertisementContent.polarDeviceType)
+    }
+
+    private func isPolarTemperatureDataFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        return isFtpReady(session)
+    }
+
+    private func isPolarFirmwareUpdateFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE) &&
+               hasPsFtpClient(session) &&
+               BlePolarDeviceCapabilitiesUtility.isFirmwareUpdateSupported(session.advertisementContent.polarDeviceType)
+    }
+
+    private func isPolarFirmwareUpdateFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        return isFtpReady(session)
+    }
+
+    private func isFeatureConfigurationServiceFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(BlePfcClient.PFC_SERVICE) && hasPfcClient(session)
+    }
+
+    private func isFeatureConfigurationServiceFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        guard let pfcClient = session.fetchGattClient(BlePfcClient.PFC_SERVICE) as? BlePfcClient else {
+            return Single.just(FeatureState.notAvailable)
+        }
+        return Single.just(pfcClient.isServiceDiscovered() ? FeatureState.ready : FeatureState.notReady)
+    }
+
+    private func isFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID], feature: PolarBleSdkFeature) -> Bool {
+        switch feature {
+        case .feature_hr:
+            return isHeartRateFeatureAvailable(session, discoveredServices)
+        case .feature_device_info:
+            return isDeviceInfoFeatureAvailable(session, discoveredServices)
+        case .feature_battery_info:
+            return isBatteryInfoFeatureAvailable(session, discoveredServices)
+        case .feature_polar_online_streaming:
+            return isOnlineStreamingFeatureAvailable(session, discoveredServices)
+        case .feature_polar_offline_recording:
+            return isOfflineRecordingFeatureAvailable(session, discoveredServices)
+        case .feature_polar_offline_exercise_v2:
+            return isOfflineExerciseV2FeatureAvailable(session, discoveredServices)
+        case .feature_polar_h10_exercise_recording:
+            return isH10ExerciseFeatureAvailable(session, discoveredServices)
+        case .feature_polar_device_time_setup:
+            return isPolarDeviceTimeFeatureAvailable(session, discoveredServices)
+        case .feature_polar_sdk_mode:
+            return isSdkModeFeatureAvailable(session, discoveredServices)
+        case .feature_polar_led_animation:
+            return isLedAnimationFeatureAvailable(session, discoveredServices)
+        case .feature_polar_activity_data:
+            return isPolarActivityDataFeatureAvailable(session, discoveredServices)
+        case .feature_polar_training_data:
+            return isPolarTrainingDataFeatureAvailable(session, discoveredServices)
+        case .feature_polar_sleep_data:
+            return isPolarSleepFeatureAvailable(session, discoveredServices)
+        case .feature_polar_device_control:
+            return isPolarDeviceControlFeatureAvailable(session, discoveredServices)
+        case .feature_polar_firmware_update:
+            return isPolarFirmwareUpdateFeatureAvailable(session, discoveredServices)
+        case .feature_polar_features_configuration_service:
+            return isFeatureConfigurationServiceFeatureAvailable(session, discoveredServices)
+        case .feature_polar_file_transfer:
+            return isPolarFileTransferFeatureAvailable(session, discoveredServices)
+        case .feature_hts:
+            return isHtsFeatureAvailable(session, discoveredServices)
+        case .feature_polar_temperature_data:
+            return isPolarTemperatureDataFeatureAvailable(session, discoveredServices)
+        }
+    }
+
+    private func isFeatureReady(_ session: BleDeviceSession, feature: PolarBleSdkFeature) -> Single<FeatureState> {
+        switch feature {
+        case .feature_hr:
+            return isHeartRateFeatureReady(session)
+        case .feature_device_info:
+            return isDeviceInfoFeatureReady(session)
+        case .feature_battery_info:
+            return isBatteryInfoFeatureReady(session)
+        case .feature_polar_online_streaming:
+            return isOnlineStreamingFeatureReady(session)
+        case .feature_polar_offline_recording:
+            return isOfflineRecordingFeatureReady(session)
+        case .feature_polar_offline_exercise_v2:
+            return isOfflineExerciseV2FeatureReady(session)
+        case .feature_polar_h10_exercise_recording:
+            return isH10ExerciseFeatureReady(session)
+        case .feature_polar_device_time_setup:
+            return isPolarDeviceTimeFeatureReady(session)
+        case .feature_polar_sdk_mode:
+            return isSdkModeFeatureReady(session)
+        case .feature_polar_led_animation:
+            return isLedAnimationFeatureReady(session)
+        case .feature_polar_activity_data:
+            return isPolarActivityDataFeatureReady(session)
+        case .feature_polar_training_data:
+            return isPolarTrainingDataFeatureReady(session)
+        case .feature_polar_sleep_data:
+            return isPolarSleepFeatureReady(session)
+        case .feature_polar_device_control:
+            return isPolarDeviceControlFeatureReady(session)
+        case .feature_polar_firmware_update:
+            return isPolarFirmwareUpdateFeatureReady(session)
+        case .feature_polar_features_configuration_service:
+            return isFeatureConfigurationServiceFeatureReady(session)
+        case .feature_polar_file_transfer:
+            return isPolarFileTransferFeatureReady(session)
+        case .feature_hts:
+            return isHtsFeatureReady(session)
+        case .feature_polar_temperature_data:
+            return isPolarTemperatureDataFeatureReady(session)
+        }
+    }
+
+    private struct FeaturesStates {
+        // Features that are not available, due e.g. missing service/client
+        let notAvailable: Set<PolarBleSdkFeature>
+        // Features that are ready
+        let ready: Set<PolarBleSdkFeature>
+        // Features not yet ready
+        let notReady: Set<PolarBleSdkFeature>
+    }
+    
+    private func checkFeaturesReady(session: BleDeviceSession, featuresToCheck: [PolarBleSdkFeature]) -> Single<FeaturesStates> {
+        if featuresToCheck.isEmpty {
+            return Single.just(FeaturesStates(notAvailable: [], ready: [], notReady: []))
+        }
+        let readinessChecks: [Single<(PolarBleSdkFeature, FeatureState)>] = featuresToCheck.map { feature in
+            return isFeatureReady(session, feature: feature)
+                .map { featureState in
+                    (feature, featureState)
+                }
+                .catchAndReturn((feature, .notAvailable))
+        }
+        return Single.zip(readinessChecks)
+            .map { results in
+                FeaturesStates(
+                    notAvailable: Set(results.compactMap { feature, state in
+                        state == .notAvailable ? feature : nil
+                    }),
+                    ready:  Set(results.compactMap { feature, state in
+                        state == .ready ? feature : nil
+                    }),
+                    notReady:  Set(results.compactMap { feature, state in
+                        state == .notReady ? feature : nil
+                    })
+               )
+            }
+    }
+
+    private func isOfflineExerciseV2FeatureAvailable(
+        _ session: BleDeviceSession,
+        _ discoveredServices: [CBUUID]
+    ) -> Bool {
+        guard discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE) else {
+            return false
+        }
+
+        do {
+            let ftpSession = try serviceClientUtils.sessionFtpClientReady(
+                session.advertisementContent.polarDeviceIdUntouched
+            )
+            guard ftpSession.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) is BlePsFtpClient else {
+                return false
+            }
+            return true
+        } catch {
+            return false
+        }
+    }
+
     // hook clients based on services available
     fileprivate func setupDevice(_ session: BleDeviceSession) {
         let deviceId = session.advertisementContent.polarDeviceIdUntouched.count != 0 ?
@@ -471,20 +680,16 @@ import UIKit
             .toArray()
             .asObservable()
             .flatMap { (uuid: [CBUUID]) -> Completable in
-                var availableFeaturesList: [Completable] = []
-                
-                for feature in PolarBleSdkFeature.allCases {
-                    if(self.features.contains(feature)) {
-                        availableFeaturesList.append(self.makeFeatureCallbackIfNeeded(session: session, discoveredServices: uuid, featurePolarOfflineRecording: feature))
-                    }
-                }
-                return Completable.concat(availableFeaturesList)
+                let requestedFeatures = self.features.isEmpty ? PolarBleSdkFeature.allCases : Array(self.features)
+                self.makeFeaturesReadyCallbackWhenReady(session: session, discoveredServices: uuid, requestedFeatures: requestedFeatures)
+                return Completable.empty()
             }.subscribe { e in
                 switch e {
                 case .error(let error):
                     self.logMessage("\(error)")
                 case .completed:
                     self.logMessage("device setup completed")
+                    
                 }
             }
         
@@ -494,7 +699,6 @@ import UIKit
                 if let client = session.fetchGattClient(uuid) {
                     switch uuid {
                     case BleHrClient.HR_SERVICE:
-                        self.deviceFeaturesObserver?.bleSdkFeatureReady(deviceId, feature: PolarBleSdkFeature.feature_hr)
                         let hrClient = client as! BleHrClient
                         self.startHrObserver(hrClient, deviceId: deviceId)
                 case BleBasClient.BATTERY_SERVICE:
@@ -538,44 +742,7 @@ import UIKit
                     case BlePmdClient.PMD_SERVICE:
                         let pmdClient = (client as! BlePmdClient)
                         return pmdClient.clientReady(true)
-                            .andThen(pmdClient.readFeature(true)
-                                .observe(on: self.scheduler)
-                                .do(onSuccess: { (value: Set<PmdMeasurementType>) in
-                                    var featureSet = Set<PolarDeviceDataType>()
-                                    if value.contains(PmdMeasurementType.ecg) {
-                                        featureSet.insert(.ecg)
-                                    }
-                                    if value.contains(PmdMeasurementType.acc) {
-                                        featureSet.insert(.acc)
-                                    }
-                                    if value.contains(PmdMeasurementType.ppg) {
-                                        featureSet.insert(.ppg)
-                                    }
-                                    if value.contains(PmdMeasurementType.ppi) {
-                                        featureSet.insert(.ppi)
-                                    }
-                                    if value.contains(PmdMeasurementType.gyro) {
-                                        featureSet.insert(.gyro)
-                                    }
-                                    if value.contains(PmdMeasurementType.mgn) {
-                                        featureSet.insert(.magnetometer)
-                                    }
-                                    if value.contains(PmdMeasurementType.temperature) {
-                                        featureSet.insert(.temperature)
-                                    }
-                                    if value.contains(PmdMeasurementType.pressure) {
-                                        featureSet.insert(.pressure)
-                                    }
-                                    if value.contains(PmdMeasurementType.skinTemperature) {
-                                        featureSet.insert(.skinTemperature)
-                                    }
-                                    
-                                    self.deviceFeaturesObserver?.bleSdkFeatureReady(deviceId, feature: PolarBleSdkFeature.feature_polar_online_streaming)
-
-                                    if value.contains(PmdMeasurementType.sdkMode) {
-                                        self.deviceFeaturesObserver?.bleSdkFeatureReady(deviceId, feature: PolarBleSdkFeature.feature_polar_sdk_mode)
-                                    }
-                                }))
+                            .andThen(Single.just(true))
                             .asObservable()
                             .map { (_) -> Any in
                                 return Any.self
@@ -595,6 +762,100 @@ import UIKit
                     self.logMessage("device setup completed")
                 }
             }
+    }
+    
+    private func makeFeaturesReadyCallbackWhenReady(session: BleDeviceSession, discoveredServices: [CBUUID], requestedFeatures: [PolarBleSdkFeature]) {
+        let deviceId = session.advertisementContent.polarDeviceIdUntouched.count != 0 ?
+        session.advertisementContent.polarDeviceIdUntouched :
+        session.address.uuidString
+
+        let availableFeaturesSet = Set(requestedFeatures.filter { feature in
+            isFeatureAvailable(session, discoveredServices, feature: feature)
+        })
+
+        if availableFeaturesSet.isEmpty {
+            self.deviceFeaturesObserver?.bleSdkFeaturesReadiness(deviceId, ready: [], unavailable: requestedFeatures)
+            return
+        }
+
+        var featuresToCheck = availableFeaturesSet
+        var readyFeatures = Set<PolarBleSdkFeature>()
+        var polledUnavailableFeatures = Set<PolarBleSdkFeature>()
+        var allReadyCallbackSent = false
+        
+        // Wait asynchronously for features to become ready
+        // Poll every 250ms, stop silently if disconnected
+        let subscription = Observable<Int>.interval(.milliseconds(250), scheduler: scheduler)
+            .take(40) // 40 * 250 = 10 seconds timeout
+            .flatMap { [weak self] _ -> Observable<FeaturesStates> in
+                guard let self = self else {
+                    return Observable.empty()
+                }
+                
+                // Check if session is still connected
+                if session.state != BleDeviceSession.DeviceSessionState.sessionOpen {
+                    // Device disconnected, stop silently
+                    return Observable.empty()
+                }
+                
+                // Check which features are ready, not ready, not available
+                return self.checkFeaturesReady(session: session, featuresToCheck: Array(featuresToCheck)).asObservable()
+            }
+            .subscribe(onNext: { [weak self] newFeaturesStates in
+                guard let self = self else { return }
+                guard featuresToCheck.count > 0 else {
+                    return
+                }
+                
+                let newlyReadyFeatures = newFeaturesStates.ready
+                let notAvailableFeatures = newFeaturesStates.notAvailable
+                
+                // Send individual callbacks for newly ready features
+                for feature in newlyReadyFeatures {
+                    if !readyFeatures.contains(feature) {
+                        self.deviceFeaturesObserver?.bleSdkFeatureReady(deviceId, feature: feature)
+                        readyFeatures.insert(feature)
+                        _ = self.readyFeaturesLock.withLock {
+                            self.readyFeaturesMap[deviceId, default: []].insert(feature)
+                        }
+                    }
+                }
+                
+                // Remove ready and not available features from features to check
+                featuresToCheck.subtract(newlyReadyFeatures)
+                featuresToCheck.subtract(notAvailableFeatures)
+                polledUnavailableFeatures.formUnion(notAvailableFeatures)
+                
+                if newlyReadyFeatures.count > 0 || notAvailableFeatures.count > 0 {
+                    BleLogger.trace("Features ready: \(newlyReadyFeatures), not available: \(notAvailableFeatures), still checking: \(featuresToCheck)")
+                }
+                
+                // Check if all available features are ready
+                if !allReadyCallbackSent && featuresToCheck.isEmpty {
+                    BleLogger.trace("All features ready, calling bleSdkFeaturesReadiness")
+                    let orderedReadyFeatures = requestedFeatures.filter { availableFeaturesSet.contains($0) && !polledUnavailableFeatures.contains($0) }
+                    let orderedUnavailableFeatures = requestedFeatures.filter { !availableFeaturesSet.contains($0) || polledUnavailableFeatures.contains($0) }
+                    self.deviceFeaturesObserver?.bleSdkFeaturesReadiness(deviceId, ready: orderedReadyFeatures, unavailable: orderedUnavailableFeatures)
+                    allReadyCallbackSent = true
+                }
+            }, onError: { error in
+                // Error occurred, but we handle it silently as per requirements
+                BleLogger.trace("Error while checking features readiness: \(error)")
+            }, onCompleted: { [weak self] in
+                guard let self = self else { return }
+                
+                // Timeout reached. If all-ready callback was not sent yet,
+                // emit callback with the features that are ready so far.
+                if !allReadyCallbackSent {
+                    let orderedReadyFeatures = requestedFeatures.filter { readyFeatures.contains($0) }
+                    let orderedUnavailableFeatures = requestedFeatures.filter { !availableFeaturesSet.contains($0) || polledUnavailableFeatures.contains($0) }
+                    BleLogger.trace("Timeout reached, calling bleSdkFeaturesReadiness with ready: \(orderedReadyFeatures), unavailable: \(orderedUnavailableFeatures)")
+                    self.deviceFeaturesObserver?.bleSdkFeaturesReadiness(deviceId, ready: orderedReadyFeatures, unavailable: orderedUnavailableFeatures)
+                    allReadyCallbackSent = true
+                }
+                _ = self.readyFeaturesLock.withLock { self.featureCheckSubscriptions.removeValue(forKey: deviceId) }
+            })
+        readyFeaturesLock.withLock { featureCheckSubscriptions[deviceId] = subscription }
     }
     
     private func startHrObserver(_ client: BleHrClient, deviceId: String) {
@@ -731,104 +992,7 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
     
     func isFeatureReady(_ identifier: String, feature: PolarBleSdkFeature) -> Bool {
-        switch feature {
-            
-        case .feature_hr:
-            do {
-                _ = try serviceClientUtils.sessionHrClientReady(identifier)
-                return true
-            } catch _ {
-                // do nothing
-            }
-        case .feature_device_info:
-            do {
-                _ = try serviceClientUtils.sessionServiceReady(identifier, service: BleDisClient.DIS_SERVICE)
-                return true
-            } catch _ {
-                // do nothing
-            }
-        case .feature_battery_info:
-            do {
-                _ = try serviceClientUtils.sessionServiceReady(identifier, service: BleBasClient.BATTERY_SERVICE)
-                return true
-            } catch _ {
-                // do nothing
-            }
-        case .feature_polar_online_streaming:
-            do {
-                _ = try serviceClientUtils.sessionHrClientReady(identifier)
-                _ = try serviceClientUtils.sessionPmdClientReady(identifier)
-                return true
-            } catch _ {
-                // do nothing
-            }
-        case .feature_polar_offline_recording:
-            do {
-                _ = try serviceClientUtils.sessionFtpClientReady(identifier)
-                _ = try serviceClientUtils.sessionPmdClientReady(identifier)
-                return true
-            } catch _ {
-                // do nothing
-            }
-        case .feature_polar_device_time_setup:
-            do {
-                _ = try serviceClientUtils.sessionFtpClientReady(identifier)
-                return true
-            } catch _ {
-                // do nothing
-            }
-        case .feature_polar_h10_exercise_recording:
-            do {
-                let session = try serviceClientUtils.sessionFtpClientReady(identifier)
-                guard session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) is BlePsFtpClient else {
-                    return false
-                }
-                if .h10FileSystem == BlePolarDeviceCapabilitiesUtility.fileSystemType( session.advertisementContent.polarDeviceType) {
-                    return true
-                } else {
-                    return false
-                }
-            } catch _ {
-                // do nothing
-            }
-        case .feature_polar_sdk_mode:
-            do {
-                _ = try serviceClientUtils.sessionPmdClientReady(identifier)
-                return true
-            } catch _ {
-                // do nothing
-            }
-        case .feature_polar_led_animation:
-            do {
-                _ = try serviceClientUtils.sessionFtpClientReady(identifier)
-                return true
-            } catch _ {
-                // do nothing
-            }
-        case .feature_polar_firmware_update:
-            do {
-                _ = try serviceClientUtils.sessionFtpClientReady(identifier)
-                return true
-            } catch _ {
-                // do nothing
-            }
-        case .feature_polar_activity_data:
-            do {
-                _ = try serviceClientUtils.sessionFtpClientReady(identifier)
-                return true
-            } catch _ {
-                // do nothing
-            }
-        case .feature_polar_features_configuration_service:
-            do {
-                _ = try serviceClientUtils.sessionPfcClientReady(identifier)
-                return true
-            } catch {
-                // do nothing
-            }
-        }
-        
-        return false
+        return readyFeaturesLock.withLock { readyFeaturesMap[identifier]?.contains(feature) ?? false }
     }
     
     func setLocalTime(_ identifier: String, time: Date, zone: TimeZone) -> Completable {
@@ -2028,20 +2192,24 @@ extension PolarBleApiImpl: PolarBleApi  {
     
     func getAvailableOnlineStreamDataTypes(_ identifier: String) -> Single<Set<PolarDeviceDataType>> {
         do {
-            let session = try serviceClientUtils.sessionPmdClientReady(identifier)
+            var deviceData: Set<PolarDeviceDataType> = Set()
             
-            // TODO, properly check the situation pmd client is not available but hr client is
-            guard let pmdClient = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { return Single.error(PolarErrors.serviceNotFound) }
+            let hrSession = try serviceClientUtils.sessionHrClientReady(identifier)
             
-            let bleHrClient = session.fetchGattClient(BleHrClient.HR_SERVICE) as? BleHrClient
+            let bleHrClient = hrSession.fetchGattClient(BleHrClient.HR_SERVICE) as? BleHrClient
             
+            if (bleHrClient != nil ) {
+                deviceData.insert(PolarDeviceDataType.hr)
+            }
+            
+            let pmdSession = try serviceClientUtils.sessionPmdClientReady(identifier)
+            
+            guard let pmdClient = pmdSession.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else {
+                return Single.just(Set(deviceData))
+            }
+
             return pmdClient.readFeature(true)
                 .map { pmdFeature -> Set<PolarDeviceDataType> in
-                    var deviceData: Set<PolarDeviceDataType> = Set()
-                    
-                    if (bleHrClient != nil ) {
-                        deviceData.insert(PolarDeviceDataType.hr)
-                    }
                     
                     if (pmdFeature.contains(PmdMeasurementType.ecg)) {
                         deviceData.insert(PolarDeviceDataType.ecg)
@@ -2234,7 +2402,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
     
-    func fetchStoredExerciseList(_ identifier: String) -> Observable<PolarExerciseEntry> {
+    func listExercises(_ identifier: String) -> Observable<PolarExerciseEntry> {
         do {
             let session = try serviceClientUtils.sessionFtpClientReady(identifier)
             let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
@@ -2277,6 +2445,11 @@ extension PolarBleApiImpl: PolarBleApi  {
         } catch let err {
             return Observable.error(handleError(err))
         }
+    }
+
+    @available(*, deprecated, renamed: "listExercises")
+    func fetchStoredExerciseList(_ identifier: String) -> Observable<PolarExerciseEntry> {
+        return listExercises(identifier)
     }
 
     func setLedConfig(_ identifier: String, ledConfig: LedConfig) -> Completable {
@@ -3203,42 +3376,6 @@ extension PolarBleApiImpl: PolarBleApi  {
            return Single.error(handleError(error))
        }
    }
-
-    func getSkinTemperature(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarSkinTemperatureData.PolarSkinTemperatureResult]> {
-        do {
-            let session = try serviceClientUtils.sessionFtpClientReady(identifier)
-            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                return Single.error(PolarErrors.serviceNotFound)
-            }
-
-            var skinTemperatureDataList = [PolarSkinTemperatureData.PolarSkinTemperatureResult]()
-
-            let calendar = Calendar.current
-            var currentDate = fromDate
-
-            var datesList = [Date]()
-
-            while currentDate <= toDate {
-                datesList.append(currentDate)
-                currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
-            }
-
-            return Observable.from(datesList)
-                .flatMap { date in
-                    PolarSkinTemperatureUtils.readSkinTemperatureData(client: client, date: date)
-                        .asObservable()
-                        .do(onNext: { skinTemp in
-                            skinTemperatureDataList.append(skinTemp)
-                        })
-                }
-                .toArray()
-                .flatMap { _ in
-                    Single.just(skinTemperatureDataList)
-                }
-        } catch {
-            return Single.error(handleError(error))
-        }
-    }
 
     func getActivitySampleData(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarActivityDayData]> {
         do {
@@ -4529,7 +4666,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
 
-    private func waitDeviceSessionWithPftpToOpen(identifier: String, timeoutSeconds: Int, waitForDeviceDownSeconds: Int = 0) -> Completable {
+    func waitDeviceSessionWithPftpToOpen(identifier: String, timeoutSeconds: Int, waitForDeviceDownSeconds: Int = 0) -> Completable {
         BleLogger.trace("Wait for device session to open, timeoutSeconds: \(timeoutSeconds), waitForDeviceDownSeconds: \(waitForDeviceDownSeconds)")
         let pollIntervalSeconds = 5
 

@@ -107,7 +107,9 @@ struct AccGraphView: View {
         }
 
         let expanded = Int(ceil(Double(maxAbs) / Double(step))) * step
-        lastMaxAbs = expanded
+        Task { @MainActor in
+            lastMaxAbs = expanded
+        }
         return expanded
     }
 }

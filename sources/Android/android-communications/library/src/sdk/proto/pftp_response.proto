@@ -58,9 +58,27 @@ message PbPftpGetExerciseStatusResult {
     EXERCISE_TYPE_NORMAL    = 1;
     EXERCISE_TYPE_REMOTE    = 2;
     EXERCISE_TYPE_AUTOMATIC = 3;
+    EXERCISE_TYPE_DATA_MERGE    = 4;
   }
   required PbExerciseState exercise_state     = 1;
   optional PbExerciseType exercise_type       = 2;
   optional PbSportIdentifier sport_identifier = 3;
   optional PbLocalDateTime start_time         = 4;
+  optional string dm_directory_path           = 5;
+}
+
+/*
+ * Response data to START_DM_EXERCISE query in pftp_request.proto.
+ */
+message PbPftpStartDmExerciseResult {
+    enum PbStartDmExerciseResult {
+        RESULT_OTHER         = 0;
+        RESULT_SUCCESS       = 1;
+        RESULT_EXE_ONGOING   = 2;
+        RESULT_LOW_BATTERY   = 3;
+        RESULT_SDK_MODE      = 4;
+        RESULT_UNKNOWN_SPORT = 5;
+    }
+	required PbStartDmExerciseResult result = 1;
+    optional string dm_directory_path       = 2;
 }

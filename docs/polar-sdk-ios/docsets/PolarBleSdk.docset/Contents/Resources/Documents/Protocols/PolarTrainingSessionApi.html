@@ -17,7 +17,7 @@
     <a title="PolarTrainingSessionApi Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">PolarBleSdk 6.14.3 Docs</a> (37% documented)</p>
+        <p><a href="../index.html">PolarBleSdk 6.15.1 Docs</a> (40% documented)</p>
         <div class="header-right">
           <form role="search" action="../search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -165,6 +165,9 @@
                 <a href="../Enums/FirmwareUpdateStatus.html">FirmwareUpdateStatus</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/OfflineExerciseStartResultType.html">OfflineExerciseStartResultType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/PolarActivityDataType.html">PolarActivityDataType</a>
               </li>
               <li class="nav-group-task">
@@ -277,6 +280,9 @@
                 <a href="../Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Protocols/PolarOfflineExerciseV2Api.html">PolarOfflineExerciseV2Api</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a>
               </li>
               <li class="nav-group-task">
@@ -292,6 +298,9 @@
                 <a href="../Protocols/PolarSleepApi.html">PolarSleepApi</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Protocols/PolarTemperatureApi.html">PolarTemperatureApi</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a>
               </li>
             </ul>
@@ -304,6 +313,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/LedConfig.html">LedConfig</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/OfflineExerciseStartResult.html">OfflineExerciseStartResult</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Polar247HrSamplesData.html">Polar247HrSamplesData</a>
@@ -519,6 +531,11 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Get training session references for a given period. If fromDate and/or toDate are not given this method will return all training session references in the device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -597,6 +614,11 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Get a specific training session using a reference.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -662,6 +684,11 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Get a specific training session using a reference with progress updates.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -727,6 +754,11 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Api for removing single training session from a Polar device. You can get a list of training sessions with <code>getTrainingSessionReferences</code> API.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -794,6 +826,11 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Start an exercise session on the device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -856,6 +893,11 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Pause an ongoing exercise session.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -906,6 +948,11 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Resume a paused exercise session.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -958,6 +1005,11 @@
                         <p>Stop the current exercise session.</p>
 
 <p>By default, the session is saved on the device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1008,6 +1060,11 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Get the current exercise session status from the device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1058,6 +1115,11 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Observe exercise session status notifications from the device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1099,7 +1161,7 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-02-23)</p>
+          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-03-16)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

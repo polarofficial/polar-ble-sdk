@@ -128,6 +128,9 @@ public struct PolarDeviceRestApiServiceDescription: Decodable {
 public protocol PolarRestServiceApi {
    
     /// Discover available services from device
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_file_transfer`
+    ///
     /// - parameters:
     ///   - identifier: Polar Device ID or BT address
     /// - returns:
@@ -136,6 +139,9 @@ public protocol PolarRestServiceApi {
     func listRestApiServices(identifier: String) -> Single<PolarDeviceRestApiServices>
     
     /// Get details related to particular REST API.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_file_transfer`
+    ///
     /// - parameters:
     ///   - identifier: Polar Device ID or BT address
     ///   - path: the REST API path corresponding to a named service returned by listRestApiServices
@@ -145,6 +151,8 @@ public protocol PolarRestServiceApi {
     func getRestApiDescription(identifier: String, path: String) -> Single<PolarDeviceRestApiServiceDescription>
     
     /// Notify device via a REST API in the device.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_file_transfer`
     ///
     /// - parameters:
     ///   - identifier: Polar device ID or BT address
@@ -156,6 +164,8 @@ public protocol PolarRestServiceApi {
     
     /// Streams for received device REST API events  parameters decoded as given Decodable type T endlessly.
     /// Only dispose , take(1) etc ... stops stream.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_file_transfer`
     ///
     /// Normally requires event action that enables subscribing to the event using putNotification()
     /// - parameters:

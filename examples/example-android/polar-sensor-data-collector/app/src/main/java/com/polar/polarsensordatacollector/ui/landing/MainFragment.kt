@@ -62,6 +62,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private var selectedDevice: Device? = null
     private var selectedDeviceSupportsSettings: Boolean? = false
 
+    private var selectedDeviceSupportsV2OfflineExercise: Boolean = false
+
     private lateinit var onlineOfflineAdapter: OnlineOfflineAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -101,6 +103,20 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             }
         }
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiOfflineRecordingV2State.collect { v2State ->
+                    Log.d(TAG, "uiOfflineRecordingV2State collected: deviceId=${v2State.deviceId}, isAvailable=${v2State.isAvailable}")
+                    if (v2State.deviceId.isNotEmpty() && v2State.isAvailable) {
+                        selectedDeviceSupportsV2OfflineExercise = true
+                        if (!onlineOfflineAdapter.hasExerciseV2Fragment()) {
+                            onlineOfflineAdapter.addExerciseV2Fragment(v2State.deviceId, true)
+                        }
+                    }
+                }
+            }
+        }
+
         connectButton.setOnClickListener { _ ->
             when (connectionState) {
                 MainViewModel.DeviceConnectionStates.NOT_CONNECTED -> showSensorSelection(
@@ -115,6 +131,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                             val name = it.name.replace(" ", "_")
                             selectedDevice = Device(deviceId = deviceId, address = deviceAddress, name = name)
                             selectedDeviceSupportsSettings = info.hasSAGRFCFileSystem
+                            // Don't check Exercise V2 capability here - it's not available at device selection time
+                            // Will be checked after connection completes via repository
+                            selectedDeviceSupportsV2OfflineExercise = false
+                            Log.d(TAG, "Device selected: $name, Exercise V2 support will be checked after connection")
                             try {
                                 selectedDevice?.let { viewModel.connectToDevice(it) }
                                 viewModel.selectedDevice = selectedDevice
@@ -177,6 +197,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                                         name = name
                                     )
                                     selectedDeviceSupportsSettings = info.hasSAGRFCFileSystem
+                                    selectedDeviceSupportsV2OfflineExercise = false
                                     try {
                                         selectedDevice?.let { viewModel.connectToDevice(it) }
                                     } catch (polarInvalidArgument: PolarInvalidArgument) {
@@ -315,6 +336,9 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 }
                 if (selectedDevice?.name?.contains("H10") == true) {
                     onlineOfflineAdapter.addH10ExerciseFragment(deviceId)
+                }
+                if (selectedDeviceSupportsV2OfflineExercise) {
+                    onlineOfflineAdapter.addExerciseV2Fragment(deviceId, selectedDeviceSupportsV2OfflineExercise)
                 }
                 tabLayout.visibility = VISIBLE
                 viewPagerPagePerDevice[deviceId]?.let {

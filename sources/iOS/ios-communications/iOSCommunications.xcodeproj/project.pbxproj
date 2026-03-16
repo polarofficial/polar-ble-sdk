@@ -105,6 +105,10 @@
 		84059D122DF031EF0013C470 /* exercise_samples2.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84059D102DEF09600013C470 /* exercise_samples2.pb.swift */; };
 		840880BC2D072E6900883420 /* PolarNightlyRechargeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840880BB2D072E6900883420 /* PolarNightlyRechargeData.swift */; };
 		840880BF2D07329D00883420 /* PolarNightlyRechargeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840880BE2D07329D00883420 /* PolarNightlyRechargeUtils.swift */; };
+		8413CA772F4D917B0089BE4D /* PolarOfflineExerciseV2Api.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8413CA762F4D916B0089BE4D /* PolarOfflineExerciseV2Api.swift */; };
+		8413CA782F4D917B0089BE4D /* PolarOfflineExerciseV2Api.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8413CA762F4D916B0089BE4D /* PolarOfflineExerciseV2Api.swift */; };
+		8413CA7A2F4D91ED0089BE4D /* PolarBleApiImpl+PolarOfflineExerciseV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8413CA792F4D91D80089BE4D /* PolarBleApiImpl+PolarOfflineExerciseV2.swift */; };
+		8413CA7B2F4D91ED0089BE4D /* PolarBleApiImpl+PolarOfflineExerciseV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8413CA792F4D91D80089BE4D /* PolarBleApiImpl+PolarOfflineExerciseV2.swift */; };
 		841A37892C7DF53B009194CC /* PolarDeviceUuidTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 841A37882C7DF53B009194CC /* PolarDeviceUuidTest.swift */; };
 		841A378C2C808982009194CC /* pftp_request.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289427CE860600855884 /* pftp_request.pb.swift */; };
 		841A378D2C808987009194CC /* pftp_request.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289427CE860600855884 /* pftp_request.pb.swift */; };
@@ -145,6 +149,19 @@
 		84D0098E2C85D46500AB4C43 /* user_physdata.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D0098D2C85D46500AB4C43 /* user_physdata.pb.swift */; };
 		84D0098F2C85D46500AB4C43 /* user_physdata.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D0098D2C85D46500AB4C43 /* user_physdata.pb.swift */; };
 		84D71C9F2D09C19600CE8089 /* PolarNightlyRechargeUtilsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D71C9E2D09C19600CE8089 /* PolarNightlyRechargeUtilsTest.swift */; };
+		9525FDE32F4DEA5600B3F072 /* PolarTemperatureApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9525FDE22F4DEA5600B3F072 /* PolarTemperatureApi.swift */; };
+		9525FDE42F4DEA5600B3F072 /* PolarTemperatureApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9525FDE22F4DEA5600B3F072 /* PolarTemperatureApi.swift */; };
+		9525FDE62F4DEA7300B3F072 /* PolarBleApiImpl+Temperature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9525FDE52F4DEA7300B3F072 /* PolarBleApiImpl+Temperature.swift */; };
+		9525FDE72F4DEA7300B3F072 /* PolarBleApiImpl+Temperature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9525FDE52F4DEA7300B3F072 /* PolarBleApiImpl+Temperature.swift */; };
+		84FC57212F4F049500676A9B /* PolarOfflineExerciseV2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84FC57202F4F047E00676A9B /* PolarOfflineExerciseV2Tests.swift */; };
+		84FC57252F4F14CE00676A9B /* PolarOfflineExerciseV2Api.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8413CA762F4D916B0089BE4D /* PolarOfflineExerciseV2Api.swift */; };
+		84FC57322F4F1ABD00676A9B /* PolarExerciseTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84FC57312F4F1AB500676A9B /* PolarExerciseTypes.swift */; };
+		84FC57332F4F1ABD00676A9B /* PolarExerciseTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84FC57312F4F1AB500676A9B /* PolarExerciseTypes.swift */; };
+		84FC57342F4F1AFD00676A9B /* PolarExerciseTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84FC57312F4F1AB500676A9B /* PolarExerciseTypes.swift */; };
+		84FC57372F4F1C2F00676A9B /* PolarExerciseSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC57B5DF2E60641200E90F5B /* PolarExerciseSession.swift */; };
+		84FC57392F4F1E4E00676A9B /* PolarExerciseSession+Parsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84FC57382F4F1E4200676A9B /* PolarExerciseSession+Parsing.swift */; };
+		84FC573A2F4F1E4E00676A9B /* PolarExerciseSession+Parsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84FC57382F4F1E4200676A9B /* PolarExerciseSession+Parsing.swift */; };
+		84FC573B2F4F1E7D00676A9B /* PolarExerciseSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC57B5DF2E60641200E90F5B /* PolarExerciseSession.swift */; };
 		955B94092D92A51C00F0447A /* PolarOfflineRecordingApiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 955B94072D92A4B200F0447A /* PolarOfflineRecordingApiTests.swift */; };
 		957DE2BA2E82623C00699BB2 /* PolarBleSdkTests.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = 957DE2B92E82623C00699BB2 /* PolarBleSdkTests.xctestplan */; };
 		9590AD952D9549CC00EBD84E /* MockGattServiceTransmitterImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5346A3625F21858006752CA /* MockGattServiceTransmitterImpl.swift */; };
@@ -404,7 +421,6 @@
 		AAEEB2392D3E532200D2B4A7 /* types_proto3.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEEB2372D3E532200D2B4A7 /* types_proto3.pb.swift */; };
 		AAF7FEE92D94012400B13734 /* PolarPlainDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF7FEE72D94012400B13734 /* PolarPlainDate.swift */; };
 		CC57B5E02E60642500E90F5B /* PolarExerciseSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC57B5DF2E60641200E90F5B /* PolarExerciseSession.swift */; };
-		CC57B5E12E60642500E90F5B /* PolarExerciseSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC57B5DF2E60641200E90F5B /* PolarExerciseSession.swift */; };
 		CF7F1A25FDC78D507DA67B69 /* Pods_iOSCommunications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 119A850082BC99162095355C /* Pods_iOSCommunications.framework */; };
 /* End PBXBuildFile section */
 
@@ -489,6 +505,8 @@
 		84059D102DEF09600013C470 /* exercise_samples2.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = exercise_samples2.pb.swift; sourceTree = "<group>"; };
 		840880BB2D072E6900883420 /* PolarNightlyRechargeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarNightlyRechargeData.swift; sourceTree = "<group>"; };
 		840880BE2D07329D00883420 /* PolarNightlyRechargeUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarNightlyRechargeUtils.swift; sourceTree = "<group>"; };
+		8413CA762F4D916B0089BE4D /* PolarOfflineExerciseV2Api.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarOfflineExerciseV2Api.swift; sourceTree = "<group>"; };
+		8413CA792F4D91D80089BE4D /* PolarBleApiImpl+PolarOfflineExerciseV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PolarBleApiImpl+PolarOfflineExerciseV2.swift"; sourceTree = "<group>"; };
 		841A37882C7DF53B009194CC /* PolarDeviceUuidTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarDeviceUuidTest.swift; sourceTree = "<group>"; };
 		8428E1DE2CEF47350021E3B1 /* PolarAutomaticSamplesUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarAutomaticSamplesUtils.swift; sourceTree = "<group>"; };
 		8428E1E32CEF73CB0021E3B1 /* PolarAutomaticSamplesUnitTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarAutomaticSamplesUnitTest.swift; sourceTree = "<group>"; };
@@ -506,8 +524,14 @@
 		84D0098A2C85D41800AB4C43 /* PolarFirstTimeUseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarFirstTimeUseConfig.swift; sourceTree = "<group>"; };
 		84D0098D2C85D46500AB4C43 /* user_physdata.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = user_physdata.pb.swift; sourceTree = "<group>"; };
 		84D71C9E2D09C19600CE8089 /* PolarNightlyRechargeUtilsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarNightlyRechargeUtilsTest.swift; sourceTree = "<group>"; };
+		84FC57202F4F047E00676A9B /* PolarOfflineExerciseV2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarOfflineExerciseV2Tests.swift; sourceTree = "<group>"; };
+		84FC57312F4F1AB500676A9B /* PolarExerciseTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarExerciseTypes.swift; sourceTree = "<group>"; };
+		84FC57382F4F1E4200676A9B /* PolarExerciseSession+Parsing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PolarExerciseSession+Parsing.swift"; sourceTree = "<group>"; };
 		869700D0971E27B1E230468A /* Pods-iOSCommunicationsTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSCommunicationsTests.release.xcconfig"; path = "Target Support Files/Pods-iOSCommunicationsTests/Pods-iOSCommunicationsTests.release.xcconfig"; sourceTree = "<group>"; };
 		87FB706CC2F9CABA4D82915F /* Pods-PolarBleSdk.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdk.release.xcconfig"; path = "Target Support Files/Pods-PolarBleSdk/Pods-PolarBleSdk.release.xcconfig"; sourceTree = "<group>"; };
+		9525FDE22F4DEA5600B3F072 /* PolarTemperatureApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarTemperatureApi.swift; sourceTree = "<group>"; };
+		9525FDE52F4DEA7300B3F072 /* PolarBleApiImpl+Temperature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PolarBleApiImpl+Temperature.swift"; sourceTree = "<group>"; };
+		952C88982F601A0800BD1BD8 /* polar_device_capabilities.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = polar_device_capabilities.json; path = Sources/iOSCommunications/Resources/polar_device_capabilities.json; sourceTree = SOURCE_ROOT; };
 		955B94072D92A4B200F0447A /* PolarOfflineRecordingApiTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarOfflineRecordingApiTests.swift; sourceTree = "<group>"; };
 		957DE2B92E82623C00699BB2 /* PolarBleSdkTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = PolarBleSdkTests.xctestplan; path = PolarBleSdkTests/PolarBleSdkTests.xctestplan; sourceTree = "<group>"; };
 		95A641812D37E57000178ED3 /* PolarBleApiImpl+Sleep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PolarBleApiImpl+Sleep.swift"; sourceTree = "<group>"; };
@@ -924,6 +948,7 @@
 		6C770B6D206B779A00F3D51D /* PolarBleSdk */ = {
 			isa = PBXGroup;
 			children = (
+				952C88982F601A0800BD1BD8 /* polar_device_capabilities.json */,
 				A5B1BAFE27CF41A0001FBB04 /* Info.plist */,
 				A577288B27CE860600855884 /* sdk */,
 			);
@@ -995,6 +1020,7 @@
 		A574368D291B81F500E901A4 /* PolarBleSdkTests */ = {
 			isa = PBXGroup;
 			children = (
+				84FC57202F4F047E00676A9B /* PolarOfflineExerciseV2Tests.swift */,
 				AAC310062F3342520025921B /* MockUtils.swift */,
 				AA9903DB2F31E91900FD4744 /* PolarFileUtilsTest.swift */,
 				8439E7A92EB8CD4D00A6EFCC /* PolarOfflineRecordingUtilsTest.swift */,
@@ -1028,9 +1054,11 @@
 		A577288C27CE860600855884 /* impl */ = {
 			isa = PBXGroup;
 			children = (
+				8413CA792F4D91D80089BE4D /* PolarBleApiImpl+PolarOfflineExerciseV2.swift */,
 				A5743681291A7D7C00E901A4 /* utils */,
 				A577288D27CE860600855884 /* PolarBleApiImpl.swift */,
 				95A641812D37E57000178ED3 /* PolarBleApiImpl+Sleep.swift */,
+				9525FDE52F4DEA7300B3F072 /* PolarBleApiImpl+Temperature.swift */,
 				95D439282D380AFB004AB936 /* PolarBleApiImpl+RestService.swift */,
 				95E2C3B22F30C4120048908A /* PolarBleApiImpl+D2HNotifications.swift */,
 				A577288E27CE860600855884 /* protobuf */,
@@ -1076,6 +1104,7 @@
 		A577289827CE860600855884 /* api */ = {
 			isa = PBXGroup;
 			children = (
+				8413CA762F4D916B0089BE4D /* PolarOfflineExerciseV2Api.swift */,
 				AA9903D42F30D15300FD4744 /* PolarBleLowLevelApi.swift */,
 				842B36072DE471340059C207 /* PolarTrainingSessionApi.swift */,
 				A577289927CE860600855884 /* PolarBleApiObservers.swift */,
@@ -1089,6 +1118,7 @@
 				A5A43C612BDFCB270066334F /* PolarFirmwareUpdateApi.swift */,
 				A5A43C642BDFCB830066334F /* PolarSdkModeApi.swift */,
 				A5BC3EF02BF20DB5008DD743 /* PolarActivityApi.swift */,
+				9525FDE22F4DEA5600B3F072 /* PolarTemperatureApi.swift */,
 				AA818E5F2C06F8C200D45B3C /* PolarSleepApi.swift */,
 				95E2C3AF2F30C1730048908A /* PolarD2HNotificationsApi.swift */,
 			);
@@ -1098,6 +1128,8 @@
 		A577289B27CE860600855884 /* model */ = {
 			isa = PBXGroup;
 			children = (
+				84FC57382F4F1E4200676A9B /* PolarExerciseSession+Parsing.swift */,
+				84FC57312F4F1AB500676A9B /* PolarExerciseTypes.swift */,
 				CC57B5DF2E60641200E90F5B /* PolarExerciseSession.swift */,
 				AA15C89C2DC1DA730015E8C0 /* PolarTrainingSessionModels.swift */,
 				AAB386F32CB934CF00D18313 /* PolarAutomaticSamples.swift */,
@@ -1759,6 +1791,7 @@
 				6C39E8DB209B07BC001F7E44 /* CBDeviceSessionImpl.swift in Sources */,
 				A57728B727CE860600855884 /* PolarBleApi.swift in Sources */,
 				6C39E8DC209B07BC001F7E44 /* CBScanner.swift in Sources */,
+				8413CA782F4D917B0089BE4D /* PolarOfflineExerciseV2Api.swift in Sources */,
 				842B36122DE4724D0059C207 /* exercise_route2.pb.swift in Sources */,
 				6C39E8DD209B07BC001F7E44 /* BleDeviceSession.swift in Sources */,
 				A57728BB27CE860600855884 /* PolarBleApiDefaultImpl.swift in Sources */,
@@ -1766,12 +1799,14 @@
 				A57728AB27CE860600855884 /* exercise_samples.pb.swift in Sources */,
 				A57D051F29226590002824D9 /* GyrData.swift in Sources */,
 				A5CD1731297C03D400C62BC7 /* PmdSecret.swift in Sources */,
+				84FC57392F4F1E4E00676A9B /* PolarExerciseSession+Parsing.swift in Sources */,
 				A55D31C42ADD5EAE005CD1B3 /* LedConfig.swift in Sources */,
 				A57728B527CE860600855884 /* PolarBleApiObservers.swift in Sources */,
 				A57D05372930932A002824D9 /* MagData.swift in Sources */,
 				A57D05432930A8CA002824D9 /* EcgData.swift in Sources */,
 				6C39E8DF209B07BC001F7E44 /* BleAdvertisementContent.swift in Sources */,
 				AAA41CA02F19010E00EFA707 /* sleep_skin_temperature_result.pb.swift in Sources */,
+				8413CA7B2F4D91ED0089BE4D /* PolarBleApiImpl+PolarOfflineExerciseV2.swift in Sources */,
 				A58F0CAE2983EE2700B5615C /* OfflineHrData.swift in Sources */,
 				AAB386F52CB934CF00D18313 /* PolarAutomaticSamples.swift in Sources */,
 				AAB386F62CB934CF00D18313 /* PolarStoredData.swift in Sources */,
@@ -1786,8 +1821,10 @@
 				95A641832D37E57000178ED3 /* PolarBleApiImpl+Sleep.swift in Sources */,
 				6C39E8E6209B07BC001F7E44 /* BleDisClient.swift in Sources */,
 				A55604C7298B8B2700DB6EDB /* PolarH10OfflineExerciseApi.swift in Sources */,
+				9525FDE42F4DEA5600B3F072 /* PolarTemperatureApi.swift in Sources */,
 				AA9903D62F30D1C800FD4744 /* PolarBleLowLevelApi.swift in Sources */,
 				A57D051029225779002824D9 /* PmdSetting.swift in Sources */,
+				9525FDE72F4DEA7300B3F072 /* PolarBleApiImpl+Temperature.swift in Sources */,
 				A5385ABD29CDBB0900A6DB6A /* PmdControlPointResponse.swift in Sources */,
 				A57D0514292258D5002824D9 /* PmdMeasurementType.swift in Sources */,
 				6C39E8E7209B07BC001F7E44 /* BleHrClient.swift in Sources */,
@@ -1804,6 +1841,7 @@
 				6C39E8EF209B07BC001F7E44 /* BleLogger.swift in Sources */,
 				AA27D9C92B88C38600397873 /* TemperatureData.swift in Sources */,
 				A5DE0961295C131A00BC2E0B /* PmdControlPointCommand.swift in Sources */,
+				84FC57332F4F1ABD00676A9B /* PolarExerciseTypes.swift in Sources */,
 				842B36082DE4713A0059C207 /* PolarTrainingSessionApi.swift in Sources */,
 				A5D04F3C2949BCD600CE93E1 /* PolarDataUtils.swift in Sources */,
 				A5D04F362948AB4A00CE93E1 /* PolarOfflineRecordingEntry.swift in Sources */,
@@ -1852,6 +1890,7 @@
 				6CEA10E02175AA5B00E16FBF /* BlePsFtpClient.swift in Sources */,
 				6C981041215B7136002820A2 /* AtomicType.swift in Sources */,
 				A52DB1DC2A1F59770073E795 /* communications_pftp_request.pb.swift in Sources */,
+				84FC573A2F4F1E4E00676A9B /* PolarExerciseSession+Parsing.swift in Sources */,
 				AA2ACAE72DE71566002A3707 /* EmptyData.swift in Sources */,
 				A57D052A292F60E3002824D9 /* AccData.swift in Sources */,
 				A5385AC029CDBBDF00A6DB6A /* PmdErrors.swift in Sources */,
@@ -1868,6 +1907,7 @@
 				A57728A227CE860600855884 /* pftp_error.pb.swift in Sources */,
 				A5A43C6B2BDFD00D0066334F /* FirmwareUpdateApi.swift in Sources */,
 				A55604C3298B893800DB6EDB /* PolarOnlineStreamingApi.swift in Sources */,
+				8413CA7A2F4D91ED0089BE4D /* PolarBleApiImpl+PolarOfflineExerciseV2.swift in Sources */,
 				A5E5BDBC295AC55F00188D55 /* OfflineRecordingError.swift in Sources */,
 				AAEEB2322D3E52F900D2B4A7 /* PolarSkinTemperatureData.swift in Sources */,
 				A5986D2A2BF7534A0014C5DF /* PolarDistanceData.swift in Sources */,
@@ -1880,6 +1920,7 @@
 				842B36142DE472AB0059C207 /* PolarPlainDate.swift in Sources */,
 				A57728BA27CE860600855884 /* PolarBleApiDefaultImpl.swift in Sources */,
 				A580139825B1636A00654E60 /* BlePolarDeviceCapabilitiesUtility.swift in Sources */,
+				8413CA772F4D917B0089BE4D /* PolarOfflineExerciseV2Api.swift in Sources */,
 				AABCBC5C2D08494A00364101 /* SkinTemperatureData.swift in Sources */,
 				A57728AA27CE860600855884 /* exercise_samples.pb.swift in Sources */,
 				A57D051E2922658F002824D9 /* GyrData.swift in Sources */,
@@ -1890,7 +1931,6 @@
 				AAEEB2392D3E532200D2B4A7 /* types_proto3.pb.swift in Sources */,
 				AAEEB2342D3E530F00D2B4A7 /* PolarSkinTemperatureUtils.swift in Sources */,
 				A55D31C32ADD5EAE005CD1B3 /* LedConfig.swift in Sources */,
-				CC57B5E12E60642500E90F5B /* PolarExerciseSession.swift in Sources */,
 				A57728B427CE860600855884 /* PolarBleApiObservers.swift in Sources */,
 				A57D05362930932A002824D9 /* MagData.swift in Sources */,
 				844D99942D083D4600FCE97C /* nightly_recovery.pb.swift in Sources */,
@@ -1898,6 +1938,7 @@
 				8428E1DF2CEF47350021E3B1 /* PolarAutomaticSamplesUtils.swift in Sources */,
 				95E2C3B02F30C17E0048908A /* PolarD2HNotificationsApi.swift in Sources */,
 				6C770B8C206B77F300F3D51D /* BleAdvertisementContent.swift in Sources */,
+				9525FDE32F4DEA5600B3F072 /* PolarTemperatureApi.swift in Sources */,
 				95EA2BA02D3E887E00657DE5 /* PolarDeviceRestApiUtils.swift in Sources */,
 				AA2FBE0F2DDB2F8900D2378F /* PolarTrainingSessionUtils.swift in Sources */,
 				A5BC3EF42BF20FBD008DD743 /* PolarActivityUtils.swift in Sources */,
@@ -1913,6 +1954,7 @@
 				84D0098F2C85D46500AB4C43 /* user_physdata.pb.swift in Sources */,
 				A57728B227CE860600855884 /* nanopb.pb.swift in Sources */,
 				6C770B8E206B77F300F3D51D /* BleRssiFilter.swift in Sources */,
+				84FC57372F4F1C2F00676A9B /* PolarExerciseSession.swift in Sources */,
 				6C770B8F206B77F300F3D51D /* BleGattException.swift in Sources */,
 				8403763E2D50EB080004AB66 /* PolarCaloriesData.swift in Sources */,
 				AAB841F52E13D44D00810B09 /* BlePfcClient.swift in Sources */,
@@ -1961,6 +2003,7 @@
 				A5DE0954295B059900BC2E0B /* PolarOfflineRecordingApi.swift in Sources */,
 				A57728A427CE860600855884 /* pftp_notification.pb.swift in Sources */,
 				AA818E612C06F8C200D45B3C /* PolarSleepApi.swift in Sources */,
+				9525FDE62F4DEA7300B3F072 /* PolarBleApiImpl+Temperature.swift in Sources */,
 				AAB386F72CB934CF00D18313 /* PolarAutomaticSamples.swift in Sources */,
 				AAB386F82CB934CF00D18313 /* PolarStoredData.swift in Sources */,
 				6C770B9B206B77F300F3D51D /* BleDeviceListener.swift in Sources */,
@@ -1971,6 +2014,7 @@
 				AAA41C9E2F1900F900EFA707 /* sleep_skin_temperature_result.pb.swift in Sources */,
 				A57728A827CE860600855884 /* structures.pb.swift in Sources */,
 				843A2B852F0E570800F3B2EC /* communications_pftp_error.pb.swift in Sources */,
+				84FC57322F4F1ABD00676A9B /* PolarExerciseTypes.swift in Sources */,
 				A5986D2E2BF7537E0014C5DF /* dailysummary.pb.swift in Sources */,
 				A57728BC27CE860600855884 /* PolarErrors.swift in Sources */,
 				6C770BA1206B77F300F3D51D /* AtomicBoolean.swift in Sources */,
@@ -1999,8 +2043,10 @@
 			files = (
 				842B36162DE49B5C0059C207 /* PolarTrainingSessionUtilsTest.swift in Sources */,
 				A5BC3EFC2BF34EA7008DD743 /* PolarActivityUtilsTest.swift in Sources */,
+				84FC57342F4F1AFD00676A9B /* PolarExerciseTypes.swift in Sources */,
 				95EA2B9A2D3A2CCC00657DE5 /* PolarDeviceRestApiTests.swift in Sources */,
 				AAF7FEE92D94012400B13734 /* PolarPlainDate.swift in Sources */,
+				84FC57212F4F049500676A9B /* PolarOfflineExerciseV2Tests.swift in Sources */,
 				A5E416D32B7F7CD300314EEB /* PolarFirmwareUpdateUtilsTest.swift in Sources */,
 				95E2C3B82F30DD3F0048908A /* PolarDeviceToHostNotificationsApiTests.swift in Sources */,
 				A57F8B182BE0E3AA00F8708F /* BleGattException.swift in Sources */,
@@ -2008,6 +2054,7 @@
 				955B94092D92A51C00F0447A /* PolarOfflineRecordingApiTests.swift in Sources */,
 				A5A43C6C2BDFD00D0066334F /* FirmwareUpdateApi.swift in Sources */,
 				A5A5EA3A2BE0DF5C00EDEF87 /* BleLogger.swift in Sources */,
+				84FC57252F4F14CE00676A9B /* PolarOfflineExerciseV2Api.swift in Sources */,
 				84389FD52E4C81E600FDA8CF /* PolarSensorSettingTest.swift in Sources */,
 				8439E7AA2EB8CD5C00A6EFCC /* PolarOfflineRecordingUtilsTest.swift in Sources */,
 				841A37892C7DF53B009194CC /* PolarDeviceUuidTest.swift in Sources */,
@@ -2021,6 +2068,7 @@
 				A5743696291B824300E901A4 /* PolarTimeUtilsTests.swift in Sources */,
 				A5A43C6F2BDFD0520066334F /* FirmwareUpdateApiModels.swift in Sources */,
 				AA2ACAE62DE71566002A3707 /* EmptyData.swift in Sources */,
+				84FC573B2F4F1E7D00676A9B /* PolarExerciseSession.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

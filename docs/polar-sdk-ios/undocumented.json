@@ -72,91 +72,91 @@
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApi.swift",
-      "line": 64,
+      "line": 91,
       "symbol": "PolarActivityDataType.SLEEP",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApi.swift",
-      "line": 65,
+      "line": 92,
       "symbol": "PolarActivityDataType.STEPS",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApi.swift",
-      "line": 66,
+      "line": 93,
       "symbol": "PolarActivityDataType.CALORIES",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApi.swift",
-      "line": 67,
+      "line": 94,
       "symbol": "PolarActivityDataType.HR_SAMPLES",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApi.swift",
-      "line": 68,
+      "line": 95,
       "symbol": "PolarActivityDataType.NIGHTLY_RECHARGE",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApi.swift",
-      "line": 69,
+      "line": 96,
       "symbol": "PolarActivityDataType.SKINTEMPERATURE",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApi.swift",
-      "line": 70,
+      "line": 97,
       "symbol": "PolarActivityDataType.PEAKTOPEAKINTERVAL",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApi.swift",
-      "line": 71,
+      "line": 98,
       "symbol": "PolarActivityDataType.ACTIVE_TIME",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApi.swift",
-      "line": 72,
+      "line": 99,
       "symbol": "PolarActivityDataType.ACTIVITY_SAMPLES",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApi.swift",
-      "line": 73,
+      "line": 100,
       "symbol": "PolarActivityDataType.DAILY_SUMMARY",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApi.swift",
-      "line": 74,
+      "line": 101,
       "symbol": "PolarActivityDataType.NONE",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApi.swift",
-      "line": 157,
+      "line": 184,
       "symbol": "PpgDataType.ppg1",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApi.swift",
-      "line": 168,
+      "line": 195,
       "symbol": "PpgDataType.unknown",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
@@ -257,6 +257,13 @@
       "line": 5,
       "symbol": "PolarDiskSpaceData.freeSpace",
       "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession+Parsing.swift",
+      "line": 7,
+      "symbol": "PolarExerciseSession.ExerciseInfo.parse(from:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
@@ -362,13 +369,6 @@
       "line": 42,
       "symbol": "PolarExerciseSession.ExerciseInfo.init(status:sportProfile:startTime:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession.swift",
-      "line": 60,
-      "symbol": "PolarExerciseSession.ExerciseInfo.parse(from:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
@@ -3425,7 +3425,7 @@
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/impl/PolarBleApiImpl.swift",
-      "line": 5069,
+      "line": 5206,
       "symbol": "PrimitiveSequence.asCompletable()",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"

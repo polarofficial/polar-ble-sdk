@@ -10,6 +10,8 @@ interface PolarRestServiceApi {
     /**
      * Discover available services from device
      *
+     * Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER]
+     *
      * @param identifier Polar Device ID or BT address
      * @return [Single] [PolarDeviceRestApiServices] object listing service names and corresponding
      * paths or error
@@ -18,6 +20,8 @@ interface PolarRestServiceApi {
 
     /**
      * Get details related to particular REST API.
+     *
+     * Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER]
      *
      * @param identifier Polar Device ID or BT address
      * @param path the REST API path corresponding to a named service returned by listRestApiServices
@@ -28,6 +32,8 @@ interface PolarRestServiceApi {
 
     /**
      * Notify device via a REST API in the device.
+     *
+     * Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER]
      *
      * @param identifier Polar device ID or BT address
      * @param notification content of the notification in JSON format.
@@ -40,6 +46,9 @@ interface PolarRestServiceApi {
     /**
      * Streams for received device REST API events  parameters decoded as given type T endlessly.
      * Only dispose , take(1) etc ... stops stream.
+     *
+     * Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER]
+     *
      * Normally requires event action that subscribes to the events using putNotification()
      * @param identifier Polar device ID or BT address
      * @param mapper lambda that converts JSON string to type T

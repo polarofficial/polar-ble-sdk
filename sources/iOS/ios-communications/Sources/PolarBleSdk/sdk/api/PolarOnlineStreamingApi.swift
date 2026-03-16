@@ -7,11 +7,13 @@ import RxSwift
 ///
 /// Online streaming makes it possible to stream live online data from Polar device.
 ///
-/// Requires features `PolarBleSdkFeature.feature_polar_online_streaming`
+/// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_online_streaming` or `PolarBleSdkFeature.feature_hr`
 ///
 public protocol PolarOnlineStreamingApi {
     
     ///  Get the data types available in this device for online streaming
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_online_streaming`
     /// - Parameters:
     ///   - identifier: polar device id
     /// - Returns: Single stream
@@ -21,6 +23,8 @@ public protocol PolarOnlineStreamingApi {
 
     ///  Find out if the HR service is available in the device. Use this API method in a case where the device does not support Polar Measurement Data service.
     ///  In such a case using 'getAvailableOnlineStreamDataTypes' will return error; use this method instead.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_hr`
     ///
     /// - Parameters:
     ///   - identifier: polar device id
@@ -32,7 +36,8 @@ public protocol PolarOnlineStreamingApi {
     ///  Request the stream settings available in current operation mode. This request shall be used before the stream is started
     ///  to decide currently available settings. The available settings depend on the state of the device. For example, if any stream(s)
     ///  or optical heart rate measurement is already enabled, then the device may limit the offer of possible settings for other stream feature.
-    ///  Requires `polarSensorStreaming` feature.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_online_streaming`
     ///
     /// - Parameters:
     ///   - identifier: polar device id
@@ -43,7 +48,9 @@ public protocol PolarOnlineStreamingApi {
     func requestStreamSettings(_ identifier: String, feature: PolarDeviceDataType) -> Single<PolarSensorSetting>
     
     /// Request full steam settings capabilities. The request returns the all capabilities of the requested streaming feature not limited by the current operation mode.
-    /// Requires `polarSensorStreaming` feature. This request is supported only by Polar Verity Sense firmware 1.1.5
+    /// This request is supported only by Polar Verity Sense firmware 1.1.5
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_online_streaming`
     ///
     /// - Parameters:
     ///   - identifier: polar device id
@@ -56,6 +63,8 @@ public protocol PolarOnlineStreamingApi {
     /// Start heart rate stream. Heart rate stream is stopped if the connection is closed,
     /// error occurs or stream is disposed.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_hr`
+    ///
     /// - Parameters:
     ///   - identifier: Polar device id or device address
     /// - Returns: Observable stream
@@ -64,6 +73,8 @@ public protocol PolarOnlineStreamingApi {
     func startHrStreaming(_ identifier: String) -> Observable<PolarHrData>
     
     /// Start the ECG (Electrocardiography) stream. ECG stream is stopped if the connection is closed, error occurs or stream is disposed.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_online_streaming`
     ///
     /// - Parameters:
     ///   - identifier: Polar device id or device address
@@ -74,6 +85,8 @@ public protocol PolarOnlineStreamingApi {
     func startEcgStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarEcgData>
     
     ///  Start ACC (Accelerometer) stream. ACC stream is stopped if the connection is closed, error occurs or stream is disposed.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_online_streaming`
     /// - Parameters:
     ///   - identifier: Polar device id or device address
     ///   - settings: selected settings to start the stream
@@ -84,6 +97,8 @@ public protocol PolarOnlineStreamingApi {
     
     /// Start Gyro stream. Gyro stream is stopped if the connection is closed, error occurs during start or stream is disposed.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_online_streaming`
+    ///
     /// - Parameters:
     ///   - identifier: Polar device id or device address
     ///   - settings: selected settings to start the stream
@@ -91,12 +106,16 @@ public protocol PolarOnlineStreamingApi {
     
     /// Start magnetometer stream. Magnetometer stream is stopped if the connection is closed, error occurs or stream is disposed.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_online_streaming`
+    ///
     /// - Parameters:
     ///   - identifier: Polar device id or device address
     ///   - settings: selected settings to start the stream
     func startMagnetometerStreaming(_ identifier: String, settings: PolarSensorSetting) -> Observable<PolarMagnetometerData>
     
     /// Start optical sensor PPG (Photoplethysmography) stream. PPG stream is stopped if the connection is closed, error occurs or stream is disposed.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_online_streaming`
     ///
     /// - Parameters:
     ///   - identifier: Polar device id or device address
@@ -110,6 +129,8 @@ public protocol PolarOnlineStreamingApi {
     /// PPI stream is stopped if the connection is closed, error occurs or stream is disposed.
     /// Notice that there is a delay before PPI data stream starts.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_online_streaming`
+    ///
     /// - Parameters:
     ///   - identifier: Polar device id or device address
     /// - Returns: Observable stream
@@ -119,6 +140,8 @@ public protocol PolarOnlineStreamingApi {
     
     /// Start temperature stream. Temperature stream is stopped if the connection is closed,
     /// error occurs or stream is disposed.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_online_streaming`
     ///
     /// - Parameters:
     ///   - identifier: Polar device id or device address
@@ -131,6 +154,8 @@ public protocol PolarOnlineStreamingApi {
     /// Start pressure stream. Pressure stream is stopped if the connection is closed,
     /// error occurs or stream is disposed.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_online_streaming`
+    ///
     /// - Parameters:
     ///   - identifier: Polar device id or device address
     ///   - settings: selected settings to start the stream
@@ -141,6 +166,8 @@ public protocol PolarOnlineStreamingApi {
     
     /// Start skin temperature stream. Skin temperature stream is stopped if the connection is closed,
     /// error occurs or stream is disposed.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_online_streaming`
     ///
     /// - Parameters:
     ///   - identifier: Polar device id or device address

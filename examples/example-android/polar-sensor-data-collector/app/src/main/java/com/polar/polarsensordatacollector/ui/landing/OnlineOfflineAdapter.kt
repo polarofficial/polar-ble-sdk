@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.polar.polarsensordatacollector.ui.activity.ActivityRecordingFragment
+import com.polar.polarsensordatacollector.ui.exercisev2.ExerciseV2Fragment
 import com.polar.polarsensordatacollector.ui.devicesettings.DeviceSettingsFragment
 import com.polar.polarsensordatacollector.ui.h10exercise.H10ExerciseFragment
 import com.polar.polarsensordatacollector.ui.logging.LoggingFragment
@@ -32,6 +33,10 @@ class OnlineOfflineAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) 
 
     override fun getItemId(position: Int): Long {
         return items[position].second.hashCode().toLong()
+    }
+
+    fun hasExerciseV2Fragment(): Boolean {
+        return items.any { it.second is ExerciseV2Fragment }
     }
 
     fun addOfflineRecordingFragment(deviceId: String) {
@@ -126,6 +131,27 @@ class OnlineOfflineAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) 
         }
     }
 
+    fun addExerciseV2Fragment(deviceId: String, isSupported: Boolean = true) {
+        Log.d(TAG, "addExerciseV2Fragment called: deviceId=$deviceId, isSupported=$isSupported")
+        if (!isSupported) {
+            Log.d(TAG, "Exercise V2 not supported for this device, skipping")
+            return
+        }
+        if (!items.any { it.second is ExerciseV2Fragment }) {
+            Log.d(TAG, "Add ExerciseV2Fragment for device $deviceId")
+            val fragment = ExerciseV2Fragment().apply {
+                arguments = Bundle().apply {
+                    putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId)
+                }
+            }
+            items.add(Pair("EXERCISE", fragment))
+            Log.d(TAG, "ExerciseV2Fragment added successfully, total fragments: ${items.size}")
+            this.notifyItemInserted(items.size - 1)
+        } else {
+            Log.w(TAG, "trying to add ExerciseV2Fragment but found already")
+        }
+    }
+
     private fun removeOfflineRecordingFragment() {
         val index = items.indexOfFirst { it.second is OfflineRecFragment }
         if (index > -1) {
@@ -166,6 +192,14 @@ class OnlineOfflineAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) 
         }
     }
 
+    private fun removeExerciseV2Fragment() {
+        val index = items.indexOfFirst { it.second is ExerciseV2Fragment }
+        if (index > -1) {
+            items.removeAt(index)
+            this.notifyItemRemoved(index)
+        }
+    }
+
     fun removeFragments(isAlreadyConnected: Boolean = false) {
         Log.d(TAG, "removeFragments(), isAlreadyConnected: $isAlreadyConnected")
         removeOfflineRecordingFragment()
@@ -175,5 +209,6 @@ class OnlineOfflineAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) 
         }
         removeLoggingFragment()
         removeActivityFragment()
+        removeExerciseV2Fragment()
     }
 }

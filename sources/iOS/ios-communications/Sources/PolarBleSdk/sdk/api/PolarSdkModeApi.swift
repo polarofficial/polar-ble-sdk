@@ -9,13 +9,15 @@ import RxSwift
 /// asked from device using `PolarOnlineStreamingApi.requestFullStreamSettings` or
 ///  `PolarOfflineRecordingApi.requestFullOfflineRecordingSettings`
 ///
-/// Requires features `PolarBleSdkFeature.feature_polar_sdk_mode`
+/// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_sdk_mode`
 ///
 /// Note, SDK mode supported by VeritySense starting from firmware 1.1.5
 ///
 public protocol PolarSdkModeApi {
     
     ///  Enables SDK mode.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_sdk_mode`
     ///
     /// - Parameter identifier: Polar device id or device address
     /// - Returns: Completable stream
@@ -24,6 +26,8 @@ public protocol PolarSdkModeApi {
     func enableSDKMode(_ identifier: String) -> Completable
     
     /// Disables SDK mode.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_sdk_mode`
     ///
     /// - Parameter identifier: Polar device id or device address
     /// - Returns: Completable stream
@@ -34,6 +38,8 @@ public protocol PolarSdkModeApi {
     /// Check if SDK mode currently enabled.
     ///
     /// Note, SDK status check is supported by VeritySense starting from firmware 2.1.0
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_sdk_mode`
     ///
     /// - Parameter identifier: Polar device id or device address
     /// - Returns: Single stream

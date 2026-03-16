@@ -50,8 +50,13 @@ class BlePolarDeviceCapabilitiesUtility {
         /**
          * Initializes the device capabilities configuration.
          *
-         * This method reads the configuration JSON from the public Documents/PolarConfig folder.
-         * If the configuration file does not exist, it copies a default version from the app's assets.
+         * This method first attempts to read the configuration JSON from the public
+         * Documents/PolarConfig folder, allowing the config to be overridden at runtime.
+         * If that file does not exist, it copies the bundled default from the app's assets.
+         *
+         * If external storage is unavailable (e.g. permission not granted), the method falls
+         * back to reading the bundled asset directly. This guarantees that the SDK is always
+         * initialized regardless of whether the user has granted storage permission.
          *
          * The configuration is parsed and stored in memory for subsequent API calls.
          * This method is safe to call multiple times and will only initialize once.
@@ -63,30 +68,89 @@ class BlePolarDeviceCapabilitiesUtility {
         fun initialize(context: Context) {
             if (initialized) return
 
+            // Try loading from the user-overridable external config first
+
             try {
+
+                val assetJson = context.assets.open(FILE_NAME)
+                    .bufferedReader()
+                    .use { it.readText() }
+
+                val assetConfig =
+                    gson.fromJson(assetJson, DeviceCapabilitiesConfig::class.java)
+
                 val folder = File(
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS),
                     "PolarConfig"
                 )
-                if (!folder.exists()) folder.mkdirs()
+                if (folder.exists() || folder.mkdirs()) {
+                    val configFile = File(folder, FILE_NAME)
 
-                val configFile = File(folder, FILE_NAME)
-
-                if (!configFile.exists()) {
-                    context.assets.open(FILE_NAME).use { input ->
-                        configFile.outputStream().use { output -> input.copyTo(output) }
+                    if (!configFile.exists()) {
+                        configFile.writeText(assetJson)
+                        Log.d(TAG, "Default config copied to $configFile")
                     }
-                    Log.d(TAG, "Default config copied to $configFile")
+
+                    val userJson = configFile.inputStream().bufferedReader().use { it.readText() }
+                    val userConfig = gson.fromJson(userJson, DeviceCapabilitiesConfig::class.java)
+
+                    if (assetConfig.version != userConfig.version) {
+                        BleLogger.d(TAG, "Config version changed ${userConfig.version} → ${assetConfig.version}, migrating")
+
+                        val merged = mergeConfigs(userConfig, assetConfig)
+
+                        configFile.writeText(gson.toJson(merged))
+                        config = merged
+                    } else {
+                        config = userConfig
+                    }
+
+                    initialized = true
+                    Log.d(TAG, "BlePolarDeviceCapabilitiesUtility initialized successfully")
+                    return
                 }
-
-                val json = configFile.inputStream().bufferedReader().use { it.readText() }
-                config = gson.fromJson(json, DeviceCapabilitiesConfig::class.java)
-
-                initialized = true
-                Log.d(TAG, "BlePolarDeviceCapabilitiesUtility initialized successfully")
             } catch (e: Exception) {
-                BleLogger.e(TAG, "Failed to initialize capabilities: ${e.message}")
+                BleLogger.w(
+                    TAG,
+                    "Could not load capabilities from external storage, falling back to bundled asset: ${e.message}"
+                )
             }
+
+            // Fallback: read directly from the bundled AAR asset (no permissions required)
+            try {
+                val json = context.assets.open(FILE_NAME).bufferedReader().use { it.readText() }
+                config = gson.fromJson(json, DeviceCapabilitiesConfig::class.java)
+                initialized = true
+                Log.d(TAG, "BlePolarDeviceCapabilitiesUtility initialized from bundled asset")
+            } catch (e: Exception) {
+                BleLogger.e(TAG, "Failed to initialize capabilities from bundled asset: ${e.message}")
+            }
+        }
+
+        private fun mergeConfigs(
+            user: DeviceCapabilitiesConfig,
+            asset: DeviceCapabilitiesConfig
+        ): DeviceCapabilitiesConfig {
+
+            val mergedDevices = asset.devices.toMutableMap()
+
+            user.devices.forEach { (key, userDevice) ->
+                val assetDevice = asset.devices[key]
+
+                mergedDevices[key] = DeviceCapabilities(
+                    fileSystemType = userDevice.fileSystemType ?: assetDevice?.fileSystemType,
+                    recordingSupported = userDevice.recordingSupported ?: assetDevice?.recordingSupported,
+                    firmwareUpdateSupported = userDevice.firmwareUpdateSupported ?: assetDevice?.firmwareUpdateSupported,
+                    isDeviceSensor = userDevice.isDeviceSensor ?: assetDevice?.isDeviceSensor,
+                    activityDataSupported = userDevice.activityDataSupported ?: assetDevice?.activityDataSupported
+                )
+            }
+
+            return DeviceCapabilitiesConfig(
+                version = asset.version,
+                devices = mergedDevices,
+                defaults = asset.defaults
+            )
         }
 
         private fun ensureInitialized(): Boolean {

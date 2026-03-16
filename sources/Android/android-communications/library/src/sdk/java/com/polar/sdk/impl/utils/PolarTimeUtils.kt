@@ -144,6 +144,20 @@ internal object PolarTimeUtils {
         ).toLocalDateTime()
     }
 
+    fun pbLocalTimeToZonedDateTime(pbLocalTime: PftpRequest.PbPFtpSetLocalTimeParams): ZonedDateTime {
+        val zoneOffset = ZoneOffset.ofTotalSeconds(pbLocalTime.tzOffset * 60)
+        return ZonedDateTime.of(
+            pbLocalTime.date.year,
+            pbLocalTime.date.month,
+            pbLocalTime.date.day,
+            pbLocalTime.time.hour,
+            pbLocalTime.time.minute,
+            pbLocalTime.time.seconds,
+            pbLocalTime.time.millis * 1000000,
+            zoneOffset
+        )
+    }
+
     fun pbLocalDateTimeToZonedDateTime(pbDateTime: PbLocalDateTime): ZonedDateTime {
         val zoneId = ZoneOffset.ofTotalSeconds(pbDateTime.timeZoneOffset * 60)
         return ZonedDateTime.of(

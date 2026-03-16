@@ -288,15 +288,15 @@ public interface <span class="typeNameLabel"><a href=PolarBleApiCallbackProvider
                                         <tr id="i5" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#disInformationReceived(java.lang.String,java.util.UUID,java.lang.String)>disInformationReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/UUID.html>UUID</a> uuid, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> value) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#bleSdkFeaturesReadiness(java.lang.String,java.util.List,java.util.List)>bleSdkFeaturesReadiness</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a>&gt; ready, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a>&gt; unavailable) </code>
                                             </th>
-                                            <td class="colLast">DIS information received.</td>
+                                            <td class="colLast">Called once all requested features have been evaluated after a device connection.</td>
                                         </tr>
                                         
                                         <tr id="i6" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#disInformationReceived(java.lang.String,.<Error class: unknown class>)>disInformationReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, &lt;Error class: unknown class&gt; disInfo) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#disInformationReceived(java.lang.String,java.util.UUID,java.lang.String)>disInformationReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/UUID.html>UUID</a> uuid, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> value) </code>
                                             </th>
                                             <td class="colLast">DIS information received.</td>
                                         </tr>
@@ -304,12 +304,20 @@ public interface <span class="typeNameLabel"><a href=PolarBleApiCallbackProvider
                                         <tr id="i7" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#disInformationReceived(java.lang.String,.<Error class: unknown class>)>disInformationReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, &lt;Error class: unknown class&gt; disInfo) </code>
+                                            </th>
+                                            <td class="colLast">DIS information received.</td>
+                                        </tr>
+                                        
+                                        <tr id="i8" class="altColor">
+                                            <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#batteryLevelReceived(java.lang.String,java.lang.Integer)>batteryLevelReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> level) </code>
                                             </th>
                                             <td class="colLast">Battery level received.</td>
                                         </tr>
                                         
-                                        <tr id="i8" class="altColor">
+                                        <tr id="i9" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#batteryChargingStatusReceived(java.lang.String,.<Error class: unknown class>)>batteryChargingStatusReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, &lt;Error class: unknown class&gt; chargingStatus) </code>
@@ -317,7 +325,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleApiCallbackProvider
                                             <td class="colLast">Battery charging status received.</td>
                                         </tr>
                                         
-                                        <tr id="i9" class="rowColor">
+                                        <tr id="i10" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#powerSourcesStateReceived(java.lang.String,.<Error class: unknown class>)>powerSourcesStateReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, &lt;Error class: unknown class&gt; powerSourcesState) </code>
@@ -325,7 +333,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleApiCallbackProvider
                                             <td class="colLast">Battery power sources state received.</td>
                                         </tr>
                                         
-                                        <tr id="i10" class="altColor">
+                                        <tr id="i11" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#hrNotificationReceived(java.lang.String,com.polar.sdk.api.model.PolarHrData.PolarHrSample)>hrNotificationReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarHrData.PolarHrSample.html>PolarHrData.PolarHrSample</a> data) </code>
@@ -333,7 +341,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleApiCallbackProvider
                                             <td class="colLast">HR notification data received from device.</td>
                                         </tr>
                                         
-                                        <tr id="i11" class="rowColor">
+                                        <tr id="i12" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#htsNotificationReceived(java.lang.String,com.polar.sdk.api.model.PolarHealthThermometerData)>htsNotificationReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarHealthThermometerData.html>PolarHealthThermometerData</a> data) </code>
@@ -527,6 +535,44 @@ public interface <span class="typeNameLabel"><a href=PolarBleApiCallbackProvider
                                             
                                             
                                             <dd><code>feature</code> - feature is ready</dd>
+                                            
+                                            
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="bleSdkFeaturesReadiness(java.lang.String,java.util.List,java.util.List)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>bleSdkFeaturesReadiness</h4>
+                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBleApiCallbackProvider.html#bleSdkFeaturesReadiness(java.lang.String,java.util.List,java.util.List)>bleSdkFeaturesReadiness</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a>&gt; ready, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a>&gt; unavailable)</pre>
+                                        <div class="block"><p>Called once all requested features have been evaluated after a device connection. This is the simplest way to wait for the device to become fully ready for further operations.</p><p>Constructing <a href=PolarBleApi.html>PolarBleApi</a> with an empty feature set causes the SDK to evaluate all SDK features by default. SDK calls this method after a device is connected.</p><p>The <a href=PolarBleApiCallbackProvider.html#bleSdkFeaturesReadiness(java.lang.String,java.util.List,java.util.List)>ready</a> list contains features that are confirmed ready for use. The <a href=PolarBleApiCallbackProvider.html#bleSdkFeaturesReadiness(java.lang.String,java.util.List,java.util.List)>unavailable</a> list contains features that are not supported by this device. Features absent from both lists timed out before their readiness could be established; they can still become ready later and will be reported via <a href=PolarBleApiCallbackProvider.html#bleSdkFeatureReady(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarBleSdkFeature)>bleSdkFeatureReady</a>.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device id</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>ready</code> - features that are confirmed ready for use on this device</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>unavailable</code> - features that are not supported by this device</dd>
                                             
                                             
                                         

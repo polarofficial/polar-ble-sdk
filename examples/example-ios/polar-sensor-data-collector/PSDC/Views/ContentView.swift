@@ -7,6 +7,7 @@ enum SelectedAction: String, CaseIterable {
     case online = "Online"
     case offline = "Offline"
     case h10Exercise = "H10 Exercise"
+    case exerciseV2 = "Exercise"
     case settings = "Settings"
     case logging = "Logging"
     case activityRecordingView = "Load"
@@ -130,16 +131,9 @@ struct ContentView: View {
                 }
                 
                 Picker("Choose operation", selection: $selectedTab) {
-                    ForEach(SelectedAction.allCases, id: \.self) {
-                        let action = $0.rawValue
-                        if (action == "Online" || action == "Settings") {
-                            Text(action)
-                        } else if( (action == "Offline" && bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) ||
-                                    (action == "Logging" && bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) ||
-                                    (action == "Load" && bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) ||
-                                    (action == "H10 Exercise" && !bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem)
-                        ){
-                            Text(action)
+                    ForEach(SelectedAction.allCases, id: \.self) { action in
+                        if shouldShowTab(action) {
+                            Text(action.rawValue)
                         }
                     }
                 }.pickerStyle(SegmentedPickerStyle())
@@ -167,6 +161,28 @@ struct ContentView: View {
         .onChange(of: appState.bleSdkManager.generalMessage?.text) { text in
            presenting = text != nil
         }
+    }
+    
+    private func shouldShowTab(_ action: SelectedAction) -> Bool {
+        let deviceState = bleSdkManager.deviceConnectionState.get()
+        
+        switch action {
+        case .online, .settings:
+            return true
+        case .offline, .logging, .activityRecordingView:
+            return deviceState.hasSAGRFCFileSystem
+        case .h10Exercise:
+            return isH10Device()
+        case .exerciseV2:
+            return bleSdkManager.offlineExerciseV2Supported
+        }
+    }
+    
+    private func isH10Device() -> Bool {
+        guard case .connected(let device) = bleSdkManager.deviceConnectionState else {
+            return false
+        }
+        return device.name.contains("H10")
     }
     
     func toggleBuildInformation() {
@@ -258,28 +274,23 @@ struct OperationModesTabView: View {
                 OnlineStreamsView()
                     .environmentObject(bleSdkManager)
             case .offline:
-                if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
-                    OfflineRecordingView()
-                        .environmentObject(bleSdkManager)
-                }
+                OfflineRecordingView()
+                    .environmentObject(bleSdkManager)
             case .h10Exercise:
-                if (!bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
-                    H10ExerciseView()
-                        .environmentObject(bleSdkManager)
-                }
+                H10ExerciseView()
+                    .environmentObject(bleSdkManager)
             case .settings:
                 DeviceSettingsView()
                     .environmentObject(bleSdkManager)
             case .logging:
-                if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
-                    SensorDatalogSettingsView()
-                        .environmentObject(bleSdkManager)
-                }
+                SensorDatalogSettingsView()
+                    .environmentObject(bleSdkManager)
             case .activityRecordingView:
-                if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
-                    ActivityRecordingView()
-                        .environmentObject(bleSdkManager)
-                }
+                ActivityRecordingView()
+                    .environmentObject(bleSdkManager)
+            case .exerciseV2:
+                OfflineExerciseV2View()
+                    .environmentObject(bleSdkManager)
             }
         }
     }

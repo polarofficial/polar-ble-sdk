@@ -20,7 +20,7 @@ import java.time.LocalDate
 interface PolarActivityApi {
 
     /**
-     * Get steps for a given period.
+     * Get steps for a given period. Requires feature [PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA]
      *
      * @param identifier The Polar device ID or BT address.
      * @param fromDate The starting date of the period to retrieve steps from.
@@ -30,7 +30,7 @@ interface PolarActivityApi {
     fun getSteps(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<PolarStepsData>>
 
     /**
-     * Get activity sample data for a given period.
+     * Get activity sample data for a given period. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA]
      *
      * @param identifier The Polar device ID or BT address.
      * @param fromDate The starting date of the period to retrieve activity sample data from.
@@ -41,7 +41,7 @@ interface PolarActivityApi {
     fun getActivitySampleData(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<PolarActivitySamplesDayData>>
 
     /**
-     * Get daily summary sample data for a given period. Daily summary data is a cumulative sum for the activity per given date.
+     * Get daily summary sample data for a given period. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA] Daily summary data is a cumulative sum for the activity per given date.
      *
      * @param identifier The Polar device ID or BT address.
      * @param fromDate The starting date of the period to retrieve daily summary data from.
@@ -52,7 +52,7 @@ interface PolarActivityApi {
     fun getDailySummaryData(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<PolarDailySummaryData>>
 
     /**
-     * Get distance for a given period.
+     * Get distance for a given period. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA]
      *
      * @param identifier The Polar device ID or BT address.
      * @param fromDate The starting date of the period to retrieve distance from.
@@ -62,7 +62,7 @@ interface PolarActivityApi {
     fun getDistance(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<PolarDistanceData>>
 
     /**
-     * Get active time for a given period.
+     * Get active time for a given period. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA]
      *
      * @param identifier The Polar device ID or BT address.
      * @param fromDate The starting date of the period to retrieve active time from.
@@ -72,7 +72,7 @@ interface PolarActivityApi {
     fun getActiveTime(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<PolarActiveTimeData>>
 
     /**
-     * Get specific calories type for a given period.
+     * Get specific calories type for a given period. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA]
      *
      * @param identifier The Polar device ID or BT address.
      * @param fromDate The starting date of the period to retrieve calories data from.
@@ -83,7 +83,7 @@ interface PolarActivityApi {
     fun getCalories(identifier: String, fromDate: LocalDate, toDate: LocalDate, caloriesType: CaloriesType): Single<List<PolarCaloriesData>>
 
     /**
-     * Get 24/7 heart rate samples for a given period.
+     * Get 24/7 heart rate samples for a given period. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA]
      *
      * @param identifier The Polar device ID or BT address.
      * @param fromDate The starting date of the period to retrieve heart rate samples from.
@@ -93,7 +93,7 @@ interface PolarActivityApi {
     fun get247HrSamples(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<Polar247HrSamplesData>>
 
     /**
-     * Get nightly recharge for a given period.
+     * Get nightly recharge for a given period. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA]
      *
      * @param identifier The Polar device ID or BT address.
      * @param fromDate The starting date of the period to retrieve nightly recharge from.
@@ -103,7 +103,7 @@ interface PolarActivityApi {
     fun getNightlyRecharge(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<PolarNightlyRechargeData>>
 
     /**
-     * Load 24/7 PPi data from a device for a given period.
+     * Load 24/7 PPi data from a device for a given period. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA]
      *
      * @param identifier, Polar device ID or BT address
      * @param fromDate The starting date of the period to retrieve 24/7 PPi data from.

@@ -56,6 +56,43 @@ class PolarOfflineRecordingUtilsTest {
     }
 
     @Test
+    fun `listOfflineRecordingsV1 does not return empty files`() {
+        val sampleEntries = listOf(
+            Pair("/U/0/20250730/R/101010/ACC0.REC", 500120L),
+            Pair("/U/0/20250730/R/101010/ACC1.REC", 500103L),
+            Pair("/U/0/20250730/R/101010/ACC2.REC", 0L),
+            Pair("/U/0/20250730/R/101010/HR0.REC", 500000L),
+            Pair("/U/0/20250730/R/101010/HR1.REC", 0L),
+            Pair("/U/0/20250730/R/101010/PPG0.REC", 0L)
+        )
+
+        val fetchRecursively: (BlePsFtpClient, String, (String) -> Boolean) -> Flowable<Pair<String, Long>> =
+            { _, _, _ -> Flowable.fromIterable(sampleEntries) }
+
+        val emitted = mutableListOf<PolarOfflineRecordingEntry>()
+        PolarOfflineRecordingUtils.listOfflineRecordingsV1(mockClient, fetchRecursively)
+            .doOnNext { emitted.add(it) }
+            .test()
+            .awaitDone(1, java.util.concurrent.TimeUnit.SECONDS)
+
+        val accEntries = emitted.filter { it.path.contains("ACC") }
+        val hrEntries = emitted.filter { it.path.contains("HR") }
+        val ppgEntries = emitted.filter { it.path.contains("PPG") }
+
+        assert(accEntries.size == 1)
+        assert(accEntries[0].size == 500120L + 500103L)
+        assert(accEntries[0].path.endsWith(".REC"))
+
+        assert(hrEntries.size == 1)
+        assert(hrEntries[0].size == 500000L)
+        assert(hrEntries[0].path.endsWith(".REC"))
+
+        assert(ppgEntries.isEmpty())
+
+        emitted.forEach { assert(it.date != null) }
+    }
+
+    @Test
     fun `listOfflineRecordingsV2 merges split REC files`() {
         val pmdTxtContent = """
             500120 /U/0/20250730/R/101010/ACC0.REC
@@ -88,6 +125,39 @@ class PolarOfflineRecordingUtilsTest {
         assert(ppgEntries[0].size == 300L)
         assert(ppgEntries[0].path.endsWith(".REC"))
 
+        emitted.forEach { assert(it.date != null) }
+    }
+
+    @Test
+    fun `listOfflineRecordingsV2 does not return empty files`() {
+        val pmdTxtContent = """
+            500120 /U/0/20250730/R/101010/ACC0.REC
+            500103 /U/0/20250730/R/101010/ACC1.REC
+            0 /U/0/20250730/R/101010/ACC2.REC
+            500050 /U/0/20250730/R/101010/HR0.REC
+            0 /U/0/20250730/R/101010/HR1.REC
+            0 /U/0/20250730/R/101010/PPG0.REC
+        """.trimIndent().toByteArray(StandardCharsets.UTF_8)
+
+        val emitted = mutableListOf<PolarOfflineRecordingEntry>()
+        PolarOfflineRecordingUtils.listOfflineRecordingsV2(pmdTxtContent)
+            .doOnSuccess { emitted.addAll(it) }
+            .test()
+            .awaitDone(1, java.util.concurrent.TimeUnit.SECONDS)
+
+        val accEntries = emitted.filter { it.path.contains("ACC") }
+        val hrEntries = emitted.filter { it.path.contains("HR") }
+        val ppgEntries = emitted.filter { it.path.contains("PPG") }
+
+        assert(accEntries.size == 1)
+        assert(accEntries[0].size == 500120L + 500103L)
+        assert(accEntries[0].path.endsWith(".REC"))
+
+        assert(hrEntries.size == 1)
+        assert(hrEntries[0].size == 500050L)
+        assert(hrEntries[0].path.endsWith(".REC"))
+
+        assert(ppgEntries.isEmpty())
         emitted.forEach { assert(it.date != null) }
     }
 }

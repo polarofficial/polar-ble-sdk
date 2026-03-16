@@ -370,7 +370,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                     <li class="blockList">
                                         <h4>getSteps</h4>
                                         <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarStepsData.html>PolarStepsData</a>&gt;&gt; <a href=PolarBleApi.html#getSteps(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getSteps</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate)</pre>
-                                        <div class="block"><p>Get steps for a given period.</p></div>
+                                        <div class="block"><p>Get steps for a given period. Requires feature PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA</p></div>
 
                                         <dl>
 
@@ -411,7 +411,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                     <li class="blockList">
                                         <h4>getActivitySampleData</h4>
                                         <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarActivitySamplesDayData.html>PolarActivitySamplesDayData</a>&gt;&gt; <a href=PolarBleApi.html#getActivitySampleData(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getActivitySampleData</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate)</pre>
-                                        <div class="block"><p>Get activity sample data for a given period.</p></div>
+                                        <div class="block"><p>Get activity sample data for a given period. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_ACTIVITY_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA</a></p></div>
 
                                         <dl>
 
@@ -452,7 +452,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                     <li class="blockList">
                                         <h4>getDailySummaryData</h4>
                                         <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarDailySummaryData.html>PolarDailySummaryData</a>&gt;&gt; <a href=PolarBleApi.html#getDailySummaryData(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getDailySummaryData</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate)</pre>
-                                        <div class="block"><p>Get daily summary sample data for a given period. Daily summary data is a cumulative sum for the activity per given date.</p></div>
+                                        <div class="block"><p>Get daily summary sample data for a given period. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_ACTIVITY_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA</a> Daily summary data is a cumulative sum for the activity per given date.</p></div>
 
                                         <dl>
 
@@ -493,7 +493,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                     <li class="blockList">
                                         <h4>getDistance</h4>
                                         <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarDistanceData.html>PolarDistanceData</a>&gt;&gt; <a href=PolarBleApi.html#getDistance(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getDistance</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate)</pre>
-                                        <div class="block"><p>Get distance for a given period.</p></div>
+                                        <div class="block"><p>Get distance for a given period. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_ACTIVITY_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA</a></p></div>
 
                                         <dl>
 
@@ -534,7 +534,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                     <li class="blockList">
                                         <h4>getActiveTime</h4>
                                         <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarActiveTimeData.html>PolarActiveTimeData</a>&gt;&gt; <a href=PolarBleApi.html#getActiveTime(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getActiveTime</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate)</pre>
-                                        <div class="block"><p>Get active time for a given period.</p></div>
+                                        <div class="block"><p>Get active time for a given period. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_ACTIVITY_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA</a></p></div>
 
                                         <dl>
 
@@ -575,7 +575,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                     <li class="blockList">
                                         <h4>getCalories</h4>
                                         <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/PolarCaloriesData.html>PolarCaloriesData</a>&gt;&gt; <a href=PolarBleApi.html#getCalories(java.lang.String,java.time.LocalDate,java.time.LocalDate,com.polar.sdk.impl.utils.CaloriesType)>getCalories</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate, <a href=../impl/utils/CaloriesType.html>CaloriesType</a> caloriesType)</pre>
-                                        <div class="block"><p>Get specific calories type for a given period.</p></div>
+                                        <div class="block"><p>Get specific calories type for a given period. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_ACTIVITY_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA</a></p></div>
 
                                         <dl>
 
@@ -620,7 +620,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                     <li class="blockList">
                                         <h4>get247HrSamples</h4>
                                         <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/Polar247HrSamplesData.html>Polar247HrSamplesData</a>&gt;&gt; <a href=PolarBleApi.html#get247HrSamples(java.lang.String,java.time.LocalDate,java.time.LocalDate)>get247HrSamples</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate)</pre>
-                                        <div class="block"><p>Get 24/7 heart rate samples for a given period.</p></div>
+                                        <div class="block"><p>Get 24/7 heart rate samples for a given period. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_ACTIVITY_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA</a></p></div>
 
                                         <dl>
 
@@ -661,7 +661,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                     <li class="blockList">
                                         <h4>getNightlyRecharge</h4>
                                         <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/sleep/PolarNightlyRechargeData.html>PolarNightlyRechargeData</a>&gt;&gt; <a href=PolarBleApi.html#getNightlyRecharge(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getNightlyRecharge</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate)</pre>
-                                        <div class="block"><p>Get nightly recharge for a given period.</p></div>
+                                        <div class="block"><p>Get nightly recharge for a given period. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_ACTIVITY_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA</a></p></div>
 
                                         <dl>
 
@@ -702,7 +702,7 @@ public interface <span class="typeNameLabel"><a href=PolarActivityApi.html>Polar
                                     <li class="blockList">
                                         <h4>get247PPiSamples</h4>
                                         <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/activity/Polar247PPiSamplesData.html>Polar247PPiSamplesData</a>&gt;&gt; <a href=PolarBleApi.html#get247PPiSamples(java.lang.String,java.time.LocalDate,java.time.LocalDate)>get247PPiSamples</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate)</pre>
-                                        <div class="block"><p>Load 24/7 PPi data from a device for a given period.</p></div>
+                                        <div class="block"><p>Load 24/7 PPi data from a device for a given period. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_ACTIVITY_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA</a></p></div>
 
                                         <dl>
 

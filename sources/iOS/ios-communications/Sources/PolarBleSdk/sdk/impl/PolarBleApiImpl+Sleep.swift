@@ -90,7 +90,7 @@ extension PolarBleApiImpl: PolarSleepApi {
         return checkApiAvailable.andThen(subscribe).andThen(receiveSleepRecordingEnabled)
     }
     
-    func getSleepData(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarSleepData.PolarSleepAnalysisResult]> {
+    func getSleep(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarSleepData.PolarSleepAnalysisResult]> {
         
         if (fromDate > toDate) {
             return Single.error(PolarErrors.invalidArgument(description: "toDate cannot be smaller than fromDate."))
@@ -149,5 +149,10 @@ extension PolarBleApiImpl: PolarSleepApi {
         } catch {
             return Single.error(error)
         }
+    }
+
+    @available(*, deprecated, renamed: "getSleep(identifier:fromDate:toDate:)")
+    func getSleepData(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarSleepData.PolarSleepAnalysisResult]> {
+        return getSleep(identifier: identifier, fromDate: fromDate, toDate: toDate)
     }
 }

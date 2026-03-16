@@ -39,7 +39,7 @@ interface PolarH10OfflineExerciseApi {
     }
 
     /**
-     * Request start recording.
+     * Request start recording. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING]
      *
      * @param identifier polar device id or bt address
      * @param exerciseId unique id for exercise entry
@@ -56,7 +56,7 @@ interface PolarH10OfflineExerciseApi {
 
 
     /**
-     * Request to stop recording.
+     * Request to stop recording. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING]
      *
      * @param identifier polar device id or bt address
      * @return Completable stream
@@ -64,7 +64,7 @@ interface PolarH10OfflineExerciseApi {
     fun stopRecording(identifier: String): Completable
 
     /**
-     * Request current recording status.
+     * Request current recording status. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING]
      *
      * @param identifier polar device id or bt address
      * @return Single stream Pair first recording status, second entryId if available
@@ -72,7 +72,7 @@ interface PolarH10OfflineExerciseApi {
     fun requestRecordingStatus(identifier: String): Single<Pair<Boolean, String>>
 
     /**
-     * List exercises stored in the device Polar H10 device.
+     * List exercises stored in the device Polar H10 device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING]
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
      * @return Flowable stream of [PolarExerciseEntry] entries
@@ -80,7 +80,7 @@ interface PolarH10OfflineExerciseApi {
     fun listExercises(identifier: String): Flowable<PolarExerciseEntry>
 
     /**
-     * Api for fetching a single exercise from Polar H10 device.
+     * Api for fetching a single exercise from Polar H10 device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING]
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
      * @param entry      [PolarExerciseEntry] object
@@ -89,7 +89,7 @@ interface PolarH10OfflineExerciseApi {
     fun fetchExercise(identifier: String, entry: PolarExerciseEntry): Single<PolarExerciseData>
 
     /**
-     * Api for removing single exercise from Polar H10 device.
+     * Api for removing single exercise from Polar H10 device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING]
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
      * @param entry      entry to be removed

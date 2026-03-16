@@ -5,6 +5,7 @@ import PolarBleSdk
 
 struct TrainingSessionEntries: Identifiable {
     let id = UUID()
+    var isSupported: Bool = false
     var isFetching: Bool = true
     var entries = [PolarTrainingSessionReference]()
 }

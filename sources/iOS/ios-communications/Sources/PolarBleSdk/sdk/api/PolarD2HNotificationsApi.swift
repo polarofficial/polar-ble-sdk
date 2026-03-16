@@ -148,6 +148,8 @@ public protocol PolarDeviceToHostNotificationsApi {
     /// Streams for received device to host notifications endlessly.
     /// Only dispose, take(1) etc... stops stream.
     ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_control`
+    ///
     /// - parameters:
     ///   - identifier: Polar device ID or BT address
     /// - Returns:

@@ -17,7 +17,7 @@
     <a title="PolarOnlineStreamingApi Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">PolarBleSdk 6.14.3 Docs</a> (37% documented)</p>
+        <p><a href="../index.html">PolarBleSdk 6.15.1 Docs</a> (40% documented)</p>
         <div class="header-right">
           <form role="search" action="../search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -165,6 +165,9 @@
                 <a href="../Enums/FirmwareUpdateStatus.html">FirmwareUpdateStatus</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/OfflineExerciseStartResultType.html">OfflineExerciseStartResultType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/PolarActivityDataType.html">PolarActivityDataType</a>
               </li>
               <li class="nav-group-task">
@@ -277,6 +280,9 @@
                 <a href="../Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Protocols/PolarOfflineExerciseV2Api.html">PolarOfflineExerciseV2Api</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a>
               </li>
               <li class="nav-group-task">
@@ -292,6 +298,9 @@
                 <a href="../Protocols/PolarSleepApi.html">PolarSleepApi</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Protocols/PolarTemperatureApi.html">PolarTemperatureApi</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a>
               </li>
             </ul>
@@ -304,6 +313,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/LedConfig.html">LedConfig</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/OfflineExerciseStartResult.html">OfflineExerciseStartResult</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Polar247HrSamplesData.html">Polar247HrSamplesData</a>
@@ -502,8 +514,11 @@
             <p>Online steaming API.</p>
 
 <p>Online streaming makes it possible to stream live online data from Polar device.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO30feature_polar_online_streamingyA2CmF">PolarBleSdkFeature.feature_polar_online_streaming</a></code> or <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO10feature_hryA2CmF">PolarBleSdkFeature.feature_hr</a></code>
 
-<p>Requires features <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO30feature_polar_online_streamingyA2CmF">PolarBleSdkFeature.feature_polar_online_streaming</a></code></p>
+</div>
 
           </section>
           <section class="section task-group-section">
@@ -523,6 +538,11 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Get the data types available in this device for online streaming</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO30feature_polar_online_streamingyA2CmF">PolarBleSdkFeature.feature_polar_online_streaming</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -560,6 +580,11 @@
                       <div class="abstract">
                         <p>Find out if the HR service is available in the device. Use this API method in a case where the device does not support Polar Measurement Data service.
  In such a case using &lsquo;getAvailableOnlineStreamDataTypes&rsquo; will return error; use this method instead.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO10feature_hryA2CmF">PolarBleSdkFeature.feature_hr</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -572,12 +597,12 @@
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single stream
+                        <p>Single stream</p>
 
 <ul>
 <li>success: onSuccess the set with HR service, if available</li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+</ul>
                       </div>
                     </section>
                   </div>
@@ -597,8 +622,12 @@
                       <div class="abstract">
                         <p>Request the stream settings available in current operation mode. This request shall be used before the stream is started
  to decide currently available settings. The available settings depend on the state of the device. For example, if any stream(s)
- or optical heart rate measurement is already enabled, then the device may limit the offer of possible settings for other stream feature.
- Requires <code>polarSensorStreaming</code> feature.</p>
+ or optical heart rate measurement is already enabled, then the device may limit the offer of possible settings for other stream feature.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO30feature_polar_online_streamingyA2CmF">PolarBleSdkFeature.feature_polar_online_streaming</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -611,12 +640,12 @@
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single stream
+                        <p>Single stream</p>
 
 <ul>
 <li>success: once after settings received from device</li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+</ul>
                       </div>
                     </section>
                   </div>
@@ -635,7 +664,12 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Request full steam settings capabilities. The request returns the all capabilities of the requested streaming feature not limited by the current operation mode.
-Requires <code>polarSensorStreaming</code> feature. This request is supported only by Polar Verity Sense firmware 1.1.5</p>
+This request is supported only by Polar Verity Sense firmware 1.1.5</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO30feature_polar_online_streamingyA2CmF">PolarBleSdkFeature.feature_polar_online_streaming</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -679,12 +713,12 @@ Requires <code>polarSensorStreaming</code> feature. This request is supported on
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single stream
+                        <p>Single stream</p>
 
 <ul>
 <li>success: once after full settings received from device</li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+</ul>
                       </div>
                     </section>
                   </div>
@@ -704,6 +738,11 @@ Requires <code>polarSensorStreaming</code> feature. This request is supported on
                       <div class="abstract">
                         <p>Start heart rate stream. Heart rate stream is stopped if the connection is closed,
 error occurs or stream is disposed.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO10feature_hryA2CmF">PolarBleSdkFeature.feature_hr</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -735,12 +774,12 @@ error occurs or stream is disposed.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Observable stream
+                        <p>Observable stream</p>
 
 <ul>
 <li>onNext: for every air packet received. see <code><a href="../Typealiases.html#/s:11PolarBleSdk0A6HrDataa">PolarHrData</a></code></li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+</ul>
                       </div>
                     </section>
                   </div>
@@ -759,6 +798,11 @@ error occurs or stream is disposed.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Start the ECG (Electrocardiography) stream. ECG stream is stopped if the connection is closed, error occurs or stream is disposed.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO30feature_polar_online_streamingyA2CmF">PolarBleSdkFeature.feature_polar_online_streaming</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -802,12 +846,12 @@ error occurs or stream is disposed.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Observable stream
+                        <p>Observable stream</p>
 
 <ul>
 <li>onNext: for every air packet received. see <code><a href="../Typealiases.html#/s:11PolarBleSdk0A7EcgDataa">PolarEcgData</a></code></li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+</ul>
                       </div>
                     </section>
                   </div>
@@ -826,6 +870,11 @@ error occurs or stream is disposed.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Start ACC (Accelerometer) stream. ACC stream is stopped if the connection is closed, error occurs or stream is disposed.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO30feature_polar_online_streamingyA2CmF">PolarBleSdkFeature.feature_polar_online_streaming</a></code>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -862,6 +911,11 @@ error occurs or stream is disposed.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Start Gyro stream. Gyro stream is stopped if the connection is closed, error occurs during start or stream is disposed.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO30feature_polar_online_streamingyA2CmF">PolarBleSdkFeature.feature_polar_online_streaming</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -920,6 +974,11 @@ error occurs or stream is disposed.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Start magnetometer stream. Magnetometer stream is stopped if the connection is closed, error occurs or stream is disposed.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO30feature_polar_online_streamingyA2CmF">PolarBleSdkFeature.feature_polar_online_streaming</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -978,6 +1037,11 @@ error occurs or stream is disposed.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Start optical sensor PPG (Photoplethysmography) stream. PPG stream is stopped if the connection is closed, error occurs or stream is disposed.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO30feature_polar_online_streamingyA2CmF">PolarBleSdkFeature.feature_polar_online_streaming</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1021,12 +1085,12 @@ error occurs or stream is disposed.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Observable stream
+                        <p>Observable stream</p>
 
 <ul>
 <li>onNext: for every air packet received. see <code>PolarOhrData</code></li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+</ul>
                       </div>
                     </section>
                   </div>
@@ -1047,6 +1111,11 @@ error occurs or stream is disposed.</p>
                         <p>Start PPI (Pulse to Pulse interval) stream.
 PPI stream is stopped if the connection is closed, error occurs or stream is disposed.
 Notice that there is a delay before PPI data stream starts.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO30feature_polar_online_streamingyA2CmF">PolarBleSdkFeature.feature_polar_online_streaming</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1078,12 +1147,12 @@ Notice that there is a delay before PPI data stream starts.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Observable stream
+                        <p>Observable stream</p>
 
 <ul>
 <li>onNext: for every air packet received. see <code><a href="../Typealiases.html#/s:11PolarBleSdk0A7PpiDataa">PolarPpiData</a></code></li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+</ul>
                       </div>
                     </section>
                   </div>
@@ -1103,6 +1172,11 @@ Notice that there is a delay before PPI data stream starts.</p>
                       <div class="abstract">
                         <p>Start temperature stream. Temperature stream is stopped if the connection is closed,
 error occurs or stream is disposed.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO30feature_polar_online_streamingyA2CmF">PolarBleSdkFeature.feature_polar_online_streaming</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1146,12 +1220,12 @@ error occurs or stream is disposed.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Observable stream
+                        <p>Observable stream</p>
 
 <ul>
 <li>onNext: for every air packet received. see <code><a href="../Typealiases.html#/s:11PolarBleSdk0A15TemperatureDataa">PolarTemperatureData</a></code></li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+</ul>
                       </div>
                     </section>
                   </div>
@@ -1171,6 +1245,11 @@ error occurs or stream is disposed.</p>
                       <div class="abstract">
                         <p>Start pressure stream. Pressure stream is stopped if the connection is closed,
 error occurs or stream is disposed.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO30feature_polar_online_streamingyA2CmF">PolarBleSdkFeature.feature_polar_online_streaming</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1214,12 +1293,12 @@ error occurs or stream is disposed.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Observable stream
+                        <p>Observable stream</p>
 
 <ul>
 <li>onNext: for every air packet received. see <code><a href="../Typealiases.html#/s:11PolarBleSdk0A12PressureDataa">PolarPressureData</a></code></li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+</ul>
                       </div>
                     </section>
                   </div>
@@ -1239,6 +1318,11 @@ error occurs or stream is disposed.</p>
                       <div class="abstract">
                         <p>Start skin temperature stream. Skin temperature stream is stopped if the connection is closed,
 error occurs or stream is disposed.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO30feature_polar_online_streamingyA2CmF">PolarBleSdkFeature.feature_polar_online_streaming</a></code></p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -1282,12 +1366,12 @@ error occurs or stream is disposed.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Observable stream
+                        <p>Observable stream</p>
 
 <ul>
 <li>onNext: for every air packet received. see <code><a href="../Typealiases.html#/s:11PolarBleSdk0A15TemperatureDataa">PolarTemperatureData</a></code></li>
 <li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+</ul>
                       </div>
                     </section>
                   </div>
@@ -1297,7 +1381,7 @@ error occurs or stream is disposed.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-02-23)</p>
+          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-03-16)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

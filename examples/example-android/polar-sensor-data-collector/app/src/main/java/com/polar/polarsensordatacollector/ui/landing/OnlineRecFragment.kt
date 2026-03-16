@@ -1340,9 +1340,11 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             }
         }
 
-        val dateString = matchingFileUri.path?.split("/")?.get(3).toString().split("_").get(1)
-        val dateInUri = LocalDateTime.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-        fileurisWithDateKey.put(dateInUri, matchingFileUri)
+        if (matchingFileUri != Uri.EMPTY) {
+            val dateString = matchingFileUri.path?.split("/")?.get(3).toString().split("_").get(1)
+            val dateInUri = LocalDateTime.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            fileurisWithDateKey.put(dateInUri, matchingFileUri)
+        }
 
         if (fileurisWithDateKey.isEmpty()) {
             return null

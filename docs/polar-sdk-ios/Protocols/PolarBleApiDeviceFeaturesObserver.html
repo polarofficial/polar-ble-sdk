@@ -17,7 +17,7 @@
     <a title="PolarBleApiDeviceFeaturesObserver Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">PolarBleSdk 6.14.3 Docs</a> (37% documented)</p>
+        <p><a href="../index.html">PolarBleSdk 6.15.1 Docs</a> (40% documented)</p>
         <div class="header-right">
           <form role="search" action="../search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -165,6 +165,9 @@
                 <a href="../Enums/FirmwareUpdateStatus.html">FirmwareUpdateStatus</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/OfflineExerciseStartResultType.html">OfflineExerciseStartResultType</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/PolarActivityDataType.html">PolarActivityDataType</a>
               </li>
               <li class="nav-group-task">
@@ -277,6 +280,9 @@
                 <a href="../Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Protocols/PolarOfflineExerciseV2Api.html">PolarOfflineExerciseV2Api</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a>
               </li>
               <li class="nav-group-task">
@@ -292,6 +298,9 @@
                 <a href="../Protocols/PolarSleepApi.html">PolarSleepApi</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Protocols/PolarTemperatureApi.html">PolarTemperatureApi</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a>
               </li>
             </ul>
@@ -304,6 +313,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/LedConfig.html">LedConfig</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/OfflineExerciseStartResult.html">OfflineExerciseStartResult</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Polar247HrSamplesData.html">Polar247HrSamplesData</a>
@@ -518,8 +530,16 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The feature is available in this device and it is ready.  Called only for the features which are specified in [PolarBleApi] construction.
-feature ready callback</p>
+                        <p>The feature is available in this device and it is ready to use.
+Called only for the features which are specified in [PolarBleApi]
+construction. SDK calls this method after device is connected.
+When this call back is received, device should be ready to
+perform methods that depend on indicated feature.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): None (observer callback).</p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -530,6 +550,128 @@ feature ready callback</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>feature</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the feature that is now ready for use</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB25ApiDeviceFeaturesObserverP03blecF9Readiness_5ready11unavailableySS_SayAA0abC7FeatureOGAItF"></a>
+                    <a name="//apple_ref/swift/Method/bleSdkFeaturesReadiness(_:ready:unavailable:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB25ApiDeviceFeaturesObserverP03blecF9Readiness_5ready11unavailableySS_SayAA0abC7FeatureOGAItF">bleSdkFeaturesReadiness(_:<wbr>ready:<wbr>unavailable:<wbr>)</a>
+                    </code>
+                      <span class="declaration-note">
+                        Default implementation
+                      </span>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>All features that are listed in [PolarBleApi] construction and are supported by this device are ready. 
+Constructing with an empty feature set causes SDK to enable all SDK features by default.
+SDK calls this method after a device is connected.</p>
+
+<p>This is the simplest way to wait for device to become ready for further operations.</p>
+
+<p>The <code>ready</code> list contains features that are confirmed ready for use.
+The <code>unavailable</code> list contains features that are not supported by this device.
+Features absent from both lists timed out before their readiness could be established;
+they can still become ready later and will be reported via <code>bleSdkFeatureReady</code>.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    <p>Requires SDK feature(s): None (observer callback).</p>
+
+</div>
+
+                      </div>
+                      <h4>Default Implementation</h4>
+                      <div class="default_impl abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">bleSdkFeaturesReadiness</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">ready</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Enums/PolarBleSdkFeature.html">PolarBleSdkFeature</a></span><span class="p">],</span> <span class="nv">unavailable</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Enums/PolarBleSdkFeature.html">PolarBleSdkFeature</a></span><span class="p">])</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device id</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>ready</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>features that are confirmed ready for use on this device</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>unavailable</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>features that are not supported by this device</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </section>
                   </div>
                 </li>
@@ -538,7 +680,7 @@ feature ready callback</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-02-23)</p>
+          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-03-16)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>
