@@ -19,7 +19,8 @@ let package = Package(
             name: "PolarBleSdk",
             dependencies: ["SwiftProtobuf", "RxSwift", "Zip"],
             path: "sources/iOS/ios-communications/Sources",
-            exclude: ["iOSCommunications/Info.plist", "PolarBleSdk/Info.plist"]
+            exclude: ["iOSCommunications/Info.plist", "PolarBleSdk/Info.plist"],
+            resources: [.process("iOSCommunications/Resources")]
         ),
     ]
 )
