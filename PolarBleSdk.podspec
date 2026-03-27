@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
     s.ios.deployment_target = '14.0'
 
     s.source_files = 'sources/iOS/ios-communications/Sources/**/*.swift'
-
+    s.resources    = ['Sources/iOSCommunications/Resources/polar_device_capabilities.json']
     s.dependency 'RxSwift', '~> 6.8.0'
     s.dependency 'SwiftProtobuf', '~> 1.0'
     s.dependency 'Zip', '~> 2.1.2'
