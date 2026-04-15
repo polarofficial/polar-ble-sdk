@@ -44,9 +44,24 @@ public class BleGattClientBase: Hashable {
     private class NotificationWaitObserver {
         let obs: RxSwift.PrimitiveSequenceType.CompletableObserver
         let uuid: CBUUID
+        private let disposeLock = NSLock()
+        private var isDisposed: Bool = false
+
         init(_ obs: @escaping RxSwift.PrimitiveSequenceType.CompletableObserver, uuid: CBUUID){
             self.obs = obs
             self.uuid = uuid
+        }
+
+        func markDisposed() {
+            disposeLock.lock()
+            defer { disposeLock.unlock() }
+            isDisposed = true
+        }
+
+        func isNotDisposed() -> Bool {
+            disposeLock.lock()
+            defer { disposeLock.unlock() }
+            return !isDisposed
         }
     }
     
@@ -156,7 +171,9 @@ public class BleGattClientBase: Hashable {
             pair.state.set(ATT_NOTIFY_OR_INDICATE_STATE_UNKNOWN)
         }
         RxUtils.emitNext(notificationWaitObservers) { (observer) in
-            observer.obs(.error(BleGattException.gattDisconnected))
+            if observer.isNotDisposed() {
+                observer.obs(.error(BleGattException.gattDisconnected))
+            }
         }
         notificationWaitObservers.removeAll()
         RxUtils.postErrorOnCompletableAndClearList(serviceWaitObservers, error: BleGattException.gattDisconnected)
@@ -191,6 +208,9 @@ public class BleGattClientBase: Hashable {
         }
         
         for object in list {
+            if !object.isNotDisposed() {
+                continue
+            }
             if err == 0 {
                 object.obs(.completed)
             } else {
@@ -354,6 +374,7 @@ public class BleGattClientBase: Hashable {
                 observer(.error(BleGattException.gattCharacteristicNotFound))
             }
             return Disposables.create {
+                subscriber.markDisposed()
                 self.notificationWaitObservers.remove({ (observer: NotificationWaitObserver) -> Bool in
                     return subscriber === observer
                 })

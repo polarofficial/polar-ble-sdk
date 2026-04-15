@@ -1,4 +1,6 @@
 buildscript {
+    ext.kotlin_version = '2.1.20'
+    ext.ksp_version = '2.1.20-1.0.32'
     repositories {
         mavenCentral()
         google()
@@ -9,8 +11,10 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:8.7.3'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22"
-        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.43.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:compose-compiler-gradle-plugin:$kotlin_version"
+        classpath "com.google.devtools.ksp:symbol-processing-gradle-plugin:$ksp_version"
+        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.55'
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:2.5.3"
         classpath "com.google.gms:google-services:4.4.3"
         classpath "com.google.firebase:firebase-appdistribution-gradle:5.1.1"

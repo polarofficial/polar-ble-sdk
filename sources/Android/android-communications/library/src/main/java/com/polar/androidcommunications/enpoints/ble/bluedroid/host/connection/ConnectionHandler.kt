@@ -3,14 +3,14 @@ package com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection
 import androidx.annotation.VisibleForTesting
 import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceSessionState
-import com.polar.androidcommunications.common.ble.BleUtils
 import com.polar.androidcommunications.common.ble.BleUtils.AD_TYPE
 import com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Scheduler
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.schedulers.Schedulers
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Connection handler handles connection states serialization, by using simple state pattern
@@ -18,17 +18,9 @@ import java.util.concurrent.TimeUnit
 class ConnectionHandler(
     private val connectionInterface: ConnectionInterface,
     private val scannerInterface: ScannerInterface,
-    private val observer: ConnectionHandlerObserver
+    private val observer: ConnectionHandlerObserver,
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) {
-    constructor(
-        connectionInterface: ConnectionInterface,
-        scannerInterface: ScannerInterface,
-        observer: ConnectionHandlerObserver,
-        guardTimerScheduler: Scheduler
-    ) : this(connectionInterface, scannerInterface, observer) {
-        this.guardTimerScheduler = guardTimerScheduler
-    }
-
     companion object {
         private const val TAG = "ConnectionHandler"
 
@@ -63,24 +55,36 @@ class ConnectionHandler(
         MTU_UPDATED
     }
 
-    private var guardTimerScheduler: Scheduler = Schedulers.computation()
-
     @VisibleForTesting
     var state: ConnectionHandlerState = ConnectionHandlerState.FREE
     private var current: BDDeviceSessionImpl? = null
     private var automaticReconnection = true
 
-    private var phySafeGuardDisposable: Disposable? = null
-    private var mtuSafeGuardDisposable: Disposable? = null
-    private var firstAttributeOperationDisposable: Disposable? = null
-    private var mutex = Object()
+    private var phySafeGuardJob: Job? = null
+    private var mtuSafeGuardJob: Job? = null
+    private var firstAttributeOperationJob: Job? = null
+    private val mutex = Object()
 
     fun setAutomaticReconnection(automaticReconnection: Boolean) {
         this.automaticReconnection = automaticReconnection
     }
 
-    fun getAutomaticReconnection() : Boolean {
+    fun getAutomaticReconnection(): Boolean {
         return this.automaticReconnection
+    }
+
+    fun cancel() {
+        cancelAllSafeGuardJobs()
+        scope.cancel()
+    }
+
+    private fun cancelAllSafeGuardJobs() {
+        phySafeGuardJob?.cancel()
+        phySafeGuardJob = null
+        mtuSafeGuardJob?.cancel()
+        mtuSafeGuardJob = null
+        firstAttributeOperationJob?.cancel()
+        firstAttributeOperationJob = null
     }
 
     fun advertisementHeadReceived(bleDeviceSession: BDDeviceSessionImpl) {
@@ -112,7 +116,7 @@ class ConnectionHandler(
     }
 
     fun phyUpdated(bleDeviceSession: BDDeviceSessionImpl) {
-        phySafeGuardDisposable?.dispose()
+        phySafeGuardJob?.cancel()
         commandState(bleDeviceSession, ConnectionHandlerAction.PHY_UPDATED)
     }
 
@@ -121,7 +125,7 @@ class ConnectionHandler(
     }
 
     fun mtuUpdated(bleDeviceSession: BDDeviceSessionImpl) {
-        mtuSafeGuardDisposable?.dispose()
+        mtuSafeGuardJob?.cancel()
         commandState(bleDeviceSession, ConnectionHandlerAction.MTU_UPDATED)
     }
 
@@ -152,7 +156,7 @@ class ConnectionHandler(
 
     private fun updateSessionState(bleDeviceSession: BDDeviceSessionImpl, newState: DeviceSessionState) {
         BleLogger.d(TAG, " Session update from: " + bleDeviceSession.sessionState.toString() + " to: " + newState.toString())
-        bleDeviceSession.sessionState = newState
+        bleDeviceSession.setSessionStates(newState)
         observer.deviceSessionStateChanged(bleDeviceSession)
     }
 
@@ -164,12 +168,14 @@ class ConnectionHandler(
             ) {
                 val uuids = if (content.containsKey(AD_TYPE.GAP_ADTYPE_16BIT_MORE)) content[AD_TYPE.GAP_ADTYPE_16BIT_MORE] else content[AD_TYPE.GAP_ADTYPE_16BIT_COMPLETE]
                 var i = 0
-                while (i < uuids!!.size) {
-                    val hexUUid = String.format("%02X%02X", uuids[i + 1], uuids[i])
-                    if (session.connectionUuids.contains(hexUUid)) {
-                        return true
+                if (uuids != null) {
+                    while (i < uuids.size) {
+                        val hexUUid = String.format("%02X%02X", uuids[i + 1], uuids[i])
+                        if (session.connectionUuids.contains(hexUUid)) {
+                            return true
+                        }
+                        i += 2
                     }
-                    i += 2
                 }
             }
             return false
@@ -255,30 +261,34 @@ class ConnectionHandler(
                 connectionInterface.startServiceDiscovery(session)
             }
             ConnectionHandlerAction.PHY_UPDATED -> {
-                mtuSafeGuardDisposable = Completable.timer(GUARD_TIME_MS, TimeUnit.MILLISECONDS, guardTimerScheduler)
-                    .subscribe { mtuUpdated(session) }
+                mtuSafeGuardJob?.cancel()
+                mtuSafeGuardJob = scope.launch {
+                    delay(GUARD_TIME_MS)
+                    mtuUpdated(session)
+                }
 
                 connectionInterface.setMtu(session)
             }
 
             ConnectionHandlerAction.MTU_UPDATED -> {
-                BleUtils.validate(current === session, "incorrect session object")
-
                 // There are devices needing a delay after connection parameters are negotiated and first attribute operation is done
-                firstAttributeOperationDisposable?.dispose()
-                firstAttributeOperationDisposable = Completable.timer(FIRST_ATTRIBUTE_OPERATION_TIMEOUT, TimeUnit.MILLISECONDS)
-                    .subscribe {
-                        // First attribute operation
-                        session.processNextAttributeOperation(false)
-                    }
+                firstAttributeOperationJob?.cancel()
+                firstAttributeOperationJob = scope.launch {
+                    delay(FIRST_ATTRIBUTE_OPERATION_TIMEOUT)
+                    // First attribute operation
+                    session.processNextAttributeOperation(false)
+                }
 
                 updateSessionState(session, DeviceSessionState.SESSION_OPEN)
                 changeState(session, ConnectionHandlerState.FREE)
             }
 
             ConnectionHandlerAction.SERVICES_DISCOVERED -> {
-                phySafeGuardDisposable = Completable.timer(GUARD_TIME_MS, TimeUnit.MILLISECONDS, guardTimerScheduler)
-                    .subscribe { phyUpdated(session) }
+                phySafeGuardJob?.cancel()
+                phySafeGuardJob = scope.launch {
+                    delay(GUARD_TIME_MS)
+                    phyUpdated(session)
+                }
 
                 connectionInterface.setPhy(session)
             }
@@ -294,6 +304,7 @@ class ConnectionHandler(
                     handleDisconnectDevice(session)
                 } else {
                     // cancel pending connection
+                    cancelAllSafeGuardJobs()
                     connectionInterface.cancelDeviceConnection(session)
                     observer.deviceConnectionCancelled(session)
                     updateSessionState(session, DeviceSessionState.SESSION_CLOSED)
@@ -302,6 +313,7 @@ class ConnectionHandler(
             }
             ConnectionHandlerAction.DEVICE_DISCONNECTED -> {
                 if (current === session) {
+                    cancelAllSafeGuardJobs()
                     updateSessionState(session, DeviceSessionState.SESSION_OPEN_PARK)
                     changeState(session, ConnectionHandlerState.FREE)
                 } else {

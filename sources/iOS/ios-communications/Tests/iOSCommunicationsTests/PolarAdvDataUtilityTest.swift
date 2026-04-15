@@ -97,4 +97,16 @@ class PolarAdvDataUtilityTest: XCTestCase {
         // Assert
         XCTAssertFalse(isPolarDevice)
     }
+
+    func testExtractDeviceModelFromName() throws {
+        // Arrange
+        let deviceName = "Polar H10 12345678"
+        let expectedModel = "h10"
+
+        // Act
+        let deviceModel = PolarAdvDataUtility.extractDeviceModelFromName(deviceName)
+
+        // Assert
+        XCTAssertEqual(expectedModel, deviceModel)
+    }
 }

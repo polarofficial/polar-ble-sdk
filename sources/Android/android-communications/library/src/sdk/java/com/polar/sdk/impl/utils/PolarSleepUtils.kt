@@ -5,7 +5,6 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpC
 import com.polar.sdk.api.model.sleep.*
 import com.polar.services.datamodels.protobuf.SleepSkinTemperatureResult
 import fi.polar.remote.representation.protobuf.SleepanalysisResult
-import io.reactivex.rxjava3.core.Single
 import protocol.PftpRequest
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -24,95 +23,89 @@ internal object PolarSleepUtils {
     /**
      * Read sleep data for a given date.
      */
-    fun readSleepDataFromDayDirectory(client: BlePsFtpClient, date: LocalDate): Single<PolarSleepAnalysisResult> {
-        return Single.create { emitter ->
-            val disposable = readSleepData(client, date).subscribe() { response ->
-               readSleepSkintemperatureResult(client, date, response).subscribe()
-               { response ->
-                   emitter.onSuccess(response)
-               }
-           }
-            emitter.setDisposable(disposable)
-        }
+    suspend fun readSleepDataFromDayDirectory(
+        client: BlePsFtpClient,
+        date: LocalDate
+    ): PolarSleepAnalysisResult {
+        val response = readSleepData(client, date)
+        return readSleepSkinTemperatureResult(client, date, response)
     }
 
     /**
      * Read sleep data.
      */
-    fun readSleepData(client: BlePsFtpClient, date: LocalDate): Single<PolarSleepAnalysisResult> {
+    private suspend fun readSleepData(client: BlePsFtpClient, date: LocalDate): PolarSleepAnalysisResult {
         BleLogger.d(TAG, "readSleepData: $date")
-        return Single.create { emitter ->
+        return try {
             val sleepFilePath = "$ARABICA_USER_ROOT_FOLDER${date.format(dateFormatter)}/${SLEEP_DIRECTORY}${SLEEP_PROTO}"
-            val disposable = client.request(PftpRequest.PbPFtpOperation.newBuilder()
-                .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                .setPath(sleepFilePath)
-                .build()
-                .toByteArray()
-            ).subscribe(
-                { response ->
-                    val proto = SleepanalysisResult.PbSleepAnalysisResult.parseFrom(response.toByteArray())
-                    emitter.onSuccess(
-                        PolarSleepAnalysisResult(
-                            PolarTimeUtils.pbLocalDateTimeToZonedDateTime(proto.sleepStartTime),
-                            PolarTimeUtils.pbLocalDateTimeToZonedDateTime(proto.sleepEndTime),
-                            PolarTimeUtils.pbSystemDateTimeToZonedDateTime(proto.lastModified),
-                            proto.sleepGoalMinutes,
-                            fromPbSleepwakePhasesListProto(proto.sleepwakePhasesList),
-                            convertSnoozeTimeListToZonedDateTimeList(proto.snoozeTimeList),
-                            if (proto.hasAlarmTime()) { PolarTimeUtils.pbLocalDateTimeToZonedDateTime(proto.alarmTime) } else null,
-                            proto.sleepStartOffsetSeconds ?: null,
-                            proto.sleepEndOffsetSeconds ?: null,
-                            if (proto.hasUserSleepRating()) { SleepRating.from(proto.userSleepRating.number) } else null,
-                            proto.recordingDevice.deviceId ?: null,
-                            proto.batteryRanOut ?: null,
-                            fromPbSleepCyclesList(proto.sleepCyclesList),
-                            PolarTimeUtils.pbDateToLocalDate(proto.sleepResultDate) ?: null,
-                            if (proto.hasOriginalSleepRange()) {fromPbOriginalSleepRange(proto.originalSleepRange)} else null,
-                            null
-                        )
-                    )
-                },
-                { error ->
-                    emitter.onSuccess(PolarSleepAnalysisResult(
-                        null, null, null, null,
-                        null, null, null, null,
-                        null, null, null, null,
-                        null, null, null, null)
-                    )
-                }
+            val response = client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath(sleepFilePath)
+                    .build()
+                    .toByteArray()
             )
-            emitter.setDisposable(disposable)
+            val proto = SleepanalysisResult.PbSleepAnalysisResult.parseFrom(response.toByteArray())
+            PolarSleepAnalysisResult(
+                PolarTimeUtils.pbLocalDateTimeToZonedDateTime(proto.sleepStartTime),
+                PolarTimeUtils.pbLocalDateTimeToZonedDateTime(proto.sleepEndTime),
+                PolarTimeUtils.pbSystemDateTimeToZonedDateTime(proto.lastModified),
+                proto.sleepGoalMinutes,
+                fromPbSleepwakePhasesListProto(proto.sleepwakePhasesList),
+                convertSnoozeTimeListToZonedDateTimeList(proto.snoozeTimeList),
+                if (proto.hasAlarmTime()) {
+                    PolarTimeUtils.pbLocalDateTimeToZonedDateTime(proto.alarmTime)
+                } else null,
+                proto.sleepStartOffsetSeconds ?: null,
+                proto.sleepEndOffsetSeconds ?: null,
+                if (proto.hasUserSleepRating()) {
+                    SleepRating.from(proto.userSleepRating.number)
+                } else null,
+                proto.recordingDevice.deviceId ?: null,
+                proto.batteryRanOut ?: null,
+                fromPbSleepCyclesList(proto.sleepCyclesList),
+                PolarTimeUtils.pbDateToLocalDate(proto.sleepResultDate) ?: null,
+                if (proto.hasOriginalSleepRange()) {
+                    fromPbOriginalSleepRange(proto.originalSleepRange)
+                } else null,
+                null
+            )
+        } catch (_: Throwable) {
+            PolarSleepAnalysisResult(
+                null, null, null, null,
+                null, null, null, null,
+                null, null, null, null,
+                null, null, null, null
+            )
         }
     }
 
     /**
-     * Read skintemperaturedata data.
+     * Read skin temperature data.
      */
-    fun readSleepSkintemperatureResult(client: BlePsFtpClient, date: LocalDate, sleepAnalysisResult: PolarSleepAnalysisResult): Single<PolarSleepAnalysisResult> {
-        BleLogger.d(TAG, "readSleepSkintemperatureResult: $date")
-        var result = sleepAnalysisResult
-        return Single.create { emitter ->
+    private suspend fun readSleepSkinTemperatureResult(
+        client: BlePsFtpClient,
+        date: LocalDate,
+        sleepAnalysisResult: PolarSleepAnalysisResult
+    ): PolarSleepAnalysisResult {
+        BleLogger.d(TAG, "readSleepSkinTemperatureResult: $date")
+        return try {
+            val result = sleepAnalysisResult
             val sleepFilePath = "$ARABICA_USER_ROOT_FOLDER${date.format(dateFormatter)}/${NRST_DIRECTORY}${NRST_PROTO}"
-            val disposable = client.request(PftpRequest.PbPFtpOperation.newBuilder()
-                .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                .setPath(sleepFilePath)
-                .build()
-                .toByteArray()
-            ).subscribe(
-                { response ->
-                    val proto = SleepSkinTemperatureResult.PbSleepSkinTemperatureResult.parseFrom(response.toByteArray())
-                    if (proto.hasSleepDate()) {
-                        result.sleepSkinTemperatureResult = fromPbSleepSkinTemperatureResult(proto)
-                    }
-                    emitter.onSuccess(
-                        result
-                    )
-                },
-                { _ ->
-                    emitter.onSuccess(result)
-                }
+            val response = client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath(sleepFilePath)
+                    .build()
+                    .toByteArray()
             )
-            emitter.setDisposable(disposable)
+            val proto = SleepSkinTemperatureResult.PbSleepSkinTemperatureResult.parseFrom(response.toByteArray())
+            if (proto.hasSleepDate()) {
+                result.sleepSkinTemperatureResult = fromPbSleepSkinTemperatureResult(proto)
+            }
+            result
+        } catch (_: Throwable) {
+            sleepAnalysisResult
         }
     }
 }

@@ -18,9 +18,14 @@ import com.polar.polarsensordatacollector.ui.landing.SensorListAdapter.ItemSelec
 import com.polar.sdk.api.model.PolarDeviceInfo
 import com.polar.sdk.api.model.PolarSensorSetting.SettingType
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.*
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import java.util.*
 
 object DialogUtility {
@@ -156,19 +161,19 @@ object DialogUtility {
         }
     }
 
-    fun showSensorSelection(activity: Activity, itemSelected: ItemSelected, flowable: Flowable<PolarDeviceInfo>) {
+    fun showSensorSelection(activity: Activity, itemSelected: ItemSelected, flowable: Flow<PolarDeviceInfo>) {
 
         // custom dialog
         val dialog = Dialog(activity)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setContentView(R.layout.sensor_selection_dialog)
         val dataItemList: MutableList<PolarDeviceInfo> = ArrayList()
-        var disposable: Disposable? = null
+        var scanJob: Job? = null
         val adapter = SensorListAdapter(dataItemList) { info: PolarDeviceInfo? ->
             Log.d("", "selected: $info")
             itemSelected.itemSelected(info)
             dialog.dismiss()
-            disposable?.dispose()
+            scanJob?.cancel()
         }
         val recyclerView: RecyclerView = dialog.findViewById(R.id.sensors_list)
         val layoutManager = LinearLayoutManager(activity)
@@ -177,31 +182,28 @@ object DialogUtility {
         val itemDecorator = DividerItemDecoration(activity, DividerItemDecoration.VERTICAL)
         ContextCompat.getDrawable(activity, R.drawable.divider)
             ?.let { itemDecorator.setDrawable(it) }
-
         recyclerView.addItemDecoration(itemDecorator)
         dialog.setOnCancelListener {
             itemSelected.itemSelected(null)
-            disposable?.dispose()
+            scanJob?.cancel()
         }
-        disposable = Completable.create { e: CompletableEmitter ->
-            dialog.show()
-            e.onComplete()
-        }
-            .subscribeOn(AndroidSchedulers.mainThread())
-            .observeOn(Schedulers.io())
-            .andThen(flowable)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { polarDeviceInfo: PolarDeviceInfo ->
-                    dataItemList.add(polarDeviceInfo)
-                    dataItemList.sortWith { t1: PolarDeviceInfo, t2: PolarDeviceInfo -> if (t1.rssi > t2.rssi) -1 else 0 }
-                    adapter.notifyDataSetChanged()
-                },
-                { throwable: Throwable ->
+
+        dialog.show()
+        scanJob = CoroutineScope(Dispatchers.Main).launch {
+            flowable
+                .flowOn(Dispatchers.IO)
+                .catch { throwable ->
                     dialog.dismiss()
                     Log.e(TAG, "${throwable.message}")
                     Toast.makeText(activity, throwable.message, Toast.LENGTH_SHORT).show()
                 }
-            )
+                .collect { polarDeviceInfo ->
+                    if (!dataItemList.any { it.deviceId == polarDeviceInfo.deviceId }) {
+                        dataItemList.add(polarDeviceInfo)
+                        dataItemList.sortWith { t1, t2 -> if (t1.rssi > t2.rssi) -1 else 0 }
+                        adapter.notifyDataSetChanged()
+                    }
+                }
+        }
     }
 }

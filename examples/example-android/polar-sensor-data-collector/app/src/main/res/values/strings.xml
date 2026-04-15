@@ -340,6 +340,12 @@
     <!-- Battery API texts -->
     <string name="charge_state_header">Read charge state</string>
 
+    <!-- BLE connection API texts -->
+    <string name="ble_check_conn_api_title">Ble disconnected due to error?</string>
+    
+    <!-- BLE RSSI API texts -->
+    <string name="ble_signal_strength_header">Get BLE signal strength</string>
+
     <!-- Exercise V2 -->
     <string name="exercise_v2_start_exercise">Start Exercise</string>
     <string name="exercise_v2_stop_exercise">Stop Exercise</string>
@@ -368,4 +374,10 @@
     <string name="exercise_v2_status_exercise_found">Exercise in device</string>
     <string name="exercise_v2_prefix_fetch">Fetch</string>
     <string name="exercise_v2_prefix_remove">Remove</string>
+
+    <!-- HR stream display -->
+    <string name="hr_label_bpm">bpm: </string>
+    <string name="hr_label_rrsms">rrsMs: </string>
+    <string name="hr_label_contact">contact: </string>
+    <string name="hr_rr_not_available">Not available</string>
 </resources>

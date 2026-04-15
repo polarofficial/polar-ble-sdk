@@ -1,16 +1,18 @@
 package com.polar.polarsensordatacollector.ui.h10exercise
 
 import android.util.Log
+import androidx.core.util.component1
+import androidx.core.util.component2
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.polar.polarsensordatacollector.repository.H10ExerciseRepository
 import com.polar.polarsensordatacollector.ui.landing.ONLINE_OFFLINE_KEY_DEVICE_ID
 import com.polar.sdk.api.model.PolarExerciseData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val TAG = "H10ExerciseViewModel"
@@ -25,106 +27,76 @@ class H10ExerciseViewModel @Inject constructor(
         state.get<String>(ONLINE_OFFLINE_KEY_DEVICE_ID)
             ?: throw Exception("Device settings viewModel must know the deviceId")
 
-    private val disposables = CompositeDisposable()
-
     private val _statusText = MutableStateFlow("")
 
     val featureState = repository.featureState
 
     init {
         _statusText.value = ""
-        val disposable = repository.requestRecordingStatus(deviceId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ (enabled, _) ->
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val (enabled, _) = repository.requestRecordingStatus(deviceId)
                 repository.updateStatus(isSupported = true, isEnabled = enabled)
-            }, { e ->
+            } catch (e: Exception) {
                 Log.e(TAG, "requestRecordingStatus() failed", e)
-            })
-        disposables.add(disposable)
+            }
+        }
     }
 
     fun listExercises(onResult: (Int) -> Unit, onError: () -> Unit) {
-        val disposable = repository.listExercises(deviceId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ entries ->
-                onResult(entries.size)
-            }, { e ->
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val entries = repository.listExercises(deviceId)
+                launch(Dispatchers.Main) { onResult(entries.size) }
+            } catch (e: Exception) {
                 Log.e(TAG, "listExercises() failed", e)
-                onError()
-            })
-        disposables.add(disposable)
+                launch(Dispatchers.Main) { onError() }
+            }
+        }
     }
 
-    fun readFirstExercise(
-        onExercise: (PolarExerciseData) -> Unit,
-        onError: () -> Unit
-    ) {
-        val disposable = repository.listExercises(deviceId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .flatMap { list ->
-                if (list.isNotEmpty()) {
-                    repository.readExercise(deviceId, list.first())
-                } else {
-                    io.reactivex.rxjava3.core.Single.error(Exception("No exercises"))
-                }
-            }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ exercise ->
-                onExercise(exercise)
-            }, { e ->
+    fun readFirstExercise(onExercise: (PolarExerciseData) -> Unit, onError: () -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val entries = repository.listExercises(deviceId)
+                if (entries.isEmpty()) throw Exception("No exercises")
+                val exercise = repository.readExercise(deviceId, entries.first())
+                launch(Dispatchers.Main) { onExercise(exercise) }
+            } catch (e: Exception) {
                 Log.e(TAG, "readFirstExercise() failed", e)
-                onError()
-            })
-        disposables.add(disposable)
+                launch(Dispatchers.Main) { onError() }
+            }
+        }
     }
 
     fun removeFirstExercise(onComplete: () -> Unit, onError: () -> Unit) {
-        val disposable = repository.listExercises(deviceId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .flatMapCompletable { list ->
-                if (list.isNotEmpty()) {
-                    repository.removeExercise(deviceId, list.first())
-                } else {
-                    io.reactivex.rxjava3.core.Completable.error(Exception("No exercises"))
-                }
-            }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                onComplete()
-            }, { e ->
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val entries = repository.listExercises(deviceId)
+                if (entries.isEmpty()) throw Exception("No exercises")
+                repository.removeExercise(deviceId, entries.first())
+                launch(Dispatchers.Main) { onComplete() }
+            } catch (e: Exception) {
                 Log.e(TAG, "removeFirstExercise() failed", e)
-                onError()
-            })
-        disposables.add(disposable)
+                launch(Dispatchers.Main) { onError() }
+            }
+        }
     }
 
     fun toggleRecording() {
         val feature = featureState.value
-        val disposable = if (feature.isEnabled) {
-            repository.stopRecording(deviceId)
-        } else {
-            val exerciseId = "H10_EX_${System.currentTimeMillis()}"
-            repository.startRecording(deviceId, exerciseId)
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnComplete {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                if (feature.isEnabled) {
+                    repository.stopRecording(deviceId)
+                } else {
+                    val exerciseId = "H10_EX_${System.currentTimeMillis()}"
+                    repository.startRecording(deviceId, exerciseId)
+                }
                 repository.updateRecordingEnabled(!feature.isEnabled)
-            }
-            .subscribe({}, { e ->
+            } catch (e: Exception) {
                 Log.e(TAG, "toggleRecording() failed", e)
-            })
-        disposables.add(disposable)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        disposables.clear()
+            }
+        }
     }
 }

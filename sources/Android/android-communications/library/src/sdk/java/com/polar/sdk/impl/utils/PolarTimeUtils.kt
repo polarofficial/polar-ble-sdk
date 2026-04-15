@@ -1,6 +1,5 @@
 package com.polar.sdk.impl.utils
 
-import com.polar.services.datamodels.protobuf.SleepSkinTemperatureResult.PbSleepSkinTemperatureResult
 import com.polar.services.datamodels.protobuf.Types.PbDateProto3
 import fi.polar.remote.representation.protobuf.Types.PbDate
 import fi.polar.remote.representation.protobuf.Types.PbDuration
@@ -170,6 +169,27 @@ internal object PolarTimeUtils {
             pbDateTime.time.millis * 1000000,
             zoneId
         )
+    }
+
+    /**
+     * Converts a [PbLocalDateTime] to a [LocalDateTime], using the embedded timezone offset to
+     * normalize to local wall-clock time. Falls back to UTC if no timezone offset is present.
+     */
+    fun pbLocalDateTimeToLocalDateTimeWithOptionalTz(pbDateTime: PbLocalDateTime): LocalDateTime {
+        val tz = if (pbDateTime.hasTimeZoneOffset()) {
+            ZoneOffset.ofTotalSeconds(pbDateTime.timeZoneOffset * 60)
+        } else {
+            ZoneOffset.UTC
+        }
+        return LocalDateTime.of(
+            pbDateTime.date.year,
+            pbDateTime.date.month,
+            pbDateTime.date.day,
+            pbDateTime.time.hour,
+            pbDateTime.time.minute,
+            pbDateTime.time.seconds,
+            pbDateTime.time.millis * 1_000_000
+        ).atZone(tz).toLocalDateTime()
     }
 
     fun pbLocalDateTimeToLocalDateTime(pbDateTime: PbLocalDateTime): LocalDateTime {

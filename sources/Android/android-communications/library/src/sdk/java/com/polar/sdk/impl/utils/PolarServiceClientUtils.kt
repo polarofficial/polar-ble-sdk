@@ -8,7 +8,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Companion.HR_MEASUREMENT
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Companion.HR_SERVICE
 import com.polar.androidcommunications.api.ble.model.gatt.client.BlePfcClient
-import com.polar.androidcommunications.api.ble.model.gatt.client.BlePfcClient.PFC_SERVICE
+import com.polar.androidcommunications.api.ble.model.gatt.client.BlePfcClient.Companion.PFC_SERVICE
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils
@@ -97,13 +97,31 @@ internal object PolarServiceClientUtils {
         throw PolarInvalidArgument()
     }
 
+    internal fun getRSSIValue(deviceId: String, listener: BleDeviceListener?): Int {
+        listener?.let {
+            val sessions = it.deviceSessions()
+            if (sessions != null) {
+                for (session in sessions) {
+                    if (session != null) {
+                        if (session.advertisementContent.polarDeviceId == deviceId) {
+                            return session.rssi
+                        }
+                    }
+                }
+            }
+        }
+        return -1
+    }
+
     private fun sessionByDeviceId(deviceId: String, listener: BleDeviceListener?): BleDeviceSession? {
         listener?.let {
             val sessions = it.deviceSessions()
             if (sessions != null) {
                 for (session in sessions) {
-                    if (session.advertisementContent.polarDeviceId == deviceId) {
-                        return session
+                    if (session != null) {
+                        if (session.advertisementContent.polarDeviceId == deviceId) {
+                            return session
+                        }
                     }
                 }
             }
@@ -116,8 +134,10 @@ internal object PolarServiceClientUtils {
             val sessions = it.deviceSessions()
             if (sessions != null) {
                 for (session in sessions) {
-                    if (session.address == address) {
-                        return session
+                    if (session != null) {
+                        if (session.address == address) {
+                            return session
+                        }
                     }
                 }
             }

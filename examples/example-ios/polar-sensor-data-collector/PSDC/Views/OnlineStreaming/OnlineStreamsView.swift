@@ -310,7 +310,7 @@ struct OnlineStreamValues: View {
                                         .font(.system(size: 14))
                                     Text("RR available: \(bleSdkManager.hrRecordingData.rrAvailable)")
                                         .font(.system(size: 14))
-                                    Text("RRs: \(bleSdkManager.hrRecordingData.rrs)")
+                                    Text("RRs (ms): \(bleSdkManager.hrRecordingData.rrs.isEmpty ? "" : bleSdkManager.hrRecordingData.rrs.map(String.init).joined(separator: ", "))")
                                         .font(.system(size: 14))
                                     Text("Contact status supported: \(bleSdkManager.hrRecordingData.contactStatusSupported)")
                                         .font(.system(size: 14))

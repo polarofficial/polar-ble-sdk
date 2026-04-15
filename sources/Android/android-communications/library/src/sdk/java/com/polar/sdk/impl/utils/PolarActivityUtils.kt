@@ -12,16 +12,18 @@ import com.polar.sdk.api.model.activity.parsePbDailySummary
 import com.polar.sdk.api.model.activity.polarActiveTimeFromProto
 import fi.polar.remote.representation.protobuf.ActivitySamples
 import fi.polar.remote.representation.protobuf.DailySummary
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.core.Maybe
-import io.reactivex.rxjava3.core.Single
-import io.reactivex.rxjava3.functions.Function
-import org.reactivestreams.Publisher
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import protocol.PftpRequest
 import protocol.PftpResponse.PbPFtpDirectory
 import java.io.ByteArrayOutputStream
-import java.time.format.DateTimeFormatter
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 private const val ARABICA_USER_ROOT_FOLDER = "/U/0/"
 private const val ACTIVITY_DIRECTORY = "ACT/"
@@ -39,301 +41,246 @@ internal object PolarActivityUtils {
     /**
      * Read step count for given [date].
      */
-    fun readStepsFromDayDirectory(client: BlePsFtpClient, date: LocalDate): Single<Int> {
+    suspend fun readStepsFromDayDirectory(client: BlePsFtpClient, date: LocalDate): Int {
         BleLogger.d(TAG, "readStepsFromDayDirectory: $date")
-        return Single.create { emitter ->
-            val activityFileDir = "$ARABICA_USER_ROOT_FOLDER${date.format(dateFormatter)}/${ACTIVITY_DIRECTORY}"
-            var fileList = mutableListOf<String>()
+        val activityFileDir = "$ARABICA_USER_ROOT_FOLDER${date.format(dateFormatter)}/$ACTIVITY_DIRECTORY"
+
+        return try {
+            val files = listFiles(client, activityFileDir) { entry ->
+                entry.matches(Regex("^$activityFileDir/")) ||
+                        entry == "ASAMPL" ||
+                        entry.contains(".BPB")
+            }.toList()
+
+            if (files.isEmpty()) {
+                BleLogger.w(TAG, "readStepsFromDayDirectory() could not find files to read for date $date.")
+                return 0
+            }
+
             var stepCount = 0
-
-            listFiles(client, activityFileDir,
-                condition = { entry: String ->
-                    entry.matches(Regex("^${activityFileDir}/")) ||
-                            entry == "ASAMPL" ||
-                            entry.contains(".BPB")})
-                .map {
-                    fileList.add(it)
-                }.doFinally {
-                    var index = 0
-                    if (fileList.isNotEmpty()) {
-                        for (file in fileList) {
-                            client.request(
-                                PftpRequest.PbPFtpOperation.newBuilder()
-                                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                                    .setPath(file)
-                                    .build()
-                                    .toByteArray()
-                            ).subscribe(
-                                { response ->
-                                    val proto =
-                                        ActivitySamples.PbActivitySamples.parseFrom(response.toByteArray())
-                                    stepCount += proto.stepsSamplesList.sum()
-                                    if (++index == fileList.size) {
-                                        emitter.onSuccess(stepCount)
-                                    }
-                                },
-                                { error ->
-                                    BleLogger.w(
-                                        TAG,
-                                        "readStepsFromDayDirectory() failed for file: $file, error: $error"
-                                    )
-                                    emitter.onSuccess(0)
-                                }
-                            )
-                        }
-                    } else {
-                        BleLogger.w(TAG, "readActivitySamplesDataFromDayDirectory() could not find files to read for date $date.")
-                        emitter.onSuccess(0)
-                    }
-                }.doOnError { error ->
-                    BleLogger.w(TAG, "readStepsFromDayDirectory() failed while listing files, error occurred $error.")
-                    emitter.onSuccess(0)
-                }.subscribe()
+            for (file in files) {
+                try {
+                    val response = client.request(
+                        PftpRequest.PbPFtpOperation.newBuilder()
+                            .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                            .setPath(file)
+                            .build()
+                            .toByteArray()
+                    )
+                    val proto = ActivitySamples.PbActivitySamples.parseFrom(response.toByteArray())
+                    stepCount += proto.stepsSamplesList.sum()
+                } catch (error: Throwable) {
+                    BleLogger.w(TAG, "readStepsFromDayDirectory() failed for file: $file, error: $error")
+                    return 0
+                }
+            }
+            stepCount
+        } catch (error: Throwable) {
+            BleLogger.w(TAG, "readStepsFromDayDirectory() failed while listing files, error occurred $error.")
+            0
         }
     }
 
-    fun readDistanceFromDayDirectory(client: BlePsFtpClient, date: LocalDate): Single<Float> {
+    suspend fun readDistanceFromDayDirectory(client: BlePsFtpClient, date: LocalDate): Float {
         BleLogger.d(TAG, "readDistanceFromDayDirectory: $date")
-        return Single.create { emitter ->
-                val dailySummaryFilePath = "$ARABICA_USER_ROOT_FOLDER${date.format(dateFormatter)}/${DAILY_SUMMARY_DIRECTORY}${DAILY_SUMMARY_PROTO}"
-                val disposable = client.request(
-                    PftpRequest.PbPFtpOperation.newBuilder()
-                        .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                        .setPath(dailySummaryFilePath)
-                        .build()
-                        .toByteArray()
-                )
-                    .subscribe(
-                        { response ->
-                            val proto = DailySummary.PbDailySummary.parseFrom(response.toByteArray())
-                            val distance = proto.activityDistance
-                            emitter.onSuccess(distance)
-                        },
-                        { error ->
-                            BleLogger.w(TAG, "readDistanceFromDayDirectory() failed for path: $dailySummaryFilePath, error: $error")
-                            emitter.onSuccess(0F)
-                        }
-                    )
-                emitter.setDisposable(disposable)
-            }
-    }
-
-    fun readActiveTimeFromDayDirectory(client: BlePsFtpClient, date: LocalDate): Single<PolarActiveTimeData> {
-        BleLogger.d(TAG, "readActiveTimeFromDayDirectory: $date")
-        return Single.create { emitter ->
-                val dailySummaryFilePath = "$ARABICA_USER_ROOT_FOLDER${date.format(dateFormatter)}/${DAILY_SUMMARY_DIRECTORY}${DAILY_SUMMARY_PROTO}"
-                val disposable = client.request(
-                    PftpRequest.PbPFtpOperation.newBuilder()
-                        .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                        .setPath(dailySummaryFilePath)
-                        .build()
-                        .toByteArray()
-                )
-                    .subscribe(
-                        { response ->
-                            val proto = DailySummary.PbDailySummary.parseFrom(response.toByteArray())
-                            val polarActiveTimeData = PolarActiveTimeData(
-                                date = date,
-                                timeNonWear = polarActiveTimeFromProto(proto.activityClassTimes.timeNonWear),
-                                timeSleep = polarActiveTimeFromProto(proto.activityClassTimes.timeSleep),
-                                timeSedentary = polarActiveTimeFromProto(proto.activityClassTimes.timeSedentary),
-                                timeLightActivity = polarActiveTimeFromProto(proto.activityClassTimes.timeLightActivity),
-                                timeContinuousModerateActivity = polarActiveTimeFromProto(proto.activityClassTimes.timeContinuousModerate),
-                                timeIntermittentModerateActivity = polarActiveTimeFromProto(proto.activityClassTimes.timeIntermittentModerate),
-                                timeContinuousVigorousActivity = polarActiveTimeFromProto(proto.activityClassTimes.timeContinuousVigorous),
-                                timeIntermittentVigorousActivity = polarActiveTimeFromProto(proto.activityClassTimes.timeIntermittentVigorous)
-                            )
-                            emitter.onSuccess(polarActiveTimeData)
-
-                        },
-                        { error ->
-                            BleLogger.w(TAG, "readActiveTimeFromDayDirectory() failed for path: $dailySummaryFilePath, error: $error")
-                            emitter.onSuccess(PolarActiveTimeData(date, PolarActiveTime()))
-                        }
-                    )
-                emitter.setDisposable(disposable)
-            }
-    }
-
-    fun readSpecificCaloriesFromDayDirectory(client: BlePsFtpClient, date: LocalDate, caloriesType: CaloriesType): Single<Int> {
-        BleLogger.d(TAG, "readSpecificCaloriesFromDayDirectory: $date, type: $caloriesType")
-        return Single.create { emitter ->
-                val dailySummaryFilePath = "$ARABICA_USER_ROOT_FOLDER${date.format(dateFormatter)}/${DAILY_SUMMARY_DIRECTORY}${DAILY_SUMMARY_PROTO}"
-                val disposable = client.request(
-                    PftpRequest.PbPFtpOperation.newBuilder()
-                        .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                        .setPath(dailySummaryFilePath)
-                        .build()
-                        .toByteArray()
-                )
-                    .subscribe(
-                        { response ->
-                            val proto = DailySummary.PbDailySummary.parseFrom(response.toByteArray())
-                            val caloriesValue = when (caloriesType) {
-                                CaloriesType.ACTIVITY -> proto.activityCalories
-                                CaloriesType.TRAINING -> proto.trainingCalories
-                                CaloriesType.BMR -> proto.bmrCalories
-                            }
-                            emitter.onSuccess(caloriesValue)
-                        },
-                        { error ->
-                            BleLogger.w(TAG, "readSpecificCaloriesFromDayDirectory() failed for path: $dailySummaryFilePath, error: $error")
-                            emitter.onSuccess(0)
-                        }
-                    )
-                emitter.setDisposable(disposable)
-            }
-    }
-
-    /**
-     * Read and return activity samples data for a given date.
-     */
-    fun readActivitySamplesDataFromDayDirectory(client: BlePsFtpClient, date: LocalDate): Single<PolarActivitySamplesDayData> {
-        BleLogger.d(TAG, "readActivitySamplesDataFromDayDirectory: $date")
-        return Single.create { emitter ->
-            val activityFileDir = "$ARABICA_USER_ROOT_FOLDER${date.format(dateFormatter)}/${ACTIVITY_DIRECTORY}"
-            var fileList = mutableListOf<String>()
-            var activitySamplesDataList: MutableList<PolarActivitySamplesData> = mutableListOf()
-            var activitySamplesDayData = PolarActivitySamplesDayData()
-            var activitySamplesData = PolarActivitySamplesData()
-            listFiles(client, activityFileDir,
-                condition = { entry: String ->
-                    entry.matches(Regex("^${activityFileDir}/")) ||
-                            entry == "ASAMPL" ||
-                            entry.contains(".BPB")})
-                .map {
-                    fileList.add(it)
-                }.doFinally {
-                    var index = 0
-                    if (fileList.isNotEmpty()) {
-                        for (file in fileList) {
-                            client.request(
-                                PftpRequest.PbPFtpOperation.newBuilder()
-                                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                                    .setPath(file)
-                                    .build()
-                                    .toByteArray()
-                            ).subscribe(
-                                { response ->
-                                    val proto =
-                                        ActivitySamples.PbActivitySamples.parseFrom(response.toByteArray())
-
-                                    activitySamplesData.startTime = PolarTimeUtils.pbLocalDateTimeToLocalDateTime(proto.startTime)
-                                    activitySamplesData.stepSamples = proto.stepsSamplesList
-                                    activitySamplesData.stepRecordingInterval = PolarTimeUtils.pbDurationToInt(proto.stepsRecordingInterval)/1E3.toInt()
-                                    activitySamplesData.metSamples = proto.metSamplesList
-                                    activitySamplesData.metRecordingInterval = PolarTimeUtils.pbDurationToInt(proto.metRecordingInterval)/1E3.toInt()
-                                    activitySamplesData.activityInfoList = parsePbActivityInfo(proto.activityInfoList)
-                                    activitySamplesDataList.add(activitySamplesData)
-                                    activitySamplesDayData.polarActivitySamplesDataList = activitySamplesDataList
-                                    if (++index == fileList.size) {
-                                        emitter.onSuccess(activitySamplesDayData)
-                                    }
-                                },
-                                { error ->
-                                    BleLogger.w(
-                                        TAG,
-                                        "readActivitySamplesDataFromDayDirectory() failed for file: $file, error: $error"
-                                    )
-                                    emitter.onSuccess(activitySamplesDayData)
-                                }
-                            )
-                        }
-                    } else {
-                        BleLogger.w(TAG, "readActivitySamplesDataFromDayDirectory() could not find files to read for date $date.")
-                        emitter.onSuccess(activitySamplesDayData)
-                    }
-                }.doOnError { error ->
-                    BleLogger.w(TAG, "readActivitySamplesDataFromDayDirectory() failed while listing files, error occurred $error.")
-                    emitter.onSuccess(activitySamplesDayData)
-                }.subscribe()
+        val dailySummaryFilePath =
+            "$ARABICA_USER_ROOT_FOLDER${date.format(dateFormatter)}/$DAILY_SUMMARY_DIRECTORY$DAILY_SUMMARY_PROTO"
+        var distance = 0F
+        try {
+            val response = client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath(dailySummaryFilePath)
+                    .build()
+                    .toByteArray())
+            distance = DailySummary.PbDailySummary.parseFrom(response.toByteArray()).activityDistance
+        } catch (error: Throwable) {
+            BleLogger.w(TAG, "readDistanceFromDayDirectory() failed for path: $dailySummaryFilePath, error: $error")
         }
+        return distance
     }
 
-    /**
-     * Read and return daily summary data for a given date.
-     */
-    fun readDailySummaryDataFromDayDirectory(client: BlePsFtpClient, date: LocalDate): Maybe<PolarDailySummaryData> {
-        BleLogger.d(TAG, "readDailySummaryDataFromDayDirectory: $date")
-
-        var dailySummaryDataList: MutableList<PolarDailySummaryData> = mutableListOf()
-        var dailySummaryData: PolarDailySummaryData
-
-        return Maybe.create { emitter ->
-            val dailySummaryFilePath = "$ARABICA_USER_ROOT_FOLDER${date.format(dateFormatter)}/${DAILY_SUMMARY_DIRECTORY}${DAILY_SUMMARY_PROTO}"
-            val disposable = client.request(
+    suspend fun readActiveTimeFromDayDirectory(client: BlePsFtpClient, date: LocalDate): PolarActiveTimeData {
+        BleLogger.d(TAG, "readActiveTimeFromDayDirectory: $date")
+        val dailySummaryFilePath =
+            "$ARABICA_USER_ROOT_FOLDER${date.format(dateFormatter)}/$DAILY_SUMMARY_DIRECTORY$DAILY_SUMMARY_PROTO"
+        return try {
+            val response = client.request(
                 PftpRequest.PbPFtpOperation.newBuilder()
                     .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
                     .setPath(dailySummaryFilePath)
                     .build()
                     .toByteArray()
             )
-                .subscribe(
-                    { response ->
-                        val proto =
-                            DailySummary.PbDailySummary.parseFrom(response.toByteArray())
-                        dailySummaryData = parsePbDailySummary(proto)
-                        dailySummaryDataList.add(dailySummaryData)
-                        emitter.onSuccess(dailySummaryData)
-                    },
-                    { error ->
-                        BleLogger.w(TAG, "readDailySummaryDataFromDayDirectory() failed for file: $dailySummaryFilePath, error: $error")
-                        emitter.onSuccess(PolarDailySummaryData())
-                    }
-                )
-            emitter.setDisposable(disposable)
+            val proto = DailySummary.PbDailySummary.parseFrom(response.toByteArray())
+            PolarActiveTimeData(
+                date = date,
+                timeNonWear = polarActiveTimeFromProto(proto.activityClassTimes.timeNonWear),
+                timeSleep = polarActiveTimeFromProto(proto.activityClassTimes.timeSleep),
+                timeSedentary = polarActiveTimeFromProto(proto.activityClassTimes.timeSedentary),
+                timeLightActivity = polarActiveTimeFromProto(proto.activityClassTimes.timeLightActivity),
+                timeContinuousModerateActivity = polarActiveTimeFromProto(proto.activityClassTimes.timeContinuousModerate),
+                timeIntermittentModerateActivity = polarActiveTimeFromProto(proto.activityClassTimes.timeIntermittentModerate),
+                timeContinuousVigorousActivity = polarActiveTimeFromProto(proto.activityClassTimes.timeContinuousVigorous),
+                timeIntermittentVigorousActivity = polarActiveTimeFromProto(proto.activityClassTimes.timeIntermittentVigorous)
+            )
+        } catch (error: Throwable) {
+            BleLogger.w(TAG, "readActiveTimeFromDayDirectory() failed for path: $dailySummaryFilePath, error: $error")
+            PolarActiveTimeData(date, PolarActiveTime())
         }
     }
 
-    private fun listFiles(client: BlePsFtpClient, folderPath: String = "/", condition: PolarFileUtils.FetchRecursiveCondition): Flowable<String> {
+    suspend fun readSpecificCaloriesFromDayDirectory(
+        client: BlePsFtpClient,
+        date: LocalDate,
+        caloriesType: CaloriesType
+    ): Int {
+        BleLogger.d(TAG, "readSpecificCaloriesFromDayDirectory: $date, type: $caloriesType")
+        val dailySummaryFilePath =
+            "$ARABICA_USER_ROOT_FOLDER${date.format(dateFormatter)}/$DAILY_SUMMARY_DIRECTORY$DAILY_SUMMARY_PROTO"
+        return try {
+            val response = client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath(dailySummaryFilePath)
+                    .build()
+                    .toByteArray()
+            )
+            val proto = DailySummary.PbDailySummary.parseFrom(response.toByteArray())
+            when (caloriesType) {
+                CaloriesType.ACTIVITY -> proto.activityCalories
+                CaloriesType.TRAINING -> proto.trainingCalories
+                CaloriesType.BMR -> proto.bmrCalories
+            }
+        } catch (error: Throwable) {
+            BleLogger.w(TAG, "readSpecificCaloriesFromDayDirectory() failed for path: $dailySummaryFilePath, error: $error")
+            0
+        }
+    }
 
+    /**
+     * Read and return activity samples data for a given date.
+     */
+    suspend fun readActivitySamplesDataFromDayDirectory(
+        client: BlePsFtpClient,
+        date: LocalDate
+    ): PolarActivitySamplesDayData {
+        BleLogger.d(TAG, "readActivitySamplesDataFromDayDirectory: $date")
+        val activityFileDir = "$ARABICA_USER_ROOT_FOLDER${date.format(dateFormatter)}/$ACTIVITY_DIRECTORY"
+        val dayData = PolarActivitySamplesDayData()
+        val sampleList = mutableListOf<PolarActivitySamplesData>()
+
+        return try {
+            val files = listFiles(client, activityFileDir) { entry ->
+                entry.matches(Regex("^$activityFileDir/")) ||
+                        entry == "ASAMPL" ||
+                        entry.contains(".BPB")
+            }.toList()
+
+            if (files.isEmpty()) {
+                BleLogger.w(TAG, "readActivitySamplesDataFromDayDirectory() could not find files to read for date $date.")
+                return dayData
+            }
+
+            for (file in files) {
+                try {
+                    val response = client.request(
+                        PftpRequest.PbPFtpOperation.newBuilder()
+                            .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                            .setPath(file)
+                            .build()
+                            .toByteArray()
+                    )
+                    val proto = ActivitySamples.PbActivitySamples.parseFrom(response.toByteArray())
+                    val activitySamplesData = PolarActivitySamplesData().apply {
+                        startTime = PolarTimeUtils.pbLocalDateTimeToLocalDateTime(proto.startTime)
+                        stepSamples = proto.stepsSamplesList
+                        stepRecordingInterval = PolarTimeUtils.pbDurationToInt(proto.stepsRecordingInterval) / 1000
+                        metSamples = proto.metSamplesList
+                        metRecordingInterval = PolarTimeUtils.pbDurationToInt(proto.metRecordingInterval) / 1000
+                        activityInfoList = parsePbActivityInfo(proto.activityInfoList)
+                    }
+                    sampleList.add(activitySamplesData)
+                } catch (error: Throwable) {
+                    BleLogger.w(TAG, "readActivitySamplesDataFromDayDirectory() failed for file: $file, error: $error")
+                    return dayData
+                }
+            }
+
+            dayData.polarActivitySamplesDataList = sampleList
+            dayData
+        } catch (error: Throwable) {
+            BleLogger.w(TAG, "readActivitySamplesDataFromDayDirectory() failed while listing files, error occurred $error.")
+            dayData
+        }
+    }
+
+    /**
+     * Read and return daily summary data for a given date.
+     */
+    suspend fun readDailySummaryDataFromDayDirectory(
+        client: BlePsFtpClient,
+        date: LocalDate
+    ): PolarDailySummaryData {
+        BleLogger.d(TAG, "readDailySummaryDataFromDayDirectory: $date")
+        val dailySummaryFilePath =
+            "$ARABICA_USER_ROOT_FOLDER${date.format(dateFormatter)}/$DAILY_SUMMARY_DIRECTORY$DAILY_SUMMARY_PROTO"
+        return try {
+            val response = client.request(
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath(dailySummaryFilePath)
+                    .build()
+                    .toByteArray()
+            )
+            val proto = DailySummary.PbDailySummary.parseFrom(response.toByteArray())
+            parsePbDailySummary(proto)
+        } catch (error: Throwable) {
+            BleLogger.w(TAG, "readDailySummaryDataFromDayDirectory() failed for file: $dailySummaryFilePath, error: $error")
+            PolarDailySummaryData()
+        }
+    }
+
+    private fun listFiles(
+        client: BlePsFtpClient,
+        folderPath: String = "/",
+        condition: PolarFileUtils.FetchRecursiveCondition
+    ): Flow<String> {
         var path = folderPath
-        if (path.first() != '/') {
-            path = "/$path"
-        }
-        if (path.last() != '/') {
-            path = "$path/"
-        }
+        if (path.firstOrNull() != '/') path = "/$path"
+        if (path.lastOrNull() != '/') path = "$path/"
 
-        return fetchRecursively(
-            client = client,
-            path = path,
-            condition = condition
-        )
+        return fetchRecursively(client, path, condition)
             .map { it.first }
-            .onErrorResumeNext { throwable: Throwable ->
+            .catch { throwable ->
                 BleLogger.w(TAG, "listFiles failed for $path: $throwable")
-                Flowable.empty()
+                emitAll(emptyFlow())
             }
     }
 
-    private fun fetchRecursively(client: BlePsFtpClient, path: String, condition: PolarFileUtils.FetchRecursiveCondition): Flowable<Pair<String, Long>> {
-        val builder = PftpRequest.PbPFtpOperation.newBuilder()
-        builder.command = PftpRequest.PbPFtpOperation.Command.GET
-        builder.path = path
-        return client.request(builder.build().toByteArray())
-            .toFlowable()
-            .flatMap(Function<ByteArrayOutputStream, Publisher<Pair<String, Long>>> { byteArrayOutputStream: ByteArrayOutputStream ->
-                val dir = PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray())
-                val entries: MutableMap<String, Long> = mutableMapOf()
+    private fun fetchRecursively(
+        client: BlePsFtpClient,
+        path: String,
+        condition: PolarFileUtils.FetchRecursiveCondition
+    ): Flow<Pair<String, Long>> = flow {
+        val byteArrayOutputStream: ByteArrayOutputStream = client.request(
+            PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                .setPath(path)
+                .build()
+                .toByteArray()
+        )
+        val dir = PbPFtpDirectory.parseFrom(byteArrayOutputStream.toByteArray())
 
-                for (entry in dir.entriesList) {
-                    if (condition.include(entry.name)) {
-                        entries[path + entry.name] = entry.size
-                    }
+        for (entry in dir.entriesList) {
+            if (condition.include(entry.name)) {
+                val entryPath = path + entry.name
+                if (entryPath.endsWith("/")) {
+                    emitAll(fetchRecursively(client, entryPath, condition))
+                } else {
+                    emit(entryPath to entry.size)
                 }
-
-                if (entries.isNotEmpty()) {
-                    return@Function Flowable.fromIterable(entries.toList())
-                        .flatMap { entry ->
-                            if (entry.first.endsWith("/")) {
-                                return@flatMap fetchRecursively(client, entry.first, condition)
-                            } else {
-                                return@flatMap Flowable.just(entry)
-                            }
-                        }
-                }
-                Flowable.empty()
-            })
+            }
+        }
     }
 }

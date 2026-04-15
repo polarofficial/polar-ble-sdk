@@ -246,7 +246,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleLowLevelApi.html>Po
                                         </tr>
                                         
                                         <tr id="i0" class="altColor">
-                                            <td class="colFirst"><code>abstract Maybe&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-byte-array/index.html>ByteArray</a>&gt;</code>
+                                            <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-byte-array/index.html>ByteArray</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleLowLevelApi.html#readFile(java.lang.String,java.lang.String)>readFile</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> filePath) </code>
                                             </th>
@@ -254,7 +254,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleLowLevelApi.html>Po
                                         </tr>
                                         
                                         <tr id="i1" class="rowColor">
-                                            <td class="colFirst"><code>abstract Completable</code>
+                                            <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleLowLevelApi.html#writeFile(java.lang.String,java.lang.String,kotlin.ByteArray)>writeFile</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> filePath, <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-byte-array/index.html>ByteArray</a> fileData) </code>
                                             </th>
@@ -262,7 +262,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleLowLevelApi.html>Po
                                         </tr>
                                         
                                         <tr id="i2" class="altColor">
-                                            <td class="colFirst"><code>abstract Completable</code>
+                                            <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleLowLevelApi.html#deleteFileOrDirectory(java.lang.String,java.lang.String)>deleteFileOrDirectory</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> filePath) </code>
                                             </th>
@@ -270,7 +270,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleLowLevelApi.html>Po
                                         </tr>
                                         
                                         <tr id="i3" class="rowColor">
-                                            <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt;&gt;</code>
+                                            <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleLowLevelApi.html#getFileList(java.lang.String,java.lang.String,java.lang.Boolean)>getFileList</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> filePath, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> recurseDeep) </code>
                                             </th>
@@ -329,7 +329,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleLowLevelApi.html>Po
                                           >
                                     <li class="blockList">
                                         <h4>readFile</h4>
-                                        <pre class="methodSignature"> abstract Maybe&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-byte-array/index.html>ByteArray</a>&gt; <a href=PolarBleLowLevelApi.html#readFile(java.lang.String,java.lang.String)>readFile</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> filePath)</pre>
+                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-byte-array/index.html>ByteArray</a> <a href=PolarBleLowLevelApi.html#readFile(java.lang.String,java.lang.String)>readFile</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> filePath)</pre>
                                         <div class="block"><p>Read any file over PFtp BLE client. API user must know the exact path to the desired file. API user must also take care of parsing the returned ByteArray payload to the desired data object. NOTE: this is an experimental API intended for Polar internal use only. Polar will not support 3rd party users with this API.</p></div>
 
                                         <dl>
@@ -349,7 +349,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleLowLevelApi.html>Po
 
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>Maybe (ByteArray or empty)</p></dd>
+                                            <dd><p>ByteArray with payload data, payload may also be empty ByeArray.</p></dd>
                                         
 
                                         
@@ -366,7 +366,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleLowLevelApi.html>Po
                                           >
                                     <li class="blockList">
                                         <h4>writeFile</h4>
-                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleLowLevelApi.html#writeFile(java.lang.String,java.lang.String,kotlin.ByteArray)>writeFile</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> filePath, <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-byte-array/index.html>ByteArray</a> fileData)</pre>
+                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBleLowLevelApi.html#writeFile(java.lang.String,java.lang.String,kotlin.ByteArray)>writeFile</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> filePath, <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-byte-array/index.html>ByteArray</a> fileData)</pre>
                                         <div class="block"><p>Write any file over PFtp BLE client. API user must know the exact path to the desired file. API user must also take care of parsing the returned ByteArray payload to the desired data object. NOTE: this is an experimental API intended for Polar internal use only. Polar will not support 3rd party users with this API.</p></div>
 
                                         <dl>
@@ -390,7 +390,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleLowLevelApi.html>Po
 
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>Completable or error</p></dd>
+                                            <dd><p>Success or error</p></dd>
                                         
 
                                         
@@ -407,7 +407,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleLowLevelApi.html>Po
                                           >
                                     <li class="blockList">
                                         <h4>deleteFileOrDirectory</h4>
-                                        <pre class="methodSignature"> abstract Completable <a href=PolarBleLowLevelApi.html#deleteFileOrDirectory(java.lang.String,java.lang.String)>deleteFileOrDirectory</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> filePath)</pre>
+                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBleLowLevelApi.html#deleteFileOrDirectory(java.lang.String,java.lang.String)>deleteFileOrDirectory</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> filePath)</pre>
                                         <div class="block"><p>Delete any file or directory over PFtp BLE client. API user must know the exact path to the desired file. API user must also take care of parsing the returned ByteArray payload to the desired data object. NOTE: this is an experimental API intended for Polar internal use only. Polar will not support 3rd party users with this API.</p></div>
 
                                         <dl>
@@ -427,7 +427,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleLowLevelApi.html>Po
 
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>Completable or error</p></dd>
+                                            <dd><p>Success or error</p></dd>
                                         
 
                                         
@@ -444,7 +444,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleLowLevelApi.html>Po
                                           >
                                     <li class="blockList">
                                         <h4>getFileList</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt;&gt; <a href=PolarBleLowLevelApi.html#getFileList(java.lang.String,java.lang.String,java.lang.Boolean)>getFileList</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> filePath, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> recurseDeep)</pre>
+                                        <pre class="methodSignature"> abstract <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; <a href=PolarBleLowLevelApi.html#getFileList(java.lang.String,java.lang.String,java.lang.Boolean)>getFileList</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> filePath, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> recurseDeep)</pre>
                                         <div class="block"><p>List all files in the given path</p></div>
 
                                         <dl>

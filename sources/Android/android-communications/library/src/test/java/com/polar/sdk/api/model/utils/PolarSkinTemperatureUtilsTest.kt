@@ -9,9 +9,11 @@ import com.polar.sdk.impl.utils.PolarSkinTemperatureUtils
 import com.polar.services.datamodels.protobuf.TemperatureMeasurement
 import com.polar.services.datamodels.protobuf.TemperatureMeasurement.TemperatureMeasurementSample
 import com.polar.services.datamodels.protobuf.Types
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
-import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import java.io.ByteArrayOutputStream
 import java.time.LocalDate
@@ -21,11 +23,11 @@ import java.util.Locale
 class PolarSkinTemperatureUtilsTest {
 
     @Test
-    fun `readSkinTemperatureData() should return skin temperature data`() {
+    fun `readSkinTemperatureData() should return skin temperature data`() = runTest {
         // Arrange
         val mockClient = mockk<BlePsFtpClient>()
         var formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
-        formatter = formatter.withLocale( Locale.ENGLISH )  // Locale specifies human language for translating, and cultural norms for lowercase/uppercase and abbreviations and such. Example: Locale.US or Locale.CANADA_FRENCH
+        formatter = formatter.withLocale(Locale.ENGLISH)
         val date: LocalDate = LocalDate.parse("20250101", formatter)
 
         val outputStream = ByteArrayOutputStream().apply {
@@ -47,7 +49,7 @@ class PolarSkinTemperatureUtilsTest {
             proto.writeTo(this)
         }
 
-        var expectedSkinTemperatureSamples: MutableList<PolarSkinTemperatureDataSample> = mutableListOf()
+        val expectedSkinTemperatureSamples: MutableList<PolarSkinTemperatureDataSample> = mutableListOf()
         expectedSkinTemperatureSamples.add(0, PolarSkinTemperatureDataSample(0, 37.0f))
         expectedSkinTemperatureSamples.add(1, PolarSkinTemperatureDataSample(1000, 37.6f))
 
@@ -58,36 +60,29 @@ class PolarSkinTemperatureUtilsTest {
             expectedSkinTemperatureSamples
         )
 
-        every { mockClient.request(any()) } returns Single.just(outputStream)
+        coEvery { mockClient.request(any()) } returns outputStream
 
         // Act
-        val testObserver = PolarSkinTemperatureUtils.readSkinTemperatureDataFromDayDirectory(mockClient, date).test()
+        val result = PolarSkinTemperatureUtils.readSkinTemperatureDataFromDayDirectory(mockClient, date)
 
         // Assert
-        testObserver.assertComplete()
-        testObserver.assertNoErrors()
-        testObserver.assertValue(expectedResult)
+        assertEquals(expectedResult, result)
     }
 
     @Test
-    fun `readSkinTemperatureDataFromDayDirectory() returns null when an error is thrown`() {
+    fun `readSkinTemperatureDataFromDayDirectory() returns null when an error is thrown`() = runTest {
         // Arrange
         val mockClient = mockk<BlePsFtpClient>()
         var formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
-        formatter =
-            formatter.withLocale(Locale.ENGLISH)  // Locale specifies human language for translating, and cultural norms for lowercase/uppercase and abbreviations and such. Example: Locale.US or Locale.CANADA_FRENCH
+        formatter = formatter.withLocale(Locale.ENGLISH)
         val date: LocalDate = LocalDate.parse("20250101", formatter)
-        val expectedError = Throwable("No skin temperature data found")
 
-        every { mockClient.request(any()) } returns Single.error(expectedError)
+        coEvery { mockClient.request(any()) } throws Throwable("No skin temperature data found")
 
         // Act
-        val testObserver =
-            PolarSkinTemperatureUtils.readSkinTemperatureDataFromDayDirectory(mockClient, date).test()
+        val result = PolarSkinTemperatureUtils.readSkinTemperatureDataFromDayDirectory(mockClient, date)
 
         // Assert
-        testObserver.assertComplete()
-        testObserver.assertNoErrors()
-        testObserver.assertNoValues()
+        assertNull(result)
     }
 }

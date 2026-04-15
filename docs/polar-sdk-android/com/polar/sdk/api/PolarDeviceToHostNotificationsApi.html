@@ -246,11 +246,11 @@ public interface <span class="typeNameLabel"><a href=PolarDeviceToHostNotificati
                                         </tr>
                                         
                                         <tr id="i0" class="altColor">
-                                            <td class="colFirst"><code>abstract Flowable&lt;<a href=PolarD2HNotificationData.html>PolarD2HNotificationData</a>&gt;</code>
+                                            <td class="colFirst"><code>abstract Flow&lt;<a href=PolarD2HNotificationData.html>PolarD2HNotificationData</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarDeviceToHostNotificationsApi.html#observeDeviceToHostNotifications(java.lang.String)>observeDeviceToHostNotifications</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
-                                            <td class="colLast">Streams for received device to host notifications endlessly.</td>
+                                            <td class="colLast">Streams received device-to-host notifications endlessly.</td>
                                         </tr>
                                         
                                         </tbody>
@@ -305,8 +305,8 @@ public interface <span class="typeNameLabel"><a href=PolarDeviceToHostNotificati
                                           >
                                     <li class="blockList">
                                         <h4>observeDeviceToHostNotifications</h4>
-                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=PolarD2HNotificationData.html>PolarD2HNotificationData</a>&gt; <a href=PolarDeviceToHostNotificationsApi.html#observeDeviceToHostNotifications(java.lang.String)>observeDeviceToHostNotifications</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Streams for received device to host notifications endlessly. Only dispose, take(1) etc... stops stream.</p></div>
+                                        <pre class="methodSignature"> abstract Flow&lt;<a href=PolarD2HNotificationData.html>PolarD2HNotificationData</a>&gt; <a href=PolarDeviceToHostNotificationsApi.html#observeDeviceToHostNotifications(java.lang.String)>observeDeviceToHostNotifications</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Streams received device-to-host notifications endlessly. Only cancellation or terminal operators stop the stream.</p></div>
 
                                         <dl>
 
@@ -321,7 +321,7 @@ public interface <span class="typeNameLabel"><a href=PolarDeviceToHostNotificati
 
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>Flowable stream of <a href=PolarD2HNotificationData.html>PolarD2HNotificationData</a> Produces onNext after successfully received notification. onCompleted not produced unless stream is further configured. onError, see BlePsFtpException, BleGattException</p></dd>
+                                            <dd><p>Flow stream of <a href=PolarD2HNotificationData.html>PolarD2HNotificationData</a> Emits values after successfully received notifications. onError, see BlePsFtpException, BleGattException</p></dd>
                                         
 
                                         

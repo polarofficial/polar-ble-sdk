@@ -1,19 +1,18 @@
 package com.polar.polarsensordatacollector.ui.exercise
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.polar.polarsensordatacollector.R
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.model.PolarExerciseSession
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.kotlin.addTo
-import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
 interface StringProvider {
@@ -55,6 +54,9 @@ class ExerciseViewModel(
     private val _notificationEvent = MutableLiveData<String?>(null)
     val notificationEvent: LiveData<String?> = _notificationEvent
 
+    private val _errorEvent = MutableLiveData<String?>(null)
+    val errorEvent: LiveData<String?> = _errorEvent
+
     val sportProfiles = listOf(
         PolarExerciseSession.SportProfile.RUNNING,
         PolarExerciseSession.SportProfile.CYCLING,
@@ -62,42 +64,47 @@ class ExerciseViewModel(
     )
     private var selectedSport: PolarExerciseSession.SportProfile = PolarExerciseSession.SportProfile.RUNNING
 
-    private val disposables = CompositeDisposable()
-    private var notificationDisposable: Disposable? = null
-    private var notificationEventDisposable: Disposable? = null
+    private var notificationObserveJob: Job? = null
+    private var notificationEventJob: Job? = null
 
     init {
-        repo.state()
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ info ->
-                _status.value = info.status
-
-                _statusText.value = when (info.status) {
-                    PolarExerciseSession.ExerciseStatus.IN_PROGRESS ->
-                        sp.get(R.string.status_in_progress, info.sportProfile.name)
-                    PolarExerciseSession.ExerciseStatus.PAUSED ->
-                        sp.get(R.string.status_paused, info.sportProfile.name)
-                    PolarExerciseSession.ExerciseStatus.STOPPED ->
-                        sp.get(R.string.status_stopped, info.sportProfile.name)
-                    PolarExerciseSession.ExerciseStatus.NOT_STARTED ->
-                        sp.get(R.string.status_not_started)
-                    PolarExerciseSession.ExerciseStatus.SYNC_REQUIRED ->
-                        sp.get(R.string.status_sync_required)
+        viewModelScope.launch(Dispatchers.Main) {
+            repo.state().collect { info ->
+                applyInfo(info)
+            }
+        }
+        viewModelScope.launch(Dispatchers.Main) {
+            repo.errorEvent.collect { error ->
+                if (error != null) {
+                    _errorEvent.value = error
                 }
+            }
+        }
+        viewModelScope.launch { repo.refresh() }
+        repo.startObservingExerciseStatus()
+    }
 
-                _canStart.value = info.status == PolarExerciseSession.ExerciseStatus.NOT_STARTED ||
-                        info.status == PolarExerciseSession.ExerciseStatus.STOPPED
-
-                _canPause.value  = info.status == PolarExerciseSession.ExerciseStatus.IN_PROGRESS
-                _canResume.value = info.status == PolarExerciseSession.ExerciseStatus.PAUSED
-                _canStop.value   = info.status == PolarExerciseSession.ExerciseStatus.IN_PROGRESS ||
-                        info.status == PolarExerciseSession.ExerciseStatus.PAUSED
-
-                _startTime.value = info.startTime
-            }, { /* swallow to UI */ })
-            .addTo(disposables)
-
-        repo.refresh().subscribe({}, {}).addTo(disposables)
+    private fun applyInfo(info: PolarExerciseSession.ExerciseInfo) {
+        _status.value = info.status
+        _statusText.value = when (info.status) {
+            PolarExerciseSession.ExerciseStatus.IN_PROGRESS ->
+                sp.get(R.string.status_in_progress, info.sportProfile.name)
+            PolarExerciseSession.ExerciseStatus.PAUSED ->
+                sp.get(R.string.status_paused, info.sportProfile.name)
+            PolarExerciseSession.ExerciseStatus.STOPPED ->
+                sp.get(R.string.status_stopped, info.sportProfile.name)
+            PolarExerciseSession.ExerciseStatus.NOT_STARTED ->
+                sp.get(R.string.status_not_started)
+            PolarExerciseSession.ExerciseStatus.SYNC_REQUIRED ->
+                sp.get(R.string.status_sync_required)
+        }
+        _canStart.value  = info.status == PolarExerciseSession.ExerciseStatus.NOT_STARTED ||
+                info.status == PolarExerciseSession.ExerciseStatus.STOPPED
+        _canPause.value  = info.status == PolarExerciseSession.ExerciseStatus.IN_PROGRESS
+        _canResume.value = info.status == PolarExerciseSession.ExerciseStatus.PAUSED
+        _canStop.value   = info.status == PolarExerciseSession.ExerciseStatus.IN_PROGRESS ||
+                info.status == PolarExerciseSession.ExerciseStatus.PAUSED
+        _startTime.value = info.startTime
     }
 
     fun selectProfile(profile: PolarExerciseSession.SportProfile) {
@@ -114,16 +121,14 @@ class ExerciseViewModel(
 
     private fun startNotificationObservation() {
         _notificationEvent.value = null
-        notificationDisposable?.dispose()
-        notificationEventDisposable?.dispose()
+        notificationObserveJob?.cancel()
+        notificationEventJob?.cancel()
 
-        notificationDisposable = repo.startObservingExerciseStatus()
+        notificationObserveJob = repo.startObservingExerciseStatus()
 
-        notificationEventDisposable = repo.state()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { info ->
-                val eventText = when (info.status) {
+        notificationEventJob = viewModelScope.launch(Dispatchers.Main) {
+            repo.state().collect { info ->
+                _notificationEvent.value = when (info.status) {
                     PolarExerciseSession.ExerciseStatus.NOT_STARTED ->
                         sp.get(R.string.status_not_started)
                     PolarExerciseSession.ExerciseStatus.IN_PROGRESS ->
@@ -135,33 +140,32 @@ class ExerciseViewModel(
                     PolarExerciseSession.ExerciseStatus.SYNC_REQUIRED ->
                         sp.get(R.string.status_sync_required)
                 }
-                _notificationEvent.value = eventText
             }
-
+        }
         _isObservingNotifications.value = true
     }
 
     private fun stopNotificationObservation() {
         repo.stopObservingExerciseStatus()
-        notificationDisposable?.dispose()
-        notificationDisposable = null
-        notificationEventDisposable?.dispose()
-        notificationEventDisposable = null
+        notificationObserveJob?.cancel()
+        notificationObserveJob = null
+        notificationEventJob?.cancel()
+        notificationEventJob = null
         _isObservingNotifications.value = false
     }
 
-    fun start() = run { repo.start(selectedSport) }
-    fun pause() = run { repo.pause() }
-    fun resume() = run { repo.resume() }
-    fun stop() = run { repo.stop() }
-
-    private fun run(op: () -> Completable) {
-        op().subscribe({}, {}).addTo(disposables)
-    }
+    fun start()  { viewModelScope.launch { try { repo.start(selectedSport) } catch (e: Exception) { Log.e(TAG, "Start failed", e) } } }
+    fun pause()  { viewModelScope.launch { try { repo.pause() } catch (e: Exception) { Log.e(TAG, "Pause failed", e) } } }
+    fun resume() { viewModelScope.launch { try { repo.resume() } catch (e: Exception) { Log.e(TAG, "Resume failed", e) } } }
+    fun stop()   { viewModelScope.launch { repo.stop() } }
 
     override fun onCleared() {
         stopNotificationObservation()
-        disposables.clear()
+        repo.stopObservingExerciseStatus()
+    }
+
+    companion object {
+        private const val TAG = "ExerciseViewModel"
     }
 }
 
@@ -174,14 +178,12 @@ class ExerciseViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         val appCtx = context.applicationContext
         val prefs = appCtx.getSharedPreferences("exercise_prefs", Context.MODE_PRIVATE)
-
         val repo = ExerciseRepository(
             api as com.polar.sdk.api.PolarTrainingSessionApi,
             api,
             deviceId,
             prefs
         )
-        val sp = AndroidStringProvider(appCtx)
-        return ExerciseViewModel(repo, sp) as T
+        return ExerciseViewModel(repo, AndroidStringProvider(appCtx)) as T
     }
 }

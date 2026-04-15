@@ -289,36 +289,40 @@ public struct OfflineRecordingData<DataType> {
                                              { _ in sampleRate })
             
             previousTimeStamp = dataFrame.timeStamp
-            switch(builder) {
-            case is EcgData:
-                let ecgData =  try EcgData.parseDataFromDataFrame(frame: dataFrame)
-                (builder as! EcgData).samples.append(contentsOf: ecgData.samples)
-            case is AccData:
-                let accData =  try AccData.parseDataFromDataFrame(frame: dataFrame)
-                (builder as! AccData).samples.append(contentsOf: accData.samples)
-            case is GyrData:
-                let gyrData =  try GyrData.parseDataFromDataFrame(frame: dataFrame)
-                (builder as! GyrData).samples.append(contentsOf: gyrData.samples)
-            case is MagData:
-                let magData =  try MagData.parseDataFromDataFrame(frame: dataFrame)
-                (builder as! MagData).samples.append(contentsOf: magData.samples)
-            case is PpgData:
-                let ppgData =  try PpgData.parseDataFromDataFrame(frame: dataFrame)
-                (builder as! PpgData).samples.append(contentsOf: ppgData.samples)
-            case is PpiData:
-                let ppiData =  try PpiData.parseDataFromDataFrame(frame: dataFrame)
-                (builder as! PpiData).samples.append(contentsOf: ppiData.samples)
-            case is OfflineHrData:
-                let offlineHrData =  try OfflineHrData.parseDataFromDataFrame(frame: dataFrame)
-                (builder as! OfflineHrData).samples.append(contentsOf: offlineHrData.samples)
-            case is TemperatureData:
-                let temperatureData =  try TemperatureData.parseDataFromDataFrame(frame: dataFrame)
-                (builder as! TemperatureData).samples.append(contentsOf: temperatureData.samples)
-            case is SkinTemperatureData:
-                let skinTemperatureData =  try SkinTemperatureData.parseDataFromDataFrame(frame: dataFrame)
-                (builder as! SkinTemperatureData).samples.append(contentsOf: skinTemperatureData.samples)
-            default:
-                throw OfflineRecordingError.offlineRecordingErrorSecretMissing
+            do {
+                switch(builder) {
+                case is EcgData:
+                    let ecgData =  try EcgData.parseDataFromDataFrame(frame: dataFrame)
+                    (builder as! EcgData).samples.append(contentsOf: ecgData.samples)
+                case is AccData:
+                    let accData =  try AccData.parseDataFromDataFrame(frame: dataFrame)
+                    (builder as! AccData).samples.append(contentsOf: accData.samples)
+                case is GyrData:
+                    let gyrData =  try GyrData.parseDataFromDataFrame(frame: dataFrame)
+                    (builder as! GyrData).samples.append(contentsOf: gyrData.samples)
+                case is MagData:
+                    let magData =  try MagData.parseDataFromDataFrame(frame: dataFrame)
+                    (builder as! MagData).samples.append(contentsOf: magData.samples)
+                case is PpgData:
+                    let ppgData =  try PpgData.parseDataFromDataFrame(frame: dataFrame)
+                    (builder as! PpgData).samples.append(contentsOf: ppgData.samples)
+                case is PpiData:
+                    let ppiData =  try PpiData.parseDataFromDataFrame(frame: dataFrame)
+                    (builder as! PpiData).samples.append(contentsOf: ppiData.samples)
+                case is OfflineHrData:
+                    let offlineHrData =  try OfflineHrData.parseDataFromDataFrame(frame: dataFrame)
+                    (builder as! OfflineHrData).samples.append(contentsOf: offlineHrData.samples)
+                case is TemperatureData:
+                    let temperatureData =  try TemperatureData.parseDataFromDataFrame(frame: dataFrame)
+                    (builder as! TemperatureData).samples.append(contentsOf: temperatureData.samples)
+                case is SkinTemperatureData:
+                    let skinTemperatureData =  try SkinTemperatureData.parseDataFromDataFrame(frame: dataFrame)
+                    (builder as! SkinTemperatureData).samples.append(contentsOf: skinTemperatureData.samples)
+                default:
+                    throw OfflineRecordingError.offlineRecordingErrorSecretMissing
+                }
+            } catch {
+                BleLogger.error("Failed to parse data frame with \(dataFrame.timeStamp). Error: \(error). Continuing with next frames.")
             }
             
             if (offset < decryptedData.count) {

@@ -454,4 +454,66 @@ class PolarServiceClientUtilsTest {
             Assert.assertEquals(true,  PolarDeviceDisconnected().toString().contentEquals(e.toString()))
         }
     }
+
+    @Test
+    fun getRSSIValue_whenMatchingDeviceFound_returnsSessionRssi() {
+        // Arrange
+        val deviceId = "E123456F"
+        val expectedRssi = -55
+
+        val listener = mockk<BleDeviceListener>()
+        val session = mockk<BleDeviceSession>()
+        val advContent = mockk<BleAdvertisementContent>()
+
+        every { listener.deviceSessions() } returns setOf(session)
+        every { session.advertisementContent } returns advContent
+        every { advContent.polarDeviceId } returns deviceId
+        every { session.rssi } returns expectedRssi
+
+        // Act
+        val result = PolarServiceClientUtils.getRSSIValue(deviceId, listener)
+
+        // Assert
+        Assert.assertEquals(expectedRssi, result)
+    }
+
+    @Test
+    fun getRSSIValue_whenNoMatchingDevice_returnsMinusOne() {
+        // Arrange
+        val listener = mockk<BleDeviceListener>()
+        val session = mockk<BleDeviceSession>()
+        val advContent = mockk<BleAdvertisementContent>()
+
+        every { listener.deviceSessions() } returns setOf(session)
+        every { session.advertisementContent } returns advContent
+        every { advContent.polarDeviceId } returns "AABBCCDD"
+
+        // Act
+        val result = PolarServiceClientUtils.getRSSIValue("12345678", listener)
+
+        // Assert
+        Assert.assertEquals(-1, result)
+    }
+
+    @Test
+    fun getRSSIValue_whenListenerIsNull_returnsMinusOne() {
+        // Act
+        val result = PolarServiceClientUtils.getRSSIValue("E123456F", null)
+
+        // Assert
+        Assert.assertEquals(-1, result)
+    }
+
+    @Test
+    fun getRSSIValue_whenDeviceSessionsReturnsNull_returnsMinusOne() {
+        // Arrange
+        val listener = mockk<BleDeviceListener>()
+        every { listener.deviceSessions() } returns null
+
+        // Act
+        val result = PolarServiceClientUtils.getRSSIValue("E123456F", listener)
+
+        // Assert
+        Assert.assertEquals(-1, result)
+    }
 }

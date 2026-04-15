@@ -7,11 +7,13 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpC
 import com.polar.sdk.api.model.sleep.PolarNightlyRechargeData
 import com.polar.sdk.impl.utils.PolarNightlyRechargeUtils
 import fi.polar.remote.representation.protobuf.NightlyRecovery
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.confirmVerified
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
-import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import protocol.PftpRequest
 import java.io.ByteArrayOutputStream
@@ -25,7 +27,7 @@ class PolarNightlyRechargeUtilsTest {
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
 
     @Test
-    fun `readNightlyRechargeData() should return nightly recharge data`() {
+    fun `readNightlyRechargeData() should return nightly recharge data`() = runTest {
         // Arrange
         val mockClient = mockk<BlePsFtpClient>()
         val date = LocalDate.now()
@@ -91,17 +93,15 @@ class PolarNightlyRechargeUtilsTest {
                 sleepResultDate = sleepResultDate
         )
 
-        every { mockClient.request(any()) } returns Single.just(outputStream)
+        coEvery { mockClient.request(any()) } returns outputStream
 
         // Act
-        val testObserver = PolarNightlyRechargeUtils.readNightlyRechargeData(mockClient, date).test()
+        val result = PolarNightlyRechargeUtils.readNightlyRechargeData(mockClient, date)
 
         // Assert
-        testObserver.assertComplete()
-        testObserver.assertNoErrors()
-        testObserver.assertValue(expectedResult)
+        assertEquals(expectedResult, result)
 
-        verify {
+        coVerify {
             mockClient.request(
                     PftpRequest.PbPFtpOperation.newBuilder()
                             .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
@@ -114,24 +114,21 @@ class PolarNightlyRechargeUtilsTest {
     }
 
     @Test
-    fun `readNightlyRechargeData() should return null when an error is thrown`() {
+    fun `readNightlyRechargeData() should return null when an error is thrown`() = runTest {
         // Arrange
         val mockClient = mockk<BlePsFtpClient>()
         val date = LocalDate.now()
         val expectedPath = "/U/0/${date.format(dateFormatter)}/NR/NR.BPB"
-        val expectedError = Throwable("No nightly recharge data found")
 
-        every { mockClient.request(any()) } returns Single.error(expectedError)
+        coEvery { mockClient.request(any()) } throws Throwable("No nightly recharge data found")
 
         // Act
-        val testObserver = PolarNightlyRechargeUtils.readNightlyRechargeData(mockClient, date).test()
+        val result = PolarNightlyRechargeUtils.readNightlyRechargeData(mockClient, date)
 
         // Assert
-        testObserver.assertComplete()
-        testObserver.assertNoErrors()
-        testObserver.assertNoValues()
+        assertNull(result)
 
-        verify {
+        coVerify {
             mockClient.request(
                     PftpRequest.PbPFtpOperation.newBuilder()
                             .setCommand(PftpRequest.PbPFtpOperation.Command.GET)

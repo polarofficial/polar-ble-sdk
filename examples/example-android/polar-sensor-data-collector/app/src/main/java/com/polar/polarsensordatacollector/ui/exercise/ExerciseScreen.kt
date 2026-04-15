@@ -33,6 +33,7 @@ fun ExerciseScreen(
 
     val isObserving by vm.isObservingNotifications.observeAsState(false)
     val notificationEvent by vm.notificationEvent.observeAsState()
+    val errorEvent by vm.errorEvent.observeAsState()
 
     val context = LocalContext.current
 
@@ -70,6 +71,12 @@ fun ExerciseScreen(
             }
             msg?.let(onStatusToast)
             lastStatus = status
+        }
+    }
+
+    LaunchedEffect(errorEvent) {
+        errorEvent?.let { error ->
+            onStatusToast(error)
         }
     }
 

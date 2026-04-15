@@ -10,6 +10,8 @@
 		6C2EDE8922B9FE370031AA17 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6C2EDE8822B9FE370031AA17 /* Assets.xcassets */; };
 		6C2EDE8C22B9FE370031AA17 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6C2EDE8A22B9FE370031AA17 /* LaunchScreen.storyboard */; };
 		8415B05A2C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8415B0592C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift */; };
+		841802B42F6A8605007A1D2E /* FileTransferFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 841802B32F6A8600007A1D2E /* FileTransferFeature.swift */; };
+		841802B62F6AD67A007A1D2E /* ActivityDataFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 841802B52F6AD678007A1D2E /* ActivityDataFeature.swift */; };
 		843A2B8C2F0E76A400F3B2EC /* HrDataHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843A2B8B2F0E769B00F3B2EC /* HrDataHolder.swift */; };
 		843A2B8E2F0E775300F3B2EC /* HrGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843A2B8D2F0E774C00F3B2EC /* HrGraphView.swift */; };
 		843A2B902F0E78C800F3B2EC /* HrGraphViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843A2B8F2F0E78B200F3B2EC /* HrGraphViewController.swift */; };
@@ -115,6 +117,8 @@
 		6C2EDE8D22B9FE370031AA17 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		823E19644F6097858925618B /* Pods-PSDC.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PSDC.debug.xcconfig"; path = "Target Support Files/Pods-PSDC/Pods-PSDC.debug.xcconfig"; sourceTree = "<group>"; };
 		8415B0592C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareUpdateFeature.swift; sourceTree = "<group>"; };
+		841802B32F6A8600007A1D2E /* FileTransferFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileTransferFeature.swift; sourceTree = "<group>"; };
+		841802B52F6AD678007A1D2E /* ActivityDataFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityDataFeature.swift; sourceTree = "<group>"; };
 		843A2B8B2F0E769B00F3B2EC /* HrDataHolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HrDataHolder.swift; sourceTree = "<group>"; };
 		843A2B8D2F0E774C00F3B2EC /* HrGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HrGraphView.swift; sourceTree = "<group>"; };
 		843A2B8F2F0E78B200F3B2EC /* HrGraphViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HrGraphViewController.swift; sourceTree = "<group>"; };
@@ -336,6 +340,8 @@
 		AA74C2242BDA3A2C005E0908 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				841802B52F6AD678007A1D2E /* ActivityDataFeature.swift */,
+				841802B32F6A8600007A1D2E /* FileTransferFeature.swift */,
 				847AAF4E2F5EF70400D65222 /* OfflineExerciseV2Feature.swift */,
 				AAB841F32E13A5F000810B09 /* MultiBleFeature.swift */,
 				8443CFAD2DD47948002AFBB9 /* UserDeviceSettingsFeature.swift */,
@@ -637,6 +643,7 @@
 				AA74C2542BDA3E86005E0908 /* OfflineRecordingStartView.swift in Sources */,
 				84698A112DB77922006AD8FA /* TrainingSessionDetailsView.swift in Sources */,
 				AA74C2302BDA3BD8005E0908 /* OfflineRecordingEntries.swift in Sources */,
+				841802B42F6A8605007A1D2E /* FileTransferFeature.swift in Sources */,
 				AAA0FE072BEA386F005368A7 /* PpgRecordingFeature.swift in Sources */,
 				CC57B5DC2E60618900E90F5B /* ExerciseUIState.swift in Sources */,
 				84F0A1802CD0F76C009CF1A1 /* ActivityPhysicalDataConfig.swift in Sources */,
@@ -697,6 +704,7 @@
 				84698A172DB77D8C006AD8FA /* TrainingSessionData.swift in Sources */,
 				847AAF4F2F5EF71E00D65222 /* OfflineExerciseV2Feature.swift in Sources */,
 				AA74C2562BDA3E9B005E0908 /* OfflineRecordingListView.swift in Sources */,
+				841802B62F6AD67A007A1D2E /* ActivityDataFeature.swift in Sources */,
 				8415B05A2C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift in Sources */,
 				849400072ECC96C10093A8C8 /* HrBroadcastView.swift in Sources */,
 				8453583E2F166B1000FCA56F /* AccDataHolder.swift in Sources */,

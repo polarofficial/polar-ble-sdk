@@ -3,13 +3,15 @@ package com.polar.polarsensordatacollector.ui.exercisev2
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.polar.polarsensordatacollector.repository.ExerciseV2Repository
 import com.polar.polarsensordatacollector.ui.landing.ONLINE_OFFLINE_KEY_DEVICE_ID
+import com.polar.sdk.api.model.PolarExerciseData
 import com.polar.sdk.api.model.PolarExerciseEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.toList
 import javax.inject.Inject
 
 private const val TAG = "ExerciseV2ViewModel"
@@ -20,150 +22,116 @@ class ExerciseV2ViewModel @Inject constructor(
     state: SavedStateHandle
 ) : ViewModel() {
 
-    private val disposables = CompositeDisposable()
-
     private val deviceId: String = state.get<String>(ONLINE_OFFLINE_KEY_DEVICE_ID)
         ?: throw Exception("ExerciseV2ViewModel must know the deviceId")
 
     fun startOfflineExercise(onResult: () -> Unit, onError: (String) -> Unit) {
-        val disposable = repository.startOfflineExerciseV2(deviceId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ result ->
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val result = repository.startOfflineExerciseV2(deviceId)
                 Log.d(TAG, "startOfflineExercise: result=${result.result}, path=${result.directoryPath}")
                 if (result.result.name == "SUCCESS") {
-                    onResult()
+                    launch(Dispatchers.Main) { onResult() }
                 } else {
                     val msg = "Start failed: ${result.result}"
                     Log.e(TAG, msg)
-                    onError(msg)
+                    launch(Dispatchers.Main) { onError(msg) }
                 }
-            }, { e ->
+            } catch (e: Exception) {
                 Log.e(TAG, "startOfflineExercise error: ${e.message}")
-                onError(e.message ?: "Unknown error")
-            })
-        disposables.add(disposable)
+                launch(Dispatchers.Main) { onError(e.message ?: "Unknown error") }
+            }
+        }
     }
 
     fun stopOfflineExercise(onResult: () -> Unit, onError: (String) -> Unit) {
-        val disposable = repository.stopOfflineExerciseV2(deviceId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                repository.stopOfflineExerciseV2(deviceId)
                 Log.d(TAG, "stopOfflineExercise: success")
-                onResult()
-            }, { e ->
+                launch(Dispatchers.Main) { onResult() }
+            } catch (e: Exception) {
                 Log.e(TAG, "stopOfflineExercise error: ${e.message}")
-                onError(e.message ?: "Unknown error")
-            })
-        disposables.add(disposable)
+                launch(Dispatchers.Main) { onError(e.message ?: "Unknown error") }
+            }
+        }
     }
 
     fun listOfflineExercises(onNext: (PolarExerciseEntry) -> Unit, onError: (String) -> Unit, onComplete: () -> Unit) {
-        val disposable = repository.listOfflineExercisesV2(deviceId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { entry ->
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                repository.listOfflineExercisesV2(deviceId).collect { entry ->
                     Log.d(TAG, "listOfflineExercises: Found exercise ${entry.identifier}")
-                    onNext(entry)
-                },
-                { e ->
-                    Log.e(TAG, "listOfflineExercises error: ${e.message}")
-                    onError(e.message ?: "Unknown error")
-                },
-                {
-                    Log.d(TAG, "listOfflineExercises: Complete")
-                    onComplete()
+                    launch(Dispatchers.Main) { onNext(entry) }
                 }
-            )
-        disposables.add(disposable)
+                Log.d(TAG, "listOfflineExercises: Complete")
+                launch(Dispatchers.Main) { onComplete() }
+            } catch (e: Exception) {
+                Log.e(TAG, "listOfflineExercises error: ${e.message}")
+                launch(Dispatchers.Main) { onError(e.message ?: "Unknown error") }
+            }
+        }
     }
 
-    fun fetchOfflineExercise(
-        onResult: (com.polar.sdk.api.model.PolarExerciseData) -> Unit,
-        onError: (String) -> Unit
-    ) {
-        val disposable = repository.listOfflineExercisesV2(deviceId)
-            .firstOrError()
-            .flatMap { entry ->
+    fun fetchOfflineExercise(onResult: (PolarExerciseData) -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val entry = repository.listOfflineExercisesV2(deviceId).toList().firstOrNull()
+                    ?: throw Exception("No exercises found")
                 Log.d(TAG, "fetchOfflineExercise: Fetching first exercise ${entry.identifier}")
-                repository.fetchOfflineExerciseV2(deviceId, entry)
-            }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ data ->
+                val data = repository.fetchOfflineExerciseV2(deviceId, entry)
                 Log.d(TAG, "fetchOfflineExercise: Success")
-                onResult(data)
-            }, { e ->
+                launch(Dispatchers.Main) { onResult(data) }
+            } catch (e: Exception) {
                 Log.e(TAG, "fetchOfflineExercise error: ${e.message}")
-                onError(e.message ?: "Unknown error")
-            })
-        disposables.add(disposable)
+                launch(Dispatchers.Main) { onError(e.message ?: "Unknown error") }
+            }
+        }
     }
 
     fun removeOfflineExercise(onResult: () -> Unit, onError: (String) -> Unit) {
-        val disposable = repository.listOfflineExercisesV2(deviceId)
-            .firstOrError()
-            .flatMapCompletable { entry ->
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val entry = repository.listOfflineExercisesV2(deviceId).toList().firstOrNull()
+                    ?: throw Exception("No exercises found")
                 Log.d(TAG, "removeOfflineExercise: Removing first exercise ${entry.identifier}")
                 repository.removeOfflineExerciseV2(deviceId, entry)
-            }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
                 Log.d(TAG, "removeOfflineExercise: Success")
-                onResult()
-            }, { e ->
+                launch(Dispatchers.Main) { onResult() }
+            } catch (e: Exception) {
                 Log.e(TAG, "removeOfflineExercise error: ${e.message}")
-                onError(e.message ?: "Unknown error")
-            })
-        disposables.add(disposable)
+                launch(Dispatchers.Main) { onError(e.message ?: "Unknown error") }
+            }
+        }
     }
 
     fun getOfflineExerciseStatus(onResult: (Boolean) -> Unit, onError: (String) -> Unit) {
-        val disposable = repository.getOfflineExerciseStatusV2(deviceId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ running ->
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val running = repository.getOfflineExerciseStatusV2(deviceId)
                 Log.d(TAG, "getOfflineExerciseStatus: running=$running")
-                onResult(running)
-            }, { e ->
+                launch(Dispatchers.Main) { onResult(running) }
+            } catch (e: Exception) {
                 Log.e(TAG, "getOfflineExerciseStatus error: ${e.message}")
-                onError(e.message ?: "Unknown error")
-            })
-        disposables.add(disposable)
+                launch(Dispatchers.Main) { onError(e.message ?: "Unknown error") }
+            }
+        }
     }
 
     fun checkStatusAndListOfflineExercises(
         onResult: (isRunning: Boolean, hasExercise: Boolean, entry: PolarExerciseEntry?) -> Unit,
         onError: (String) -> Unit
     ) {
-        val disposable = repository.getOfflineExerciseStatusV2(deviceId)
-            .flatMap { running ->
-                repository.listOfflineExercisesV2(deviceId)
-                    .toList()
-                    .map { entries ->
-                        Log.d(TAG, "checkStatusAndList: running=$running, exerciseCount=${entries.size}")
-                        Triple(running, entries.isNotEmpty(), entries.firstOrNull())
-                    }
-            }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ result ->
-                onResult(result.first, result.second, result.third)
-            }, { e ->
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val running = repository.getOfflineExerciseStatusV2(deviceId)
+                val entries = repository.listOfflineExercisesV2(deviceId).toList()
+                Log.d(TAG, "checkStatusAndList: running=$running, exerciseCount=${entries.size}")
+                launch(Dispatchers.Main) { onResult(running, entries.isNotEmpty(), entries.firstOrNull()) }
+            } catch (e: Exception) {
                 Log.e(TAG, "checkStatusAndList error: ${e.message}")
-                onError(e.message ?: "Unknown error")
-            })
-        disposables.add(disposable)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        disposables.clear()
+                launch(Dispatchers.Main) { onError(e.message ?: "Unknown error") }
+            }
+        }
     }
 }
-
-
-

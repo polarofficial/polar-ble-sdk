@@ -225,6 +225,18 @@ final class PolarFileUtilsTest: XCTestCase {
         }
     }
     
+    func testCheckIfDirectoryIsEmpty_error103_file_not_found() throws {
+        // Arrange
+        mockClient.requestReturnValueClosure = { _ in Single.error(BlePsFtpException.responseError(errorCode: 103)) }
+
+        // Act
+        let result = try fileUtils.checkIfDirectoryIsEmpty(directoryPath: "/U/0/20260101/DSUM/", client: mockClient).toBlocking().first()
+
+        // Assert
+        XCTAssertNotNil(result, "Error code 103 should be handled, not thrown")
+        XCTAssertTrue(result!, "Error code 103 MUST return true")
+    }
+
     func testRemoveSingleFile_success() throws {
         // Arrange
         mockClient.requestReturnValues = [Single.just(Data([0x00]))]

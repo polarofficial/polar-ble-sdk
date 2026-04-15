@@ -467,21 +467,44 @@ class PolarTimeUtilsTests: XCTestCase {
     }
     
     func testpbDateConversionToDate() throws {
-        
+
         var pbDate = PbDate()
         pbDate.year = 2525
         pbDate.month = 1
         pbDate.day = 2
-        
+
         let result = try PolarTimeUtils.pbDateToDate(pbDate: pbDate)
-        
+
         // Assert
         let calendar = Calendar.current
         let components = calendar.dateComponents([.year, .month, .day], from: result)
-        
+
         XCTAssertEqual(components.year, 2525)
         XCTAssertEqual(components.month, 1)
         XCTAssertEqual(components.day, 2)
+    }
+
+    func testPbDateToDateUTC_returnsMidnightUTC() throws {
+        // Arrange
+        var pbDate = PbDate()
+        pbDate.year = 2525
+        pbDate.month = 1
+        pbDate.day = 2
+
+        // Act
+        let result = try PolarTimeUtils.pbDateToDateUTC(pbDate: pbDate)
+
+        // Assert
+        var utcCalendar = Calendar(identifier: .gregorian)
+        utcCalendar.timeZone = TimeZone(identifier: "UTC")!
+        let components = utcCalendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: result)
+
+        XCTAssertEqual(components.year, 2525)
+        XCTAssertEqual(components.month, 1)
+        XCTAssertEqual(components.day, 2)
+        XCTAssertEqual(components.hour, 0)
+        XCTAssertEqual(components.minute, 0)
+        XCTAssertEqual(components.second, 0)
     }
 
     func testPbDurationToMillis () throws {

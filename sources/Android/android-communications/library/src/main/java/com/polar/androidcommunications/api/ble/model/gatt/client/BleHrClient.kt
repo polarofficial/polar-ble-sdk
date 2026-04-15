@@ -4,11 +4,11 @@ import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
 import com.polar.androidcommunications.common.ble.AtomicSet
-import com.polar.androidcommunications.common.ble.RxUtils
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.core.FlowableEmitter
-import io.reactivex.rxjava3.core.Single
+import com.polar.androidcommunications.common.ble.ChannelUtils
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
 import java.util.*
 import kotlin.math.roundToInt
 
@@ -57,7 +57,7 @@ class BleHrClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, HR
         val rrPresent: Boolean
     )
 
-    private val hrObserverAtomicList = AtomicSet<FlowableEmitter<in HrNotificationData>>()
+    private val hrObserverAtomicList = AtomicSet<Channel<HrNotificationData>>()
 
     init {
         addCharacteristicRead(BODY_SENSOR_LOCATION)
@@ -65,37 +65,61 @@ class BleHrClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, HR
 
     override fun reset() {
         super.reset()
-        RxUtils.postDisconnectedAndClearList(hrObserverAtomicList)
+        try {
+            ChannelUtils.postDisconnectedAndClearList(hrObserverAtomicList)
+        } catch (e: Exception) {
+            BleLogger.d(TAG, "Failed to post disconnected to hr observers. Reason $e")
+        }
     }
 
-    override fun processServiceData(characteristic: UUID, data: ByteArray, status: Int, notifying: Boolean) {
-        BleLogger.d(TAG, "Processing service data. Status: " + status + ".  Data length: " + data.size)
-        if (status == ATT_SUCCESS && characteristic == HR_MEASUREMENT) {
-            val hrFormat = data[0].toInt() and 0x01
-            val sensorContact = data[0].toInt() and 0x06 shr 1 == 0x03
-            val contactSupported = data[0].toInt() and 0x04 != 0
-            val energyExpended = data[0].toInt() and 0x08 shr 3
-            val rrPresent = data[0].toInt() and 0x10 shr 4
-            val hrValue: Int = (if (hrFormat == 1) (data[1].toInt() and 0xFF) + (data[2].toInt() shl 8) else data[1]).toInt() and if (hrFormat == 1) 0x0000FFFF else 0x000000FF
-            var offset = hrFormat + 2
-            var energy = 0
-            if (energyExpended == 1) {
-                energy = (data[offset].toInt() and 0xFF) + (data[offset + 1].toInt() and 0xFF shl 8)
-                offset += 2
-            }
-            val rrs = mutableListOf<Int>()
-            val rrsMs = mutableListOf<Int>()
-            if (rrPresent == 1) {
-                val len = data.size
-                while (offset < len) {
-                    val rrValue = (data[offset].toInt() and 0xFF) + (data[offset + 1].toInt() and 0xFF shl 8)
+    override fun processServiceData(
+        characteristic: UUID,
+        data: ByteArray,
+        status: Int,
+        notifying: Boolean
+    ) {
+        if (data.isNotEmpty()) {
+            BleLogger.d(TAG, "Processing service data. Status: " + status + ".  Data length: " + data.size)
+            if (status == ATT_SUCCESS && characteristic == HR_MEASUREMENT) {
+                val hrFormat = data[0].toInt() and 0x01
+                val sensorContact = data[0].toInt() and 0x06 shr 1 == 0x03
+                val contactSupported = data[0].toInt() and 0x04 != 0
+                val energyExpended = data[0].toInt() and 0x08 shr 3
+                val rrPresent = data[0].toInt() and 0x10 shr 4
+                val hrValue: Int = (if (hrFormat == 1) (data[1].toInt() and 0xFF) + (data[2].toInt() shl 8) else data[1]).toInt() and if (hrFormat == 1) 0x0000FFFF else 0x000000FF
+                var offset = hrFormat + 2
+                var energy = 0
+                if (energyExpended == 1) {
+                    energy = (data[offset].toInt() and 0xFF) + (data[offset + 1].toInt() and 0xFF shl 8)
                     offset += 2
-                    rrs.add(rrValue)
-                    rrsMs.add(mapRr1024ToRrMs(rrValue))
+                }
+                val rrs = mutableListOf<Int>()
+                val rrsMs = mutableListOf<Int>()
+                if (rrPresent == 1) {
+                    val len = data.size
+                    while (offset < len) {
+                        val rrValue = (data[offset].toInt() and 0xFF) + (data[offset + 1].toInt() and 0xFF shl 8)
+                        offset += 2
+                        rrs.add(rrValue)
+                        rrsMs.add(mapRr1024ToRrMs(rrValue))
+                    }
+                }
+                val finalEnergy = energy
+
+                ChannelUtils.emitNext(hrObserverAtomicList) { observer ->
+                    observer.trySend(
+                        HrNotificationData(
+                            hrValue,
+                            sensorContact,
+                            finalEnergy,
+                            rrs,
+                            rrsMs,
+                            contactSupported,
+                            rrPresent == 1
+                        )
+                    )
                 }
             }
-            val finalEnergy = energy
-            RxUtils.emitNext(hrObserverAtomicList) { `object`: FlowableEmitter<in HrNotificationData> -> `object`.onNext(HrNotificationData(hrValue, sensorContact, finalEnergy, rrs, rrsMs, contactSupported, rrPresent == 1)) }
         }
     }
 
@@ -109,23 +133,22 @@ class BleHrClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, HR
     }
 
     /**
-     * @return Flowable stream
+     * @return Flow stream
      * Produces: onNext, for every hr notification event
      * onError, if client is not initially connected or ble disconnects
-     * onCompleted, none except further configuration applied. If binded to fragment or activity life cycle this might be produced
      */
-    fun observeHrNotifications(checkConnection: Boolean): Flowable<HrNotificationData> {
-        return RxUtils.monitorNotifications(hrObserverAtomicList, txInterface, checkConnection)
-            .startWith(Completable.fromAction {
+    fun observeHrNotifications(checkConnection: Boolean): Flow<HrNotificationData> {
+        return ChannelUtils.monitorNotifications(hrObserverAtomicList, txInterface, checkConnection)
+            .onStart {
                 BleLogger.d(TAG, "Start observing HR")
                 addCharacteristicNotification(HR_MEASUREMENT)
-                getTxInterface().setCharacteristicNotify(HR_SERVICE, HR_MEASUREMENT, true)
-            })
-            .doFinally {
+                txInterface.setCharacteristicNotify(HR_SERVICE, HR_MEASUREMENT, true)
+            }
+            .onCompletion {
                 BleLogger.d(TAG, "Stop observing HR")
                 removeCharacteristicNotification(HR_MEASUREMENT)
                 try {
-                    getTxInterface().setCharacteristicNotify(HR_SERVICE, HR_MEASUREMENT, false)
+                    txInterface.setCharacteristicNotify(HR_SERVICE, HR_MEASUREMENT, false)
                 } catch (e: Exception) {
                     // this may happen if connection is already closed, no need sent the exception to downstream
                     BleLogger.d(TAG, "HR client is not able to set characteristic notify to false. Reason $e")
@@ -134,18 +157,19 @@ class BleHrClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, HR
     }
 
     /**
-     * @return Completable
-     * onError, if client is not initially connected or removing HR_MEASUREMENT notification fails
+     * @return Result<Unit>
+     * failure if removing HR_MEASUREMENT notification fails
      */
-    fun stopObserveHrNotifications(checkConnection: Boolean): Single<Unit> {
+    fun stopObserveHrNotifications(checkConnection: Boolean): Result<Unit> {
         BleLogger.d(TAG, "Stop observing HR")
         removeCharacteristicNotification(HR_MEASUREMENT)
-        try {
-            return Single.create {  getTxInterface().setCharacteristicNotify(HR_SERVICE, HR_MEASUREMENT, false) }
+        return try {
+            txInterface.setCharacteristicNotify(HR_SERVICE, HR_MEASUREMENT, false)
+            Result.success(Unit)
         } catch (e: Exception) {
             // this may happen if connection is already closed, no need sent the exception to downstream
             BleLogger.d(TAG, "HR client is not able to set characteristic notify to false. Reason $e")
-            return Single.error(e)
+            Result.failure(e)
         }
     }
 }

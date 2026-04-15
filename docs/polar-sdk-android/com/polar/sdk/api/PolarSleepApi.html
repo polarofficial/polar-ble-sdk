@@ -246,7 +246,7 @@ public interface <span class="typeNameLabel"><a href=PolarSleepApi.html>PolarSle
                                         </tr>
                                         
                                         <tr id="i0" class="altColor">
-                                            <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>&gt;</code>
+                                            <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarSleepApi.html#getSleepRecordingState(java.lang.String)>getSleepRecordingState</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
@@ -254,7 +254,7 @@ public interface <span class="typeNameLabel"><a href=PolarSleepApi.html>PolarSle
                                         </tr>
                                         
                                         <tr id="i1" class="rowColor">
-                                            <td class="colFirst"><code>abstract Flowable&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-boolean-array/index.html>BooleanArray</a>&gt;</code>
+                                            <td class="colFirst"><code>abstract Flow&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-boolean-array/index.html>BooleanArray</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarSleepApi.html#observeSleepRecordingState(java.lang.String)>observeSleepRecordingState</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
@@ -262,7 +262,7 @@ public interface <span class="typeNameLabel"><a href=PolarSleepApi.html>PolarSle
                                         </tr>
                                         
                                         <tr id="i2" class="altColor">
-                                            <td class="colFirst"><code>abstract Completable</code>
+                                            <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarSleepApi.html#stopSleepRecording(java.lang.String)>stopSleepRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
@@ -270,7 +270,7 @@ public interface <span class="typeNameLabel"><a href=PolarSleepApi.html>PolarSle
                                         </tr>
                                         
                                         <tr id="i3" class="rowColor">
-                                            <td class="colFirst"><code>abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/sleep/PolarSleepData.html>PolarSleepData</a>&gt;&gt;</code>
+                                            <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/sleep/PolarSleepData.html>PolarSleepData</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarSleepApi.html#getSleep(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getSleep</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate) </code>
                                             </th>
@@ -329,7 +329,7 @@ public interface <span class="typeNameLabel"><a href=PolarSleepApi.html>PolarSle
                                           >
                                     <li class="blockList">
                                         <h4>getSleepRecordingState</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>&gt; <a href=PolarSleepApi.html#getSleepRecordingState(java.lang.String)>getSleepRecordingState</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <pre class="methodSignature"> abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarSleepApi.html#getSleepRecordingState(java.lang.String)>getSleepRecordingState</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
                                         <div class="block"><p>Get sleep recording state. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_SLEEP_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA</a></p></div>
 
                                         <dl>
@@ -345,7 +345,7 @@ public interface <span class="typeNameLabel"><a href=PolarSleepApi.html>PolarSle
 
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>A Single boolean value indicating if sleep recording is ongoing</p></dd>
+                                            <dd><p>boolean value indicating if sleep recording is ongoing</p></dd>
                                         
 
                                         
@@ -362,7 +362,7 @@ public interface <span class="typeNameLabel"><a href=PolarSleepApi.html>PolarSle
                                           >
                                     <li class="blockList">
                                         <h4>observeSleepRecordingState</h4>
-                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-boolean-array/index.html>BooleanArray</a>&gt; <a href=PolarSleepApi.html#observeSleepRecordingState(java.lang.String)>observeSleepRecordingState</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <pre class="methodSignature"> abstract Flow&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-boolean-array/index.html>BooleanArray</a>&gt; <a href=PolarSleepApi.html#observeSleepRecordingState(java.lang.String)>observeSleepRecordingState</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
                                         <div class="block"><p>Observe sleep recording state. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_SLEEP_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA</a></p></div>
 
                                         <dl>
@@ -378,7 +378,7 @@ public interface <span class="typeNameLabel"><a href=PolarSleepApi.html>PolarSle
 
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>Flowable of boolean values indicating if sleep recording is ongoing</p></dd>
+                                            <dd><p>Flow of boolean values indicating if sleep recording is ongoing</p></dd>
                                         
 
                                         
@@ -395,7 +395,7 @@ public interface <span class="typeNameLabel"><a href=PolarSleepApi.html>PolarSle
                                           >
                                     <li class="blockList">
                                         <h4>stopSleepRecording</h4>
-                                        <pre class="methodSignature"> abstract Completable <a href=PolarSleepApi.html#stopSleepRecording(java.lang.String)>stopSleepRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarSleepApi.html#stopSleepRecording(java.lang.String)>stopSleepRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
                                         <div class="block"><p>Stop sleep recording. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_SLEEP_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA</a></p></div>
 
                                         <dl>
@@ -409,9 +409,6 @@ public interface <span class="typeNameLabel"><a href=PolarSleepApi.html>PolarSle
                                             
                                         
 
-                                        
-                                            <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>Completable success when sleep recording stop action has been succesfully sent to device</p></dd>
                                         
 
                                         
@@ -428,7 +425,7 @@ public interface <span class="typeNameLabel"><a href=PolarSleepApi.html>PolarSle
                                           >
                                     <li class="blockList">
                                         <h4>getSleep</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/sleep/PolarSleepData.html>PolarSleepData</a>&gt;&gt; <a href=PolarSleepApi.html#getSleep(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getSleep</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate)</pre>
+                                        <pre class="methodSignature"> abstract <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=model/sleep/PolarSleepData.html>PolarSleepData</a>&gt; <a href=PolarSleepApi.html#getSleep(java.lang.String,java.time.LocalDate,java.time.LocalDate)>getSleep</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> fromDate, <a href=https://developer.android.com/reference/kotlin/java/time/LocalDate.html>LocalDate</a> toDate)</pre>
                                         <div class="block"><p>Get sleep stages and duration for a given period. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_SLEEP_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA</a></p></div>
 
                                         <dl>
@@ -452,7 +449,7 @@ public interface <span class="typeNameLabel"><a href=PolarSleepApi.html>PolarSle
 
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>A Single emitting a list of <a href=model/sleep/PolarSleepData.html>PolarSleepData</a> representing the sleep data for the specified period.</p></dd>
+                                            <dd><p>list of <a href=model/sleep/PolarSleepData.html>PolarSleepData</a> representing the sleep data for the specified period.</p></dd>
                                         
 
                                         

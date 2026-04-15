@@ -246,15 +246,15 @@ public interface <span class="typeNameLabel"><a href=PolarRestServiceApi.html>Po
                                         </tr>
                                         
                                         <tr id="i0" class="altColor">
-                                            <td class="colFirst"><code>abstract Single&lt;<a href=model/restapi/PolarDeviceRestApiServices.html>PolarDeviceRestApiServices</a>&gt;</code>
+                                            <td class="colFirst"><code>abstract <a href=model/restapi/PolarDeviceRestApiServices.html>PolarDeviceRestApiServices</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarRestServiceApi.html#listRestApiServices(java.lang.String)>listRestApiServices</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
-                                            <td class="colLast">Discover available services from deviceRequires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FILE_TRANSFER>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER</a></td>
+                                            <td class="colLast">Discover available services from device.</td>
                                         </tr>
                                         
                                         <tr id="i1" class="rowColor">
-                                            <td class="colFirst"><code>abstract Single&lt;<a href=model/restapi/PolarDeviceRestApiServiceDescription.html>PolarDeviceRestApiServiceDescription</a>&gt;</code>
+                                            <td class="colFirst"><code>abstract <a href=model/restapi/PolarDeviceRestApiServiceDescription.html>PolarDeviceRestApiServiceDescription</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarRestServiceApi.html#getRestApiDescription(java.lang.String,java.lang.String)>getRestApiDescription</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> path) </code>
                                             </th>
@@ -262,7 +262,7 @@ public interface <span class="typeNameLabel"><a href=PolarRestServiceApi.html>Po
                                         </tr>
                                         
                                         <tr id="i2" class="altColor">
-                                            <td class="colFirst"><code>abstract Completable</code>
+                                            <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarRestServiceApi.html#putNotification(java.lang.String,java.lang.String,java.lang.String)>putNotification</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> notification, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> path) </code>
                                             </th>
@@ -270,11 +270,11 @@ public interface <span class="typeNameLabel"><a href=PolarRestServiceApi.html>Po
                                         </tr>
                                         
                                         <tr id="i3" class="rowColor">
-                                            <td class="colFirst"><code>abstract &lt;T extends <a href=RestApiEventPayload.html>RestApiEventPayload</a>&gt; Flowable&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>T</a>&gt;&gt;</code>
+                                            <td class="colFirst"><code>abstract &lt;T extends <a href=RestApiEventPayload.html>RestApiEventPayload</a>&gt; Flow&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>T</a>&gt;&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>receiveRestApiEvents</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, Function1&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>, <a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>T</a>&gt; mapper) </code>
                                             </th>
-                                            <td class="colLast">Streams for received device REST API events  parameters decoded as given type T endlessly.</td>
+                                            <td class="colLast">Stream received device REST API event parameters decoded as given type <a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>T</a>.</td>
                                         </tr>
                                         
                                         </tbody>
@@ -329,8 +329,8 @@ public interface <span class="typeNameLabel"><a href=PolarRestServiceApi.html>Po
                                           >
                                     <li class="blockList">
                                         <h4>listRestApiServices</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/restapi/PolarDeviceRestApiServices.html>PolarDeviceRestApiServices</a>&gt; <a href=PolarRestServiceApi.html#listRestApiServices(java.lang.String)>listRestApiServices</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Discover available services from device</p><p>Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FILE_TRANSFER>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER</a></p></div>
+                                        <pre class="methodSignature"> abstract <a href=model/restapi/PolarDeviceRestApiServices.html>PolarDeviceRestApiServices</a> <a href=PolarRestServiceApi.html#listRestApiServices(java.lang.String)>listRestApiServices</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Discover available services from device.</p><p>Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FILE_TRANSFER>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER</a>.</p></div>
 
                                         <dl>
 
@@ -345,7 +345,7 @@ public interface <span class="typeNameLabel"><a href=PolarRestServiceApi.html>Po
 
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p><a href=model/restapi/PolarDeviceRestApiServices.html>Single</a> object listing service names and corresponding paths or error</p></dd>
+                                            <dd><p><a href=model/restapi/PolarDeviceRestApiServices.html>PolarDeviceRestApiServices</a> object listing service names and corresponding paths</p></dd>
                                         
 
                                         
@@ -362,8 +362,8 @@ public interface <span class="typeNameLabel"><a href=PolarRestServiceApi.html>Po
                                           >
                                     <li class="blockList">
                                         <h4>getRestApiDescription</h4>
-                                        <pre class="methodSignature"> abstract Single&lt;<a href=model/restapi/PolarDeviceRestApiServiceDescription.html>PolarDeviceRestApiServiceDescription</a>&gt; <a href=PolarRestServiceApi.html#getRestApiDescription(java.lang.String,java.lang.String)>getRestApiDescription</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> path)</pre>
-                                        <div class="block"><p>Get details related to particular REST API.</p><p>Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FILE_TRANSFER>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER</a></p></div>
+                                        <pre class="methodSignature"> abstract <a href=model/restapi/PolarDeviceRestApiServiceDescription.html>PolarDeviceRestApiServiceDescription</a> <a href=PolarRestServiceApi.html#getRestApiDescription(java.lang.String,java.lang.String)>getRestApiDescription</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> path)</pre>
+                                        <div class="block"><p>Get details related to particular REST API.</p><p>Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FILE_TRANSFER>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER</a>.</p></div>
 
                                         <dl>
 
@@ -382,7 +382,7 @@ public interface <span class="typeNameLabel"><a href=PolarRestServiceApi.html>Po
 
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p><a href=model/restapi/PolarDeviceRestApiServiceDescription.html>Single</a> object with detailed description of the service, or error</p></dd>
+                                            <dd><p><a href=model/restapi/PolarDeviceRestApiServiceDescription.html>PolarDeviceRestApiServiceDescription</a> object with detailed description of the service</p></dd>
                                         
 
                                         
@@ -399,8 +399,8 @@ public interface <span class="typeNameLabel"><a href=PolarRestServiceApi.html>Po
                                           >
                                     <li class="blockList">
                                         <h4>putNotification</h4>
-                                        <pre class="methodSignature"> abstract Completable <a href=PolarRestServiceApi.html#putNotification(java.lang.String,java.lang.String,java.lang.String)>putNotification</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> notification, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> path)</pre>
-                                        <div class="block"><p>Notify device via a REST API in the device.</p><p>Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FILE_TRANSFER>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER</a></p></div>
+                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarRestServiceApi.html#putNotification(java.lang.String,java.lang.String,java.lang.String)>putNotification</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> notification, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> path)</pre>
+                                        <div class="block"><p>Notify device via a REST API in the device.</p><p>Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FILE_TRANSFER>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER</a>.</p></div>
 
                                         <dl>
 
@@ -412,18 +412,15 @@ public interface <span class="typeNameLabel"><a href=PolarRestServiceApi.html>Po
                                             
                                             
                                             
-                                            <dd><code>notification</code> - content of the notification in JSON format.</dd>
+                                            <dd><code>notification</code> - content of the notification in JSON format</dd>
                                             
                                             
                                             
-                                            <dd><code>path</code> - the API endpoint that will be notified; the path of the REST API file in device + REST API parameters.</dd>
+                                            <dd><code>path</code> - the API endpoint that will be notified; the path of the REST API file in device + REST API parameters</dd>
                                             
                                             
                                         
 
-                                        
-                                            <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>Completable with success or error</p></dd>
                                         
 
                                         
@@ -440,8 +437,8 @@ public interface <span class="typeNameLabel"><a href=PolarRestServiceApi.html>Po
                                           >
                                     <li class="blockList">
                                         <h4>receiveRestApiEvents</h4>
-                                        <pre class="methodSignature"> abstract &lt;T extends <a href=RestApiEventPayload.html>RestApiEventPayload</a>&gt; Flowable&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>T</a>&gt;&gt; <a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>receiveRestApiEvents</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, Function1&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>, <a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>T</a>&gt; mapper)</pre>
-                                        <div class="block"><p>Streams for received device REST API events  parameters decoded as given type T endlessly. Only dispose , take(1) etc ... stops stream.</p><p>Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FILE_TRANSFER>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER</a></p><p>Normally requires event action that subscribes to the events using putNotification()</p></div>
+                                        <pre class="methodSignature"> abstract &lt;T extends <a href=RestApiEventPayload.html>RestApiEventPayload</a>&gt; Flow&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>T</a>&gt;&gt; <a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>receiveRestApiEvents</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, Function1&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>, <a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>T</a>&gt; mapper)</pre>
+                                        <div class="block"><p>Stream received device REST API event parameters decoded as given type <a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>T</a>.</p><p>Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FILE_TRANSFER>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER</a>.</p><p>Normally requires an event action that subscribes to the events using <a href=PolarRestServiceApi.html#putNotification(java.lang.String,java.lang.String,java.lang.String)>putNotification</a>.</p></div>
 
                                         <dl>
 
@@ -453,14 +450,14 @@ public interface <span class="typeNameLabel"><a href=PolarRestServiceApi.html>Po
                                             
                                             
                                             
-                                            <dd><code>mapper</code> - lambda that converts JSON string to type T</dd>
+                                            <dd><code>mapper</code> - lambda that converts JSON string to type <a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>T</a></dd>
                                             
                                             
                                         
 
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>Flowable stream of REST API event parameters decoded from JSON format using mapper lambda to type T. SDK provides default decoding using String.toObject&lt;T&gt;() where T should be a subclass of RestApiEventPayload abstract class. Example of such class is PolarSleepRecordingStatusData. Produces onNext after successfully received notification and decoded as List&lt;T&gt;. onCompleted not produced unless stream is further configured. onError, see BlePsFtpException, BleGattException</p></dd>
+                                            <dd><p>Flow of REST API event parameters decoded from JSON format using mapper lambda to type <a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>T</a>. SDK provides default decoding using <code>String.toObject&lt;T&gt;()</code> where <a href=PolarRestServiceApi.html#receiveRestApiEvents(java.lang.String,kotlin.jvm.functions.Function1)>T</a> should be a subclass of <a href=RestApiEventPayload.html>RestApiEventPayload</a>. Example of such class is PolarSleepRecordingStatusData. Emits decoded <code>List&lt;T&gt;</code> values until collection is cancelled or the flow completes. Exceptions may include BlePsFtpException, BleGattException.</p></dd>
                                         
 
                                         

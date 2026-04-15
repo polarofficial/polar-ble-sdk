@@ -1,10 +1,5 @@
 package com.polar.sdk.api
 
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Maybe
-import io.reactivex.rxjava3.core.Single
-import java.io.ByteArrayOutputStream
-
 interface PolarBleLowLevelApi {
 
     /**
@@ -13,13 +8,13 @@ interface PolarBleLowLevelApi {
      * NOTE: this is an experimental API intended for Polar internal use only. Polar will not support 3rd party users with this API.
      * @param identifier Polar device ID or BT address
      * @param filePath Path to the desired file in a Polar device.
-     * @return Maybe (ByteArray or empty)
+     * @return ByteArray with payload data, payload may also be empty ByeArray.
      */
     @OptIn
-    fun readFile(
+    suspend fun readFile(
         identifier: String,
         filePath: String
-    ): Maybe<ByteArray>
+    ): ByteArray?
 
     /**
      * Write any file over PFtp BLE client. API user must know the exact path to the desired file.
@@ -28,14 +23,14 @@ interface PolarBleLowLevelApi {
      * @param identifier Polar device ID or BT address
      * @param filePath Path to the directory in device  in a Polar device.
      * @param fileData, file data in already serialized into ByteArray format.
-     * @return Completable or error
+     * @return Success or error
      */
     @OptIn
-    fun writeFile(
+    suspend fun writeFile(
         identifier: String,
         filePath: String,
         fileData: ByteArray
-    ): Completable
+    )
 
     /**
      * Delete any file or directory over PFtp BLE client. API user must know the exact path to the desired file.
@@ -43,13 +38,13 @@ interface PolarBleLowLevelApi {
      * NOTE: this is an experimental API intended for Polar internal use only. Polar will not support 3rd party users with this API.
      * @param identifier Polar device ID or BT address
      * @param filePath Path of the file or directory to be deleted at a Polar device.
-     * @return Completable or error
+     * @return Success or error
      */
     @OptIn
-    fun deleteFileOrDirectory(
+    suspend fun deleteFileOrDirectory(
         identifier: String,
         filePath: String
-    ): Completable
+    )
 
     /**
      * List all files in the given path
@@ -61,9 +56,9 @@ interface PolarBleLowLevelApi {
      * @return List of files or error
      */
     @OptIn
-    fun getFileList(
+    suspend fun getFileList(
         identifier: String,
         filePath: String,
         recurseDeep: Boolean
-    ): Single<List<String>>
+    ): List<String>
 }

@@ -13,7 +13,6 @@ import com.polar.sdk.api.model.PolarOfflineRecordingTrigger
 import com.polar.sdk.api.model.PolarOfflineRecordingTriggerMode
 import com.polar.sdk.api.model.PolarSensorSetting
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.rxjava3.core.Single
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -91,18 +90,15 @@ class OfflineTriggerSettingsViewModel @Inject constructor(
 
     private suspend fun getSelectedSettings(feature: PolarBleApi.PolarDeviceDataType): Map<PolarSensorSetting.SettingType, Int> {
         return if (feature == PolarBleApi.PolarDeviceDataType.PPI || feature == PolarBleApi.PolarDeviceDataType.HR) {
-            Single.just(emptyMap<PolarSensorSetting.SettingType, Int>()).blockingGet()
+            emptyMap()
         } else {
-            selectedSettingsCache[feature]?.selectedSettings?.let {
-                Single.just(it).blockingGet()
-            } ?: run {
-                polarDeviceStreamingRepository.getOfflineRecSettings(deviceId, feature)
-                    .map { sensorSetting: PolarSensorSetting ->
-                        val selectedSettings = maxSettingsFromStreamSettings(sensorSetting)
-                        updateSelectedStreamSettings(feature, selectedSettings)
-                        selectedSettings
-                    }.blockingGet()
-            }
+            selectedSettingsCache[feature]?.selectedSettings
+                ?: run {
+                    val sensorSetting = polarDeviceStreamingRepository.getOfflineRecSettings(deviceId, feature)
+                    val selectedSettings = maxSettingsFromStreamSettings(sensorSetting)
+                    updateSelectedStreamSettings(feature, selectedSettings)
+                    selectedSettings
+                }
         }
     }
 
@@ -152,30 +148,26 @@ class OfflineTriggerSettingsViewModel @Inject constructor(
 
     fun requestStreamSettings(feature: PolarBleApi.PolarDeviceDataType) {
         viewModelScope.launch(Dispatchers.IO) {
-            polarDeviceStreamingRepository.getOfflineRecSettings(deviceId, feature)
-                .subscribe(
-                    { sensorSettings: PolarSensorSetting ->
-                        Log.d(TAG, "Sensor settings fetch completed")
-                        val newSettings = OfflineRecTriggerSettings(
+            try {
+                val sensorSettings = polarDeviceStreamingRepository.getOfflineRecSettings(deviceId, feature)
+                Log.d(TAG, "Sensor settings fetch completed")
+                val newSettings = OfflineRecTriggerSettings(
+                    currentlyAvailable = sensorSettings,
+                    selectedSettings = selectedSettingsCache[feature]?.selectedSettings
+                )
+                selectedSettingsCache[feature] = newSettings
+                _uiOfflineRecTriggerSettingsState.update {
+                    OfflineRecTriggerSettingsUiState(
+                        feature = feature,
+                        settings = OfflineRecTriggerSettings(
                             currentlyAvailable = sensorSettings,
                             selectedSettings = selectedSettingsCache[feature]?.selectedSettings
                         )
-                        selectedSettingsCache[feature] = newSettings
-
-                        _uiOfflineRecTriggerSettingsState.update {
-                            OfflineRecTriggerSettingsUiState(
-                                feature = feature,
-                                settings = OfflineRecTriggerSettings(
-                                    currentlyAvailable = sensorSettings,
-                                    selectedSettings = selectedSettingsCache[feature]?.selectedSettings
-                                )
-                            )
-                        }
-                    },
-                    { error: Throwable ->
-                        showError("Settings fetch error for feature $feature. REASON: $error")
-                    }
-                )
+                    )
+                }
+            } catch (e: Exception) {
+                showError("Settings fetch error for feature $feature. REASON: $e")
+            }
         }
     }
 

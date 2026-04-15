@@ -24,6 +24,8 @@ import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.model.Device
 import com.polar.polarsensordatacollector.ui.hrbroadcast.HrBroadcastDialogFragment
 import com.polar.polarsensordatacollector.ui.utils.DialogUtility.showSensorSelection
+import com.polar.polarsensordatacollector.repository.PolarDeviceRepository.SdkFeaturesReadyEvent
+import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.errors.PolarInvalidArgument
 import com.polar.sdk.api.model.PolarDeviceInfo
 import dagger.hilt.android.AndroidEntryPoint
@@ -105,6 +107,14 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiSdkFeaturesReadyState.collect { event ->
+                    sdkFeaturesReadyChange(event)
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiOfflineRecordingV2State.collect { v2State ->
                     Log.d(TAG, "uiOfflineRecordingV2State collected: deviceId=${v2State.deviceId}, isAvailable=${v2State.isAvailable}")
                     if (v2State.deviceId.isNotEmpty() && v2State.isAvailable) {
@@ -130,9 +140,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                             val deviceAddress = it.address
                             val name = it.name.replace(" ", "_")
                             selectedDevice = Device(deviceId = deviceId, address = deviceAddress, name = name)
-                            selectedDeviceSupportsSettings = info.hasSAGRFCFileSystem
-                            // Don't check Exercise V2 capability here - it's not available at device selection time
-                            // Will be checked after connection completes via repository
                             selectedDeviceSupportsV2OfflineExercise = false
                             Log.d(TAG, "Device selected: $name, Exercise V2 support will be checked after connection")
                             try {
@@ -196,7 +203,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                                         address = deviceAddress,
                                         name = name
                                     )
-                                    selectedDeviceSupportsSettings = info.hasSAGRFCFileSystem
                                     selectedDeviceSupportsV2OfflineExercise = false
                                     try {
                                         selectedDevice?.let { viewModel.connectToDevice(it) }
@@ -330,16 +336,20 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 connectButton.isEnabled = true
                 onlineOfflineAdapter.addOnlineRecordingFragment(deviceId)
                 onlineOfflineAdapter.addDeviceSettingsFragment(deviceId)
-                if (selectedDeviceSupportsSettings == true) {
-                    onlineOfflineAdapter.addLoggingFragment(deviceId)
-                    onlineOfflineAdapter.addActivityFragment(deviceId)
-                }
+
                 if (selectedDevice?.name?.contains("H10") == true) {
                     onlineOfflineAdapter.addH10ExerciseFragment(deviceId)
                 }
-                if (selectedDeviceSupportsV2OfflineExercise) {
-                    onlineOfflineAdapter.addExerciseV2Fragment(deviceId, selectedDeviceSupportsV2OfflineExercise)
+
+                val isActivityDataReadyNow =
+                    viewModel.isFeatureReady(deviceId, PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA)
+                if (isActivityDataReadyNow) {
+                    onlineOfflineAdapter.addLoggingFragment(deviceId)
+                    onlineOfflineAdapter.addActivityFragment(deviceId)
                 }
+
+                val cachedEvent = viewModel.uiSdkFeaturesReadyState.value
+                sdkFeaturesReadyChange(cachedEvent)
                 tabLayout.visibility = VISIBLE
                 viewPagerPagePerDevice[deviceId]?.let {
                     viewPager.setCurrentItem(it, false)
@@ -402,6 +412,16 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private fun offlineRecordingStateChange(offlineRecordingUiState: OfflineRecordingAvailabilityUiState) {
         if (offlineRecordingUiState.isAvailable) {
             onlineOfflineAdapter.addOfflineRecordingFragment(offlineRecordingUiState.deviceId)
+        }
+    }
+
+    private fun sdkFeaturesReadyChange(event: SdkFeaturesReadyEvent) {
+        val deviceId = event.deviceId
+        if (deviceId.isEmpty()) return
+
+        if (event.readyFeatures.contains(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA)) {
+            onlineOfflineAdapter.addLoggingFragment(deviceId)
+            onlineOfflineAdapter.addActivityFragment(deviceId)
         }
     }
 

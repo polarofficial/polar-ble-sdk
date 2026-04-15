@@ -226,12 +226,15 @@ fun HrPlotterCanvas(
 
         if (hrValues.isEmpty()) return@Canvas
 
+        val startIndex = if (hrValues.size > MAX_HR_SAMPLES) hrValues.size - MAX_HR_SAMPLES else 0
+        val visibleValues = hrValues.subList(startIndex, hrValues.size)
+
         val stepX = graphWidth / (MAX_HR_SAMPLES - 1).coerceAtLeast(1)
 
-        if (hrValues.size > 1) {
+        if (visibleValues.size > 1) {
             val path = Path()
 
-            hrValues.forEachIndexed { index, hr ->
+            visibleValues.forEachIndexed { index, hr ->
                 val x = leftPadding + index * stepX
                 val clampedHr = hr.toFloat().coerceIn(minHr, maxHr)
                 val y = height - ((clampedHr - minHr) / hrRange * height)
@@ -250,9 +253,9 @@ fun HrPlotterCanvas(
             )
         }
 
-        if (hrValues.isNotEmpty()) {
-            val lastIndex = hrValues.size - 1
-            val lastHr = hrValues.last().toFloat().coerceIn(minHr, maxHr)
+        if (visibleValues.isNotEmpty()) {
+            val lastIndex = visibleValues.size - 1
+            val lastHr = visibleValues.last().toFloat().coerceIn(minHr, maxHr)
             val x = leftPadding + lastIndex * stepX
             val y = height - ((lastHr - minHr) / hrRange * height)
 

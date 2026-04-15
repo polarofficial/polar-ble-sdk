@@ -1,7 +1,6 @@
 package com.polar.androidcommunications.http.client
 
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 
 class RetrofitClient {
@@ -10,7 +9,6 @@ class RetrofitClient {
             return Retrofit.Builder()
                 .baseUrl("https://firmware-management.polar.com")
                 .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
                 .build()
         }
     }

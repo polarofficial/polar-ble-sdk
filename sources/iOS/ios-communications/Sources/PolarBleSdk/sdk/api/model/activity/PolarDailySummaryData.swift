@@ -22,7 +22,7 @@ public struct PolarDailySummary: Codable {
         var date: Date
         var activeTimeData: PolarActiveTimeData
         do {
-            date = try PolarTimeUtils.pbDateToDate(pbDate: proto.date).localDate()
+            date = try PolarTimeUtils.pbDateToDateUTC(pbDate: proto.date)
         } catch let err {
             BleLogger.error("Failed to parse PolarDailySummary data from DailySummary proto: \(err)")
             throw PolarErrors.dateTimeFormatFailed(description: "Failed to parse date for PolarActiveTimeData from DailySummary proto: \(err)")
@@ -201,7 +201,7 @@ public struct PolarActiveTimeData: Codable  {
     static func fromProto(proto: Data_PbDailySummary) throws -> PolarActiveTimeData {
         var date: Date
         do {
-            date = try PolarTimeUtils.pbDateToDate(pbDate: proto.date).localDate()
+            date = try PolarTimeUtils.pbDateToDateUTC(pbDate: proto.date)
         } catch let err {
             BleLogger.error("Failed to parse PolarActiveTimeData from DailySummary proto: \(err)")
             throw PolarErrors.dateTimeFormatFailed(description: "Failed to parse PolarActiveTimeData from DailySummary proto: \(err)")

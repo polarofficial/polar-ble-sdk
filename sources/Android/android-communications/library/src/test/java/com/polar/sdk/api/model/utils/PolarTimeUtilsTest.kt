@@ -808,4 +808,28 @@ internal class PolarTimeUtilsTest {
         Assert.assertEquals(pbUtcMilliSecond, result.time.millis)
         Assert.assertTrue(result.trusted)
     }
+
+    @Test
+    fun `test pbLocalDateTimeToLocalDateTimeWithOptionalTz`() {
+        // Arrange
+        val pbLocalDateTime = PbLocalDateTime.newBuilder()
+            .setDate(PbDate.newBuilder().setYear(2024).setMonth(6).setDay(15).build())
+            .setTime(PbTime.newBuilder().setHour(14).setMinute(30).setSeconds(45).setMillis(500).build())
+            .setOBSOLETETrusted(true)
+            .setTimeZoneOffset(60)
+            .build()
+
+        // Act
+        val result = PolarTimeUtils.pbLocalDateTimeToLocalDateTimeWithOptionalTz(pbLocalDateTime)
+
+        // Assert
+        Assert.assertEquals(2024, result.year)
+        Assert.assertEquals(6, result.monthValue)
+        Assert.assertEquals(15, result.dayOfMonth)
+        Assert.assertEquals(14, result.hour)
+        Assert.assertEquals(30, result.minute)
+        Assert.assertEquals(45, result.second)
+        Assert.assertEquals(500 * 1_000_000, result.nano)
+    }
+
 }

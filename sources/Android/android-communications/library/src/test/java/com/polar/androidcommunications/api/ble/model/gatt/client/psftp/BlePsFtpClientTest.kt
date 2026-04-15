@@ -7,14 +7,12 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpU
 import com.polar.androidcommunications.testrules.BleLoggerTestRule
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
-import io.reactivex.rxjava3.schedulers.TestScheduler
-import io.reactivex.rxjava3.subscribers.TestSubscriber
+import kotlinx.coroutines.test.runTest
 import org.junit.*
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import java.io.ByteArrayOutputStream
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 internal class BlePsFtpClientTest {
     @Rule
@@ -25,14 +23,12 @@ internal class BlePsFtpClientTest {
     lateinit var mockGattTxInterface: BleGattTxInterface
 
     private lateinit var blePsFtpClient: BlePsFtpClient
-    private lateinit var testScheduler: TestScheduler
 
     @Before
     fun setUp() {
         MockKAnnotations.init(this)
         blePsFtpClient = BlePsFtpClient(mockGattTxInterface)
-        every { mockGattTxInterface.isConnected } returns true
-        testScheduler = TestScheduler()
+        every { mockGattTxInterface.isConnected() } returns true
     }
 
     @After
@@ -41,7 +37,7 @@ internal class BlePsFtpClientTest {
     }
 
     @Test
-    fun `test psftp client request`() {
+    fun `test psftp client request`() = runTest {
         // Arrange
         val transmitService = slot<UUID>()
         val transmitCharacteristics = slot<UUID>()
@@ -62,23 +58,14 @@ internal class BlePsFtpClientTest {
         blePsFtpClient.descriptorWritten(RFC77_PFTP_MTU_CHARACTERISTIC, true, BleGattBase.ATT_SUCCESS)
 
         // Act
-        val result = blePsFtpClient.request(randomRequestData, testScheduler).toFlowable()
-        val testObserver = TestSubscriber<ByteArrayOutputStream>()
-        result.subscribe(testObserver)
-        testScheduler.advanceTimeBy(1, TimeUnit.SECONDS)
+        val result = blePsFtpClient.request(randomRequestData)
 
-        //Assert
+        // Assert
         verify(exactly = 1) { mockGattTxInterface.gattClientRequestStopScanning() }
         verify(exactly = 1) { mockGattTxInterface.gattClientResumeScanning() }
-
         assertTrue(RFC77_PFTP_SERVICE.equals(transmitService.captured))
         assertTrue(RFC77_PFTP_MTU_CHARACTERISTIC.equals(transmitCharacteristics.captured))
-
-        testObserver.assertNoErrors()
-        testObserver.assertValueCount(1)
-        testObserver.assertComplete()
-        val emittedValue = testObserver.values()[0].toByteArray()[0]
-        assertEquals(responsePayload, emittedValue)
+        assertEquals(responsePayload, result.toByteArray()[0])
     }
 
     @Test

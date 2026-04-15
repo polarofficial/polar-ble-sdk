@@ -5,11 +5,11 @@ import com.polar.sdk.impl.utils.PolarFirmwareUpdateUtils
 import com.polar.sdk.impl.utils.PolarFirmwareUpdateUtils.FwFileComparator
 import fi.polar.remote.representation.protobuf.Device
 import fi.polar.remote.representation.protobuf.Structures.PbVersion
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.confirmVerified
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
-import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test
 import protocol.PftpRequest
@@ -23,7 +23,7 @@ class PolarFirmwareUpdateUtilsTest {
     private val firmwareFilePath = "/DEVICE.BPB"
 
     @Test
-    fun `readDeviceFirmwareInfo() should return firmware info`() {
+    fun `readDeviceFirmwareInfo() should return firmware info`() = runTest {
         // Arrange
         val deviceId = "123456"
         val firmwareVersion = "1.2.0"
@@ -40,19 +40,18 @@ class PolarFirmwareUpdateUtilsTest {
             proto.writeTo(this)
         }
 
-        every { mockClient.request(
+        coEvery { mockClient.request(
                 PftpRequest.PbPFtpOperation.newBuilder()
                         .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
                         .setPath(firmwareFilePath)
                         .build().toByteArray()
-        ) } returns Single.just(mockResponseContent)
+        ) } returns mockResponseContent
 
         // Act
-        val firmwareInfoSingle = PolarFirmwareUpdateUtils.readDeviceFirmwareInfo(mockClient, deviceId)
-        val firmwareInfo = firmwareInfoSingle.blockingGet()
+        val firmwareInfo = PolarFirmwareUpdateUtils.readDeviceFirmwareInfo(mockClient, deviceId)
 
         // Assert
-        verify {
+        coVerify {
             mockClient.request(
                     PftpRequest.PbPFtpOperation.newBuilder()
                             .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
@@ -163,9 +162,5 @@ class PolarFirmwareUpdateUtilsTest {
         Assert.assertEquals(f3, files[2])
     }
 
-    private fun mockFile(name: String): File {
-        val file = mockk<File>()
-        every { file.name } returns name
-        return file
-    }
+    private fun mockFile(name: String): File = File(name)
 }

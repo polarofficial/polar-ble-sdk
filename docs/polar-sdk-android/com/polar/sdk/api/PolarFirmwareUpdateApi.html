@@ -246,7 +246,7 @@ public interface <span class="typeNameLabel"><a href=PolarFirmwareUpdateApi.html
                                         </tr>
                                         
                                         <tr id="i0" class="altColor">
-                                            <td class="colFirst"><code>abstract Observable&lt;<a href=model/CheckFirmwareUpdateStatus.html>CheckFirmwareUpdateStatus</a>&gt;</code>
+                                            <td class="colFirst"><code>abstract Flow&lt;<a href=model/CheckFirmwareUpdateStatus.html>CheckFirmwareUpdateStatus</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarFirmwareUpdateApi.html#checkFirmwareUpdate(java.lang.String)>checkFirmwareUpdate</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
@@ -254,7 +254,7 @@ public interface <span class="typeNameLabel"><a href=PolarFirmwareUpdateApi.html
                                         </tr>
                                         
                                         <tr id="i1" class="rowColor">
-                                            <td class="colFirst"><code>abstract Flowable&lt;<a href=model/FirmwareUpdateStatus.html>FirmwareUpdateStatus</a>&gt;</code>
+                                            <td class="colFirst"><code>abstract Flow&lt;<a href=model/FirmwareUpdateStatus.html>FirmwareUpdateStatus</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarFirmwareUpdateApi.html#updateFirmware(java.lang.String)>updateFirmware</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
                                             </th>
@@ -262,7 +262,7 @@ public interface <span class="typeNameLabel"><a href=PolarFirmwareUpdateApi.html
                                         </tr>
                                         
                                         <tr id="i2" class="altColor">
-                                            <td class="colFirst"><code>abstract Flowable&lt;<a href=model/FirmwareUpdateStatus.html>FirmwareUpdateStatus</a>&gt;</code>
+                                            <td class="colFirst"><code>abstract Flow&lt;<a href=model/FirmwareUpdateStatus.html>FirmwareUpdateStatus</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarFirmwareUpdateApi.html#updateFirmware(java.lang.String,java.lang.String)>updateFirmware</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> firmwareUrl) </code>
                                             </th>
@@ -321,7 +321,7 @@ public interface <span class="typeNameLabel"><a href=PolarFirmwareUpdateApi.html
                                           >
                                     <li class="blockList">
                                         <h4>checkFirmwareUpdate</h4>
-                                        <pre class="methodSignature"> abstract Observable&lt;<a href=model/CheckFirmwareUpdateStatus.html>CheckFirmwareUpdateStatus</a>&gt; <a href=PolarFirmwareUpdateApi.html#checkFirmwareUpdate(java.lang.String)>checkFirmwareUpdate</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <pre class="methodSignature"> abstract Flow&lt;<a href=model/CheckFirmwareUpdateStatus.html>CheckFirmwareUpdateStatus</a>&gt; <a href=PolarFirmwareUpdateApi.html#checkFirmwareUpdate(java.lang.String)>checkFirmwareUpdate</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
                                         <div class="block"><p>Checks if a firmware update is available for the given device identifier. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FIRMWARE_UPDATE>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FIRMWARE_UPDATE</a></p></div>
 
                                         <dl>
@@ -337,7 +337,7 @@ public interface <span class="typeNameLabel"><a href=PolarFirmwareUpdateApi.html
 
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>Observable emitting <a href=model/CheckFirmwareUpdateStatus.html>CheckFirmwareUpdateStatus</a></p></dd>
+                                            <dd><p>Flow emitting <a href=model/CheckFirmwareUpdateStatus.html>CheckFirmwareUpdateStatus</a></p></dd>
                                         
 
                                         
@@ -354,7 +354,7 @@ public interface <span class="typeNameLabel"><a href=PolarFirmwareUpdateApi.html
                                           >
                                     <li class="blockList">
                                         <h4>updateFirmware</h4>
-                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=model/FirmwareUpdateStatus.html>FirmwareUpdateStatus</a>&gt; <a href=PolarFirmwareUpdateApi.html#updateFirmware(java.lang.String)>updateFirmware</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <pre class="methodSignature"> abstract Flow&lt;<a href=model/FirmwareUpdateStatus.html>FirmwareUpdateStatus</a>&gt; <a href=PolarFirmwareUpdateApi.html#updateFirmware(java.lang.String)>updateFirmware</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
                                         <div class="block"><p>Updates firmware to given device. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FIRMWARE_UPDATE>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FIRMWARE_UPDATE</a></p></div>
 
                                         <dl>
@@ -370,7 +370,7 @@ public interface <span class="typeNameLabel"><a href=PolarFirmwareUpdateApi.html
 
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>Flowable emitting status of firmware update</p></dd>
+                                            <dd><p>Flow emitting status of firmware update</p></dd>
                                         
 
                                         
@@ -387,7 +387,7 @@ public interface <span class="typeNameLabel"><a href=PolarFirmwareUpdateApi.html
                                           >
                                     <li class="blockList">
                                         <h4>updateFirmware</h4>
-                                        <pre class="methodSignature"> abstract Flowable&lt;<a href=model/FirmwareUpdateStatus.html>FirmwareUpdateStatus</a>&gt; <a href=PolarFirmwareUpdateApi.html#updateFirmware(java.lang.String,java.lang.String)>updateFirmware</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> firmwareUrl)</pre>
+                                        <pre class="methodSignature"> abstract Flow&lt;<a href=model/FirmwareUpdateStatus.html>FirmwareUpdateStatus</a>&gt; <a href=PolarFirmwareUpdateApi.html#updateFirmware(java.lang.String,java.lang.String)>updateFirmware</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> firmwareUrl)</pre>
                                         <div class="block"><p>Updates firmware to given device from specific URL. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_FIRMWARE_UPDATE>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FIRMWARE_UPDATE</a></p></div>
 
                                         <dl>
@@ -407,7 +407,7 @@ public interface <span class="typeNameLabel"><a href=PolarFirmwareUpdateApi.html
 
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>Flowable emitting status of firmware update</p></dd>
+                                            <dd><p>Flow emitting status of firmware update</p></dd>
                                         
 
                                         

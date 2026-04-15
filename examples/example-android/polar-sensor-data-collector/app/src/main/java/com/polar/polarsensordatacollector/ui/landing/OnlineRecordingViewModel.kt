@@ -2,7 +2,6 @@ package com.polar.polarsensordatacollector.ui.landing
 
 import android.net.Uri
 import android.util.Log
-import android.util.Pair
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,20 +17,18 @@ import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.errors.PolarDeviceDisconnected
 import com.polar.sdk.api.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.Single
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.util.*
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 data class LiveRecordingUiState(
@@ -146,11 +143,13 @@ class OnlineRecordingViewModel @Inject constructor(
         private const val TAG = "OnlineRecordingViewModel"
     }
 
-    private val deviceId = state.get<String>(ONLINE_OFFLINE_KEY_DEVICE_ID) ?: throw Exception("Online recording viewModel must know the deviceId")
+    private val deviceId = state.get<String>(ONLINE_OFFLINE_KEY_DEVICE_ID)
+        ?: throw Exception("Online recording viewModel must know the deviceId")
 
-    private var settingsCache: EnumMap<PolarBleApi.PolarDeviceDataType, OnlineStreamSettings> = EnumMap(PolarBleApi.PolarDeviceDataType.values().associateWith { OnlineStreamSettings(null, null, null) })
+    private var settingsCache: EnumMap<PolarBleApi.PolarDeviceDataType, OnlineStreamSettings> =
+        EnumMap(PolarBleApi.PolarDeviceDataType.values().associateWith { OnlineStreamSettings(null, null, null) })
 
-    private val streamDisposables: MutableMap<PolarBleApi.PolarDeviceDataType, Disposable?> =
+    private val streamJobs: MutableMap<PolarBleApi.PolarDeviceDataType, Job?> =
         EnumMap(PolarBleApi.PolarDeviceDataType::class.java)
 
     private val _uiAvailableOnlineStreamDataTypesState = MutableStateFlow(AvailableOnlineStreamDataState())
@@ -204,7 +203,7 @@ class OnlineRecordingViewModel @Inject constructor(
     private val _shareFiles: MutableStateFlow<ArrayList<Uri>> = MutableStateFlow(ArrayList<Uri>())
     val shareFiles: StateFlow<ArrayList<Uri>> = _shareFiles.asStateFlow()
 
-    private var recordingTimerDisposable: Disposable? = null
+    private var recordingTimerJob: Job? = null
 
     init {
 
@@ -232,15 +231,12 @@ class OnlineRecordingViewModel @Inject constructor(
         }
     }
 
-    fun addMarkerToLog(isStartMarker: Boolean) = viewModelScope.launch {
-        Single.fromCallable { collector.marker(deviceId, isStartMarker, System.nanoTime()) }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                {},
-                { error ->
-                    Log.w(TAG, "Failed to add marker: $error")
-                }
-            )
+    fun addMarkerToLog(isStartMarker: Boolean) = viewModelScope.launch(Dispatchers.IO) {
+        try {
+            collector.marker(deviceId, isStartMarker, System.nanoTime())
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to add marker: $e")
+        }
     }
 
     fun fileShareCompleted() {
@@ -255,17 +251,14 @@ class OnlineRecordingViewModel @Inject constructor(
         }
     }
 
-    private fun getStreamSettingsToStartStream(feature: PolarBleApi.PolarDeviceDataType): Single<Map<PolarSensorSetting.SettingType, Int>> {
-        return settingsCache[feature]?.selectedSettings?.let {
-            Single.just(it)
-        } ?: run {
-            polarDeviceStreamingRepository.getAvailableStreamSettings(deviceId, feature)
-                .map { sensorSetting: PolarSensorSetting ->
-                    val selectedSettings = maxSettingsFromStreamSettings(sensorSetting)
-                    updateSelectedStreamSettings(feature, selectedSettings)
-                    selectedSettings
-                }
-        }
+    private suspend fun getStreamSettingsToStartStream(feature: PolarBleApi.PolarDeviceDataType): Map<PolarSensorSetting.SettingType, Int> {
+        return settingsCache[feature]?.selectedSettings
+            ?: run {
+                val sensorSetting = polarDeviceStreamingRepository.getAvailableStreamSettings(deviceId, feature)
+                val selectedSettings = maxSettingsFromStreamSettings(sensorSetting)
+                updateSelectedStreamSettings(feature, selectedSettings)
+                selectedSettings
+            }
     }
 
     fun updateSelectedStreamSettings(feature: PolarBleApi.PolarDeviceDataType, settings: Map<PolarSensorSetting.SettingType, Int>) {
@@ -286,83 +279,56 @@ class OnlineRecordingViewModel @Inject constructor(
     }
 
     private fun startHrStream() {
-        val disposable = Single.fromCallable {}
-            .toFlowable()
-            .flatMap {
-                Log.d(TAG, "Start HR stream")
-                polarDeviceStreamingRepository.getDeviceName(deviceId)?.let {
-                    collector.startHrLog(it)
-                } ?: kotlin.run {
-                    showError("Failed to start HR stream. Device name is not known")
+        streamJobs[PolarBleApi.PolarDeviceDataType.HR]?.cancel()
+        streamJobs[PolarBleApi.PolarDeviceDataType.HR] = viewModelScope.launch(Dispatchers.IO) {
+            Log.d(TAG, "Start HR stream")
+            polarDeviceStreamingRepository.getDeviceName(deviceId)?.let {
+                collector.startHrLog(it)
+            } ?: showError("Failed to start HR stream. Device name is not known")
+            updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.HR, StreamingFeatureState.STATES.RECORDING)
+            polarDeviceStreamingRepository.startHrStreaming(deviceId)
+                .catch { error ->
+                    if (error !is PolarDeviceDisconnected) showError("HR stream failed", error)
                 }
-
-                updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.HR, StreamingFeatureState.STATES.RECORDING)
-                polarDeviceStreamingRepository.startHrStreaming(deviceId)
-            }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { polarHrData: PolarHrData ->
+                .collect { polarHrData ->
                     logHrData(polarHrData)
-
                     val hrSample = polarHrData.samples.first()
                     HrDataHolder.updateHr(hrSample.hr)
-
-                    _uiHeartRateInfoState.update {
-                        it.copy(deviceId = deviceId, heartRate = hrSample)
-                    }
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("HR stream failed", error)
-                    }
+                    _uiHeartRateInfoState.update { it.copy(deviceId = deviceId, heartRate = hrSample) }
                 }
-            )
-        streamDisposables[PolarBleApi.PolarDeviceDataType.HR] = disposable
+        }
     }
 
     fun requestStreamSettings(deviceId: String, feature: PolarBleApi.PolarDeviceDataType) {
         viewModelScope.launch(Dispatchers.IO) {
-            val availableSettings = polarDeviceStreamingRepository.getAvailableStreamSettings(deviceId, feature)
-            val allSettings = polarDeviceStreamingRepository.requestFullStreamSettings(deviceId, feature)
-                .onErrorReturn { PolarSensorSetting(emptyMap()) }
-
-            Single.zip(availableSettings, allSettings) { available: PolarSensorSetting, all: PolarSensorSetting ->
-                if (available.settings.isEmpty()) {
-                    throw Throwable("Settings are not available")
-                } else {
-                    Log.d(TAG, "Feature " + feature + " available settings " + available.settings)
-                    Log.d(TAG, "Feature " + feature + " all settings " + all.settings)
-                    return@zip Pair(available, all)
+            try {
+                val available = polarDeviceStreamingRepository.getAvailableStreamSettings(deviceId, feature)
+                val all = try {
+                    polarDeviceStreamingRepository.requestFullStreamSettings(deviceId, feature)
+                } catch (e: Exception) {
+                    PolarSensorSetting(emptyMap())
                 }
-            }
-                .toFlowable()
-                .subscribe(
-                    { sensorSettings: Pair<PolarSensorSetting, PolarSensorSetting> ->
-                        Log.d(TAG, "Sensor settings fetch completed")
 
-                        val newSettings = OnlineStreamSettings(
-                            currentlyAvailable = sensorSettings.first,
-                            allPossibleSettings = sensorSettings.second,
-                            selectedSettings = settingsCache[feature]?.selectedSettings
-                        )
-                        settingsCache[feature] = newSettings
+                if (available.settings.isEmpty()) {
+                    showError("Settings are not available for feature $feature")
+                    return@launch
+                }
 
-                        _uiOnlineRequestedSettingsState.update {
-                            OnlineAvailableStreamSettingsUiState(
-                                feature = feature,
-                                OnlineStreamSettings(
-                                    currentlyAvailable = sensorSettings.first,
-                                    allPossibleSettings = sensorSettings.second,
-                                    selectedSettings = settingsCache[feature]?.selectedSettings
-                                )
-                            )
-                        }
-                    },
-                    { error: Throwable ->
-                        showError("Settings fetch error for feature $feature", error)
-                    }
+                Log.d(TAG, "Feature $feature available settings ${available.settings}")
+                Log.d(TAG, "Feature $feature all settings ${all.settings}")
+
+                val newSettings = OnlineStreamSettings(
+                    currentlyAvailable = available,
+                    allPossibleSettings = all,
+                    selectedSettings = settingsCache[feature]?.selectedSettings
                 )
+                settingsCache[feature] = newSettings
+                _uiOnlineRequestedSettingsState.update {
+                    OnlineAvailableStreamSettingsUiState(feature = feature, settings = newSettings)
+                }
+            } catch (e: Exception) {
+                showError("Settings fetch error for feature $feature", e)
+            }
         }
     }
 
@@ -384,100 +350,64 @@ class OnlineRecordingViewModel @Inject constructor(
     }
 
     fun pauseStream(feature: PolarBleApi.PolarDeviceDataType) {
-        val disposable = streamDisposables[feature]
-        if (disposable != null) {
-            disposable.dispose()
-            streamDisposables[feature] = null
+        val job = streamJobs[feature]
+        if (job != null) {
+            job.cancel()
+            streamJobs[feature] = null
             updateStreamingRecordingState(deviceId, feature, StreamingFeatureState.STATES.PAUSED)
         } else {
-            Log.d(TAG, "Disposing stream which has no disposable $feature")
+            Log.d(TAG, "Pausing stream which has no job $feature")
         }
     }
 
     fun stopStream(feature: PolarBleApi.PolarDeviceDataType) {
+        streamJobs[feature]?.cancel()
+        streamJobs[feature] = null
         when (feature) {
             PolarBleApi.PolarDeviceDataType.ECG -> {
                 polarDeviceStreamingRepository.stopStreaming(deviceId, PmdMeasurementType.ECG)
-                settingsCache[PolarBleApi.PolarDeviceDataType.ECG]?.selectedSettings?.let {
-                    updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.ECG, StreamingFeatureState.STATES.STOPPED,
-                        it
-                    )
-                }
+                settingsCache[feature]?.selectedSettings?.let { updateStreamingRecordingState(deviceId, feature, StreamingFeatureState.STATES.STOPPED, it) }
             }
             PolarBleApi.PolarDeviceDataType.ACC -> {
                 polarDeviceStreamingRepository.stopStreaming(deviceId, PmdMeasurementType.ACC)
-                settingsCache[PolarBleApi.PolarDeviceDataType.ACC]?.selectedSettings?.let {
-                    updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.ACC, StreamingFeatureState.STATES.STOPPED,
-                        it
-                    )
-                }
+                settingsCache[feature]?.selectedSettings?.let { updateStreamingRecordingState(deviceId, feature, StreamingFeatureState.STATES.STOPPED, it) }
                 AccDataHolder.clear()
             }
             PolarBleApi.PolarDeviceDataType.PPG -> {
                 polarDeviceStreamingRepository.stopStreaming(deviceId, PmdMeasurementType.PPG)
-                settingsCache[PolarBleApi.PolarDeviceDataType.PPG]?.selectedSettings?.let {
-                    updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.PPG, StreamingFeatureState.STATES.STOPPED,
-                        it
-                    )
-                }
+                settingsCache[feature]?.selectedSettings?.let { updateStreamingRecordingState(deviceId, feature, StreamingFeatureState.STATES.STOPPED, it) }
             }
             PolarBleApi.PolarDeviceDataType.PPI -> {
-                polarDeviceStreamingRepository.stopHrStreaming(deviceId)
-                updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.PPI, StreamingFeatureState.STATES.STOPPED, emptyMap())
+                viewModelScope.launch { polarDeviceStreamingRepository.stopHrStreaming(deviceId) }
+                updateStreamingRecordingState(deviceId, feature, StreamingFeatureState.STATES.STOPPED, emptyMap())
             }
             PolarBleApi.PolarDeviceDataType.GYRO -> {
                 polarDeviceStreamingRepository.stopStreaming(deviceId, PmdMeasurementType.GYRO)
-                settingsCache[PolarBleApi.PolarDeviceDataType.GYRO]?.selectedSettings?.let {
-                    updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.GYRO, StreamingFeatureState.STATES.STOPPED,
-                        it
-                    )
-                }
+                settingsCache[feature]?.selectedSettings?.let { updateStreamingRecordingState(deviceId, feature, StreamingFeatureState.STATES.STOPPED, it) }
             }
             PolarBleApi.PolarDeviceDataType.MAGNETOMETER -> {
                 polarDeviceStreamingRepository.stopStreaming(deviceId, PmdMeasurementType.MAGNETOMETER)
-                settingsCache[PolarBleApi.PolarDeviceDataType.MAGNETOMETER]?.selectedSettings?.let {
-                    updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.MAGNETOMETER, StreamingFeatureState.STATES.STOPPED,
-                        it
-                    )
-                }
+                settingsCache[feature]?.selectedSettings?.let { updateStreamingRecordingState(deviceId, feature, StreamingFeatureState.STATES.STOPPED, it) }
             }
             PolarBleApi.PolarDeviceDataType.PRESSURE -> {
                 polarDeviceStreamingRepository.stopStreaming(deviceId, PmdMeasurementType.PRESSURE)
-                settingsCache[PolarBleApi.PolarDeviceDataType.PRESSURE]?.selectedSettings?.let {
-                    updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.PRESSURE, StreamingFeatureState.STATES.STOPPED,
-                        it
-                    )
-                }
+                settingsCache[feature]?.selectedSettings?.let { updateStreamingRecordingState(deviceId, feature, StreamingFeatureState.STATES.STOPPED, it) }
             }
             PolarBleApi.PolarDeviceDataType.LOCATION -> {
                 polarDeviceStreamingRepository.stopStreaming(deviceId, PmdMeasurementType.LOCATION)
-                settingsCache[PolarBleApi.PolarDeviceDataType.LOCATION]?.selectedSettings?.let {
-                    updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.LOCATION, StreamingFeatureState.STATES.STOPPED,
-                        it
-                    )
-                }
+                settingsCache[feature]?.selectedSettings?.let { updateStreamingRecordingState(deviceId, feature, StreamingFeatureState.STATES.STOPPED, it) }
             }
             PolarBleApi.PolarDeviceDataType.TEMPERATURE -> {
                 polarDeviceStreamingRepository.stopStreaming(deviceId, PmdMeasurementType.TEMPERATURE)
-                settingsCache[PolarBleApi.PolarDeviceDataType.TEMPERATURE]?.selectedSettings?.let {
-                    updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.TEMPERATURE, StreamingFeatureState.STATES.STOPPED,
-                        it
-                    )
-                }
+                settingsCache[feature]?.selectedSettings?.let { updateStreamingRecordingState(deviceId, feature, StreamingFeatureState.STATES.STOPPED, it) }
             }
-
             PolarBleApi.PolarDeviceDataType.SKIN_TEMPERATURE -> {
                 polarDeviceStreamingRepository.stopStreaming(deviceId, PmdMeasurementType.SKIN_TEMP)
-                settingsCache[PolarBleApi.PolarDeviceDataType.SKIN_TEMPERATURE]?.selectedSettings?.let {
-                    updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.SKIN_TEMPERATURE, StreamingFeatureState.STATES.STOPPED,
-                        it
-                    )
-                }
+                settingsCache[feature]?.selectedSettings?.let { updateStreamingRecordingState(deviceId, feature, StreamingFeatureState.STATES.STOPPED, it) }
             }
-
             PolarBleApi.PolarDeviceDataType.HR -> {
-                polarDeviceStreamingRepository.stopHrStreaming(deviceId)
-                updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.HR, StreamingFeatureState.STATES.STOPPED, emptyMap())
+                viewModelScope.launch { polarDeviceStreamingRepository.stopHrStreaming(deviceId) }
+                updateStreamingRecordingState(deviceId, feature, StreamingFeatureState.STATES.STOPPED, emptyMap())
                 HrDataHolder.clear()
             }
         }
@@ -485,575 +415,192 @@ class OnlineRecordingViewModel @Inject constructor(
     }
 
     private fun startEcgStream() {
-        val disposable = getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.ECG)
-            .observeOn(Schedulers.io())
-            .toFlowable()
-            .flatMap { settings: Map<PolarSensorSetting.SettingType, Int> ->
-                Log.d(TAG, "Start ECG stream with settings: $settings")
-                polarDeviceStreamingRepository.getDeviceName(deviceId)?.let {
-                    collector.startEcgLog(it)
-                } ?: kotlin.run {
-                    showError("Failed start ECG stream. Device name is not known")
-                }
-                updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.ECG, StreamingFeatureState.STATES.RECORDING, settings)
-                polarDeviceStreamingRepository.startEcgStream(deviceId, PolarSensorSetting(settings))
-            }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                { polarEcgData: PolarEcgData ->
-                    logEcgData(polarEcgData)
-                    val sampleRate = if (polarEcgData.samples.size > 1) {
-                        StreamUtils.calculateSampleRate(timeStampEarlier = polarEcgData.samples[0].timeStamp, timeStampLater = polarEcgData.samples[1].timeStamp)
-                    } else {
-                        0.0
-                    }
-                    _uiEcgStreamDataState.update {
-                        EcgSampleDataUiState(deviceId = deviceId, sampleRate, polarEcgData)
-                    }
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("ECG stream failed", error)
-                    }
+        streamJobs[PolarBleApi.PolarDeviceDataType.ECG]?.cancel()
+        streamJobs[PolarBleApi.PolarDeviceDataType.ECG] = viewModelScope.launch(Dispatchers.IO) {
+            val settings = try { getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.ECG) } catch (e: Exception) { showError("Failed to get ECG settings", e); return@launch }
+            Log.d(TAG, "Start ECG stream with settings: $settings")
+            polarDeviceStreamingRepository.getDeviceName(deviceId)?.let { collector.startEcgLog(it) } ?: showError("Failed start ECG stream. Device name is not known")
+            updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.ECG, StreamingFeatureState.STATES.RECORDING, settings)
+            polarDeviceStreamingRepository.startEcgStream(deviceId, PolarSensorSetting(settings))
+                .catch { error ->
+                    if (error !is PolarDeviceDisconnected) showError("ECG stream failed", error)
                     updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.ECG, StreamingFeatureState.STATES.STOPPED)
                 }
-            )
-        streamDisposables[PolarBleApi.PolarDeviceDataType.ECG] = disposable
+                .collect { polarEcgData ->
+                    logEcgData(polarEcgData)
+                    val sampleRate = if (polarEcgData.samples.size > 1) StreamUtils.calculateSampleRate(polarEcgData.samples[0].timeStamp, polarEcgData.samples[1].timeStamp) else 0.0
+                    _uiEcgStreamDataState.update { EcgSampleDataUiState(deviceId = deviceId, sampleRate, polarEcgData) }
+                }
+        }
     }
 
     private fun startAccStream() {
-        val disposable = getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.ACC)
-            .observeOn(Schedulers.io())
-            .toFlowable()
-            .flatMap { settings: Map<PolarSensorSetting.SettingType, Int> ->
-                Log.d(TAG, "Start ACC stream with settings: $settings")
-                polarDeviceStreamingRepository.getDeviceName(deviceId)?.let {
-                    collector.startAccLog(it)
-                } ?: kotlin.run {
-                    showError("Failed start ACC stream. Device name is not known")
-                }
-                updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.ACC, StreamingFeatureState.STATES.RECORDING, settings)
-                polarDeviceStreamingRepository.startAccStreaming(deviceId, PolarSensorSetting(settings))
-            }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                { accData: PolarAccelerometerData ->
-                    logAccData(accData)
-                    val sampleRate = if (accData.samples.size > 1) {
-                        StreamUtils.calculateSampleRate(timeStampEarlier = accData.samples[0].timeStamp, timeStampLater = accData.samples[1].timeStamp)
-                    } else {
-                        0.0
-                    }
-                    _uiAccStreamDataState.update {
-                        AccSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = accData)
-                    }
-
-                    accData.samples.forEach { s ->
-                        AccDataHolder.updateAcc(s.x, s.y, s.z)
-                    }
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("ACC stream failed", error)
-                    }
+        streamJobs[PolarBleApi.PolarDeviceDataType.ACC]?.cancel()
+        streamJobs[PolarBleApi.PolarDeviceDataType.ACC] = viewModelScope.launch(Dispatchers.IO) {
+            val settings = try { getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.ACC) } catch (e: Exception) { showError("Failed to get ACC settings", e); return@launch }
+            Log.d(TAG, "Start ACC stream with settings: $settings")
+            polarDeviceStreamingRepository.getDeviceName(deviceId)?.let { collector.startAccLog(it) } ?: showError("Failed start ACC stream. Device name is not known")
+            updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.ACC, StreamingFeatureState.STATES.RECORDING, settings)
+            polarDeviceStreamingRepository.startAccStreaming(deviceId, PolarSensorSetting(settings))
+                .catch { error ->
+                    if (error !is PolarDeviceDisconnected) showError("ACC stream failed", error)
                     updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.ACC, StreamingFeatureState.STATES.STOPPED)
                 }
-            )
-        streamDisposables[PolarBleApi.PolarDeviceDataType.ACC] = disposable
+                .collect { accData ->
+                    logAccData(accData)
+                    val sampleRate = if (accData.samples.size > 1) StreamUtils.calculateSampleRate(accData.samples[0].timeStamp, accData.samples[1].timeStamp) else 0.0
+                    _uiAccStreamDataState.update { AccSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = accData) }
+                    accData.samples.forEach { s -> AccDataHolder.updateAcc(s.x, s.y, s.z) }
+                }
+        }
     }
 
     private fun startGyroStream() {
-        val disposable = getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.GYRO)
-            .toFlowable()
-            .flatMap { settings: Map<PolarSensorSetting.SettingType, Int> ->
-                Log.d(TAG, "Start Gyro stream with settings: $settings")
-                polarDeviceStreamingRepository.getDeviceName(deviceId)?.let {
-                    collector.startGyroLog(it)
-                } ?: kotlin.run {
-                    showError("Failed start Gyro stream. Device name is not known")
-                }
-                updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.GYRO, StreamingFeatureState.STATES.RECORDING, settings)
-                polarDeviceStreamingRepository.startGyroStreaming(deviceId, PolarSensorSetting(settings))
-            }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                { polarGyroData: PolarGyroData ->
+        streamJobs[PolarBleApi.PolarDeviceDataType.GYRO]?.cancel()
+        streamJobs[PolarBleApi.PolarDeviceDataType.GYRO] = viewModelScope.launch(Dispatchers.IO) {
+            val settings = try { getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.GYRO) } catch (e: Exception) { showError("Failed to get Gyro settings", e); return@launch }
+            Log.d(TAG, "Start Gyro stream with settings: $settings")
+            polarDeviceStreamingRepository.getDeviceName(deviceId)?.let { collector.startGyroLog(it) } ?: showError("Failed start Gyro stream. Device name is not known")
+            updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.GYRO, StreamingFeatureState.STATES.RECORDING, settings)
+            polarDeviceStreamingRepository.startGyroStreaming(deviceId, PolarSensorSetting(settings))
+                .catch { error -> if (error !is PolarDeviceDisconnected) showError("Gyro stream failed", error) }
+                .collect { polarGyroData ->
                     logGyroData(polarGyroData)
-                    val sampleRate = if (polarGyroData.samples.size > 1) {
-                        StreamUtils.calculateSampleRate(timeStampEarlier = polarGyroData.samples[0].timeStamp, timeStampLater = polarGyroData.samples[1].timeStamp)
-                    } else {
-                        0.0
-                    }
-
-                    _uiGyroStreamDataState.update {
-                        GyroSampleDataUiState(deviceId = deviceId, sampleRate, polarGyroData)
-                    }
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("Gyro stream failed", error)
-                    }
+                    val sampleRate = if (polarGyroData.samples.size > 1) StreamUtils.calculateSampleRate(polarGyroData.samples[0].timeStamp, polarGyroData.samples[1].timeStamp) else 0.0
+                    _uiGyroStreamDataState.update { GyroSampleDataUiState(deviceId = deviceId, sampleRate, polarGyroData) }
                 }
-            )
-        streamDisposables[PolarBleApi.PolarDeviceDataType.GYRO] = disposable
+        }
     }
 
     private fun startMagnetometerStream() {
-        val disposable = getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.MAGNETOMETER)
-            .observeOn(Schedulers.io())
-            .toFlowable()
-            .flatMap { settings: Map<PolarSensorSetting.SettingType, Int> ->
-                Log.d(TAG, "Start Magnetometer stream with settings: $settings")
-                polarDeviceStreamingRepository.getDeviceName(deviceId)?.let {
-                    collector.startMagnetometerLog(it)
-                } ?: kotlin.run {
-                    showError("Failed start Mag stream. Device name is not known")
-                }
-
-                updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.MAGNETOMETER, StreamingFeatureState.STATES.RECORDING, settings)
-                polarDeviceStreamingRepository.startMagnetometerStream(deviceId, PolarSensorSetting(settings))
-            }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                { polarMagData: PolarMagnetometerData ->
+        streamJobs[PolarBleApi.PolarDeviceDataType.MAGNETOMETER]?.cancel()
+        streamJobs[PolarBleApi.PolarDeviceDataType.MAGNETOMETER] = viewModelScope.launch(Dispatchers.IO) {
+            val settings = try { getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.MAGNETOMETER) } catch (e: Exception) { showError("Failed to get Mag settings", e); return@launch }
+            Log.d(TAG, "Start Magnetometer stream with settings: $settings")
+            polarDeviceStreamingRepository.getDeviceName(deviceId)?.let { collector.startMagnetometerLog(it) } ?: showError("Failed start Mag stream. Device name is not known")
+            updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.MAGNETOMETER, StreamingFeatureState.STATES.RECORDING, settings)
+            polarDeviceStreamingRepository.startMagnetometerStream(deviceId, PolarSensorSetting(settings))
+                .catch { error -> if (error !is PolarDeviceDisconnected) showError("MAG stream failed", error) }
+                .collect { polarMagData ->
                     logMagnetometerData(polarMagData)
-                    val sampleRate = if (polarMagData.samples.size > 1) {
-                        StreamUtils.calculateSampleRate(timeStampEarlier = polarMagData.samples[0].timeStamp, timeStampLater = polarMagData.samples[1].timeStamp)
-                    } else {
-                        0.0
-                    }
-
-                    _uiMagnStreamDataState.update {
-                        MagnSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = polarMagData)
-                    }
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("MAG stream failed", error)
-                    }
+                    val sampleRate = if (polarMagData.samples.size > 1) StreamUtils.calculateSampleRate(polarMagData.samples[0].timeStamp, polarMagData.samples[1].timeStamp) else 0.0
+                    _uiMagnStreamDataState.update { MagnSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = polarMagData) }
                 }
-            )
-        streamDisposables[PolarBleApi.PolarDeviceDataType.MAGNETOMETER] = disposable
+        }
     }
 
     private fun startPpiStream() {
-        val disposable =
-            Single.fromCallable {}
-                .toFlowable()
-                .flatMap {
-                    Log.d(TAG, "Start PPI stream")
-                    polarDeviceStreamingRepository.getDeviceName(deviceId)?.let {
-                        collector.startPpiLog(it)
-                    } ?: kotlin.run {
-                        showError("Failed start PPI stream. Device name is not known")
-                    }
-
-                    updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.PPI, StreamingFeatureState.STATES.RECORDING)
-                    polarDeviceStreamingRepository.startPpiStream(deviceId)
+        streamJobs[PolarBleApi.PolarDeviceDataType.PPI]?.cancel()
+        streamJobs[PolarBleApi.PolarDeviceDataType.PPI] = viewModelScope.launch(Dispatchers.IO) {
+            Log.d(TAG, "Start PPI stream")
+            polarDeviceStreamingRepository.getDeviceName(deviceId)?.let { collector.startPpiLog(it) } ?: showError("Failed start PPI stream. Device name is not known")
+            updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.PPI, StreamingFeatureState.STATES.RECORDING)
+            polarDeviceStreamingRepository.startPpiStream(deviceId)
+                .catch { error -> if (error !is PolarDeviceDisconnected) showError("PPI stream failed", error) }
+                .collect { ppiSampleData ->
+                    logPpiData(ppiSampleData)
+                    _uiPpiStreamDataState.update { it.copy(deviceId = deviceId, sampleData = ppiSampleData.samples[0]) }
                 }
-                .subscribeOn(Schedulers.io())
-                .subscribe(
-                    { ppiSampleData: PolarPpiData ->
-                        logPpiData(ppiSampleData)
-                        _uiPpiStreamDataState.update {
-                            it.copy(deviceId = deviceId, sampleData = ppiSampleData.samples[0])
-                        }
-                    },
-                    { error: Throwable ->
-                        if (error !is PolarDeviceDisconnected) {
-                            showError("PPI stream failed", error)
-                        }
-                    }
-                )
-        streamDisposables[PolarBleApi.PolarDeviceDataType.PPI] = disposable
+        }
     }
 
     private fun startPpgStream() {
-        val ppgStreamsConnectable = getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.PPG)
-            .observeOn(Schedulers.io())
-            .toFlowable()
-            .flatMap { settings: Map<PolarSensorSetting.SettingType, Int> ->
-                Log.d(TAG, "Start PPG stream with settings: $settings")
-                polarDeviceStreamingRepository.getDeviceName(deviceId)?.let {
-                    collector.startPpgLog(it)
-                } ?: kotlin.run {
-                    showError("Failed start PPG stream. Device name is not known")
-                }
-                updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.PPG, StreamingFeatureState.STATES.RECORDING, settings)
-                polarDeviceStreamingRepository.startPpgStream(deviceId, PolarSensorSetting(settings))
-            }.publish()
-
-        ppgStreamsConnectable.filter { value: PolarPpgData -> value.type == PolarPpgData.PpgDataType.PPG3_AMBIENT1 }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                { polarPpgData: PolarPpgData ->
+        streamJobs[PolarBleApi.PolarDeviceDataType.PPG]?.cancel()
+        streamJobs[PolarBleApi.PolarDeviceDataType.PPG] = viewModelScope.launch(Dispatchers.IO) {
+            val settings = try { getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.PPG) } catch (e: Exception) { showError("Failed to get PPG settings", e); return@launch }
+            Log.d(TAG, "Start PPG stream with settings: $settings")
+            polarDeviceStreamingRepository.getDeviceName(deviceId)?.let { collector.startPpgLog(it) } ?: showError("Failed start PPG stream. Device name is not known")
+            updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.PPG, StreamingFeatureState.STATES.RECORDING, settings)
+            polarDeviceStreamingRepository.startPpgStream(deviceId, PolarSensorSetting(settings))
+                .catch { error -> if (error !is PolarDeviceDisconnected) showError("PPG stream failed", error) }
+                .collect { polarPpgData ->
                     logPpgData(polarPpgData)
-                    val sampleRate = if (polarPpgData.samples.size > 1) {
-                        StreamUtils.calculateSampleRate(timeStampEarlier = polarPpgData.samples[0].timeStamp, timeStampLater = polarPpgData.samples[1].timeStamp)
-                    } else {
-                        0.0
-                    }
-
-                    _uiPpgStreamDataState.update {
-                        PpgSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = polarPpgData)
-                    }
-
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("PPG3_AMBIENT1 stream failed", error)
+                    val sampleRate = if (polarPpgData.samples.size > 1) StreamUtils.calculateSampleRate(polarPpgData.samples[0].timeStamp, polarPpgData.samples[1].timeStamp) else 0.0
+                    when (polarPpgData.type) {
+                        PolarPpgData.PpgDataType.PPG3_AMBIENT1,
+                        PolarPpgData.PpgDataType.FRAME_TYPE_7,
+                        PolarPpgData.PpgDataType.FRAME_TYPE_8,
+                        PolarPpgData.PpgDataType.FRAME_TYPE_10,
+                        PolarPpgData.PpgDataType.FRAME_TYPE_13,
+                        PolarPpgData.PpgDataType.FRAME_TYPE_14 ->
+                            _uiPpgStreamDataState.update { PpgSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = polarPpgData) }
+                        else -> { /* log only */ }
                     }
                 }
-            )
-
-        ppgStreamsConnectable.filter { value: PolarPpgData -> value.type == PolarPpgData.PpgDataType.FRAME_TYPE_7 }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                { polarPpgData: PolarPpgData ->
-                    logPpgData(polarPpgData)
-                    val sampleRate = if (polarPpgData.samples.size > 1) {
-                        StreamUtils.calculateSampleRate(timeStampEarlier = polarPpgData.samples[0].timeStamp, timeStampLater = polarPpgData.samples[1].timeStamp)
-                    } else {
-                        0.0
-                    }
-                    _uiPpgStreamDataState.update {
-                        PpgSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = polarPpgData)
-                    }
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("PPG16 stream failed", error)
-                    }
-                }
-            )
-
-        ppgStreamsConnectable.filter { value: PolarPpgData -> value.type == PolarPpgData.PpgDataType.FRAME_TYPE_8 }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                { polarPpgData: PolarPpgData ->
-                    logPpgData(polarPpgData)
-                    val sampleRate = if (polarPpgData.samples.size > 1) {
-                        StreamUtils.calculateSampleRate(timeStampEarlier = polarPpgData.samples[0].timeStamp, timeStampLater = polarPpgData.samples[1].timeStamp)
-                    } else {
-                        0.0
-                    }
-                    _uiPpgStreamDataState.update {
-                        PpgSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = polarPpgData)
-                    }
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("PPG24 stream failed", error)
-                    }
-                }
-            )
-
-        ppgStreamsConnectable.filter { value: PolarPpgData -> value.type == PolarPpgData.PpgDataType.FRAME_TYPE_13 }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                { polarPpgData: PolarPpgData ->
-                    logPpgData(polarPpgData)
-                    val sampleRate = if (polarPpgData.samples.size > 1) {
-                        StreamUtils.calculateSampleRate(timeStampEarlier = polarPpgData.samples[0].timeStamp, timeStampLater = polarPpgData.samples[1].timeStamp)
-                    } else {
-                        0.0
-                    }
-                    _uiPpgStreamDataState.update {
-                        PpgSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = polarPpgData)
-                    }
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("PPG13 stream failed", error)
-                    }
-                }
-            )
-
-        ppgStreamsConnectable.filter { value: PolarPpgData -> value.type == PolarPpgData.PpgDataType.FRAME_TYPE_14 }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                { polarPpgData: PolarPpgData ->
-                    logPpgData(polarPpgData)
-                    val sampleRate = if (polarPpgData.samples.size > 1) {
-                        StreamUtils.calculateSampleRate(timeStampEarlier = polarPpgData.samples[0].timeStamp, timeStampLater = polarPpgData.samples[1].timeStamp)
-                    } else {
-                        0.0
-                    }
-                    _uiPpgStreamDataState.update {
-                        PpgSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = polarPpgData)
-                    }
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("PPG14 auto gain stream failed", error)
-                    }
-                }
-            )
-
-
-        ppgStreamsConnectable.filter { value: PolarPpgData -> value.type == PolarPpgData.PpgDataType.SPORT_ID }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                { ohrData: PolarPpgData ->
-                    logPpgData(ohrData)
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("PPG SPORT_ID stream failed", error)
-                    }
-                }
-            )
-
-        ppgStreamsConnectable.filter { value: PolarPpgData -> value.type == PolarPpgData.PpgDataType.FRAME_TYPE_4 }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                { ohrData: PolarPpgData ->
-                    logPpgData(ohrData)
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("PPG FRAME_TYPE_4 stream failed", error)
-                    }
-                }
-            )
-
-        ppgStreamsConnectable.filter { value: PolarPpgData -> value.type == PolarPpgData.PpgDataType.FRAME_TYPE_5 }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                { ohrData: PolarPpgData ->
-                    logPpgData(ohrData)
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("PPG FRAME_TYPE_5 stream failed", error)
-                    }
-                }
-            )
-
-        ppgStreamsConnectable.filter { value: PolarPpgData -> value.type == PolarPpgData.PpgDataType.FRAME_TYPE_9 }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                { ohrData: PolarPpgData ->
-                    logPpgData(ohrData)
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("PPG FRAME_TYPE_9 stream failed", error)
-                    }
-                }
-            )
-
-        ppgStreamsConnectable.filter { value: PolarPpgData -> value.type == PolarPpgData.PpgDataType.FRAME_TYPE_10 }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                { ppgData: PolarPpgData ->
-                    logPpgData(ppgData)
-                    val sampleRate = if (ppgData.samples.size > 1) {
-                        StreamUtils.calculateSampleRate(timeStampEarlier = ppgData.samples[0].timeStamp, timeStampLater = ppgData.samples[1].timeStamp)
-                    } else {
-                        0.0
-                    }
-                    _uiPpgStreamDataState.update {
-                        PpgSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = ppgData)
-                    }
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("PPG FRAME_TYPE_10 stream failed", error)
-                    }
-                }
-            )
-
-
-
-        val disposable = ppgStreamsConnectable.connect()
-        streamDisposables[PolarBleApi.PolarDeviceDataType.PPG] = disposable
+        }
     }
 
     private fun startPressureStream() {
-        val disposable = getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.PRESSURE)
-            .toFlowable()
-            .flatMap { settings: Map<PolarSensorSetting.SettingType, Int> ->
-                Log.d(TAG, "Start Pressure stream with settings: $settings")
-                polarDeviceStreamingRepository.getDeviceName(deviceId)?.let {
-                    collector.startPressureLog(it)
-                } ?: kotlin.run {
-                    showError("Failed start PPG stream. Device name is not known")
-                }
-                updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.PRESSURE, StreamingFeatureState.STATES.RECORDING, settings)
-                polarDeviceStreamingRepository.startPressureStream(deviceId, PolarSensorSetting(settings))
-            }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                { polarPressureData: PolarPressureData ->
+        streamJobs[PolarBleApi.PolarDeviceDataType.PRESSURE]?.cancel()
+        streamJobs[PolarBleApi.PolarDeviceDataType.PRESSURE] = viewModelScope.launch(Dispatchers.IO) {
+            val settings = try { getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.PRESSURE) } catch (e: Exception) { showError("Failed to get Pressure settings", e); return@launch }
+            Log.d(TAG, "Start Pressure stream with settings: $settings")
+            polarDeviceStreamingRepository.getDeviceName(deviceId)?.let { collector.startPressureLog(it) } ?: showError("Failed start Pressure stream. Device name is not known")
+            updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.PRESSURE, StreamingFeatureState.STATES.RECORDING, settings)
+            polarDeviceStreamingRepository.startPressureStream(deviceId, PolarSensorSetting(settings))
+                .catch { error -> if (error !is PolarDeviceDisconnected) showError("PRESSURE stream failed", error) }
+                .collect { polarPressureData ->
                     logPressureData(polarPressureData)
-                    val sampleRate = if (polarPressureData.samples.size > 1) {
-                        StreamUtils.calculateSampleRate(timeStampEarlier = polarPressureData.samples[0].timeStamp, timeStampLater = polarPressureData.samples[1].timeStamp)
-                    } else {
-                        0.0
-                    }
-
-                    _uiPressureStreamDataState.update {
-                        PressureSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = polarPressureData)
-                    }
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("PRESSURE stream failed", error)
-                    }
+                    val sampleRate = if (polarPressureData.samples.size > 1) StreamUtils.calculateSampleRate(polarPressureData.samples[0].timeStamp, polarPressureData.samples[1].timeStamp) else 0.0
+                    _uiPressureStreamDataState.update { PressureSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = polarPressureData) }
                 }
-            )
-        streamDisposables[PolarBleApi.PolarDeviceDataType.PRESSURE] = disposable
+        }
     }
 
     private fun startLocationStream() {
-        val locationStreamsConnectable = getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.LOCATION)
-            .observeOn(Schedulers.io())
-            .toFlowable()
-            .flatMap { settings: Map<PolarSensorSetting.SettingType, Int> ->
-                Log.d(TAG, "Start Location stream with settings: $settings")
-                polarDeviceStreamingRepository.getDeviceName(deviceId)?.let {
-                    collector.startLocationLog(it)
-                } ?: kotlin.run {
-                    showError("Failed start Location stream. Device name is not known")
-                }
-
-                updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.LOCATION, StreamingFeatureState.STATES.RECORDING, settings)
-                polarDeviceStreamingRepository.startLocationStream(deviceId, PolarSensorSetting(settings))
-            }.publish()
-
-        locationStreamsConnectable.filter { value: PolarLocationData -> value.samples.first() is GpsCoordinatesSample }
-            .subscribe(
-                { polarLocationData: PolarLocationData ->
-                    val sampleRate = if (polarLocationData.samples.size > 1) {
-                        StreamUtils.calculateSampleRate(timeStampEarlier = (polarLocationData.samples[0] as GpsCoordinatesSample).timeStamp, timeStampLater = (polarLocationData.samples[1] as GpsCoordinatesSample).timeStamp)
-                    } else {
-                        0.0
-                    }
-
+        streamJobs[PolarBleApi.PolarDeviceDataType.LOCATION]?.cancel()
+        streamJobs[PolarBleApi.PolarDeviceDataType.LOCATION] = viewModelScope.launch(Dispatchers.IO) {
+            val settings = try { getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.LOCATION) } catch (e: Exception) { showError("Failed to get Location settings", e); return@launch }
+            Log.d(TAG, "Start Location stream with settings: $settings")
+            polarDeviceStreamingRepository.getDeviceName(deviceId)?.let { collector.startLocationLog(it) } ?: showError("Failed start Location stream. Device name is not known")
+            updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.LOCATION, StreamingFeatureState.STATES.RECORDING, settings)
+            polarDeviceStreamingRepository.startLocationStream(deviceId, PolarSensorSetting(settings))
+                .catch { error -> if (error !is PolarDeviceDisconnected) showError("LOCATION stream failed", error) }
+                .collect { polarLocationData ->
                     logLocationData(polarLocationData)
-                    _uiLocationStreamDataState.update {
-                        LocationSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, polarLocationData)
-                    }
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("LOCATION GpsCoordinatesSample stream failed", error)
-                    }
-                }
-            )
-
-        locationStreamsConnectable.filter { value: PolarLocationData -> value.samples.first() is GpsSatelliteDilutionSample }
-            .subscribe(
-                { polarLocationData: PolarLocationData ->
-                    logLocationData(polarLocationData)
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("LOCATION GpsSatelliteDilutionSample stream failed", error)
+                    when (val sample = polarLocationData.samples.firstOrNull()) {
+                        is GpsCoordinatesSample -> {
+                            val sampleRate = if (polarLocationData.samples.size > 1) StreamUtils.calculateSampleRate((polarLocationData.samples[0] as GpsCoordinatesSample).timeStamp, (polarLocationData.samples[1] as GpsCoordinatesSample).timeStamp) else 0.0
+                            _uiLocationStreamDataState.update { LocationSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = polarLocationData) }
+                        }
+                        else -> { /* satellite/NMEA data logged only */ }
                     }
                 }
-            )
-
-        locationStreamsConnectable.filter { value: PolarLocationData -> value.samples.first() is GpsSatelliteSummarySample }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { polarLocationData: PolarLocationData ->
-                    logLocationData(polarLocationData)
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("LOCATION GpsSatelliteSummarySample stream failed", error)
-                    }
-                }
-            )
-
-        locationStreamsConnectable.filter { value: PolarLocationData -> value.samples.first() is GpsNMEASample }
-            .subscribe(
-                { polarLocationData: PolarLocationData ->
-                    logLocationData(polarLocationData)
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("LOCATION timeStampPreviousPacketLocationNMEA stream failed", error)
-                    }
-                }
-            )
-
-        val disposable = locationStreamsConnectable.connect()
-        streamDisposables[PolarBleApi.PolarDeviceDataType.LOCATION] = disposable
+        }
     }
 
     private fun startTemperatureStream() {
-        val disposable = getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.TEMPERATURE)
-            .toFlowable()
-            .flatMap { settings: Map<PolarSensorSetting.SettingType, Int> ->
-                Log.d(TAG, "Start Temperature stream with settings: $settings")
-                polarDeviceStreamingRepository.getDeviceName(deviceId)?.let {
-                    collector.startTemperatureLog(it)
-                } ?: kotlin.run {
-                    showError("Failed start Temperature stream. Device name is not known")
-                }
-                updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.TEMPERATURE, StreamingFeatureState.STATES.RECORDING, settings)
-                polarDeviceStreamingRepository.startTemperatureStreaming(deviceId, PolarSensorSetting(settings))
-            }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                { polarTemperatureData: PolarTemperatureData ->
+        streamJobs[PolarBleApi.PolarDeviceDataType.TEMPERATURE]?.cancel()
+        streamJobs[PolarBleApi.PolarDeviceDataType.TEMPERATURE] = viewModelScope.launch(Dispatchers.IO) {
+            val settings = try { getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.TEMPERATURE) } catch (e: Exception) { showError("Failed to get Temperature settings", e); return@launch }
+            Log.d(TAG, "Start Temperature stream with settings: $settings")
+            polarDeviceStreamingRepository.getDeviceName(deviceId)?.let { collector.startTemperatureLog(it) } ?: showError("Failed start Temperature stream. Device name is not known")
+            updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.TEMPERATURE, StreamingFeatureState.STATES.RECORDING, settings)
+            polarDeviceStreamingRepository.startTemperatureStreaming(deviceId, PolarSensorSetting(settings))
+                .catch { error -> if (error !is PolarDeviceDisconnected) showError("TEMPERATURE stream failed", error) }
+                .collect { polarTemperatureData ->
                     logTemperatureData(polarTemperatureData)
-                    val sampleRate = if (polarTemperatureData.samples.size > 1) {
-                        StreamUtils.calculateSampleRate(timeStampEarlier = polarTemperatureData.samples[0].timeStamp, timeStampLater = polarTemperatureData.samples[1].timeStamp)
-                    } else {
-                        0.0
-                    }
-
-                    _uiTemperatureStreamDataState.update {
-                        TemperatureSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = polarTemperatureData)
-                    }
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("TEMPERATURE stream failed", error)
-                    }
+                    val sampleRate = if (polarTemperatureData.samples.size > 1) StreamUtils.calculateSampleRate(polarTemperatureData.samples[0].timeStamp, polarTemperatureData.samples[1].timeStamp) else 0.0
+                    _uiTemperatureStreamDataState.update { TemperatureSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = polarTemperatureData) }
                 }
-            )
-        streamDisposables[PolarBleApi.PolarDeviceDataType.TEMPERATURE] = disposable
+        }
     }
 
     private fun startSkinTemperatureStream() {
-        val disposable = getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.SKIN_TEMPERATURE)
-            .toFlowable()
-            .flatMap { settings: Map<PolarSensorSetting.SettingType, Int> ->
-                Log.d(TAG, "Start Skin Temperature stream with settings: $settings")
-                polarDeviceStreamingRepository.getDeviceName(deviceId)?.let {
-                    collector.startSkinTemperatureLog(it)
-                } ?: kotlin.run {
-                    showError("Failed start Skin Temperature stream. Device name is not known")
-                }
-                updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.SKIN_TEMPERATURE, StreamingFeatureState.STATES.RECORDING, settings)
-                polarDeviceStreamingRepository.startSkinTemperatureStreaming(deviceId, PolarSensorSetting(settings))
-            }
-            .subscribeOn(Schedulers.io())
-            .subscribe(
-                { polarTemperatureData: PolarTemperatureData ->
+        streamJobs[PolarBleApi.PolarDeviceDataType.SKIN_TEMPERATURE]?.cancel()
+        streamJobs[PolarBleApi.PolarDeviceDataType.SKIN_TEMPERATURE] = viewModelScope.launch(Dispatchers.IO) {
+            val settings = try { getStreamSettingsToStartStream(PolarBleApi.PolarDeviceDataType.SKIN_TEMPERATURE) } catch (e: Exception) { showError("Failed to get SkinTemp settings", e); return@launch }
+            Log.d(TAG, "Start Skin Temperature stream with settings: $settings")
+            polarDeviceStreamingRepository.getDeviceName(deviceId)?.let { collector.startSkinTemperatureLog(it) } ?: showError("Failed start Skin Temperature stream. Device name is not known")
+            updateStreamingRecordingState(deviceId, PolarBleApi.PolarDeviceDataType.SKIN_TEMPERATURE, StreamingFeatureState.STATES.RECORDING, settings)
+            polarDeviceStreamingRepository.startSkinTemperatureStreaming(deviceId, PolarSensorSetting(settings))
+                .catch { error -> if (error !is PolarDeviceDisconnected) showError("SKIN TEMPERATURE stream failed", error) }
+                .collect { polarTemperatureData ->
                     logSkinTemperatureData(polarTemperatureData)
-                    val sampleRate = if (polarTemperatureData.samples.size > 1) {
-                        StreamUtils.calculateSampleRate(timeStampEarlier = polarTemperatureData.samples[0].timeStamp, timeStampLater = polarTemperatureData.samples[1].timeStamp)
-                    } else {
-                        0.0
-                    }
-
-                    _uiSkinTemperatureStreamDataState.update {
-                        SkinTemperatureSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = polarTemperatureData)
-                    }
-                },
-                { error: Throwable ->
-                    if (error !is PolarDeviceDisconnected) {
-                        showError("SKIN TEMPERATURE stream failed", error)
-                    }
+                    val sampleRate = if (polarTemperatureData.samples.size > 1) StreamUtils.calculateSampleRate(polarTemperatureData.samples[0].timeStamp, polarTemperatureData.samples[1].timeStamp) else 0.0
+                    _uiSkinTemperatureStreamDataState.update { SkinTemperatureSampleDataUiState(deviceId = deviceId, calculatedFrequency = sampleRate, sampleData = polarTemperatureData) }
                 }
-            )
-        streamDisposables[PolarBleApi.PolarDeviceDataType.SKIN_TEMPERATURE] = disposable
+        }
     }
 
     @Throws(IOException::class)
@@ -1147,23 +694,23 @@ class OnlineRecordingViewModel @Inject constructor(
     }
 
     private fun startRecTimer() {
-        val disposable = recordingTimerDisposable
-        if (disposable == null || disposable.isDisposed) {
-            recordingTimerDisposable = Observable.interval(1, TimeUnit.SECONDS)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { time: Long ->
-                    val hours = (time / 3600).toInt()
-                    val minutes = (time / 60 % 60).toInt()
-                    val seconds = (time % 60).toInt()
-                    updateOnlineRecordingUiState(deviceId = "", timer = String.format("%02d:%02d:%02d", hours, minutes, seconds))
-                }
+        if (recordingTimerJob?.isActive == true) return
+        recordingTimerJob = viewModelScope.launch(Dispatchers.IO) {
+            var time = 0L
+            while (true) {
+                val hours = (time / 3600).toInt()
+                val minutes = (time / 60 % 60).toInt()
+                val seconds = (time % 60).toInt()
+                updateOnlineRecordingUiState(deviceId = "", timer = String.format("%02d:%02d:%02d", hours, minutes, seconds))
+                delay(1_000L)
+                time++
+            }
         }
     }
 
     private fun stopRecTimer() {
-        recordingTimerDisposable?.dispose()
-        recordingTimerDisposable = null
+        recordingTimerJob?.cancel()
+        recordingTimerJob = null
     }
 
     private fun updateOnlineRecordingUiState(deviceId: String, timer: String = "") {
@@ -1198,38 +745,23 @@ class OnlineRecordingViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        for (disposable in streamDisposables.values) {
-            disposable?.dispose()
+        for (job in streamJobs.values) {
+            job?.cancel()
         }
-        streamDisposables.clear()
+        streamJobs.clear()
         stopRecTimer()
-
-
     }
 
     private fun finalizeCollector() {
-        try {
-            Single.fromCallable { collector.finalizeAllStreams() }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { fileUris ->
-                        if (fileUris.isNotEmpty()) {
-                            _shareFiles.update {
-                                fileUris
-                            }
-                        }
-                    },
-                    { error ->
-                        showError("Failed to finalize stream files", error)
-                    }
-                )
-        } catch (e: Exception) {
-            showError("Exception when finalizing streams", e)
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val fileUris = collector.finalizeAllStreams()
+                if (fileUris.isNotEmpty()) {
+                    _shareFiles.update { fileUris }
+                }
+            } catch (e: Exception) {
+                showError("Failed to finalize stream files", e)
+            }
         }
     }
-
-
 }
-
-

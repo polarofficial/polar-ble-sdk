@@ -15,6 +15,7 @@ import fi.polar.remote.representation.protobuf.ExerciseSamples.PbExerciseSamples
 import fi.polar.remote.representation.protobuf.Structures
 import fi.polar.remote.representation.protobuf.Types
 import io.mockk.*
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
 import org.junit.Test
@@ -39,7 +40,7 @@ class PolarOfflineExerciseV2ApiImplTest {
     }
 
     @Test
-    fun `startOfflineExerciseV2() should return SUCCESS result`() {
+    fun `startOfflineExerciseV2() should return SUCCESS result`() = runTest {
         // Arrange
         val (client, listener) = mockBleConnection(deviceId)
         val api = PolarOfflineExerciseV2ApiImpl(listener)
@@ -50,23 +51,20 @@ class PolarOfflineExerciseV2ApiImplTest {
             .setDmDirectoryPath("/exercise")
             .build()
 
-        val mockResponseContent = ByteArrayOutputStream().apply {
-            mockResponse.writeTo(this)
-        }
-
-        every { client.query(any(), any()) } returns io.reactivex.rxjava3.core.Single.just(mockResponseContent)
+        val mockResponseContent = ByteArrayOutputStream().apply { mockResponse.writeTo(this) }
+        coEvery { client.query(any(), any()) } returns mockResponseContent
 
         // Act
-        val result = api.startOfflineExerciseV2(deviceId, sportProfile).blockingGet()
+        val result = api.startOfflineExerciseV2(deviceId, sportProfile)
 
         // Assert
-        verify { client.query(PftpRequest.PbPFtpQuery.START_DM_EXERCISE_VALUE, any()) }
+        coVerify { client.query(PftpRequest.PbPFtpQuery.START_DM_EXERCISE_VALUE, any()) }
         Assert.assertEquals(PolarOfflineExerciseV2Api.StartResult.SUCCESS, result.result)
         Assert.assertEquals("/exercise", result.directoryPath)
     }
 
     @Test
-    fun `startOfflineExerciseV2() should return EXERCISE_ONGOING result`() {
+    fun `startOfflineExerciseV2() should return EXERCISE_ONGOING result`() = runTest {
         // Arrange
         val (client, listener) = mockBleConnection(deviceId)
         val api = PolarOfflineExerciseV2ApiImpl(listener)
@@ -76,46 +74,39 @@ class PolarOfflineExerciseV2ApiImplTest {
             .setResult(PftpResponse.PbPftpStartDmExerciseResult.PbStartDmExerciseResult.RESULT_EXE_ONGOING)
             .build()
 
-        val mockResponseContent = ByteArrayOutputStream().apply {
-            mockResponse.writeTo(this)
-        }
-
-        every { client.query(any(), any()) } returns io.reactivex.rxjava3.core.Single.just(mockResponseContent)
+        val mockResponseContent = ByteArrayOutputStream().apply { mockResponse.writeTo(this) }
+        coEvery { client.query(any(), any()) } returns mockResponseContent
 
         // Act
-        val result = api.startOfflineExerciseV2(deviceId, sportProfile).blockingGet()
+        val result = api.startOfflineExerciseV2(deviceId, sportProfile)
 
         // Assert
-        verify { client.query(PftpRequest.PbPFtpQuery.START_DM_EXERCISE_VALUE, any()) }
+        coVerify { client.query(PftpRequest.PbPFtpQuery.START_DM_EXERCISE_VALUE, any()) }
         Assert.assertEquals(PolarOfflineExerciseV2Api.StartResult.EXERCISE_ONGOING, result.result)
     }
 
     @Test
-    fun `startOfflineExerciseV2() should return LOW_BATTERY result`() {
+    fun `startOfflineExerciseV2() should return LOW_BATTERY result`() = runTest {
         // Arrange
         val (client, listener) = mockBleConnection(deviceId)
         val api = PolarOfflineExerciseV2ApiImpl(listener)
-        val sportProfile = PolarExerciseSession.SportProfile.RUNNING
 
         val mockResponse = PftpResponse.PbPftpStartDmExerciseResult.newBuilder()
             .setResult(PftpResponse.PbPftpStartDmExerciseResult.PbStartDmExerciseResult.RESULT_LOW_BATTERY)
             .build()
 
-        val mockResponseContent = ByteArrayOutputStream().apply {
-            mockResponse.writeTo(this)
-        }
-
-        every { client.query(any(), any()) } returns io.reactivex.rxjava3.core.Single.just(mockResponseContent)
+        val mockResponseContent = ByteArrayOutputStream().apply { mockResponse.writeTo(this) }
+        coEvery { client.query(any(), any()) } returns mockResponseContent
 
         // Act
-        val result = api.startOfflineExerciseV2(deviceId, sportProfile).blockingGet()
+        val result = api.startOfflineExerciseV2(deviceId, PolarExerciseSession.SportProfile.RUNNING)
 
         // Assert
         Assert.assertEquals(PolarOfflineExerciseV2Api.StartResult.LOW_BATTERY, result.result)
     }
 
     @Test
-    fun `startOfflineExerciseV2() should return SDK_MODE result`() {
+    fun `startOfflineExerciseV2() should return SDK_MODE result`() = runTest {
         // Arrange
         val (client, listener) = mockBleConnection(deviceId)
         val api = PolarOfflineExerciseV2ApiImpl(listener)
@@ -124,21 +115,18 @@ class PolarOfflineExerciseV2ApiImplTest {
             .setResult(PftpResponse.PbPftpStartDmExerciseResult.PbStartDmExerciseResult.RESULT_SDK_MODE)
             .build()
 
-        val mockResponseContent = ByteArrayOutputStream().apply {
-            mockResponse.writeTo(this)
-        }
-
-        every { client.query(any(), any()) } returns io.reactivex.rxjava3.core.Single.just(mockResponseContent)
+        val mockResponseContent = ByteArrayOutputStream().apply { mockResponse.writeTo(this) }
+        coEvery { client.query(any(), any()) } returns mockResponseContent
 
         // Act
-        val result = api.startOfflineExerciseV2(deviceId, PolarExerciseSession.SportProfile.RUNNING).blockingGet()
+        val result = api.startOfflineExerciseV2(deviceId, PolarExerciseSession.SportProfile.RUNNING)
 
         // Assert
         Assert.assertEquals(PolarOfflineExerciseV2Api.StartResult.SDK_MODE, result.result)
     }
 
     @Test
-    fun `startOfflineExerciseV2() should return UNKNOWN_SPORT result`() {
+    fun `startOfflineExerciseV2() should return UNKNOWN_SPORT result`() = runTest {
         // Arrange
         val (client, listener) = mockBleConnection(deviceId)
         val api = PolarOfflineExerciseV2ApiImpl(listener)
@@ -147,21 +135,18 @@ class PolarOfflineExerciseV2ApiImplTest {
             .setResult(PftpResponse.PbPftpStartDmExerciseResult.PbStartDmExerciseResult.RESULT_UNKNOWN_SPORT)
             .build()
 
-        val mockResponseContent = ByteArrayOutputStream().apply {
-            mockResponse.writeTo(this)
-        }
-
-        every { client.query(any(), any()) } returns io.reactivex.rxjava3.core.Single.just(mockResponseContent)
+        val mockResponseContent = ByteArrayOutputStream().apply { mockResponse.writeTo(this) }
+        coEvery { client.query(any(), any()) } returns mockResponseContent
 
         // Act
-        val result = api.startOfflineExerciseV2(deviceId, PolarExerciseSession.SportProfile.OTHER_OUTDOOR).blockingGet()
+        val result = api.startOfflineExerciseV2(deviceId, PolarExerciseSession.SportProfile.OTHER_OUTDOOR)
 
         // Assert
         Assert.assertEquals(PolarOfflineExerciseV2Api.StartResult.UNKNOWN_SPORT, result.result)
     }
 
     @Test
-    fun `startOfflineExerciseV2() should use default directory path when not provided`() {
+    fun `startOfflineExerciseV2() should use default directory path when not provided`() = runTest {
         // Arrange
         val (client, listener) = mockBleConnection(deviceId)
         val api = PolarOfflineExerciseV2ApiImpl(listener)
@@ -170,21 +155,18 @@ class PolarOfflineExerciseV2ApiImplTest {
             .setResult(PftpResponse.PbPftpStartDmExerciseResult.PbStartDmExerciseResult.RESULT_SUCCESS)
             .build()
 
-        val mockResponseContent = ByteArrayOutputStream().apply {
-            mockResponse.writeTo(this)
-        }
-
-        every { client.query(any(), any()) } returns io.reactivex.rxjava3.core.Single.just(mockResponseContent)
+        val mockResponseContent = ByteArrayOutputStream().apply { mockResponse.writeTo(this) }
+        coEvery { client.query(any(), any()) } returns mockResponseContent
 
         // Act
-        val result = api.startOfflineExerciseV2(deviceId, PolarExerciseSession.SportProfile.RUNNING).blockingGet()
+        val result = api.startOfflineExerciseV2(deviceId, PolarExerciseSession.SportProfile.RUNNING)
 
         // Assert
         Assert.assertEquals("/", result.directoryPath)
     }
 
     @Test
-    fun `startOfflineExerciseV2() should throw PolarDeviceNotFound when no session`() {
+    fun `startOfflineExerciseV2() should throw PolarDeviceNotFound when no session`() = runTest {
         // Arrange
         val listener = mockk<BleDeviceListener>()
         val sessions = mockk<Set<BleDeviceSession>>()
@@ -193,66 +175,64 @@ class PolarOfflineExerciseV2ApiImplTest {
 
         val api = PolarOfflineExerciseV2ApiImpl(listener)
 
-        // Act
-        val testObserver = api.startOfflineExerciseV2(deviceId, PolarExerciseSession.SportProfile.RUNNING).test()
-
-        // Assert
-        testObserver.assertNotComplete()
-        testObserver.assertError(PolarDeviceNotFound::class.java)
+        // Act & Assert
+        try {
+            api.startOfflineExerciseV2(deviceId, PolarExerciseSession.SportProfile.RUNNING)
+            Assert.fail("Expected PolarDeviceNotFound")
+        } catch (e: PolarDeviceNotFound) {
+            // expected
+        }
     }
 
     @Test
-    fun `startOfflineExerciseV2() should throw PolarServiceNotAvailable when client not available`() {
+    fun `startOfflineExerciseV2() should throw PolarServiceNotAvailable when client not available`() = runTest {
         // Arrange
         val (_, listener, session) = mockBleConnectionWithoutClient(deviceId)
         val api = PolarOfflineExerciseV2ApiImpl(listener)
-
         every { session.fetchClient(any()) } returns null
 
-        // Act
-        val testObserver = api.startOfflineExerciseV2(deviceId, PolarExerciseSession.SportProfile.RUNNING).test()
-
-        // Assert
-        testObserver.assertNotComplete()
-        testObserver.assertError(PolarServiceNotAvailable::class.java)
+        // Act & Assert
+        try {
+            api.startOfflineExerciseV2(deviceId, PolarExerciseSession.SportProfile.RUNNING)
+            Assert.fail("Expected PolarServiceNotAvailable")
+        } catch (e: PolarServiceNotAvailable) {
+            // expected
+        }
     }
 
     @Test
-    fun `stopOfflineExerciseV2() should complete successfully`() {
+    fun `stopOfflineExerciseV2() should complete successfully`() = runTest {
         // Arrange
         val (client, listener) = mockBleConnection(deviceId)
         val api = PolarOfflineExerciseV2ApiImpl(listener)
 
-        val mockResponseContent = ByteArrayOutputStream()
-        every { client.query(any(), any()) } returns io.reactivex.rxjava3.core.Single.just(mockResponseContent)
+        coEvery { client.query(any(), any()) } returns ByteArrayOutputStream()
 
         // Act
-        val testObserver = api.stopOfflineExerciseV2(deviceId).test()
+        api.stopOfflineExerciseV2(deviceId)
 
         // Assert
-        testObserver.assertComplete()
-        testObserver.assertNoErrors()
-        verify { client.query(PftpRequest.PbPFtpQuery.STOP_EXERCISE_VALUE, any()) }
+        coVerify { client.query(PftpRequest.PbPFtpQuery.STOP_EXERCISE_VALUE, any()) }
     }
 
     @Test
-    fun `stopOfflineExerciseV2() should throw PolarServiceNotAvailable when client not available`() {
+    fun `stopOfflineExerciseV2() should throw PolarServiceNotAvailable when client not available`() = runTest {
         // Arrange
         val (_, listener, session) = mockBleConnectionWithoutClient(deviceId)
         val api = PolarOfflineExerciseV2ApiImpl(listener)
-
         every { session.fetchClient(any()) } returns null
 
-        // Act
-        val testObserver = api.stopOfflineExerciseV2(deviceId).test()
-
-        // Assert
-        testObserver.assertNotComplete()
-        testObserver.assertError(PolarServiceNotAvailable::class.java)
+        // Act & Assert
+        try {
+            api.stopOfflineExerciseV2(deviceId)
+            Assert.fail("Expected PolarServiceNotAvailable")
+        } catch (e: PolarServiceNotAvailable) {
+            // expected
+        }
     }
 
     @Test
-    fun `getOfflineExerciseStatusV2() should return true when exercise is running`() {
+    fun `getOfflineExerciseStatusV2() should return true when exercise is running`() = runTest {
         // Arrange
         val (client, listener) = mockBleConnection(deviceId)
         val api = PolarOfflineExerciseV2ApiImpl(listener)
@@ -262,22 +242,19 @@ class PolarOfflineExerciseV2ApiImplTest {
             .setExerciseState(PftpResponse.PbPftpGetExerciseStatusResult.PbExerciseState.EXERCISE_STATE_RUNNING)
             .build()
 
-        val mockResponseContent = ByteArrayOutputStream().apply {
-            mockResponse.writeTo(this)
-        }
-
-        every { client.query(any(), any()) } returns io.reactivex.rxjava3.core.Single.just(mockResponseContent)
+        val mockResponseContent = ByteArrayOutputStream().apply { mockResponse.writeTo(this) }
+        coEvery { client.query(any(), any()) } returns mockResponseContent
 
         // Act
-        val result = api.getOfflineExerciseStatusV2(deviceId).blockingGet()
+        val result = api.getOfflineExerciseStatusV2(deviceId)
 
         // Assert
         Assert.assertEquals(true, result)
-        verify { client.query(PftpRequest.PbPFtpQuery.GET_EXERCISE_STATUS_VALUE, any()) }
+        coVerify { client.query(PftpRequest.PbPFtpQuery.GET_EXERCISE_STATUS_VALUE, any()) }
     }
 
     @Test
-    fun `getOfflineExerciseStatusV2() should return false when exercise is paused`() {
+    fun `getOfflineExerciseStatusV2() should return false when exercise is paused`() = runTest {
         // Arrange
         val (client, listener) = mockBleConnection(deviceId)
         val api = PolarOfflineExerciseV2ApiImpl(listener)
@@ -287,21 +264,18 @@ class PolarOfflineExerciseV2ApiImplTest {
             .setExerciseState(PftpResponse.PbPftpGetExerciseStatusResult.PbExerciseState.EXERCISE_STATE_PAUSED)
             .build()
 
-        val mockResponseContent = ByteArrayOutputStream().apply {
-            mockResponse.writeTo(this)
-        }
-
-        every { client.query(any(), any()) } returns io.reactivex.rxjava3.core.Single.just(mockResponseContent)
+        val mockResponseContent = ByteArrayOutputStream().apply { mockResponse.writeTo(this) }
+        coEvery { client.query(any(), any()) } returns mockResponseContent
 
         // Act
-        val result = api.getOfflineExerciseStatusV2(deviceId).blockingGet()
+        val result = api.getOfflineExerciseStatusV2(deviceId)
 
         // Assert
         Assert.assertEquals(false, result)
     }
 
     @Test
-    fun `getOfflineExerciseStatusV2() should return false when exercise type is not DATA_MERGE`() {
+    fun `getOfflineExerciseStatusV2() should return false when exercise type is not DATA_MERGE`() = runTest {
         // Arrange
         val (client, listener) = mockBleConnection(deviceId)
         val api = PolarOfflineExerciseV2ApiImpl(listener)
@@ -311,21 +285,18 @@ class PolarOfflineExerciseV2ApiImplTest {
             .setExerciseState(PftpResponse.PbPftpGetExerciseStatusResult.PbExerciseState.EXERCISE_STATE_RUNNING)
             .build()
 
-        val mockResponseContent = ByteArrayOutputStream().apply {
-            mockResponse.writeTo(this)
-        }
-
-        every { client.query(any(), any()) } returns io.reactivex.rxjava3.core.Single.just(mockResponseContent)
+        val mockResponseContent = ByteArrayOutputStream().apply { mockResponse.writeTo(this) }
+        coEvery { client.query(any(), any()) } returns mockResponseContent
 
         // Act
-        val result = api.getOfflineExerciseStatusV2(deviceId).blockingGet()
+        val result = api.getOfflineExerciseStatusV2(deviceId)
 
         // Assert
         Assert.assertEquals(false, result)
     }
 
     @Test
-    fun `fetchOfflineExerciseV2() should return heart rate samples`() {
+    fun `fetchOfflineExerciseV2() should return heart rate samples`() = runTest {
         // Arrange
         val (client, listener) = mockBleConnection(deviceId)
         val api = PolarOfflineExerciseV2ApiImpl(listener)
@@ -342,17 +313,14 @@ class PolarOfflineExerciseV2ApiImplTest {
             .addAllHeartRateSamples(hrSamples)
             .build()
 
-        val mockResponseContent = ByteArrayOutputStream().apply {
-            mockResponse.writeTo(this)
-        }
-
-        every { client.request(any()) } returns io.reactivex.rxjava3.core.Single.just(mockResponseContent)
+        val mockResponseContent = ByteArrayOutputStream().apply { mockResponse.writeTo(this) }
+        coEvery { client.request(any()) } returns mockResponseContent
 
         // Act
-        val result = api.fetchOfflineExerciseV2(deviceId, entry).blockingGet()
+        val result = api.fetchOfflineExerciseV2(deviceId, entry)
 
         // Assert
-        verify {
+        coVerify {
             client.request(match { bytes ->
                 val operation = PftpRequest.PbPFtpOperation.parseFrom(bytes)
                 operation.command == PftpRequest.PbPFtpOperation.Command.GET &&
@@ -363,9 +331,8 @@ class PolarOfflineExerciseV2ApiImplTest {
         Assert.assertEquals(hrSamples, result.hrSamples)
     }
 
-
     @Test
-    fun `fetchOfflineExerciseV2() should throw PolarServiceNotAvailable when client not available`() {
+    fun `fetchOfflineExerciseV2() should throw PolarServiceNotAvailable when client not available`() = runTest {
         // Arrange
         val (_, listener, session) = mockBleConnectionWithoutClient(deviceId)
         val api = PolarOfflineExerciseV2ApiImpl(listener)
@@ -378,16 +345,17 @@ class PolarOfflineExerciseV2ApiImplTest {
 
         every { session.fetchClient(any()) } returns null
 
-        // Act
-        val testObserver = api.fetchOfflineExerciseV2(deviceId, entry).test()
-
-        // Assert
-        testObserver.assertNotComplete()
-        testObserver.assertError(PolarServiceNotAvailable::class.java)
+        // Act & Assert
+        try {
+            api.fetchOfflineExerciseV2(deviceId, entry)
+            Assert.fail("Expected PolarServiceNotAvailable")
+        } catch (e: PolarServiceNotAvailable) {
+            // expected
+        }
     }
 
     @Test
-    fun `removeOfflineExerciseV2() should complete successfully`() {
+    fun `removeOfflineExerciseV2() should complete successfully`() = runTest {
         // Arrange
         val (client, listener) = mockBleConnection(deviceId)
         val api = PolarOfflineExerciseV2ApiImpl(listener)
@@ -398,16 +366,13 @@ class PolarOfflineExerciseV2ApiImplTest {
             identifier = "SAMPLES.BPB"
         )
 
-        val mockResponseContent = ByteArrayOutputStream()
-        every { client.request(any()) } returns io.reactivex.rxjava3.core.Single.just(mockResponseContent)
+        coEvery { client.request(any()) } returns ByteArrayOutputStream()
 
         // Act
-        val testObserver = api.removeOfflineExerciseV2(deviceId, entry).test()
+        api.removeOfflineExerciseV2(deviceId, entry)
 
         // Assert
-        testObserver.assertComplete()
-        testObserver.assertNoErrors()
-        verify {
+        coVerify {
             client.request(match { bytes ->
                 val operation = PftpRequest.PbPFtpOperation.parseFrom(bytes)
                 operation.command == PftpRequest.PbPFtpOperation.Command.REMOVE &&
@@ -417,7 +382,7 @@ class PolarOfflineExerciseV2ApiImplTest {
     }
 
     @Test
-    fun `removeOfflineExerciseV2() should throw PolarServiceNotAvailable when client not available`() {
+    fun `removeOfflineExerciseV2() should throw PolarServiceNotAvailable when client not available`() = runTest {
         // Arrange
         val (_, listener, session) = mockBleConnectionWithoutClient(deviceId)
         val api = PolarOfflineExerciseV2ApiImpl(listener)
@@ -430,12 +395,13 @@ class PolarOfflineExerciseV2ApiImplTest {
 
         every { session.fetchClient(any()) } returns null
 
-        // Act
-        val testObserver = api.removeOfflineExerciseV2(deviceId, entry).test()
-
-        // Assert
-        testObserver.assertNotComplete()
-        testObserver.assertError(PolarServiceNotAvailable::class.java)
+        // Act & Assert
+        try {
+            api.removeOfflineExerciseV2(deviceId, entry)
+            Assert.fail("Expected PolarServiceNotAvailable")
+        } catch (e: PolarServiceNotAvailable) {
+            // expected
+        }
     }
 
     @Test

@@ -15,13 +15,22 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.polar.polarsensordatacollector.R
 import com.polar.sdk.api.model.PolarExerciseSession
-import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.kotlin.addTo
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 class ExerciseService : Service() {
 
     private val nm by lazy { getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    private lateinit var repo: ExerciseRepository
+    private var autoRefreshJob: Job? = null
+    private var stateJob: Job? = null
+    private var exerciseNotificationJob: Job? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -37,12 +46,13 @@ class ExerciseService : Service() {
             val prefs = applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             repo = ExerciseRepository(api, bleApi, deviceId, prefs)
 
-            autoRefresh?.dispose()
-            autoRefresh = repo.startAutoRefresh(intervalSec = 5)
+            autoRefreshJob?.cancel()
+            autoRefreshJob = repo.startAutoRefresh(intervalMs = 5_000L)
+
             observeState(deviceId)
 
-            exerciseNotificationSub?.dispose()
-            exerciseNotificationSub = repo.startObservingExerciseStatus()
+            exerciseNotificationJob?.cancel()
+            exerciseNotificationJob = repo.startObservingExerciseStatus()
 
             startForeground(
                 NOTIF_ID,
@@ -54,65 +64,75 @@ class ExerciseService : Service() {
         }
 
         when (intent.action) {
-            ACTION_PAUSE  -> repo.pause().subscribe({}, { e -> Log.w(TAG, "pause failed: ${e.message}") }).addTo(ops)
-            ACTION_RESUME -> repo.resume().subscribe({}, { e -> Log.w(TAG, "resume failed: ${e.message}") }).addTo(ops)
-            ACTION_STOP   -> repo.stop().subscribe({}, { e -> Log.w(TAG, "stop failed: ${e.message}") }).addTo(ops)
+            ACTION_PAUSE  -> serviceScope.launch {
+                try { repo.pause() } catch (e: Exception) { Log.w(TAG, "pause failed: ${e.message}") }
+            }
+            ACTION_RESUME -> serviceScope.launch {
+                try { repo.resume() } catch (e: Exception) { Log.w(TAG, "resume failed: ${e.message}") }
+            }
+            ACTION_STOP   -> serviceScope.launch {
+                try { repo.stop() } catch (e: Exception) { Log.w(TAG, "stop failed: ${e.message}") }
+            }
         }
         return START_STICKY
     }
 
     private fun observeState(deviceId: String) {
-        stateSub?.dispose()
-        stateSub = repo.state().subscribe({ info ->
-            val title = when (info.status) {
-                PolarExerciseSession.ExerciseStatus.IN_PROGRESS,
-                PolarExerciseSession.ExerciseStatus.PAUSED,
-                PolarExerciseSession.ExerciseStatus.STOPPED,
-                PolarExerciseSession.ExerciseStatus.SYNC_REQUIRED ->
-                    getString(R.string.exercise_title_running, info.sportProfile.toString())
-                else -> getString(R.string.exercise_title)
+        stateJob?.cancel()
+        stateJob = serviceScope.launch {
+            try {
+                repo.state().collect { info ->
+                    val title = when (info.status) {
+                        PolarExerciseSession.ExerciseStatus.IN_PROGRESS,
+                        PolarExerciseSession.ExerciseStatus.PAUSED,
+                        PolarExerciseSession.ExerciseStatus.STOPPED,
+                        PolarExerciseSession.ExerciseStatus.SYNC_REQUIRED ->
+                            getString(R.string.exercise_title_running, info.sportProfile.toString())
+                        else -> getString(R.string.exercise_title)
+                    }
+                    val notif = when (info.status) {
+                        PolarExerciseSession.ExerciseStatus.IN_PROGRESS ->
+                            buildNotification(title, getString(R.string.exercise_in_progress),
+                                showPause = true, showStop = true, deviceId = deviceId)
+                        PolarExerciseSession.ExerciseStatus.PAUSED ->
+                            buildNotification(title, getString(R.string.exercise_paused),
+                                showResume = true, showStop = true, deviceId = deviceId)
+                        PolarExerciseSession.ExerciseStatus.SYNC_REQUIRED ->
+                            buildNotification(title, getString(R.string.exercise_syncing), deviceId = deviceId)
+                        else ->
+                            buildNotification(title, getString(R.string.exercise_idle), deviceId = deviceId)
+                    }
+                    if (canPostNotifications()) {
+                        nm.notify(NOTIF_ID, notif)
+                    } else {
+                        Log.d(TAG, "Notification not posted: POST_NOTIFICATIONS not granted")
+                    }
+                    Log.d(TAG, "UI state -> ${info.status} ${info.sportProfile}")
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "state observe failed: ${e.message}")
             }
-            val notif = when (info.status) {
-                PolarExerciseSession.ExerciseStatus.IN_PROGRESS ->
-                    buildNotification(title, getString(R.string.exercise_in_progress),
-                        showPause = true, showStop = true, deviceId = deviceId)
-                PolarExerciseSession.ExerciseStatus.PAUSED ->
-                    buildNotification(title, getString(R.string.exercise_paused),
-                        showResume = true, showStop = true, deviceId = deviceId)
-                PolarExerciseSession.ExerciseStatus.SYNC_REQUIRED ->
-                    buildNotification(title, getString(R.string.exercise_syncing), deviceId = deviceId)
-                else ->
-                    buildNotification(title, getString(R.string.exercise_idle), deviceId = deviceId)
-            }
-            if (canPostNotifications()) {
-                nm.notify(NOTIF_ID, notif)
-            } else {
-                Log.d(TAG, "Notification not posted: POST_NOTIFICATIONS not granted")
-            }
-            Log.d(TAG, "UI state -> ${info.status} ${info.sportProfile}")
-        }, { e -> Log.w(TAG, "state observe failed: ${e.message}") })
+        }
     }
 
     override fun onDestroy() {
-        stateSub?.dispose()
-        autoRefresh?.dispose()
-        exerciseNotificationSub?.dispose()
-        ops.clear()
+        stateJob?.cancel()
+        autoRefreshJob?.cancel()
+        exerciseNotificationJob?.cancel()
+        serviceScope.cancel()
         super.onDestroy()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     private fun ensureChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            nm.createNotificationChannel(
-                NotificationChannel(
-                    CHANNEL_ID,
-                    getString(R.string.exercise_title),
-                    NotificationManager.IMPORTANCE_LOW
-                )
+        nm.createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_ID,
+                getString(R.string.exercise_title),
+                NotificationManager.IMPORTANCE_LOW
             )
-        }
+        )
     }
 
     private fun canPostNotifications(): Boolean {
@@ -153,12 +173,6 @@ class ExerciseService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
     }
-
-    private lateinit var repo: ExerciseRepository
-    private var autoRefresh: Disposable? = null
-    private var stateSub: Disposable? = null
-    private var exerciseNotificationSub: Disposable? = null
-    private val ops = CompositeDisposable()
 
     companion object {
         private const val TAG = "ExerciseService"
