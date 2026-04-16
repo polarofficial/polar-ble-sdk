@@ -82,13 +82,13 @@ Get up and running with the Polar BLE SDK.
 
 ### Installation
 
-1.  In `build.gradle` make sure the __minSdk__ is set to __24__ or higher.
+1.  In `build.gradle` make sure the __minSdk__ is set to __33__ or higher.
 ```gradle
 android {
     ...
     defaultConfig {
         ...
-        minSdk 24
+        minSdk 33
     }
 }
 ```
@@ -105,12 +105,12 @@ android {
 }
 ```
 
-3. Add the dependency to Polar BLE SDK library. Also you will need the dependencies to [RxJava](https://github.com/ReactiveX/RxJava) to use the Polar BLE SDK Library
+3. Add the dependency to Polar BLE SDK library. Also you will need the dependencies to [Kotlin Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) to use the Polar BLE SDK Library
 ```gradle
 dependencies {
     implementation 'com.github.polarofficial:polar-ble-sdk:${sdk_version}'
-    implementation 'io.reactivex.rxjava3:rxjava:3.1.6'
-    implementation 'io.reactivex.rxjava3:rxandroid:3.0.2'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-rx3:1.10.2"
 }
 ```
 
@@ -284,7 +284,7 @@ If you use [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) 
 use_frameworks!
 
 target 'YOUR_TARGET_NAME' do
-    pod 'PolarBleSdk', '~> 6.0'
+    pod 'PolarBleSdk', '~> 7.0.1'
 end
 ```
 
@@ -293,7 +293,7 @@ Add PolarBleSdk as a dependency to your `Package.swift` manifest
 
 ```swift
 dependencies: [
-    .package(name: "PolarBleSdk", url: "https://github.com/polarofficial/polar-ble-sdk.git", .upToNextMajor(from: "6.0.0"))
+    .package(name: "PolarBleSdk", url: "https://github.com/polarofficial/polar-ble-sdk.git", .upToNextMajor(from: "7.0.1"))
 ]
 ```
 or alternatively use [XCode package manager](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) to add Swift package to your project.
