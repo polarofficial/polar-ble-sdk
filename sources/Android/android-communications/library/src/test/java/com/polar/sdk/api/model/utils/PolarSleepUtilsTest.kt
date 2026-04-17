@@ -17,17 +17,17 @@ import fi.polar.remote.representation.protobuf.Types
 import fi.polar.remote.representation.protobuf.Types.PbDate
 import fi.polar.remote.representation.protobuf.Types.PbLocalDateTime
 import fi.polar.remote.representation.protobuf.Types.PbTime
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.confirmVerified
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
-import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import protocol.PftpRequest
 import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -36,8 +36,7 @@ import java.util.*
 class PolarSleepUtilsTest {
 
     @Test
-    fun `readSleepFromDayDirectory() should return sleep analysis data`() {
-
+    fun `readSleepFromDayDirectory() should return sleep analysis data`() = runTest {
         val dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd", Locale.ENGLISH)
 
         val mockClient = mockk<BlePsFtpClient>()
@@ -55,8 +54,8 @@ class PolarSleepUtilsTest {
             .setSleepStartTime(createPbLocalDateTime(23, 45, 45, 1, 1, 2, 2525, 60))
             .setSleepEndTime(createPbLocalDateTime(7, 5, 7, 6, 2, 2, 2525, 60))
             .setLastModified(Types.PbSystemDateTime.newBuilder()
-                .setTime(createPbTime(4,3,2,1))
-                .setDate(createPbDate(4,3,2525))
+                .setTime(createPbTime(4, 3, 2, 1))
+                .setDate(createPbDate(4, 3, 2525))
                 .setTrusted(true)
                 .build()
             )
@@ -73,34 +72,32 @@ class PolarSleepUtilsTest {
             .setUserSleepRating(Types.PbSleepUserRating.valueOf("PB_SLEPT_WELL"))
             .setSleepResultDate(Types.PbDate.newBuilder().setDay(1).setMonth(2).setYear(2525).build())
             .setCreatedTimestamp(Types.PbSystemDateTime.newBuilder()
-                .setTime(createPbTime(1,2,3,4))
-                .setDate(createPbDate(2,2,2525))
+                .setTime(createPbTime(1, 2, 3, 4))
+                .setDate(createPbDate(2, 2, 2525))
                 .setTrusted(true)
                 .build()
-                )
+            )
             .build()
 
         sleepProto.writeTo(sleepOutputStream)
 
         val skinTempProto = PbSleepSkinTemperatureResult.newBuilder()
-            .setSleepDate(createPbDateProto3(4,3,2525))
+            .setSleepDate(createPbDateProto3(4, 3, 2525))
             .setSleepSkinTemperatureCelsius(35.123455f)
             .setDeviationFromBaselineCelsius(-0.111111f)
             .build()
 
         skinTempProto.writeTo(skintempOutputStream)
 
-        every { mockClient.request(any()) } returns Single.just(sleepOutputStream) andThen Single.just(skintempOutputStream)
+        coEvery { mockClient.request(any()) } answers { sleepOutputStream } andThen skintempOutputStream
 
         // Act
-        val testObserver = PolarSleepUtils.readSleepDataFromDayDirectory(mockClient, date).test()
+        val result = PolarSleepUtils.readSleepDataFromDayDirectory(mockClient, date)
 
         // Assert
-        testObserver.assertComplete()
-        testObserver.assertNoErrors()
-        testObserver.assertValue(expectedResult)
+        assertEquals(expectedResult, result)
 
-        verify {
+        coVerify {
             mockClient.request(
                 PftpRequest.PbPFtpOperation.newBuilder()
                     .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
@@ -109,7 +106,7 @@ class PolarSleepUtilsTest {
                     .toByteArray()
             )
         }
-        verify {
+        coVerify {
             mockClient.request(
                 PftpRequest.PbPFtpOperation.newBuilder()
                     .setCommand(PftpRequest.PbPFtpOperation.Command.GET)

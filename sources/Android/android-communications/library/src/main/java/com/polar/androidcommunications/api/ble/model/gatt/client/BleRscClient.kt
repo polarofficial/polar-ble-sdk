@@ -1,125 +1,120 @@
-package com.polar.androidcommunications.api.ble.model.gatt.client;
+package com.polar.androidcommunications.api.ble.model.gatt.client
 
-import androidx.annotation.NonNull;
+import com.polar.androidcommunications.api.ble.BleLogger.Companion.d
+import com.polar.androidcommunications.api.ble.BleLogger.Companion.w
+import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
+import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
+import com.polar.androidcommunications.common.ble.AtomicSet
+import com.polar.androidcommunications.common.ble.ChannelUtils
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import java.util.UUID
 
-import com.polar.androidcommunications.api.ble.BleLogger;
-import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase;
-import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface;
-import com.polar.androidcommunications.common.ble.AtomicSet;
-import com.polar.androidcommunications.common.ble.RxUtils;
+class BleRscClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, RSC_SERVICE) {
+    class RscNotificationData(
+        var strideLengthPresent: Boolean,
+        var totalDistancePresent: Boolean,
+        var running: Boolean,
+        var speed: Long,
+        var cadence: Long,
+        var strideLength: Long,
+        var totalDistance: Long
+    )
 
-import java.util.UUID;
+    private val observers = AtomicSet<Channel<RscNotificationData>>()
 
-import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.FlowableEmitter;
-
-public class BleRscClient extends BleGattBase {
-
-    private final static String TAG = BleRscClient.class.getSimpleName();
-
-    public static class RscNotificationData {
-        public boolean StrideLengthPresent;
-        public boolean TotaDistancePresent;
-        public boolean Running;
-
-        public long Speed;
-        public long Cadence;
-
-        public long StrideLength;
-        public long TotalDistance;
-
-
-        public RscNotificationData(boolean StrideLengthPresent, boolean TotaDistancePresent, boolean Running, long Speed, long Cadence, long StrideLength, long TotaDistance) {
-            this.StrideLengthPresent = StrideLengthPresent;
-            this.TotaDistancePresent = TotaDistancePresent;
-            this.Running = Running;
-            this.Speed = Speed;
-            this.Cadence = Cadence;
-            this.StrideLength = StrideLength;
-            this.TotalDistance = TotaDistance;
-        }
+    init {
+        addCharacteristicNotification(RSC_MEASUREMENT)
+        addCharacteristicRead(RSC_FEATURE)
     }
 
-    private final AtomicSet<FlowableEmitter<? super RscNotificationData>> observers = new AtomicSet<>();
-
-    public static final UUID RSC_FEATURE = UUID.fromString("00002a54-0000-1000-8000-00805f9b34fb");
-    public static final UUID RSC_MEASUREMENT = UUID.fromString("00002a53-0000-1000-8000-00805f9b34fb");
-    public static final UUID RSC_SERVICE = UUID.fromString("00001814-0000-1000-8000-00805f9b34fb");
-
-    public BleRscClient(BleGattTxInterface txInterface) {
-        super(txInterface, RSC_SERVICE);
-        addCharacteristicNotification(RSC_MEASUREMENT);
-        addCharacteristicRead(RSC_FEATURE);
+    override fun reset() {
+        super.reset()
+        ChannelUtils.postDisconnectedAndClearList(observers)
     }
 
-    @Override
-    public void reset() {
-        super.reset();
-        RxUtils.postDisconnectedAndClearList(observers);
-    }
-
-    @Override
-    public void processServiceData(UUID characteristic, byte[] data, int status, boolean notifying) {
-        if (status == ATT_SUCCESS) {
-            if (characteristic.equals(RSC_MEASUREMENT)) {
+    override fun processServiceData(
+        characteristic: UUID,
+        data: ByteArray,
+        status: Int,
+        notifying: Boolean
+    ) {
+        if (status == ATT_SUCCESS && data.isNotEmpty()) {
+            if (characteristic == RSC_MEASUREMENT) {
                 // stupid java does not have bit fields
-                int index = 0;
-                long flags = data[index++];
-                final boolean StrideLenPresent = (flags & 0x01) == 0x01;
-                final boolean TotalDistancePresent = (flags & 0x02) == 0x02;
-                final boolean Running = (flags & 0x04) == 0x04;
+                var index = 0
+                val flags = data[index++].toLong()
+                val strideLenPresent = (flags and 0x01L) == 0x01L
+                val totalDistancePresent = (flags and 0x02L) == 0x02L
+                val running = (flags and 0x04L) == 0x04L
 
-                final long Speed = (data[index++] | (data[index++] << 8));
-                final long Cadence = data[index++];
+                val speed = ((data[index++].toInt() and 0xFF) or ((data[index++].toInt() and 0xFF) shl 8)).toLong()
+                val cadence = (data[index++].toInt() and 0xFF).toLong()
 
-                long StrideLength = 0;
-                long TotalDistance = 0;
+                var strideLength: Long = 0
+                var totalDistance: Long = 0
 
-                if (StrideLenPresent)
-                    StrideLength = (data[index++] | (data[index++] << 8));
+                if (strideLenPresent) strideLength =
+                    ((data[index++].toInt() and 0xFF) or ((data[index++].toInt() and 0xFF) shl 8)).toLong()
 
-                if (TotalDistancePresent)
-                    TotalDistance = (data[index++] | (data[index++] << 8) | data[index++] << 16 | data[index] << 24);
+                if (totalDistancePresent) totalDistance =
+                    ((data[index++].toInt() and 0xFF) or ((data[index++].toInt() and 0xFF) shl 8) or ((data[index++].toInt() and 0xFF) shl 16) or ((data[index].toInt() and 0xFF) shl 24)).toLong()
 
-                final long finalStrideLength = StrideLength;
-                final long finalTotalDistance = TotalDistance;
-                RxUtils.emitNext(observers, object -> object.onNext(new RscNotificationData(StrideLenPresent, TotalDistancePresent, Running, Speed, Cadence, finalStrideLength, finalTotalDistance)));
-            } else if (characteristic.equals(RSC_FEATURE)) {
-                long feature = data[0] | data[1] << 8;
-                BleLogger.d(TAG, "RSC Feature Characteristic read: " + feature);
+                val finalStrideLength = strideLength
+                val finalTotalDistance = totalDistance
+                ChannelUtils.emitNext(observers) { observer ->
+                    observer.trySend(
+                        RscNotificationData(
+                            strideLenPresent,
+                            totalDistancePresent,
+                            running,
+                            speed,
+                            cadence,
+                            finalStrideLength,
+                            finalTotalDistance
+                        )
+                    )
+                }
+            } else if (characteristic == RSC_FEATURE) {
+                val feature = (data[0].toInt() or (data[1].toInt() shl 8)).toLong()
+                d(TAG, "RSC Feature Characteristic read: $feature")
             }
         } else {
-            BleLogger.w(TAG, "Process service data with status " + status + ", skipped");
+            w(
+                TAG,
+                "Process service data with status $status, skipped"
+            )
         }
     }
 
-    @Override
-    public void processServiceDataWritten(UUID characteristic, int status) {
+    override fun processServiceDataWritten(characteristic: UUID, status: Int) {
         // do  nothing
     }
 
-    @Override
-    public @NonNull
-    String toString() {
-        return "RSC service ";
+    override fun toString(): String {
+        return "RSC service "
     }
 
-    @Override
-    public Completable clientReady(boolean checkConnection) {
-        // override in client if required
-        return waitNotificationEnabled(RSC_MEASUREMENT, checkConnection);
+    override suspend fun clientReady(checkConnection: Boolean) {
+        waitNotificationEnabled(RSC_MEASUREMENT, checkConnection)
     }
 
     // API
-
     /**
-     * @return Flowable stream of RscNotificationData
-     * Produces: onNext  for every Rsc notification event
+     * @return Flow stream of RscNotificationData
+     * Produces: onNext for every Rsc notification event
      * onError for Interrupted mutex wait
-     * onCompleted none except further configuration applied. If binded to fragment or activity life cycle this might be produced
+     * onCompleted none except further configuration applied. If bound to fragment or activity life cycle this might be produced
      */
-    public Flowable<RscNotificationData> monitorRscNotifications() {
-        return RxUtils.monitorNotifications(observers, txInterface, true);
+    fun monitorRscNotifications(): Flow<RscNotificationData> {
+        return ChannelUtils.monitorNotifications(observers, txInterface, true)
+    }
+
+    companion object {
+        private val TAG: String = BleRscClient::class.java.simpleName
+
+        val RSC_FEATURE: UUID = UUID.fromString("00002a54-0000-1000-8000-00805f9b34fb")
+        val RSC_MEASUREMENT: UUID = UUID.fromString("00002a53-0000-1000-8000-00805f9b34fb")
+        val RSC_SERVICE: UUID = UUID.fromString("00001814-0000-1000-8000-00805f9b34fb")
     }
 }

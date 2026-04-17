@@ -171,7 +171,29 @@ internal class PolarTimeUtils {
         }
         return date
     }
-    
+
+    static func pbDateToDateUTC(pbDate: PbDate?) throws -> Date {
+        guard let year = pbDate?.year,
+              let month = pbDate?.month,
+              let day = pbDate?.day else {
+            BleLogger.error("pbDateToDateUTC failed, pbDate is missing parameters")
+            throw PolarErrors.dateTimeFormatFailed(description: "pbDateToDateUTC failed, pbDate is missing parameters")
+        }
+
+        var dateComponents = DateComponents()
+        dateComponents.year = Int(year)
+        dateComponents.month = Int(month)
+        dateComponents.day = Int(day)
+
+        var utcCalendar = Calendar(identifier: .gregorian)
+        utcCalendar.timeZone = TimeZone(identifier: "UTC")!
+        guard let date = utcCalendar.date(from: dateComponents) else {
+            BleLogger.error("pbDateToDateUTC failed, cannot create date from dateComponents")
+            throw PolarErrors.dateTimeFormatFailed(description: "pbDateToDateUTC failed, cannot create date from dateComponents")
+        }
+        return date
+    }
+
     static func pbDateToDateComponents(pbDate: PbDate?) throws -> DateComponents {
         guard let year = pbDate?.year,
               let month = pbDate?.month,

@@ -14,17 +14,17 @@ class BleGattBaseTest {
     @MockK
     lateinit var mockGattTxInterface: BleGattTxInterface
 
-    class ConcreteImplBleGattBase(txInterface: BleGattTxInterface?) :
+    class ConcreteImplBleGattBase(txInterface: BleGattTxInterface) :
         BleGattBase(txInterface, SOME_BLE_SERVICE_UUID) {
         override fun processServiceData(
-            characteristic: UUID?,
-            data: ByteArray?,
+            characteristic: UUID,
+            data: ByteArray,
             status: Int,
             notifying: Boolean
         ) {
         }
 
-        override fun processServiceDataWritten(characteristic: UUID?, status: Int) {}
+        override fun processServiceDataWritten(characteristic: UUID, status: Int) {}
     }
 
     private lateinit var bleGattBase: ConcreteImplBleGattBase
@@ -46,7 +46,7 @@ class BleGattBaseTest {
 
         //Assert
         assertTrue(bleGattBase.containsNotifyCharacteristic(someBleCharacteristicsUUID))
-        assertEquals(-1, bleGattBase.getNotificationAtomicInteger(someBleCharacteristicsUUID).get())
+        assertEquals(-1, bleGattBase.getNotificationAtomicInteger(someBleCharacteristicsUUID)?.get())
 
         assertTrue(bleGattBase.containsCharacteristic(someBleCharacteristicsUUID))
 

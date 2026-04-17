@@ -5,7 +5,6 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpC
 import com.polar.sdk.api.model.PolarFirmwareVersionInfo
 import fi.polar.remote.representation.protobuf.Device
 import fi.polar.remote.representation.protobuf.Structures
-import io.reactivex.rxjava3.core.Single
 import protocol.PftpRequest
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -38,32 +37,21 @@ internal object PolarFirmwareUpdateUtils {
     private const val DEVICE_FIRMWARE_INFO_PATH = "/DEVICE.BPB"
     private const val TAG = "PolarFirmwareUpdateUtils"
 
-    fun readDeviceFirmwareInfo(client: BlePsFtpClient, deviceId: String): Single<PolarFirmwareVersionInfo> {
+    suspend fun readDeviceFirmwareInfo(client: BlePsFtpClient, deviceId: String): PolarFirmwareVersionInfo {
         BleLogger.d(TAG, "readDeviceFirmwareInfo: $deviceId")
-        return Single.create { emitter ->
-            val disposable = client.request(PftpRequest.PbPFtpOperation.newBuilder()
-                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                    .setPath(DEVICE_FIRMWARE_INFO_PATH)
-                    .build()
-                    .toByteArray()
-            ).subscribe(
-                    { response ->
-                        val proto = Device.PbDeviceInfo.parseFrom(response.toByteArray())
-                        emitter.onSuccess(
-                                PolarFirmwareVersionInfo(
-                                        deviceFwVersion = devicePbVersionToString(proto.deviceVersion),
-                                        deviceModelName = proto.modelName,
-                                        deviceHardwareCode = proto.hardwareCode
-                                )
-                        )
-                    },
-                    { error ->
-                        BleLogger.e(TAG, "readDeviceFirmwareInfo() failed for device: $deviceId, error: $error")
-                        emitter.onError(error)
-                    }
-            )
-            emitter.setDisposable(disposable)
-        }
+        val response = client.request(
+            PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                .setPath(DEVICE_FIRMWARE_INFO_PATH)
+                .build()
+                .toByteArray()
+        )
+        val proto = Device.PbDeviceInfo.parseFrom(response.toByteArray())
+        return PolarFirmwareVersionInfo(
+            deviceFwVersion = devicePbVersionToString(proto.deviceVersion),
+            deviceModelName = proto.modelName,
+            deviceHardwareCode = proto.hardwareCode
+        )
     }
 
     fun isAvailableFirmwareVersionHigher(currentVersion: String, availableVersion: String): Boolean {

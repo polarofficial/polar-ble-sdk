@@ -1,5 +1,6 @@
 package com.polar.polarsensordatacollector.ui.utils
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
@@ -21,6 +22,7 @@ import java.io.InputStream
 class DataViewer: AppCompatActivity() {
 
     private lateinit var dataText: TextView
+    private val MAX_LINES_TO_SHOW_IN_VIEW = 100_000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +35,15 @@ class DataViewer: AppCompatActivity() {
                 val uri = intent.getStringExtra("DATA_URI" )?.toUri()
                 try {
                     val file = getFile(uri, filesDirPath)
-                    dataText.text = "${file.name}\n" + file.inputStream().readBytes().toString(Charsets.UTF_8)
+                    val fileData = file.inputStream().readBytes().toString(Charsets.UTF_8)
+                    file.inputStream().close()
+                    val showingText = if(fileData.lines() .size > MAX_LINES_TO_SHOW_IN_VIEW) {
+                        "Showing first $MAX_LINES_TO_SHOW_IN_VIEW lines of ${fileData.lines().size} total lines.\n\n"
+                    } else {
+                        ""
+                    }
+                    val text = "${file.name}\n"  + showingText+ file.inputStream().readBytes().toString(Charsets.UTF_8)
+                    dataText.text = text.take(MAX_LINES_TO_SHOW_IN_VIEW)
                 } catch (e: Exception) {
                     showToast("${intent.getStringExtra("TOAST_TEXT")}: $filesDirPath")
                 }

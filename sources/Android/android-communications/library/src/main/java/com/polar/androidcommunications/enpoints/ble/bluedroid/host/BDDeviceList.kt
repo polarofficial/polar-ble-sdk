@@ -1,61 +1,65 @@
-package com.polar.androidcommunications.enpoints.ble.bluedroid.host;
+package com.polar.androidcommunications.enpoints.ble.bluedroid.host
 
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGatt
+import com.polar.androidcommunications.api.ble.BleLogger.Companion.d
+import com.polar.androidcommunications.api.ble.model.BleDeviceSession
+import com.polar.androidcommunications.common.ble.AtomicSet
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+internal class BDDeviceList {
+    val sessions: AtomicSet<BDDeviceSessionImpl> = AtomicSet()
 
-import com.polar.androidcommunications.api.ble.BleLogger;
-import com.polar.androidcommunications.api.ble.model.BleDeviceSession;
-import com.polar.androidcommunications.common.ble.AtomicSet;
-
-import java.util.HashSet;
-import java.util.Set;
-
-class BDDeviceList {
-
-    private static final String TAG = BDDeviceList.class.getSimpleName();
-    private final AtomicSet<BDDeviceSessionImpl> sessions = new AtomicSet<>();
-
-    AtomicSet<BDDeviceSessionImpl> getSessions() {
-        return sessions;
+    fun getSession(device: BluetoothDevice): BDDeviceSessionImpl? {
+        return sessions.fetch( {
+                item: BDDeviceSessionImpl? -> item?.bluetoothDevice?.address == device.address
+        })
     }
 
-    @Nullable
-    BDDeviceSessionImpl getSession(final BluetoothDevice device) {
-        return sessions.fetch(object -> object.getBluetoothDevice().getAddress().equals(device.getAddress()));
+    fun addSession(smartPolarDeviceSession: BDDeviceSessionImpl) {
+        d(TAG, "new session added: " + smartPolarDeviceSession.advertisementContent.name)
+        sessions.add(smartPolarDeviceSession)
     }
 
-    void addSession(@NonNull BDDeviceSessionImpl smartPolarDeviceSession) {
-        BleLogger.d(TAG, "new session added: " + smartPolarDeviceSession.getAdvertisementContent().getName());
-        sessions.add(smartPolarDeviceSession);
+    fun copyDeviceList(): Set<BleDeviceSession> {
+        return HashSet<BleDeviceSession>(sessions.objects())
     }
 
-    Set<BleDeviceSession> copyDeviceList() {
-        return new HashSet<>(sessions.objects());
-    }
 
-    @Nullable
-    BDDeviceSessionImpl getSession(@NonNull BluetoothGatt gatt) {
-        return sessions.fetch(object -> {
-            synchronized (object.getGattMutex()) {
-                return object.getGatt() != null && object.getGatt().equals(gatt);
+    fun getSession(gatt: BluetoothGatt): BDDeviceSessionImpl? {
+        return sessions.fetch(object : AtomicSet.CompareFunction<BDDeviceSessionImpl?> {
+            override fun compare(item: BDDeviceSessionImpl?): Boolean {
+                if (item != null) {
+                    return item.gatt != null && item.gatt == gatt
+                }
+                return false
             }
-        });
+        })
     }
 
-    @Nullable
-    BDDeviceSessionImpl getSession(final String address) {
-        return sessions.fetch(object -> object.getAddress().equals(address));
+    fun getSession(address: String): BDDeviceSessionImpl? {
+        return sessions.fetch(object : AtomicSet.CompareFunction<BDDeviceSessionImpl?> {
+            override fun compare(item: BDDeviceSessionImpl?): Boolean {
+                if (item != null) {
+                    return item.address == address
+                }
+                return false
+            }
+        })
     }
 
-    interface CompareFunction {
-        boolean compare(BDDeviceSessionImpl smartPolarDeviceSession1);
+    fun interface CompareFunction<T> {
+        fun compare(smartPolarDeviceSession1: BDDeviceSessionImpl?): Boolean
     }
 
-    @Nullable
-    BDDeviceSessionImpl fetch(final CompareFunction function) {
-        return sessions.fetch(function::compare);
+    fun fetch(function: CompareFunction<Any>): BDDeviceSessionImpl? {
+        return sessions.fetch { smartPolarDeviceSession1: BDDeviceSessionImpl? ->
+            function.compare(
+                smartPolarDeviceSession1
+            )
+        }
+    }
+
+    companion object {
+        private val TAG: String = BDDeviceList::class.java.simpleName
     }
 }

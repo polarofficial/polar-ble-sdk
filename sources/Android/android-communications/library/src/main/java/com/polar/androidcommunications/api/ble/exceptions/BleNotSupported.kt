@@ -1,13 +1,10 @@
-package com.polar.androidcommunications.api.ble.exceptions;
+package com.polar.androidcommunications.api.ble.exceptions
 
 /**
  * Error indicating that requested operation is not supported
  */
-public class BleNotSupported extends Exception {
-    public BleNotSupported() {
-    }
+class BleNotSupported : Exception {
+    constructor()
 
-    public BleNotSupported(String detailMessage) {
-        super(detailMessage);
-    }
+    constructor(detailMessage: String?) : super(detailMessage)
 }

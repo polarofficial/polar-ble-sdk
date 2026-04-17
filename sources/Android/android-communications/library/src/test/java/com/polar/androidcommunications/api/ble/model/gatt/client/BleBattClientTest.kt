@@ -2,10 +2,15 @@ package com.polar.androidcommunications.api.ble.model.gatt.client
 
 import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
+import com.polar.androidcommunications.common.ble.AtomicSet
+import com.polar.androidcommunications.common.ble.ChannelUtils
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.reactivex.rxjava3.subscribers.TestSubscriber
+import io.mockk.mockkObject
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -21,7 +26,15 @@ class BleBattClientTest {
     @Before
     fun setUp() {
         MockKAnnotations.init(this)
-        every { txInterface.isConnected } returns true
+        mockkObject(ChannelUtils.Companion)
+        every { ChannelUtils.postDisconnectedAndClearList(any<AtomicSet<Channel<Any>>>()) } answers {
+            @Suppress("UNCHECKED_CAST")
+            val list = firstArg<AtomicSet<Channel<Any>>>()
+            val error = BleDisconnected()
+            list.objects().forEach { it.close(error) }
+            list.clear()
+        }
+        every { txInterface.isConnected() } returns true
         bleBattClient = BleBattClient(txInterface)
     }
 
@@ -29,7 +42,7 @@ class BleBattClientTest {
     // WHEN battery status observable is subscribed
     // THEN the latest cached battery value is emitted
     @Test
-    fun cachedValue() {
+    fun cachedValue() = runTest {
         //Arrange
         val characteristic: UUID = BleBattClient.BATTERY_LEVEL_CHARACTERISTIC
         val status = 0
@@ -50,21 +63,21 @@ class BleBattClientTest {
             notifying
         )
 
-        val testObserver = TestSubscriber<Int>()
-        bleBattClient.monitorBatteryStatus(true)
-            .subscribe(testObserver)
+        val values = mutableListOf<Int>()
+        val job = launch { bleBattClient.monitorBatteryStatus(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
+        job.cancel()
 
         //Assert
-        testObserver.assertNoErrors()
-        testObserver.assertValueCount(1)
-        assertEquals(deviceNotifyingBatteryData[1], testObserver.values()[0])
+        assertEquals(1, values.size)
+        assertEquals(deviceNotifyingBatteryData[1], values[0])
     }
 
     // GIVEN that BLE Battery Service client receives battery data updates
     // WHEN battery status observable is subscribed
     // THEN the correct values are received by observer
     @Test
-    fun batteryNotificationReceived() {
+    fun batteryNotificationReceived() = runTest {
         //Arrange
         val characteristic: UUID = BleBattClient.BATTERY_LEVEL_CHARACTERISTIC
         val status = 0
@@ -72,9 +85,10 @@ class BleBattClientTest {
         val deviceNotifyingBatteryData = intArrayOf(100, 80, 255, 0, -1)
 
         //Act
-        val testObserver = TestSubscriber<Int>()
-        bleBattClient.monitorBatteryStatus(true)
-            .subscribe(testObserver)
+        val values = mutableListOf<Int>()
+        val job = launch { bleBattClient.monitorBatteryStatus(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
+
         bleBattClient.processServiceData(
             characteristic,
             byteArrayOf(deviceNotifyingBatteryData[0].toByte()),
@@ -105,20 +119,21 @@ class BleBattClientTest {
             status,
             notifying
         )
+        testScheduler.advanceUntilIdle()
+        job.cancel()
 
         //Assert
-        testObserver.assertNoErrors()
-        testObserver.assertValueCount(3)
-        assertEquals(deviceNotifyingBatteryData[0], testObserver.values()[0])
-        assertEquals(deviceNotifyingBatteryData[1], testObserver.values()[1])
-        assertEquals(deviceNotifyingBatteryData[3], testObserver.values()[2])
+        assertEquals(3, values.size)
+        assertEquals(deviceNotifyingBatteryData[0], values[0])
+        assertEquals(deviceNotifyingBatteryData[1], values[1])
+        assertEquals(deviceNotifyingBatteryData[3], values[2])
     }
 
     // GIVEN that BLE Battery Service client receives battery data updates
     // WHEN battery level observable is subscribed
     // THEN at some point device connection is lost
     @Test
-    fun deviceDisconnectsWhileStreaming() {
+    fun deviceDisconnectsWhileStreaming() = runTest {
         //Arrange
         val characteristic: UUID = BleBattClient.BATTERY_LEVEL_CHARACTERISTIC
         val status = 0
@@ -127,21 +142,31 @@ class BleBattClientTest {
         val dataFromBatteryService = byteArrayOf(0x64.toByte())
 
         //Act
-        val testObserver = TestSubscriber.create<Int>()
-        bleBattClient.monitorBatteryStatus(false)
-            .subscribe(testObserver)
+        val values = mutableListOf<Int>()
+        var caughtError: Throwable? = null
+        val job = launch {
+            try {
+                bleBattClient.monitorBatteryStatus(false).collect { values.add(it) }
+            } catch (e: Throwable) {
+                caughtError = e
+            }
+        }
+        testScheduler.advanceUntilIdle()
+
         bleBattClient.processServiceData(characteristic, dataFromBatteryService, status, notifying)
+        testScheduler.advanceUntilIdle()
         bleBattClient.reset()
+        testScheduler.advanceUntilIdle()
+        job.join()
 
         //Assert
-        testObserver.assertError(BleDisconnected::class.java)
-        testObserver.assertValueCount(1)
-        val batteryData = testObserver.values()[0]
-        assertEquals(expectedBatteryLevel, batteryData)
+        assertEquals(1, values.size)
+        assertEquals(expectedBatteryLevel, values[0])
+        assert(caughtError is BleDisconnected)
     }
 
     @Test
-    fun `processServiceData() should emit unknown charge state when battery status notification is received with unknown charge state`() {
+    fun `processServiceData() should emit unknown charge state when battery status notification is received with unknown charge state`() = runTest {
         // Arrange
         val characteristic: UUID = BleBattClient.BATTERY_LEVEL_STATUS_CHARACTERISTIC
         val status = 0
@@ -149,21 +174,20 @@ class BleBattClientTest {
         val batteryStatusData = byteArrayOf(0b00000000, 0b00000000)
 
         // Act
-        val testObserver = TestSubscriber.create<ChargeState>()
-        bleBattClient.monitorChargingStatus(true)
-                .subscribe(testObserver)
+        val values = mutableListOf<ChargeState>()
+        val job = launch { bleBattClient.monitorChargingStatus(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
 
         bleBattClient.processServiceData(characteristic, batteryStatusData, status, notifying)
+        testScheduler.advanceUntilIdle()
+        job.cancel()
 
         // Assert
-        testObserver.assertNoErrors()
-
-        val chargeState = testObserver.values()[1]
-        assertEquals(ChargeState.UNKNOWN, chargeState)
+        assertEquals(ChargeState.UNKNOWN, values[1])
     }
 
     @Test
-    fun `processServiceData() should emit discharging inactive charge state when battery status notification is received with discharging inactive charge state`() {
+    fun `processServiceData() should emit discharging inactive charge state when battery status notification is received with discharging inactive charge state`() = runTest {
         // Arrange
         val characteristic: UUID = BleBattClient.BATTERY_LEVEL_STATUS_CHARACTERISTIC
         val status = 0
@@ -171,21 +195,20 @@ class BleBattClientTest {
         val batteryStatusData = byteArrayOf(0b00000000, 0b11100011.toByte()) // bit6=1, bit5=1 → 0x60 = value 3
 
         // Act
-        val testObserver = TestSubscriber.create<ChargeState>()
-        bleBattClient.monitorChargingStatus(true)
-                .subscribe(testObserver)
+        val values = mutableListOf<ChargeState>()
+        val job = launch { bleBattClient.monitorChargingStatus(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
 
         bleBattClient.processServiceData(characteristic, batteryStatusData, status, notifying)
+        testScheduler.advanceUntilIdle()
+        job.cancel()
 
         // Assert
-        testObserver.assertNoErrors()
-
-        val chargeState = testObserver.values()[1]
-        assertEquals(ChargeState.DISCHARGING_INACTIVE, chargeState)
+        assertEquals(ChargeState.DISCHARGING_INACTIVE, values[1])
     }
 
     @Test
-    fun `processServiceData() should emit discharging active charge state when battery status notification is received with discharging active charge state`() {
+    fun `processServiceData() should emit discharging active charge state when battery status notification is received with discharging active charge state`() = runTest {
         // Arrange
         val characteristic: UUID = BleBattClient.BATTERY_LEVEL_STATUS_CHARACTERISTIC
         val status = 0
@@ -193,21 +216,20 @@ class BleBattClientTest {
         val batteryStatusData = byteArrayOf(0b00000000, 0b11000001.toByte())
 
         // Act
-        val testObserver = TestSubscriber.create<ChargeState>()
-        bleBattClient.monitorChargingStatus(true)
-                .subscribe(testObserver)
+        val values = mutableListOf<ChargeState>()
+        val job = launch { bleBattClient.monitorChargingStatus(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
 
         bleBattClient.processServiceData(characteristic, batteryStatusData, status, notifying)
+        testScheduler.advanceUntilIdle()
+        job.cancel()
 
         // Assert
-        testObserver.assertNoErrors()
-
-        val chargeState = testObserver.values()[1]
-        assertEquals(ChargeState.DISCHARGING_ACTIVE, chargeState)
+        assertEquals(ChargeState.DISCHARGING_ACTIVE, values[1])
     }
 
     @Test
-    fun `processServiceData() should emit charging charge state when battery status notification is received with charging charge state`() {
+    fun `processServiceData() should emit charging charge state when battery status notification is received with charging charge state`() = runTest {
         // Arrange
         val characteristic: UUID = BleBattClient.BATTERY_LEVEL_STATUS_CHARACTERISTIC
         val status = 0
@@ -215,130 +237,99 @@ class BleBattClientTest {
         val batteryStatusData = byteArrayOf(0b00000000, 0b10100011.toByte())
 
         // Act
-        val testObserver = TestSubscriber.create<ChargeState>()
-        bleBattClient.monitorChargingStatus(true)
-                .subscribe(testObserver)
+        val values = mutableListOf<ChargeState>()
+        val job = launch { bleBattClient.monitorChargingStatus(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
 
         bleBattClient.processServiceData(characteristic, batteryStatusData, status, notifying)
+        testScheduler.advanceUntilIdle()
+        job.cancel()
 
         // Assert
-        testObserver.assertNoErrors()
-
-        val chargeState = testObserver.values()[1]
-        assertEquals(ChargeState.CHARGING, chargeState)
+        assertEquals(ChargeState.CHARGING, values[1])
     }
 
     // GIVEN that BLE Battery Service client receives battery status updates
     // WHEN battery power sources state observable is subscribed
     // THEN the latest cached power sources state value is emitted
     @Test
-    fun powerSourcesStateCachedValue() {
+    fun powerSourcesStateCachedValue() = runTest {
         //Arrange
         val characteristic: UUID = BleBattClient.BATTERY_LEVEL_STATUS_CHARACTERISTIC
         val status = 0
         val notifying = true
-
-        // Bit#0 Battery present
-        // 0 = No
-        // 1 = Yes
-        // Bits#1-2 Wired External Power Source Connected
-        // Bits#3-4 Wireless External Power Source Connected
-        // 0 = No
-        // 1 = Yes
-        // 2 = Unknown
-        // 3 = RFU
-
-        // Battery present, wireless not connected, wired not connected
-        val batteryStatusDataWiredNotConnected              = byteArrayOf(0x00, 0b10100001.toByte())
-        // Battery present, wireless not connected, wired connected
-        val batteryStatusDataWiredConnected                 = byteArrayOf(0x00, 0b10100011.toByte())
+        val batteryStatusDataWiredNotConnected = byteArrayOf(0x00, 0b10100001.toByte())
+        val batteryStatusDataWiredConnected    = byteArrayOf(0x00, 0b10100011.toByte())
 
         //Act
-        bleBattClient.processServiceData(
-            characteristic,
-            batteryStatusDataWiredNotConnected,
-            status,
-            notifying
-        )
-        bleBattClient.processServiceData(
-            characteristic,
-            batteryStatusDataWiredConnected,
-            status,
-            notifying
-        )
+        bleBattClient.processServiceData(characteristic, batteryStatusDataWiredNotConnected, status, notifying)
+        bleBattClient.processServiceData(characteristic, batteryStatusDataWiredConnected, status, notifying)
 
-        val testObserver = TestSubscriber.create<PowerSourcesState>()
-        bleBattClient.monitorPowerSourcesState(true)
-            .subscribe(testObserver)
+        val values = mutableListOf<PowerSourcesState>()
+        val job = launch { bleBattClient.monitorPowerSourcesState(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
+        job.cancel()
 
         //Assert
-        testObserver.assertNoErrors()
-        testObserver.assertValueCount(1)
-        assertEquals(PowerSourceState.CONNECTED, testObserver.values()[0].wiredExternalPowerConnected)
-        assertEquals(PowerSourceState.NOT_CONNECTED, testObserver.values()[0].wirelessExternalPowerConnected)
-        assertEquals(BatteryPresentState.PRESENT, testObserver.values()[0].batteryPresent)
+        assertEquals(1, values.size)
+        assertEquals(PowerSourceState.CONNECTED, values[0].wiredExternalPowerConnected)
+        assertEquals(PowerSourceState.NOT_CONNECTED, values[0].wirelessExternalPowerConnected)
+        assertEquals(BatteryPresentState.PRESENT, values[0].batteryPresent)
     }
 
     @Test
-    fun `processServiceData() should emit all power sources states correctly`()  {
-        
+    fun `processServiceData() should emit all power sources states correctly`() = runTest {
         // Arrange
         val characteristic: UUID = BleBattClient.BATTERY_LEVEL_STATUS_CHARACTERISTIC
         val status = 0
         val notifying = true
 
-        val batteryStatusDataBatteryNotPresent              = byteArrayOf(0x00, 0b10100000.toByte())
-        val batteryStatusDataBatteryPresent                 = byteArrayOf(0x00, 0b10100001.toByte())
-
-        val batteryStatusDataWiredNotConnected              = byteArrayOf(0x00, 0b10100001.toByte())
-        val batteryStatusDataWiredConnected                 = byteArrayOf(0x00, 0b10100011.toByte())
-        val batteryStatusDataWiredUnknown                   = byteArrayOf(0x00, 0b10100101.toByte())
-        val batteryStatusDataWiredReservedForFutureUse      = byteArrayOf(0x00, 0b10100111.toByte())
-
-        val batteryStatusDataWirelessNotConnected           = byteArrayOf(0x00, 0b10100011.toByte())
-        val batteryStatusDataWirelessConnected              = byteArrayOf(0x00, 0b10101011.toByte())
-        val batteryStatusDataWirelessUnknown                = byteArrayOf(0x00, 0b10110011.toByte())
-        val batteryStatusDataWirelessReservedForFutureUse   = byteArrayOf(0x00, 0b10111011.toByte())
+        val batteryStatusDataBatteryNotPresent            = byteArrayOf(0x00, 0b10100000.toByte())
+        val batteryStatusDataBatteryPresent               = byteArrayOf(0x00, 0b10100001.toByte())
+        val batteryStatusDataWiredNotConnected            = byteArrayOf(0x00, 0b10100001.toByte())
+        val batteryStatusDataWiredConnected               = byteArrayOf(0x00, 0b10100011.toByte())
+        val batteryStatusDataWiredUnknown                 = byteArrayOf(0x00, 0b10100101.toByte())
+        val batteryStatusDataWiredReservedForFutureUse    = byteArrayOf(0x00, 0b10100111.toByte())
+        val batteryStatusDataWirelessNotConnected         = byteArrayOf(0x00, 0b10100011.toByte())
+        val batteryStatusDataWirelessConnected            = byteArrayOf(0x00, 0b10101011.toByte())
+        val batteryStatusDataWirelessUnknown              = byteArrayOf(0x00, 0b10110011.toByte())
+        val batteryStatusDataWirelessReservedForFutureUse = byteArrayOf(0x00, 0b10111011.toByte())
 
         // Act
-        val testObserver = TestSubscriber.create<PowerSourcesState>()
-        bleBattClient.monitorPowerSourcesState(true)
-            .subscribe(testObserver)
+        val values = mutableListOf<PowerSourcesState>()
+        val job = launch { bleBattClient.monitorPowerSourcesState(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
 
         bleBattClient.processServiceData(characteristic, batteryStatusDataBatteryNotPresent, status, notifying)
         bleBattClient.processServiceData(characteristic, batteryStatusDataBatteryPresent, status, notifying)
-        
         bleBattClient.processServiceData(characteristic, batteryStatusDataWiredNotConnected, status, notifying)
         bleBattClient.processServiceData(characteristic, batteryStatusDataWiredConnected, status, notifying)
         bleBattClient.processServiceData(characteristic, batteryStatusDataWiredUnknown, status, notifying)
         bleBattClient.processServiceData(characteristic, batteryStatusDataWiredReservedForFutureUse, status, notifying)
-        
         bleBattClient.processServiceData(characteristic, batteryStatusDataWirelessNotConnected, status, notifying)
         bleBattClient.processServiceData(characteristic, batteryStatusDataWirelessConnected, status, notifying)
         bleBattClient.processServiceData(characteristic, batteryStatusDataWirelessUnknown, status, notifying)
         bleBattClient.processServiceData(characteristic, batteryStatusDataWirelessReservedForFutureUse, status, notifying)
-        
+        testScheduler.advanceUntilIdle()
+        job.cancel()
+
         // Assert
-        testObserver.assertNoErrors()
-        val events = testObserver.values()
-        
-        assertEquals(events[1].batteryPresent, BatteryPresentState.NOT_PRESENT)
-        assertEquals(events[2].batteryPresent, BatteryPresentState.PRESENT)
+        assertEquals(BatteryPresentState.NOT_PRESENT, values[1].batteryPresent)
+        assertEquals(BatteryPresentState.PRESENT, values[2].batteryPresent)
 
-        assertEquals(events[3].wiredExternalPowerConnected, PowerSourceState.NOT_CONNECTED)
-        assertEquals(events[4].wiredExternalPowerConnected, PowerSourceState.CONNECTED)
-        assertEquals(events[5].wiredExternalPowerConnected, PowerSourceState.UNKNOWN)
-        assertEquals(events[6].wiredExternalPowerConnected, PowerSourceState.RESERVED_FOR_FUTURE_USE)
+        assertEquals(PowerSourceState.NOT_CONNECTED, values[3].wiredExternalPowerConnected)
+        assertEquals(PowerSourceState.CONNECTED, values[4].wiredExternalPowerConnected)
+        assertEquals(PowerSourceState.UNKNOWN, values[5].wiredExternalPowerConnected)
+        assertEquals(PowerSourceState.RESERVED_FOR_FUTURE_USE, values[6].wiredExternalPowerConnected)
 
-        assertEquals(events[7].wirelessExternalPowerConnected, PowerSourceState.NOT_CONNECTED)
-        assertEquals(events[8].wirelessExternalPowerConnected, PowerSourceState.CONNECTED)
-        assertEquals(events[9].wirelessExternalPowerConnected, PowerSourceState.UNKNOWN)
-        assertEquals(events[10].wirelessExternalPowerConnected, PowerSourceState.RESERVED_FOR_FUTURE_USE)
-
+        assertEquals(PowerSourceState.NOT_CONNECTED, values[7].wirelessExternalPowerConnected)
+        assertEquals(PowerSourceState.CONNECTED, values[8].wirelessExternalPowerConnected)
+        assertEquals(PowerSourceState.UNKNOWN, values[9].wirelessExternalPowerConnected)
+        assertEquals(PowerSourceState.RESERVED_FOR_FUTURE_USE, values[10].wirelessExternalPowerConnected)
     }
 
     @Test
-    fun `getBatteryLevel_should_return_newest_battery_level_value`() {
+    fun `getBatteryLevel_should_return_newest_battery_level_value`() = runTest {
         // Arrange
         val characteristic: UUID = BleBattClient.BATTERY_LEVEL_CHARACTERISTIC
         val status = 0
@@ -346,46 +337,47 @@ class BleBattClientTest {
         val deviceNotifyingBatteryData = intArrayOf(100, 80, 255, 0, -1)
 
         //Act
-        val testObserver = TestSubscriber<Int>()
-        bleBattClient.monitorBatteryStatus(true)
-            .subscribe(testObserver)
+        val values = mutableListOf<Int>()
+        val job = launch { bleBattClient.monitorBatteryStatus(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
+
         bleBattClient.processServiceData(
             characteristic,
             byteArrayOf(deviceNotifyingBatteryData[0].toByte()),
             status,
             notifying
         )
-        val result = bleBattClient.getBatteryLevel()
+        testScheduler.advanceUntilIdle()
+        job.cancel()
 
         // Assert
-        testObserver.assertNoErrors()
-        assertEquals(100, result)
+        assertEquals(0, values.indexOf(values.first()))
+        assertEquals(100, bleBattClient.getBatteryLevel())
     }
 
     @Test
-    fun `getBatteryLevel_should_return_undefined_battery_percentage`() {
+    fun `getBatteryLevel_should_return_undefined_battery_percentage`() = runTest {
         // Arrange
-        // Purposefully using wrong UUID here to test that getBatteryLevel()
-        // returns UNDEFINED_BATTERY_PERCENTAGE (-1) when battery level characteristic data is not received
         val characteristic: UUID = UUID.randomUUID()
         val status = 0
         val notifying = true
 
-        //Act
-        val testObserver = TestSubscriber<Int>()
-        bleBattClient.monitorBatteryStatus(true)
-            .subscribe(testObserver)
+        // Act
+        val values = mutableListOf<Int>()
+        val job = launch { bleBattClient.monitorBatteryStatus(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
+
         bleBattClient.processServiceData(
             characteristic,
-            byteArrayOf(),
+            byteArrayOf(0x64.toByte()),
             status,
             notifying
         )
-        val result = bleBattClient.getBatteryLevel()
+        testScheduler.advanceUntilIdle()
+        job.cancel()
 
         // Assert
-        testObserver.assertNoErrors()
-        assertEquals(-1, result)
+        assertEquals(-1, bleBattClient.getBatteryLevel())
     }
 
     @Test
@@ -394,8 +386,6 @@ class BleBattClientTest {
         val characteristic: UUID = BleBattClient.BATTERY_LEVEL_STATUS_CHARACTERISTIC
         val status = 0
         val notifying = true
-
-        // Battery present, wireless not connected, wired connected
         val batteryStatusDataWiredConnected = byteArrayOf(0x00, 0b10100011.toByte())
 
         //Act
@@ -406,22 +396,16 @@ class BleBattClientTest {
             notifying
         )
 
-        val result = bleBattClient.getChargerStatus()
-
         //Assert
-        assertEquals(ChargeState.CHARGING, result)
+        assertEquals(ChargeState.CHARGING, bleBattClient.getChargerStatus())
     }
 
     @Test
     fun `getChargerStatus_should_return_undefined_battery_percentage`() {
         // Arrange
-        // Purposefully using wrong UUID here to test that getChargerStatus()
-        // returns ChargeState.UNKNOWN BATTERY_LEVEL_STATUS_CHARACTERISTIC characteristic data is not received
         val characteristic: UUID = UUID.randomUUID()
         val status = 0
         val notifying = true
-
-        // Battery present, wireless not connected, wired connected
         val batteryStatusDataWiredConnected = byteArrayOf(0x00, 0b10100011.toByte())
 
         //Act
@@ -432,9 +416,7 @@ class BleBattClientTest {
             notifying
         )
 
-        val result = bleBattClient.getChargerStatus()
-
         //Assert
-        assertEquals(ChargeState.UNKNOWN, result)
+        assertEquals(ChargeState.UNKNOWN, bleBattClient.getChargerStatus())
     }
 }

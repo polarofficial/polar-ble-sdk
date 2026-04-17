@@ -4,11 +4,12 @@ package com.polar.sdk.impl.utils
 import com.google.protobuf.InvalidProtocolBufferException
 import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
-import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils
 import com.polar.sdk.api.PolarD2HNotificationData
 import com.polar.sdk.api.PolarDeviceToHostNotification
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.transform
 import protocol.PftpNotification.*
 
 private const val TAG = "PolarD2HNotificationsUtils"
@@ -16,30 +17,27 @@ private const val TAG = "PolarD2HNotificationsUtils"
 /**
  * Extension function for BlePsFtpClient to observe device-to-host notifications.
  *
- * This function filters the raw notification stream from the device and maps
- * the notifications to [PolarD2HNotificationData] objects with parsed parameters.
- *
  * @param identifier Polar device ID or BT address (used for logging)
- * @return Flowable stream of parsed device-to-host notifications
+ * @return Flow of parsed device-to-host notifications
  */
-fun BlePsFtpClient.observeDeviceToHostNotifications(identifier: String): Flowable<PolarD2HNotificationData> {
-    return waitForNotification(Schedulers.newThread())
-        .flatMap { notification: BlePsFtpUtils.PftpNotificationMessage ->
+fun BlePsFtpClient.observeDeviceToHostNotifications(identifier: String): Flow<PolarD2HNotificationData> {
+    return waitForNotification()
+        .transform { notification ->
             val notificationType = PolarDeviceToHostNotification.fromValue(notification.id)
             if (notificationType == null) {
                 BleLogger.w(TAG, "Unknown notification type: ${notification.id}")
-                Flowable.empty()
             } else {
                 val parameters = notification.byteArrayOutputStream.toByteArray()
                 val parsedParameters = parseD2HNotificationParameters(notificationType, parameters)
-                Flowable.just(PolarD2HNotificationData(notificationType, parameters, parsedParameters))
+                emit(PolarD2HNotificationData(notificationType, parameters, parsedParameters))
             }
         }
-        .doOnNext { data ->
+        .onEach { data ->
             BleLogger.d(TAG, "Received D2H notification for $identifier: ${data.notificationType}")
         }
-        .doOnError { error ->
+        .catch { error ->
             BleLogger.e(TAG, "D2H notification error for $identifier: ${error.message}")
+            throw error
         }
 }
 

@@ -1,146 +1,101 @@
-package com.polar.androidcommunications.api.ble.model.gatt;
+package com.polar.androidcommunications.api.ble.model.gatt
 
-import com.polar.androidcommunications.api.ble.BleLogger;
-import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError;
-import com.polar.androidcommunications.api.ble.exceptions.BleCharacteristicNotFound;
-import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected;
-import com.polar.androidcommunications.common.ble.AtomicSet;
-
-import java.util.HashMap;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.Scheduler;
-import io.reactivex.rxjava3.schedulers.Schedulers;
+import com.polar.androidcommunications.api.ble.BleLogger.Companion.d
+import com.polar.androidcommunications.api.ble.BleLogger.Companion.e
+import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError
+import com.polar.androidcommunications.api.ble.exceptions.BleCharacteristicNotFound
+import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected
+import com.polar.androidcommunications.common.ble.AtomicSet
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Container class holding information from current client or service
  * For client encapsulates all characteristic uuid's , properties and service uuid
  * contains helpers functions for asynchronously monitoring characteristic or service events
  */
-public abstract class BleGattBase {
-    private static final String TAG = BleGattBase.class.getSimpleName();
-
-    public static final int DEFAULT_ATT_MTU_SIZE = 23;
-    private static final int DEFAULT_MTU_SIZE = DEFAULT_ATT_MTU_SIZE - 3;
-
-    /**
-     * Characteristic properties
-     */
-    public static final int PROPERTY_BROADCAST = 0x01;
-    public static final int PROPERTY_READ = 0x02;
-    public static final int PROPERTY_WRITE_NO_RESPONSE = 0x04;
-    public static final int PROPERTY_WRITE = 0x08;
-    public static final int PROPERTY_NOTIFY = 0x10;
-    public static final int PROPERTY_INDICATE = 0x20;
-    public static final int PROPERTY_SIGNED_WRITE = 0x40;
-    public static final int PROPERTY_EXTENDED_PROPS = 0x80;
-
-    /**
-     * Permissions, note only in service role
-     */
-    public static final int PERMISSION_READ = 0x01;
-    public static final int PERMISSION_READ_ENCRYPTED = 0x02;
-    public static final int PERMISSION_READ_ENCRYPTED_MITM = 0x04;
-    public static final int PERMISSION_WRITE = 0x10;
-    public static final int PERMISSION_WRITE_ENCRYPTED = 0x20;
-    public static final int PERMISSION_WRITE_ENCRYPTED_MITM = 0x40;
-    public static final int PERMISSION_WRITE_SIGNED = 0x80;
-
-    /**
-     * ATT ERROR CODES, endpoint shall prefer these error codes when calling gatt client callbacks
-     */
-    public static final int ATT_SUCCESS = 0;
-    public static final int ATT_INVALID_HANDLE = 0x1;
-    public static final int ATT_READ_NOT_PERMITTED = 0x2;
-    public static final int ATT_WRITE_NOT_PERMITTED = 0x3;
-    public static final int ATT_INVALID_PDU = 0x4;
-    public static final int ATT_INSUFFICIENT_AUTHENTICATION = 0x5;
-    public static final int ATT_REQUEST_NOT_SUPPORTED = 0x6;
-    public static final int ATT_INVALID_OFFSET = 0x7;
-    public static final int ATT_INSUFFICIENT_AUTHOR = 0x8;
-    public static final int ATT_PREPARE_QUEUE_FULL = 0x9;
-    public static final int ATT_ATTR_NOT_FOUND = 0xa;
-    public static final int ATT_ATTR_NOT_LONG = 0xb;
-    public static final int ATT_INSUFFICIENT_KEY_SIZE = 0xc;
-    public static final int ATT_INVALID_ATTRIBUTE_LENGTH = 0xd;
-    public static final int ATT_UNLIKELY = 0xe;
-    public static final int ATT_INSUFFICIENT_ENCRYPTION = 0xf;
-    public static final int ATT_UNSUPPORTED_GRP_TYPE = 0x10;
-    public static final int ATT_INSUFFICIENT_RESOURCES = 0x11;
-    public static final int ATT_NOTIFY_OR_INDICATE_OFF = 0xff;
-    //0x80-0x9F Application Errors
-    //0xA0-0xDF Reserved for future use
-    //0xE0-0xFF Common Profile and Service Error Codes
-    //          Defined in Core Specification Supplement Part B.
-    public static final int ATT_WRITE_REQUEST_REJECTED = 0xFC;
-    public static final int ATT_CCCD_IMPROPERLY_CONFIGURED = 0xFD;
-    public static final int ATT_PROCEDURE_ALREADY_IN_PROGRESS = 0xFE;
-    public static final int ATT_OUT_OF_RANGE = 0xFF;
-
-    public static final int ATT_UNKNOWN_ERROR = 0x100;
+abstract class BleGattBase {
 
     //
-    protected UUID serviceUuid;
+    protected var serviceUuid: UUID
+
     // List of all service characteristics, value is boolean if this is a automatic read/notification
-    private final HashMap<UUID, Boolean> characteristics = new HashMap<>();
+    private val characteristics = HashMap<UUID, Boolean>()
+
     // List of all service characteristics to read automatically
-    private final HashMap<UUID, Boolean> characteristicsRead = new HashMap<>();
+    private val characteristicsRead = HashMap<UUID, Boolean>()
+
     // List of all service characteristics to be enabled automatically, pair contains property and atomic boolean
-    private final HashMap<UUID, AtomicInteger> mandatoryNotificationCharacteristics = new HashMap<>();
+    private val mandatoryNotificationCharacteristics = HashMap<UUID, AtomicInteger>()
+
     // List of all characteristics that are available
-    private final AtomicSet<UUID> availableCharacteristics = new AtomicSet<>();
+    private val availableCharacteristics = AtomicSet<UUID>()
+
     // List of all readable characteristics that are available
-    private final AtomicSet<UUID> availableReadableCharacteristics = new AtomicSet<>();
+    private val availableReadableCharacteristics = AtomicSet<UUID>()
+
     // List of all writable characteristics that are available
-    private final AtomicSet<UUID> availableWritableCharacteristics = new AtomicSet<>();
+    private val availableWritableCharacteristics = AtomicSet<UUID>()
+
     // transport layer interface
-    protected final BleGattTxInterface txInterface;
+    @JvmField
+    val txInterface: BleGattTxInterface
+
     // current usable mtu size
-    protected final AtomicInteger mtuSize = new AtomicInteger(DEFAULT_MTU_SIZE);
+    @JvmField
+    protected val mtuSize: AtomicInteger = AtomicInteger(
+        DEFAULT_MTU_SIZE
+    )
+
     // mtu size with att layer
-    private final AtomicInteger attMtuSize = new AtomicInteger(DEFAULT_ATT_MTU_SIZE);
+    private val attMtuSize = AtomicInteger(DEFAULT_ATT_MTU_SIZE)
+
+    /**
+     * @return true if the current service is the most primary one
+     */
     // flag to set client as primary
-    protected boolean isPrimaryService = false;
-    protected final AtomicBoolean serviceDiscovered = new AtomicBoolean(false);
+    @JvmField
+    var isPrimaryService: Boolean = false
+    protected val serviceDiscovered: AtomicBoolean = AtomicBoolean(false)
+
     // sets flag that this client/service requires as a whole encryption
-    private boolean encryptionRequired = false;
+    var isEncryptionRequired: Boolean = false
+        private set
 
-    protected BleGattBase(BleGattTxInterface txInterface, UUID serviceUuid) {
-        this.txInterface = txInterface;
-        this.serviceUuid = serviceUuid;
+    protected constructor(txInterface: BleGattTxInterface, serviceUuid: UUID) {
+        this.txInterface = txInterface
+        this.serviceUuid = serviceUuid
     }
 
-    protected BleGattBase(BleGattTxInterface txInterface, UUID serviceUuid, boolean encryptionRequired) {
-        this.txInterface = txInterface;
-        this.serviceUuid = serviceUuid;
-        this.encryptionRequired = encryptionRequired;
+    protected constructor(
+        txInterface: BleGattTxInterface,
+        serviceUuid: UUID,
+        encryptionRequired: Boolean
+    ) {
+        this.txInterface = txInterface
+        this.serviceUuid = serviceUuid
+        this.isEncryptionRequired = encryptionRequired
     }
 
-    public boolean isEncryptionRequired() {
-        return encryptionRequired;
-    }
-
-    public void reset() {
-        availableCharacteristics.clear();
-        availableReadableCharacteristics.clear();
-        availableWritableCharacteristics.clear();
-        for (AtomicInteger integer : mandatoryNotificationCharacteristics.values()) {
-            synchronized (integer) {
-                integer.set(-1);
-                integer.notifyAll();
+    open fun reset() {
+        availableCharacteristics.clear()
+        availableReadableCharacteristics.clear()
+        availableWritableCharacteristics.clear()
+        for (integer in mandatoryNotificationCharacteristics.values) {
+            synchronized(integer) {
+                integer.set(-1)
+                (integer as Object).notifyAll()
             }
         }
-        synchronized (serviceDiscovered) {
-            serviceDiscovered.set(false);
-            serviceDiscovered.notifyAll();
+        synchronized(serviceDiscovered) {
+            serviceDiscovered.set(false)
+            (serviceDiscovered as Object).notifyAll()
         }
-        mtuSize.set(DEFAULT_MTU_SIZE);
-        attMtuSize.set(DEFAULT_ATT_MTU_SIZE);
+        mtuSize.set(DEFAULT_MTU_SIZE)
+        attMtuSize.set(DEFAULT_ATT_MTU_SIZE)
     }
 
     /**
@@ -151,124 +106,123 @@ public abstract class BleGattBase {
      * @param status         status code of processed data
      * @param notifying      if true data is notification data from GATT service
      */
-    public abstract void processServiceData(UUID characteristic, byte[] data, int status, boolean notifying);
+    abstract fun processServiceData(
+        characteristic: UUID,
+        data: ByteArray,
+        status: Int,
+        notifying: Boolean
+    )
 
-    public abstract void processServiceDataWritten(UUID characteristic, int status);
+    abstract fun processServiceDataWritten(characteristic: UUID, status: Int)
 
-    public Completable clientReady(boolean checkConnection) {
+    open suspend fun clientReady(checkConnection: Boolean) {
         // override in client if required
-        return Completable.fromPublisher(Flowable.empty());
     }
 
-    public void authenticationCompleted() {
+    fun authenticationCompleted() {
         // NOTE this informal for client to know that authentication has been completed,
         // link might be encrypted, and device might be bonded
     }
 
-    public void authenticationFailed(Throwable reason) {
+    fun authenticationFailed(reason: Throwable) {
         // NOTE this informal for client to know that authentication has failed
-        BleLogger.e(TAG, "authentication failed: " + reason.toString());
+        e(TAG, "authentication failed: $reason")
     }
 
-    public void processServiceDataWrittenWithResponse(UUID characteristic, int status) {
+    open fun processServiceDataWrittenWithResponse(characteristic: UUID, status: Int) {
         // optional, default forward to processServiceDataWritten
-        processServiceDataWritten(characteristic, status);
+        processServiceDataWritten(characteristic, status)
     }
 
     // only for CCC
-    public void descriptorWritten(UUID characteristic, boolean active, int status) {
-        final AtomicInteger integer = getNotificationAtomicInteger(characteristic);
+    fun descriptorWritten(characteristic: UUID, active: Boolean, status: Int) {
+        val integer = getNotificationAtomicInteger(characteristic)
         if (integer != null) {
-            synchronized (integer) {
+            synchronized(integer) {
                 if (status == ATT_SUCCESS) {
                     if (active) {
-                        integer.set(status);
+                        integer.set(status)
                     } else {
-                        integer.set(ATT_NOTIFY_OR_INDICATE_OFF);
+                        integer.set(ATT_NOTIFY_OR_INDICATE_OFF)
                     }
                 } else {
-                    integer.set(status);
+                    integer.set(status)
                 }
-                integer.notifyAll();
+                (integer as Object).notifyAll()
             }
         }
     }
 
-    public void processCharacteristicDiscovered(UUID characteristic, int property) {
+    fun processCharacteristicDiscovered(characteristic: UUID, property: Int) {
         // implement if needed
-        addAvailableCharacteristic(characteristic, property);
+        addAvailableCharacteristic(characteristic, property)
     }
 
-    public boolean isServiceDiscovered() {
-        return serviceDiscovered.get();
-    }
+    val isServiceDiscovered: Boolean
+        get() = serviceDiscovered.get()
 
-    public void setServiceDiscovered(boolean discovered, UUID uuid) {
-        synchronized (serviceDiscovered) {
-            serviceDiscovered.set(discovered);
-            serviceDiscovered.notifyAll();
+    fun setServiceDiscovered(discovered: Boolean) {
+        synchronized(serviceDiscovered) {
+            serviceDiscovered.set(discovered)
+            (serviceDiscovered as Object).notifyAll()
         }
     }
 
-    public boolean containsCharacteristicRead(UUID characteristic) {
-        return characteristicsRead.containsKey(characteristic);
+    fun containsCharacteristicRead(characteristic: UUID): Boolean {
+        return characteristicsRead.containsKey(characteristic)
     }
 
-    public boolean containsCharacteristic(UUID characteristic) {
-        return characteristics.containsKey(characteristic);
+    fun containsCharacteristic(characteristic: UUID): Boolean {
+        return characteristics.containsKey(characteristic)
     }
 
-    public boolean isAutomaticRead(UUID characteristic) {
-        return characteristicsRead.containsKey(characteristic) && characteristicsRead.get(characteristic);
+    fun isAutomaticRead(characteristic: UUID): Boolean {
+        return characteristicsRead.containsKey(characteristic) && characteristicsRead[characteristic]!!
     }
 
-    public boolean isAutomatic(UUID characteristic) {
-        return characteristics.containsKey(characteristic) && characteristics.get(characteristic);
+    fun isAutomatic(characteristic: UUID): Boolean {
+        return characteristics.containsKey(characteristic) && characteristics[characteristic]!!
     }
 
-    public boolean serviceBelongsToClient(UUID service) {
-        return serviceUuid.equals(service);
+    fun serviceBelongsToClient(service: UUID): Boolean {
+        return serviceUuid == service
     }
 
-    public boolean containsNotifyCharacteristic(UUID characteristic) {
-        return mandatoryNotificationCharacteristics.containsKey(characteristic);
+    fun containsNotifyCharacteristic(characteristic: UUID): Boolean {
+        return mandatoryNotificationCharacteristics.containsKey(characteristic)
     }
 
-    public AtomicInteger getNotificationAtomicInteger(UUID characteristic) {
+    fun getNotificationAtomicInteger(characteristic: UUID): AtomicInteger? {
         if (mandatoryNotificationCharacteristics.containsKey(characteristic)) {
-            return mandatoryNotificationCharacteristics.get(characteristic);
+            return mandatoryNotificationCharacteristics[characteristic]
         }
-        return null;
+        return null
     }
 
-    private boolean contains(UUID characteristic, Set<UUID> uuids) {
-        return uuids.contains(characteristic);
+    private fun contains(characteristic: UUID, uuids: Set<UUID>): Boolean {
+        return uuids.contains(characteristic)
     }
 
-    public Set<UUID> getAvailableCharacteristics() {
-        return availableCharacteristics.objects();
+    fun getAvailableCharacteristics(): Set<UUID> {
+        return availableCharacteristics.objects()
     }
 
-    public BleGattTxInterface getTxInterface() {
-        return txInterface;
+    fun setMtuSize(mtuSize: Int) {
+        attMtuSize.set(mtuSize)
+        this.mtuSize.set(mtuSize - 3)
     }
 
-    public void setMtuSize(int mtuSize) {
-        this.attMtuSize.set(mtuSize);
-        this.mtuSize.set(mtuSize - 3);
-    }
-
-    protected void addCharacteristic(UUID chr) {
-        characteristics.put(chr, true);
+    protected fun addCharacteristic(chr: UUID) {
+        characteristics[chr] = true
     }
 
     /**
-     * Adds characteristic uuid to be handled by this client, by calling this characteristic shall be auto read after connection establishment <BR>
+     * Adds characteristic uuid to be handled by this client, by calling this characteristic shall be auto read after connection establishment <BR></BR>
      *
-     * @param characteristicRead <BR>
+     * @param characteristicRead <BR></BR>
      */
-    protected void addCharacteristicRead(UUID characteristicRead) {
-        addCharacteristic(characteristicRead, PROPERTY_READ);
+    protected fun addCharacteristicRead(characteristicRead: UUID) {
+        addCharacteristic(characteristicRead, PROPERTY_READ)
     }
 
     /**
@@ -277,10 +231,13 @@ public abstract class BleGattBase {
      *
      * @param characteristic characteristic which notification is set on
      */
-    protected void addCharacteristicNotification(UUID characteristic) {
+    fun addCharacteristicNotification(characteristic: UUID) {
         // Note properties are just informal, as this is used by the client
-        BleLogger.d(TAG, "Added notification characteristic for " + characteristic.toString());
-        addCharacteristic(characteristic, PROPERTY_NOTIFY | PROPERTY_INDICATE);
+        d(
+            TAG,
+            "Added notification characteristic for $characteristic"
+        )
+        addCharacteristic(characteristic, PROPERTY_NOTIFY or PROPERTY_INDICATE)
     }
 
     /**
@@ -289,138 +246,181 @@ public abstract class BleGattBase {
      *
      * @param characteristic characteristic which notification is set off
      */
-    protected void removeCharacteristicNotification(UUID characteristic) {
-        BleLogger.d(TAG, "Remove notification characteristic for " + characteristic.toString());
+    fun removeCharacteristicNotification(characteristic: UUID) {
+        d(
+            TAG,
+            "Remove notification characteristic for $characteristic"
+        )
         if (containsNotifyCharacteristic(characteristic)) {
-            mandatoryNotificationCharacteristics.remove(characteristic);
+            mandatoryNotificationCharacteristics.remove(characteristic)
         }
         if (containsCharacteristic(characteristic)) {
-            characteristics.remove(characteristic);
+            characteristics.remove(characteristic)
         }
     }
 
-    protected void addCharacteristic(final UUID characteristic, int properties) {
-        if (((properties & PROPERTY_NOTIFY) != 0 || (properties & PROPERTY_INDICATE) != 0) && !containsNotifyCharacteristic(characteristic)) {
-            mandatoryNotificationCharacteristics.put(characteristic, new AtomicInteger(-1));
+    protected fun addCharacteristic(characteristic: UUID, properties: Int) {
+        if (((properties and PROPERTY_NOTIFY) != 0 || (properties and PROPERTY_INDICATE) != 0) && !containsNotifyCharacteristic(
+                characteristic
+            )
+        ) {
+            mandatoryNotificationCharacteristics[characteristic] =
+                AtomicInteger(-1)
         }
-        if ((properties & PROPERTY_READ) != 0 && !containsCharacteristicRead(characteristic)) {
-            characteristicsRead.put(characteristic, true);
+        if ((properties and PROPERTY_READ) != 0 && !containsCharacteristicRead(characteristic)) {
+            characteristicsRead[characteristic] = true
         }
         if (!characteristics.containsKey(characteristic)) {
-            characteristics.put(characteristic, true);
+            characteristics[characteristic] = true
         }
     }
 
-    protected void addAvailableCharacteristic(UUID chr, int property) {
+    private fun addAvailableCharacteristic(chr: UUID, property: Int) {
         if (containsCharacteristic(chr) && !contains(chr, availableCharacteristics.objects())) {
-            availableCharacteristics.add(chr);
+            availableCharacteristics.add(chr)
         }
-        if ((property & PROPERTY_READ) != 0 && !contains(chr, availableReadableCharacteristics.objects())) {
-            availableReadableCharacteristics.add(chr);
+        if ((property and PROPERTY_READ) != 0 && !contains(
+                chr,
+                availableReadableCharacteristics.objects()
+            )
+        ) {
+            availableReadableCharacteristics.add(chr)
         }
-        if (((property & PROPERTY_WRITE) != 0 || (property & PROPERTY_WRITE_NO_RESPONSE) != 0) &&
-                !contains(chr, availableWritableCharacteristics.objects())) {
-            availableWritableCharacteristics.add(chr);
+        if (((property and PROPERTY_WRITE) != 0 || (property and PROPERTY_WRITE_NO_RESPONSE) != 0) &&
+            !contains(chr, availableWritableCharacteristics.objects())
+        ) {
+            availableWritableCharacteristics.add(chr)
         }
     }
 
-    protected boolean hasAllAvailableReadableCharacteristics(Set<UUID> list) {
-        return hasCharacteristics(list, availableReadableCharacteristics.objects());
+    protected fun hasAllAvailableReadableCharacteristics(list: Set<UUID>): Boolean {
+        return hasCharacteristics(list, availableReadableCharacteristics.objects())
     }
 
-    protected boolean hasCharacteristics(Set<UUID> set, Set<UUID> list) {
-        return !list.isEmpty() && set.containsAll(list);
+    private fun hasCharacteristics(set: Set<UUID>, list: Set<UUID>): Boolean {
+        return list.isNotEmpty() && set.containsAll(list)
     }
 
     /**
-     * @return true if the current service is the most primary one
-     */
-    public boolean isPrimaryService() {
-        return isPrimaryService;
-    }
-
-    public void setIsPrimaryService(boolean isPrimaryService) {
-        this.isPrimaryService = isPrimaryService;
-    }
-
-    /**
-     * monitor service discovered
+     * Suspend until the service is discovered.
      *
      * @param checkConnection optionally check is currently connected
-     * @return Observable stream, only complete or error is produced
+     * @throws BleDisconnected if connection is lost while waiting
      */
-    public Completable waitServiceDiscovered(final boolean checkConnection) {
-        return Completable.create(emitter -> {
-            try {
-                if (!checkConnection || txInterface.isConnected()) {
-                    synchronized (serviceDiscovered) {
-                        if (serviceDiscovered.get()) {
-                            emitter.onComplete();
-                            return;
-                        }
-                        serviceDiscovered.wait();
-                        if (txInterface.isConnected() && serviceDiscovered.get()) {
-                            emitter.onComplete();
-                            return;
-                        }
-                    }
+    suspend fun waitServiceDiscovered(checkConnection: Boolean) = withContext(Dispatchers.IO) {
+        if (!checkConnection || txInterface.isConnected()) {
+            synchronized(serviceDiscovered) {
+                if (!serviceDiscovered.get()) {
+                    (serviceDiscovered as Object).wait()
                 }
-                throw new BleDisconnected();
-            } catch (Exception ex) {
-                if (!emitter.isDisposed()) {
-                    emitter.tryOnError(ex);
+                if (!txInterface.isConnected() || !serviceDiscovered.get()) {
+                    throw BleDisconnected()
                 }
             }
-        }).subscribeOn(Schedulers.io());
+        } else {
+            throw BleDisconnected()
+        }
     }
 
     /**
-     * monitor notification enabled observable.
+     * Suspend until the notification for the given characteristic is enabled.
      *
      * @param uuid            chr uuid to wait for
      * @param checkConnection optionally check is currently connected
-     * @param scheduler       context where to start listening
-     * @return Observable stream, only complete or error is produced
+     * @throws BleDisconnected if connection is lost while waiting
+     * @throws BleAttributeError if the notification/indication setup failed
+     * @throws BleCharacteristicNotFound if the characteristic is not registered
      */
-    public Completable waitNotificationEnabled(final UUID uuid, final boolean checkConnection, final Scheduler scheduler) {
-        final AtomicInteger integer = getNotificationAtomicInteger(uuid);
-        return Completable.create(emitter -> {
-            try {
-                if (!checkConnection || txInterface.isConnected()) {
-                    if (integer != null) {
-                        if (integer.get() == ATT_SUCCESS) {
-                            emitter.onComplete();
-                            return;
-                        } else if (integer.get() != -1) {
-                            throw new BleAttributeError("Failed to set characteristic notification or indication ", integer.get());
-                        } else {
-                            synchronized (integer) {
-                                integer.wait();
-                            }
-                            if (integer.get() != ATT_SUCCESS && !emitter.isDisposed()) {
-                                if (integer.get() != -1) {
-                                    throw new BleAttributeError("Failed to set characteristic notification or indication ", integer.get());
-                                } else {
-                                    throw new BleDisconnected();
-                                }
-                            }
-                        }
-                        emitter.onComplete();
-                    } else {
-                        throw new BleCharacteristicNotFound();
+    suspend fun waitNotificationEnabled(uuid: UUID, checkConnection: Boolean) = withContext(Dispatchers.IO) {
+        val integer = getNotificationAtomicInteger(uuid)
+            ?: throw BleCharacteristicNotFound()
+        if (!checkConnection || txInterface.isConnected()) {
+            when {
+                integer.get() == ATT_SUCCESS -> return@withContext
+                integer.get() != -1 -> throw BleAttributeError(
+                    "Failed to set characteristic notification or indication ", integer.get()
+                )
+                else -> {
+                    synchronized(integer) {
+                        (integer as Object).wait()
                     }
-                } else {
-                    throw new BleDisconnected();
-                }
-            } catch (Exception ex) {
-                if (!emitter.isDisposed()) {
-                    emitter.tryOnError(ex);
+                    if (integer.get() != ATT_SUCCESS) {
+                        if (integer.get() != -1) {
+                            throw BleAttributeError(
+                                "Failed to set characteristic notification or indication ", integer.get()
+                            )
+                        } else {
+                            throw BleDisconnected()
+                        }
+                    }
                 }
             }
-        }).subscribeOn(scheduler);
+        } else {
+            throw BleDisconnected()
+        }
     }
 
-    public Completable waitNotificationEnabled(final UUID uuid, final boolean checkConnection) {
-        return waitNotificationEnabled(uuid, checkConnection, Schedulers.io());
+    companion object {
+        private val TAG: String = BleGattBase::class.java.simpleName
+
+        const val DEFAULT_ATT_MTU_SIZE: Int = 23
+        private const val DEFAULT_MTU_SIZE = DEFAULT_ATT_MTU_SIZE - 3
+
+        /**
+         * Characteristic properties
+         */
+        const val PROPERTY_BROADCAST: Int = 0x01
+        const val PROPERTY_READ: Int = 0x02
+        const val PROPERTY_WRITE_NO_RESPONSE: Int = 0x04
+        const val PROPERTY_WRITE: Int = 0x08
+        const val PROPERTY_NOTIFY: Int = 0x10
+        const val PROPERTY_INDICATE: Int = 0x20
+        const val PROPERTY_SIGNED_WRITE: Int = 0x40
+        const val PROPERTY_EXTENDED_PROPS: Int = 0x80
+
+        /**
+         * Permissions, note only in service role
+         */
+        const val PERMISSION_READ: Int = 0x01
+        const val PERMISSION_READ_ENCRYPTED: Int = 0x02
+        const val PERMISSION_READ_ENCRYPTED_MITM: Int = 0x04
+        const val PERMISSION_WRITE: Int = 0x10
+        const val PERMISSION_WRITE_ENCRYPTED: Int = 0x20
+        const val PERMISSION_WRITE_ENCRYPTED_MITM: Int = 0x40
+        const val PERMISSION_WRITE_SIGNED: Int = 0x80
+
+        /**
+         * ATT ERROR CODES, endpoint shall prefer these error codes when calling gatt client callbacks
+         */
+        const val ATT_SUCCESS: Int = 0
+        const val ATT_INVALID_HANDLE: Int = 0x1
+        const val ATT_READ_NOT_PERMITTED: Int = 0x2
+        const val ATT_WRITE_NOT_PERMITTED: Int = 0x3
+        const val ATT_INVALID_PDU: Int = 0x4
+        const val ATT_INSUFFICIENT_AUTHENTICATION: Int = 0x5
+        const val ATT_REQUEST_NOT_SUPPORTED: Int = 0x6
+        const val ATT_INVALID_OFFSET: Int = 0x7
+        const val ATT_INSUFFICIENT_AUTHOR: Int = 0x8
+        const val ATT_PREPARE_QUEUE_FULL: Int = 0x9
+        const val ATT_ATTR_NOT_FOUND: Int = 0xa
+        const val ATT_ATTR_NOT_LONG: Int = 0xb
+        const val ATT_INSUFFICIENT_KEY_SIZE: Int = 0xc
+        const val ATT_INVALID_ATTRIBUTE_LENGTH: Int = 0xd
+        const val ATT_UNLIKELY: Int = 0xe
+        const val ATT_INSUFFICIENT_ENCRYPTION: Int = 0xf
+        const val ATT_UNSUPPORTED_GRP_TYPE: Int = 0x10
+        const val ATT_INSUFFICIENT_RESOURCES: Int = 0x11
+        const val ATT_NOTIFY_OR_INDICATE_OFF: Int = 0xff
+
+        //0x80-0x9F Application Errors
+        //0xA0-0xDF Reserved for future use
+        //0xE0-0xFF Common Profile and Service Error Codes
+        //          Defined in Core Specification Supplement Part B.
+        const val ATT_WRITE_REQUEST_REJECTED: Int = 0xFC
+        const val ATT_CCCD_IMPROPERLY_CONFIGURED: Int = 0xFD
+        const val ATT_PROCEDURE_ALREADY_IN_PROGRESS: Int = 0xFE
+        const val ATT_OUT_OF_RANGE: Int = 0xFF
+
+        const val ATT_UNKNOWN_ERROR: Int = 0x100
     }
 }

@@ -447,6 +447,13 @@ import UIKit
     }
 
     private func isPolarActivityDataFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        let deviceModel = PolarAdvDataUtility.extractDeviceModelFromName(session.advertisementContent.name)
+        let isCapabilitySupported = BlePolarDeviceCapabilitiesUtility.isActivityDataSupported(deviceModel)
+
+        if !isCapabilitySupported {
+            return Single.just(.notAvailable)
+        }
+
         return isFtpReady(session)
     }
 
@@ -1871,7 +1878,12 @@ extension PolarBleApiImpl: PolarBleApi  {
                             }
                         },
                         onFailure: { error in
-                            single(.failure(self.handleError(error)))
+                            if case let BlePsFtpException.responseError(code) = error, code == 103 {
+                                BleLogger.trace("Directory not found for sub-recording count")
+                                single(.success(0))
+                            } else {
+                                single(.failure(self.handleError(error)))
+                            }
                         }
                     )
             } catch {
@@ -1917,7 +1929,12 @@ extension PolarBleApiImpl: PolarBleApi  {
                             }
                         },
                         onFailure: { error in
-                            single(.failure(self.handleError(error)))
+                            if case let BlePsFtpException.responseError(code) = error, code == 103 {
+                                BleLogger.trace("Directory not found for sub-recordings. Returning main recording path.")
+                                single(.success([entry.path]))
+                            } else {
+                                single(.failure(self.handleError(error)))
+                            }
                         }
                     )
             } catch {
@@ -5078,6 +5095,13 @@ extension PolarBleApiImpl: PolarBleApi  {
                     } catch let err {
                         return Observable.error(PolarErrors.deviceError(description: "\(err)"))
                     }
+                }
+                .catch { error in
+                    if case let BlePsFtpException.responseError(code) = error, code == 103 {
+                        BleLogger.trace("Directory not found at path: \(path). Returning empty list.")
+                        return Observable.empty()
+                    }
+                    return Observable.error(error)
                 }
         } catch let err {
             return Observable.error(handleError(err))

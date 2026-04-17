@@ -3,13 +3,12 @@ package com.polar.sdk.api.model.utils
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
 import com.polar.sdk.impl.utils.PolarBackupManager
 import com.polar.sdk.impl.utils.PolarBackupManager.BackupFileData
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.confirmVerified
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import protocol.PftpRequest
 import protocol.PftpResponse.*
@@ -20,7 +19,7 @@ class PolarBackupManagerTest {
     private val mockClient = mockk<BlePsFtpClient>()
 
     @Test
-    fun `backupDevice() should read and backup files`() {
+    fun `backupDevice() should read and backup files`() = runTest {
         // Arrange
         val backupManager = PolarBackupManager(mockClient)
 
@@ -31,111 +30,109 @@ class PolarBackupManagerTest {
         }
 
         val builder = PbPFtpDirectory.newBuilder()
-                .addAllEntries(
-                        listOf(
-                                PbPFtpEntry.newBuilder().setName("BACKUP.TXT").setSize(1234).build(),
-                                PbPFtpEntry.newBuilder().setName("BT/").setSize(1234).build(),
-                        )
+            .addAllEntries(
+                listOf(
+                    PbPFtpEntry.newBuilder().setName("BACKUP.TXT").setSize(1234).build(),
+                    PbPFtpEntry.newBuilder().setName("BT/").setSize(1234).build(),
                 )
+            )
 
         val mockDirectoryContent = ByteArrayOutputStream().apply {
             builder.build().writeTo(this)
         }
 
-        every { mockClient.request(
-                PftpRequest.PbPFtpOperation.newBuilder()
-                        .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                        .setPath("/SYS/")
-                        .build().toByteArray()
-        )} returns Single.just(mockDirectoryContent)
+        coEvery { mockClient.request(
+            PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                .setPath("/SYS/")
+                .build().toByteArray()
+        )} returns mockDirectoryContent
 
-        every { mockClient.request(
-                PftpRequest.PbPFtpOperation.newBuilder()
-                        .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                        .setPath("/SYS/BACKUP.TXT")
-                        .build().toByteArray()
-        )} returns Single.just(mockBackupFileContent)
+        coEvery { mockClient.request(
+            PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                .setPath("/SYS/BACKUP.TXT")
+                .build().toByteArray()
+        )} returns mockBackupFileContent
 
-        every { mockClient.request(
-                PftpRequest.PbPFtpOperation.newBuilder()
-                        .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                        .setPath("/SYS/BT/")
-                        .build().toByteArray()
-        )} returns Single.just(ByteArrayOutputStream())
+        coEvery { mockClient.request(
+            PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                .setPath("/SYS/BT/")
+                .build().toByteArray()
+        )} returns ByteArrayOutputStream()
 
+        coEvery { mockClient.request(
+            PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                .setPath("/U/0/USERID.BPB")
+                .build().toByteArray()
+        )} returns ByteArrayOutputStream()
 
-        every { mockClient.request(
-                PftpRequest.PbPFtpOperation.newBuilder()
-                        .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                        .setPath("/U/0/USERID.BPB")
-                        .build().toByteArray()
-        )} returns Single.just(ByteArrayOutputStream())
-
-        every { mockClient.request(
-                PftpRequest.PbPFtpOperation.newBuilder()
-                        .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                        .setPath("/RANDOM/FILE.TXT")
-                        .build().toByteArray()
-        )} returns Single.just(ByteArrayOutputStream())
+        coEvery { mockClient.request(
+            PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                .setPath("/RANDOM/FILE.TXT")
+                .build().toByteArray()
+        )} returns ByteArrayOutputStream()
 
         // Default backup files
-        every { mockClient.request(
+        coEvery { mockClient.request(
             PftpRequest.PbPFtpOperation.newBuilder()
                 .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
                 .setPath("/U/0/S/PHYSDATA.BPB")
                 .build().toByteArray()
-        )} returns Single.just(ByteArrayOutputStream())
+        )} returns ByteArrayOutputStream()
 
-        every { mockClient.request(
+        coEvery { mockClient.request(
             PftpRequest.PbPFtpOperation.newBuilder()
                 .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
                 .setPath("/U/0/S/UDEVSET.BPB")
                 .build().toByteArray()
-        )} returns Single.just(ByteArrayOutputStream())
+        )} returns ByteArrayOutputStream()
 
-        every { mockClient.request(
+        coEvery { mockClient.request(
             PftpRequest.PbPFtpOperation.newBuilder()
                 .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
                 .setPath("/U/0/S/PREFS.BPB")
                 .build().toByteArray()
-        )} returns Single.just(ByteArrayOutputStream())
+        )} returns ByteArrayOutputStream()
 
         // Act
-        backupManager.backupDevice().blockingGet()
+        backupManager.backupDevice()
 
         // Assert
-        verify {
+        coVerify {
             mockClient.request(
-                    PftpRequest.PbPFtpOperation.newBuilder()
-                            .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                            .setPath("/SYS/")
-                            .build().toByteArray()
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath("/SYS/")
+                    .build().toByteArray()
             )
             mockClient.request(
-                    PftpRequest.PbPFtpOperation.newBuilder()
-                            .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                            .setPath("/SYS/BACKUP.TXT")
-                            .build().toByteArray()
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath("/SYS/BACKUP.TXT")
+                    .build().toByteArray()
             )
             mockClient.request(
-                    PftpRequest.PbPFtpOperation.newBuilder()
-                            .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                            .setPath("/SYS/BT/")
-                            .build().toByteArray()
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath("/SYS/BT/")
+                    .build().toByteArray()
             )
             mockClient.request(
-                    PftpRequest.PbPFtpOperation.newBuilder()
-                            .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                            .setPath("/U/0/USERID.BPB")
-                            .build().toByteArray()
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath("/U/0/USERID.BPB")
+                    .build().toByteArray()
             )
             mockClient.request(
-                    PftpRequest.PbPFtpOperation.newBuilder()
-                            .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
-                            .setPath("/RANDOM/FILE.TXT")
-                            .build().toByteArray()
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                    .setPath("/RANDOM/FILE.TXT")
+                    .build().toByteArray()
             )
-
             // Default files
             mockClient.request(
                 PftpRequest.PbPFtpOperation.newBuilder()
@@ -160,60 +157,59 @@ class PolarBackupManagerTest {
     }
 
     @Test
-    fun `restoreBackup() should restore files`() {
+    fun `restoreBackup() should restore files`() = runTest {
         // Arrange
         val backupManager = PolarBackupManager(mockClient)
 
         val mockFileData = listOf(
-                BackupFileData(byteArrayOf(), "/SYS/BT/", "BTDEV.BPB"),
-                BackupFileData(byteArrayOf(), "/SYS/BT/", "SVSTATUS.BPB"),
-                BackupFileData(byteArrayOf(), "/RANDOM/", "FILE.TXT"))
+            BackupFileData(byteArrayOf(), "/SYS/BT/", "BTDEV.BPB"),
+            BackupFileData(byteArrayOf(), "/SYS/BT/", "SVSTATUS.BPB"),
+            BackupFileData(byteArrayOf(), "/RANDOM/", "FILE.TXT")
+        )
 
-        every { mockClient.write(
-                PftpRequest.PbPFtpOperation.newBuilder()
-                        .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
-                        .setPath("/SYS/BT/BTDEV.BPB").build().toByteArray(),
-                any()
-        ) } returns Flowable.fromCompletable(Completable.complete())
+        coEvery { mockClient.write(
+            PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
+                .setPath("/SYS/BT/BTDEV.BPB").build().toByteArray(),
+            any()
+        )} returns flowOf(0L)
 
-        every { mockClient.write(
-                PftpRequest.PbPFtpOperation.newBuilder()
-                        .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
-                        .setPath("/SYS/BT/SVSTATUS.BPB").build().toByteArray(),
-                any()
-        ) } returns Flowable.fromCompletable(Completable.complete())
+        coEvery { mockClient.write(
+            PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
+                .setPath("/SYS/BT/SVSTATUS.BPB").build().toByteArray(),
+            any()
+        )} returns flowOf(0L)
 
-        every { mockClient.write(
-                PftpRequest.PbPFtpOperation.newBuilder()
-                        .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
-                        .setPath("/RANDOM/FILE.TXT").build().toByteArray(),
-                any()
-        ) } returns Flowable.fromCompletable(Completable.complete())
+        coEvery { mockClient.write(
+            PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
+                .setPath("/RANDOM/FILE.TXT").build().toByteArray(),
+            any()
+        )} returns flowOf(0L)
 
         // Act
-        backupManager.restoreBackup(mockFileData).blockingAwait()
+        backupManager.restoreBackup(mockFileData)
 
         // Assert
-        verify {
+        coVerify {
             mockClient.write(
-                    PftpRequest.PbPFtpOperation.newBuilder()
-                            .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
-                            .setPath("/SYS/BT/BTDEV.BPB")
-                            .build().toByteArray(), any()
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
+                    .setPath("/SYS/BT/BTDEV.BPB")
+                    .build().toByteArray(), any()
             )
-
             mockClient.write(
-                    PftpRequest.PbPFtpOperation.newBuilder()
-                            .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
-                            .setPath("/SYS/BT/SVSTATUS.BPB")
-                            .build().toByteArray(), any()
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
+                    .setPath("/SYS/BT/SVSTATUS.BPB")
+                    .build().toByteArray(), any()
             )
-
             mockClient.write(
-                    PftpRequest.PbPFtpOperation.newBuilder()
-                            .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
-                            .setPath("/RANDOM/FILE.TXT")
-                            .build().toByteArray(), any()
+                PftpRequest.PbPFtpOperation.newBuilder()
+                    .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
+                    .setPath("/RANDOM/FILE.TXT")
+                    .build().toByteArray(), any()
             )
         }
         confirmVerified(mockClient)

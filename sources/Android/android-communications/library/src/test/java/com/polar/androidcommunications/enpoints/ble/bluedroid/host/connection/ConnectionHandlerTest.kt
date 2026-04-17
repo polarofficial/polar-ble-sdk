@@ -6,17 +6,20 @@ import com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection.Co
 import com.polar.androidcommunications.testrules.BleLoggerTestRule
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
-import io.reactivex.rxjava3.schedulers.TestScheduler
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.util.concurrent.TimeUnit
 
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class ConnectionHandlerTest {
     private lateinit var connectionHandler: ConnectionHandler
-    private lateinit var testScheduler: TestScheduler
+    private lateinit var testScope: TestScope
 
     @Rule
     @JvmField
@@ -37,8 +40,8 @@ internal class ConnectionHandlerTest {
     @Before
     fun setUp() {
         MockKAnnotations.init(this, relaxUnitFun = true)
-        testScheduler = TestScheduler()
-        connectionHandler = ConnectionHandler(mockConnectionInterface, mockScannerInterface, mockConnectionHandlerObserver, guardTimerScheduler = testScheduler)
+        testScope = TestScope()
+        connectionHandler = ConnectionHandler(mockConnectionInterface, mockScannerInterface, mockConnectionHandlerObserver, scope = testScope)
 
         every { mockConnectionInterface.connectDevice(any()) } answers {
             connectionHandler.connectionInitialized(mockDeviceSession)
@@ -61,11 +64,19 @@ internal class ConnectionHandlerTest {
         every { mockDeviceSession.connectionUuids } returns ArrayList()
     }
 
+    @After
+    fun tearDown() {
+        unmockkAll()
+    }
+
     @Test
     fun `connect to device`() {
         // Arrange
         val capturedSessionStates = mutableListOf<BleDeviceSession.DeviceSessionState>()
-        every { mockDeviceSession.sessionState = capture(capturedSessionStates) } returns Unit
+        every { mockDeviceSession.setSessionStates(capture(capturedSessionStates)) } just runs
+        every { mockDeviceSession.sessionState } answers {
+            capturedSessionStates.lastOrNull() ?: BleDeviceSession.DeviceSessionState.SESSION_CLOSED
+        }
 
         // Act
         connectionHandler.connectDevice(mockDeviceSession, true)
@@ -82,18 +93,21 @@ internal class ConnectionHandlerTest {
     }
 
     @Test
-    fun `connect to device but PHY updated callback never called`() {
+    fun `connect to device but PHY updated callback never called`() = runTest {
         // Arrange
         every { mockConnectionInterface.setPhy(any()) } answers {
             // Do not answer anything
         }
 
         val capturedSessionStates = mutableListOf<BleDeviceSession.DeviceSessionState>()
-        every { mockDeviceSession.sessionState = capture(capturedSessionStates) } returns Unit
+        every { mockDeviceSession.setSessionStates(capture(capturedSessionStates)) } just runs
+        every { mockDeviceSession.sessionState } answers {
+            capturedSessionStates.lastOrNull() ?: BleDeviceSession.DeviceSessionState.SESSION_CLOSED
+        }
 
         // Act
         connectionHandler.connectDevice(mockDeviceSession, true)
-        testScheduler.advanceTimeBy(GUARD_TIME_MS + 10, TimeUnit.MILLISECONDS)
+        testScope.advanceTimeBy(GUARD_TIME_MS + 10)
 
         // Assert
         verify(exactly = 1) { mockScannerInterface.connectionHandlerRequestStopScanning() }
@@ -107,16 +121,19 @@ internal class ConnectionHandlerTest {
     }
 
     @Test
-    fun `connect to device but MTU updated callback never called`() {
+    fun `connect to device but MTU updated callback never called`() = runTest {
         // Arrange
         every { mockConnectionInterface.setMtu(any()) } returns true
 
         val capturedSessionStates = mutableListOf<BleDeviceSession.DeviceSessionState>()
-        every { mockDeviceSession.sessionState = capture(capturedSessionStates) } returns Unit
+        every { mockDeviceSession.setSessionStates(capture(capturedSessionStates)) } just runs
+        every { mockDeviceSession.sessionState } answers {
+            capturedSessionStates.lastOrNull() ?: BleDeviceSession.DeviceSessionState.SESSION_CLOSED
+        }
 
         // Act
         connectionHandler.connectDevice(mockDeviceSession, true)
-        testScheduler.advanceTimeBy(GUARD_TIME_MS + 10, TimeUnit.MILLISECONDS)
+        testScope.advanceTimeBy(GUARD_TIME_MS + 10)
 
         // Assert
         verify(exactly = 1) { mockScannerInterface.connectionHandlerRequestStopScanning() }
@@ -133,9 +150,9 @@ internal class ConnectionHandlerTest {
     fun `test connection steps opening, open, openpark and open`() {
         // Arrange
         val capturedSessionStates = mutableListOf<BleDeviceSession.DeviceSessionState>()
-        every { mockDeviceSession.sessionState = capture(capturedSessionStates) } returns Unit
+        every { mockDeviceSession.setSessionStates(capture(capturedSessionStates)) } just runs
         every { mockDeviceSession.sessionState } answers {
-            if (capturedSessionStates.isEmpty()) BleDeviceSession.DeviceSessionState.SESSION_CLOSED else capturedSessionStates.last()
+            capturedSessionStates.lastOrNull() ?: BleDeviceSession.DeviceSessionState.SESSION_CLOSED
         }
         every { mockDeviceSession.isConnectableAdvertisement } returns true
         every { mockDeviceSession.connectionUuids } returns ArrayList()
@@ -160,17 +177,17 @@ internal class ConnectionHandlerTest {
         val mockDeviceSession2 = mockk<BDDeviceSessionImpl>()
 
         val capturedSessionStates1 = mutableListOf<BleDeviceSession.DeviceSessionState>()
-        every { mockDeviceSession1.sessionState = capture(capturedSessionStates1) } returns Unit
+        every { mockDeviceSession1.setSessionStates(capture(capturedSessionStates1)) } just runs
         every { mockDeviceSession1.sessionState } answers {
-            if (capturedSessionStates1.isEmpty()) BleDeviceSession.DeviceSessionState.SESSION_CLOSED else capturedSessionStates1.last()
+            capturedSessionStates1.lastOrNull() ?: BleDeviceSession.DeviceSessionState.SESSION_CLOSED
         }
         every { mockDeviceSession1.isConnectableAdvertisement } returns true
         every { mockDeviceSession1.connectionUuids } returns ArrayList()
 
         val capturedSessionStates2 = mutableListOf<BleDeviceSession.DeviceSessionState>()
-        every { mockDeviceSession2.sessionState = capture(capturedSessionStates2) } returns Unit
+        every { mockDeviceSession2.setSessionStates(capture(capturedSessionStates2)) } just runs
         every { mockDeviceSession2.sessionState } answers {
-            if (capturedSessionStates2.isEmpty()) BleDeviceSession.DeviceSessionState.SESSION_CLOSED else capturedSessionStates2.last()
+            capturedSessionStates2.lastOrNull() ?: BleDeviceSession.DeviceSessionState.SESSION_CLOSED
         }
         every { mockDeviceSession2.isConnectableAdvertisement } returns true
         every { mockDeviceSession2.connectionUuids } returns ArrayList()

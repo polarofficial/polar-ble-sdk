@@ -1,21 +1,21 @@
-package com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection;
+package com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection
 
-import com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl;
+import com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl
 
-public interface ConnectionInterface {
-    void connectDevice(BDDeviceSessionImpl session);
+interface ConnectionInterface {
+    fun connectDevice(session: BDDeviceSessionImpl?)
 
-    void disconnectDevice(BDDeviceSessionImpl session);
+    fun disconnectDevice(session: BDDeviceSessionImpl?)
 
-    void cancelDeviceConnection(BDDeviceSessionImpl session);
+    fun cancelDeviceConnection(session: BDDeviceSessionImpl?)
 
-    void setPhy(BDDeviceSessionImpl session);
+    fun setPhy(session: BDDeviceSessionImpl?)
 
-    void readPhy(BDDeviceSessionImpl session);
+    fun readPhy(session: BDDeviceSessionImpl?)
 
-    boolean isPowered();
+    val isPowered: Boolean
 
-    boolean startServiceDiscovery(BDDeviceSessionImpl session);
+    fun startServiceDiscovery(session: BDDeviceSessionImpl?): Boolean
 
-    boolean setMtu(BDDeviceSessionImpl session);
+    fun setMtu(session: BDDeviceSessionImpl?): Boolean
 }

@@ -1,15 +1,13 @@
-package com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection;
+package com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection
 
-import androidx.annotation.NonNull;
+import com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl
 
-import com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl;
+interface ConnectionHandlerObserver {
+    fun deviceSessionStateChanged(session: BDDeviceSessionImpl)
 
-public interface ConnectionHandlerObserver {
-    void deviceSessionStateChanged(@NonNull BDDeviceSessionImpl session);
+    fun deviceConnected(session: BDDeviceSessionImpl) // explicit connected event
 
-    void deviceConnected(@NonNull BDDeviceSessionImpl session); // explicit connected event
+    fun deviceDisconnected(session: BDDeviceSessionImpl) // explicit disconnected event
 
-    void deviceDisconnected(@NonNull BDDeviceSessionImpl session); // explicit disconnected event
-
-    void deviceConnectionCancelled(@NonNull BDDeviceSessionImpl session); // explicit pending connection cancelled event
+    fun deviceConnectionCancelled(session: BDDeviceSessionImpl) // explicit pending connection cancelled event
 }

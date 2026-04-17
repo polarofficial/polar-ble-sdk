@@ -6,12 +6,12 @@ import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import com.polar.androidcommunications.api.ble.BleLogger
-import com.polar.androidcommunications.common.ble.RxUtils
 import com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection.ConnectionHandler
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.SingleEmitter
-import io.reactivex.rxjava3.schedulers.Schedulers
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Implementation of Android [BluetoothGattCallback]
@@ -20,6 +20,13 @@ internal class GattCallback(
     private val connectionHandler: ConnectionHandler,
     private val sessions: BDDeviceList
 ) : BluetoothGattCallback() {
+
+    private val scope = CoroutineScope(Dispatchers.IO)
+    private var indicatesPairingProblem: Pair<Boolean, Int> = Pair(false, -1)
+
+    fun cancel() {
+        scope.cancel()
+    }
 
     companion object {
         private const val TAG = "GattCallback"
@@ -31,26 +38,32 @@ internal class GattCallback(
         val deviceSession = sessions.getSession(gatt)
         BleLogger.d(TAG, "GATT state changed device newState: $newState status: $status")
         if (deviceSession != null) {
+            indicatesPairingProblem = Pair(false, -1)
             if (newState == BluetoothGatt.STATE_CONNECTED) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
-                    // There are devices needing a delay before connection parameters negotiation is started, e.g. Motorola Moto E40
-                    Completable.timer(CONNECTION_PARAMETER_NEGOTIATION_WAIT_DELAY, TimeUnit.MILLISECONDS)
-                        .observeOn(Schedulers.io())
-                        .subscribe { connectionHandler.connectionInitialized(deviceSession) }
+                    scope.launch {
+                        delay(CONNECTION_PARAMETER_NEGOTIATION_WAIT_DELAY)
+                        connectionHandler.connectionInitialized(deviceSession)
+                    }
                 } else {
-                    Completable.fromAction { connectionHandler.deviceDisconnected(deviceSession) }
-                        .subscribeOn(Schedulers.io())
-                        .subscribe()
+                    scope.launch { connectionHandler.deviceDisconnected(deviceSession) }
                 }
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
-                Completable.fromAction { connectionHandler.deviceDisconnected(deviceSession) }
-                    .subscribeOn(Schedulers.io())
-                    .subscribe()
+                scope.launch {
+                    if (status != 0) {
+                        indicatesPairingProblem = Pair(true, status)
+                    }
+                    connectionHandler.deviceDisconnected(deviceSession)
+                }
             }
         } else {
             BleLogger.e(TAG, "Dead gatt object received")
             gatt.close()
         }
+    }
+
+    fun getIndicatesPairingProblem(): Pair<Boolean, Int> {
+        return indicatesPairingProblem
     }
 
     override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
@@ -60,25 +73,21 @@ internal class GattCallback(
             return
         }
 
-        if (deviceSession.serviceDiscovery != null) {
-            deviceSession.serviceDiscovery.dispose()
-            deviceSession.serviceDiscovery = null
-        }
+        deviceSession.serviceDiscovery?.cancel()
+        deviceSession.serviceDiscovery = null
+
         if (status == BluetoothGatt.GATT_SUCCESS) {
             deviceSession.handleServicesDiscovered()
-            // There are devices needing a delay before connection parameters negotiation is continued, e.g. Nokia G11
-            Completable.timer(CONNECTION_PARAMETER_NEGOTIATION_WAIT_DELAY, TimeUnit.MILLISECONDS)
-                .observeOn(Schedulers.io())
-                .subscribe { connectionHandler.servicesDiscovered(deviceSession) }
+            scope.launch {
+                delay(CONNECTION_PARAMETER_NEGOTIATION_WAIT_DELAY)
+                connectionHandler.servicesDiscovered(deviceSession)
+            }
         } else {
             BleLogger.e(TAG, "service discovery failed: $status")
-            Completable.fromAction { connectionHandler.disconnectDevice(deviceSession) }
-                .subscribeOn(Schedulers.io())
-                .subscribe()
+            scope.launch { connectionHandler.disconnectDevice(deviceSession) }
         }
     }
 
-    @Deprecated("Deprecated in Java")
     @SuppressLint("MissingPermission")
     override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
         BleLogger.d(TAG, "GATT onCharacteristicRead characteristic:${characteristic.uuid} status: $status")
@@ -180,7 +189,7 @@ internal class GattCallback(
         BleLogger.d(TAG, "onReadRemoteRssi status: $status")
         val deviceSession = sessions.getSession(gatt)
         if (deviceSession != null) {
-            RxUtils.emitNext(deviceSession.rssiObservers) { emitter: SingleEmitter<in Int> -> emitter.onSuccess(rssi) }
+            deviceSession.handleRssiRead(rssi, status)
         } else {
             BleLogger.e(TAG, "Dead gatt event?")
             gatt.close()
@@ -193,9 +202,7 @@ internal class GattCallback(
         val deviceSession = sessions.getSession(gatt)
         if (deviceSession != null) {
             deviceSession.handleMtuChanged(mtu, status)
-            Completable.fromAction { connectionHandler.mtuUpdated(deviceSession) }
-                .subscribeOn(Schedulers.io())
-                .subscribe()
+            scope.launch { connectionHandler.mtuUpdated(deviceSession) }
         } else {
             BleLogger.e(TAG, "Dead gatt event?")
             gatt.close()
@@ -206,9 +213,7 @@ internal class GattCallback(
         BleLogger.d(TAG, " phy updated tx: $txPhy rx: $rxPhy status: $status")
         val deviceSession = sessions.getSession(gatt)
         if (deviceSession != null) {
-            Completable.fromAction { connectionHandler.phyUpdated(deviceSession) }
-                .subscribeOn(Schedulers.io())
-                .subscribe()
+            scope.launch { connectionHandler.phyUpdated(deviceSession) }
         }
     }
 
@@ -216,9 +221,7 @@ internal class GattCallback(
         BleLogger.d(TAG, " phy read tx: $txPhy rx: $rxPhy status: $status")
         val deviceSession = sessions.getSession(gatt)
         if (deviceSession != null) {
-            Completable.fromAction { connectionHandler.phyUpdated(deviceSession) }
-                .subscribeOn(Schedulers.io())
-                .subscribe()
+            scope.launch { connectionHandler.phyUpdated(deviceSession) }
         }
     }
 

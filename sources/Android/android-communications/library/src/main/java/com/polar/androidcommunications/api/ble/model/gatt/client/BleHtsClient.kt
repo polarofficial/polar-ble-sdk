@@ -5,15 +5,15 @@ import com.polar.androidcommunications.api.ble.BleLogger.Companion.d
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
 import com.polar.androidcommunications.common.ble.AtomicSet
-import com.polar.androidcommunications.common.ble.RxUtils
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.core.FlowableEmitter
+import com.polar.androidcommunications.common.ble.ChannelUtils
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
 import java.nio.ByteBuffer
 import java.util.*
 import kotlin.math.pow
 import kotlin.math.roundToInt
-
 
 class HealthThermometer {
     companion object {
@@ -23,7 +23,7 @@ class HealthThermometer {
     }
 }
 
-class BleHtsClient(txInterface: BleGattTxInterface?) :
+class BleHtsClient(txInterface: BleGattTxInterface) :
     BleGattBase(txInterface, HealthThermometer.HTS_SERVICE) {
     data class TemperatureMeasurement(
         val temperatureCelsius: Float,
@@ -35,16 +35,16 @@ class BleHtsClient(txInterface: BleGattTxInterface?) :
         const val TEMP_ACCURACY: Int = 100
     }
 
-    private val htsObserverAtomicList = AtomicSet<FlowableEmitter<in TemperatureMeasurement>>()
+    private val htsObserverAtomicList = AtomicSet<Channel<TemperatureMeasurement>>()
 
     override fun reset() {
         super.reset()
-        RxUtils.postDisconnectedAndClearList(htsObserverAtomicList)
+        ChannelUtils.postDisconnectedAndClearList(htsObserverAtomicList)
     }
 
     override fun processServiceData(
-        characteristic: UUID?,
-        data: ByteArray?,
+        characteristic: UUID,
+        data: ByteArray,
         status: Int,
         notifying: Boolean
     ) {
@@ -52,7 +52,7 @@ class BleHtsClient(txInterface: BleGattTxInterface?) :
             TAG, "processServiceData uuid=$characteristic status=$status" +
                     "notifying=$notifying len(data)=${data?.size}"
         )
-        if (characteristic != null && status == ATT_SUCCESS && data != null) {
+        if (status == ATT_SUCCESS && data.isNotEmpty()) {
             if (characteristic == HealthThermometer.TEMPERATURE_MEASUREMENT) {
                 BleLogger.d(
                     TAG,
@@ -70,13 +70,9 @@ class BleHtsClient(txInterface: BleGattTxInterface?) :
                     if (!isFahrenheit) temperature else (temperature - 32.0f) * 5.0f / 9.0f
                 val fahrenheit =
                     if (isFahrenheit) temperature else temperature * 9.0f / 5.0f + 32.0f
-                RxUtils.emitNext<FlowableEmitter<in TemperatureMeasurement>>(htsObserverAtomicList,
-                    RxUtils.Emitter<FlowableEmitter<in TemperatureMeasurement>> { `object`: FlowableEmitter<in TemperatureMeasurement> ->
-                        `object`.onNext(
-                            TemperatureMeasurement(celsius, fahrenheit)
-                        )
-                    })
-
+                ChannelUtils.emitNext(htsObserverAtomicList) { observer ->
+                    observer.trySend(TemperatureMeasurement(celsius, fahrenheit))
+                }
             }
             if (characteristic == HealthThermometer.TEMPERATURE_TYPE) {
                 BleLogger.d(TAG, "TEMPERATURE_TYPE ${data.let { BleLogger.byteArrayToHex(it) }}")
@@ -84,26 +80,26 @@ class BleHtsClient(txInterface: BleGattTxInterface?) :
         }
     }
 
-    override fun processServiceDataWritten(characteristic: UUID?, status: Int) {
+    override fun processServiceDataWritten(characteristic: UUID, status: Int) {
         BleLogger.d(TAG, "processServiceDataWritten TODO")
     }
 
-    fun observeHtsNotifications(checkConnection: Boolean): Flowable<TemperatureMeasurement> {
-        return RxUtils.monitorNotifications(htsObserverAtomicList, txInterface, checkConnection)
-            .startWith(Completable.fromAction {
+    fun observeHtsNotifications(checkConnection: Boolean): Flow<TemperatureMeasurement> {
+        return ChannelUtils.monitorNotifications(htsObserverAtomicList, txInterface, checkConnection)
+            .onStart {
                 d(TAG, "Start observing HTS")
                 addCharacteristicNotification(HealthThermometer.TEMPERATURE_MEASUREMENT)
-                getTxInterface().setCharacteristicNotify(
+                txInterface.setCharacteristicNotify(
                     HealthThermometer.HTS_SERVICE,
                     HealthThermometer.TEMPERATURE_MEASUREMENT,
                     true
                 )
-            })
-            .doFinally {
+            }
+            .onCompletion {
                 d(TAG, "Stop observing HTS")
                 removeCharacteristicNotification(HealthThermometer.TEMPERATURE_MEASUREMENT)
                 try {
-                    getTxInterface().setCharacteristicNotify(
+                    txInterface.setCharacteristicNotify(
                         HealthThermometer.HTS_SERVICE,
                         HealthThermometer.TEMPERATURE_MEASUREMENT,
                         false
@@ -117,5 +113,4 @@ class BleHtsClient(txInterface: BleGattTxInterface?) :
                 }
             }
     }
-
 }

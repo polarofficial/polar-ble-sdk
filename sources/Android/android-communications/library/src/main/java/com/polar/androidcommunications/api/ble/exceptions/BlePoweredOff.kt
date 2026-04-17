@@ -1,13 +1,10 @@
-package com.polar.androidcommunications.api.ble.exceptions;
+package com.polar.androidcommunications.api.ble.exceptions
 
 /**
  * Error indicating that ble chipset is currently off
  */
-public class BlePoweredOff extends Exception {
-    public BlePoweredOff() {
-    }
+class BlePoweredOff : Exception {
+    constructor()
 
-    public BlePoweredOff(String detailMessage) {
-        super(detailMessage);
-    }
+    constructor(detailMessage: String?) : super(detailMessage)
 }

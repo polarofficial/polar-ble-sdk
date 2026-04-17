@@ -317,6 +317,34 @@
             tools:visibility="visible" />
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/second_data_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="2dp"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/second_data_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:paddingEnd="4dp"
+            android:textColor="@android:color/white"
+            android:visibility="gone"
+            tools:text="rrsMs:" />
+
+        <TextView
+            android:id="@+id/second_data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:visibility="gone"
+            tools:text="820, 815" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/recording_live_data_stream_error"
         android:layout_width="wrap_content"

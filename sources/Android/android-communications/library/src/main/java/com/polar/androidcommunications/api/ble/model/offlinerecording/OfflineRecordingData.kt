@@ -291,54 +291,68 @@ internal class OfflineRecordingData<out T>(
 
                 previousTimeStamp = dataFrame.timeStamp
 
-                when (builder) {
-                    is EcgData -> {
-                        val ecgData = EcgData.parseDataFromDataFrame(dataFrame)
-                        builder.ecgSamples.addAll(ecgData.ecgSamples)
-                    }
-                    is AccData -> {
-                        val accData = AccData.parseDataFromDataFrame(dataFrame)
-                        builder.accSamples.addAll(accData.accSamples)
-                    }
-                    is GyrData -> {
-                        val gyrData = GyrData.parseDataFromDataFrame(dataFrame)
-                        builder.gyrSamples.addAll(gyrData.gyrSamples)
-                    }
-                    is MagData -> {
-                        val magData = MagData.parseDataFromDataFrame(dataFrame)
-                        builder.magSamples.addAll(magData.magSamples)
-                    }
-                    is PpgData -> {
-                        val ppgData = PpgData.parseDataFromDataFrame(dataFrame)
-                        builder.ppgSamples.addAll(ppgData.ppgSamples)
-                    }
-                    is PressureData -> {
-                        val pressureData = PressureData.parseDataFromDataFrame(dataFrame)
-                        builder.pressureSamples.addAll(pressureData.pressureSamples)
-                    }
-                    is GnssLocationData -> {
-                        val gnssLocationData = GnssLocationData.parseDataFromDataFrame(dataFrame)
-                        builder.gnssLocationDataSamples.addAll(gnssLocationData.gnssLocationDataSamples)
-                    }
-                    is PpiData -> {
-                        val ppiData = PpiData.parseDataFromDataFrame(dataFrame)
-                        builder.ppiSamples.addAll(ppiData.ppiSamples)
-                    }
+                try {
+                    when (builder) {
+                        is EcgData -> {
+                            val ecgData = EcgData.parseDataFromDataFrame(dataFrame)
+                            builder.ecgSamples.addAll(ecgData.ecgSamples)
+                        }
 
-                    is OfflineHrData -> {
-                        val offlineHrData = OfflineHrData.parseDataFromDataFrame(dataFrame)
-                        builder.hrSamples.addAll(offlineHrData.hrSamples)
-                    }
+                        is AccData -> {
+                            val accData = AccData.parseDataFromDataFrame(dataFrame)
+                            builder.accSamples.addAll(accData.accSamples)
+                        }
 
-                    is TemperatureData -> {
-                        val offlineTemperatureData = TemperatureData.parseDataFromDataFrame(dataFrame)
-                        builder.temperatureSamples.addAll(offlineTemperatureData.temperatureSamples)
-                    }
+                        is GyrData -> {
+                            val gyrData = GyrData.parseDataFromDataFrame(dataFrame)
+                            builder.gyrSamples.addAll(gyrData.gyrSamples)
+                        }
 
-                    is SkinTemperatureData -> {
-                        val offlineTemperatureData = SkinTemperatureData.parseDataFromDataFrame(dataFrame)
-                        builder.skinTemperatureSamples.addAll(offlineTemperatureData.skinTemperatureSamples)
+                        is MagData -> {
+                            val magData = MagData.parseDataFromDataFrame(dataFrame)
+                            builder.magSamples.addAll(magData.magSamples)
+                        }
+
+                        is PpgData -> {
+                            val ppgData = PpgData.parseDataFromDataFrame(dataFrame)
+                            builder.ppgSamples.addAll(ppgData.ppgSamples)
+                        }
+
+                        is PressureData -> {
+                            val pressureData = PressureData.parseDataFromDataFrame(dataFrame)
+                            builder.pressureSamples.addAll(pressureData.pressureSamples)
+                        }
+
+                        is GnssLocationData -> {
+                            val gnssLocationData =
+                                GnssLocationData.parseDataFromDataFrame(dataFrame)
+                            builder.gnssLocationDataSamples.addAll(gnssLocationData.gnssLocationDataSamples)
+                        }
+
+                        is PpiData -> {
+                            val ppiData = PpiData.parseDataFromDataFrame(dataFrame)
+                            builder.ppiSamples.addAll(ppiData.ppiSamples)
+                        }
+
+                        is OfflineHrData -> {
+                            val offlineHrData = OfflineHrData.parseDataFromDataFrame(dataFrame)
+                            builder.hrSamples.addAll(offlineHrData.hrSamples)
+                        }
+
+                        is TemperatureData -> {
+                            val offlineTemperatureData =
+                                TemperatureData.parseDataFromDataFrame(dataFrame)
+                            builder.temperatureSamples.addAll(offlineTemperatureData.temperatureSamples)
+                        }
+
+                        is SkinTemperatureData -> {
+                            val offlineTemperatureData =
+                                SkinTemperatureData.parseDataFromDataFrame(dataFrame)
+                            builder.skinTemperatureSamples.addAll(offlineTemperatureData.skinTemperatureSamples)
+                        }
                     }
+                } catch (e: Exception) {
+                    BleLogger.e(TAG, "Failed to parse data frame with timestamp ${dataFrame.timeStamp}. Error: ${e.toString()}. Continuing with next frames.")
                 }
 
                 if (offset < decryptedData.size) {

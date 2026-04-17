@@ -1,13 +1,10 @@
-package com.polar.androidcommunications.api.ble.exceptions;
+package com.polar.androidcommunications.api.ble.exceptions
 
 /**
  * Error indicating gatt is not currently initialized
  */
-public class BleGattNotInitialized extends Exception {
-    public BleGattNotInitialized() {
-    }
+class BleGattNotInitialized : Exception {
+    constructor()
 
-    public BleGattNotInitialized(String message) {
-        super(message);
-    }
+    constructor(message: String?) : super(message)
 }

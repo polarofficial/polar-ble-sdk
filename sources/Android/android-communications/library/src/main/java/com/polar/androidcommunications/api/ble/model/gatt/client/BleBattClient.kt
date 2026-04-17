@@ -4,10 +4,11 @@ import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
 import com.polar.androidcommunications.common.ble.AtomicSet
-import com.polar.androidcommunications.common.ble.RxUtils
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.core.FlowableEmitter
-import io.reactivex.rxjava3.core.Single
+import com.polar.androidcommunications.common.ble.ChannelUtils
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.onStart
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -44,14 +45,14 @@ data class PowerSourcesState(
         }
     }
 
-class BleBattClient(txInterface: BleGattTxInterface?) : BleGattBase(txInterface, BATTERY_SERVICE) {
-    private val batteryStatusObservers = AtomicSet<FlowableEmitter<in Int>>()
+class BleBattClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, BATTERY_SERVICE) {
+    private val batteryStatusObservers = AtomicSet<Channel<Int>>()
     private val cachedBatteryPercentage = AtomicInteger(UNDEFINED_BATTERY_PERCENTAGE)
 
-    private val batteryChargeStateObservers = AtomicSet<FlowableEmitter<in ChargeState>>()
+    private val batteryChargeStateObservers = AtomicSet<Channel<ChargeState>>()
     private var cachedChargeState: ChargeState = ChargeState.UNKNOWN
 
-    private var powerSourcesStateObservers = AtomicSet<FlowableEmitter<in PowerSourcesState>>()
+    private var powerSourcesStateObservers = AtomicSet<Channel<PowerSourcesState>>()
     private var cachedPowerSourcesState =
         PowerSourcesState(BatteryPresentState.UNKNOWN, PowerSourceState.UNKNOWN, PowerSourceState.UNKNOWN)
 
@@ -74,13 +75,13 @@ class BleBattClient(txInterface: BleGattTxInterface?) : BleGattBase(txInterface,
     override fun reset() {
         super.reset()
         cachedBatteryPercentage.set(UNDEFINED_BATTERY_PERCENTAGE)
-        RxUtils.postDisconnectedAndClearList(batteryStatusObservers)
+        ChannelUtils.postDisconnectedAndClearList(batteryStatusObservers)
 
         cachedChargeState = ChargeState.UNKNOWN
-        RxUtils.postDisconnectedAndClearList(batteryChargeStateObservers)
+        ChannelUtils.postDisconnectedAndClearList(batteryChargeStateObservers)
 
         cachedPowerSourcesState = PowerSourcesState(BatteryPresentState.UNKNOWN, PowerSourceState.UNKNOWN, PowerSourceState.UNKNOWN)
-        RxUtils.postDisconnectedAndClearList(powerSourcesStateObservers)
+        ChannelUtils.postDisconnectedAndClearList(powerSourcesStateObservers)
     }
 
     override fun processServiceData(
@@ -89,22 +90,22 @@ class BleBattClient(txInterface: BleGattTxInterface?) : BleGattBase(txInterface,
         status: Int,
         notifying: Boolean
     ) {
-        if (status == ATT_SUCCESS) {
+        if (status == ATT_SUCCESS && data.isNotEmpty()) {
             when (characteristic) {
                 BATTERY_LEVEL_CHARACTERISTIC -> {
                     cachedBatteryPercentage.set(data[0].toInt())
-                    RxUtils.emitNext(batteryStatusObservers) { emitter: FlowableEmitter<in Int> ->
-                        emitter.onNext(cachedBatteryPercentage.get())
+                    ChannelUtils.emitNext(batteryStatusObservers) { channel ->
+                        channel.trySend(cachedBatteryPercentage.get())
                     }
                 }
                 BATTERY_LEVEL_STATUS_CHARACTERISTIC -> {
                     cachedChargeState = parseBatteryStatus(data)
-                    RxUtils.emitNext(batteryChargeStateObservers) { emitter: FlowableEmitter<in ChargeState> ->
-                        emitter.onNext(cachedChargeState)
+                    ChannelUtils.emitNext(batteryChargeStateObservers) { channel ->
+                        channel.trySend(cachedChargeState)
                     }
                     cachedPowerSourcesState = parsePowerSourcesState(data)
-                    RxUtils.emitNext(powerSourcesStateObservers) { emitter: FlowableEmitter<in PowerSourcesState> ->
-                        emitter.onNext(cachedPowerSourcesState)
+                    ChannelUtils.emitNext(powerSourcesStateObservers) { channel ->
+                        channel.trySend(cachedPowerSourcesState)
                     }
                 }
             }
@@ -116,43 +117,40 @@ class BleBattClient(txInterface: BleGattTxInterface?) : BleGattBase(txInterface,
     }
 
     /**
-     * Get observable for monitoring battery status updates on connected device
+     * Get flow for monitoring battery status updates on connected device
      *
      * @param checkConnection false = connection is not check before observer added, true = connection is check
-     * @return Flowable stream
-     * onNext, on every battery status update received from connected device. The value is the device battery level as a percentage from 0% to 100%
-     * onError, if client is not initially connected or ble disconnect's
-     * onCompleted, none except further configuration applied. If binded to fragment or activity life cycle this might be produced
+     * @return Flow stream
      */
-    fun monitorBatteryStatus(checkConnection: Boolean): Flowable<Int> {
-        return RxUtils.monitorNotifications(batteryStatusObservers, txInterface, checkConnection)
-            .startWith(Flowable.just(cachedBatteryPercentage.get()))
-            .filter { level: Int -> isValidBatteryPercentage(level) }
+    fun monitorBatteryStatus(checkConnection: Boolean): Flow<Int> {
+        return ChannelUtils.monitorNotifications(batteryStatusObservers, txInterface, checkConnection)
+            .onStart { emit(cachedBatteryPercentage.get()) }
+            .filter { level -> isValidBatteryPercentage(level) }
     }
 
     /**
-     * Get observable for monitoring charging status updates on connected device.
+     * Get flow for monitoring charging status updates on connected device.
      * Requires BLE BAS v1.1
      *
      * @param checkConnection false = connection is not check before observer added, true = connection is check
-     * @return Flowable stream emitting [ChargeState]
+     * @return Flow stream emitting [ChargeState]
      */
-    fun monitorChargingStatus(checkConnection: Boolean): Flowable<ChargeState> {
-        return RxUtils.monitorNotifications(batteryChargeStateObservers, txInterface, checkConnection)
-            .startWith(Flowable.just(cachedChargeState))
+    fun monitorChargingStatus(checkConnection: Boolean): Flow<ChargeState> {
+        return ChannelUtils.monitorNotifications(batteryChargeStateObservers, txInterface, checkConnection)
+            .onStart { emit(cachedChargeState) }
     }
 
     /**
-     * Get observable for monitoring power sources updates on connected device.
+     * Get flow for monitoring power sources updates on connected device.
      * Requires BLE BAS v1.1. Exposes battery present, wired and wireless power
      * source connected statuses.
      *
      * @param checkConnection false = connection is not check before observer added, true = connection is check
-     * @return Flowable stream emitting [PowerSourcesState]
+     * @return Flow stream emitting [PowerSourcesState]
      */
-    fun monitorPowerSourcesState(checkConnection: Boolean): Flowable<PowerSourcesState> {
-        return RxUtils.monitorNotifications(powerSourcesStateObservers, txInterface, checkConnection)
-            .startWith(Flowable.just(cachedPowerSourcesState))
+    fun monitorPowerSourcesState(checkConnection: Boolean): Flow<PowerSourcesState> {
+        return ChannelUtils.monitorNotifications(powerSourcesStateObservers, txInterface, checkConnection)
+            .onStart { emit(cachedPowerSourcesState) }
     }
 
     /**

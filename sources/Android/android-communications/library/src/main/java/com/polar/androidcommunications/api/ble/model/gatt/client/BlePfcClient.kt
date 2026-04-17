@@ -1,57 +1,33 @@
-package com.polar.androidcommunications.api.ble.model.gatt.client;
+package com.polar.androidcommunications.api.ble.model.gatt.client
 
-import android.util.Pair;
+import android.util.Pair
+import androidx.annotation.VisibleForTesting
+import com.polar.androidcommunications.api.ble.BleLogger.Companion.w
+import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError
+import com.polar.androidcommunications.api.ble.exceptions.BleCharacteristicNotificationNotEnabled
+import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected
+import com.polar.androidcommunications.api.ble.exceptions.BleNotSupported
+import com.polar.androidcommunications.api.ble.exceptions.BleTimeout
+import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
+import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.nio.ByteBuffer
+import java.util.UUID
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.locks.ReentrantLock
 
-import androidx.annotation.NonNull;
-import androidx.annotation.VisibleForTesting;
-
-import com.polar.androidcommunications.api.ble.BleLogger;
-import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError;
-import com.polar.androidcommunications.api.ble.exceptions.BleCharacteristicNotificationNotEnabled;
-import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected;
-import com.polar.androidcommunications.api.ble.exceptions.BleNotSupported;
-import com.polar.androidcommunications.api.ble.exceptions.BleTimeout;
-import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase;
-import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface;
-
-import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.UUID;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.core.Scheduler;
-import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.core.SingleOnSubscribe;
-import io.reactivex.rxjava3.schedulers.Schedulers;
-
-public class BlePfcClient extends BleGattBase {
-
-    private static final String TAG = BlePfcClient.class.getSimpleName();
-
-    public static final byte SUCCESS = 0x01;
-    public static final byte ERROR_NOT_SUPPORTED = 0x02;
-    public static final byte ERROR_INVALID_PARAMETER = 0x03;
-    public static final byte ERROR_OPERATION_FAILED = 0x04;
-    public static final byte ERROR_NOT_ALLOWED = 0x05;
-
-    public static final byte RESPONSE_CODE = (byte) 0xF0;
-
-    public static final UUID PFC_SERVICE = UUID.fromString("6217FF4B-FB31-1140-AD5A-A45545D7ECF3"); /* Polar Features Configuration Service (PFCS)*/
-    public static final UUID PFC_FEATURE = UUID.fromString("6217FF4C-C8EC-B1FB-1380-3AD986708E2D");
-    public static final UUID PFC_CP = UUID.fromString("6217FF4D-91BB-91D0-7E2A-7CD3BDA8A1F3");
-
+class BlePfcClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, PFC_SERVICE) {
     @VisibleForTesting
-    public final LinkedBlockingQueue<Pair<byte[], Integer>> pfcCpInputQueue = new LinkedBlockingQueue<>();
-    private PfcFeature pfcFeature = null;
-    private final Object mutexFeature = new Object();
-    private final Scheduler scheduler = Schedulers.newThread();
-    private final AtomicInteger pfcCpEnabled;
-    private final Object pfcMutex = new Object();
+    val pfcCpInputQueue: LinkedBlockingQueue<Pair<ByteArray, Int>> = LinkedBlockingQueue()
+    private var pfcFeature: PfcFeature? = null
+    private val mutexFeature = ReentrantLock()
+    private val pfcCpEnabled: AtomicInteger?
+    private val pfcMutex = Any()
 
-    public enum PfcMessage {
+    enum class PfcMessage(val numVal: Int) {
         PFC_UNKNOWN(0),
         PFC_CONFIGURE_BROADCAST(1),
         PFC_REQUEST_BROADCAST_SETTING(2),
@@ -66,266 +42,238 @@ public class BlePfcClient extends BleGattBase {
         PFC_REQUEST_ANT_PLUS_SETTING(11),
         PFC_REQUEST_SECURITY_MODE(12),
         PFC_CONFIGURE_SENSOR_INITIATED_SECURITY_MODE(14),
-        PFC_REQUEST_SENSOR_INITIATED_SECURITY_MODE(15);
-
-        private final int numVal;
-
-        PfcMessage(int numVal) {
-            this.numVal = numVal;
-        }
-
-        public int getNumVal() {
-            return numVal;
-        }
+        PFC_REQUEST_SENSOR_INITIATED_SECURITY_MODE(15)
     }
 
-    public static class PfcResponse {
-        private byte responseCode;
-        private PfcMessage opCode;
-        private byte status;
-        private byte[] payload;
+    class PfcResponse {
+        var responseCode: Byte = 0
+            private set
+        var opCode: PfcMessage? = null
+            private set
+        var status: Byte = 0
+            private set
+        var payload: ByteArray? = null
+            private set
 
-        public PfcResponse() {
-        }
+        constructor()
 
-        public PfcResponse(byte[] data) {
-            responseCode = data[0];
-            opCode = mapOpCode(data[1]);
-            status = data[2];
-            if (data.length > 3) {
-                payload = new byte[data.length - 3];
-                System.arraycopy(data, 3, payload, 0, data.length - 3);
+        constructor(data: ByteArray) {
+            responseCode = data[0]
+            opCode = mapOpCode(data[1].toInt())
+            status = data[2]
+            if (data.size > 3) {
+                payload = ByteArray(data.size - 3)
+                System.arraycopy(data, 3, payload, 0, data.size - 3)
             }
         }
 
-        private PfcMessage mapOpCode(final int value) {
-            for (final PfcMessage m : PfcMessage.values()) {
-                if (m.getNumVal() == value) {
-                    return m;
-                }
-            }
-            return PfcMessage.PFC_UNKNOWN;
-        }
-
-        public byte getResponseCode() {
-            return responseCode;
-        }
-
-        public PfcMessage getOpCode() {
-            return opCode;
-        }
-
-        public byte getStatus() {
-            return status;
-        }
-
-        public byte[] getPayload() {
-            return payload;
-        }
-
-        @Override
-        public String toString() {
-            StringBuffer stringBuffer = new StringBuffer();
+        override fun toString(): String {
+            val stringBuffer = StringBuffer()
             if (payload != null) {
-                for (byte b : payload) {
-                    stringBuffer.append(String.format("%02x ", b));
+                for (b in payload!!) {
+                    stringBuffer.append(String.format("%02x ", b))
                 }
             }
             return "Response code: " + String.format("%02x", responseCode) +
                     " op code: " + opCode +
-                    " status: " + String.format("%02x", status) + " payload: " + stringBuffer;
+                    " status: " + String.format("%02x", status) + " payload: " + stringBuffer
+        }
+
+        private fun mapOpCode(value: Int): PfcMessage {
+            for (m in PfcMessage.entries) {
+                if (m.numVal == value) {
+                    return m
+                }
+            }
+            return PfcMessage.PFC_UNKNOWN
         }
     }
 
-    public static class PfcFeature implements Cloneable {
+    class PfcFeature : Cloneable {
         // feature boolean's
-        public boolean broadcastSupported;
-        public boolean khzSupported;
-        public boolean whisperModeSupported;
-        public boolean otaUpdateSupported;
-        public boolean bleModeConfigureSupported;
-        public boolean multiConnectionSupported;
-        public boolean antSupported;
-        public boolean securityModeSupported;
+        var broadcastSupported: Boolean = false
+        var khzSupported: Boolean = false
+        var whisperModeSupported: Boolean = false
+        var otaUpdateSupported: Boolean = false
+        var bleModeConfigureSupported: Boolean = false
+        var multiConnectionSupported: Boolean = false
+        var antSupported: Boolean = false
+        var securityModeSupported: Boolean = false
+        var sensorInitiatedSecurityModeSupported: Boolean = false
 
-        public PfcFeature() {
+        constructor(data: ByteArray) {
+            broadcastSupported = (data[0].toInt() and 0x01) == 1
+            khzSupported = ((data[0].toInt() and 0x02) shr 1) == 1
+            otaUpdateSupported = ((data[0].toInt() and 0x04) shr 2) == 1
+            whisperModeSupported = ((data[0].toInt() and 0x10) shr 4) == 1
+            bleModeConfigureSupported = ((data[0].toInt() and 0x40) shr 6) == 1
+            multiConnectionSupported = ((data[0].toInt() and 0x80) shr 7) == 1
+            antSupported = (data[1].toInt() and 0x01) == 1
+            securityModeSupported = ((data[1].toInt() and 0x02) shr 1) == 1
+            sensorInitiatedSecurityModeSupported = ((data[1].toInt() and 0x08) shr 3) === 1
         }
 
-        public PfcFeature(byte[] data) {
-            broadcastSupported = (data[0] & 0x01) == 1;
-            khzSupported = ((data[0] & 0x02) >> 1) == 1;
-            otaUpdateSupported = ((data[0] & 0x04) >> 2) == 1;
-            whisperModeSupported = ((data[0] & 0x10) >> 4) == 1;
-            bleModeConfigureSupported = ((data[0] & 0x40) >> 6) == 1;
-            multiConnectionSupported = ((data[0] & 0x80) >> 7) == 1;
-            antSupported = (data[1] & 0x01) == 1;
-            securityModeSupported = ((data[1] & 0x02) >> 1) == 1;
-        }
-
-        public PfcFeature(PfcFeature clone) {
-            this.broadcastSupported = clone.broadcastSupported;
-            this.khzSupported = clone.khzSupported;
-            this.otaUpdateSupported = clone.otaUpdateSupported;
-            this.whisperModeSupported = clone.whisperModeSupported;
-            this.bleModeConfigureSupported = clone.bleModeConfigureSupported;
-            this.multiConnectionSupported = clone.multiConnectionSupported;
-            this.antSupported = clone.antSupported;
-            this.securityModeSupported = clone.securityModeSupported;
-        }
-    }
-
-    public BlePfcClient(BleGattTxInterface txInterface) {
-        super(txInterface, PFC_SERVICE);
-        addCharacteristicRead(PFC_FEATURE);
-        addCharacteristicNotification(PFC_CP);
-        pfcCpEnabled = getNotificationAtomicInteger(PFC_CP);
-    }
-
-    @Override
-    public void reset() {
-        super.reset();
-        pfcCpInputQueue.clear();
-        synchronized (mutexFeature) {
-            pfcFeature = null;
-            mutexFeature.notifyAll();
+        constructor(clone: PfcFeature) {
+            this.broadcastSupported = clone.broadcastSupported
+            this.khzSupported = clone.khzSupported
+            this.otaUpdateSupported = clone.otaUpdateSupported
+            this.whisperModeSupported = clone.whisperModeSupported
+            this.bleModeConfigureSupported = clone.bleModeConfigureSupported
+            this.multiConnectionSupported = clone.multiConnectionSupported
+            this.antSupported = clone.antSupported
+            this.securityModeSupported = clone.securityModeSupported
         }
     }
 
-    @Override
-    public void processServiceData(UUID characteristic, byte[] data, int status, boolean notifying) {
-        if (characteristic.equals(PFC_CP)) {
-            pfcCpInputQueue.add(new Pair<>(data, status));
-        } else if (characteristic.equals(PFC_FEATURE)) {
+    init {
+        addCharacteristicRead(PFC_FEATURE)
+        addCharacteristicNotification(PFC_CP)
+        pfcCpEnabled = getNotificationAtomicInteger(PFC_CP)
+    }
+
+    override fun reset() {
+        super.reset()
+        pfcCpInputQueue.clear()
+        synchronized(mutexFeature) {
+            pfcFeature = null
+            (mutexFeature as Object).notifyAll()
+        }
+    }
+
+    override fun processServiceData(
+        characteristic: UUID,
+        data: ByteArray,
+        status: Int,
+        notifying: Boolean
+    ) {
+        if (characteristic == PFC_CP) {
+            pfcCpInputQueue.add(Pair(data, status))
+        } else if (characteristic == PFC_FEATURE) {
             if (status == ATT_SUCCESS) {
-                synchronized (mutexFeature) {
+                synchronized(mutexFeature) {
                     if (status == 0) {
-                        pfcFeature = new PfcFeature(data);
+                        pfcFeature = PfcFeature(data)
                     }
-                    mutexFeature.notifyAll();
+                    (mutexFeature as Object).notifyAll()
                 }
             } else {
-                BleLogger.w(TAG, "Process service data with status: " + status + ", skipped");
+                w(
+                    TAG,
+                    "Process service data with status: $status, skipped"
+                )
             }
         }
     }
 
-    @Override
-    public void processServiceDataWritten(UUID characteristic, int status) {
+    override fun processServiceDataWritten(characteristic: UUID, status: Int) {
         // add some implementation later if needed
     }
 
-    @Override
-    public @NonNull
-    String toString() {
-        return "PFC service with values broadcast supported: " + pfcFeature.broadcastSupported + " 5khz supported: " + pfcFeature.khzSupported;
+    override fun toString(): String {
+        return "PFC service with values broadcast supported: " + pfcFeature?.broadcastSupported + " 5khz supported: " + pfcFeature?.khzSupported
     }
 
-    private PfcResponse sendPfcCommandAndProcessResponse(byte[] packet) throws Exception {
-        txInterface.transmitMessages(PFC_SERVICE, PFC_CP, Collections.singletonList(packet), true);
-        Pair<byte[], Integer> pair = pfcCpInputQueue.poll(30, TimeUnit.SECONDS);
+    @Throws(Exception::class)
+    private fun sendPfcCommandAndProcessResponse(packet: ByteArray): PfcResponse {
+        txInterface.transmitMessages(PFC_SERVICE, PFC_CP, listOf(packet), true)
+        val pair = pfcCpInputQueue.poll(30, TimeUnit.SECONDS)
         if (pair != null) {
             if (pair.second == 0) {
-                return new PfcResponse(pair.first);
+                return PfcResponse(pair.first)
             } else {
-                throw new BleAttributeError("pfc attribute ", pair.second);
+                throw BleAttributeError("pfc attribute ", pair.second)
             }
         }
-        throw new BleTimeout("Pfc response failed to receive in timeline");
+        throw BleTimeout("Pfc response failed to receive in timeline")
     }
 
     // API
-    public Single<PfcResponse> sendControlPointCommand(final PfcMessage command, int param) {
-        return sendControlPointCommand(command, new byte[]{(byte) param});
+    suspend fun sendControlPointCommand(command: PfcMessage, param: Int): PfcResponse {
+        return sendControlPointCommand(command, byteArrayOf(param.toByte()))
     }
 
-    @Override
-    public Completable clientReady(boolean checkConnection) {
-        return waitNotificationEnabled(PFC_CP, checkConnection);
-    }
-
-    /**
-     * Produces:  onError: if reponse read fails e.g. timeout etc...
-     * onSuccess: with control point response
-     *
-     * @param command @see PfcMessage
-     * @param params  optional parameters depends on command
-     * @return Observable stream, @see Rx Observable
-     */
-    public Single<PfcResponse> sendControlPointCommand(final PfcMessage command, final byte[] params) {
-        return Single.create((SingleOnSubscribe<PfcResponse>) emitter -> {
-            // force pfc operation to be 'atomic'
-            synchronized (pfcMutex) {
-                if (pfcCpEnabled.get() == ATT_SUCCESS) {
-                    try {
-                        pfcCpInputQueue.clear();
-                        switch (command) {
-                            case PFC_CONFIGURE_ANT_PLUS_SETTING:
-                            case PFC_CONFIGURE_MULTI_CONNECTION_SETTING:
-                            case PFC_CONFIGURE_BLE_MODE:
-                            case PFC_CONFIGURE_WHISPER_MODE:
-                            case PFC_CONFIGURE_BROADCAST:
-                            case PFC_CONFIGURE_5KHZ:
-                            case PFC_CONFIGURE_SENSOR_INITIATED_SECURITY_MODE: {
-                                ByteBuffer bb = ByteBuffer.allocate(1 + params.length);
-                                bb.put((byte) command.getNumVal());
-                                bb.put(params);
-                                emitter.onSuccess(sendPfcCommandAndProcessResponse(bb.array()));
-                                return;
-                            }
-                            case PFC_REQUEST_MULTI_CONNECTION_SETTING:
-                            case PFC_REQUEST_ANT_PLUS_SETTING:
-                            case PFC_REQUEST_WHISPER_MODE:
-                            case PFC_REQUEST_BROADCAST_SETTING:
-                            case PFC_REQUEST_5KHZ_SETTING:
-                            case PFC_REQUEST_SECURITY_MODE:
-                            case PFC_REQUEST_SENSOR_INITIATED_SECURITY_MODE: {
-                                byte[] packet = new byte[]{(byte) command.getNumVal()};
-                                emitter.onSuccess(sendPfcCommandAndProcessResponse(packet));
-                                return;
-                            }
-                            default:
-                                throw new BleNotSupported("Unknown pfc command acquired");
-                        }
-                    } catch (Exception ex) {
-                        if (!emitter.isDisposed()) {
-                            emitter.tryOnError(ex);
-                        }
-                    }
-                } else if (!emitter.isDisposed()) {
-                    emitter.tryOnError(new BleCharacteristicNotificationNotEnabled("PFC control point not enabled"));
-                }
-            }
-        }).subscribeOn(scheduler);
+    override suspend fun clientReady(checkConnection: Boolean) {
+        waitNotificationEnabled(PFC_CP, checkConnection)
     }
 
     /**
-     * read features from pfc service
+     * Send a control point command to the device.
      *
-     * @return Observable stream
-     * Produces:
-     * - onSuccess device response data
-     * - onError, @see errors package com.polar.androidcommunications.
+     * @param command see [PfcMessage]
+     * @param params  optional parameters, depends on command
+     * @return [PfcResponse] on success
+     * @throws Throwable on any error
      */
-    public Single<PfcFeature> readFeature() {
-        return Single.create((SingleOnSubscribe<PfcFeature>) emitter -> {
-            try {
-                synchronized (mutexFeature) {
-                    if (pfcFeature == null) {
-                        mutexFeature.wait();
+    suspend fun sendControlPointCommand(command: PfcMessage, params: ByteArray? = null): PfcResponse = withContext(Dispatchers.IO) {
+        if (params == null) return@withContext PfcResponse()
+        synchronized(pfcMutex) {
+            if (pfcCpEnabled?.get() == ATT_SUCCESS) {
+                pfcCpInputQueue.clear()
+                when (command) {
+                    PfcMessage.PFC_CONFIGURE_ANT_PLUS_SETTING,
+                    PfcMessage.PFC_CONFIGURE_MULTI_CONNECTION_SETTING,
+                    PfcMessage.PFC_CONFIGURE_BLE_MODE,
+                    PfcMessage.PFC_CONFIGURE_WHISPER_MODE,
+                    PfcMessage.PFC_CONFIGURE_BROADCAST,
+                    PfcMessage.PFC_CONFIGURE_5KHZ,
+                    PfcMessage.PFC_CONFIGURE_SENSOR_INITIATED_SECURITY_MODE -> {
+                        val bb = ByteBuffer.allocate(1 + params.size)
+                        bb.put(command.numVal.toByte())
+                        bb.put(params)
+                        return@synchronized sendPfcCommandAndProcessResponse(bb.array())
                     }
-                    if (pfcFeature != null) {
-                        emitter.onSuccess(new PfcFeature(pfcFeature));
-                        return;
-                    } else if (!txInterface.isConnected()) {
-                        throw new BleDisconnected();
+                    PfcMessage.PFC_REQUEST_MULTI_CONNECTION_SETTING,
+                    PfcMessage.PFC_REQUEST_ANT_PLUS_SETTING,
+                    PfcMessage.PFC_REQUEST_WHISPER_MODE,
+                    PfcMessage.PFC_REQUEST_BROADCAST_SETTING,
+                    PfcMessage.PFC_REQUEST_5KHZ_SETTING,
+                    PfcMessage.PFC_REQUEST_SECURITY_MODE,
+                    PfcMessage.PFC_REQUEST_SENSOR_INITIATED_SECURITY_MODE -> {
+                        val packet = byteArrayOf(command.numVal.toByte())
+                        return@synchronized sendPfcCommandAndProcessResponse(packet)
                     }
-                    throw new Exception("Undefined device error");
+                    else -> throw BleNotSupported("Unknown pfc command acquired")
                 }
-            } catch (Exception ex) {
-                if (!emitter.isDisposed()) {
-                    emitter.tryOnError(ex);
-                }
+            } else {
+                throw BleCharacteristicNotificationNotEnabled("PFC control point not enabled")
             }
-        }).subscribeOn(Schedulers.io());
+        }
+    }
+
+    /**
+     * Read features from PFC service.
+     *
+     * @return [PfcFeature] on success
+     * @throws Throwable on any error
+     */
+    suspend fun readFeature(): PfcFeature = withContext(Dispatchers.IO) {
+        synchronized(mutexFeature) {
+            if (pfcFeature == null) {
+                (mutexFeature as Object).wait()
+            }
+            pfcFeature?.let { return@withContext it }
+            if (!txInterface.isConnected()) {
+                throw BleDisconnected()
+            } else {
+                throw BleNotSupported("PFC feature read failed")
+            }
+        }
+    }
+
+    companion object {
+        private val TAG: String = BlePfcClient::class.java.simpleName
+
+        const val SUCCESS: Byte = 0x01
+        const val ERROR_NOT_SUPPORTED: Byte = 0x02
+        const val ERROR_INVALID_PARAMETER: Byte = 0x03
+        const val ERROR_OPERATION_FAILED: Byte = 0x04
+        const val ERROR_NOT_ALLOWED: Byte = 0x05
+
+        const val RESPONSE_CODE: Byte = 0xF0.toByte()
+
+        val PFC_SERVICE: UUID =
+            UUID.fromString("6217FF4B-FB31-1140-AD5A-A45545D7ECF3") /* Polar Features Configuration Service (PFCS)*/
+        val PFC_FEATURE: UUID = UUID.fromString("6217FF4C-C8EC-B1FB-1380-3AD986708E2D")
+        val PFC_CP: UUID = UUID.fromString("6217FF4D-91BB-91D0-7E2A-7CD3BDA8A1F3")
     }
 }

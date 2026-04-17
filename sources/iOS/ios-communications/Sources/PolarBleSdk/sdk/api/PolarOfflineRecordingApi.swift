@@ -80,6 +80,7 @@ public protocol PolarOfflineRecordingApi {
     /// Fetch recording from the  device.
     ///
     /// Note, the fetching of the recording may take several seconds if the recording is big.
+    /// Note, if a faulty data block is encountered while parsing offline data from device that particular data block will be discarded. This will lead to gaps in the data.
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
     ///
@@ -95,7 +96,7 @@ public protocol PolarOfflineRecordingApi {
     /// Fetch recording from the device with progress updates.
     ///
     /// Note, the fetching of the recording may take several seconds if the recording is big.
-    ///
+    /// Note, if a faulty data block is encountered while parsing offline data from device that particular data block will be discarded. This will lead to gaps in the data.
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
     ///
     /// - Parameters:
@@ -136,6 +137,7 @@ public protocol PolarOfflineRecordingApi {
     /// Fetch split recording from the device.
     ///
     /// Note, the fetching of the recording may take several seconds if the recording is big.
+    /// Note, if a faulty data block is encountered while parsing offline data from device that particular data block will be discarded. This will lead to gaps in the data.
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
     ///

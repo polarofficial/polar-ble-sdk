@@ -6,10 +6,8 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurem
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.errors.PolarInvalidArgument
 import com.polar.sdk.api.model.PolarOfflineRecordingEntry
-import io.reactivex.rxjava3.core.BackpressureOverflowStrategy
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.core.Single
-import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import java.io.ByteArrayInputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -20,7 +18,7 @@ internal object PolarOfflineRecordingUtils {
     private const val TAG = "OfflineRecordingUtils"
     private const val PMD_FILE_PATH = "/PMDFILES.TXT"
 
-    fun mapOfflineRecordingFileNameToMeasurementType(fileName: String): PmdMeasurementType {
+    private fun mapOfflineRecordingFileNameToMeasurementType(fileName: String): PmdMeasurementType {
         val fileNameWithoutExtension = fileName.substringBeforeLast(".")
         return when (fileNameWithoutExtension.replace(Regex("\\d+"), "")) {
             "ACC" -> PmdMeasurementType.ACC
@@ -51,110 +49,90 @@ internal object PolarOfflineRecordingUtils {
 
     fun listOfflineRecordingsV1(
         client: BlePsFtpClient,
-        fetchRecursively: (client: BlePsFtpClient, path: String, condition: (String) -> Boolean) -> Flowable<Pair<String, Long>>
-    ): Flowable<PolarOfflineRecordingEntry> {
+        fetchRecursively: (client: BlePsFtpClient, path: String, condition: (String) -> Boolean) -> Flow<Pair<String, Long>>
+    ): Flow<PolarOfflineRecordingEntry> = flow {
 
-        return fetchRecursively(client, "/U/0/") { entry ->
+        val grouped = mutableMapOf<String, MutableList<PolarOfflineRecordingEntry>>()
+
+        fetchRecursively(client, "/U/0/") { entry ->
             entry.matches(Regex("^(\\d{8})(/)")) ||
                     entry == "R/" ||
                     entry.matches(Regex("^(\\d{6})(/)")) ||
                     entry.contains(".REC")
-        }.subscribeOn(Schedulers.io())
-            .flatMap { entry ->
-                try {
-                    val components = entry.first.split("/")
-                    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ENGLISH)
-                    val date = LocalDateTime.parse("${components[3]}${components[5]}", dateTimeFormatter)
-                        ?: throw PolarInvalidArgument("Cannot parse date from ${components[3]} and ${components[5]}")
-
-                    val type = mapPmdMeasurementTypeToPolarDeviceDataType(
-                        mapOfflineRecordingFileNameToMeasurementType(
-                            components[6].substringBefore(".").filter { !it.isDigit() }
-                        )
-                    )
-                    if (entry.second <= 0) {
-                        BleLogger.e(TAG, "Encountered zero size entry in path ${entry.first}. Ignoring empty recording.")
-                        return@flatMap Flowable.empty()
-                    }
-
-                    Flowable.just(PolarOfflineRecordingEntry(entry.first, entry.second, date, type))
-                } catch (e: Exception) {
-                    BleLogger.e(TAG, "Error processing offline recording entry ${entry.first}: ${e.message}")
-                    Flowable.empty()
-                }
-            }
-            .groupBy { it.path.replace(Regex("\\d+\\.REC$"), ".REC") }
-            .onBackpressureBuffer(
-                8192,
-                {
-                    BleLogger.w(TAG, "Offline recording entries dropped due to buffer overflow")
-                },
-                BackpressureOverflowStrategy.DROP_LATEST
-            )
-            .flatMap { groupedEntries ->
-                groupedEntries.toList().flatMapPublisher { entriesList ->
-                    if (entriesList.isEmpty()) return@flatMapPublisher Flowable.empty()
-                    val totalSize = entriesList.sumOf { it.size.toInt() }
-                    val first = entriesList.first()
-                    Flowable.just(
-                        PolarOfflineRecordingEntry(
-                            path = first.path.replace(Regex("\\d+\\.REC$"), ".REC"),
-                            size = totalSize.toLong(),
-                            date = first.date,
-                            type = first.type
-                        )
-                    )
-                }.onErrorResumeNext { throwable: Throwable ->
-                    Flowable.error(throwable)
-                }
-            }
-    }
-
-    fun listOfflineRecordingsV2(file: ByteArray): Single<List<PolarOfflineRecordingEntry>> {
-
-        return Single.create { emitter ->
+        }.collect { entry ->
             try {
-                val offlineRecordings = ByteArrayInputStream(file)
-                    .bufferedReader()
-                    .useLines { lines ->
-                        lines.mapNotNull { line ->
-                            try {
-                                val parts = line.split(" ")
-                                if (parts.size < 2 || !parts[1].endsWith(".REC")) return@mapNotNull null
-                                val path = parts[1].replace(Regex("(\\w*?)\\d+\\.REC$"), "$1.REC")
-                                if ( parts[0].toInt() <= 0) {
-                                    BleLogger.e(TAG, "Encountered zero size entry in path $path. Ignoring empty recording.")
-                                    return@mapNotNull null
-                                }
-                                val type = mapPmdMeasurementTypeToPolarDeviceDataType(
-                                    mapOfflineRecordingFileNameToMeasurementType(
-                                        path.split("/")[6].substringBefore(".").filter { !it.isDigit() }
-                                    )
-                                )
-                                val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ENGLISH)
-                                val date = LocalDateTime.parse("${path.split("/")[3]}${path.split("/")[5]}", dateTimeFormatter)
+                val components = entry.first.split("/")
+                val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ENGLISH)
+                val date = LocalDateTime.parse("${components[3]}${components[5]}", dateTimeFormatter)
+                    ?: throw PolarInvalidArgument("Cannot parse date from ${components[3]} and ${components[5]}")
 
-                                PolarOfflineRecordingEntry(path, parts[0].toLong(), date, type)
-                            } catch (e: Exception) {
-                                BleLogger.e(TAG, "Failed to parse line: $line (${e.message})")
-                                null
-                            }
-                        }.toList()
-                    }
+                val type = mapPmdMeasurementTypeToPolarDeviceDataType(
+                    mapOfflineRecordingFileNameToMeasurementType(
+                        components[6].substringBefore(".").filter { !it.isDigit() }
+                    )
+                )
+                if (entry.second <= 0) {
+                    BleLogger.e(TAG, "Encountered zero size entry in path ${entry.first}. Ignoring empty recording.")
+                    return@collect
+                }
 
-                val merged = offlineRecordings
-                    .groupBy { it.path to it.date }
-                    .map { (_, entries) ->
-                        val totalSize = entries.sumOf { it.size }
-                        val first = entries.first()
-                        first.copy(size = totalSize)
-                    }
-
-                emitter.onSuccess(merged)
+                val groupKey = entry.first.replace(Regex("\\d+\\.REC$"), ".REC")
+                grouped.getOrPut(groupKey) { mutableListOf() }.add(
+                    PolarOfflineRecordingEntry(entry.first, entry.second, date, type)
+                )
             } catch (e: Exception) {
-                BleLogger.e(TAG, "Failed to parse PMD.TXT: ${e.message}")
-                emitter.onError(e)
+                BleLogger.e(TAG, "Error processing offline recording entry ${entry.first}: ${e.message}")
             }
         }
+
+        for ((groupKey, entries) in grouped) {
+            if (entries.isEmpty()) continue
+            val totalSize = entries.sumOf { it.size }
+            val first = entries.first()
+            emit(PolarOfflineRecordingEntry(
+                path = groupKey,
+                size = totalSize,
+                date = first.date,
+                type = first.type
+            ))
+        }
+    }
+
+    fun listOfflineRecordingsV2(file: ByteArray): List<PolarOfflineRecordingEntry> {
+        val offlineRecordings = ByteArrayInputStream(file)
+            .bufferedReader()
+            .useLines { lines ->
+                lines.mapNotNull { line ->
+                    try {
+                        val parts = line.split(" ")
+                        if (parts.size < 2 || !parts[1].endsWith(".REC")) return@mapNotNull null
+                        val path = parts[1].replace(Regex("(\\w*?)\\d+\\.REC$"), "$1.REC")
+                        if (parts[0].toInt() <= 0) {
+                            BleLogger.e(TAG, "Encountered zero size entry in path $path. Ignoring empty recording.")
+                            return@mapNotNull null
+                        }
+                        val type = mapPmdMeasurementTypeToPolarDeviceDataType(
+                            mapOfflineRecordingFileNameToMeasurementType(
+                                path.split("/")[6].substringBefore(".").filter { !it.isDigit() }
+                            )
+                        )
+                        val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ENGLISH)
+                        val date = LocalDateTime.parse("${path.split("/")[3]}${path.split("/")[5]}", dateTimeFormatter)
+
+                        PolarOfflineRecordingEntry(path, parts[0].toLong(), date, type)
+                    } catch (e: Exception) {
+                        BleLogger.e(TAG, "Failed to parse line: $line (${e.message})")
+                        null
+                    }
+                }.toList()
+            }
+
+        return offlineRecordings
+            .groupBy { it.path to it.date }
+            .map { (_, entries) ->
+                val totalSize = entries.sumOf { it.size }
+                val first = entries.first()
+                first.copy(size = totalSize)
+            }
     }
 }

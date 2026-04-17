@@ -1,50 +1,48 @@
-package com.polar.androidcommunications.api.ble.model;
+package com.polar.androidcommunications.api.ble.model
 
-import android.bluetooth.BluetoothDevice;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.polar.androidcommunications.api.ble.model.advertisement.BleAdvertisementContent;
-import com.polar.androidcommunications.api.ble.model.advertisement.BlePolarHrAdvertisement;
-import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.functions.Function;
+import android.bluetooth.BluetoothDevice
+import com.polar.androidcommunications.api.ble.model.advertisement.BleAdvertisementContent
+import com.polar.androidcommunications.api.ble.model.advertisement.BlePolarHrAdvertisement
+import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
+import kotlinx.coroutines.Deferred
+import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 /**
  * Bluetooth le device class, contains all essential api's for sufficient usage of bluetooth le device
  */
-public abstract class BleDeviceSession {
-
+abstract class BleDeviceSession
+/**
+ * Methods
+ *
+ *
+ * Class constructor
+ */
+protected constructor() {
     /**
      * Connection state
      */
-    public enum DeviceSessionState {
+    enum class DeviceSessionState {
         /**
          * Disconnected state
          */
         SESSION_CLOSED,
+
         /**
          * Connection attempting/connecting at the moment
          */
         SESSION_OPENING,
+
         /**
          * Device is disconnected, but is waiting for advertisement head or ble power on for reconnection
          */
         SESSION_OPEN_PARK,
+
         /**
          * Device is connected
          */
         SESSION_OPEN,
+
         /**
          * Disconnecting at the moment
          */
@@ -52,37 +50,61 @@ public abstract class BleDeviceSession {
     }
 
     /**
+     * @return get current state (DeviceSessionState.SESSION_XXXXX)
+     */
+    /**
      * Members
      */
-    @NonNull
-    protected DeviceSessionState state = DeviceSessionState.SESSION_CLOSED;
-    @NonNull
-    protected DeviceSessionState previousState = DeviceSessionState.SESSION_CLOSED;
-    protected Set<BleGattBase> clients;
-    // needs to be set by 'upper' class
-    protected BleAdvertisementContent advertisementContent = new BleAdvertisementContent();
-    private final List<String> connectionUuids = new ArrayList<>();
+    var sessionState: DeviceSessionState = DeviceSessionState.SESSION_CLOSED
 
     /**
-     * Methods
-     * <p>
-     * Class constructor
+     * @return state before current one
      */
-    protected BleDeviceSession() {
-    }
+    var previousState: DeviceSessionState = DeviceSessionState.SESSION_CLOSED
+        protected set
+    protected lateinit var clients: Set<BleGattBase>
+
+    // needs to be set by 'upper' class
+    var advertisementContent: BleAdvertisementContent = BleAdvertisementContent()
+
+    /**
+     * @return advertisement content object
+     */
+    val getAdvertisementContent: BleAdvertisementContent
+        get() = advertisementContent
+
+    /**
+     * Set advertisement content object
+     */
+    /*fun setAdvertisementContent(content: BleAdvertisementContent) {
+        advertisementContent = content
+    }*/
+
+    /**
+     * @return current connection uuid's needed for connection attempt
+     */
+    var connectionUuids: MutableList<String> = ArrayList()
+        /**
+         * @param uuids set connection uuid's
+         */
+        set(uuids) {
+            field.clear()
+            field.addAll(uuids)
+        }
 
     /**
      * @param time     max time for the last advertisement event
      * @param timeUnit desired timeunit
      * @return true, device is still somewhat considered "alive"
      */
-    public boolean isDeviceAlive(long time, TimeUnit timeUnit) {
-        long deltaTime = (System.currentTimeMillis() / 1000L) - advertisementContent.getAdvertisementTimeStamp();
-        DeviceSessionState sessionState = getSessionState();
-        return (sessionState == DeviceSessionState.SESSION_OPEN ||
-                sessionState == DeviceSessionState.SESSION_OPENING ||
-                sessionState == DeviceSessionState.SESSION_CLOSING) ||
-                (advertisementContent.getAdvertisementData().size() != 0 && deltaTime <= timeUnit.toSeconds(time));
+    fun isDeviceAlive(time: Long, timeUnit: TimeUnit): Boolean {
+        val deltaTime =
+            (System.currentTimeMillis() / 1000L) - advertisementContent.advertisementTimeStamp
+        val sessionState = sessionState
+        return (sessionState == DeviceSessionState.SESSION_OPEN || sessionState == DeviceSessionState.SESSION_OPENING || sessionState == DeviceSessionState.SESSION_CLOSING) ||
+                (advertisementContent.getAdvertisementData().size != 0 && deltaTime <= timeUnit.toSeconds(
+                    time
+                ))
     }
 
     /**
@@ -90,186 +112,140 @@ public abstract class BleDeviceSession {
      * @param timeUnit desired timeunit
      * @return true if device is advertising in the required timespan
      */
-    public boolean isAdvertising(long time, TimeUnit timeUnit) {
-        long deltaTime = (System.currentTimeMillis() / 1000L) - advertisementContent.getAdvertisementTimeStamp();
-        return advertisementContent.getAdvertisementData().size() != 0 && deltaTime <= timeUnit.toSeconds(time);
+    fun isAdvertising(time: Long, timeUnit: TimeUnit): Boolean {
+        val deltaTime =
+            (System.currentTimeMillis() / 1000L) - advertisementContent.advertisementTimeStamp
+        return advertisementContent.getAdvertisementData().isNotEmpty() && deltaTime <= timeUnit.toSeconds(
+            time
+        )
     }
 
     /**
-     * @return true if device is in non-connectable advertisement<BR>
-     * Notes: Depending on Android API version,it's impossible to know this.<BR>
+     * @return true if device is in non-connectable advertisement<BR></BR>
+     * Notes: Depending on Android API version,it's impossible to know this.<BR></BR>
      * So this would work only for Polar Devices that follows Polar SAGRFC31
      */
-    public abstract boolean isNonConnectableAdvertisement();
+    abstract val isNonConnectableAdvertisement: Boolean
 
-    /**
-     * @return true if device is connectable advertisement<BR>
-     * Notes: Depending on Android API version,it's impossible to know this.<BR>
-     * So this would work only for Polar Devices that follows Polar SAGRFC31
-     */
-    public boolean isConnectableAdvertisement() {
-        return !isNonConnectableAdvertisement();
-    }
+    val isConnectableAdvertisement: Boolean
+        /**
+         * @return true if device is connectable advertisement<BR></BR>
+         * Notes: Depending on Android API version,it's impossible to know this.<BR></BR>
+         * So this would work only for Polar Devices that follows Polar SAGRFC31
+         */
+        get() = !isNonConnectableAdvertisement
 
     /**
      * @return bluetooth device address in string format
      */
-    public abstract String getAddress();
+    abstract val address: String?
 
     /**
      * start pairing and optionally bonding procedure with the device
-     *
-     * @return Completable either produces complete for already bonded device or starts pairing/bonding procedure
+     * @return Either produces complete for already bonded device or starts pairing/bonding procedure
      * or onError on failure case
      */
-    public abstract Completable authenticate();
+    abstract suspend fun authenticate()
 
     /**
      * @return true if session is bonded device
      */
-    public abstract boolean isAuthenticated();
+    abstract val isAuthenticated: Boolean
 
     /**
      * Monitor services discovered
      *
-     * @return Observable stream
+     * @return Deferred result
      */
-    public abstract Single<List<UUID>> monitorServicesDiscovered(final boolean checkConnection);
+    abstract fun monitorServicesDiscovered(checkConnection: Boolean): Deferred<List<UUID>>
 
     /**
      * @return true if current gatt cache clear was ok
      */
-    public abstract boolean clearGattCache();
+    abstract fun clearGattCache(): Boolean
 
     /**
-     * @return Observable stream for rssi values
+     * @return Deferred result for rssi values
      */
-    public abstract Single<Integer> readRssiValue();
+    abstract fun readRssiValue(): Deferred<Int>?
 
     /**
-     * @return get current state (DeviceSessionState.SESSION_XXXXX)
+     * Checks if session indicates pairing problem.
+     * This is a helper method to check if the session is in a state where pairing problems are likely, for example due to failed authentication attempts
+     * or other issues that may arise during the pairing process.
+     * @return Boolean indicating if the session indicates a pairing problem.
+     * True if there are indications of a pairing problem, false otherwise. Int value contains Bluetooth error code if there is a pairing problem, otherwise it is -1 (not set).
      */
-    @NonNull
-    public DeviceSessionState getSessionState() {
-        return state;
-    }
-
-    /**
-     * @return state before current one
-     */
-    @NonNull
-    public DeviceSessionState getPreviousState() {
-        return previousState;
-    }
+    abstract fun getIndicatesPairingProblem():  Pair<Boolean, Int>
 
     /**
      * @param uuid service uuid
      * @return get a specific client from the list
      */
-    @Nullable
-    public BleGattBase fetchClient(@NonNull UUID uuid) {
-        for (BleGattBase serviceBase : clients) {
+    fun fetchClient(uuid: UUID): BleGattBase? {
+        for (serviceBase in clients) {
             if (serviceBase.serviceBelongsToClient(uuid)) {
-                return serviceBase;
+                return serviceBase
             }
         }
-        return null;
+        return null
     }
 
     /**
-     * Helper to combine all available/desired clients ready
+     * Helper to combine all available/desired clients ready.
      *
      * @param checkConnection check initial connection
-     * @return Observable stream
+     * @throws Throwable if any client fails to become ready
      */
-    public Completable clientsReady(final boolean checkConnection) {
-        return Completable.fromPublisher(
-                monitorServicesDiscovered(checkConnection)
-                        .toFlowable()
-                        .flatMapIterable((Function<List<UUID>, Iterable<UUID>>) uuids -> uuids)
-                        .flatMap(
-                                uuid -> {
-                                    BleGattBase bleGattBase = fetchClient(uuid);
-                                    if (bleGattBase != null) {
-                                        return bleGattBase.clientReady(checkConnection).toFlowable();
-                                    }
-                                    return Completable.fromPublisher(Flowable.empty()).toFlowable();
-                                }));
-    }
-
-    /**
-     * @return advertisement content object
-     */
-    @NonNull
-    public BleAdvertisementContent getAdvertisementContent() {
-        return advertisementContent;
-    }
-
-    /**
-     * @param uuids set connection uuid's
-     */
-    public void setConnectionUuids(List<String> uuids) {
-        connectionUuids.clear();
-        connectionUuids.addAll(uuids);
+    suspend fun clientsReady(checkConnection: Boolean) {
+        val uuids = monitorServicesDiscovered(checkConnection).await()
+        for (uuid in uuids) {
+            fetchClient(uuid)?.clientReady(checkConnection)
+        }
     }
 
     /**
      * @return android bluetooth device instance
      */
-    public abstract BluetoothDevice getBluetoothDevice();
+    abstract val bluetoothDevice: BluetoothDevice?
 
-    /**
-     * @return current connection uuid's needed for connection attempt
-     */
-    public List<String> getConnectionUuids() {
-        return connectionUuids;
-    }
+    val name: String
+        // adv data getter helpers
+        get() = advertisementContent.name
 
-    // adv data getter helpers
-    public String getName() {
-        return advertisementContent.getName();
-    }
+    val polarDeviceId: String
+        /**
+         * @return polar device id
+         */
+        get() = advertisementContent.polarDeviceId
 
-    /**
-     * @return polar device id
-     */
-    public String getPolarDeviceId() {
-        return advertisementContent.getPolarDeviceId();
-    }
+    val polarDeviceType: String
+        /**
+         * @return polar device type
+         */
+        get() = advertisementContent.polarDeviceType
 
-    /**
-     * @return polar device type
-     */
-    @NonNull
-    public String getPolarDeviceType() {
-        return advertisementContent.getPolarDeviceType();
-    }
+    val polarDeviceIdInt: Long
+        /**
+         * @return polar device id in int
+         */
+        get() = advertisementContent.polarDeviceIdInt
 
-    /**
-     * @return polar device id in int
-     */
-    public long getPolarDeviceIdInt() {
-        return advertisementContent.getPolarDeviceIdInt();
-    }
+    val medianRssi: Int
+        /**
+         * @return current median rssi value
+         */
+        get() = advertisementContent.medianRssi
 
-    /**
-     * @return current median rssi value
-     */
-    public int getMedianRssi() {
-        return advertisementContent.getMedianRssi();
-    }
+    val rssi: Int
+        /**
+         * @return instant rssi value
+         */
+        get() = advertisementContent.rssi
 
-    /**
-     * @return instant rssi value
-     */
-    public int getRssi() {
-        return advertisementContent.getRssi();
-    }
-
-    /**
-     * @return polar hr advertisement content @see BlePolarHrAdvertisement
-     */
-    public BlePolarHrAdvertisement getBlePolarHrAdvertisement() {
-        return advertisementContent.getPolarHrAdvertisement();
-    }
+    val blePolarHrAdvertisement: BlePolarHrAdvertisement
+        /**
+         * @return polar hr advertisement content @see BlePolarHrAdvertisement
+         */
+        get() = advertisementContent.polarHrAdvertisement
 }

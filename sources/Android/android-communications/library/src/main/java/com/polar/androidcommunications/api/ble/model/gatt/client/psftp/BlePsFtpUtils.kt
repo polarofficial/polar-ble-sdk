@@ -1,122 +1,30 @@
-package com.polar.androidcommunications.api.ble.model.gatt.client.psftp;
+package com.polar.androidcommunications.api.ble.model.gatt.client.psftp
 
-import org.apache.commons.io.IOUtils;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-import protocol.PftpError;
+import org.apache.commons.io.IOUtils
+import protocol.PftpError.PbPFtpError
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.util.UUID
 
 /**
  * RFC76 and RFC 60 related utils
  */
-public class BlePsFtpUtils {
-    private static final String TAG = BlePsFtpUtils.class.getSimpleName();
-    public static final UUID RFC77_PFTP_SERVICE = UUID.fromString("0000FEEE-0000-1000-8000-00805f9b34fb");
-    public static final String PFTP_SERVICE_16BIT_UUID = "FEEE";
-    public static final UUID RFC77_PFTP_MTU_CHARACTERISTIC = UUID.fromString("FB005C51-02E7-F387-1CAD-8ACD2D8DF0C8");
-    public static final UUID RFC77_PFTP_D2H_CHARACTERISTIC = UUID.fromString("FB005C52-02E7-F387-1CAD-8ACD2D8DF0C8");
-    public static final UUID RFC77_PFTP_H2D_CHARACTERISTIC = UUID.fromString("FB005C53-02E7-F387-1CAD-8ACD2D8DF0C8");
+object BlePsFtpUtils {
+    private val TAG: String = BlePsFtpUtils::class.java.simpleName
+    val RFC77_PFTP_SERVICE: UUID = UUID.fromString("0000FEEE-0000-1000-8000-00805f9b34fb")
+    const val PFTP_SERVICE_16BIT_UUID: String = "FEEE"
+    val RFC77_PFTP_MTU_CHARACTERISTIC: UUID =
+        UUID.fromString("FB005C51-02E7-F387-1CAD-8ACD2D8DF0C8")
+    val RFC77_PFTP_D2H_CHARACTERISTIC: UUID =
+        UUID.fromString("FB005C52-02E7-F387-1CAD-8ACD2D8DF0C8")
+    val RFC77_PFTP_H2D_CHARACTERISTIC: UUID =
+        UUID.fromString("FB005C53-02E7-F387-1CAD-8ACD2D8DF0C8")
 
-    public static final int RFC76_HEADER_SIZE = 1;
-    public static final int RFC76_STATUS_MORE = 0x03;
-    public static final int RFC76_STATUS_LAST = 0x01;
-    public static final int RFC76_STATUS_ERROR_OR_RESPONSE = 0x00;
-
-    public static class Rfc76SequenceNumber {
-        long seq = 0;
-
-        public long getSeq() {
-            return seq;
-        }
-
-        public void increment() {
-            if (seq < 0x0F) {
-                this.seq += 1;
-            } else {
-                this.seq = 0;
-            }
-        }
-    }
-
-    /**
-     * PSFTP EXCEPTIONS
-     */
-    public static class PftpOperationTimeout extends Exception {
-        public PftpOperationTimeout(String detailMessage) {
-            super(detailMessage);
-        }
-    }
-
-    /**
-     * one of PbPftpError codes
-     */
-    public static class PftpResponseError extends Exception {
-        private final int error;
-
-        public PftpResponseError(String detailMessage, int error) {
-            super(formatMessage(detailMessage, error));
-            this.error = error;
-        }
-
-        public int getError() {
-            return error;
-        }
-
-        /**
-         * Return typed enum for the error code, or null if the code is unknown
-         */
-        public PftpError.PbPFtpError getErrorCode() {
-            return PftpError.PbPFtpError.forNumber(error);
-        }
-
-        /**
-         * Return enum name or null if unknown.
-         */
-        public String getErrorName() {
-            PftpError.PbPFtpError errorEnum = getErrorCode();
-            return errorEnum != null ? errorEnum.name() : null;
-        }
-
-        private static String formatMessage(String detailMessage, int error) {
-            PftpError.PbPFtpError errorEnum = PftpError.PbPFtpError.forNumber(error);
-            if (errorEnum != null) {
-                return detailMessage + " Error: " + error + " (" + errorEnum.name() + ")";
-            }
-            return detailMessage + " Error: " + error;
-        }
-    }
-
-    public static class PftpNotificationMessage {
-        /**
-         * One of PbPftpDevToHostNotifications
-         */
-        public int id = 0;
-        public ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    }
-
-    public static class PftpRfc76ResponseHeader {
-        public int next;
-        public int status;
-        public int error;
-        public byte[] payload;
-        public long sequenceNumber;
-
-        @Override
-        public String toString() {
-            return "first: " + next + " length: " + status + " error: " + error + " payload: " + (payload != null ? new String(payload) : "null" + " seq: " + sequenceNumber);
-        }
-    }
-
-    public enum MessageType {
-        REQUEST,
-        QUERY,
-        NOTIFICATION
-    }
+    const val RFC76_HEADER_SIZE: Int = 1
+    const val RFC76_STATUS_MORE: Int = 0x03
+    const val RFC76_STATUS_LAST: Int = 0x01
+    const val RFC76_STATUS_ERROR_OR_RESPONSE: Int = 0x00
 
     /**
      * Compines header(protobuf typically) and data(for write operation only, for other operations = null)
@@ -128,50 +36,55 @@ public class BlePsFtpUtils {
      * @return complete message stream
      * @throws IOException thrown by IOUtils.copy
      */
-    public static ByteArrayInputStream makeCompleteMessageStream(
-            final ByteArrayInputStream header,
-            final ByteArrayInputStream data,
-            MessageType type,
-            int id) throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    @Throws(IOException::class)
+    fun makeCompleteMessageStream(
+        header: ByteArrayInputStream?,
+        data: ByteArrayInputStream?,
+        type: MessageType,
+        id: Int
+    ): ByteArrayInputStream {
+        val outputStream = ByteArrayOutputStream()
         // for request and query add RFC60 header
-        switch (type) {
-            case REQUEST: {
-                int headerSize = header.available();
-                byte[] request = new byte[2];
+        when (type) {
+            MessageType.REQUEST -> {
+                val headerSize = header?.available()
+                val request = ByteArray(2)
                 // RFC60
-                request[1] = (byte) ((headerSize & 0x7F00) >> 8);
-                request[0] = (byte) (headerSize & 0x00FF);
-                outputStream.write(request, 0, 2);
-                IOUtils.copy(header, outputStream);
+                if (headerSize != null) {
+                    request[1] = ((headerSize and 0x7F00) shr 8).toByte()
+                }
+                if (headerSize != null) {
+                    request[0] = (headerSize and 0x00FF).toByte()
+                }
+                outputStream.write(request, 0, 2)
+                IOUtils.copy(header, outputStream)
                 if (data != null) {
-                    IOUtils.copy(data, outputStream);
+                    IOUtils.copy(data, outputStream)
                 }
-                break;
             }
-            case QUERY: {
-                byte[] request = new byte[2];
+
+            MessageType.QUERY -> {
+                val request = ByteArray(2)
                 // RFC60
-                request[1] = (byte) (((id & 0x7F00) >> 8) | 0x80);
-                request[0] = (byte) (id & 0x00FF);
-                outputStream.write(request, 0, 2);
+                request[1] = (((id and 0x7F00) shr 8) or 0x80).toByte()
+                request[0] = (id and 0x00FF).toByte()
+                outputStream.write(request, 0, 2)
                 if (header != null) {
-                    IOUtils.copy(header, outputStream);
+                    IOUtils.copy(header, outputStream)
                 }
-                break;
             }
-            case NOTIFICATION: {
-                byte[] request = new byte[1];
-                request[0] = (byte) id;
-                outputStream.write(request, 0, 1);
+
+            MessageType.NOTIFICATION -> {
+                val request = ByteArray(1)
+                request[0] = id.toByte()
+                outputStream.write(request, 0, 1)
                 if (header != null) {
-                    IOUtils.copy(header, outputStream);
+                    IOUtils.copy(header, outputStream)
                 }
-                break;
             }
         }
 
-        return new ByteArrayInputStream(outputStream.toByteArray());
+        return ByteArrayInputStream(outputStream.toByteArray())
     }
 
     /**
@@ -183,26 +96,31 @@ public class BlePsFtpUtils {
      * @param sequenceNumber RFC76 ring counter
      * @return air packet
      */
-    public static byte[] buildRfc76MessageFrame(final ByteArrayInputStream data,
-                                                final int next,
-                                                int mtuSize,
-                                                Rfc76SequenceNumber sequenceNumber) {
-        int offset = RFC76_HEADER_SIZE;
-        byte[] packet;
+    fun buildRfc76MessageFrame(
+        data: ByteArrayInputStream,
+        next: Int,
+        mtuSize: Int,
+        sequenceNumber: Rfc76SequenceNumber
+    ): ByteArray {
+        val offset = RFC76_HEADER_SIZE
+        val packet: ByteArray
         if (data.available() > (mtuSize - RFC76_HEADER_SIZE)) {
-            packet = new byte[mtuSize];
-            packet[0] = (byte) (packet[0] | next | 0x06 | (sequenceNumber.getSeq() << 4)); // 0x06 == MORE
-            data.read(packet, offset, mtuSize - offset);
+            packet = ByteArray(mtuSize)
+            packet[0] =
+                ((packet[0].toInt() or next or 0x06).toLong() or (sequenceNumber.seq shl 4)).toByte() // 0x06 == MORE
+            data.read(packet, offset, mtuSize - offset)
         } else if (data.available() > 0) {
-            packet = new byte[data.available() + RFC76_HEADER_SIZE];
-            packet[0] = (byte) (packet[0] | next | 0x02 | (sequenceNumber.getSeq() << 4)); // 0x02 == LAST
-            data.read(packet, offset, data.available());
+            packet = ByteArray(data.available() + RFC76_HEADER_SIZE)
+            packet[0] =
+                ((packet[0].toInt() or next or 0x02).toLong() or (sequenceNumber.seq shl 4)).toByte() // 0x02 == LAST
+            data.read(packet, offset, data.available())
         } else {
-            packet = new byte[RFC76_HEADER_SIZE];
-            packet[0] = (byte) (packet[0] | next | 0x02 | (sequenceNumber.getSeq() << 4));
+            packet = ByteArray(RFC76_HEADER_SIZE)
+            packet[0] =
+                ((packet[0].toInt() or next or 0x02).toLong() or (sequenceNumber.seq shl 4)).toByte()
         }
-        sequenceNumber.increment();
-        return packet;
+        sequenceNumber.increment()
+        return packet
     }
 
     /**
@@ -213,18 +131,20 @@ public class BlePsFtpUtils {
      * @param sequenceNumber RFC76 ring counter
      * @return list of air packets
      */
-    public static List<byte[]> buildRfc76MessageFrameAll(final ByteArrayInputStream data,
-                                                         int mtuSize,
-                                                         Rfc76SequenceNumber sequenceNumber) {
-        List<byte[]> packets = new ArrayList<>();
-        int next = 0;
+    fun buildRfc76MessageFrameAll(
+        data: ByteArrayInputStream,
+        mtuSize: Int,
+        sequenceNumber: Rfc76SequenceNumber
+    ): MutableList<ByteArray> {
+        val packets: MutableList<ByteArray> = ArrayList()
+        var next = 0
         do {
-            int temp = next; // workaround for stupid java translator idiotisim
-            byte[] packet = buildRfc76MessageFrame(data, temp, mtuSize, sequenceNumber);
-            packets.add(packet);
-            next = 1;
-        } while (data.available() > 0);
-        return packets;
+            val temp = next // workaround for stupid java translator idiotisim
+            val packet = buildRfc76MessageFrame(data, temp, mtuSize, sequenceNumber)
+            packets.add(packet)
+            next = 1
+        } while (data.available() > 0)
+        return packets
     }
 
     /**
@@ -233,25 +153,108 @@ public class BlePsFtpUtils {
      * @param packet air packet
      * @return @see PftpRfc76ResponseHeader
      */
-    public static PftpRfc76ResponseHeader processRfc76MessageFrameHeader(byte[] packet) {
-        PftpRfc76ResponseHeader header = new PftpRfc76ResponseHeader();
-        processRfc76MessageFrameHeader(header, packet);
-        return header;
+    fun processRfc76MessageFrameHeader(packet: ByteArray): PftpRfc76ResponseHeader {
+        val header = PftpRfc76ResponseHeader()
+        processRfc76MessageFrameHeader(header, packet)
+        return header
     }
 
     /**
      * @param header RF76 header container
      * @param packet air packet
      */
-    public static void processRfc76MessageFrameHeader(PftpRfc76ResponseHeader header, byte[] packet) {
-        header.next = packet[0] & 0x01;
-        header.status = (packet[0] >> 1) & 0x03;
-        header.sequenceNumber = (packet[0] >> 4) & 0x0F;
+    fun processRfc76MessageFrameHeader(header: PftpRfc76ResponseHeader, packet: ByteArray) {
+        header.next = packet[0].toInt() and 0x01
+        header.status = (packet[0].toInt() shr 1) and 0x03
+        header.sequenceNumber = ((packet[0].toInt() shr 4) and 0x0F).toLong()
         if (header.status == 0) {
-            header.error = ((packet[RFC76_HEADER_SIZE] & 0xFF) | ((packet[RFC76_HEADER_SIZE + 1] << 8) & 0xFF)) & 0x0000FFFF;
+            header.error =
+                ((packet[RFC76_HEADER_SIZE].toInt() and 0xFF) or ((packet[RFC76_HEADER_SIZE + 1].toInt() shl 8) and 0xFF)) and 0x0000FFFF
         } else {
-            header.payload = new byte[packet.length - RFC76_HEADER_SIZE];
-            System.arraycopy(packet, RFC76_HEADER_SIZE, header.payload, 0, packet.length - RFC76_HEADER_SIZE);
+            header.payload = ByteArray(packet.size - RFC76_HEADER_SIZE)
+            System.arraycopy(
+                packet,
+                RFC76_HEADER_SIZE,
+                header.payload,
+                0,
+                packet.size - RFC76_HEADER_SIZE
+            )
         }
+    }
+
+    class Rfc76SequenceNumber {
+        var seq: Long = 0
+
+        fun increment() {
+            if (seq < 0x0F) {
+                this.seq += 1
+            } else {
+                this.seq = 0
+            }
+        }
+    }
+
+    /**
+     * PSFTP EXCEPTIONS
+     */
+    class PftpOperationTimeout(detailMessage: String?) : Exception(detailMessage)
+
+    /**
+     * one of PbPftpError codes
+     */
+    class PftpResponseError(detailMessage: String, val error: Int) :
+        Exception(formatMessage(detailMessage, error)) {
+        val errorCode: PbPFtpError?
+            /**
+             * Return typed enum for the error code, or null if the code is unknown
+             */
+            get() = PbPFtpError.forNumber(error)
+
+        val errorName: String?
+            /**
+             * Return enum name or null if unknown.
+             */
+            get() {
+                val errorEnum = errorCode
+                return errorEnum?.name
+            }
+
+        companion object {
+            private fun formatMessage(detailMessage: String, error: Int): String {
+                val errorEnum = PbPFtpError.forNumber(error)
+                if (errorEnum != null) {
+                    return detailMessage + " Error: " + error + " (" + errorEnum.name + ")"
+                }
+                return "$detailMessage Error: $error"
+            }
+        }
+    }
+
+    class PftpNotificationMessage {
+        /**
+         * One of PbPftpDevToHostNotifications
+         */
+        @JvmField var id: Int = 0
+        @JvmField var byteArrayOutputStream: ByteArrayOutputStream = ByteArrayOutputStream()
+    }
+
+    class PftpRfc76ResponseHeader {
+        var next: Int = 0
+        var status: Int = 0
+        var error: Int = 0
+        var payload: ByteArray? = null
+        var sequenceNumber: Long = 0
+
+        override fun toString(): String {
+            return "first: $next length: $status error: $error payload: " + (if (payload != null) String(
+                payload!!
+            ) else "null seq: $sequenceNumber")
+        }
+    }
+
+    enum class MessageType {
+        REQUEST,
+        QUERY,
+        NOTIFICATION
     }
 }

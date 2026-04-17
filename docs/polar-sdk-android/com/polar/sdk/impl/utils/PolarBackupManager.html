@@ -259,7 +259,7 @@ public final class <span class="typeNameLabel"><a href=PolarBackupManager.html>P
                                         </tr>
                                         
                                         <tr id="i0" class="altColor">
-                                            <td class="colFirst"><code>final Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBackupManager.BackupFileData.html>PolarBackupManager.BackupFileData</a>&gt;&gt;</code>
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBackupManager.BackupFileData.html>PolarBackupManager.BackupFileData</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBackupManager.html#backupDevice()>backupDevice</a>() </code>
                                             </th>
@@ -267,7 +267,7 @@ public final class <span class="typeNameLabel"><a href=PolarBackupManager.html>P
                                         </tr>
                                         
                                         <tr id="i1" class="rowColor">
-                                            <td class="colFirst"><code>final Completable</code>
+                                            <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBackupManager.html#restoreBackup(java.util.List)>restoreBackup</a>(<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBackupManager.BackupFileData.html>PolarBackupManager.BackupFileData</a>&gt; backupFiles) </code>
                                             </th>
@@ -345,7 +345,7 @@ public final class <span class="typeNameLabel"><a href=PolarBackupManager.html>P
                                           >
                                     <li class="blockList">
                                         <h4>backupDevice</h4>
-                                        <pre class="methodSignature"> final Single&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBackupManager.BackupFileData.html>PolarBackupManager.BackupFileData</a>&gt;&gt; <a href=PolarBackupManager.html#backupDevice()>backupDevice</a>()</pre>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBackupManager.BackupFileData.html>PolarBackupManager.BackupFileData</a>&gt; <a href=PolarBackupManager.html#backupDevice()>backupDevice</a>()</pre>
                                         <div class="block"><p>Backs up the device.</p></div>
 
                                         <dl>
@@ -354,7 +354,7 @@ public final class <span class="typeNameLabel"><a href=PolarBackupManager.html>P
 
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>Single emitting the list of backed up file data.</p></dd>
+                                            <dd><p>List of backed up file data.</p></dd>
                                         
 
                                         
@@ -371,7 +371,7 @@ public final class <span class="typeNameLabel"><a href=PolarBackupManager.html>P
                                           >
                                     <li class="blockList">
                                         <h4>restoreBackup</h4>
-                                        <pre class="methodSignature"> final Completable <a href=PolarBackupManager.html#restoreBackup(java.util.List)>restoreBackup</a>(<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBackupManager.BackupFileData.html>PolarBackupManager.BackupFileData</a>&gt; backupFiles)</pre>
+                                        <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBackupManager.html#restoreBackup(java.util.List)>restoreBackup</a>(<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBackupManager.BackupFileData.html>PolarBackupManager.BackupFileData</a>&gt; backupFiles)</pre>
                                         <div class="block"><p>Restores the backup files.</p></div>
 
                                         <dl>
@@ -385,9 +385,6 @@ public final class <span class="typeNameLabel"><a href=PolarBackupManager.html>P
                                             
                                         
 
-                                        
-                                            <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>Completable indicating the completion of the restore operation.</p></dd>
                                         
 
                                         

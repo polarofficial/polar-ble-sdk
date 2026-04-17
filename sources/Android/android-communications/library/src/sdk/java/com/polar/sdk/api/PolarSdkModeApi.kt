@@ -2,8 +2,6 @@
 package com.polar.sdk.api
 
 import com.polar.sdk.api.PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Single
 
 /**
  * Polar SDK mode API
@@ -22,21 +20,17 @@ interface PolarSdkModeApi {
      * Enables SDK mode. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE]
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
-     * @return Completable stream produces:
-     * success if SDK mode is enabled or device is already in SDK mode
-     * error if SDK mode enable failed
+     * @throws Throwable if SDK mode enable fails
      */
-    fun enableSDKMode(identifier: String): Completable
+    suspend fun enableSDKMode(identifier: String)
 
     /**
      * Disables SDK mode. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE]
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
-     * @return Completable stream produces:
-     * success if SDK mode is disabled or SDK mode was already disabled
-     * error if SDK mode disable failed
+     * @throws Throwable if SDK mode disable fails
      */
-    fun disableSDKMode(identifier: String): Completable
+    suspend fun disableSDKMode(identifier: String)
 
     /**
      * Check if SDK mode currently enabled. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SDK_MODE]
@@ -44,10 +38,8 @@ interface PolarSdkModeApi {
      * Note, SDK status check is supported by VeritySense starting from firmware 2.1.0
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
-     * @return [Single]
-     * Produces:
-     * <BR></BR> - onSuccess true, if the SDK mode is currently enabled
-     * <BR></BR> - onError status request failed
+     * @return true if SDK mode is currently enabled
+     * @throws Throwable if status request fails
      */
-    fun isSDKModeEnabled(identifier: String): Single<Boolean>
+    suspend fun isSDKModeEnabled(identifier: String): Boolean
 }

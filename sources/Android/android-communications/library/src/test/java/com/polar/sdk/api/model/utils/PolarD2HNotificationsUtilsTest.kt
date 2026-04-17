@@ -8,14 +8,14 @@ import com.polar.sdk.api.PolarDeviceToHostNotification
 import com.polar.sdk.impl.utils.observeDeviceToHostNotifications
 import io.mockk.every
 import io.mockk.mockk
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import protocol.PftpNotification.*
 import java.io.ByteArrayOutputStream
-import java.util.*
 
 class PolarD2HNotificationsUtilsTest {
 
@@ -27,7 +27,7 @@ class PolarD2HNotificationsUtilsTest {
     }
 
     @Test
-    fun `test receives sync required notification`() {
+    fun `test receives sync required notification`() = runTest {
         // Arrange
         val syncRequiredNotificationId = PbPFtpDevToHostNotification.SYNC_REQUIRED.number
         val syncRequiredNotificationParameter = PbPFtpSyncRequiredParams.newBuilder().apply {
@@ -38,20 +38,18 @@ class PolarD2HNotificationsUtilsTest {
             )
         }.build()
         val syncRequiredNotificationParamsData = syncRequiredNotificationParameter.toByteArray()
-
         val keepAliveNotificationId = PbPFtpDevToHostNotification.KEEP_BACKGROUND_ALIVE.number
 
-        val notifications = listOf(
+        every { mockClient.waitForNotification() } returns flowOf(
             createMockNotification(syncRequiredNotificationId, syncRequiredNotificationParamsData),
             createMockNotification(keepAliveNotificationId, ByteArray(0))
         )
 
-        every { mockClient.waitForNotification(any()) } returns Flowable.fromIterable(notifications)
-
         // Act
-        val results = mockClient.observeDeviceToHostNotifications("test-device-id")
-            .toList()
-            .blockingGet()
+        val results = mutableListOf<PolarD2HNotificationData>()
+        val job = launch { mockClient.observeDeviceToHostNotifications("test-device-id").collect { results.add(it) } }
+        testScheduler.advanceUntilIdle()
+        job.join()
 
         // Assert
         assertNotNull(results)
@@ -71,7 +69,7 @@ class PolarD2HNotificationsUtilsTest {
     }
 
     @Test
-    fun `test receives filesystem modified notification`() {
+    fun `test receives filesystem modified notification`() = runTest {
         // Arrange
         val notificationId = PbPFtpDevToHostNotification.FILESYSTEM_MODIFIED.number
 
@@ -81,15 +79,17 @@ class PolarD2HNotificationsUtilsTest {
             .build()
         val serializedData = fileSystemModifiedParams.toByteArray()
 
-        val notification = createMockNotification(notificationId, serializedData)
-
-        every { mockClient.waitForNotification(any()) } returns Flowable.just(notification)
+        every { mockClient.waitForNotification() } returns flowOf(createMockNotification(notificationId, serializedData))
 
         // Act
-        val result = mockClient.observeDeviceToHostNotifications("test-device-id")
-            .blockingFirst()
+        val results = mutableListOf<PolarD2HNotificationData>()
+        val job = launch { mockClient.observeDeviceToHostNotifications("test-device-id").collect { results.add(it) } }
+        testScheduler.advanceUntilIdle()
+        job.join()
 
         // Assert
+        assertEquals(1, results.size)
+        val result = results[0]
         assertNotNull(result)
         assertEquals(PolarDeviceToHostNotification.FILESYSTEM_MODIFIED, result.notificationType)
         assertArrayEquals(serializedData, result.parameters)
@@ -100,24 +100,24 @@ class PolarD2HNotificationsUtilsTest {
     }
 
     @Test
-    fun `test receives inactivity alert notification`() {
+    fun `test receives inactivity alert notification`() = runTest {
         // Arrange
         val notificationId = PbPFtpDevToHostNotification.INACTIVITY_ALERT.number
 
-        val inactivityAlertParams = PbPFtpInactivityAlert.newBuilder()
-            .setCountdown(5)
-            .build()
+        val inactivityAlertParams = PbPFtpInactivityAlert.newBuilder().setCountdown(5).build()
         val serializedData = inactivityAlertParams.toByteArray()
 
-        val notification = createMockNotification(notificationId, serializedData)
-
-        every { mockClient.waitForNotification(any()) } returns Flowable.just(notification)
+        every { mockClient.waitForNotification() } returns flowOf(createMockNotification(notificationId, serializedData))
 
         // Act
-        val result = mockClient.observeDeviceToHostNotifications("test-device-id")
-            .blockingFirst()
+        val results = mutableListOf<PolarD2HNotificationData>()
+        val job = launch { mockClient.observeDeviceToHostNotifications("test-device-id").collect { results.add(it) } }
+        testScheduler.advanceUntilIdle()
+        job.join()
 
         // Assert
+        assertEquals(1, results.size)
+        val result = results[0]
         assertNotNull(result)
         assertEquals(PolarDeviceToHostNotification.INACTIVITY_ALERT, result.notificationType)
         assertArrayEquals(serializedData, result.parameters)
@@ -128,24 +128,24 @@ class PolarD2HNotificationsUtilsTest {
     }
 
     @Test
-    fun `test receives training session status notification`() {
+    fun `test receives training session status notification`() = runTest {
         // Arrange
         val notificationId = PbPFtpDevToHostNotification.TRAINING_SESSION_STATUS.number
 
-        val trainingSessionStatus = PbPFtpTrainingSessionStatus.newBuilder()
-            .setInprogress(true)
-            .build()
+        val trainingSessionStatus = PbPFtpTrainingSessionStatus.newBuilder().setInprogress(true).build()
         val serializedData = trainingSessionStatus.toByteArray()
 
-        val notification = createMockNotification(notificationId, serializedData)
-
-        every { mockClient.waitForNotification(any()) } returns Flowable.just(notification)
+        every { mockClient.waitForNotification() } returns flowOf(createMockNotification(notificationId, serializedData))
 
         // Act
-        val result = mockClient.observeDeviceToHostNotifications("test-device-id")
-            .blockingFirst()
+        val results = mutableListOf<PolarD2HNotificationData>()
+        val job = launch { mockClient.observeDeviceToHostNotifications("test-device-id").collect { results.add(it) } }
+        testScheduler.advanceUntilIdle()
+        job.join()
 
         // Assert
+        assertEquals(1, results.size)
+        val result = results[0]
         assertNotNull(result)
         assertEquals(PolarDeviceToHostNotification.TRAINING_SESSION_STATUS, result.notificationType)
         assertArrayEquals(serializedData, result.parameters)
@@ -156,7 +156,7 @@ class PolarD2HNotificationsUtilsTest {
     }
 
     @Test
-    fun `test receives autosync status notification`() {
+    fun `test receives autosync status notification`() = runTest {
         // Arrange
         val notificationId = PbPFtpDevToHostNotification.AUTOSYNC_STATUS.number
 
@@ -166,15 +166,17 @@ class PolarD2HNotificationsUtilsTest {
             .build()
         val serializedData = autoSyncStatus.toByteArray()
 
-        val notification = createMockNotification(notificationId, serializedData)
-
-        every { mockClient.waitForNotification(any()) } returns Flowable.just(notification)
+        every { mockClient.waitForNotification() } returns flowOf(createMockNotification(notificationId, serializedData))
 
         // Act
-        val result = mockClient.observeDeviceToHostNotifications("test-device-id")
-            .blockingFirst()
+        val results = mutableListOf<PolarD2HNotificationData>()
+        val job = launch { mockClient.observeDeviceToHostNotifications("test-device-id").collect { results.add(it) } }
+        testScheduler.advanceUntilIdle()
+        job.join()
 
         // Assert
+        assertEquals(1, results.size)
+        val result = results[0]
         assertNotNull(result)
         assertEquals(PolarDeviceToHostNotification.AUTOSYNC_STATUS, result.notificationType)
         assertArrayEquals(serializedData, result.parameters)
@@ -186,19 +188,21 @@ class PolarD2HNotificationsUtilsTest {
     }
 
     @Test
-    fun `test receives notification without parameters`() {
+    fun `test receives notification without parameters`() = runTest {
         // Arrange
         val notificationId = PbPFtpDevToHostNotification.STOP_GPS_MEASUREMENT.number
 
-        val notification = createMockNotification(notificationId, ByteArray(0))
-
-        every { mockClient.waitForNotification(any()) } returns Flowable.just(notification)
+        every { mockClient.waitForNotification() } returns flowOf(createMockNotification(notificationId, ByteArray(0)))
 
         // Act
-        val result = mockClient.observeDeviceToHostNotifications("test-device-id")
-            .blockingFirst()
+        val results = mutableListOf<PolarD2HNotificationData>()
+        val job = launch { mockClient.observeDeviceToHostNotifications("test-device-id").collect { results.add(it) } }
+        testScheduler.advanceUntilIdle()
+        job.join()
 
         // Assert
+        assertEquals(1, results.size)
+        val result = results[0]
         assertNotNull(result)
         assertEquals(PolarDeviceToHostNotification.STOP_GPS_MEASUREMENT, result.notificationType)
         assertEquals(0, result.parameters.size)
@@ -206,53 +210,52 @@ class PolarD2HNotificationsUtilsTest {
     }
 
     @Test
-    fun `test filters unknown notification types`() {
+    fun `test filters unknown notification types`() = runTest {
         // Arrange
         val unknownNotificationId = 999
         val validNotificationId = PbPFtpDevToHostNotification.IDLING.number
 
-        val notifications = listOf(
+        every { mockClient.waitForNotification() } returns flowOf(
             createMockNotification(unknownNotificationId, ByteArray(0)),
             createMockNotification(validNotificationId, ByteArray(0))
         )
 
-        every { mockClient.waitForNotification(any()) } returns Flowable.fromIterable(notifications)
-
         // Act
-        val results = mockClient.observeDeviceToHostNotifications("test-device-id")
-            .toList()
-            .blockingGet()
+        val results = mutableListOf<PolarD2HNotificationData>()
+        val job = launch { mockClient.observeDeviceToHostNotifications("test-device-id").collect { results.add(it) } }
+        testScheduler.advanceUntilIdle()
+        job.join()
 
         // Assert
-        // Unknown notification should be filtered out
         assertEquals(1, results.size)
         assertEquals(PolarDeviceToHostNotification.IDLING, results[0].notificationType)
     }
 
     @Test
-    fun `test handles invalid protobuf data gracefully`() {
+    fun `test handles invalid protobuf data gracefully`() = runTest {
         // Arrange
         val notificationId = PbPFtpDevToHostNotification.SYNC_REQUIRED.number
         val invalidData = "invalid protobuf data".toByteArray()
 
-        val notification = createMockNotification(notificationId, invalidData)
-
-        every { mockClient.waitForNotification(any()) } returns Flowable.just(notification)
+        every { mockClient.waitForNotification() } returns flowOf(createMockNotification(notificationId, invalidData))
 
         // Act
-        val result = mockClient.observeDeviceToHostNotifications("test-device-id")
-            .blockingFirst()
+        val results = mutableListOf<PolarD2HNotificationData>()
+        val job = launch { mockClient.observeDeviceToHostNotifications("test-device-id").collect { results.add(it) } }
+        testScheduler.advanceUntilIdle()
+        job.join()
 
         // Assert
+        assertEquals(1, results.size)
+        val result = results[0]
         assertNotNull(result)
         assertEquals(PolarDeviceToHostNotification.SYNC_REQUIRED, result.notificationType)
         assertArrayEquals(invalidData, result.parameters)
-        // parsedParameters should be null for invalid data
         assertNull(result.parsedParameters)
     }
 
     @Test
-    fun `test receives media control request notification`() {
+    fun `test receives media control request notification`() = runTest {
         // Arrange
         val notificationId = PbPFtpDevToHostNotification.MEDIA_CONTROL_REQUEST_DH.number
 
@@ -261,15 +264,17 @@ class PolarD2HNotificationsUtilsTest {
             .build()
         val serializedData = mediaControlRequest.toByteArray()
 
-        val notification = createMockNotification(notificationId, serializedData)
-
-        every { mockClient.waitForNotification(any()) } returns Flowable.just(notification)
+        every { mockClient.waitForNotification() } returns flowOf(createMockNotification(notificationId, serializedData))
 
         // Act
-        val result = mockClient.observeDeviceToHostNotifications("test-device-id")
-            .blockingFirst()
+        val results = mutableListOf<PolarD2HNotificationData>()
+        val job = launch { mockClient.observeDeviceToHostNotifications("test-device-id").collect { results.add(it) } }
+        testScheduler.advanceUntilIdle()
+        job.join()
 
         // Assert
+        assertEquals(1, results.size)
+        val result = results[0]
         assertNotNull(result)
         assertEquals(PolarDeviceToHostNotification.MEDIA_CONTROL_REQUEST_DH, result.notificationType)
         assertArrayEquals(serializedData, result.parameters)
@@ -280,7 +285,7 @@ class PolarD2HNotificationsUtilsTest {
     }
 
     @Test
-    fun `test receives media control command notification`() {
+    fun `test receives media control command notification`() = runTest {
         // Arrange
         val notificationId = PbPFtpDevToHostNotification.MEDIA_CONTROL_COMMAND_DH.number
 
@@ -289,15 +294,17 @@ class PolarD2HNotificationsUtilsTest {
             .build()
         val serializedData = mediaControlCommand.toByteArray()
 
-        val notification = createMockNotification(notificationId, serializedData)
-
-        every { mockClient.waitForNotification(any()) } returns Flowable.just(notification)
+        every { mockClient.waitForNotification() } returns flowOf(createMockNotification(notificationId, serializedData))
 
         // Act
-        val result = mockClient.observeDeviceToHostNotifications("test-device-id")
-            .blockingFirst()
+        val results = mutableListOf<PolarD2HNotificationData>()
+        val job = launch { mockClient.observeDeviceToHostNotifications("test-device-id").collect { results.add(it) } }
+        testScheduler.advanceUntilIdle()
+        job.join()
 
         // Assert
+        assertEquals(1, results.size)
+        val result = results[0]
         assertNotNull(result)
         assertEquals(PolarDeviceToHostNotification.MEDIA_CONTROL_COMMAND_DH, result.notificationType)
         assertArrayEquals(serializedData, result.parameters)
@@ -308,7 +315,7 @@ class PolarD2HNotificationsUtilsTest {
     }
 
     @Test
-    fun `test receives start GPS measurement notification`() {
+    fun `test receives start GPS measurement notification`() = runTest {
         // Arrange
         val notificationId = PbPFtpDevToHostNotification.START_GPS_MEASUREMENT.number
 
@@ -320,15 +327,17 @@ class PolarD2HNotificationsUtilsTest {
             .build()
         val serializedData = startGpsMeasurement.toByteArray()
 
-        val notification = createMockNotification(notificationId, serializedData)
-
-        every { mockClient.waitForNotification(any()) } returns Flowable.just(notification)
+        every { mockClient.waitForNotification() } returns flowOf(createMockNotification(notificationId, serializedData))
 
         // Act
-        val result = mockClient.observeDeviceToHostNotifications("test-device-id")
-            .blockingFirst()
+        val results = mutableListOf<PolarD2HNotificationData>()
+        val job = launch { mockClient.observeDeviceToHostNotifications("test-device-id").collect { results.add(it) } }
+        testScheduler.advanceUntilIdle()
+        job.join()
 
         // Assert
+        assertEquals(1, results.size)
+        val result = results[0]
         assertNotNull(result)
         assertEquals(PolarDeviceToHostNotification.START_GPS_MEASUREMENT, result.notificationType)
         assertArrayEquals(serializedData, result.parameters)

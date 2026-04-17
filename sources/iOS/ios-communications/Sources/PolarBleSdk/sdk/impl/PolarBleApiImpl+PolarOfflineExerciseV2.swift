@@ -263,6 +263,11 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
 
                 let session = try self.serviceClientUtils.sessionFtpClientReady(identifier)
 
+                let deviceType = session.advertisementContent.polarDeviceType
+                guard BlePolarDeviceCapabilitiesUtility.isRecordingSupported(deviceType) else {
+                    return Single.just(false)
+                }
+
                 guard let client = session.fetchGattClient(
                     BlePsFtpClient.PSFTP_SERVICE
                 ) as? BlePsFtpClient else {

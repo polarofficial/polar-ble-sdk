@@ -9,8 +9,6 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.polar.sdk.api.model.PolarFirstTimeUseConfig
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.schedulers.Schedulers
 import java.util.*
 import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.di.PolarBleSdkModule
@@ -60,8 +58,6 @@ class PhysicalConfigActivity : AppCompatActivity() {
             val info = try {
                 deviceSettingsViewModel.getUserPhysicalInfo()
                 deviceSettingsViewModel.physInfo
-                    .filterNotNull()
-                    .first()
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to get user physical information from device, using defaults", e)
                 showToast(getString(R.string.ftu_failed_to_get_user_physical_information_from_device_using_defaults))
@@ -84,51 +80,53 @@ class PhysicalConfigActivity : AppCompatActivity() {
             initViews()
             setupListeners()
 
-            when (info.gender) {
-                PolarFirstTimeUseConfig.Gender.MALE -> radioGroupSex.check(R.id.radioButtonMale)
-                PolarFirstTimeUseConfig.Gender.FEMALE -> radioGroupSex.check(R.id.radioButtonFemale)
-            }
+            if (info != null) {
+                when (info.gender) {
+                    PolarFirstTimeUseConfig.Gender.MALE -> radioGroupSex.check(R.id.radioButtonMale)
+                    PolarFirstTimeUseConfig.Gender.FEMALE -> radioGroupSex.check(R.id.radioButtonFemale)
+                }
 
-            val birthDate = info.birthDate
-            textViewBirthday.text = birthDate.toString()
+                val birthDate = info.birthDate
+                textViewBirthday.text = birthDate.toString()
 
-            editTextHeight.setText(info.height.toString())
-            editTextWeight.run { setText(info.weight.toString()) }
+                editTextHeight.setText(info.height.toString())
+                editTextWeight.run { setText(info.weight.toString()) }
 
-            val maxHr = info.maxHeartRate
-            spinnerMaxHeartRate.setSelection(
-                (PolarFirstTimeUseConfig.MAX_HEART_RATE_MIN..PolarFirstTimeUseConfig.MAX_HEART_RATE_MAX)
-                    .indexOf(maxHr)
-            )
+                val maxHr = info.maxHeartRate
+                spinnerMaxHeartRate.setSelection(
+                    (PolarFirstTimeUseConfig.MAX_HEART_RATE_MIN..PolarFirstTimeUseConfig.MAX_HEART_RATE_MAX)
+                        .indexOf(maxHr)
+                )
 
-            val restHr = info.restingHeartRate
-            spinnerRestingHeartRate.setSelection(
-                (PolarFirstTimeUseConfig.RESTING_HEART_RATE_MIN..PolarFirstTimeUseConfig.RESTING_HEART_RATE_MAX)
-                    .indexOf(restHr)
-            )
+                val restHr = info.restingHeartRate
+                spinnerRestingHeartRate.setSelection(
+                    (PolarFirstTimeUseConfig.RESTING_HEART_RATE_MIN..PolarFirstTimeUseConfig.RESTING_HEART_RATE_MAX)
+                        .indexOf(restHr)
+                )
 
-            numberPickerVO2max.value = info.vo2Max
+                numberPickerVO2max.value = info.vo2Max
 
-            spinnerTrainingBackground.setSelection(
-                PolarFirstTimeUseConfig.TRAINING_BACKGROUND_VALUES
-                    .indexOf(info.trainingBackground)
-            )
+                spinnerTrainingBackground.setSelection(
+                    PolarFirstTimeUseConfig.TRAINING_BACKGROUND_VALUES
+                        .indexOf(info.trainingBackground)
+                )
 
-            typicalDaySpinner.setSelection(
-                info.typicalDay.ordinal
-            )
+                typicalDaySpinner.setSelection(
+                    info.typicalDay.ordinal
+                )
 
-            val totalMinutes = info.sleepGoalMinutes
+                val totalMinutes = info.sleepGoalMinutes
 
-            if (totalMinutes > 0 ) {
-                sleepGoalHoursPicker.value = totalMinutes / 60
-                sleepGoalMinutesPicker.value = totalMinutes % 60
-            } else {
-                sleepGoalHoursPicker.isVisible = false
-                sleepGoalMinutesPicker.isVisible = false
-                sleepGoalLabel.isVisible = false
-                minutesText.isVisible = false
-                hoursText.isVisible = false
+                if (totalMinutes > 0) {
+                    sleepGoalHoursPicker.value = totalMinutes / 60
+                    sleepGoalMinutesPicker.value = totalMinutes % 60
+                } else {
+                    sleepGoalHoursPicker.isVisible = false
+                    sleepGoalMinutesPicker.isVisible = false
+                    sleepGoalLabel.isVisible = false
+                    minutesText.isVisible = false
+                    hoursText.isVisible = false
+                }
             }
         }
     }
@@ -256,17 +254,16 @@ class PhysicalConfigActivity : AppCompatActivity() {
             return
         }
 
-        api.doFirstTimeUse(deviceId, ftuConfig = polarFirstTimeUseConfig)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeOn(Schedulers.io())
-            .subscribe({
+        lifecycleScope.launch {
+            try {
+                api.doFirstTimeUse(deviceId, ftuConfig = polarFirstTimeUseConfig)
                 showToast("Physical data sent successfully")
-            }, { error ->
+            } catch (error: Exception) {
                 Log.e("FirstTimeUseActivity", "Error sending Physical data: ${error.localizedMessage}", error)
                 showToast("Error sending Physical data")
-            })
+            }
+        }
     }
-
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()

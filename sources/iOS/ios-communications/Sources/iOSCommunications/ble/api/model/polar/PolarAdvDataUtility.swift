@@ -22,4 +22,14 @@ open class PolarAdvDataUtility {
         return advLocalName.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix(requiredPrefix) &&
             advLocalName.trimmingCharacters(in: .whitespacesAndNewlines).split(separator: " ").count > 2
     }
+
+    public static func extractDeviceModelFromName(_ deviceName: String) -> String {
+        let deviceModel = deviceName
+            .lowercased()
+            .replacingOccurrences(of: "polar ", with: "")
+            .components(separatedBy: " ")
+            .dropLast()
+            .joined(separator: " ")
+        return deviceModel
+    }
 }

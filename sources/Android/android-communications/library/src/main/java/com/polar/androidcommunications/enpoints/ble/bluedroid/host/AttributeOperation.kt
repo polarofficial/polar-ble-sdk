@@ -1,88 +1,71 @@
-package com.polar.androidcommunications.enpoints.ble.bluedroid.host;
+package com.polar.androidcommunications.enpoints.ble.bluedroid.host
 
-import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattCharacteristic
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-public class AttributeOperation implements Comparable<AttributeOperation> {
-
-    @Override
-    public int compareTo(@NonNull AttributeOperation another) {
-        if (another.getAttributeOperation() == AttributeOperation.AttributeOperationCommand.DESCRIPTOR_WRITE &&
-                another.isPartOfPrimaryService()) {
-            return 1;
-        } else if (another.getAttributeOperation() == AttributeOperation.AttributeOperationCommand.DESCRIPTOR_WRITE) {
-            return 0;
+class AttributeOperation : Comparable<AttributeOperation> {
+    override fun compareTo(another: AttributeOperation): Int {
+        if (another.attributeOperation == AttributeOperationCommand.DESCRIPTOR_WRITE &&
+            another.isPartOfPrimaryService
+        ) {
+            return 1
+        } else if (another.attributeOperation == AttributeOperationCommand.DESCRIPTOR_WRITE) {
+            return 0
         }
-        return -1;
+        return -1
     }
 
-    public enum AttributeOperationCommand {
+    enum class AttributeOperationCommand {
         CHARACTERISTIC_READ,
         CHARACTERISTIC_WRITE,
         DESCRIPTOR_WRITE,
         CHARACTERISTIC_NOTIFY // add more later
     }
 
-    private final AttributeOperationCommand attributeOperation;
-    private byte[] data;
-    private final BluetoothGattCharacteristic characteristic;
-    private boolean isPartOfPrimaryService = false;
-    private boolean enable = false;
-    private boolean withResponse = false;
+    @JvmField
+    val attributeOperation: AttributeOperationCommand
+    private lateinit var data: ByteArray
+    @JvmField
+    val characteristic: BluetoothGattCharacteristic
+    @JvmField
+    var isPartOfPrimaryService = false
 
-    void setIsPartOfPrimaryService(boolean isPartOfPrimaryService) {
-        this.isPartOfPrimaryService = isPartOfPrimaryService;
+    // notification or indication
+    var isEnable: Boolean = false
+        private set
+    var isWithResponse: Boolean = false
+        private set
+
+    internal constructor(
+        attributeOperation: AttributeOperationCommand,
+        characteristic: BluetoothGattCharacteristic
+    ) {
+        this.attributeOperation = attributeOperation
+        this.characteristic = characteristic
     }
 
-    private boolean isPartOfPrimaryService() {
-        return isPartOfPrimaryService;
+    internal constructor(
+        attributeOperation: AttributeOperationCommand,
+        characteristic: BluetoothGattCharacteristic,
+        enable: Boolean
+    ) {
+        this.attributeOperation = attributeOperation
+        this.characteristic = characteristic
+        this.isEnable = enable
     }
 
-    AttributeOperation(AttributeOperationCommand attributeOperation,
-                       BluetoothGattCharacteristic characteristic) {
-        this.attributeOperation = attributeOperation;
-        this.characteristic = characteristic;
+    internal constructor(
+        attributeOperation: AttributeOperationCommand,
+        data: ByteArray,
+        characteristic: BluetoothGattCharacteristic,
+        withResponse: Boolean
+    ) {
+        this.attributeOperation = attributeOperation
+        this.data = data
+        this.characteristic = characteristic
+        this.isWithResponse = withResponse
     }
 
-    AttributeOperation(AttributeOperationCommand attributeOperation,
-                       BluetoothGattCharacteristic characteristic,
-                       boolean enable) {
-        this.attributeOperation = attributeOperation;
-        this.characteristic = characteristic;
-        this.enable = enable;
-    }
-
-    AttributeOperation(AttributeOperationCommand attributeOperation,
-                       byte[] data,
-                       BluetoothGattCharacteristic characteristic,
-                       final boolean withResponse) {
-        this.attributeOperation = attributeOperation;
-        this.data = data;
-        this.characteristic = characteristic;
-        this.withResponse = withResponse;
-    }
-
-    AttributeOperationCommand getAttributeOperation() {
-        return attributeOperation;
-    }
-
-    @Nullable
-    public byte[] getData() {
-        return data;
-    }
-
-    @NonNull
-    public BluetoothGattCharacteristic getCharacteristic() {
-        return characteristic;
-    }
-
-    public boolean isEnable() {
-        return enable; // notification or indication
-    }
-
-    boolean isWithResponse() {
-        return withResponse;
+    fun getData(): ByteArray? {
+        return data
     }
 }

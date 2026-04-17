@@ -1,7 +1,6 @@
 package com.polar.polarsensordatacollector.ui.landing
 
 import android.util.Log
-import android.util.Pair
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,8 +10,6 @@ import com.polar.polarsensordatacollector.ui.utils.MessageUiState
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.model.PolarSensorSetting
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.rxjava3.core.Single
-import io.reactivex.rxjava3.disposables.Disposable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -124,81 +121,62 @@ class OfflineRecordingViewModel @Inject constructor(
     public override fun onCleared() {
         super.onCleared()
         Log.d(TAG, "ViewModel onCleared()")
-        for (disposable in disposables.values) {
-            disposable?.dispose()
-        }
-        disposables.clear()
     }
 
     fun requestOfflineRecSettings(deviceId: String, feature: PolarBleApi.PolarDeviceDataType) {
         viewModelScope.launch(Dispatchers.IO) {
-            val availableSettings = polarDeviceStreamingRepository.getOfflineRecSettings(deviceId, feature)
-            val allSettings = polarDeviceStreamingRepository.getFullOfflineRecSettings(deviceId, feature)
-                .onErrorReturn { PolarSensorSetting(emptyMap()) }
-
-            Single.zip(availableSettings, allSettings) { available: PolarSensorSetting, all: PolarSensorSetting ->
-                if (available.settings.isEmpty()) {
-                    throw Throwable("Settings are not available")
-                } else {
-                    Log.d(TAG, "Feature " + feature + " available settings " + available.settings)
-                    Log.d(TAG, "Feature " + feature + " all settings " + all.settings)
-                    return@zip Pair(available, all)
+            try {
+                val available = polarDeviceStreamingRepository.getOfflineRecSettings(deviceId, feature)
+                val all = try {
+                    polarDeviceStreamingRepository.getFullOfflineRecSettings(deviceId, feature)
+                } catch (e: Exception) {
+                    PolarSensorSetting(emptyMap())
                 }
-            }
-                .toFlowable()
-                .subscribe(
-                    { sensorSettings: Pair<PolarSensorSetting, PolarSensorSetting> ->
-                        Log.d(TAG, "Sensor settings fetch completed")
 
-                        val newSettings = OfflineStreamSettings(
-                            currentlyAvailable = sensorSettings.first,
-                            allPossibleSettings = sensorSettings.second,
-                            selectedSettings = settingsCache[feature]?.selectedSettings
-                        )
-                        settingsCache[feature] = newSettings
+                if (available.settings.isEmpty()) {
+                    showError("Settings are not available for feature $feature")
+                    return@launch
+                }
 
-                        _uiOfflineRequestedSettingsState.update {
-                            OfflineAvailableStreamSettingsUiState(
-                                feature = feature,
-                                settings = OfflineStreamSettings(
-                                    currentlyAvailable = sensorSettings.first,
-                                    allPossibleSettings = sensorSettings.second,
-                                    selectedSettings = settingsCache[feature]?.selectedSettings
-                                )
-                            )
-                        }
-                    },
-                    { error: Throwable ->
-                        showError("Settings fetch error for feature $feature. REASON: $error")
-                    }
+                Log.d(TAG, "Feature $feature available settings ${available.settings}")
+                Log.d(TAG, "Feature $feature all settings ${all.settings}")
+
+                val newSettings = OfflineStreamSettings(
+                    currentlyAvailable = available,
+                    allPossibleSettings = all,
+                    selectedSettings = settingsCache[feature]?.selectedSettings
                 )
+                settingsCache[feature] = newSettings
+
+                _uiOfflineRequestedSettingsState.update {
+                    OfflineAvailableStreamSettingsUiState(
+                        feature = feature,
+                        settings = newSettings
+                    )
+                }
+            } catch (e: Exception) {
+                showError("Settings fetch error for feature $feature. REASON: $e")
+            }
         }
     }
 
-    private fun getOfflineRecSettingsToStartRec(deviceId: String, feature: PolarBleApi.PolarDeviceDataType): Single<PolarSensorSetting> {
+    private suspend fun getOfflineRecSettingsToStartRec(deviceId: String, feature: PolarBleApi.PolarDeviceDataType): PolarSensorSetting {
         return settingsCache[feature]?.selectedSettings?.let {
-            Single.just(PolarSensorSetting(it))
+            PolarSensorSetting(it)
         } ?: run {
-            polarDeviceStreamingRepository.getOfflineRecSettings(deviceId, feature)
-                .map { sensorSetting: PolarSensorSetting ->
-                    val selectedSettings = maxSettingsFromStreamSettings(sensorSetting)
-                    updateSelectedStreamSettings(feature, selectedSettings)
-                    PolarSensorSetting(selectedSettings)
-                }
+            val sensorSetting = polarDeviceStreamingRepository.getOfflineRecSettings(deviceId, feature)
+            val selectedSettings = maxSettingsFromStreamSettings(sensorSetting)
+            updateSelectedStreamSettings(feature, selectedSettings)
+            PolarSensorSetting(selectedSettings)
         }
     }
 
     fun updateSelectedStreamSettings(feature: PolarBleApi.PolarDeviceDataType, settings: Map<PolarSensorSetting.SettingType, Int>) {
-        val newSettings = OfflineStreamSettings(
-            currentlyAvailable = settingsCache[feature]?.currentlyAvailable,
-            allPossibleSettings = settingsCache[feature]?.allPossibleSettings,
+        val newSettings = (settingsCache[feature] ?: OfflineStreamSettings(null, null, null)).copy(
             selectedSettings = settings
         )
         settingsCache[feature] = newSettings
     }
-
-    private val disposables: MutableMap<PolarBleApi.PolarDeviceDataType, Disposable?> =
-        EnumMap(PolarBleApi.PolarDeviceDataType::class.java)
 
     // TODO, move to utils
     private fun maxSettingsFromStreamSettings(sensorSetting: PolarSensorSetting): Map<PolarSensorSetting.SettingType, Int> {
@@ -218,7 +196,6 @@ class OfflineRecordingViewModel @Inject constructor(
                 } else {
                     try {
                         getOfflineRecSettingsToStartRec(deviceId, feature)
-                            .blockingGet()
                     } catch (settingsException: Exception) {
                         showError("Couldn't get settings for $feature", settingsException)
                         return@launch

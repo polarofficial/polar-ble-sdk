@@ -1,13 +1,10 @@
-package com.polar.androidcommunications.api.ble.exceptions;
+package com.polar.androidcommunications.api.ble.exceptions
 
 /**
  * Error indicating that gatt service does not contain requested characteristic
  */
-public class BleCharacteristicNotFound extends Exception {
-    public BleCharacteristicNotFound() {
-    }
+class BleCharacteristicNotFound : Exception {
+    constructor()
 
-    public BleCharacteristicNotFound(String detailMessage) {
-        super(detailMessage);
-    }
+    constructor(detailMessage: String?) : super(detailMessage)
 }

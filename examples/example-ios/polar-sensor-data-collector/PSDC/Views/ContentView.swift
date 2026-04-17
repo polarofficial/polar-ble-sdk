@@ -164,17 +164,32 @@ struct ContentView: View {
     }
     
     private func shouldShowTab(_ action: SelectedAction) -> Bool {
-        let deviceState = bleSdkManager.deviceConnectionState.get()
-        
+        let isConnected: Bool
+        switch bleSdkManager.deviceConnectionState {
+        case .connected:
+            isConnected = true
+        default:
+            isConnected = false
+        }
+
         switch action {
-        case .online, .settings:
-            return true
-        case .offline, .logging, .activityRecordingView:
-            return deviceState.hasSAGRFCFileSystem
+
+        case .settings:
+            return isConnected && bleSdkManager.fileTransferFeature.isSupported
+            
+        case .online:
+            return isConnected && bleSdkManager.onlineStreamingFeature.isSupported
+
+        case .offline:
+            return isConnected && bleSdkManager.offlineRecordingFeature.isSupported
+
+        case .logging, .activityRecordingView:
+            return isConnected && bleSdkManager.activityDataFeature.isSupported
+
         case .h10Exercise:
-            return isH10Device()
+            return isConnected && isH10Device()
         case .exerciseV2:
-            return bleSdkManager.offlineExerciseV2Supported
+            return isConnected && bleSdkManager.offlineExerciseV2Supported
         }
     }
     

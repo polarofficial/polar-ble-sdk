@@ -2,7 +2,6 @@
 package com.polar.sdk.api
 
 import com.polar.sdk.api.model.PolarSkinTemperatureData
-import io.reactivex.rxjava3.core.Single
 import java.time.LocalDate
 
 /**
@@ -19,8 +18,9 @@ interface PolarTemperatureApi {
      * @param identifier The Polar device ID or BT address.
      * @param fromDate The starting date of the period to retrieve skin temperature data from.
      * @param toDate The ending date of the period to retrieve skin temperature data from.
-     * @return A [Single] emitting a list of [PolarSkinTemperatureData] representing the skin
-     *          temperature data for the specified period.
+     * @return A list of [PolarSkinTemperatureData] representing the skin
+     * temperature data for the specified period.
+     * @throws Throwable if the operation fails
      */
-    abstract fun getSkinTemperature(identifier: String, fromDate: LocalDate, toDate: LocalDate): Single<List<PolarSkinTemperatureData>>
+    suspend fun getSkinTemperature(identifier: String, fromDate: LocalDate, toDate: LocalDate): List<PolarSkinTemperatureData>
 }

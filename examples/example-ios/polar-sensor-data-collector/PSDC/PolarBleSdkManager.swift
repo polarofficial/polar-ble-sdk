@@ -112,6 +112,9 @@ class PolarBleSdkManager : ObservableObject {
     @Published var offlineExerciseV2Supported: Bool = false
     @Published var offlineExerciseV2Entries: [PolarExerciseEntry] = []
     @Published var offlineExerciseV2Status: Bool = false
+    
+    @Published var fileTransferFeature = FileTransferFeature()
+    @Published var activityDataFeature = ActivityDataFeature()
 
     private let disposeBag = DisposeBag()
     private var h10ExerciseEntry: PolarExerciseEntry?
@@ -1243,7 +1246,7 @@ extension PolarBleSdkManager {
                         NSLog("HR    BPM: \(data[0].hr) rrs: \(data[0].rrsMs) rrAvailable: \(data[0].rrAvailable) contact status: \(data[0].contactStatus) contact supported: \(data[0].contactStatusSupported)")
                         Task { @MainActor in
                             self.hrRecordingData.hr = data[0].hr
-                            // self.hrRecordingData.rrs = data[0].rrsMs[0]
+                            self.hrRecordingData.rrs = data[0].rrsMs
                             self.hrRecordingData.rrAvailable = data[0].rrAvailable
                             self.hrRecordingData.contactStatus = data[0].contactStatus
                             self.hrRecordingData.contactStatusSupported = data[0].contactStatusSupported
@@ -3658,13 +3661,20 @@ extension PolarBleSdkManager : PolarBleApiDeviceFeaturesObserver {
         }
     
         if ready.contains(.feature_polar_activity_data) {
-            // Not implemented. Could enable activity data functions.
-            print("Not implemented")
+            Task { @MainActor in
+                self.activityDataFeature.isSupported = true
+            }
         }
     
         if ready.contains(.feature_polar_features_configuration_service) {
             // Not implemented. Could enable multi BLE mode control.
             print("Not implemented")
+        }
+        
+        if ready.contains(.feature_polar_file_transfer) {
+            Task { @MainActor in
+                self.fileTransferFeature.isSupported = true
+            }
         }
     }
     

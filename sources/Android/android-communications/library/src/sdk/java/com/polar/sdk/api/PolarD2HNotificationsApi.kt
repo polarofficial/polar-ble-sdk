@@ -1,7 +1,7 @@
 // Copyright © 2026 Polar Electro Oy. All rights reserved.
 package com.polar.sdk.api
 
-import io.reactivex.rxjava3.core.Flowable
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Enum representing all possible device-to-host notification types.
@@ -114,14 +114,13 @@ data class PolarD2HNotificationData(
  */
 interface PolarDeviceToHostNotificationsApi {
     /**
-     * Streams for received device to host notifications endlessly.
-     * Only dispose, take(1) etc... stops stream.
+    * Streams received device-to-host notifications endlessly.
+     * Only cancellation or terminal operators stop the stream.
      *
      * @param identifier Polar device ID or BT address
-     * @return [Flowable] stream of [PolarD2HNotificationData]
-     * Produces onNext after successfully received notification.
-     * onCompleted not produced unless stream is further configured.
+     * @return [Flow] stream of [PolarD2HNotificationData]
+     * Emits values after successfully received notifications.
      * onError, see [BlePsFtpException], [BleGattException]
      */
-    fun observeDeviceToHostNotifications(identifier: String): Flowable<PolarD2HNotificationData>
+    fun observeDeviceToHostNotifications(identifier: String): Flow<PolarD2HNotificationData>
 }

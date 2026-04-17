@@ -28,7 +28,7 @@ internal class BlePfcClientTest {
     fun setUp() {
         MockKAnnotations.init(this)
         blePfcClient = BlePfcClient(mockGattTxInterface)
-        every { mockGattTxInterface.isConnected } returns true
+        every { mockGattTxInterface.isConnected() } returns true
     }
 
     @After
@@ -106,8 +106,8 @@ internal class BlePfcClientTest {
         )
         Assert.assertEquals(BlePfcClient.SUCCESS, pfcResponse.status)
         Assert.assertNotNull(pfcResponse.payload)
-        Assert.assertEquals(1, pfcResponse.payload.size)
-        Assert.assertEquals(0x01.toByte(), pfcResponse.payload[0])
+        Assert.assertEquals(1, pfcResponse.payload?.size ?: 0)
+        Assert.assertEquals(0x01.toByte(), pfcResponse.payload!![0])
     }
 
     @Test
@@ -170,7 +170,7 @@ internal class BlePfcClientTest {
 
         // Assert
         Assert.assertEquals(BlePfcClient.SUCCESS, pfcResponse.status)
-        Assert.assertEquals(0x00.toByte(), pfcResponse.payload[0])
+        Assert.assertEquals(0x00.toByte(), pfcResponse.payload!![0])
     }
 
     @Test
@@ -195,7 +195,7 @@ internal class BlePfcClientTest {
         )
         Assert.assertEquals(BlePfcClient.SUCCESS, pfcResponse.status)
         Assert.assertNotNull(pfcResponse.payload)
-        Assert.assertEquals(1, pfcResponse.payload.size)
-        Assert.assertEquals(0x01.toByte(), pfcResponse.payload[0])
+        Assert.assertEquals(1, pfcResponse.payload!!.size)
+        Assert.assertEquals(0x01.toByte(), pfcResponse.payload!![0])
     }
 }

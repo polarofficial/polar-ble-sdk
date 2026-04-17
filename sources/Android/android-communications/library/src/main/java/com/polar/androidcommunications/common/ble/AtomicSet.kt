@@ -1,67 +1,63 @@
-package com.polar.androidcommunications.common.ble;
+package com.polar.androidcommunications.common.ble
 
-import androidx.annotation.Nullable;
+class AtomicSet<Any : kotlin.Any> {
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+    private val items: MutableList<Any> = mutableListOf()
 
-public class AtomicSet<E> {
-
-    private final List<E> items = new ArrayList<>();
-
-    public interface ObjectAccess<E> {
-        void access(E object);
+    fun interface CompareFunction<Any> {
+        fun compare(`object`: Any): Boolean
     }
 
-    public interface CompareFunction<E> {
-        boolean compare(E object);
+    @Synchronized
+    fun clear() {
+        items.clear()
     }
 
-    public synchronized void clear() {
-        items.clear();
-    }
-
-    public synchronized boolean add(E object) {
-        if (object != null && !items.contains(object)) {
-            items.add(object);
-            return true;
+    @Synchronized
+    fun add(`object`: Any?): Boolean {
+        if (`object` != null && !items.contains(`object`)) {
+            items.add(`object`)
+            return true
         }
-        return false;
+        return false
     }
 
-    public synchronized void remove(E object) {
-        if (object != null) {
-            items.remove(object);
+    @Synchronized
+    fun <T: Any> remove(`object`: T?) {
+        if (`object` != null) {
+            items.remove(`object`)
         }
     }
 
-    public synchronized void accessAll(ObjectAccess<E> objectAccess) {
-        for (int i = items.size() - 1; i != -1; --i) {
-            objectAccess.access(items.get(i));
+    @Synchronized
+    fun <T: Any> accessAll(`object`: (kotlin.Any) -> Unit) {
+        for (i in items.size - 1 downTo 0) {
+            `object`(items[i])
         }
     }
 
-    @Nullable
-    public synchronized E fetch(CompareFunction<E> compareFunction) {
-        for (int i = items.size() - 1; i != -1; --i) {
-            if (compareFunction.compare(items.get(i))) {
-                return items.get(i);
+    @Synchronized
+    fun fetch(compareFunction: CompareFunction<Any?>): Any? {
+        for (i in items.size - 1 downTo 0) {
+            if (compareFunction.compare(items[i])) {
+                return items[i]
             }
         }
-        return null;
+        return null
     }
 
-    public synchronized Set<E> objects() {
-        return new HashSet<>(items);
+    @Synchronized
+    fun objects(): Set<Any> {
+        return HashSet(items)
     }
 
-    public synchronized int size() {
-        return items.size();
+    @Synchronized
+    fun size(): Int {
+        return items.size
     }
 
-    public synchronized boolean contains(E object) {
-        return items.contains(object);
+    @Synchronized
+    fun contains(`object`: Any): Boolean {
+        return items.contains(`object`)
     }
 }

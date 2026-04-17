@@ -1,63 +1,67 @@
-package com.polar.androidcommunications.api.ble.model.polar;
+package com.polar.androidcommunications.api.ble.model.polar
 
-public final class BlePolarDeviceIdUtility {
-
-    private BlePolarDeviceIdUtility() {
-        throw new IllegalStateException("Utility class");
+class BlePolarDeviceIdUtility private constructor() {
+    init {
+        throw IllegalStateException("Utility class")
     }
 
-    public static boolean isValidDeviceId(final String deviceId) {
-        if (deviceId == null) return false;
-        if (deviceId.length() == 8) {
-            return checkSumForDeviceId(Long.parseLong(deviceId, 16), 8) == (Long.parseLong(deviceId, 16) & 0x000000000000000FL);
+    companion object {
+        fun isValidDeviceId(deviceId: String?): Boolean {
+            if (deviceId == null) return false
+            if (deviceId.length == 8) {
+                return checkSumForDeviceId(
+                    deviceId.toLong(16),
+                    8
+                ).toLong() == (deviceId.toLong(16) and 0x000000000000000FL)
+            }
+            return checkSumForDeviceId(deviceId.toLong(16), deviceId.length).toInt() != 0
         }
-        return checkSumForDeviceId(Long.parseLong(deviceId, 16), deviceId.length()) != 0;
-    }
 
-    public static String assemblyFullPolarDeviceId(final String deviceId) {
-        try {
-            switch (deviceId.length()) {
-                case 6: {
-                    byte crc = checkSumForDeviceId(Long.parseLong(deviceId, 16), 6);
-                    return deviceId + "1" + String.format("%01X", crc);
-                }
-                case 7: {
-                    byte crc = checkSumForDeviceId(Long.parseLong(deviceId, 16), 7);
-                    return deviceId + String.format("%01X", crc);
-                }
-                default: {
-                    return deviceId;
-                }
-            }
-        } catch (NumberFormatException ex) {
-            return "";
-        }
-    }
+        fun assemblyFullPolarDeviceId(deviceId: String): String {
+            try {
+                when (deviceId.length) {
+                    6 -> {
+                        val crc = checkSumForDeviceId(deviceId.toLong(16), 6)
+                        return deviceId + "1" + String.format("%01X", crc)
+                    }
 
-    private static byte checkSumForDeviceId(long deviceId, int width) {
-        int siftOffset = 0;
-        byte a2 = 0x01;
-        switch (width) {
-            case 8: {
-                a2 = (byte) ((deviceId >> 4) & 0x0F);
-                siftOffset = 8;
-                break;
-            }
-            case 7: {
-                a2 = (byte) ((deviceId) & 0x0F);
-                siftOffset = 4;
-                break;
-            }
-            case 6: {
-                break;
+                    7 -> {
+                        val crc = checkSumForDeviceId(deviceId.toLong(16), 7)
+                        return deviceId + String.format("%01X", crc)
+                    }
+
+                    else -> {
+                        return deviceId
+                    }
+                }
+            } catch (ex: NumberFormatException) {
+                return ""
             }
         }
-        byte a3 = (byte) ((deviceId >> siftOffset) & 0x0F);
-        byte a4 = (byte) ((deviceId >> siftOffset + 4) & 0x0F);
-        byte a5 = (byte) ((deviceId >> siftOffset + 8) & 0x0F);
-        byte a6 = (byte) ((deviceId >> siftOffset + 12) & 0x0F);
-        byte a7 = (byte) ((deviceId >> siftOffset + 16) & 0x0F);
-        byte a8 = (byte) ((deviceId >> siftOffset + 20) & 0x0F);
-        return (byte) ((3 * (a2 + a4 + a6 + a8) + a3 + a5 + a7) % 16);
+
+        private fun checkSumForDeviceId(deviceId: Long, width: Int): Byte {
+            var siftOffset = 0
+            var a2: Byte = 0x01
+            when (width) {
+                8 -> {
+                    a2 = ((deviceId shr 4) and 0x0FL).toByte()
+                    siftOffset = 8
+                }
+
+                7 -> {
+                    a2 = ((deviceId) and 0x0FL).toByte()
+                    siftOffset = 4
+                }
+
+                6 -> {}
+            }
+            val a3 = ((deviceId shr siftOffset) and 0x0FL).toByte()
+            val a4 = ((deviceId shr siftOffset + 4) and 0x0FL).toByte()
+            val a5 = ((deviceId shr siftOffset + 8) and 0x0FL).toByte()
+            val a6 = ((deviceId shr siftOffset + 12) and 0x0FL).toByte()
+            val a7 = ((deviceId shr siftOffset + 16) and 0x0FL).toByte()
+            val a8 = ((deviceId shr siftOffset + 20) and 0x0FL).toByte()
+            return ((3 * (a2 + a4 + a6 + a8) + a3 + a5 + a7) % 16).toByte()
+        }
     }
 }

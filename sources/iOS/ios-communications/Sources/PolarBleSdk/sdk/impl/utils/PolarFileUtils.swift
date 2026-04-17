@@ -86,6 +86,13 @@ class PolarFileUtils {
                         return Completable.empty()
                     }
                 })
+                .catch { error in
+                    if case let BlePsFtpException.responseError(code) = error, code == 103 {
+                        BleLogger.trace("Directory not found: \(directoryPath). Treating as already deleted.")
+                        return Completable.empty()
+                    }
+                    return Completable.error(error)
+                }
         } catch {
             BleLogger.error("Error while getting session \(error)")
             return Completable.error(PolarErrors.serviceNotFound)
@@ -113,6 +120,13 @@ class PolarFileUtils {
                 let directory = try Protocol_PbPFtpDirectory(serializedData: data as Data)
                 return Single.just(directory.entries.count == 0)
             })
+            .catch { error in
+                    if case let BlePsFtpException.responseError(code) = error, code == 103 {
+                    BleLogger.trace("Directory not found: \(directoryPath). Treating as empty.")
+                    return Single.just(true)
+                }
+                return Single.error(error)
+            }
             .do(onError: { error in
                 BleLogger.error("Failed to get data from directory \(directoryPath).  Error: \(error.localizedDescription)")
             })
@@ -149,7 +163,15 @@ class PolarFileUtils {
                     operation.command = Protocol_PbPFtpOperation.Command.remove
                     operation.path = filePath.element
                     let request = try operation.serializedData()
-                    return client.request(request).asCompletable()
+                    return client.request(request)
+                        .asCompletable()
+                        .catch { error in
+                            if case let BlePsFtpException.responseError(code) = error, code == 103 {
+                                BleLogger.trace("File not found: \(filePath.element). Treating as already deleted.")
+                                return Completable.empty()
+                            }
+                            return Completable.error(error)
+                        }
                 }.asCompletable()
         } catch {
             return Completable.error(PolarErrors.deviceError(description: "Failed to remove files \(filePaths)."))

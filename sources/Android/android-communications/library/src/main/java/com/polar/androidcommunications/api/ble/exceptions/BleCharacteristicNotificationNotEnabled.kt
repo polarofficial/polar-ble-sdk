@@ -1,24 +1,20 @@
-package com.polar.androidcommunications.api.ble.exceptions;
+package com.polar.androidcommunications.api.ble.exceptions
 
 /**
  * Error indicating characteristic notification/indication is not enabled
  */
-public class BleCharacteristicNotificationNotEnabled extends Exception {
-    public int error = -1;
+class BleCharacteristicNotificationNotEnabled : Exception {
+    var error: Int = -1
 
-    public BleCharacteristicNotificationNotEnabled() {
+    constructor()
+
+    constructor(message: String?) : super(message)
+
+    constructor(error: Int) {
+        this.error = error
     }
 
-    public BleCharacteristicNotificationNotEnabled(String message) {
-        super(message);
-    }
-
-    public BleCharacteristicNotificationNotEnabled(int error) {
-        this.error = error;
-    }
-
-    public BleCharacteristicNotificationNotEnabled(String message, int error) {
-        super(message);
-        this.error = error;
+    constructor(message: String?, error: Int) : super(message) {
+        this.error = error
     }
 }

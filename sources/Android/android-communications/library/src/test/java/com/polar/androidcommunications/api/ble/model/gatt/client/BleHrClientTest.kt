@@ -5,7 +5,8 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Com
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.reactivex.rxjava3.subscribers.TestSubscriber
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -22,12 +23,12 @@ class BleHrClientTest {
     fun setUp() {
         MockKAnnotations.init(this)
         bleHrClient = BleHrClient(txInterface)
-        every { txInterface.isConnected } returns true
+        every { txInterface.isConnected() } returns true
         every { txInterface.setCharacteristicNotify(any(), any(), any()) } returns Unit
     }
 
     @Test
-    fun `hr format uint8`() {
+    fun `hr format uint8`() = runTest {
         //Arrange
         val characteristic: UUID = HR_MEASUREMENT
         val status = 0
@@ -49,23 +50,22 @@ class BleHrClientTest {
         val measurementFrame2 = byteArrayOf(0x00.toByte(), 0x7F.toByte())
 
         //Act
-        val result = bleHrClient.observeHrNotifications(true)
-        val testObserver = TestSubscriber<BleHrClient.HrNotificationData>()
-        result.subscribe(testObserver)
+        val values = mutableListOf<BleHrClient.HrNotificationData>()
+        val job = launch { bleHrClient.observeHrNotifications(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
         bleHrClient.processServiceData(characteristic, measurementFrame1, status, notifying)
         bleHrClient.processServiceData(characteristic, measurementFrame2, status, notifying)
+        testScheduler.advanceUntilIdle()
+        job.cancel()
 
         //Assert
-        testObserver.assertNoErrors()
-        testObserver.assertValueCount(2)
-        val hrData1 = testObserver.values()[0]
-        assertEquals(expectedHeartRate1, hrData1.hrValue)
-        val hrData2 = testObserver.values()[1]
-        assertEquals(expectedHeartRate2, hrData2.hrValue)
+        assertEquals(2, values.size)
+        assertEquals(expectedHeartRate1, values[0].hrValue)
+        assertEquals(expectedHeartRate2, values[1].hrValue)
     }
 
     @Test
-    fun `hr format uint16`() {
+    fun `hr format uint16`() = runTest {
         //Arrange
         val characteristic: UUID = HR_MEASUREMENT
         val status = 0
@@ -86,23 +86,22 @@ class BleHrClientTest {
         val measurementFrame2 = byteArrayOf(0x01.toByte(), 0x7F.toByte(), 0x7F.toByte())
 
         //Act
-        val result = bleHrClient.observeHrNotifications(true)
-        val testObserver = TestSubscriber<BleHrClient.HrNotificationData>()
-        result.subscribe(testObserver)
+        val values = mutableListOf<BleHrClient.HrNotificationData>()
+        val job = launch { bleHrClient.observeHrNotifications(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
         bleHrClient.processServiceData(characteristic, measurementFrame1, status, notifying)
         bleHrClient.processServiceData(characteristic, measurementFrame2, status, notifying)
+        testScheduler.advanceUntilIdle()
+        job.cancel()
 
         //Assert
-        testObserver.assertNoErrors()
-        testObserver.assertValueCount(2)
-        val hrData1 = testObserver.values()[0]
-        assertEquals(expectedHeartRate1, hrData1.hrValue)
-        val hrData2 = testObserver.values()[1]
-        assertEquals(expectedHeartRate2, hrData2.hrValue)
+        assertEquals(2, values.size)
+        assertEquals(expectedHeartRate1, values[0].hrValue)
+        assertEquals(expectedHeartRate2, values[1].hrValue)
     }
 
     @Test
-    fun `sensor contact supported`() {
+    fun `sensor contact supported`() = runTest {
         //Arrange
         val characteristic: UUID = HR_MEASUREMENT
         val status = 0
@@ -121,25 +120,24 @@ class BleHrClientTest {
         val measurementFrame1 = byteArrayOf(0x04.toByte(), 0x00.toByte())
 
         //Act
-        val result = bleHrClient.observeHrNotifications(true)
-        val testObserver = TestSubscriber<BleHrClient.HrNotificationData>()
-        result.subscribe(testObserver)
+        val values = mutableListOf<BleHrClient.HrNotificationData>()
+        val job = launch { bleHrClient.observeHrNotifications(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
         bleHrClient.processServiceData(characteristic, measurementFrame0, status, notifying)
         bleHrClient.processServiceData(characteristic, measurementFrame1, status, notifying)
+        testScheduler.advanceUntilIdle()
+        job.cancel()
 
         //Assert
-        testObserver.assertNoErrors()
-        testObserver.assertValueCount(2)
-        val hrData0 = testObserver.values()[0]
-        val hrData1 = testObserver.values()[1]
-        assertTrue(hrData0.sensorContact)
-        assertTrue(hrData0.sensorContactSupported)
-        assertFalse(hrData1.sensorContact)
-        assertTrue(hrData1.sensorContactSupported)
+        assertEquals(2, values.size)
+        assertTrue(values[0].sensorContact)
+        assertTrue(values[0].sensorContactSupported)
+        assertFalse(values[1].sensorContact)
+        assertTrue(values[1].sensorContactSupported)
     }
 
     @Test
-    fun `sensor contact not supported`() {
+    fun `sensor contact not supported`() = runTest {
         //Arrange
         val characteristic: UUID = HR_MEASUREMENT
         val status = 0
@@ -160,23 +158,22 @@ class BleHrClientTest {
         val measurementFrame2 = byteArrayOf(0x00.toByte(), 0x00.toByte())
 
         //Act
-        val result = bleHrClient.observeHrNotifications(true)
-        val testObserver = TestSubscriber<BleHrClient.HrNotificationData>()
-        result.subscribe(testObserver)
+        val values = mutableListOf<BleHrClient.HrNotificationData>()
+        val job = launch { bleHrClient.observeHrNotifications(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
         bleHrClient.processServiceData(characteristic, measurementFrame1, status, notifying)
         bleHrClient.processServiceData(characteristic, measurementFrame2, status, notifying)
+        testScheduler.advanceUntilIdle()
+        job.cancel()
 
         //Assert
-        testObserver.assertNoErrors()
-        testObserver.assertValueCount(2)
-        val hrData1 = testObserver.values()[0]
-        assertFalse(hrData1.sensorContactSupported)
-        val hrData2 = testObserver.values()[1]
-        assertFalse(hrData2.sensorContactSupported)
+        assertEquals(2, values.size)
+        assertFalse(values[0].sensorContactSupported)
+        assertFalse(values[1].sensorContactSupported)
     }
 
     @Test
-    fun `energy expended`() {
+    fun `energy expended`() = runTest {
         //Arrange
         val characteristic: UUID = HR_MEASUREMENT
         val status = 0
@@ -206,25 +203,24 @@ class BleHrClientTest {
             byteArrayOf(0x08.toByte(), 0x00.toByte(), 0x7F.toByte(), 0x80.toByte())
 
         //Act
-        val result = bleHrClient.observeHrNotifications(true)
-        val testObserver = TestSubscriber<BleHrClient.HrNotificationData>()
-        result.subscribe(testObserver)
+        val values = mutableListOf<BleHrClient.HrNotificationData>()
+        val job = launch { bleHrClient.observeHrNotifications(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
         bleHrClient.processServiceData(characteristic, measurementFrame1, status, notifying)
         bleHrClient.processServiceData(characteristic, measurementFrame2, status, notifying)
+        testScheduler.advanceUntilIdle()
+        job.cancel()
 
         //Assert
-        testObserver.assertNoErrors()
-        testObserver.assertValueCount(2)
-        val hrData1 = testObserver.values()[0]
-        assertEquals(expectedHeartRate1, hrData1.hrValue)
-        assertEquals(energyExpended1, hrData1.energy)
-        val hrData2 = testObserver.values()[1]
-        assertEquals(expectedHeartRate2, hrData2.hrValue)
-        assertEquals(energyExpended2, hrData2.energy)
+        assertEquals(2, values.size)
+        assertEquals(expectedHeartRate1, values[0].hrValue)
+        assertEquals(energyExpended1, values[0].energy)
+        assertEquals(expectedHeartRate2, values[1].hrValue)
+        assertEquals(energyExpended2, values[1].energy)
     }
 
     @Test
-    fun `rr interval`() {
+    fun `rr interval`() = runTest {
         //Arrange
         val characteristic: UUID = HR_MEASUREMENT
         val status = 0
@@ -283,18 +279,19 @@ class BleHrClientTest {
         )
 
         //Act
-        val result = bleHrClient.observeHrNotifications(true)
-        val testObserver = TestSubscriber<BleHrClient.HrNotificationData>()
-        result.subscribe(testObserver)
+        val values = mutableListOf<BleHrClient.HrNotificationData>()
+        val job = launch { bleHrClient.observeHrNotifications(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
         bleHrClient.processServiceData(characteristic, measurementFrame1, status, notifying)
         bleHrClient.processServiceData(characteristic, measurementFrame2, status, notifying)
         bleHrClient.processServiceData(characteristic, measurementFrame3, status, notifying)
+        testScheduler.advanceUntilIdle()
+        job.cancel()
 
         //Assert
-        testObserver.assertNoErrors()
-        testObserver.assertValueCount(3)
+        assertEquals(3, values.size)
 
-        val hrData1 = testObserver.values()[0]
+        val hrData1 = values[0]
         assertEquals(expectedHeartRate1, hrData1.hrValue)
         assertEquals(1, hrData1.rrs.size)
         assertEquals(1, hrData1.rrsMs.size)
@@ -302,7 +299,7 @@ class BleHrClientTest {
         assertEquals(sample1ExpectedRRin1024Unit, hrData1.rrs[0])
         assertEquals(sample1ExpectedRRinMsUnit, hrData1.rrsMs[0])
 
-        val hrData2 = testObserver.values()[1]
+        val hrData2 = values[1]
         assertEquals(expectedHeartRate2, hrData2.hrValue)
         assertEquals(2, hrData2.rrs.size)
         assertEquals(2, hrData2.rrsMs.size)
@@ -313,7 +310,7 @@ class BleHrClientTest {
         assertEquals(sample3ExpectedRRin1024Unit, hrData2.rrs[1])
         assertEquals(sample3ExpectedRRinMsUnit, hrData2.rrsMs[1])
 
-        val hrData3 = testObserver.values()[2]
+        val hrData3 = values[2]
         assertEquals(expectedHeartRate3, hrData3.hrValue)
         assertEquals(1, hrData3.rrs.size)
         assertEquals(1, hrData3.rrsMs.size)

@@ -1,140 +1,109 @@
-package com.polar.androidcommunications.api.ble;
+package com.polar.androidcommunications.api.ble
 
-import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanFilter
+import androidx.annotation.IntDef
+import androidx.annotation.IntRange
+import androidx.core.util.Pair
+import com.polar.androidcommunications.api.ble.exceptions.BleInvalidMtu
+import com.polar.androidcommunications.api.ble.model.BleDeviceSession
+import com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceSessionState
+import com.polar.androidcommunications.api.ble.model.advertisement.BleAdvertisementContent
+import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
+import com.polar.androidcommunications.api.ble.model.gatt.BleGattFactory
+import kotlinx.coroutines.flow.Flow
 
-import androidx.annotation.IntDef;
-import androidx.annotation.IntRange;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.util.Pair;
-
-import com.polar.androidcommunications.api.ble.exceptions.BleInvalidMtu;
-import com.polar.androidcommunications.api.ble.model.BleDeviceSession;
-import com.polar.androidcommunications.api.ble.model.advertisement.BleAdvertisementContent;
-import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase;
-import com.polar.androidcommunications.api.ble.model.gatt.BleGattFactory;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.util.List;
-import java.util.Set;
-
-import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.Observable;
-
-public abstract class BleDeviceListener {
-
+abstract class BleDeviceListener protected constructor(clients: Set<Class<out BleGattBase>>) {
     /**
      * Pre filter interface for search, to improve memory usage
      */
-    public interface BleSearchPreFilter {
-        boolean process(@NonNull BleAdvertisementContent content);
+    fun interface BleSearchPreFilter {
+        fun process(content: BleAdvertisementContent): Boolean
     }
 
-    @NonNull
-    protected BleGattFactory factory;
+    protected var factory: BleGattFactory = BleGattFactory(clients)
 
-    @Nullable
-    protected BleSearchPreFilter preFilter;
-
-    /**
-     * @param clients e.g. how to set the clients
-     *                <p>
-     *                Set<Class<? extends BleGattBase> > clients = new HashSet<>(Arrays.asList(
-     *                BleHrClient.class,
-     *                BleBattClient.class,
-     *                BleDisClient.class,
-     *                BleGapClient.class,
-     *                BlePfcClient.class,
-     *                BlePsdClient.class,
-     *                BlePsFtpClient.class,
-     *                BleH7SettingsClient.class,
-     *                BlePMDClient.class,
-     *                BleRscClient.class));
-     */
-    protected BleDeviceListener(@NonNull Set<Class<? extends BleGattBase>> clients) {
-        factory = new BleGattFactory(clients);
-    }
+    protected var preFilter: BleSearchPreFilter? = null
 
     /**
      * @return true if bluetooth is active
      */
-    public abstract boolean bleActive();
+    abstract fun bleActive(): Boolean
 
     /**
      * @param cb callback
      */
-    public abstract void setBlePowerStateCallback(@NonNull BlePowerStateChangedCallback cb);
+    abstract fun setBlePowerStateCallback(cb: BlePowerStateChangedCallback)
 
-    public interface BlePowerStateChangedCallback {
+    interface BlePowerStateChangedCallback {
         /**
          * @param power bt state
          */
-        void stateChanged(boolean power);
+        fun stateChanged(power: Boolean)
     }
 
     /**
      * Restarts the scan
      */
-    public abstract void scanRestart();
+    abstract fun scanRestart()
 
     /**
      * @param filters scan filter list, android specific
      */
-    public abstract void setScanFilters(@Nullable List<ScanFilter> filters);
+    abstract fun setScanFilters(filters: List<ScanFilter>)
 
     /**
      * enable to optimize memory usage or disable scan pre filter
      *
      * @param filter policy
      */
-    public abstract void setScanPreFilter(@Nullable BleSearchPreFilter filter);
+    abstract fun setScanPreFilter(filter: BleSearchPreFilter?)
 
     /**
      * @param enable true enables timer to avoid opportunistic scan, false disables. Default true.
      */
-    public abstract void setOpportunisticScan(boolean enable);
+    abstract fun setOpportunisticScan(enable: Boolean)
 
     /**
-     * Produces: onNext:      When a advertisement has been detected <BR>
-     * onError:     if scan start fails propagates BleStartScanError with error code <BR>
-     * onCompleted: Non produced <BR>
+     * Produces: onNext:      When a advertisement has been detected <BR></BR>
+     * onError:     if scan start fails propagates BleStartScanError with error code <BR></BR>
+     * onCompleted: Non produced <BR></BR>
      *
-     * @param fetchKnownDevices, fetch known devices means bonded, already connected and already found devices <BR>
-     * @return Observable stream <BR>
+     * @param fetchKnownDevices, fetch known devices means bonded, already connected and already found devices <BR></BR>
+     * @return Flow stream <BR></BR>
      */
-    @NonNull
-    public abstract Flowable<BleDeviceSession> search(boolean fetchKnownDevices);
+    abstract fun search(fetchKnownDevices: Boolean): Flow<BleDeviceSession>
 
     /**
      * Set the preferred MTU. This value will be negotiated between the central and peripheral devices,
      * so it might not always take effect if peripheral is not capable
-     * <p>
+     *
+     *
      * If set to 0 before the connection is created then MTU negotiation is skipped. Value 0 can be
      * used in cases we don't want MTU negotiation, this can be handy with phones we know the MTU
      * negotiation is not working.
      *
      * @param mtu preferred mtu
      */
-    public abstract void setPreferredMtu(@IntRange(from = 0, to = 512) int mtu) throws BleInvalidMtu;
+    @Throws(BleInvalidMtu::class)
+    abstract fun setPreferredMtu(@IntRange(from = 0, to = 512) mtu: Int)
 
     /**
      * Read the preferred MTU. This is not the negotiated MTU, but the value suggested by host
      * during MTU negotiation.
      */
-    public abstract int getPreferredMtu();
+    abstract fun getPreferredMtu(): Int
 
     /**
      * As java does not support destructor/RAII, Client/App should call this whenever the application is being destroyed
      */
-    public abstract void shutDown();
+    abstract fun shutDown()
 
     /**
      * Attempt connection establishment
      *
      * @param session device
      */
-    public abstract void openSessionDirect(@NonNull BleDeviceSession session);
+    abstract fun openSessionDirect(session: BleDeviceSession)
 
     /**
      * Acquire connection establishment, BleDeviceSessionStateChangedCallback callbacks are invoked
@@ -142,24 +111,23 @@ public abstract class BleDeviceListener {
      * @param session device
      * @param uuids   needed uuids to be found from advertisement data, when reconnecting
      */
-    public abstract void openSessionDirect(@NonNull BleDeviceSession session, @NonNull List<String> uuids);
+    abstract fun openSessionDirect(session: BleDeviceSession, uuids: List<String>)
 
     /**
      * Produces: onNext: When a device session state has changed, Note use pair.second to check the state (see BleDeviceSession.DeviceSessionState)
      *
-     * @return Observable stream
+     * @return Flow stream
      */
-    @NonNull
-    public abstract Observable<Pair<BleDeviceSession, BleDeviceSession.DeviceSessionState>> monitorDeviceSessionState();
+    abstract fun monitorDeviceSessionState(): Flow<Pair<BleDeviceSession, DeviceSessionState>>
 
 
-    public interface BleDeviceSessionStateChangedCallback {
+    interface BleDeviceSessionStateChangedCallback {
         /**
          * Invoked for all sessions and all state changes
          *
          * @param session check sessionState or session.getPreviousState() for actions
          */
-        void stateChanged(@NonNull BleDeviceSession session, @NonNull BleDeviceSession.DeviceSessionState sessionState);
+        fun stateChanged(session: BleDeviceSession, sessionState: DeviceSessionState)
     }
 
     /**
@@ -167,19 +135,18 @@ public abstract class BleDeviceListener {
      *
      * @param session device
      */
-    public abstract void closeSessionDirect(@NonNull BleDeviceSession session);
+    abstract fun closeSessionDirect(session: BleDeviceSession)
 
     /**
      * @return List of current device sessions known
      */
-    @Nullable
-    public abstract Set<BleDeviceSession> deviceSessions();
+    abstract fun deviceSessions(): Set<BleDeviceSession?>?
 
     /**
      * @param address bt address in format 00:11:22:33:44:55
      * @return BleDeviceSession
      */
-    public abstract BleDeviceSession sessionByAddress(final String address);
+    abstract fun sessionByAddress(address: String?): BleDeviceSession?
 
     /**
      * Client app/lib can request to remove device from the list,
@@ -187,34 +154,37 @@ public abstract class BleDeviceListener {
      * @param deviceSession @see BleDeviceSession
      * @return true device was removed, false no( means device is considered to be alive )
      */
-    public abstract boolean removeSession(@NonNull BleDeviceSession deviceSession);
+    abstract fun removeSession(deviceSession: BleDeviceSession): Boolean
 
     /**
      * @return count of sessions removed
      */
-    public abstract int removeAllSessions();
+    abstract fun removeAllSessions(): Int
 
-    public abstract int removeAllSessions(@NonNull Set<BleDeviceSession.DeviceSessionState> inStates);
+    abstract fun removeAllSessions(inStates: Set<DeviceSessionState?>): Int
 
     /**
      * enable or disable automatic reconnection, by default true.
      *
      * @param automaticReconnection
      */
-    public abstract void setAutomaticReconnection(boolean automaticReconnection);
+    abstract fun setAutomaticReconnection(automaticReconnection: Boolean)
 
     /**
      * @return current state of automatic reconnection
      */
-    public abstract Boolean getAutomaticReconnection();
+    abstract fun getAutomaticReconnection(): Boolean?
 
-    public static final int POWER_MODE_NORMAL = 0;
-    public static final int POWER_MODE_LOW = 1;
+    @Retention(AnnotationRetention.SOURCE)
+    @IntDef(POWER_MODE_NORMAL, POWER_MODE_LOW)
+    annotation class PowerMode
 
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef({POWER_MODE_NORMAL, POWER_MODE_LOW})
-    public @interface PowerMode {
+    abstract fun setPowerMode(@PowerMode mode: Int)
+
+    companion object {
+        const val POWER_MODE_NORMAL: Int = 0
+        const val POWER_MODE_LOW: Int = 1
     }
 
-    public abstract void setPowerMode(@PowerMode int mode);
+    abstract fun getIndicatesPairingProblem(identifier: String): kotlin.Pair<Boolean, Int>
 }

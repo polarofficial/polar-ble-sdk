@@ -3,10 +3,7 @@ package com.polar.sdk.api
 
 import com.polar.sdk.api.PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING
 import com.polar.sdk.api.model.*
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Offline recording API.
@@ -28,147 +25,122 @@ interface PolarOfflineRecordingApi {
     /**
      * Get the data types available in this device for offline recording. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING]
      *
-     * @param identifier    Polar device id found printed on the sensor/device or bt address
-     * @return [Single]
-     * Produces:
-     * <BR></BR> - onSuccess the set of available offline recording data types in this device
-     * <BR></BR> - onError status request failed
+     * @param identifier Polar device id found printed on the sensor/device or bt address
+     * @return the set of available offline recording data types in this device
      */
-    fun getAvailableOfflineRecordingDataTypes(identifier: String): Single<Set<PolarBleApi.PolarDeviceDataType>>
+    suspend fun getAvailableOfflineRecordingDataTypes(identifier: String): Set<PolarBleApi.PolarDeviceDataType>
 
     /**
      * Request the offline recording settings available in current operation mode. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING] This request shall be used before the offline recording is started
      * to decide currently available settings. The available settings depend on the state of the device.
      *
      * @param identifier polar device id or bt address
-     * @param feature    the stream feature of interest
-     * @return Single stream
+     * @param feature the stream feature of interest
+     * @return PolarSensorSetting with the settings available in current device state for the requested stream feature.
+     * The available settings depend on the state of the device and may be empty if no settings are currently available for the requested stream feature.
      */
-    fun requestOfflineRecordingSettings(
+    suspend fun requestOfflineRecordingSettings(
         identifier: String,
         feature: PolarBleApi.PolarDeviceDataType
-    ): Single<PolarSensorSetting>
+    ): PolarSensorSetting
 
     /**
      * Request all the settings available in the device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING] The request returns the all capabilities of the
      * requested streaming feature not limited by the current operation mode.
      *
      * @param identifier polar device id or bt address
-     * @param feature    the stream feature of interest
-     * @return Single stream
+     * @param feature the stream feature of interest
+     * @return PolarSensorSetting with the settings available in current device state for the requested stream feature.
+     * The available settings depend on the state of the device and may be empty if no settings are currently available for the requested stream feature.
      */
-    fun requestFullOfflineRecordingSettings(
+    suspend fun requestFullOfflineRecordingSettings(
         identifier: String,
         feature: PolarBleApi.PolarDeviceDataType
-    ): Single<PolarSensorSetting>
+    ): PolarSensorSetting
 
     /**
      * Get current offline recording status. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING]
      *
      * @param identifier polar device id or bt address
-     * @return [Single]
-     * Produces:
-     * <BR></BR> - onSuccess the list of currently recording offline recordings, if the list is empty no offline recordings currently recorded
-     * <BR></BR> - onError status request failed
+     * @return the list of currently recording offline recordings, if the list is empty no offline recordings currently recorded
      */
-    fun getOfflineRecordingStatus(
-        identifier: String
-    ): Single<List<PolarBleApi.PolarDeviceDataType>>
+    suspend fun getOfflineRecordingStatus(identifier: String): List<PolarBleApi.PolarDeviceDataType>
 
     /**
      * List offline recordings stored in the device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING]
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
-     * @return [Flowable] stream
-     * <BR></BR> - onNext the found offline recording entry in [PolarOfflineRecordingEntry]
-     * <BR></BR> - onComplete the listing completed
-     * <BR></BR> - onError listing request failed
+     * @return [Flow] stream of found offline recording entries in [PolarOfflineRecordingEntry]
      */
-    fun listOfflineRecordings(identifier: String): Flowable<PolarOfflineRecordingEntry>
+    fun listOfflineRecordings(identifier: String): Flow<PolarOfflineRecordingEntry>
 
     /**
      * Fetch recording from the Polar device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING]
      *
      * Note, the fetching of the recording may take several seconds if the recording is big.
+     * Note, if a faulty data block is encountered while parsing offline data from device that particular data block will be discarded. This will lead to gaps in the data.
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
      * @param entry The offline recording to be fetched
      * @param secret If the secret is provided in [startOfflineRecording] or [setOfflineRecordingTrigger]
      * then the same secret must be provided when fetching the offline record
-     *
-     * @return [Single]
-     * Produces:
-     * <BR></BR> - onSuccess the offline recording data
-     * <BR></BR> - onError fetch recording request failed
+     * @return the offline recording data
      */
-    fun getOfflineRecord(identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret? = null): Single<PolarOfflineRecordingData>
+    suspend fun getOfflineRecord(
+        identifier: String,
+        entry: PolarOfflineRecordingEntry,
+        secret: PolarRecordingSecret? = null
+    ): PolarOfflineRecordingData
 
     /**
      * Fetch recording from the Polar device with progress tracking. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING]
      *
      * Note, the fetching of the recording may take several seconds if the recording is big.
+     * Note, if a faulty data block is encountered while parsing offline data from device that particular data block will be discarded. This will lead to gaps in the data.
      * This method provides progress updates during the download.
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
      * @param entry The offline recording to be fetched
      * @param secret If the secret is provided in [startOfflineRecording] or [setOfflineRecordingTrigger]
      * then the same secret must be provided when fetching the offline record
-     *
-     * @return [Observable]
-     * Produces:
-     * <BR></BR> - onNext progress updates with [PolarOfflineRecordingProgress] containing bytes downloaded
-     * <BR></BR> - onComplete when download finishes with final [PolarOfflineRecordingResult]
-     * <BR></BR> - onError fetch recording request failed
+     * @return [Flow] stream of [PolarOfflineRecordingResult]
      */
     fun getOfflineRecordWithProgress(
         identifier: String,
         entry: PolarOfflineRecordingEntry,
         secret: PolarRecordingSecret? = null
-    ): Observable<PolarOfflineRecordingResult>
+    ): Flow<PolarOfflineRecordingResult>
 
     /**
      * Lists all parts of all offline recordings (split and non-split) stored in the device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING]
-     * Use this method to list all parts of a recording when you need to read long offline
-     * recordings one file part at a time.
-     *
-     * @param identifier Polar device id found printed on the sensor/device or bt address
-     * @return [Flowable] stream
-     * <BR></BR> - onNext the found offline recording entry in [PolarOfflineRecordingEntry]
-     * <BR></BR> - onComplete the listing completed
-     * <BR></BR> - onError listing request failed
      */
     @Deprecated("Use listOfflineRecordings instead")
-    fun listSplitOfflineRecordings(identifier: String): Flowable<PolarOfflineRecordingEntry>
+    fun listSplitOfflineRecordings(identifier: String): Flow<PolarOfflineRecordingEntry>
 
     /**
      * Fetch split recording from the Polar device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING]
      *
      * Note, the fetching of the recording may take several seconds if the recording is big.
+     * Note, if a faulty data block is encountered while parsing offline data from device that particular data block will be discarded. This will lead to gaps in the data.
      *
      * @param identifier Polar device id found printed on the sensor/device or bt address
      * @param entry The offline recording to be fetched
      * @param secret If the secret is provided in [startOfflineRecording] or [setOfflineRecordingTrigger]
      * then the same secret must be provided when fetching the offline record
      *
-     * @return [Single]
-     * Produces:
-     * <BR></BR> - onSuccess the offline recording data
-     * <BR></BR> - onError fetch recording request failed
+     * @return Success or error
      */
     @Deprecated("Use getOfflineRecordWithProgress method instead")
-    fun getSplitOfflineRecord(identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret? = null): Single<PolarOfflineRecordingData>
+    suspend fun getSplitOfflineRecord(
+        identifier: String,
+        entry: PolarOfflineRecordingEntry,
+        secret: PolarRecordingSecret? = null
+    ): PolarOfflineRecordingData
 
     /**
      * Removes offline recording from the device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING]
-     *
-     * @param identifier Polar device id found printed on the sensor/device or bt address
-     * @param entry      entry to be removed
-     * @return [Completable]
-     * Produces:
-     * <BR></BR> - onComplete offline record is removed
-     * <BR></BR> - onError  offline record removal failed
      */
-    fun removeOfflineRecord(identifier: String, entry: PolarOfflineRecordingEntry): Completable
+    suspend fun removeOfflineRecord(identifier: String, entry: PolarOfflineRecordingEntry)
 
     /**
      * Start offline recording. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING]
@@ -178,32 +150,25 @@ interface PolarOfflineRecordingApi {
      * @param settings settings for the started offline recording. In case of
      * the feature [PolarBleApi.PolarDeviceDataType.PPI] or [PolarBleApi.PolarDeviceDataType.HR] the [PolarSensorSetting] is not needed
      * @param secret if the secret is provided the offline recordings are encrypted in device
-     * @return [Completable]
-     * Produces:
-     * <BR></BR> - onComplete offline recording is started successfully
-     * <BR></BR> - onError  offline recording start failed.
+     * @return Success or error.
      */
-    fun startOfflineRecording(
+    suspend fun startOfflineRecording(
         identifier: String,
         feature: PolarBleApi.PolarDeviceDataType,
         settings: PolarSensorSetting? = null,
         secret: PolarRecordingSecret? = null
-    ): Completable
+    )
 
     /**
      * Request to stop offline recording. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING]
-     *
      * @param identifier polar device id
      * @param feature which is stopped
-     * @return [Completable]
-     * Produces:
-     * <BR></BR> - onComplete offline recording is stop successfully
-     * <BR></BR> - onError  offline recording stop failed.
+     * @return Success or error.
      */
-    fun stopOfflineRecording(
+    suspend fun stopOfflineRecording(
         identifier: String,
         feature: PolarBleApi.PolarDeviceDataType
-    ): Completable
+    )
 
     /**
      * Sets the offline recording triggers for a given Polar device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING] The offline recording can be started automatically in the device by setting the triggers.
@@ -218,25 +183,18 @@ interface PolarOfflineRecordingApi {
      * @param identifier  Polar device id found printed on the sensor/device or bt address
      * @param trigger the type of trigger
      * @param secret if the secret is provided the offline recordings are encrypted in device
-     *
-     * Produces:
-     * <BR></BR> - onComplete offline recording trigger set successfully
-     * <BR></BR> - onError  offline recording trigger set failed.
+     * @return Success or error.
      */
-    fun setOfflineRecordingTrigger(
+    suspend fun setOfflineRecordingTrigger(
         identifier: String,
         trigger: PolarOfflineRecordingTrigger,
         secret: PolarRecordingSecret? = null
-    ): Completable
+    )
 
     /**
      * Retrieves the current offline recording trigger setup in the device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING]
-     *
      * @param identifier  Polar device id found printed on the sensor/device or bt address
-     *
-     * Produces:
-     * <BR></BR> - onSuccess the offline recording trigger setup in the device
-     * <BR></BR> - onError fetch recording request failed
+     * @return PolarOfflineRecordingTrigger, the current offline recording trigger setup in the device
      */
-    fun getOfflineRecordingTriggerSetup(identifier: String): Single<PolarOfflineRecordingTrigger>
+    suspend fun getOfflineRecordingTriggerSetup(identifier: String): PolarOfflineRecordingTrigger
 }

@@ -45,9 +45,6 @@ import com.polar.sdk.api.model.PolarDiskSpaceData
 import com.polar.sdk.api.model.PolarPhysicalConfiguration
 import com.polar.sdk.api.model.PolarUserDeviceSettings
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
@@ -159,11 +156,15 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
     private lateinit var getBatteryLevelHeader: TextView
     private lateinit var getChargeStateButton: Button
 
+    private lateinit var bleErrorTestButton: Button
+    private lateinit var bleErrorTestText: TextView
+
+    private lateinit var getBLESignalStrengthHeader: TextView
+    private lateinit var getBLESignalStrengthButton: Button
+
     private lateinit var genericButton: Button
     private lateinit var genericText: TextView
     private var genericButtonCounter: Int = 0
-
-    private var latestPhysicalConfiguration: PolarPhysicalConfiguration? = null
 
     interface DateRangeSelectedListener {
         fun onDateRangeSelected(fromDate: LocalDate?, toDate: LocalDate?)
@@ -265,14 +266,6 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
 
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.physInfo.collect { physInfo ->
-                    latestPhysicalConfiguration = physInfo
-                }
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiSettingsSupportUiState.collect {
                     settingsSupportUiState(SettingsSupportUiState(it))
                 }
@@ -321,9 +314,12 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
 
         getUserPhysicalInfoButton.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch {
-                viewModel.getUserPhysicalInfo()
-                val ftu = viewModel.physInfo.drop(1).filterNotNull().first()
-                showUserPhysicalInfoDialog(ftu)
+                viewModel.getUserPhysicalInfo().run {
+                    val ftu = viewModel.physInfo
+                    if (ftu != null ) {
+                        showUserPhysicalInfoDialog(ftu)
+                    }
+                }
             }
         }
 
@@ -468,6 +464,15 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
             }
         }
 
+        getBLESignalStrengthButton.setOnClickListener {
+            try {
+                viewModel.getBLESignalStrength()
+            } catch (e: Exception) {
+                Log.e(TAG, "An error occurred while getting BLE signal strength: ", e)
+                Toast.makeText(this.context, "An error occurred while getting BLE signal strength. Error: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+
         genericButton.isEnabled = true
         genericText.alpha = 0F
 
@@ -481,6 +486,15 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
                 } else {
                     genericButtonCounter++
                 }
+        }
+
+        bleErrorTestButton.setOnClickListener {
+            try {
+                viewModel.checkIfDeviceDisconnectedDueRemovedPairing()
+            } catch (e: Exception) {
+                Log.e(TAG, "An error occurred while getting possible BLE connection problems: ", e)
+                Toast.makeText(this.context, "An error occurred while getting BLE connection problems. Error: ${e.message}", Toast.LENGTH_LONG).show()
+            }
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -567,6 +581,8 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         forceStopSleepButton = view.findViewById(R.id.force_stop_sleep_button)
         genericButton = view.findViewById(R.id.generic_api_button)
         genericText = view.findViewById(R.id.generic_api_header)
+        bleErrorTestButton = view.findViewById(R.id.ble_error_test_button)
+        bleErrorTestText = view.findViewById(R.id.ble_error_test_text)
 
         val adapter = ArrayAdapter(
             requireContext(),
@@ -618,6 +634,9 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         batteryLevelGroup = view.findViewById(R.id.battery_status_group)
         getBatteryLevelHeader = view.findViewById(R.id.get_charge_state_header)
         getChargeStateButton = view.findViewById(R.id.get_charge_state_button)
+
+        getBLESignalStrengthButton = view.findViewById(R.id.ble_signal_strength_button)
+        getBLESignalStrengthHeader = view.findViewById(R.id.ble_signal_strength_header)
     }
 
     private fun settingsSupportUiState(settingsSupportUiState: SettingsSupportUiState) {

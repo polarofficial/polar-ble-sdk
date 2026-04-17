@@ -4,9 +4,7 @@ package com.polar.sdk.api
 import com.polar.sdk.api.model.PolarExerciseSession
 import com.polar.sdk.api.model.PolarExerciseEntry
 import com.polar.sdk.api.model.PolarExerciseData
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Offline Exercise V2 API.
@@ -49,12 +47,12 @@ interface PolarOfflineExerciseV2Api {
      *
      * @param identifier Polar device id or BT address
      * @param sportProfile The sport profile for the exercise
-     * @return Single stream of [OfflineExerciseStartResult]
+     * @return [OfflineExerciseStartResult]
      */
-    fun startOfflineExerciseV2(
+    suspend fun startOfflineExerciseV2(
         identifier: String,
         sportProfile: PolarExerciseSession.SportProfile = PolarExerciseSession.SportProfile.OTHER_OUTDOOR
-    ): Single<OfflineExerciseStartResult>
+    ): OfflineExerciseStartResult
 
     /**
      * Stop an ongoing offline exercise.
@@ -62,9 +60,9 @@ interface PolarOfflineExerciseV2Api {
      * Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2]
      *
      * @param identifier Polar device id or BT address
-     * @return Completable stream
+     * @return Success or error
      */
-    fun stopOfflineExerciseV2(identifier: String): Completable
+    suspend fun stopOfflineExerciseV2(identifier: String)
 
     /**
      * Get the current offline exercise status.
@@ -73,9 +71,9 @@ interface PolarOfflineExerciseV2Api {
      * Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2]
      *
      * @param identifier Polar device id or BT address
-     * @return Single stream of Boolean indicating if exercise is running
+     * @return true if exercise is running
      */
-    fun getOfflineExerciseStatusV2(identifier: String): Single<Boolean>
+    suspend fun getOfflineExerciseStatusV2(identifier: String): Boolean
 
     /**
      * List all offline exercises stored in the device.
@@ -84,9 +82,9 @@ interface PolarOfflineExerciseV2Api {
      *
      * @param identifier Polar device id or BT address
      * @param directoryPath Optional directory path to search
-     * @return Flowable stream of [PolarExerciseEntry] entries
+     * @return [Flow] stream of [PolarExerciseEntry] entries
      */
-    fun listOfflineExercisesV2(identifier: String, directoryPath: String = "/"): Flowable<PolarExerciseEntry>
+    fun listOfflineExercisesV2(identifier: String, directoryPath: String = "/"): Flow<PolarExerciseEntry>
 
     /**
      * Fetch an offline exercise from the device.
@@ -95,9 +93,9 @@ interface PolarOfflineExerciseV2Api {
      *
      * @param identifier Polar device id or BT address
      * @param entry [PolarExerciseEntry] object to fetch
-     * @return Single stream of [PolarExerciseData]
+     * @return [PolarExerciseData]
      */
-    fun fetchOfflineExerciseV2(identifier: String, entry: PolarExerciseEntry): Single<PolarExerciseData>
+    suspend fun fetchOfflineExerciseV2(identifier: String, entry: PolarExerciseEntry): PolarExerciseData
 
     /**
      * Remove an offline exercise from the device.
@@ -106,9 +104,9 @@ interface PolarOfflineExerciseV2Api {
      *
      * @param identifier Polar device id or BT address
      * @param entry [PolarExerciseEntry] object to remove
-     * @return Completable stream
+     * @return Success or error
      */
-    fun removeOfflineExerciseV2(identifier: String, entry: PolarExerciseEntry): Completable
+    suspend fun removeOfflineExerciseV2(identifier: String, entry: PolarExerciseEntry)
 
     /**
      * Check if device supports offline exercise V2 (dm_exercise capability).
@@ -117,13 +115,11 @@ interface PolarOfflineExerciseV2Api {
      * Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2]
      *
      * @param identifier Polar device id or BT address
-     * @return Single that emits true if dm_exercise is supported, false otherwise
+     * @return true if dm_exercise is supported, false otherwise
      */
-    fun isOfflineExerciseV2Supported(identifier: String): Single<Boolean>
+    suspend fun isOfflineExerciseV2Supported(identifier: String): Boolean
 
     companion object {
         const val EXERCISE_SAMPLES_FILE = "SAMPLES.BPB"
     }
 }
-
-

@@ -1,97 +1,84 @@
-package com.polar.androidcommunications.enpoints.ble.bluedroid.host;
+package com.polar.androidcommunications.enpoints.ble.bluedroid.host
 
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.bluetooth.BluetoothDevice
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import com.polar.androidcommunications.api.ble.BleLogger.Companion.d
+import com.polar.androidcommunications.common.ble.AtomicSet
 
-import com.polar.androidcommunications.api.ble.BleLogger;
-import com.polar.androidcommunications.common.ble.AtomicSet;
 
-class BDBondingListener {
-
-    interface AuthenticationObserverInterface {
+class BDBondingListener(private val context: Context) {
+    internal interface AuthenticationObserverInterface {
         // bonding completion
-        void bonding();
+        fun bonding()
 
-        void bonded();
+        fun bonded()
 
-        void bondNone();
+        fun bondNone()
     }
 
-    private static final String TAG = BDBondingListener.class.getSimpleName();
-    private final Context context;
-    private final AtomicSet<BondingObserver> authenticationObservers = new AtomicSet<>();
+    private val authenticationObservers: AtomicSet<BondingObserver> = AtomicSet()
 
-    BDBondingListener(final Context context) {
-        this.context = context;
-        IntentFilter intent = new IntentFilter();
-        intent.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-        context.registerReceiver(mReceiver, intent);
-    }
-
-    void stopBroadcastReceiver() {
+    fun stopBroadcastReceiver() {
         if (mReceiver != null) {
-            context.unregisterReceiver(mReceiver);
-            mReceiver = null;
+            context.unregisterReceiver(mReceiver)
+            mReceiver = null
         }
     }
 
-    abstract static class BondingObserver implements AuthenticationObserverInterface {
-        private final BluetoothDevice device;
+    abstract class BondingObserver(val device: BluetoothDevice) :
+        AuthenticationObserverInterface
 
-        BondingObserver(BluetoothDevice device) {
-            this.device = device;
-        }
-
-        public BluetoothDevice getDevice() {
-            return device;
-        }
+    fun addObserver(observer: BondingObserver) {
+        authenticationObservers.add(observer)
     }
 
-    void addObserver(BondingObserver observer) {
-        authenticationObservers.add(observer);
+    fun removeObserver(observer: BondingObserver) {
+        authenticationObservers.remove(observer)
     }
 
-    void removeObserver(BondingObserver observer) {
-        authenticationObservers.remove(observer);
-    }
-
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+    private var mReceiver: BroadcastReceiver? = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val action = intent.action
+            val device = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
             if (device != null && action != null) {
-                if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
-                    final int state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
-                    BleLogger.d(TAG, "Bond manager state:" + state + " action: " + intent);
-                    switch (state) {
-                        case BluetoothDevice.BOND_BONDING:
-                            authenticationObservers.accessAll(object -> {
-                                if (object.getDevice().equals(device)) {
-                                    object.bonding();
-                                }
-                            });
-                            break;
-                        case BluetoothDevice.BOND_BONDED:
-                            authenticationObservers.accessAll(object -> {
-                                if (object.getDevice().equals(device)) {
-                                    object.bonded();
-                                }
-                            });
-                            break;
-                        case BluetoothDevice.BOND_NONE:
-                            authenticationObservers.accessAll(object -> {
-                                if (object.getDevice().equals(device)) {
-                                    object.bondNone();
-                                }
-                            });
-                            break;
+                if (action == BluetoothDevice.ACTION_BOND_STATE_CHANGED) {
+                    val state =
+                        intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR)
+                    d(TAG, "Bond manager state:$state action: $intent")
+                    when (state) {
+                        BluetoothDevice.BOND_BONDING -> authenticationObservers.accessAll<BondingObserver> { item: Any ->
+                            if ((item  as BondingObserver).device == device) {
+                                item.bonding()
+                            }
+                        }
+
+                        BluetoothDevice.BOND_BONDED -> authenticationObservers.accessAll<BondingObserver> { item: Any ->
+                            if ((item  as BondingObserver).device == device) {
+                                item.bonded()
+                            }
+                        }
+
+                        BluetoothDevice.BOND_NONE -> authenticationObservers.accessAll<BondingObserver> { item: Any ->
+                            if ((item  as BondingObserver).device == device) {
+                                item.bondNone()
+                            }
+                        }
                     }
                 }
             }
         }
-    };
+    }
+
+    init {
+        val intent = IntentFilter()
+        intent.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
+        context.registerReceiver(mReceiver, intent)
+    }
+
+    companion object {
+        private val TAG: String = BDBondingListener::class.java.simpleName
+    }
 }

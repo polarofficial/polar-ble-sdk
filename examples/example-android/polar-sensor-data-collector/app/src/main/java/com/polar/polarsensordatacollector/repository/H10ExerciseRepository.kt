@@ -1,14 +1,16 @@
 package com.polar.polarsensordatacollector.repository
 
 import android.util.Log
+import androidx.core.util.Pair
 import com.polar.sdk.api.PolarH10OfflineExerciseApi
 import com.polar.sdk.api.model.PolarExerciseData
 import com.polar.sdk.api.model.PolarExerciseEntry
 import com.polar.sdk.impl.BDBleApiImpl
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.toList
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,65 +37,79 @@ class H10ExerciseRepository @Inject constructor(
         _featureState.value = _featureState.value.copy(isEnabled = isEnabled)
     }
 
-    fun requestRecordingStatus(deviceId: String): Single<Pair<Boolean, String>> {
+    suspend fun requestRecordingStatus(deviceId: String): Pair<Boolean, String> {
         return api.requestRecordingStatus(deviceId)
-            .map { Pair(it.first, it.second) }
     }
 
-    fun listExercises(deviceId: String): Single<List<PolarExerciseEntry>> {
+    suspend fun listExercises(deviceId: String): List<PolarExerciseEntry> {
+        return try {
+            api.listExercises(deviceId)
+                .catch { e -> Log.e(TAG, "listExercises() failed", e); throw e }
+                .toList()
+        } catch (e: Exception) {
+            Log.e(TAG, "listExercises() failed", e)
+            throw e
+        }
+    }
+
+    fun listExercisesAsFlow(deviceId: String): Flow<PolarExerciseEntry> {
         return api.listExercises(deviceId)
-            .toList()
-            .doOnError { e ->
+            .catch { e ->
                 Log.e(TAG, "listExercises() failed", e)
+                throw e
             }
     }
 
-    fun readExercise(
+    suspend fun readExercise(
         deviceId: String,
         entry: PolarExerciseEntry
-    ): Single<PolarExerciseData> {
-        return api.fetchExercise(deviceId, entry)
-            .doOnError { e ->
-                Log.e(TAG, "readExercise() failed", e)
-            }
+    ): PolarExerciseData {
+        return try {
+            api.fetchExercise(deviceId, entry)
+        } catch (e: Exception) {
+            Log.e(TAG, "readExercise() failed", e)
+            throw e
+        }
     }
 
-    fun removeExercise(
+    suspend fun removeExercise(
         deviceId: String,
         entry: PolarExerciseEntry
-    ): Completable {
-        return api.removeExercise(deviceId, entry)
-            .doOnError { e ->
-                Log.e(TAG, "removeExercise() failed", e)
-            }
+    ) {
+        try {
+            api.removeExercise(deviceId, entry)
+        } catch (e: Exception) {
+            Log.e(TAG, "removeExercise() failed", e)
+            throw e
+        }
     }
 
-    fun startRecording(
+    suspend fun startRecording(
         deviceId: String,
         exerciseId: String
-    ): Completable {
-        return api.startRecording(
-            deviceId,
-            exerciseId,
-            PolarH10OfflineExerciseApi.RecordingInterval.INTERVAL_1S,
-            PolarH10OfflineExerciseApi.SampleType.HR
-        )
-            .doOnComplete {
-                Log.d(TAG, "Recording started for $deviceId, exerciseId=$exerciseId")
-            }
-            .doOnError { e ->
-                Log.e(TAG, "startRecording() failed", e)
-            }
+    ) {
+        try {
+            api.startRecording(
+                deviceId,
+                exerciseId,
+                PolarH10OfflineExerciseApi.RecordingInterval.INTERVAL_1S,
+                PolarH10OfflineExerciseApi.SampleType.HR
+            )
+            Log.d(TAG, "Recording started for $deviceId, exerciseId=$exerciseId")
+        } catch (e: Exception) {
+            Log.e(TAG, "startRecording() failed", e)
+            throw e
+        }
     }
 
-    fun stopRecording(deviceId: String): Completable {
-        return api.stopRecording(deviceId)
-            .doOnComplete {
-                Log.d(TAG, "Recording stopped for $deviceId")
-            }
-            .doOnError { e ->
-                Log.e(TAG, "stopRecording() failed", e)
-            }
+    suspend fun stopRecording(deviceId: String) {
+        try {
+            api.stopRecording(deviceId)
+            Log.d(TAG, "Recording stopped for $deviceId")
+        } catch (e: Exception) {
+            Log.e(TAG, "stopRecording() failed", e)
+            throw e
+        }
     }
 }
 

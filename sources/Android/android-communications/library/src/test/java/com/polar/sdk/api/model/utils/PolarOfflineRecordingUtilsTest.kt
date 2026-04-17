@@ -3,21 +3,20 @@ package com.polar.sdk.api.model.utils
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
 import com.polar.sdk.impl.utils.PolarOfflineRecordingUtils
 import com.polar.sdk.api.model.PolarOfflineRecordingEntry
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
-import io.reactivex.rxjava3.core.Flowable
-import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import java.nio.charset.StandardCharsets
-import java.util.*
 
 class PolarOfflineRecordingUtilsTest {
 
     private val mockClient = mockk<BlePsFtpClient>()
 
     @Test
-    fun `listOfflineRecordingsV1 merges split REC files`() {
+    fun `listOfflineRecordingsV1 merges split REC files`() = runTest {
         val sampleEntries = listOf(
             Pair("/U/0/20250730/R/101010/ACC0.REC", 500120L),
             Pair("/U/0/20250730/R/101010/ACC1.REC", 500103L),
@@ -27,14 +26,15 @@ class PolarOfflineRecordingUtilsTest {
             Pair("/U/0/20250730/R/101010/PPG0.REC", 300L)
         )
 
-        val fetchRecursively: (BlePsFtpClient, String, (String) -> Boolean) -> Flowable<Pair<String, Long>> =
-            { _, _, _ -> Flowable.fromIterable(sampleEntries) }
+        val fetchRecursively: (BlePsFtpClient, String, (String) -> Boolean) -> Flow<Pair<String, Long>> =
+            { _, _, _ -> sampleEntries.asFlow() }
 
         val emitted = mutableListOf<PolarOfflineRecordingEntry>()
-        PolarOfflineRecordingUtils.listOfflineRecordingsV1(mockClient, fetchRecursively)
-            .doOnNext { emitted.add(it) }
-            .test()
-            .awaitDone(1, java.util.concurrent.TimeUnit.SECONDS)
+        val job = launch {
+            PolarOfflineRecordingUtils.listOfflineRecordingsV1(mockClient, fetchRecursively)
+                .collect { emitted.add(it) }
+        }
+        job.join()
 
         val accEntries = emitted.filter { it.path.contains("ACC") }
         val hrEntries = emitted.filter { it.path.contains("HR") }
@@ -56,7 +56,7 @@ class PolarOfflineRecordingUtilsTest {
     }
 
     @Test
-    fun `listOfflineRecordingsV1 does not return empty files`() {
+    fun `listOfflineRecordingsV1 does not return empty files`() = runTest {
         val sampleEntries = listOf(
             Pair("/U/0/20250730/R/101010/ACC0.REC", 500120L),
             Pair("/U/0/20250730/R/101010/ACC1.REC", 500103L),
@@ -66,14 +66,15 @@ class PolarOfflineRecordingUtilsTest {
             Pair("/U/0/20250730/R/101010/PPG0.REC", 0L)
         )
 
-        val fetchRecursively: (BlePsFtpClient, String, (String) -> Boolean) -> Flowable<Pair<String, Long>> =
-            { _, _, _ -> Flowable.fromIterable(sampleEntries) }
+        val fetchRecursively: (BlePsFtpClient, String, (String) -> Boolean) -> Flow<Pair<String, Long>> =
+            { _, _, _ -> sampleEntries.asFlow() }
 
         val emitted = mutableListOf<PolarOfflineRecordingEntry>()
-        PolarOfflineRecordingUtils.listOfflineRecordingsV1(mockClient, fetchRecursively)
-            .doOnNext { emitted.add(it) }
-            .test()
-            .awaitDone(1, java.util.concurrent.TimeUnit.SECONDS)
+        val job = launch {
+            PolarOfflineRecordingUtils.listOfflineRecordingsV1(mockClient, fetchRecursively)
+                .collect { emitted.add(it) }
+        }
+        job.join()
 
         val accEntries = emitted.filter { it.path.contains("ACC") }
         val hrEntries = emitted.filter { it.path.contains("HR") }
@@ -93,7 +94,7 @@ class PolarOfflineRecordingUtilsTest {
     }
 
     @Test
-    fun `listOfflineRecordingsV2 merges split REC files`() {
+    fun `listOfflineRecordingsV2 merges split REC files`() = runTest {
         val pmdTxtContent = """
             500120 /U/0/20250730/R/101010/ACC0.REC
             500103 /U/0/20250730/R/101010/ACC1.REC
@@ -103,11 +104,7 @@ class PolarOfflineRecordingUtilsTest {
             300 /U/0/20250730/R/101010/PPG0.REC
         """.trimIndent().toByteArray(StandardCharsets.UTF_8)
 
-        val emitted = mutableListOf<PolarOfflineRecordingEntry>()
-        PolarOfflineRecordingUtils.listOfflineRecordingsV2(pmdTxtContent)
-            .doOnSuccess { emitted.addAll(it) }
-            .test()
-            .awaitDone(1, java.util.concurrent.TimeUnit.SECONDS)
+        val emitted = PolarOfflineRecordingUtils.listOfflineRecordingsV2(pmdTxtContent)
 
         val accEntries = emitted.filter { it.path.contains("ACC") }
         val hrEntries = emitted.filter { it.path.contains("HR") }
@@ -129,7 +126,7 @@ class PolarOfflineRecordingUtilsTest {
     }
 
     @Test
-    fun `listOfflineRecordingsV2 does not return empty files`() {
+    fun `listOfflineRecordingsV2 does not return empty files`() = runTest {
         val pmdTxtContent = """
             500120 /U/0/20250730/R/101010/ACC0.REC
             500103 /U/0/20250730/R/101010/ACC1.REC
@@ -139,11 +136,7 @@ class PolarOfflineRecordingUtilsTest {
             0 /U/0/20250730/R/101010/PPG0.REC
         """.trimIndent().toByteArray(StandardCharsets.UTF_8)
 
-        val emitted = mutableListOf<PolarOfflineRecordingEntry>()
-        PolarOfflineRecordingUtils.listOfflineRecordingsV2(pmdTxtContent)
-            .doOnSuccess { emitted.addAll(it) }
-            .test()
-            .awaitDone(1, java.util.concurrent.TimeUnit.SECONDS)
+        val emitted = PolarOfflineRecordingUtils.listOfflineRecordingsV2(pmdTxtContent)
 
         val accEntries = emitted.filter { it.path.contains("ACC") }
         val hrEntries = emitted.filter { it.path.contains("HR") }

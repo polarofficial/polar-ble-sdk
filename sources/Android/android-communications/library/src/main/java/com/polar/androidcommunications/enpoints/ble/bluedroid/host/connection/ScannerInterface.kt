@@ -1,13 +1,13 @@
-package com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection;
+package com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection
 
-public interface ScannerInterface {
+interface ScannerInterface {
     /**
      * connection handler exited connecting state, and scanning can be resumed if needed
      */
-    void connectionHandlerResumeScanning();
+    fun connectionHandlerResumeScanning()
 
     /**
      * connection handler has requested to stop scanning, while there is connection attempt started
      */
-    void connectionHandlerRequestStopScanning();
+    fun connectionHandlerRequestStopScanning()
 }

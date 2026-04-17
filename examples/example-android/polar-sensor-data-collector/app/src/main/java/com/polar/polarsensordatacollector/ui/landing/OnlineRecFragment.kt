@@ -664,32 +664,41 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
     }
 
     private fun printHrLiveData(hr: Int, rrAvailable: Boolean, rrsMs: List<Int>, contactSupported: Boolean, contactStatus: Boolean) {
+        // data_0: BPM
         val recordingLiveHeader0 = hrRecordingLive.findViewById<TextView>(R.id.data_0_header)
         val recordingLiveData0 = hrRecordingLive.findViewById<TextView>(R.id.data_0)
-        recordingLiveHeader0.text = "bpm:"
+        recordingLiveHeader0.text = getString(R.string.hr_label_bpm)
         recordingLiveData0.text = hr.toString()
+        recordingLiveHeader0.visibility = VISIBLE
+        recordingLiveData0.visibility = VISIBLE
+
+        // data_1: contact status
         val recordingLiveHeader1 = hrRecordingLive.findViewById<TextView>(R.id.data_1_header)
         val recordingLiveData1 = hrRecordingLive.findViewById<TextView>(R.id.data_1)
-        recordingLiveHeader1.text = "rrsMs:"
-        if (rrAvailable && rrsMs.isNotEmpty()) {
-            recordingLiveData1.text = rrsMs[0].toString()
-            recordingLiveData1.visibility = VISIBLE
-            recordingLiveHeader1.visibility = VISIBLE
+        recordingLiveHeader1.text = getString(R.string.hr_label_contact)
+        recordingLiveData1.text = if (contactSupported) contactStatus.toString() else getString(R.string.hr_rr_not_available)
+        recordingLiveHeader1.visibility = VISIBLE
+        recordingLiveData1.visibility = VISIBLE
+
+        // data_2: not used for HR — keep hidden
+        hrRecordingLive.findViewById<TextView>(R.id.data_2_header).visibility = GONE
+        hrRecordingLive.findViewById<TextView>(R.id.data_2).visibility = GONE
+
+        // second_data_row: RR intervals — shown below the indexed slots
+        val rrRow = hrRecordingLive.findViewById<View>(R.id.second_data_row)
+        val rrHeader = hrRecordingLive.findViewById<TextView>(R.id.second_data_header)
+        val rrData = hrRecordingLive.findViewById<TextView>(R.id.second_data)
+        rrHeader.text = getString(R.string.hr_label_rrsms)
+        rrData.text = if (rrAvailable && rrsMs.isNotEmpty()) {
+            rrsMs.joinToString(", ")
         } else {
-            recordingLiveData1.text = "N/A"
+            getString(R.string.hr_rr_not_available)
         }
-        val recordingLiveHeader2 = hrRecordingLive.findViewById<TextView>(R.id.data_2_header)
-        val recordingLiveData2 = hrRecordingLive.findViewById<TextView>(R.id.data_2)
+        rrRow.visibility = VISIBLE
+        rrHeader.visibility = VISIBLE
+        rrData.visibility = VISIBLE
 
-        recordingLiveHeader2.text = "contact:"
-        if (contactSupported) {
-
-            recordingLiveData2.text = contactStatus.toString()
-        } else {
-            recordingLiveData2.text = "N/A"
-        }
-
-        hrGraphButton?.visibility = VISIBLE
+        hrGraphButton.visibility = VISIBLE
     }
 
     private fun printMagLiveData(magData: PolarMagnetometerData) {
@@ -1080,6 +1089,10 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                 recordingLiveHeader.text = "HR"
                 recordingLiveHeader0.visibility = VISIBLE
                 recordingLiveData0.visibility = VISIBLE
+                recordingLiveHeader1.visibility = VISIBLE
+                recordingLiveData1.visibility = VISIBLE
+                recordingLiveHeader2.visibility = GONE
+                recordingLiveData2.visibility = GONE
                 measSampleRateHeader.visibility = GONE
             }
         }

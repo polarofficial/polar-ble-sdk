@@ -1,815 +1,718 @@
-package com.polar.androidcommunications.api.ble.model.gatt.client.psftp;
+package com.polar.androidcommunications.api.ble.model.gatt.client.psftp
 
-
-import androidx.annotation.NonNull;
-import androidx.annotation.VisibleForTesting;
-import androidx.core.util.Pair;
-
-import com.polar.androidcommunications.api.ble.BleLogger;
-import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError;
-import com.polar.androidcommunications.api.ble.exceptions.BleCharacteristicNotificationNotEnabled;
-import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected;
-import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase;
-import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
-import io.reactivex.rxjava3.core.BackpressureOverflowStrategy;
-import io.reactivex.rxjava3.core.BackpressureStrategy;
-import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.FlowableOnSubscribe;
-import io.reactivex.rxjava3.core.Scheduler;
-import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.core.SingleOnSubscribe;
-import io.reactivex.rxjava3.schedulers.Schedulers;
-import com.polar.androidcommunications.api.ble.model.proto.CommunicationsPftpRequest;
+import androidx.annotation.VisibleForTesting
+import androidx.core.util.Pair
+import com.polar.androidcommunications.api.ble.BleLogger.Companion.d
+import com.polar.androidcommunications.api.ble.BleLogger.Companion.e
+import com.polar.androidcommunications.api.ble.BleLogger.Companion.w
+import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError
+import com.polar.androidcommunications.api.ble.exceptions.BleCharacteristicNotificationNotEnabled
+import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected
+import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
+import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
+import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils.PftpNotificationMessage
+import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils.PftpOperationTimeout
+import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils.PftpResponseError
+import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils.PftpRfc76ResponseHeader
+import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils.Rfc76SequenceNumber
+import com.polar.androidcommunications.api.ble.model.proto.CommunicationsPftpRequest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.util.UUID
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Polar simple file transfer client declaration.
  */
-public class BlePsFtpClient extends BleGattBase {
-
-    private static final String TAG = "BlePsFtpClient";
-    private final AtomicInteger pftpMtuEnabled;
-    private final AtomicInteger pftpD2HNotificationEnabled;
-    private final LinkedBlockingQueue<Pair<byte[], Integer>> mtuInputQueue = new LinkedBlockingQueue<>();
-    private final LinkedBlockingQueue<Pair<byte[], Integer>> notificationInputQueue = new LinkedBlockingQueue<>();
-    private final AtomicInteger packetsWritten = new AtomicInteger(0);
-    private final AtomicInteger packetsWrittenWithResponse = new AtomicInteger(0);
-    private final AtomicBoolean mtuWaiting = new AtomicBoolean(false);
-    private final AtomicBoolean currentOperationWrite = new AtomicBoolean(false);
-    private final AtomicBoolean notificationWaiting = new AtomicBoolean(false);
-    private final AtomicInteger notificationPacketsWritten = new AtomicInteger(0);
-    private final AtomicInteger packetsCount = new AtomicInteger(5); // default every 5th packet is written with response
-    private static final int PROTOCOL_TIMEOUT_SECONDS = 90;
-    private static final int PROTOCOL_TIMEOUT_EXTENDED_SECONDS = 900;
-
-    private final List<String> extendedWriteTimeoutFilePaths = Collections.singletonList("/SYNCPART.TGZ");
+class BlePsFtpClient(txInterface: BleGattTxInterface) :
+    BleGattBase(txInterface, BlePsFtpUtils.RFC77_PFTP_SERVICE, true) {
+    private val pftpMtuEnabled: AtomicInteger?
+    private val pftpD2HNotificationEnabled: AtomicInteger?
+    private val mtuInputQueue = LinkedBlockingQueue<Pair<ByteArray, Int>>()
+    private val notificationInputQueue = LinkedBlockingQueue<Pair<ByteArray, Int>>()
+    private val packetsWritten = AtomicInteger(0)
+    private val packetsWrittenWithResponse = AtomicInteger(0)
+    private val mtuWaiting = AtomicBoolean(false)
+    private val currentOperationWrite = AtomicBoolean(false)
+    private val notificationWaiting = AtomicBoolean(false)
+    private val notificationPacketsWritten = AtomicInteger(0)
+    private val packetsCount = AtomicInteger(5) // default every 5th packet is written with response
+    private val extendedWriteTimeoutFilePaths = listOf("/SYNCPART.TGZ")
 
     /**
      * true  = uses attribute operation WRITE
      * false = uses attribute operation WRITE_NO_RESPONSE
      */
-    private final AtomicBoolean useAttributeLevelResponse = new AtomicBoolean(false);
-    private final Object pftpOperationMutex = new Object();
-    private final Object pftpNotificationMutex = new Object();
-    private final Object pftpWaitNotificationMutex = new Object();
-    private final Object pftpWaitNotificationSharedMutex = new Object();
-    private volatile Flowable<BlePsFtpUtils.PftpNotificationMessage> _sharedWaitNotificationFlowable = null;
+    private val useAttributeLevelResponse = AtomicBoolean(false)
+    private val pftpOperationMutex = Any()
+    private val pftpNotificationMutex = Any()
+    private val pftpWaitNotificationMutex = Any()
+    private val pftpWaitNotificationSharedMutex = Any()
+    @Volatile private var _sharedWaitNotificationFlow: Flow<PftpNotificationMessage>? = null
 
-    public BlePsFtpClient(BleGattTxInterface txInterface) {
-        super(txInterface, BlePsFtpUtils.RFC77_PFTP_SERVICE, true);
-        addCharacteristicNotification(BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC);
-        addCharacteristicNotification(BlePsFtpUtils.RFC77_PFTP_D2H_CHARACTERISTIC);
-        addCharacteristic(BlePsFtpUtils.RFC77_PFTP_H2D_CHARACTERISTIC);
-        pftpMtuEnabled = getNotificationAtomicInteger(BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC);
-        pftpD2HNotificationEnabled = getNotificationAtomicInteger(BlePsFtpUtils.RFC77_PFTP_D2H_CHARACTERISTIC);
-        setIsPrimaryService(true);
+    fun interface ProgressCallback {
+        fun onProgressUpdate(bytesReceived: Long)
     }
 
-    public interface ProgressCallback {
-        void onProgressUpdate(long bytesReceived);
+    private var progressCallback: ProgressCallback? = null
+
+    init {
+        addCharacteristicNotification(BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC)
+        addCharacteristicNotification(BlePsFtpUtils.RFC77_PFTP_D2H_CHARACTERISTIC)
+        addCharacteristic(BlePsFtpUtils.RFC77_PFTP_H2D_CHARACTERISTIC)
+        pftpMtuEnabled = getNotificationAtomicInteger(BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC)
+        pftpD2HNotificationEnabled =
+            getNotificationAtomicInteger(BlePsFtpUtils.RFC77_PFTP_D2H_CHARACTERISTIC)
+        isPrimaryService = true
     }
 
-    private ProgressCallback progressCallback = null;
-
-    public void setProgressCallback(ProgressCallback callback) {
-        this.progressCallback = callback;
+    fun setProgressCallback(callback: ProgressCallback?) {
+        this.progressCallback = callback
     }
 
     /**
-     * set amount of packets written consecutive with BLE ATT WRITE before adding the BLE ATT WRITE REQUEST
-     * <p>
-     * BLE ATT WRITE is the write which don't wait response from the GATT server as BLE ATT WRITE
-     * REQUEST waits that GATT server responses before next write is attempt. With BLE ATT WRITE
-     * REQUEST server can control if its getting too busy to handle all the write events by delaying the response.
-     * So it is good send BLE ATT WRITE REQUEST every now and then.
+     * Set amount of packets written consecutive with BLE ATT WRITE before adding the BLE ATT WRITE REQUEST.
      *
      * @param count number of packets
      */
-    public void setPacketsCount(int count) {
-        packetsCount.set(count);
+    fun setPacketsCount(count: Int) {
+        packetsCount.set(count)
     }
 
-    public int getPacketsCount() {
-        return packetsCount.get();
+    fun getPacketsCount(): Int {
+        return packetsCount.get()
     }
 
-    @Override
-    public void reset() {
-        super.reset();
-        currentOperationWrite.set(false);
-        mtuInputQueue.clear();
-        synchronized (mtuInputQueue) {
-            mtuInputQueue.notifyAll();
+    override fun reset() {
+        super.reset()
+        currentOperationWrite.set(false)
+        mtuInputQueue.clear()
+        synchronized(mtuInputQueue) {
+            (mtuInputQueue as Object).notifyAll()
         }
 
-        packetsWritten.set(0);
-        synchronized (packetsWritten) {
-            packetsWritten.notifyAll();
+        packetsWritten.set(0)
+        synchronized(packetsWritten) {
+            (packetsWritten as Object).notifyAll()
         }
 
-        packetsWrittenWithResponse.set(0);
-        synchronized (packetsWrittenWithResponse) {
-            packetsWrittenWithResponse.notifyAll();
+        packetsWrittenWithResponse.set(0)
+        synchronized(packetsWrittenWithResponse) {
+            (packetsWrittenWithResponse as Object).notifyAll()
         }
 
-        notificationInputQueue.clear();
-        synchronized (notificationInputQueue) {
-            notificationInputQueue.notifyAll();
+        notificationInputQueue.clear()
+        synchronized(notificationInputQueue) {
+            (notificationInputQueue as Object).notifyAll()
         }
 
-        notificationPacketsWritten.set(0);
-        synchronized (notificationPacketsWritten) {
-            notificationPacketsWritten.notifyAll();
+        notificationPacketsWritten.set(0)
+        synchronized(notificationPacketsWritten) {
+            (notificationPacketsWritten as Object).notifyAll()
         }
 
-        mtuWaiting.set(false);
-        notificationWaiting.set(false);
+        mtuWaiting.set(false)
+        notificationWaiting.set(false)
     }
 
-    @Override
-    public void processServiceData(UUID characteristic, byte[] data, int status, boolean notifying) {
+    override fun processServiceData(
+        characteristic: UUID,
+        data: ByteArray,
+        status: Int,
+        notifying: Boolean
+    ) {
         if (status != ATT_SUCCESS) {
-            BleLogger.w(TAG, "Process service data with status $status, skipping data");
-        } else if (data.length != 0) {
-            if (characteristic.equals(BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC)) {
-                synchronized (mtuInputQueue) {
-                    mtuInputQueue.add(new Pair<>(data, status));
-                    mtuInputQueue.notifyAll();
+            w(TAG, "Process service data with status $status, skipping data")
+        } else if (data.isNotEmpty()) {
+            if (characteristic == BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC) {
+                synchronized(mtuInputQueue) {
+                    mtuInputQueue.add(Pair(data, status))
+                    (mtuInputQueue as Object).notifyAll()
                 }
 
-                if (progressCallback != null) {
-                    progressCallback.onProgressUpdate(data.length);
-                }
+                progressCallback?.onProgressUpdate(data.size.toLong())
 
-                if (currentOperationWrite.get() && mtuWaiting.get() && data.length == 3) {
+                if (currentOperationWrite.get() && mtuWaiting.get() && data.size == 3) {
                     // special case stream cancellation has been received before att response
-                    synchronized (packetsWritten) {
-                        packetsWritten.incrementAndGet();
-                        packetsWritten.notifyAll();
+                    synchronized(packetsWritten) {
+                        packetsWritten.incrementAndGet()
+                        (packetsWritten as Object).notifyAll()
                     }
                 }
-            } else if (characteristic.equals(BlePsFtpUtils.RFC77_PFTP_D2H_CHARACTERISTIC)) {
-                synchronized (notificationInputQueue) {
-                    notificationInputQueue.add(new Pair<>(data, status));
-                    notificationInputQueue.notifyAll();
+            } else if (characteristic == BlePsFtpUtils.RFC77_PFTP_D2H_CHARACTERISTIC) {
+                synchronized(notificationInputQueue) {
+                    notificationInputQueue.add(Pair(data, status))
+                    (notificationInputQueue as Object).notifyAll()
                 }
             }
         } else {
-            BleLogger.e(TAG, "Received 0 length packet");
+            e(TAG, "Received 0 length packet")
         }
     }
 
-    @Override
-    public void processServiceDataWritten(UUID characteristic, int status) {
+    override fun processServiceDataWritten(characteristic: UUID, status: Int) {
         if (status == 0) {
-            if (characteristic.equals(BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC)) {
-                synchronized (packetsWritten) {
-                    packetsWritten.incrementAndGet();
-                    packetsWritten.notifyAll();
+            if (characteristic == BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC) {
+                synchronized(packetsWritten) {
+                    packetsWritten.incrementAndGet()
+                    (packetsWritten as Object).notifyAll()
                 }
-            } else if (characteristic.equals(BlePsFtpUtils.RFC77_PFTP_H2D_CHARACTERISTIC)) {
-                synchronized (notificationPacketsWritten) {
-                    notificationPacketsWritten.incrementAndGet();
-                    notificationPacketsWritten.notifyAll();
+            } else if (characteristic == BlePsFtpUtils.RFC77_PFTP_H2D_CHARACTERISTIC) {
+                synchronized(notificationPacketsWritten) {
+                    notificationPacketsWritten.incrementAndGet()
+                    (notificationPacketsWritten as Object).notifyAll()
                 }
             }
         } else {
-            // print informal info, NOTE current implementation will result to timeout, which is ok as both ends will
-            // reset them selfs with timeout
-            BleLogger.e(TAG, "Failed to write chr UUID: " + characteristic.toString() + " status: " + status);
+            e(TAG, "Failed to write chr UUID: $characteristic status: $status")
         }
     }
 
-    @Override
-    public void processServiceDataWrittenWithResponse(UUID characteristic, int status) {
+    override fun processServiceDataWrittenWithResponse(characteristic: UUID, status: Int) {
         if (status == 0) {
-            if (characteristic.equals(BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC)) {
-                synchronized (packetsWrittenWithResponse) {
-                    packetsWrittenWithResponse.incrementAndGet();
-                    packetsWrittenWithResponse.notifyAll();
+            if (characteristic == BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC) {
+                synchronized(packetsWrittenWithResponse) {
+                    packetsWrittenWithResponse.incrementAndGet()
+                    (packetsWrittenWithResponse as Object).notifyAll()
                 }
             }
         }
-        processServiceDataWritten(characteristic, status);
+        processServiceDataWritten(characteristic, status)
     }
 
-    @Override
-    public @NonNull
-    String toString() {
-        return "RFC77 Service";
+    override fun toString(): String {
+        return "RFC77 Service"
     }
 
-    private void resetMtuPipe() {
-        BleLogger.d(TAG, "mtu reseted");
-        mtuInputQueue.clear();
-        packetsWritten.set(0);
-        mtuWaiting.set(false);
+    private fun resetMtuPipe() {
+        d(TAG, "mtu reseted")
+        mtuInputQueue.clear()
+        packetsWritten.set(0)
+        mtuWaiting.set(false)
     }
 
-    private void resetNotificationPipe() {
-        notificationPacketsWritten.set(0);
-        notificationWaiting.set(false);
+    private fun resetNotificationPipe() {
+        notificationPacketsWritten.set(0)
+        notificationWaiting.set(false)
     }
 
-    @Override
-    public Completable clientReady(boolean checkConnection) {
-        return waitPsFtpClientReady(checkConnection);
+    override suspend fun clientReady(checkConnection: Boolean) {
+        waitPsFtpClientReady(checkConnection)
     }
 
-    // Add overload that accepts ProgressCallback
-    public Single<ByteArrayOutputStream> request(final byte[] header, ProgressCallback progressCallback) {
-        return request(header, Schedulers.newThread(), progressCallback);
-    }
-
-    public Single<ByteArrayOutputStream> request(final byte[] header, Scheduler scheduler, ProgressCallback progressCallback) {
-        return Single.create((SingleOnSubscribe<ByteArrayOutputStream>) emitter -> {
-                    List<byte[]> requestData = new ArrayList<>();
-                    ProgressCallback previousCallback = null;
-
-                    try {
-                        synchronized (pftpOperationMutex) {
-                            if (pftpMtuEnabled.get() == ATT_SUCCESS) {
-                                BleLogger.d(TAG, "Start request");
-
-                                previousCallback = this.progressCallback;
-                                if (progressCallback != null) {
-                                    this.progressCallback = progressCallback;
-                                }
-
-                                try {
-                                    resetMtuPipe();
-                                    ByteArrayInputStream totalStream = BlePsFtpUtils.makeCompleteMessageStream(
-                                            new ByteArrayInputStream(header), null,
-                                            BlePsFtpUtils.MessageType.REQUEST, 0
-                                    );
-                                    BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();
-                                    requestData = BlePsFtpUtils.buildRfc76MessageFrameAll(
-                                            totalStream, mtuSize.get(), sequenceNumber
-                                    );
-                                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-                                    txInterface.transmitMessages(
-                                            BlePsFtpUtils.RFC77_PFTP_SERVICE,
-                                            BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC,
-                                            requestData, false
-                                    );
-                                    waitPacketsWritten(packetsWritten, mtuWaiting, requestData.size(), PROTOCOL_TIMEOUT_SECONDS);
-                                    requestData.clear();
-                                    readResponse(outputStream, PROTOCOL_TIMEOUT_SECONDS);
-
-                                    this.progressCallback = previousCallback;
-
-                                    emitter.onSuccess(outputStream);
-
-                                } catch (InterruptedException ex) {
-                                    BleLogger.e(TAG, "Request interrupted. Exception: " + ex.getMessage());
-
-                                    this.progressCallback = previousCallback;
-
-                                    handleMtuInterrupted(true, requestData.size());
-                                    throw ex;
-                                }
-                            } else {
-                                BleLogger.e(TAG, "Request failed. PS-FTP MTU not enabled");
-                                throw new BleCharacteristicNotificationNotEnabled("PS-FTP MTU not enabled");
-                            }
-                        }
-                    } catch (Exception ex) {
-                        BleLogger.e(TAG, "Request failed. Exception: " + ex.getMessage());
-
-                        if (previousCallback != this.progressCallback) {
-                            this.progressCallback = previousCallback;
-                        }
-
-                        if (!emitter.isDisposed()) {
-                            emitter.tryOnError(toPftpError(ex));
-                        }
-                    }
-                })
-                .doOnSubscribe(disposable -> txInterface.gattClientRequestStopScanning())
-                .doFinally(txInterface::gattClientResumeScanning)
-                .subscribeOn(scheduler);
-    }
-
-    // Keep existing methods for backward compatibility
-    public Single<ByteArrayOutputStream> request(final byte[] header) {
-        return request(header, Schedulers.newThread(), null);
-    }
-
-    public Single<ByteArrayOutputStream> request(final byte[] header, Scheduler scheduler) {
-        return request(header, scheduler, null);
-    }
-
-    private void waitPacketsWritten(final AtomicInteger written, AtomicBoolean waiting, int count, long timeoutSeconds) throws InterruptedException, BleDisconnected, BlePsFtpUtils.PftpOperationTimeout {
+    /**
+     * Sends a request to the device and returns the response.
+     *
+     * @param header protobuf pftp operation bytes
+     * @param progressCallback optional callback for progress updates
+     * @return [ByteArrayOutputStream] containing the response
+     * @throws Throwable on any transfer error
+     */
+    suspend fun request(
+        header: ByteArray,
+        progressCallback: ProgressCallback? = null
+    ): ByteArrayOutputStream = withContext(Dispatchers.IO) {
+        txInterface.gattClientRequestStopScanning()
         try {
-            waiting.set(true);
+            var requestData: MutableList<ByteArray> = ArrayList()
+            var previousCallback: ProgressCallback? = null
+            synchronized(pftpOperationMutex) {
+                if (pftpMtuEnabled?.get() == ATT_SUCCESS) {
+                    d(TAG, "Start request")
+                    previousCallback = this@BlePsFtpClient.progressCallback
+                    if (progressCallback != null) {
+                        this@BlePsFtpClient.progressCallback = progressCallback
+                    }
+                    try {
+                        resetMtuPipe()
+                        val totalStream = BlePsFtpUtils.makeCompleteMessageStream(
+                            ByteArrayInputStream(header), null,
+                            BlePsFtpUtils.MessageType.REQUEST, 0
+                        )
+                        val sequenceNumber = Rfc76SequenceNumber()
+                        requestData = BlePsFtpUtils.buildRfc76MessageFrameAll(
+                            totalStream, mtuSize.get(), sequenceNumber
+                        ).toMutableList()
+                        val outputStream = ByteArrayOutputStream()
+                        txInterface.transmitMessages(
+                            BlePsFtpUtils.RFC77_PFTP_SERVICE,
+                            BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC,
+                            requestData, false
+                        )
+                        waitPacketsWritten(
+                            packetsWritten, mtuWaiting, requestData.size,
+                            PROTOCOL_TIMEOUT_SECONDS.toLong()
+                        )
+                        requestData.clear()
+                        readResponse(outputStream, PROTOCOL_TIMEOUT_SECONDS.toLong())
+                        this@BlePsFtpClient.progressCallback = previousCallback
+                        return@synchronized outputStream
+                    } catch (ex: InterruptedException) {
+                        e(TAG, "Request interrupted. Exception: " + ex.message)
+                        this@BlePsFtpClient.progressCallback = previousCallback
+                        handleMtuInterrupted(true, requestData.size)
+                        throw ex
+                    } catch (ex: Exception) {
+                        if (previousCallback !== this@BlePsFtpClient.progressCallback) {
+                            this@BlePsFtpClient.progressCallback = previousCallback
+                        }
+                        throw toPftpException(ex)
+                    }
+                } else {
+                    e(TAG, "Request failed. PS-FTP MTU not enabled")
+                    throw BleCharacteristicNotificationNotEnabled("PS-FTP MTU not enabled")
+                }
+            }
+        } finally {
+            txInterface.gattClientResumeScanning()
+        }
+    }
+
+    @Throws(InterruptedException::class, BleDisconnected::class, PftpOperationTimeout::class)
+    private fun waitPacketsWritten(
+        written: AtomicInteger,
+        waiting: AtomicBoolean,
+        count: Int,
+        timeoutSeconds: Long
+    ) {
+        try {
+            waiting.set(true)
             while (written.get() < count) {
-                synchronized (written) {
+                synchronized(written) {
                     if (written.get() != count) {
-                        int was = written.get();
-                        written.wait(timeoutSeconds * 1000);
+                        val was = written.get()
+                        (written as Object).wait(timeoutSeconds * 1000)
                         if (was == written.get()) {
                             if (!txInterface.isConnected()) {
-                                throw new BleDisconnected("Connection lost during waiting packets to be written");
+                                throw BleDisconnected("Connection lost during waiting packets to be written")
                             } else {
-                                throw new BlePsFtpUtils.PftpOperationTimeout("Operation timeout while waiting packets written");
+                                throw PftpOperationTimeout("Operation timeout while waiting packets written")
                             }
                         }
                     }
                 }
                 if (!txInterface.isConnected()) {
-                    throw new BleDisconnected("Connection lost during waiting packets to be written");
+                    throw BleDisconnected("Connection lost during waiting packets to be written")
                 }
             }
         } finally {
-            waiting.set(false);
-            written.set(0);
+            waiting.set(false)
+            written.set(0)
         }
-    }
-
-    public Flowable<Long> write(final byte[] header, final ByteArrayInputStream data) {
-        return write(header, data, Schedulers.newThread());
     }
 
     /**
-     * Writes file to a device, atomic operation<BR>
+     * Writes file to a device, atomic operation.
      *
-     * @param header protobuf pftp operation bytes<BR>
-     * @param data   actual file data<BR>
-     * @return Observable stream of byte offset progress<BR>
-     * Produces: onNext current count of bytes written to device<BR>
-     * onError any error during file transfer, @see BlePsFtpUtils for possible exceptions<BR>
-     * onCompleted after file has been successfully been written to device, and device has<BR>
-     * replyed ok<BR>
+     * @param header protobuf pftp operation bytes
+     * @param data   actual file data
+     * @return [Flow] emitting current byte offset progress; completes after device confirms write
+     * @throws Throwable on any transfer error
      */
-    public Flowable<Long> write(final byte[] header, final ByteArrayInputStream data, final Scheduler scheduler) {
-        return Flowable.create((FlowableOnSubscribe<Long>) subscriber -> {
-                    // block until previous operation has completed
-                    synchronized (pftpOperationMutex) {
-                        if (pftpMtuEnabled.get() == ATT_SUCCESS) {
-                            BleLogger.d(TAG, "Start write");
-
-                            currentOperationWrite.set(true);
-                            long pCounter = 0;
-                            resetMtuPipe();
-                            // clear all before new operation
-                            ByteArrayInputStream totalStream;
-                            int headerSize = header.length;
-                            totalStream = BlePsFtpUtils.makeCompleteMessageStream(new ByteArrayInputStream(header), data, BlePsFtpUtils.MessageType.REQUEST, 0);
-                            int next = 0;
-                            long totalPayload = totalStream.available();
-                            BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();
-                            final long timeoutSeconds = getWriteTimeoutForFilePath(CommunicationsPftpRequest.PbPFtpOperation.parseFrom(header).getPath());
-                            do {
-                                byte[] airPacket;
-                                int counter = 0;
-                                try {
-                                    int temp = next; // workaround for stupid java translator idiotisim
-                                    airPacket = BlePsFtpUtils.buildRfc76MessageFrame(totalStream, temp, mtuSize.get(), sequenceNumber);
-                                    next = 1;
-                                    // transmit one frame
-                                    useAttributeLevelResponse.set((++pCounter % (packetsCount.get())) == 0);
-                                    txInterface.transmitMessage(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, airPacket, useAttributeLevelResponse.get());
-                                    if (totalStream.available() != 0) {
-                                        if (useAttributeLevelResponse.get()) {
-                                            counter = 1;
-                                            packetsWrittenWithResponse.set(0);
-                                            waitPacketsWritten(packetsWrittenWithResponse, mtuWaiting, 1, timeoutSeconds);
-                                            packetsWritten.set(0);
-                                            counter = 0;
-                                        } else {
-                                            ++counter;
-                                        }
-                                        // check input stream, give some time to respond
-                                        Pair<byte[], Integer> packet = mtuInputQueue.poll();
-                                        if (packet != null && packet.second == 0) {
-                                            BleLogger.e(TAG, "Frame sending interrupted by device!");
-                                            BlePsFtpUtils.PftpRfc76ResponseHeader response = BlePsFtpUtils.processRfc76MessageFrameHeader(packet.first);
-                                            if (response.status == 0) {
-                                                if (!subscriber.isCancelled()) {
-                                                    subscriber.tryOnError(new BlePsFtpUtils.PftpResponseError("Stream canceled: ", response.error));
-                                                }
-                                            } else {
-                                                if (!subscriber.isCancelled()) {
-                                                    subscriber.tryOnError(new Throwable("Stream canceled"));
-                                                }
-                                            }
-                                            return;
-                                        }
-                                    }
-                                    long transferred = totalPayload - totalStream.available() - headerSize - 2;
-                                    subscriber.onNext(transferred);
-                                } catch (InterruptedException ex) {
-                                    // Note RX throws InterruptedException when the stream is not completed, and it is unsubscribed
-                                    // canceled
-                                    BleLogger.e(TAG, "Frame sending interrupted!");
-                                    handleMtuInterrupted(totalStream.available() != 0, counter);
-                                    return;
-                                } catch (Throwable throwable) {
-                                    if (!subscriber.isCancelled()) {
-                                        subscriber.tryOnError(throwable);
-                                    }
-                                    return;
+    fun write(
+        header: ByteArray,
+        data: ByteArrayInputStream?
+    ): Flow<Long> = channelFlow {
+        txInterface.gattClientRequestStopScanning()
+        try {
+            synchronized(pftpOperationMutex) {
+                if (pftpMtuEnabled?.get() == ATT_SUCCESS) {
+                    d(TAG, "Start write")
+                    currentOperationWrite.set(true)
+                    var pCounter: Long = 0
+                    resetMtuPipe()
+                    val headerSize = header.size
+                    val totalStream = BlePsFtpUtils.makeCompleteMessageStream(
+                        ByteArrayInputStream(header), data,
+                        BlePsFtpUtils.MessageType.REQUEST, 0
+                    )
+                    var next = 0
+                    val totalPayload = totalStream.available().toLong()
+                    val sequenceNumber = Rfc76SequenceNumber()
+                    val timeoutSeconds = getWriteTimeoutForFilePath(
+                        CommunicationsPftpRequest.PbPFtpOperation.parseFrom(header).path
+                    )
+                    var lastEmitTime = 0L
+                    do {
+                        val airPacket: ByteArray
+                        var counter = 0
+                        try {
+                            val temp = next
+                            airPacket = BlePsFtpUtils.buildRfc76MessageFrame(
+                                totalStream, temp, mtuSize.get(), sequenceNumber
+                            )
+                            next = 1
+                            useAttributeLevelResponse.set((++pCounter % packetsCount.get()) == 0L)
+                            txInterface.transmitMessage(
+                                BlePsFtpUtils.RFC77_PFTP_SERVICE,
+                                BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC,
+                                airPacket,
+                                useAttributeLevelResponse.get()
+                            )
+                            if (totalStream.available() != 0) {
+                                if (useAttributeLevelResponse.get()) {
+                                    packetsWrittenWithResponse.set(0)
+                                    waitPacketsWritten(packetsWrittenWithResponse, mtuWaiting, 1, timeoutSeconds)
+                                    packetsWritten.set(0)
+                                    counter = 0
+                                } else {
+                                    ++counter
                                 }
-                            } while (totalStream.available() != 0);
-
-                            // receive response
-                            currentOperationWrite.set(false);
-                            ByteArrayOutputStream response = new ByteArrayOutputStream();
-                            try {
-                                readResponse(response, timeoutSeconds);
-                            } catch (InterruptedException ex) {
-                                // catch interrupted as it cannot be rethrown onwards
-                                BleLogger.e(TAG, "write interrupted while reading response");
-                                return;
-                            } catch (Throwable throwable) {
-                                if (!subscriber.isCancelled()) {
-                                    subscriber.tryOnError(throwable);
+                                val packet = mtuInputQueue.poll()
+                                if (packet != null && packet.second == 0) {
+                                    e(TAG, "Frame sending interrupted by device!")
+                                    val response = BlePsFtpUtils.processRfc76MessageFrameHeader(packet.first)
+                                    if (response.status == 0) {
+                                        throw PftpResponseError("Stream canceled: ", response.error)
+                                    } else {
+                                        throw Throwable("Stream canceled")
+                                    }
                                 }
-                                return;
                             }
-                            subscriber.onComplete();
-                        } else if (!subscriber.isCancelled()) {
-                            throw new BleCharacteristicNotificationNotEnabled("PS-FTP MTU not enabled");
+                            val bytesWritten = totalPayload - totalStream.available() - headerSize - 2
+                            val now = System.currentTimeMillis()
+                            val isFirst = lastEmitTime == 0L
+                            val isDone = totalStream.available() == 0
+                            val isTimeToEmit = (now - lastEmitTime) >= 5000L
+                            if (isFirst || isDone || isTimeToEmit) {
+                                lastEmitTime = now
+                                trySend(bytesWritten)
+                            }
+                        } catch (ex: InterruptedException) {
+                            e(TAG, "Frame sending interrupted!")
+                            handleMtuInterrupted(totalStream.available() != 0, counter)
+                            return@synchronized
                         }
-                    }
-                }, BackpressureStrategy.LATEST)
-                .doOnSubscribe(subscription -> txInterface.gattClientRequestStopScanning())
-                .doFinally(() -> {
-                    txInterface.gattClientResumeScanning();
-                    currentOperationWrite.set(false);
-                })
-                .subscribeOn(scheduler)
-                .serialize();
-    }
+                    } while (totalStream.available() != 0)
 
-    private long getWriteTimeoutForFilePath(final String filePath) {
-        for (final String path : extendedWriteTimeoutFilePaths) {
+                    currentOperationWrite.set(false)
+                    val response = ByteArrayOutputStream()
+                    try {
+                        readResponse(response, timeoutSeconds)
+                    } catch (ex: InterruptedException) {
+                        e(TAG, "write interrupted while reading response")
+                        return@synchronized
+                    }
+                    // channel completes naturally on scope exit
+                } else {
+                    throw BleCharacteristicNotificationNotEnabled("PS-FTP MTU not enabled")
+                }
+            }
+        } finally {
+            txInterface.gattClientResumeScanning()
+            currentOperationWrite.set(false)
+        }
+    }.flowOn(Dispatchers.IO)
+
+    private fun getWriteTimeoutForFilePath(filePath: String): Long {
+        for (path in extendedWriteTimeoutFilePaths) {
             if (filePath.startsWith(path)) {
-                return PROTOCOL_TIMEOUT_EXTENDED_SECONDS;
+                return PROTOCOL_TIMEOUT_EXTENDED_SECONDS.toLong()
             }
         }
-        return PROTOCOL_TIMEOUT_SECONDS;
+        return PROTOCOL_TIMEOUT_SECONDS.toLong()
     }
 
-    public Single<ByteArrayOutputStream> query(final int id, final byte[] parameters) {
-        return query(id, parameters, Schedulers.newThread());
-    }
-
-    private void handleMtuInterrupted(boolean dataAvailable, int lastRequest) {
-        if (pftpMtuEnabled.get() == ATT_SUCCESS && dataAvailable) {
-            //wait for packets written
-            byte[] cancelPacket = new byte[]{0x00, 0x00, 0x00};
+    private fun handleMtuInterrupted(dataAvailable: Boolean, lastRequest: Int) {
+        if (pftpMtuEnabled?.get() == ATT_SUCCESS && dataAvailable) {
+            val cancelPacket = byteArrayOf(0x00, 0x00, 0x00)
             try {
                 if (mtuWaiting.get()) {
-                    waitPacketsWritten(packetsWritten, mtuWaiting, lastRequest, PROTOCOL_TIMEOUT_SECONDS);
+                    waitPacketsWritten(packetsWritten, mtuWaiting, lastRequest, PROTOCOL_TIMEOUT_SECONDS.toLong())
                 }
-                txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, Collections.singletonList(cancelPacket), useAttributeLevelResponse.get());
-                waitPacketsWritten(packetsWritten, mtuWaiting, 1, PROTOCOL_TIMEOUT_SECONDS);
-                BleLogger.d(TAG, "MTU interrupted. Stream cancel has been successfully send");
-            } catch (Throwable throwable) {
-                BleLogger.e(TAG, "Exception while trying to cancel streaming");
+                txInterface.transmitMessages(
+                    BlePsFtpUtils.RFC77_PFTP_SERVICE,
+                    BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC,
+                    listOf(cancelPacket),
+                    useAttributeLevelResponse.get()
+                )
+                waitPacketsWritten(packetsWritten, mtuWaiting, 1, PROTOCOL_TIMEOUT_SECONDS.toLong())
+                d(TAG, "MTU interrupted. Stream cancel has been successfully send")
+            } catch (throwable: Throwable) {
+                e(TAG, "Exception while trying to cancel streaming")
             }
         }
     }
 
     /**
-     * Sends a query to devicef
+     * Sends a query to device.
      *
      * @param id         query id value
      * @param parameters optional parameters
-     * @return Observable stream of response data <BR>
-     * Produces: onNext, successful query response with or without data, depending on query type <BR>
-     * onError, @see BlePsFtpUtils for possible exceptions <BR>
-     * onCompleted, after successfully completed query <BR>
+     * @return [ByteArrayOutputStream] containing the query response
+     * @throws Throwable on any error
      */
-    public Single<ByteArrayOutputStream> query(final int id, final byte[] parameters, Scheduler scheduler) {
-        return Single.create((SingleOnSubscribe<ByteArrayOutputStream>) emitter -> {
-            // block until previous operation has completed
-            try {
-                synchronized (pftpOperationMutex) {
-                    if (pftpMtuEnabled.get() == ATT_SUCCESS) {
-                        BleLogger.d(TAG, "Send query id: " + id);
-                        resetMtuPipe();
-                        ByteArrayInputStream totalStream = BlePsFtpUtils.makeCompleteMessageStream(parameters != null ? new ByteArrayInputStream(parameters) : null, null, BlePsFtpUtils.MessageType.QUERY, id);
-                        BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();
-                        List<byte[]> requs = BlePsFtpUtils.buildRfc76MessageFrameAll(totalStream, mtuSize.get(), sequenceNumber);
-                        ByteArrayOutputStream response = new ByteArrayOutputStream();
-                        try {
-                            txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, requs, false);
-                            waitPacketsWritten(packetsWritten, mtuWaiting, requs.size(), PROTOCOL_TIMEOUT_SECONDS);
-                            requs.clear();
-                            readResponse(response, PROTOCOL_TIMEOUT_SECONDS);
-                            emitter.onSuccess(response);
-                        } catch (InterruptedException ex) {
-                            // Note RX throws InterruptedException when the stream is not completed, and it is unsubscribed
-                            // canceled
-                            BleLogger.e(TAG, "Query " + id + " interrupted");
-                            if (requs.isEmpty()) {
-                                handleMtuInterrupted(true, requs.size());
-                            }
-                            if (!emitter.isDisposed()) {
-                                throw ex;
-                            }
+    suspend fun query(id: Int, parameters: ByteArray?): ByteArrayOutputStream = withContext(Dispatchers.IO) {
+        try {
+            synchronized(pftpOperationMutex) {
+                if (pftpMtuEnabled?.get() == ATT_SUCCESS) {
+                    d(TAG, "Send query id: $id")
+                    resetMtuPipe()
+                    val totalStream = BlePsFtpUtils.makeCompleteMessageStream(
+                        if (parameters != null) ByteArrayInputStream(parameters) else null,
+                        null,
+                        BlePsFtpUtils.MessageType.QUERY,
+                        id
+                    )
+                    val sequenceNumber = Rfc76SequenceNumber()
+                    var requs = BlePsFtpUtils.buildRfc76MessageFrameAll(totalStream, mtuSize.get(), sequenceNumber)
+                    val response = ByteArrayOutputStream()
+                    try {
+                        txInterface.transmitMessages(
+                            BlePsFtpUtils.RFC77_PFTP_SERVICE,
+                            BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC,
+                            requs, false
+                        )
+                        waitPacketsWritten(packetsWritten, mtuWaiting, requs.size, PROTOCOL_TIMEOUT_SECONDS.toLong())
+                        requs = mutableListOf()
+                        readResponse(response, PROTOCOL_TIMEOUT_SECONDS.toLong())
+                        return@synchronized response
+                    } catch (ex: InterruptedException) {
+                        e(TAG, "Query $id interrupted")
+                        if (requs.isEmpty()) {
+                            handleMtuInterrupted(true, requs.size)
                         }
-                    } else {
-                        BleLogger.e(TAG, "Query " + id + " failed. PS-FTP MTU not enabled");
-                        throw new BleCharacteristicNotificationNotEnabled("PS-FTP MTU not enabled");
+                        throw ex
                     }
-                }
-            } catch (Exception ex) {
-                BleLogger.e(TAG, "Query " + id + " failed. Exception: " + ex.getMessage());
-                if (!emitter.isDisposed()) {
-                    emitter.tryOnError(toPftpError(ex));
+                } else {
+                    e(TAG, "Query $id failed. PS-FTP MTU not enabled")
+                    throw BleCharacteristicNotificationNotEnabled("PS-FTP MTU not enabled")
                 }
             }
-        }).subscribeOn(scheduler);
-    }
-
-    public Completable sendNotification(final int id, final byte[] parameters) {
-        return sendNotification(id, parameters, Schedulers.newThread());
+        } catch (ex: Exception) {
+            e(TAG, "Query $id failed. Exception: ${ex.message}")
+            throw toPftpException(ex)
+        }
     }
 
     /**
-     * Sends a single notification to device
+     * Sends a single notification to device.
      *
      * @param id         one of the PbPFtpHostToDevNotification values
      * @param parameters matching parameter for PbPFtpHostToDevNotification value if any
-     * @return Flowable stream <BR>
-     * Produces: onError, @see BlePsFtpUtils for possible exceptions <BR>
-     * onComplete, once notification has been send <BR>
+     * @throws Throwable on any error
      */
-    public Completable sendNotification(final int id, final byte[] parameters, Scheduler scheduler) {
-        return Completable.create(emitter -> {
-            try {
-                synchronized (pftpNotificationMutex) {
-                    if (txInterface.isConnected()) {
-                        if (pftpD2HNotificationEnabled.get() == ATT_SUCCESS) {
-                            BleLogger.d(TAG, "Send notification id: " + id);
-                            resetNotificationPipe();
-                            ByteArrayInputStream totalStream = BlePsFtpUtils.makeCompleteMessageStream(parameters != null ? new ByteArrayInputStream(parameters) : null, null, BlePsFtpUtils.MessageType.NOTIFICATION, id);
-                            BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();
-                            List<byte[]> requs = BlePsFtpUtils.buildRfc76MessageFrameAll(totalStream, mtuSize.get(), sequenceNumber);
-                            txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_H2D_CHARACTERISTIC, requs, false);
-                            waitPacketsWritten(notificationPacketsWritten, notificationWaiting, requs.size(), PROTOCOL_TIMEOUT_SECONDS);
-                            emitter.onComplete();
-                        } else {
-                            BleLogger.e(TAG, "Send notification id: " + id + " failed. PS-FTP notification not enabled");
-                            throw new BleCharacteristicNotificationNotEnabled("PS-FTP notification not enabled");
-                        }
+    suspend fun sendNotification(id: Int, parameters: ByteArray?) = withContext(Dispatchers.IO) {
+        try {
+            synchronized(pftpNotificationMutex) {
+                if (txInterface.isConnected()) {
+                    if (pftpD2HNotificationEnabled?.get() == ATT_SUCCESS) {
+                        d(TAG, "Send notification id: $id")
+                        resetNotificationPipe()
+                        val totalStream = BlePsFtpUtils.makeCompleteMessageStream(
+                            if (parameters != null) ByteArrayInputStream(parameters) else null,
+                            null,
+                            BlePsFtpUtils.MessageType.NOTIFICATION,
+                            id
+                        )
+                        val sequenceNumber = Rfc76SequenceNumber()
+                        val requs = BlePsFtpUtils.buildRfc76MessageFrameAll(totalStream, mtuSize.get(), sequenceNumber)
+                        txInterface.transmitMessages(
+                            BlePsFtpUtils.RFC77_PFTP_SERVICE,
+                            BlePsFtpUtils.RFC77_PFTP_H2D_CHARACTERISTIC,
+                            requs, false
+                        )
+                        waitPacketsWritten(notificationPacketsWritten, notificationWaiting, requs.size, PROTOCOL_TIMEOUT_SECONDS.toLong())
                     } else {
-                        BleLogger.e(TAG, "Send notification id: " + id + " failed. BLE disconnected");
-                        throw new BleDisconnected();
+                        e(TAG, "Send notification id: $id failed. PS-FTP notification not enabled")
+                        throw BleCharacteristicNotificationNotEnabled("PS-FTP notification not enabled")
                     }
-                }
-            } catch (Exception ex) {
-                BleLogger.e(TAG, "Send notification id: " + id + " failed. Exception: " + ex.getMessage());
-                if (!emitter.isDisposed()) {
-                    emitter.tryOnError(toPftpError(ex));
+                } else {
+                    e(TAG, "Send notification id: $id failed. BLE disconnected")
+                    throw BleDisconnected()
                 }
             }
-        }).subscribeOn(scheduler);
+        } catch (ex: Exception) {
+            e(TAG, "Send notification id: $id failed. Exception: ${ex.message}")
+            throw toPftpException(ex)
+        }
     }
 
     /**
-     * Wait endlessly notifications from device using shared Flowable.
+     * Wait endlessly for notifications from device using a shared [Flow].
      *
-     * @return Flowable stream
-     * Produces: onNext, for each complete notification received
-     * onError, @see BlePsFtpUtils
-     * onComplete, non produced
+     * @return [Flow] emitting [PftpNotificationMessage] for each complete notification received.
+     * Throws on error; never completes on its own.
      */
-    public Flowable<BlePsFtpUtils.PftpNotificationMessage> waitForNotification(Scheduler scheduler) {
-        Flowable<BlePsFtpUtils.PftpNotificationMessage> sharedFlowable = _sharedWaitNotificationFlowable;
-        if (sharedFlowable == null) {
-            synchronized (pftpWaitNotificationSharedMutex) {
-                sharedFlowable = _sharedWaitNotificationFlowable;
-                if (sharedFlowable == null) {
-                    sharedFlowable = createSharedWaitNotificationFlowable();
-                    _sharedWaitNotificationFlowable = sharedFlowable;
+    fun waitForNotification(): Flow<PftpNotificationMessage> {
+        _sharedWaitNotificationFlow?.let { return it }
+        synchronized(pftpWaitNotificationSharedMutex) {
+            if (_sharedWaitNotificationFlow == null) {
+                _sharedWaitNotificationFlow = buildNotificationFlow()
+            }
+        }
+        return _sharedWaitNotificationFlow!!
+    }
+
+    private fun buildNotificationFlow(): Flow<PftpNotificationMessage> = channelFlow {
+        while (true) {
+            var pendingMessage: PftpNotificationMessage? = null
+            synchronized(pftpWaitNotificationMutex) {
+                if (pftpD2HNotificationEnabled?.get() == ATT_SUCCESS) {
+                    try {
+                        synchronized(notificationInputQueue) {
+                            if (notificationInputQueue.isEmpty()) {
+                                (notificationInputQueue as Object).wait()
+                            }
+                        }
+                    } catch (ex: InterruptedException) {
+                        e(TAG, "Wait notification interrupted")
+                        return@synchronized
+                    }
+                } else {
+                    throw BleCharacteristicNotificationNotEnabled("PS-FTP d2h notification not enabled")
+                }
+                try {
+                    var packet = notificationInputQueue.take()
+                    if (packet?.second == 0) {
+                        var response = BlePsFtpUtils.processRfc76MessageFrameHeader(packet.first)
+                        if (response.payload != null) {
+                            if (response.next == 0) {
+                                val msg = PftpNotificationMessage()
+                                msg.id = response.payload!![0].toInt()
+                                response.payload?.let {
+                                    msg.byteArrayOutputStream.write(
+                                        it, 1, response.payload!!.size - 1
+                                    )
+                                }
+                                var status = response.status
+                                while (status == BlePsFtpUtils.RFC76_STATUS_MORE) {
+                                    packet = notificationInputQueue.poll(PROTOCOL_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
+                                    if (packet != null && packet.second == 0) {
+                                        response = BlePsFtpUtils.processRfc76MessageFrameHeader(packet.first)
+                                        status = response.status
+                                        d(TAG, "Message frame sub sequent packet successfully received")
+                                        response.payload?.let {
+                                            msg.byteArrayOutputStream.write(
+                                                it, 0, response.payload!!.size
+                                            )
+                                        }
+                                    } else {
+                                        throw Throwable("Failed to receive notification packet in timeline")
+                                    }
+                                }
+                                pendingMessage = msg
+                            } else {
+                                e(TAG, "wait notification not in sync, take next")
+                            }
+                        }
+                    } else {
+                        throw BleAttributeError("ps-ftp wait notification failure ", packet.second)
+                    }
+                } catch (ex: InterruptedException) {
+                    e(TAG, "wait notification interrupted")
+                    return@synchronized
+                } catch (throwable: Exception) {
+                    throw Exception("Notification receive failed", throwable)
                 }
             }
+            pendingMessage?.let { send(it) }
         }
-        return sharedFlowable.subscribeOn(scheduler, false);
-    }
+    }.flowOn(Dispatchers.IO)
 
-    private Flowable<BlePsFtpUtils.PftpNotificationMessage> createSharedWaitNotificationFlowable() {
-        AtomicReference<Flowable<BlePsFtpUtils.PftpNotificationMessage>> sharedRef = new AtomicReference<>();
-        Flowable<BlePsFtpUtils.PftpNotificationMessage> shared =
-                waitForNotificationFlowable()
-                        .doFinally(() -> clearSharedWaitNotificationFlowable(sharedRef.get()))
-                        .share();
-        sharedRef.set(shared);
-        return shared;
-    }
-
-    private void clearSharedWaitNotificationFlowable(Flowable<BlePsFtpUtils.PftpNotificationMessage> flowable) {
-        synchronized (pftpWaitNotificationSharedMutex) {
-            if (_sharedWaitNotificationFlowable == flowable) {
-                _sharedWaitNotificationFlowable = null;
-            }
-        }
-    }
-
-    private Flowable<BlePsFtpUtils.PftpNotificationMessage> waitForNotificationFlowable() {
-        return Flowable.create((FlowableOnSubscribe<BlePsFtpUtils.PftpNotificationMessage>) subscriber -> {
-                    // NOTE no flush as client may be interested in buffered notifications
-                    // notificationInputQueue.clear();
-                    synchronized (pftpWaitNotificationMutex) {
-                        do {
-                            if (pftpD2HNotificationEnabled.get() == ATT_SUCCESS) {
-                                try {
-                                    synchronized (notificationInputQueue) {
-                                        if (notificationInputQueue.isEmpty()) {
-                                            notificationInputQueue.wait();
-                                        }
-                                    }
-                                } catch (InterruptedException ex) {
-                                    boolean cancelled = subscriber.isCancelled();
-                                    if (cancelled) {
-                                        BleLogger.d(TAG, "Wait notification interrupted due to stream cancellation");
-                                    } else {
-                                        BleLogger.e(TAG, "Wait notification interrupted");
-                                    }
-                                    Thread.currentThread().interrupt();
-                                    if (!cancelled) {
-                                        InterruptedException interrupted = new InterruptedException("Wait notification interrupted");
-                                        interrupted.initCause(ex);
-                                        subscriber.tryOnError(interrupted);
-                                    }
-                                    return;
-                                }
-                            } else {
-                                if (!subscriber.isCancelled()) {
-                                    subscriber.tryOnError(new BleCharacteristicNotificationNotEnabled("PS-FTP d2h notification not enabled"));
-                                }
-                                return;
-                            }
-                            try {
-                                Pair<byte[], Integer> packet = notificationInputQueue.take();
-                                if (packet.second == 0) {
-                                    BlePsFtpUtils.PftpRfc76ResponseHeader response = BlePsFtpUtils.processRfc76MessageFrameHeader(packet.first);
-                                    if (response.next == 0) {
-                                        BlePsFtpUtils.PftpNotificationMessage notificationMessage = new BlePsFtpUtils.PftpNotificationMessage();
-                                        notificationMessage.id = response.payload[0];
-                                        notificationMessage.byteArrayOutputStream.write(response.payload, 1, response.payload.length - 1);
-                                        int status = response.status;
-                                        while (status == BlePsFtpUtils.RFC76_STATUS_MORE) {
-                                            packet = notificationInputQueue.poll(PROTOCOL_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-                                            if (packet != null && packet.second == 0) {
-                                                response = BlePsFtpUtils.processRfc76MessageFrameHeader(packet.first);
-                                                status = response.status;
-                                                BleLogger.d(TAG, "Message frame sub sequent packet successfully received");
-                                                notificationMessage.byteArrayOutputStream.write(response.payload, 0, response.payload.length);
-                                            } else {
-                                                // Failed to receive in timeline
-                                                if (!subscriber.isCancelled()) {
-                                                    subscriber.tryOnError(new Throwable("Failed to receive notification packet in timeline"));
-                                                }
-                                                return;
-                                            }
-                                        }
-                                        subscriber.onNext(notificationMessage);
-                                    } else {
-                                        // not in sync
-                                        BleLogger.e(TAG, "wait notification not in sync, take next");
-                                    }
-                                } else {
-                                    if (!subscriber.isCancelled()) {
-                                        subscriber.tryOnError(new BleAttributeError("ps-ftp wait notification failure ", packet.second));
-                                    }
-                                    return;
-                                }
-                            } catch (InterruptedException ex) {
-                                boolean cancelled = subscriber.isCancelled();
-                                if (cancelled) {
-                                    BleLogger.d(TAG, "Wait notification interrupted due to stream cancellation");
-                                } else {
-                                    BleLogger.e(TAG, "Wait notification interrupted");
-                                }
-                                Thread.currentThread().interrupt();
-                                if (!cancelled) {
-                                    InterruptedException interrupted = new InterruptedException("Wait notification interrupted");
-                                    interrupted.initCause(ex);
-                                    subscriber.tryOnError(interrupted);
-                                }
-                                return;
-                            } catch (Exception throwable) {
-                                // continue to next notification or stop?
-                                if (!subscriber.isCancelled()) {
-                                    subscriber.tryOnError(new Exception("Notification receive failed", throwable));
-                                }
-                                return;
-                            }
-                        } while (true);
-                    }
-                }, BackpressureStrategy.BUFFER)
-                .onBackpressureBuffer(100, () -> BleLogger.w(TAG, "notifications buffer full"), BackpressureOverflowStrategy.DROP_OLDEST)
-                .serialize();
-    }
-
-    public Completable waitPsFtpClientReady(final boolean checkConnection) {
-        return waitPsFtpClientReady(checkConnection, Schedulers.io());
-    }
-
-    public Completable waitPsFtpClientReady(final boolean checkConnection, Scheduler scheduler) {
-        Completable mtuEnabled = waitNotificationEnabled(BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, checkConnection, scheduler);
-        Completable d2hEnabled = waitNotificationEnabled(BlePsFtpUtils.RFC77_PFTP_D2H_CHARACTERISTIC, checkConnection, scheduler);
-        return Completable.concatArray(mtuEnabled, d2hEnabled);
+    /**
+     * Suspend until both PS-FTP MTU and D2H notifications are enabled.
+     *
+     * @param checkConnection if true, checks connection state before waiting
+     * @throws Throwable if notifications cannot be enabled or connection is lost
+     */
+    suspend fun waitPsFtpClientReady(checkConnection: Boolean) = withContext(Dispatchers.IO) {
+        waitNotificationEnabled(BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, checkConnection)
+        waitNotificationEnabled(BlePsFtpUtils.RFC77_PFTP_D2H_CHARACTERISTIC, checkConnection)
     }
 
     @VisibleForTesting
-    void readResponse(ByteArrayOutputStream outputStream, final long timeoutSeconds) throws Exception {
-        long status = 0;
-        int next = 0;
-        BlePsFtpUtils.Rfc76SequenceNumber sequenceNumber = new BlePsFtpUtils.Rfc76SequenceNumber();
-        BlePsFtpUtils.PftpRfc76ResponseHeader response = new BlePsFtpUtils.PftpRfc76ResponseHeader();
+    @Throws(Exception::class)
+    fun readResponse(outputStream: ByteArrayOutputStream, timeoutSeconds: Long) {
+        var status: Long = 0
+        var next = 0
+        val sequenceNumber = Rfc76SequenceNumber()
+        val response = PftpRfc76ResponseHeader()
         do {
-            // wait for message frame
             if (txInterface.isConnected()) {
-                synchronized (mtuInputQueue) {
+                synchronized(mtuInputQueue) {
                     if (mtuInputQueue.isEmpty()) {
-                        mtuInputQueue.wait(timeoutSeconds * 1000L);
+                        (mtuInputQueue as Object).wait(timeoutSeconds * 1000L)
                     }
                 }
             } else {
-                // connection lost
-                throw new BleDisconnected("Connection lost during read response");
+                throw BleDisconnected("Connection lost during read response")
             }
-            Pair<byte[], Integer> packet = mtuInputQueue.poll(PROTOCOL_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            val packet = mtuInputQueue.poll(PROTOCOL_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
             if (packet != null && packet.second == 0) {
-                BlePsFtpUtils.processRfc76MessageFrameHeader(response, packet.first);
-                if (sequenceNumber.getSeq() != response.sequenceNumber) {
+                BlePsFtpUtils.processRfc76MessageFrameHeader(response, packet.first)
+                if (sequenceNumber.seq != response.sequenceNumber) {
                     if (response.status == BlePsFtpUtils.RFC76_STATUS_MORE) {
-                        byte[] cancelPacket = new byte[]{0x00, 0x00, 0x00};
-                        txInterface.transmitMessages(BlePsFtpUtils.RFC77_PFTP_SERVICE, BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC, Collections.singletonList(cancelPacket), true);
-                        waitPacketsWritten(packetsWritten, mtuWaiting, 1, timeoutSeconds);
-                        BleLogger.d(TAG, "Sequence number mismatch. Stream cancel has been successfully send");
+                        val cancelPacket = byteArrayOf(0x00, 0x00, 0x00)
+                        txInterface.transmitMessages(
+                            BlePsFtpUtils.RFC77_PFTP_SERVICE,
+                            BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC,
+                            listOf(cancelPacket), true
+                        )
+                        waitPacketsWritten(packetsWritten, mtuWaiting, 1, timeoutSeconds)
+                        d(TAG, "Sequence number mismatch. Stream cancel has been successfully send")
                     }
-                    throw new BlePsFtpUtils.PftpResponseError("Air packet lost!", 303);
+                    throw PftpResponseError("Air packet lost!", 303)
                 }
-                sequenceNumber.increment();
-                status = response.status;
+                sequenceNumber.increment()
+                status = response.status.toLong()
                 if (next == response.next) {
-                    next = 1;
-                    switch (response.status) {
-                        case BlePsFtpUtils.RFC76_STATUS_LAST:
-                        case BlePsFtpUtils.RFC76_STATUS_MORE: {
-                            outputStream.write(response.payload, 0, response.payload.length);
-                            break;
+                    next = 1
+                    when (response.status) {
+                        BlePsFtpUtils.RFC76_STATUS_LAST,
+                        BlePsFtpUtils.RFC76_STATUS_MORE -> {
+                            outputStream.write(response.payload, 0, response.payload?.size ?: 0)
                         }
-                        case BlePsFtpUtils.RFC76_STATUS_ERROR_OR_RESPONSE: { // error or response
-                            if (response.error == 0) {
-                                return;
-                            }
-                            throw new BlePsFtpUtils.PftpResponseError("Request failed: ", response.error);
+                        BlePsFtpUtils.RFC76_STATUS_ERROR_OR_RESPONSE -> {
+                            if (response.error == 0) return
+                            throw PftpResponseError("Request failed: ", response.error)
                         }
-                        default:
-                            throw new BlePsFtpUtils.PftpResponseError("Protocol error, undefined status received", 200);
+                        else -> throw PftpResponseError("Protocol error, undefined status received", 200)
                     }
                 } else {
-                    throw new BlePsFtpUtils.PftpResponseError("Protocol error stream is out of sync", 200);
+                    throw PftpResponseError("Protocol error stream is out of sync", 200)
                 }
             } else {
-                handlePacketError(packet);
+                handlePacketError(packet)
             }
-        } while (status == BlePsFtpUtils.RFC76_STATUS_MORE);
-        BleLogger.d(TAG, "RFC76 message has read successfully");
+        } while (status == BlePsFtpUtils.RFC76_STATUS_MORE.toLong())
+        d(TAG, "RFC76 message has read successfully")
     }
 
-    private void handlePacketError(Pair<byte[], Integer> packet) throws Exception {
+    @Throws(Exception::class)
+    private fun handlePacketError(packet: Pair<ByteArray, Int>) {
         if (!txInterface.isConnected()) {
-            // connection lost
-            throw new BleDisconnected("Connection lost during packet read");
+            throw BleDisconnected("Connection lost during packet read")
         } else if (packet == null) {
-            throw new BlePsFtpUtils.PftpOperationTimeout("Air packet was not received in required timeline");
+            throw PftpOperationTimeout("Air packet was not received in required timeline")
         } else {
-            throw new BlePsFtpUtils.PftpResponseError("Response error: " + packet.second, packet.second);
+            throw PftpResponseError("Response error: " + packet.second, packet.second)
         }
     }
 
     /**
-     * Converts any PftpResponseError into a descriptive Throwable with enum name.
+     * Converts any PftpResponseError into a descriptive Exception with enum name.
      */
-    private Throwable toPftpError(final Throwable throwable) {
-        if (throwable instanceof BlePsFtpUtils.PftpResponseError e) {
-            String name = e.getErrorName();
-            int code = e.getError();
-            return new Throwable("PFTP error: " + (name != null ? name : "UNKNOWN") + " (" + code + ")", throwable);
+    private fun toPftpException(throwable: Throwable): Exception {
+        if (throwable is PftpResponseError) {
+            val name = throwable.errorName
+            val code = throwable.error
+            return Exception("PFTP error: " + (name ?: "UNKNOWN") + " (" + code + ")", throwable)
         }
-        return throwable;
+        return throwable as? Exception ?: Exception(throwable)
+    }
+
+    companion object {
+        private const val TAG = "BlePsFtpClient"
+        private const val PROTOCOL_TIMEOUT_SECONDS = 90
+        private const val PROTOCOL_TIMEOUT_EXTENDED_SECONDS = 900
     }
 }

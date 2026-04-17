@@ -129,7 +129,7 @@ struct DeviceSettingsView: View {
                                 ProgressView()
                             }
                         }
-                        if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                        if bleSdkManager.fileTransferFeature.isSupported  {
                             Button("Get time",
                                    action: {
                                 isPerformingTimeGet = true
@@ -146,7 +146,7 @@ struct DeviceSettingsView: View {
                                 }
                             }
                         }
-                        if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                        if bleSdkManager.fileTransferFeature.isSupported {
                             Button("Get disk space",
                                    action: {
                                 isPerformingDiskSpaceGet = true
@@ -164,7 +164,7 @@ struct DeviceSettingsView: View {
                             }
                         }
                         
-                        if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                        if bleSdkManager.fileTransferFeature.isSupported {
                             Button(bleSdkManager.sdkModeFeature.isEnabled ? "Disable SDK mode" : "Enable SDK mode",
                                    action: {
                                 bleSdkManager.sdkModeToggle()
@@ -247,7 +247,7 @@ struct DeviceSettingsView: View {
                         }
                     }).buttonStyle(SecondaryButtonStyle(buttonState: ButtonState.released))
                     
-                    if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                    if bleSdkManager.fileTransferFeature.isSupported {
                         Button("Do physical data config") {
                             if bleSdkManager.checkIfDeviceIdSet() {
                                 showPhysicalDataConfig = true
@@ -275,7 +275,7 @@ struct DeviceSettingsView: View {
                         }
                         .buttonStyle(SecondaryButtonStyle(buttonState: .released))
                     }
-                    if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                    if bleSdkManager.fileTransferFeature.isSupported {
                         Button("Get physical data config") {
                             Task {
                                 guard let info = await bleSdkManager.getUserPhysicalConfiguration() else {
@@ -318,7 +318,7 @@ struct DeviceSettingsView: View {
                             Text(errorMessage)
                         }
                     }
-                    if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                    if bleSdkManager.fileTransferFeature.isSupported {
                         Button("Get FTU status",
                                action: {
                             Task {
@@ -327,7 +327,7 @@ struct DeviceSettingsView: View {
                         })
                         .buttonStyle(SecondaryButtonStyle(buttonState: ButtonState.released))
                     }
-                    if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                    if bleSdkManager.fileTransferFeature.isSupported {
                         Button("Set up exercise") {
                             if bleSdkManager.checkIfDeviceIdSet() {
                                 showExercise = true
@@ -359,7 +359,7 @@ struct DeviceSettingsView: View {
                             Text(errorMessage)
                         }
                     }
-                    if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                    if bleSdkManager.fileTransferFeature.isSupported {
                         HStack {
                             Button("Set warehouse sleep",
                                    action: {
@@ -369,7 +369,7 @@ struct DeviceSettingsView: View {
                             }).buttonStyle(SecondaryButtonStyle(buttonState: ButtonState.released))
                         }
                     }
-                    if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                    if bleSdkManager.fileTransferFeature.isSupported {
                         HStack {
                             Button("Turn device off",
                                    action: {
@@ -396,7 +396,7 @@ struct DeviceSettingsView: View {
                         await bleSdkManager.getMultiBleModeStatus()
                         isPerformingMultiBleStatusGet = false
                     }
-                    if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                    if bleSdkManager.fileTransferFeature.isSupported {
                         HStack {
                             Button("Delete data") {
                                 showSettingsView = false
@@ -411,7 +411,7 @@ struct DeviceSettingsView: View {
                         }.padding(.top, 20)
                             .buttonStyle(SecondaryButtonStyle(buttonState: ButtonState.released))
                     }
-                    if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                    if bleSdkManager.fileTransferFeature.isSupported {
                         HStack {
                             Button("Delete telemetry data") {
                                 showTelemetryDeleteAlert = true
@@ -430,7 +430,7 @@ struct DeviceSettingsView: View {
                             Text("Are you sure you want to delete telemetry data?")
                         }
                     }
-                    if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                    if bleSdkManager.fileTransferFeature.isSupported {
                         HStack {
                             Button("Delete date folders") {
                                 showSettingsView = false
@@ -474,7 +474,7 @@ struct DeviceSettingsView: View {
                         }
                         .buttonStyle(SecondaryButtonStyle(buttonState: .released))
                     }
-                    if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                    if bleSdkManager.fileTransferFeature.isSupported {
                         HStack(spacing: 0) {
                             Text("Wait for connection")
                                 .font(.headline)
@@ -553,7 +553,7 @@ struct DeviceSettingsView: View {
                     }
                     .padding(.top, 10)
 
-                    if (bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem) {
+                    if bleSdkManager.fileTransferFeature.isSupported {
                         
                         Button(action: {
                             if !bleSdkManager.checkIfDeviceIdSet() {

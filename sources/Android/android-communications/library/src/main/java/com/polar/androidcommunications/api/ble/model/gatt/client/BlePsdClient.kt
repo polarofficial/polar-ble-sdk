@@ -1,373 +1,279 @@
-package com.polar.androidcommunications.api.ble.model.gatt.client;
+package com.polar.androidcommunications.api.ble.model.gatt.client
 
-import android.util.Pair;
+import android.util.Pair
+import com.polar.androidcommunications.api.ble.BleLogger.Companion.w
+import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError
+import com.polar.androidcommunications.api.ble.exceptions.BleCharacteristicNotificationNotEnabled
+import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected
+import com.polar.androidcommunications.api.ble.exceptions.BleNotSupported
+import com.polar.androidcommunications.api.ble.exceptions.BleTimeout
+import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
+import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
+import com.polar.androidcommunications.common.ble.AtomicSet
+import com.polar.androidcommunications.common.ble.ChannelUtils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
+import java.util.Arrays
+import java.util.UUID
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
-import androidx.annotation.NonNull;
+class BlePsdClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, PSD_SERVICE) {
+    private val psdMutex = Any()
+    private val psdCpEnabled: AtomicInteger?
+    private var psdFeature: PsdFeature? = null
+    private val mutexFeature = Any()
+    private val psdCpInputQueue = LinkedBlockingQueue<Pair<ByteArray, Int>>()
 
-import com.polar.androidcommunications.api.ble.BleLogger;
-import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError;
-import com.polar.androidcommunications.api.ble.exceptions.BleCharacteristicNotificationNotEnabled;
-import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected;
-import com.polar.androidcommunications.api.ble.exceptions.BleNotSupported;
-import com.polar.androidcommunications.api.ble.exceptions.BleTimeout;
-import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase;
-import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface;
-import com.polar.androidcommunications.common.ble.AtomicSet;
-import com.polar.androidcommunications.common.ble.RxUtils;
+    private val ppObservers = AtomicSet<Channel<PPData>>()
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.FlowableEmitter;
-import io.reactivex.rxjava3.core.Scheduler;
-import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.core.SingleOnSubscribe;
-import io.reactivex.rxjava3.schedulers.Schedulers;
-
-public class BlePsdClient extends BleGattBase {
-
-    private static final String TAG = "BlePsdClient";
-    public static final byte SUCCESS = 0x01;
-    public static final byte OP_CODE_NOT_SUPPORTED = 0x02;
-    public static final byte INVALID_PARAMETER = 0x03;
-    public static final byte OPERATION_FAILED = 0x04;
-    public static final byte NOT_ALLOWED = 0x05;
-
-    public static final UUID PSD_SERVICE = UUID.fromString("FB005C20-02E7-F387-1CAD-8ACD2D8DF0C8");
-    public static final UUID PSD_FEATURE = UUID.fromString("FB005C21-02E7-F387-1CAD-8ACD2D8DF0C8");
-    public static final UUID PSD_CP = UUID.fromString("FB005C22-02E7-F387-1CAD-8ACD2D8DF0C8");
-    public static final UUID PSD_PP = UUID.fromString("FB005C26-02E7-F387-1CAD-8ACD2D8DF0C8");
-
-    public static final byte OP_CODE_START_ECG_STREAM = 0x01;
-    public static final byte OP_CODE_STOP_ECG_STREAM = 0x02;
-    public static final byte OP_CODE_START_OHR_STREAM = 0x03;
-    public static final byte OP_CODE_STOP_OHR_STREAM = 0x04;
-    public static final byte OP_CODE_START_ACC_STREAM = 0x05;
-    public static final byte OP_CODE_STOP_ACC_STREAM = 0x06;
-    public static final byte RESPONSE_CODE = (byte) 0xF0;
-
-    private final Object psdMutex = new Object();
-    private final AtomicInteger psdCpEnabled;
-    private PsdFeature psdFeature = null;
-    private final Object mutexFeature = new Object();
-    private final LinkedBlockingQueue<Pair<byte[], Integer>> psdCpInputQueue = new LinkedBlockingQueue<>();
-    private final Scheduler scheduler = Schedulers.newThread();
-
-    private final AtomicSet<FlowableEmitter<? super PPData>> ppObservers = new AtomicSet<>();
-
-    public enum PsdMessage {
+    enum class PsdMessage(val numVal: Int) {
         PSD_UNKNOWN(0),
         PSD_START_OHR_PP_STREAM(7),
-        PSD_STOP_OHR_PP_STREAM(8);
-
-        private final int numVal;
-
-        PsdMessage(int numVal) {
-            this.numVal = numVal;
-        }
-
-        public int getNumVal() {
-            return numVal;
-        }
+        PSD_STOP_OHR_PP_STREAM(8)
     }
 
-    public static class PsdData {
-        private final byte[] data;
+    class PsdData(val payload: ByteArray)
 
-        public PsdData(byte[] data) {
-            this.data = data;
-        }
-
-        public byte[] getPayload() {
-            return data;
-        }
+    class PPData(data: ByteArray) {
+        val rc: Int = (data[0].toLong() and 0xFFL).toInt()
+        val hr: Int = (data[1].toLong() and 0xFFL).toInt()
+        val ppInMs: Int =
+            ((data[2].toLong() and 0xFFL) or ((data[3].toLong() and 0xFFL) shl 8)).toInt()
+        val ppErrorEstimate: Int =
+            ((data[4].toLong() and 0xFFL) or ((data[5].toLong() and 0xFFL) shl 8)).toInt()
+        val blockerBit: Int = data[6].toInt() and 0x01
+        val skinContactStatus: Int = (data[6].toInt() and 0x02) shr 1
+        val skinContactSupported: Int = (data[6].toInt() and 0x04) shr 2
     }
 
-    public static class PPData {
-        private final int rc;
-        private final int hr;
-        private final int ppInMs;
-        private final int ppErrorEstimate;
-        private final int blockerBit;
-        private final int skinContactStatus;
-        private final int skinContactSupported;
+    class PsdResponse {
+        var responseCode: Byte = 0
+            private set
+        var opCode: PsdMessage? = null
+            private set
+        var status: Byte = 0
+            private set
+        var payload: Byte = 0
+            private set
 
-        public PPData(byte[] data) {
-            rc = (int) ((long) data[0] & 0xFFL);
-            hr = (int) ((long) data[1] & 0xFFL);
-            ppInMs = (int) (((long) data[2] & 0xFFL) | ((long) data[3] & 0xFFL) << 8);
-            ppErrorEstimate = (int) (((long) data[4] & 0xFFL) | (((long) data[5] & 0xFFL) << 8));
-            blockerBit = data[6] & 0x01;
-            skinContactStatus = (data[6] & 0x02) >> 1;
-            skinContactSupported = (data[6] & 0x04) >> 2;
-        }
+        constructor()
 
-        public int getRc() {
-            return rc;
-        }
-
-        public int getHr() {
-            return hr;
-        }
-
-        public int getPpErrorEstimate() {
-            return ppErrorEstimate;
-        }
-
-        public int getBlockerBit() {
-            return blockerBit;
-        }
-
-        public int getSkinContactStatus() {
-            return skinContactStatus;
-        }
-
-        public int getSkinContactSupported() {
-            return skinContactSupported;
-        }
-
-        public int getPpInMs() {
-            return ppInMs;
-        }
-    }
-
-    public static class PsdResponse {
-        private byte responseCode;
-        private PsdMessage opCode;
-        private byte status;
-        private byte payload;
-
-        public PsdResponse() {
-        }
-
-        public PsdResponse(byte[] data) {
-            if (data.length > 2) {
-                responseCode = data[0];
-                opCode = PsdMessage.values()[data[1]];
-                status = data[2];
-                if (data.length > 3) {
-                    payload = data[3];
+        constructor(data: ByteArray) {
+            if (data.size > 2) {
+                responseCode = data[0]
+                opCode = PsdMessage.entries[data[1].toInt()]
+                status = data[2]
+                if (data.size > 3) {
+                    payload = data[3]
                 }
             } else {
-                opCode = PsdMessage.PSD_UNKNOWN;
-                responseCode = 0;
-                status = 0;
-                payload = 0;
+                opCode = PsdMessage.PSD_UNKNOWN
+                responseCode = 0
+                status = 0
+                payload = 0
             }
         }
 
-        public byte getResponseCode() {
-            return responseCode;
-        }
-
-        public PsdMessage getOpCode() {
-            return opCode;
-        }
-
-        public byte getStatus() {
-            return status;
-        }
-
-        public byte getPayload() {
-            return payload;
-        }
-
-        @Override
-        public String toString() {
+        override fun toString(): String {
             return "Response code: " + String.format("%02x", responseCode) +
                     " op code: " + opCode +
                     " status: " + String.format("%02x", status) +
-                    " payload: " + String.format("%02x", payload);
+                    " payload: " + String.format("%02x", payload)
         }
     }
 
-    public static class PsdFeature {
+    class PsdFeature {
         // feature boolean's
-        public boolean ecgSupported;
-        public boolean accSupported;
-        public boolean ohrSupported;
-        public boolean ppSupported;
+        var ecgSupported: Boolean = false
+        var accSupported: Boolean = false
+        var ohrSupported: Boolean = false
+        var ppSupported: Boolean = false
 
-        public PsdFeature() {
+        constructor()
+
+        constructor(data: ByteArray) {
+            ecgSupported = (data[0].toInt() and 0x01) == 1
+            ohrSupported = ((data[0].toInt() and 0x02) shr 1) == 1
+            accSupported = ((data[0].toInt() and 0x04) shr 2) == 1
+            ppSupported = ((data[0].toInt() and 0x08) != 0)
         }
 
-        public PsdFeature(byte[] data) {
-            ecgSupported = (data[0] & 0x01) == 1;
-            ohrSupported = ((data[0] & 0x02) >> 1) == 1;
-            accSupported = ((data[0] & 0x04) >> 2) == 1;
-            ppSupported = ((data[0] & 0x08) != 0);
-        }
-
-        PsdFeature(PsdFeature clone) {
-            ecgSupported = clone.ecgSupported;
-            ohrSupported = clone.ohrSupported;
-            accSupported = clone.accSupported;
-            ppSupported = clone.ppSupported;
+        internal constructor(clone: PsdFeature) {
+            ecgSupported = clone.ecgSupported
+            ohrSupported = clone.ohrSupported
+            accSupported = clone.accSupported
+            ppSupported = clone.ppSupported
         }
     }
 
-    public BlePsdClient(BleGattTxInterface txInterface) {
-        super(txInterface, PSD_SERVICE);
-        addCharacteristicRead(PSD_FEATURE);
-        addCharacteristicNotification(PSD_CP);
-        addCharacteristicNotification(PSD_PP);
-        psdCpEnabled = getNotificationAtomicInteger(PSD_CP);
+    init {
+        addCharacteristicRead(PSD_FEATURE)
+        addCharacteristicNotification(PSD_CP)
+        addCharacteristicNotification(PSD_PP)
+        psdCpEnabled = getNotificationAtomicInteger(PSD_CP)
     }
 
-    @Override
-    public void reset() {
-        super.reset();
-        psdCpInputQueue.clear();
+    override fun reset() {
+        super.reset()
+        psdCpInputQueue.clear()
 
-        synchronized (mutexFeature) {
-            psdFeature = null;
-            mutexFeature.notifyAll();
+        synchronized(mutexFeature) {
+            psdFeature = null
+            (mutexFeature as Object).notifyAll()
         }
 
-        RxUtils.postDisconnectedAndClearList(ppObservers);
+        ChannelUtils.postDisconnectedAndClearList(ppObservers)
     }
 
-    @Override
-    public void processServiceData(UUID characteristic, final byte[] data, int status, boolean notifying) {
-        if (characteristic.equals(PSD_CP)) {
-            psdCpInputQueue.add(new Pair<>(data, status));
-        } else if (characteristic.equals(PSD_FEATURE)) {
-            synchronized (mutexFeature) {
-                if (status == ATT_SUCCESS) {
-                    psdFeature = new PsdFeature(data);
-                } else {
-                    BleLogger.w(TAG,"Process service data for feature characteristics with status " + status + ", skipped");
+    override fun processServiceData(
+        characteristic: UUID,
+        data: ByteArray,
+        status: Int,
+        notifying: Boolean
+    ) {
+        if (data.isNotEmpty()) {
+            if (characteristic == PSD_CP) {
+                psdCpInputQueue.add(Pair(data, status))
+            } else if (characteristic == PSD_FEATURE) {
+                synchronized(mutexFeature) {
+                    if (status == ATT_SUCCESS) {
+                        psdFeature = PsdFeature(data)
+                    } else {
+                        w(
+                            TAG,
+                            "Process service data for feature characteristics with status $status, skipped"
+                        )
+                    }
+                    (mutexFeature as Object).notifyAll()
                 }
-                mutexFeature.notifyAll();
-            }
-        } else if (status == ATT_SUCCESS) {
-            if (characteristic.equals(PSD_PP)) {
-                List<byte[]> list = splitPP(data);
-                for (final byte[] packet : list) {
-                    RxUtils.emitNext(ppObservers, object -> object.onNext(new PPData(packet)));
+            } else if (status == ATT_SUCCESS) {
+                if (characteristic == PSD_PP) {
+                    val list = splitPP(data)
+                    for (packet in list) {
+                        ChannelUtils.emitNext(ppObservers) { observer -> observer.trySend(PPData(packet)) }
+                    }
                 }
+            } else {
+                w(
+                    TAG,
+                    "Process service data with status $status, skipped"
+                )
             }
-        } else {
-            BleLogger.w(TAG, "Process service data with status " + status + ", skipped");
         }
     }
 
-    private List<byte[]> splitPP(byte[] data) {
-        int offset = 0;
-        List<byte[]> components = new ArrayList<>();
-        while (offset < data.length) {
-            components.add(Arrays.copyOfRange(data, offset, offset + 7));
-            offset += 7;
+    private fun splitPP(data: ByteArray): List<ByteArray> {
+        var offset = 0
+        val components: MutableList<ByteArray> = ArrayList()
+        while (offset < data.size) {
+            components.add(Arrays.copyOfRange(data, offset, offset + 7))
+            offset += 7
         }
-        return components;
+        return components
     }
 
-    @Override
-    public void processServiceDataWritten(UUID characteristic, int status) {
+    override fun processServiceDataWritten(characteristic: UUID, status: Int) {
         // add some implementation later if needed
     }
 
-    @Override
-    public @NonNull
-    String toString() {
-        return "psd client";
+    override fun toString(): String {
+        return "psd client"
     }
 
-    private PsdResponse sendPsdCommandAndProcessResponse(byte[] packet) throws Exception {
-        txInterface.transmitMessages(PSD_SERVICE, PSD_CP, Arrays.asList(packet), true);
-        Pair<byte[], Integer> pair = psdCpInputQueue.poll(30, TimeUnit.SECONDS);
+    @Throws(Exception::class)
+    private fun sendPsdCommandAndProcessResponse(packet: ByteArray): PsdResponse {
+        txInterface.transmitMessages(PSD_SERVICE, PSD_CP, listOf(packet), true)
+        val pair = psdCpInputQueue.poll(30, TimeUnit.SECONDS)
         if (pair != null) {
             if (pair.second == 0) {
-                return new PsdResponse(pair.first);
+                return PsdResponse(pair.first)
             } else {
-                throw new BleAttributeError("Psd attribute ", pair.second);
+                throw BleAttributeError("Psd attribute ", pair.second)
             }
         }
-        throw new BleTimeout("Psd response failed in receive in timeline");
+        throw BleTimeout("Psd response failed in receive in timeline")
     }
 
     // API
-    @Override
-    public Completable clientReady(boolean checkConnection) {
-        return waitNotificationEnabled(PSD_CP, checkConnection);
+    override suspend fun clientReady(checkConnection: Boolean) {
+        waitNotificationEnabled(PSD_CP, checkConnection)
     }
 
     /**
-     * Produces:  onNext:  when response message from device has been received
-     * onError: if reponse read fails e.g. timeout etc...
-     * onCompleted: produced after onNext
+     * Send a control point command and return the device response.
      *
      * @param command psd command
      * @param params  optional parameters if any
-     * @return Observable stream, @see Rx Observer
+     * @return [PsdResponse] on success
+     * @throws Throwable on any error
      */
-    public Single<PsdResponse> sendControlPointCommand(final PsdMessage command, final byte[] params) {
-        return Single.create((SingleOnSubscribe<PsdResponse>) emitter -> {
-            synchronized (psdMutex) {
-                if (psdCpEnabled.get() == ATT_SUCCESS) {
-                    try {
-                        psdCpInputQueue.clear();
-                        switch (command) {
-                            case PSD_STOP_OHR_PP_STREAM:
-                            case PSD_START_OHR_PP_STREAM: {
-                                byte[] packet = new byte[]{(byte) command.getNumVal()};
-                                emitter.onSuccess(sendPsdCommandAndProcessResponse(packet));
-                                return;
-                            }
-                            default:
-                                throw new BleNotSupported("Unknown psd command aquired");
-                        }
-                    } catch (Exception ex) {
-                        if (!emitter.isDisposed()) {
-                            emitter.tryOnError(ex);
-                        }
-                    }
-                } else if (!emitter.isDisposed()) {
-                    emitter.tryOnError(new BleCharacteristicNotificationNotEnabled("PSD control point not enabled"));
-                }
+    suspend fun sendControlPointCommand(command: PsdMessage, params: ByteArray? = null): PsdResponse = withContext(Dispatchers.IO) {
+        synchronized(psdMutex) {
+            if (psdCpEnabled?.get() == ATT_SUCCESS) {
+                psdCpInputQueue.clear()
+                val packet = byteArrayOf(command.numVal.toByte())
+                sendPsdCommandAndProcessResponse(packet)
+            } else {
+                throw BleCharacteristicNotificationNotEnabled("PSD control point not enabled")
             }
-        }).subscribeOn(scheduler);
+        }
     }
 
-    public Single<PsdFeature> readFeature() {
-        return Single.create((SingleOnSubscribe<PsdFeature>) emitter -> {
-            try {
-                synchronized (mutexFeature) {
-                    if (psdFeature == null) {
-                        mutexFeature.wait();
-                    }
-                    if (psdFeature != null) {
-                        emitter.onSuccess(new PsdFeature(psdFeature));
-                        return;
-                    } else if (!txInterface.isConnected()) {
-                        throw new BleDisconnected();
-                    }
-                    throw new Exception("Undefined device error");
-                }
-            } catch (Exception ex) {
-                if (!emitter.isDisposed()) {
-                    emitter.tryOnError(ex);
-                }
+    /**
+     * Read the PSD feature characteristic from the device.
+     *
+     * @return [PsdFeature] on success
+     * @throws Throwable on any error
+     */
+    suspend fun readFeature(): PsdFeature = withContext(Dispatchers.IO) {
+        synchronized(mutexFeature) {
+            if (psdFeature == null) {
+                (mutexFeature as Object).wait()
             }
-        }).subscribeOn(Schedulers.io());
+            psdFeature?.let { return@withContext it }
+            if (!txInterface.isConnected()) {
+                throw BleDisconnected()
+            } else {
+                throw BleNotSupported("PSD feature characteristic read failed")
+            }
+        }
     }
 
     /**
      * start raw pp monitoring
      *
-     * @return Flowable stream Produces:
-     * - onNext for every air packet received <BR>
-     * - onComplete non produced if stream is not further configured <BR>
-     * - onError BleDisconnected produced on disconnection <BR>
+     * @return Flow stream Produces:
+     * - onNext for every air packet received <BR></BR>
+     * - onComplete non produced if stream is not further configured <BR></BR>
+     * - onError BleDisconnected produced on disconnection <BR></BR>
      */
-    public Flowable<PPData> monitorPPNotifications(final boolean checkConnection) {
-        return RxUtils.monitorNotifications(ppObservers, txInterface, checkConnection);
+    fun monitorPPNotifications(checkConnection: Boolean): Flow<PPData> {
+        return ChannelUtils.monitorNotifications(ppObservers, txInterface, checkConnection)
+    }
+
+    companion object {
+        private const val TAG = "BlePsdClient"
+        const val SUCCESS: Byte = 0x01
+        const val OP_CODE_NOT_SUPPORTED: Byte = 0x02
+        const val INVALID_PARAMETER: Byte = 0x03
+        const val OPERATION_FAILED: Byte = 0x04
+        const val NOT_ALLOWED: Byte = 0x05
+
+        val PSD_SERVICE: UUID = UUID.fromString("FB005C20-02E7-F387-1CAD-8ACD2D8DF0C8")
+        val PSD_FEATURE: UUID = UUID.fromString("FB005C21-02E7-F387-1CAD-8ACD2D8DF0C8")
+        val PSD_CP: UUID = UUID.fromString("FB005C22-02E7-F387-1CAD-8ACD2D8DF0C8")
+        val PSD_PP: UUID = UUID.fromString("FB005C26-02E7-F387-1CAD-8ACD2D8DF0C8")
+
+        const val OP_CODE_START_ECG_STREAM: Byte = 0x01
+        const val OP_CODE_STOP_ECG_STREAM: Byte = 0x02
+        const val OP_CODE_START_OHR_STREAM: Byte = 0x03
+        const val OP_CODE_STOP_OHR_STREAM: Byte = 0x04
+        const val OP_CODE_START_ACC_STREAM: Byte = 0x05
+        const val OP_CODE_STOP_ACC_STREAM: Byte = 0x06
+        const val RESPONSE_CODE: Byte = 0xF0.toByte()
     }
 }

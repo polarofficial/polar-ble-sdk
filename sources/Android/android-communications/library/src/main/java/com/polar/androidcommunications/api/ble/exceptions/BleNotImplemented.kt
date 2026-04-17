@@ -1,14 +1,10 @@
-package com.polar.androidcommunications.api.ble.exceptions;
+package com.polar.androidcommunications.api.ble.exceptions
 
 /**
  * Error indicating that requested operation is not implemented
  */
-public class BleNotImplemented extends Exception {
+class BleNotImplemented : Exception {
+    constructor()
 
-    public BleNotImplemented() {
-    }
-
-    public BleNotImplemented(String detailMessage) {
-        super(detailMessage);
-    }
+    constructor(detailMessage: String?) : super(detailMessage)
 }

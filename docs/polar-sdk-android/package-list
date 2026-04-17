@@ -1,5 +1,72 @@
 $dokka.format:javadoc-v1
 $dokka.linkExtension:html
+$dokka.location:com.polar.androidcommunications.api.ble.exceptions/SecurityError.SecurityStrategyUnknown///PointingToDeclaration/com/polar/androidcommunications/api/ble/exceptions/SecurityError.SecurityStrategyUnknown.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.pmd/BlePMDClient.Companion///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/pmd/BlePMDClient.Companion.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.pmd/BlePMDClient.PmdDataFieldEncoding///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/pmd/BlePMDClient.PmdDataFieldEncoding.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.pmd/PmdActiveMeasurement.Companion///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/pmd/PmdActiveMeasurement.Companion.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.pmd/PmdControlPointCommandServiceToClient.Companion///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/pmd/PmdControlPointCommandServiceToClient.Companion.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.pmd/PmdControlPointResponse.PmdControlPointResponseCode///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/pmd/PmdControlPointResponse.PmdControlPointResponseCode.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.pmd/PmdDataFrame.PmdDataFrameType.Companion///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/pmd/PmdDataFrame.PmdDataFrameType.Companion.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.pmd/PmdDataFrame.PmdDataFrameType///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/pmd/PmdDataFrame.PmdDataFrameType.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.pmd/PmdRecordingType.Companion///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/pmd/PmdRecordingType.Companion.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.pmd/PmdSdkMode.Companion///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/pmd/PmdSdkMode.Companion.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.pmd/PmdSecret.SecurityStrategy.Companion///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/pmd/PmdSecret.SecurityStrategy.Companion.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.pmd/PmdSecret.SecurityStrategy///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/pmd/PmdSecret.SecurityStrategy.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.pmd/PmdSetting.PmdSettingType///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/pmd/PmdSetting.PmdSettingType.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.psftp/BlePsFtpClient.ProgressCallback///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/psftp/BlePsFtpClient.ProgressCallback.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.psftp/BlePsFtpUtils.MessageType///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/psftp/BlePsFtpUtils.MessageType.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.psftp/BlePsFtpUtils.PftpNotificationMessage///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/psftp/BlePsFtpUtils.PftpNotificationMessage.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.psftp/BlePsFtpUtils.PftpOperationTimeout///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/psftp/BlePsFtpUtils.PftpOperationTimeout.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.psftp/BlePsFtpUtils.PftpResponseError///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/psftp/BlePsFtpUtils.PftpResponseError.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.psftp/BlePsFtpUtils.PftpRfc76ResponseHeader///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/psftp/BlePsFtpUtils.PftpRfc76ResponseHeader.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client.psftp/BlePsFtpUtils.Rfc76SequenceNumber///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/psftp/BlePsFtpUtils.Rfc76SequenceNumber.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BleBattClient.Companion///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BleBattClient.Companion.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BleDisClient.Companion///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BleDisClient.Companion.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BleGapClient.Companion///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BleGapClient.Companion.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BleHrClient.Companion///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BleHrClient.Companion.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BleHrClient.HrNotificationData///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BleHrClient.HrNotificationData.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BleHtsClient.Companion///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BleHtsClient.Companion.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BleHtsClient.TemperatureMeasurement///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BleHtsClient.TemperatureMeasurement.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BlePfcClient.Companion///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BlePfcClient.Companion.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BlePfcClient.PfcFeature///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BlePfcClient.PfcFeature.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BlePfcClient.PfcMessage///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BlePfcClient.PfcMessage.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BlePfcClient.PfcResponse///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BlePfcClient.PfcResponse.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BlePsdClient.Companion///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BlePsdClient.Companion.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BlePsdClient.PPData///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BlePsdClient.PPData.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BlePsdClient.PsdData///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BlePsdClient.PsdData.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BlePsdClient.PsdFeature///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BlePsdClient.PsdFeature.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BlePsdClient.PsdMessage///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BlePsdClient.PsdMessage.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BlePsdClient.PsdResponse///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BlePsdClient.PsdResponse.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BleRscClient.Companion///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BleRscClient.Companion.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/BleRscClient.RscNotificationData///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/BleRscClient.RscNotificationData.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.gatt.client/HealthThermometer.Companion///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/gatt/client/HealthThermometer.Companion.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.offlinerecording/OfflineRecordingError.OfflineRecordingEmptyFile///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/offlinerecording/OfflineRecordingError.OfflineRecordingEmptyFile.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.offlinerecording/OfflineRecordingError.OfflineRecordingErrorMetaDataParseFailed///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/offlinerecording/OfflineRecordingError.OfflineRecordingErrorMetaDataParseFailed.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.offlinerecording/OfflineRecordingError.OfflineRecordingErrorNoParserForData///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/offlinerecording/OfflineRecordingError.OfflineRecordingErrorNoParserForData.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.offlinerecording/OfflineRecordingError.OfflineRecordingErrorSecretMissing///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/offlinerecording/OfflineRecordingError.OfflineRecordingErrorSecretMissing.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.offlinerecording/OfflineRecordingError.OfflineRecordingHasWrongSignature///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/offlinerecording/OfflineRecordingError.OfflineRecordingHasWrongSignature.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.offlinerecording/OfflineRecordingError.OfflineRecordingNoPayloadData///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/offlinerecording/OfflineRecordingError.OfflineRecordingNoPayloadData.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.offlinerecording/OfflineRecordingError.OfflineRecordingSecurityStrategyMissMatch///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/offlinerecording/OfflineRecordingError.OfflineRecordingSecurityStrategyMissMatch.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.polar/BlePolarDeviceCapabilitiesUtility.DefaultsSection///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/polar/BlePolarDeviceCapabilitiesUtility.DefaultsSection.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.polar/BlePolarDeviceCapabilitiesUtility.DeviceCapabilities///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/polar/BlePolarDeviceCapabilitiesUtility.DeviceCapabilities.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.polar/BlePolarDeviceCapabilitiesUtility.DeviceCapabilitiesConfig///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/polar/BlePolarDeviceCapabilitiesUtility.DeviceCapabilitiesConfig.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.polar/BlePolarDeviceCapabilitiesUtility.FileSystemType///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/polar/BlePolarDeviceCapabilitiesUtility.FileSystemType.html
+$dokka.location:com.polar.androidcommunications.api.ble.model.polar/BlePolarDeviceIdUtility.Companion///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/polar/BlePolarDeviceIdUtility.Companion.html
+$dokka.location:com.polar.androidcommunications.api.ble.model/BleDeviceSession.DeviceSessionState///PointingToDeclaration/com/polar/androidcommunications/api/ble/model/BleDeviceSession.DeviceSessionState.html
+$dokka.location:com.polar.androidcommunications.api.ble/BleDeviceListener.BleDeviceSessionStateChangedCallback///PointingToDeclaration/com/polar/androidcommunications/api/ble/BleDeviceListener.BleDeviceSessionStateChangedCallback.html
+$dokka.location:com.polar.androidcommunications.api.ble/BleDeviceListener.BlePowerStateChangedCallback///PointingToDeclaration/com/polar/androidcommunications/api/ble/BleDeviceListener.BlePowerStateChangedCallback.html
+$dokka.location:com.polar.androidcommunications.api.ble/BleDeviceListener.BleSearchPreFilter///PointingToDeclaration/com/polar/androidcommunications/api/ble/BleDeviceListener.BleSearchPreFilter.html
+$dokka.location:com.polar.androidcommunications.api.ble/BleDeviceListener.PowerMode///PointingToDeclaration/com/polar/androidcommunications/api/ble/BleDeviceListener.PowerMode.html
+$dokka.location:com.polar.androidcommunications.api.ble/BleLogger.BleLoggerInterface///PointingToDeclaration/com/polar/androidcommunications/api/ble/BleLogger.BleLoggerInterface.html
+$dokka.location:com.polar.androidcommunications.common.ble/AtomicSet.CompareFunction///PointingToDeclaration/com/polar/androidcommunications/common/ble/AtomicSet.CompareFunction.html
+$dokka.location:com.polar.androidcommunications.common.ble/BleUtils.AD_TYPE///PointingToDeclaration/com/polar/androidcommunications/common/ble/BleUtils.AD_TYPE.html
+$dokka.location:com.polar.androidcommunications.common.ble/BleUtils.Companion///PointingToDeclaration/com/polar/androidcommunications/common/ble/BleUtils.Companion.html
+$dokka.location:com.polar.androidcommunications.common.ble/BleUtils.EVENT_TYPE///PointingToDeclaration/com/polar/androidcommunications/common/ble/BleUtils.EVENT_TYPE.html
+$dokka.location:com.polar.androidcommunications.common.ble/ChannelUtils.Companion///PointingToDeclaration/com/polar/androidcommunications/common/ble/ChannelUtils.Companion.html
+$dokka.location:com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection/ConnectionHandler.ConnectionHandlerState///PointingToDeclaration/com/polar/androidcommunications/enpoints/ble/bluedroid/host/connection/ConnectionHandler.ConnectionHandlerState.html
+$dokka.location:com.polar.androidcommunications.enpoints.ble.bluedroid.host/AttributeOperation.AttributeOperationCommand///PointingToDeclaration/com/polar/androidcommunications/enpoints/ble/bluedroid/host/AttributeOperation.AttributeOperationCommand.html
+$dokka.location:com.polar.androidcommunications.enpoints.ble.bluedroid.host/BDBondingListener.BondingObserver///PointingToDeclaration/com/polar/androidcommunications/enpoints/ble/bluedroid/host/BDBondingListener.BondingObserver.html
+$dokka.location:com.polar.androidcommunications.http.client/RetrofitClient.Companion///PointingToDeclaration/com/polar/androidcommunications/http/client/RetrofitClient.Companion.html
 $dokka.location:com.polar.sdk.api.model.activity/AutomaticSampleTriggerType.Companion///PointingToDeclaration/com/polar/sdk/api/model/activity/AutomaticSampleTriggerType.Companion.html
 $dokka.location:com.polar.sdk.api.model.activity/IntervalStatus.Companion///PointingToDeclaration/com/polar/sdk/api/model/activity/IntervalStatus.Companion.html
 $dokka.location:com.polar.sdk.api.model.activity/Movement.Companion///PointingToDeclaration/com/polar/sdk/api/model/activity/Movement.Companion.html
@@ -73,6 +140,23 @@ $dokka.location:com.polar.sdk.api/PolarOfflineExerciseV2Api.Companion///Pointing
 $dokka.location:com.polar.sdk.api/PolarOfflineExerciseV2Api.OfflineExerciseStartResult///PointingToDeclaration/com/polar/sdk/api/PolarOfflineExerciseV2Api.OfflineExerciseStartResult.html
 $dokka.location:com.polar.sdk.api/PolarOfflineExerciseV2Api.StartResult///PointingToDeclaration/com/polar/sdk/api/PolarOfflineExerciseV2Api.StartResult.html
 $dokka.location:com.polar.sdk.impl.utils/PolarBackupManager.BackupFileData///PointingToDeclaration/com/polar/sdk/impl/utils/PolarBackupManager.BackupFileData.html
+com.polar.androidcommunications.api.ble
+com.polar.androidcommunications.api.ble.exceptions
+com.polar.androidcommunications.api.ble.model
+com.polar.androidcommunications.api.ble.model.advertisement
+com.polar.androidcommunications.api.ble.model.gatt
+com.polar.androidcommunications.api.ble.model.gatt.client
+com.polar.androidcommunications.api.ble.model.gatt.client.pmd
+com.polar.androidcommunications.api.ble.model.gatt.client.pmd.errors
+com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
+com.polar.androidcommunications.api.ble.model.gatt.client.psftp
+com.polar.androidcommunications.api.ble.model.offlinerecording
+com.polar.androidcommunications.api.ble.model.polar
+com.polar.androidcommunications.common.ble
+com.polar.androidcommunications.enpoints.ble.bluedroid.host
+com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection
+com.polar.androidcommunications.http.client
+com.polar.androidcommunications.http.fwu
 com.polar.sdk.api
 com.polar.sdk.api.errors
 com.polar.sdk.api.model
