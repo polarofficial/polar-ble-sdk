@@ -1,22 +1,20 @@
 plugins {
     id('com.android.library')
     id('kotlin-android')
-    id('kotlin-kapt')
     id('com.google.protobuf')
-    id("org.jetbrains.dokka") version "1.9.10"
+    id("org.jetbrains.dokka") version "1.9.20"
     id("maven-publish")
 }
 
 import java.util.regex.Pattern
 
 def getVersion = { ->
-    def stdout = new ByteArrayOutputStream()
-    exec {
+    def result = providers.exec {
         commandLine 'git', 'describe', '--tags'
-        standardOutput = stdout
     }
+    def stdout = result.standardOutput.asText.get().trim()
     def pattern = Pattern.compile("^([0-9]*)(\\.)([0-9]*)(\\.)([0-9]*)")
-    def matcher = pattern.matcher(stdout.toString().trim())
+    def matcher = pattern.matcher(stdout)
     if (matcher.matches()) {
         String MAJOR = matcher.group(1)
         String MINOR = matcher.group(3)
@@ -25,17 +23,25 @@ def getVersion = { ->
         println VERSION
         return VERSION
     } else {
-        return stdout.toString().trim()
+        return stdout
     }
 }
+
+configurations.all {
+    resolutionStrategy {
+        force 'net.bytebuddy:byte-buddy:1.14.18'
+        force 'net.bytebuddy:byte-buddy-agent:1.14.18'
+        force "org.jetbrains.kotlin:kotlin-metadata-jvm:2.3.20"
+    }
+}
+
 
 android {
     namespace = 'com.polar.androidcommunications'
 
-    compileSdkVersion 33
-
     defaultConfig {
-        minSdkVersion 26
+        compileSdk 35
+        minSdkVersion 33
         targetSdkVersion 33
         versionCode 14
         versionName "14"
@@ -70,7 +76,7 @@ android {
     }
 
     publishing {
-        singleVariant("sdkRelease") {
+        singleVariant("androidCommunicationsRelease") {
             withSourcesJar()
             withJavadocJar()
         }
@@ -122,25 +128,26 @@ protobuf {
 }
 
 dependencies {
-    implementation 'io.reactivex.rxjava3:rxandroid:3.0.2'
-    implementation 'io.reactivex.rxjava3:rxjava:3.1.6'
     implementation 'commons-io:commons-io:2.11.0'
     implementation 'androidx.annotation:annotation:1.6.0'
     implementation "androidx.core:core-ktx:1.9.0"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:2.1.20"
     implementation 'com.google.protobuf:protobuf-javalite:3.20.0'
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-    implementation 'com.squareup.retrofit2:adapter-rxjava3:2.9.0'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-rx3:1.10.2"
     sdkImplementation 'com.google.protobuf:protobuf-javalite:3.20.0'
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:5.15.2'
-    testImplementation 'io.mockk:mockk:1.13.6'
-    testImplementation 'androidx.test:runner:1.5.2'
-    testImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    testImplementation 'org.mockito:mockito-core:5.23.0'
+    testImplementation 'io.mockk:mockk:1.14.9'
+    testImplementation 'androidx.test:runner:1.7.0'
+    testImplementation 'androidx.test.espresso:espresso-core:3.7.0'
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2"
     androidTestImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test:core:1.5.0'
-    androidTestImplementation 'androidx.test:runner:1.5.2'
-    androidTestImplementation 'androidx.test:rules:1.5.0'
+    androidTestImplementation 'androidx.test:core:1.7.0'
+    androidTestImplementation 'androidx.test:runner:1.7.0'
+    androidTestImplementation 'androidx.test:rules:1.7.0'
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
 }
+
