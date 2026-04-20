@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
 abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineStreamingApi,
     PolarOfflineRecordingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi,
     PolarActivityApi, PolarSleepApi, PolarRestServiceApi, PolarTemperatureApi, PolarTrainingSessionApi,
-    PolarBleLowLevelApi, PolarDeviceToHostNotificationsApi {
+    PolarBleLowLevelApi, PolarDeviceToHostNotificationsApi, PolarTestApi {
 
     /**
      * Features available in Polar BLE SDK library
@@ -107,6 +107,11 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
         FEATURE_POLAR_TEMPERATURE_DATA,
 
         /**
+         * Feature to receive SPO2 test data from Polar device.
+         */
+        FEATURE_POLAR_SPO2_TEST_DATA,
+
+        /**
          * Feature to access training session data and exercise session controls.
          */
         FEATURE_POLAR_TRAINING_DATA,
@@ -134,7 +139,8 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
         SLEEP("SLEEP"),
         SLEEP_SCORE("SLEEPSCO"),
         SKIN_CONTACT_CHANGES("SKINCONT"),
-        SKIN_TEMP("SKINTEMP")
+        SKIN_TEMP("SKINTEMP"),
+        SPO2_TEST("SPO2TEST")
     }
 
     /**
@@ -160,7 +166,7 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * The activity recording data types available in Polar devices.
      */
     enum class PolarActivityDataType {
-        SLEEP, STEPS, DISTANCE, CALORIES, HR_SAMPLES, NIGHTLY_RECHARGE, SKIN_TEMPERATURE, PPI_SAMPLES, ACTIVE_TIME, ACTIVITY_SAMPLES, DAILY_SUMMARY
+        SLEEP, STEPS, DISTANCE, CALORIES, HR_SAMPLES, NIGHTLY_RECHARGE, SKIN_TEMPERATURE, PPI_SAMPLES, ACTIVE_TIME, ACTIVITY_SAMPLES, DAILY_SUMMARY, SPO2_TEST
     }
 
     /**

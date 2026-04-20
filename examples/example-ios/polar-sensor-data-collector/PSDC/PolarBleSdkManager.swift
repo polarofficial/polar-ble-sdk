@@ -2239,6 +2239,49 @@ extension PolarBleSdkManager {
         }
     }
 
+    func getSpo2Test(start: Date, end: Date) async {
+        if case .connected(let device) = deviceConnectionState {
+            do {
+                let spo2DateTimeFormatter = DateFormatter()
+                spo2DateTimeFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                spo2DateTimeFormatter.timeZone = TimeZone(identifier: "UTC")
+                encoder.dateEncodingStrategy = .millisecondsSince1970
+                let spo2Data = try await api.getSpo2TestData(identifier: device.deviceId, fromDate: start, toDate: end).value
+                Task { @MainActor in
+                    if !spo2Data.isEmpty {
+                        let spo2Json = try encoder.encode(spo2Data)
+                        if let jsonArray = try JSONSerialization.jsonObject(with: spo2Json, options: []) as? [[String: Any]] {
+                            let transformed = jsonArray.map { record -> [String: Any] in
+                                var entry = record
+                                if let dateMs = record["date"] as? Double {
+                                    let date = Date(timeIntervalSince1970: dateMs / 1000.0)
+                                    entry["testTime"] = spo2DateTimeFormatter.string(from: date)
+                                    entry.removeValue(forKey: "date")
+                                }
+                                return entry
+                            }
+                            let transformedJson = try JSONSerialization.data(withJSONObject: transformed, options: [])
+                            self.activityRecordingData.data = String(data: transformedJson, encoding: .utf8)!
+                        } else {
+                            self.activityRecordingData.data = String(data: spo2Json, encoding: .utf8)!
+                        }
+                        self.activityRecordingData.activityType = PolarActivityDataType.SPO2_TEST
+                        self.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.success
+                    } else {
+                        self.activityRecordingData.activityType = PolarActivityDataType.SPO2_TEST
+                        dateFormatter.dateFormat = "yyyy-MM-dd"
+                        self.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.failed(error: "No SpO2 test data found for dates \(dateFormatter.string(from: start)) - \(dateFormatter.string(from: end))")
+                    }
+                }
+            } catch let err {
+                Task { @MainActor in
+                    self.activityRecordingData.activityType = PolarActivityDataType.SPO2_TEST
+                    self.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.failed(error: "Failed to load SpO2 test data, \(err)")
+                }
+            }
+        }
+    }
+
     func getUserDeviceSettings() async -> PolarUserDeviceSettings.PolarUserDeviceSettingsResult? {
         var settings: PolarUserDeviceSettings.PolarUserDeviceSettingsResult? = nil
         if case .connected(let device) = deviceConnectionState {

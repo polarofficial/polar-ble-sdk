@@ -262,6 +262,9 @@
     <!-- Daily summary data -->
     <string name="daily_summary_label">Daily summary</string>
 
+    <!-- SpO2 test data -->
+    <string name="spo2_test_label">SpO2 test data</string>
+
     <!-- Battery present states -->
     <string name="battery_present_state_present">Battery present</string>
     <string name="battery_present_state_not_present">Battery not present</string>

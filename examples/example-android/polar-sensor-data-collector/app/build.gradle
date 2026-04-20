@@ -54,7 +54,7 @@ def getVersion = { ->
 
 // Version of the Polar BLE SDK declared as the JitPack dependency (see dependencies block below).
 // Set this to select SDK version to use with PSDC app
-def POLAR_SDK_VERSION = '7.0.1' // e.g. '6.15.0'
+def POLAR_SDK_VERSION = '7.1.0' // e.g. '6.15.0'
 
 // Returns the SDK version string to embed in BuildConfig.SDK_VERSION:
 //   - JitPack mode  → the declared POLAR_SDK_VERSION constant (always reliable)
@@ -103,9 +103,9 @@ android {
         applicationId "com.polar.polarsensordatacollector"
         minSdkVersion 33
         targetSdkVersion 34
-    	versionCode 76300
+    	versionCode 76400
         // version code from semantic version in format [2 digits of major][2 digits of minor][2 digits of batch]
-    	versionName "7.63.0"
+    	versionName "7.64.0"
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 

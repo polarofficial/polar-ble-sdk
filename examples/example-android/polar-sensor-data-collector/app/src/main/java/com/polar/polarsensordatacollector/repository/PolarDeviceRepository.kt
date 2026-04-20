@@ -31,6 +31,7 @@ import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference
 import com.polar.sdk.api.model.activity.PolarActivitySamplesDayData
 import com.polar.sdk.api.model.activity.PolarDailySummaryData
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionFetchResult
+import com.polar.sdk.api.model.PolarSpo2TestData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -991,6 +992,14 @@ class PolarDeviceRepository @Inject constructor(
     suspend fun getDailySummaryData(deviceId: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<PolarDailySummaryData>> = withContext(Dispatchers.IO) {
         return@withContext try {
             ResultOfRequest.Success(api.getDailySummaryData(deviceId, from, to))
+        } catch (e: Exception) {
+            ResultOfRequest.Failure(e.message.toString(), e)
+        }
+    }
+
+    suspend fun getSpo2TestData(deviceId: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<PolarSpo2TestData>> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            ResultOfRequest.Success(api.getSpo2Test(deviceId, from, to))
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
         }

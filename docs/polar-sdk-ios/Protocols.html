@@ -17,7 +17,7 @@
     <a title="Protocols  Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="index.html">PolarBleSdk 6.16.2 Docs</a> (40% documented)</p>
+        <p><a href="index.html">PolarBleSdk 7.0.2 Docs</a> (41% documented)</p>
         <div class="header-right">
           <form role="search" action="search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -299,6 +299,9 @@
                 <a href="Protocols/PolarTemperatureApi.html">PolarTemperatureApi</a>
               </li>
               <li class="nav-group-task">
+                <a href="Protocols/PolarTestApi.html">PolarTestApi</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a>
               </li>
             </ul>
@@ -425,6 +428,21 @@
               </li>
               <li class="nav-group-task">
                 <a href="Structs/PolarSensorSetting/SettingType.html">– SettingType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/PolarSpo2TestData.html">PolarSpo2TestData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/PolarSpo2TestData/Spo2Class.html">– Spo2Class</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/PolarSpo2TestData/Spo2TestTriggerType.html">– Spo2TestTriggerType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/PolarSpo2TestData/Spo2TestStatus.html">– Spo2TestStatus</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/PolarSpo2TestData/DeviationFromBaseline.html">– DeviationFromBaseline</a>
               </li>
               <li class="nav-group-task">
                 <a href="Structs/PolarStepsData.html">PolarStepsData</a>
@@ -557,7 +575,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">PolarBleApi</span> <span class="p">:</span> <span class="kt"><a href="Protocols/PolarActivityApi.html">PolarActivityApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarBleLowLevelApi.html">PolarBleLowLevelApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarDeviceToHostNotificationsApi.html">PolarDeviceToHostNotificationsApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarFirmwareUpdateApi.html">PolarFirmwareUpdateApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarOfflineExerciseV2Api.html">PolarOfflineExerciseV2Api</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarOnlineStreamingApi.html">PolarOnlineStreamingApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarRestServiceApi.html">PolarRestServiceApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarSdkModeApi.html">PolarSdkModeApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarSleepApi.html">PolarSleepApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarTemperatureApi.html">PolarTemperatureApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">PolarBleApi</span> <span class="p">:</span> <span class="kt"><a href="Protocols/PolarActivityApi.html">PolarActivityApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarBleLowLevelApi.html">PolarBleLowLevelApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarDeviceToHostNotificationsApi.html">PolarDeviceToHostNotificationsApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarFirmwareUpdateApi.html">PolarFirmwareUpdateApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarOfflineExerciseV2Api.html">PolarOfflineExerciseV2Api</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarOnlineStreamingApi.html">PolarOnlineStreamingApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarRestServiceApi.html">PolarRestServiceApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarSdkModeApi.html">PolarSdkModeApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarSleepApi.html">PolarSleepApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarTemperatureApi.html">PolarTemperatureApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarTestApi.html">PolarTestApi</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a></span></code></pre>
 
                         </div>
                       </div>
@@ -1077,6 +1095,36 @@ asked from device using <code>PolarOnlineStreamingApi.requestFullStreamSettings<
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:11PolarBleSdk0A7TestApiP"></a>
+                    <a name="//apple_ref/swift/Protocol/PolarTestApi" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A7TestApiP">PolarTestApi</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Polar SPO2 test API.</p>
+
+<p>Requires SDK feature: <code><a href="Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_spo2_test_datayA2CmF">PolarBleSdkFeature.feature_polar_spo2_test_data</a></code></p>
+
+                        <a href="Protocols/PolarTestApi.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">PolarTestApi</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:11PolarBleSdk0A18TrainingSessionApiP"></a>
                     <a name="//apple_ref/swift/Protocol/PolarTrainingSessionApi" class="dashAnchor"></a>
                     <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP">PolarTrainingSessionApi</a>
@@ -1135,7 +1183,7 @@ asked from device using <code>PolarOnlineStreamingApi.requestFullStreamSettings<
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-04-17)</p>
+          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-04-20)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

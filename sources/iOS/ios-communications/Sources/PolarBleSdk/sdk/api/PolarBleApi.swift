@@ -82,6 +82,9 @@ public enum PolarBleSdkFeature: CaseIterable {
 
     /// Feature to read and set device configuration through Polar Features Configuration Service.
     case feature_polar_features_configuration_service
+    
+    /// Feature to receive SPO2 test data from Polar device.
+    case feature_polar_spo2_test_data
 }
 
 ///
@@ -98,6 +101,7 @@ public enum PolarActivityDataType: String, CaseIterable {
     case ACTIVE_TIME
     case ACTIVITY_SAMPLES
     case DAILY_SUMMARY
+    case SPO2_TEST
     case NONE
    }
 
@@ -224,7 +228,7 @@ public typealias PolarPpiData = (timeStamp: UInt64, samples: [(timeStamp: UInt64
 public typealias PolarRecordingStatus = (ongoing: Bool, entryId: String)
 
 /// API.
-public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi, PolarActivityApi, PolarTemperatureApi, PolarSleepApi, PolarTrainingSessionApi, PolarDeviceToHostNotificationsApi, PolarBleLowLevelApi, PolarRestServiceApi, PolarOfflineExerciseV2Api {
+public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi, PolarActivityApi, PolarTemperatureApi, PolarSleepApi, PolarTrainingSessionApi, PolarDeviceToHostNotificationsApi, PolarBleLowLevelApi, PolarRestServiceApi, PolarOfflineExerciseV2Api, PolarTestApi {
     
     /// remove all known devices, which are not in use
     ///

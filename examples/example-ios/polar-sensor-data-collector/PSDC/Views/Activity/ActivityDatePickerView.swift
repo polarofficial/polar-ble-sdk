@@ -77,6 +77,8 @@ struct ActivityDatePickerView: View {
                                         await bleSdkManager.getActivitySamplesData(start: startDate, end: endDate)
                                     case .DAILY_SUMMARY:
                                         await bleSdkManager.getDailySummaryData(start: startDate, end: endDate)
+                                    case .SPO2_TEST:
+                                        await bleSdkManager.getSpo2Test(start: startDate, end: endDate)
                                     case .NONE:
                                         print("NOT IMPLEMENTED")
                                     }

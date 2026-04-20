@@ -51,6 +51,9 @@ import com.polar.sdk.api.PolarBleApiCallbackProvider
 import com.polar.sdk.api.PolarBleLowLevelApi
 import com.polar.sdk.api.PolarD2HNotificationData
 import com.polar.sdk.api.PolarOfflineExerciseV2Api
+import com.polar.sdk.api.PolarTestApi
+import com.polar.sdk.api.model.PolarSpo2TestData
+import com.polar.sdk.impl.utils.PolarTestUtils
 import com.polar.sdk.api.PolarH10OfflineExerciseApi
 import com.polar.sdk.api.RestApiEventPayload
 import com.polar.sdk.api.errors.*
@@ -167,7 +170,7 @@ import kotlinx.coroutines.withContext
  * @Suppress
  */
 class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleSdkFeature>) : PolarBleApi(features), BlePowerStateChangedCallback, PolarTrainingSessionApi,
-    PolarBleLowLevelApi, PolarOfflineExerciseV2Api {
+    PolarBleLowLevelApi, PolarOfflineExerciseV2Api, PolarTestApi {
 
     private val connectSubscriptions: MutableMap<String, Job> = mutableMapOf()
     private val apiScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -223,6 +226,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA -> clients.add(BlePsFtpClient::class.java)
                 PolarBleSdkFeature.FEATURE_POLAR_DEVICE_CONTROL -> clients.add(BlePsFtpClient::class.java)
                 PolarBleSdkFeature.FEATURE_POLAR_FEATURES_CONFIGURATION_SERVICE -> clients.add(BlePfcClient::class.java)
+                PolarBleSdkFeature.FEATURE_POLAR_SPO2_TEST_DATA -> clients.add(BlePsFtpClient::class.java)
             }
         }
 
@@ -400,6 +404,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
                 PolarBleSdkFeature.FEATURE_POLAR_FEATURES_CONFIGURATION_SERVICE -> {
                     PolarServiceClientUtils.sessionPsPfcClientReady(deviceId, listener)
+                    true
+                }
+
+                PolarBleSdkFeature.FEATURE_POLAR_SPO2_TEST_DATA -> {
+                    PolarServiceClientUtils.sessionPsFtpClientReady(deviceId, listener)
                     true
                 }
             }
@@ -2705,6 +2714,26 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         return result
     }
 
+    override suspend fun getSpo2Test(identifier: String, fromDate: LocalDate, toDate: LocalDate): List<PolarSpo2TestData> {
+        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: throw PolarServiceNotAvailable()
+        val dates = generateSequence(fromDate) { it.plusDays(1) }.takeWhile { !it.isAfter(toDate) }.toList()
+        val result = mutableListOf<PolarSpo2TestData>()
+        for (date in dates) {
+            val entries = PolarTestUtils.readSpo2TestProtoFromDayDirectory(client, date)
+            for (entry in entries) {
+                try {
+                    result.add(PolarTestUtils.mapSpo2TestEntry(entry))
+                } catch (error: Throwable) {
+                    BleLogger.w(TAG, "getSpo2Test() failed to parse SPO2 proto for date $date timedir ${entry.timeDirName}, error: $error")
+                }
+            }
+        }
+        return result
+    }
+
+
     override fun getTrainingSessionReferences(identifier: String, fromDate: LocalDate?, toDate: LocalDate?): Flow<PolarTrainingSessionReference> {
         return flow {
             val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
@@ -3371,6 +3400,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA -> isActivityDataFeatureAvailable(discoveredServices, session)
             PolarBleSdkFeature.FEATURE_POLAR_DEVICE_CONTROL -> isPsftpServiceAvailable(discoveredServices, session)
             PolarBleSdkFeature.FEATURE_POLAR_FEATURES_CONFIGURATION_SERVICE -> isPolarFeaturesConfigurationServiceFeatureAvailable(discoveredServices, session)
+            PolarBleSdkFeature.FEATURE_POLAR_SPO2_TEST_DATA -> isPsftpServiceAvailable(discoveredServices, session)
         }
         if (available && deviceId != null) {
             withContext(Dispatchers.Main) {

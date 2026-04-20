@@ -46,6 +46,7 @@ class ActivityRecordingFragment : Fragment(R.layout.fragment_activity_recording)
     private lateinit var activeTimeButton: Button
     private lateinit var activitySamplesButton: Button
     private lateinit var dailySummaryButton: Button
+    private lateinit var spo2TestButton: Button
 
     private lateinit var trainingSessionsButton: Button
 
@@ -155,6 +156,12 @@ class ActivityRecordingFragment : Fragment(R.layout.fragment_activity_recording)
             type = PolarBleApi.PolarActivityDataType.DAILY_SUMMARY
             showDateRangePicker()
         }
+
+        spo2TestButton.setOnClickListener {
+            viewModel.initView()
+            type = PolarBleApi.PolarActivityDataType.SPO2_TEST
+            showDateRangePicker()
+        }
     }
 
     private fun showCaloriesTypePicker() {
@@ -234,5 +241,6 @@ class ActivityRecordingFragment : Fragment(R.layout.fragment_activity_recording)
         trainingSessionsButton = view.findViewById(R.id.button_get_training_sessions)
         activitySamplesButton = view.findViewById(R.id.button_get_activity_samples)
         dailySummaryButton = view.findViewById(R.id.button_get_daily_summary)
+        spo2TestButton = view.findViewById(R.id.button_get_spo2_test)
     }
 }

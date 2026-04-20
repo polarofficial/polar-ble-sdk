@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package data;
+
+option java_package = "com.polar.services.datamodels.protobuf";
+option java_outer_classname = "Spo2TestResult";
+
+/*
+ * Peripheral capillary oxygen saturation (Spo2) Test Result
+ * Defines structure for syncing & storing Spo2 test results.
+ */
+
+enum PbSpo2Class {
+  SPO2_CLASS_UNKNOWN = 0;
+  SPO2_CLASS_VERY_LOW = 1;
+  SPO2_CLASS_LOW = 2;
+  SPO2_CLASS_NORMAL = 3;
+}
+
+enum PbSpo2TestTriggerType {
+  SPO2_TEST_MANUAL = 0;
+  SPO2_TEST_AUTOMATIC = 1;
+}
+
+enum PbSpo2TestStatus {
+  SPO2_TEST_PASSED = 0;
+  SPO2_TEST_INCONCLUSIVE_TOO_LOW_QUALITY_IN_SAMPLES = 1;
+  SPO2_TEST_INCONCLUSIVE_TOO_LOW_OVERALL_QUALITY = 2;
+  SPO2_TEST_INCONCLUSIVE_TOO_MANY_MISSING_SAMPLES = 3;
+}
+
+enum PbDeviationFromBaseline {
+  DEVIATION_NO_BASELINE = 0;
+  DEVIATION_BELOW_USUAL = 1;
+  DEVIATION_USUAL = 2;
+  DEVIATION_ABOVE_USUAL = 3;
+}
+
+message PbSpo2TestResult {
+  string recording_device = 1;
+  uint64 test_time = 2;
+  int32 time_zone_offset = 3;
+  PbSpo2TestStatus test_status = 4;
+  optional int32 blood_oxygen_percent = 5;
+  optional PbSpo2Class spo2_class = 6;
+  optional PbDeviationFromBaseline spo2_value_deviation_from_baseline = 7;
+  optional float spo2_quality_average_percent = 8;
+  optional uint32 average_heart_rate_bpm = 9;
+  optional float heart_rate_variability_ms = 10;
+  optional PbDeviationFromBaseline spo2_hrv_deviation_from_baseline = 11;
+  optional float altitude_meters = 12;
+}
+

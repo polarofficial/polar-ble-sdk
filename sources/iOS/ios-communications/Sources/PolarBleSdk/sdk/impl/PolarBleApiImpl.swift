@@ -101,7 +101,8 @@ import UIKit
            resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_file_transfer) ||
            resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_temperature_data) ||
            resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_firmware_update) ||
-           resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_led_animation)) {
+           resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_led_animation) ||
+           resolvedFeatures.contains(PolarBleSdkFeature.feature_polar_spo2_test_data)) {
             clientList.append(BlePsFtpClient.init)
             //TODO, why this is needed?
             serviceList.append(CBUUID.init(string: "FEEE"))
@@ -533,6 +534,14 @@ import UIKit
         }
         return Single.just(pfcClient.isServiceDiscovered() ? FeatureState.ready : FeatureState.notReady)
     }
+    
+    private func isPolarSpo2TestDataFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID]) -> Bool {
+        return discoveredServices.contains(BlePsFtpClient.PSFTP_SERVICE) && hasPsFtpClient(session)
+    }
+    
+    private func isPolarSpo2TestDataFeatureReady(_ session: BleDeviceSession) -> Single<FeatureState> {
+        return isFtpReady(session)
+    }
 
     private func isFeatureAvailable(_ session: BleDeviceSession, _ discoveredServices: [CBUUID], feature: PolarBleSdkFeature) -> Bool {
         switch feature {
@@ -574,6 +583,8 @@ import UIKit
             return isHtsFeatureAvailable(session, discoveredServices)
         case .feature_polar_temperature_data:
             return isPolarTemperatureDataFeatureAvailable(session, discoveredServices)
+        case .feature_polar_spo2_test_data:
+            return isPolarSpo2TestDataFeatureAvailable(session, discoveredServices)
         }
     }
 
@@ -617,6 +628,8 @@ import UIKit
             return isHtsFeatureReady(session)
         case .feature_polar_temperature_data:
             return isPolarTemperatureDataFeatureReady(session)
+        case .feature_polar_spo2_test_data:
+            return isPolarSpo2TestDataFeatureReady(session)
         }
     }
 

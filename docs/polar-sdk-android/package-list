@@ -85,6 +85,7 @@ $dokka.location:com.polar.sdk.api.model.trainingsession/PolarTrainingSessionFetc
 $dokka.location:com.polar.sdk.api.model/CheckFirmwareUpdateStatus.CheckFwUpdateAvailable///PointingToDeclaration/com/polar/sdk/api/model/CheckFirmwareUpdateStatus.CheckFwUpdateAvailable.html
 $dokka.location:com.polar.sdk.api.model/CheckFirmwareUpdateStatus.CheckFwUpdateFailed///PointingToDeclaration/com/polar/sdk/api/model/CheckFirmwareUpdateStatus.CheckFwUpdateFailed.html
 $dokka.location:com.polar.sdk.api.model/CheckFirmwareUpdateStatus.CheckFwUpdateNotAvailable///PointingToDeclaration/com/polar/sdk/api/model/CheckFirmwareUpdateStatus.CheckFwUpdateNotAvailable.html
+$dokka.location:com.polar.sdk.api.model/DeviationFromBaseline.Companion///PointingToDeclaration/com/polar/sdk/api/model/DeviationFromBaseline.Companion.html
 $dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.FetchingFwUpdatePackage///PointingToDeclaration/com/polar/sdk/api/model/FirmwareUpdateStatus.FetchingFwUpdatePackage.html
 $dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.FinalizingFwUpdate///PointingToDeclaration/com/polar/sdk/api/model/FirmwareUpdateStatus.FinalizingFwUpdate.html
 $dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.FwUpdateCompletedSuccessfully///PointingToDeclaration/com/polar/sdk/api/model/FirmwareUpdateStatus.FwUpdateCompletedSuccessfully.html
@@ -127,6 +128,9 @@ $dokka.location:com.polar.sdk.api.model/PolarUserDeviceSettings.Companion///Poin
 $dokka.location:com.polar.sdk.api.model/PolarUserDeviceSettings.DeviceLocation///PointingToDeclaration/com/polar/sdk/api/model/PolarUserDeviceSettings.DeviceLocation.html
 $dokka.location:com.polar.sdk.api.model/SkinTemperatureMeasurementType.Companion///PointingToDeclaration/com/polar/sdk/api/model/SkinTemperatureMeasurementType.Companion.html
 $dokka.location:com.polar.sdk.api.model/SkinTemperatureSensorLocation.Companion///PointingToDeclaration/com/polar/sdk/api/model/SkinTemperatureSensorLocation.Companion.html
+$dokka.location:com.polar.sdk.api.model/Spo2Class.Companion///PointingToDeclaration/com/polar/sdk/api/model/Spo2Class.Companion.html
+$dokka.location:com.polar.sdk.api.model/Spo2TestStatus.Companion///PointingToDeclaration/com/polar/sdk/api/model/Spo2TestStatus.Companion.html
+$dokka.location:com.polar.sdk.api.model/Spo2TestTriggerType.Companion///PointingToDeclaration/com/polar/sdk/api/model/Spo2TestTriggerType.Companion.html
 $dokka.location:com.polar.sdk.api.model/UserIdentifierType.Companion///PointingToDeclaration/com/polar/sdk/api/model/UserIdentifierType.Companion.html
 $dokka.location:com.polar.sdk.api/PolarBleApi.PolarActivityDataType///PointingToDeclaration/com/polar/sdk/api/PolarBleApi.PolarActivityDataType.html
 $dokka.location:com.polar.sdk.api/PolarBleApi.PolarBleApiLogger///PointingToDeclaration/com/polar/sdk/api/PolarBleApi.PolarBleApiLogger.html

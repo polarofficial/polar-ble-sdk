@@ -405,6 +405,38 @@ class ActivityRecordingDataViewModel @Inject constructor(
                             activityDataUiState = ActivityDataUiState.Failure(dailySummaryData.message, dailySummaryData.throwable)
                         }
                     }
+
+                PolarBleApi.PolarActivityDataType.SPO2_TEST ->
+                    when (val spo2TestData = polarDeviceStreamingRepository.getSpo2TestData(
+                        deviceId, startDate, endDate)) {
+                        is ResultOfRequest.Success -> {
+                            if (spo2TestData.value != null) {
+                                val gson = GsonBuilder()
+                                    .registerTypeAdapter(LocalDate::class.java, JsonSerializer<LocalDate> { src, _, _ ->
+                                        JsonPrimitive(src?.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                                    })
+                                    .setPrettyPrinting()
+                                    .create()
+                                val json = gson.toJson(spo2TestData.value)
+                                val fileUri = fileUtils.saveToFile(
+                                    json.encodeToByteArray(),
+                                    "/SPO2_TEST/$startDate-spo2-test.json"
+                                )
+                                val spo2Recording = ActivityRecordingData(startDate.toString(), endDate.toString(), fileUri, PolarBleApi.PolarActivityDataType.SPO2_TEST)
+                                updateActivityDataUiState(spo2Recording, fileUri, PolarBleApi.PolarActivityDataType.SPO2_TEST)
+                            } else {
+                                withContext(Dispatchers.Main) {
+                                    activityDataUiState = ActivityDataUiState.Failure("fetch SpO2 test data responded with empty data", null)
+                                }
+                            }
+                        }
+                        is ResultOfRequest.Failure -> {
+                            withContext(Dispatchers.Main) {
+                                activityDataUiState = ActivityDataUiState.Failure(spo2TestData.message, spo2TestData.throwable)
+                            }
+                        }
+                    }
+
                 else -> { Log.d(TAG, "fetchRecording not implemented for $activityRecordingType") }
             }
             elapsedTime = System.currentTimeMillis() - startTime

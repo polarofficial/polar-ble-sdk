@@ -24,7 +24,10 @@ struct ActivityRecordingView: View {
     @State private var activeTimeTitle = "Get active time data"
     @State private var activitySamplesTitle = "Get activity samples data"
     @State private var dailySummaryTitle = "Get daily summary"
-    
+    @State private var spo2TestTitle = "Get SpO2 test data"
+    @State private var showSpo2DatePickerView = false
+    @State private var showSpo2ActivityView = false
+
     var body: some View {
         if case .connected = bleSdkManager.deviceConnectionState,
            bleSdkManager.deviceInfoFeature.isSupported {
@@ -210,6 +213,20 @@ struct ActivityRecordingView: View {
                     }
                     .sheet(isPresented: $showTrainingSessionView) {
                         TrainingSessionListView().environmentObject(bleSdkManager)
+                    }
+
+                    Button(spo2TestTitle) {
+                        showSpo2DatePickerView = true
+                        showSpo2ActivityView = false
+                        bleSdkManager.activityRecordingData.activityType = PolarActivityDataType.SPO2_TEST
+                        bleSdkManager.activityRecordingData.loadingState = ActivityRecordingDataLoadingState.inProgress
+                    }.alignmentGuide(.leading) { d in d[.leading] }
+                    .sheet(isPresented: $showSpo2DatePickerView) {
+                        ActivityDatePickerView(isPresented: $showSpo2DatePickerView, showActivityView: $showSpo2ActivityView)
+                    }
+                    .sheet(isPresented: $showSpo2ActivityView) {
+                        ActivityRecordingDetailsView(isPresented: $showSpo2ActivityView)
+                            .environmentObject(bleSdkManager)
                     }
                 }
                 .padding(.vertical, 20)
