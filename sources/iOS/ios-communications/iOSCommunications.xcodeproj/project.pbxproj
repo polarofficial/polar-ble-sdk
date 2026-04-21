@@ -7,8 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		55A1C9E0620F9D5EBF66501E /* Pods_iOSCommunications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C65B704E542A7C1DD1FAF722 /* Pods_iOSCommunications.framework */; };
-		5B64EB48FEE5A2E076261B04 /* Pods_PolarBleSdkWatchOs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E08CC6FD945F920B8D38DFDB /* Pods_PolarBleSdkWatchOs.framework */; };
+		19C40FCF6ADCE0C526429DCF /* Pods_iOSCommunicationsTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EAAEDEC04BFC03AD734C3056 /* Pods_iOSCommunicationsTests.framework */; };
+		4986E83D1B4BDC29063FC084 /* Pods_PolarBleSdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B05E5443D4BD82E84117A35 /* Pods_PolarBleSdk.framework */; };
+		5A061CA47473A774AB6445EA /* Pods_PolarBleSdkWatchOs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49A5107367704369EB9A6D26 /* Pods_PolarBleSdkWatchOs.framework */; };
 		6C0C54FE1CFEB3C900FF23E9 /* TimeUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C54FD1CFEB3C900FF23E9 /* TimeUtility.swift */; };
 		6C10792D1D6D9C4800931948 /* iOSCommunications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C34DE881CAA3F240083EB1F /* iOSCommunications.framework */; };
 		6C2408F8220D9581001C1A84 /* CBScanningProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */; };
@@ -98,7 +99,6 @@
 		6CD12ACA201F126500F3A417 /* BleGattException.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD12AC9201F126500F3A417 /* BleGattException.swift */; };
 		6CEA10DF2175AA5B00E16FBF /* BlePsFtpUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD381CE5BCEA00A4C6A8 /* BlePsFtpUtility.swift */; };
 		6CEA10E02175AA5B00E16FBF /* BlePsFtpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8BCD391CE5BCEA00A4C6A8 /* BlePsFtpClient.swift */; };
-		6DFEBAAF8D40DA3B3938C6A8 /* Pods_iOSCommunicationsTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F7795F96E6A815B6D6C3615 /* Pods_iOSCommunicationsTests.framework */; };
 		8403763D2D50EB080004AB66 /* PolarCaloriesData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8403763C2D50EB080004AB66 /* PolarCaloriesData.swift */; };
 		8403763E2D50EB080004AB66 /* PolarCaloriesData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8403763C2D50EB080004AB66 /* PolarCaloriesData.swift */; };
 		84059D112DEF096C0013C470 /* exercise_samples2.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84059D102DEF09600013C470 /* exercise_samples2.pb.swift */; };
@@ -158,6 +158,10 @@
 		84D0098E2C85D46500AB4C43 /* user_physdata.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D0098D2C85D46500AB4C43 /* user_physdata.pb.swift */; };
 		84D0098F2C85D46500AB4C43 /* user_physdata.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D0098D2C85D46500AB4C43 /* user_physdata.pb.swift */; };
 		84D71C9F2D09C19600CE8089 /* PolarNightlyRechargeUtilsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D71C9E2D09C19600CE8089 /* PolarNightlyRechargeUtilsTest.swift */; };
+		9525FDE32F4DEA5600B3F072 /* PolarTemperatureApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9525FDE22F4DEA5600B3F072 /* PolarTemperatureApi.swift */; };
+		9525FDE42F4DEA5600B3F072 /* PolarTemperatureApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9525FDE22F4DEA5600B3F072 /* PolarTemperatureApi.swift */; };
+		9525FDE62F4DEA7300B3F072 /* PolarBleApiImpl+Temperature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9525FDE52F4DEA7300B3F072 /* PolarBleApiImpl+Temperature.swift */; };
+		9525FDE72F4DEA7300B3F072 /* PolarBleApiImpl+Temperature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9525FDE52F4DEA7300B3F072 /* PolarBleApiImpl+Temperature.swift */; };
 		84FC57212F4F049500676A9B /* PolarOfflineExerciseV2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84FC57202F4F047E00676A9B /* PolarOfflineExerciseV2Tests.swift */; };
 		84FC57252F4F14CE00676A9B /* PolarOfflineExerciseV2Api.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8413CA762F4D916B0089BE4D /* PolarOfflineExerciseV2Api.swift */; };
 		84FC57322F4F1ABD00676A9B /* PolarExerciseTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84FC57312F4F1AB500676A9B /* PolarExerciseTypes.swift */; };
@@ -167,10 +171,6 @@
 		84FC57392F4F1E4E00676A9B /* PolarExerciseSession+Parsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84FC57382F4F1E4200676A9B /* PolarExerciseSession+Parsing.swift */; };
 		84FC573A2F4F1E4E00676A9B /* PolarExerciseSession+Parsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84FC57382F4F1E4200676A9B /* PolarExerciseSession+Parsing.swift */; };
 		84FC573B2F4F1E7D00676A9B /* PolarExerciseSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC57B5DF2E60641200E90F5B /* PolarExerciseSession.swift */; };
-		9525FDE32F4DEA5600B3F072 /* PolarTemperatureApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9525FDE22F4DEA5600B3F072 /* PolarTemperatureApi.swift */; };
-		9525FDE42F4DEA5600B3F072 /* PolarTemperatureApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9525FDE22F4DEA5600B3F072 /* PolarTemperatureApi.swift */; };
-		9525FDE62F4DEA7300B3F072 /* PolarBleApiImpl+Temperature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9525FDE52F4DEA7300B3F072 /* PolarBleApiImpl+Temperature.swift */; };
-		9525FDE72F4DEA7300B3F072 /* PolarBleApiImpl+Temperature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9525FDE52F4DEA7300B3F072 /* PolarBleApiImpl+Temperature.swift */; };
 		955B94092D92A51C00F0447A /* PolarOfflineRecordingApiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 955B94072D92A4B200F0447A /* PolarOfflineRecordingApiTests.swift */; };
 		957DE2BA2E82623C00699BB2 /* PolarBleSdkTests.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = 957DE2B92E82623C00699BB2 /* PolarBleSdkTests.xctestplan */; };
 		9590AD952D9549CC00EBD84E /* MockGattServiceTransmitterImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5346A3625F21858006752CA /* MockGattServiceTransmitterImpl.swift */; };
@@ -188,6 +188,7 @@
 		95EA2B9A2D3A2CCC00657DE5 /* PolarDeviceRestApiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EA2B992D3A2CCC00657DE5 /* PolarDeviceRestApiTests.swift */; };
 		95EA2BA02D3E887E00657DE5 /* PolarDeviceRestApiUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EA2B9E2D3E887E00657DE5 /* PolarDeviceRestApiUtils.swift */; };
 		95EA2BB02D4217B100657DE5 /* PolarCompressionUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EA2BAE2D42179C00657DE5 /* PolarCompressionUtils.swift */; };
+		9708EE2D5CABD0771D2C3443 /* Pods_PolarBleSdkTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4592C66DA389FF07420D3379 /* Pods_PolarBleSdkTests.framework */; };
 		A518C36D2AFA61C7001F3724 /* OfflineRecordingUtilsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A518C36C2AFA61C7001F3724 /* OfflineRecordingUtilsTest.swift */; };
 		A52DB1DB2A1F59770073E795 /* communications_pftp_request.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52DB1DA2A1F59770073E795 /* communications_pftp_request.pb.swift */; };
 		A52DB1DC2A1F59770073E795 /* communications_pftp_request.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52DB1DA2A1F59770073E795 /* communications_pftp_request.pb.swift */; };
@@ -428,9 +429,8 @@
 		AAEEB2382D3E532200D2B4A7 /* temperature_measurement_period.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEEB2362D3E532200D2B4A7 /* temperature_measurement_period.pb.swift */; };
 		AAEEB2392D3E532200D2B4A7 /* types_proto3.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEEB2372D3E532200D2B4A7 /* types_proto3.pb.swift */; };
 		AAF7FEE92D94012400B13734 /* PolarPlainDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF7FEE72D94012400B13734 /* PolarPlainDate.swift */; };
-		B2CE16DB2DB1E79F9B105F72 /* Pods_PolarBleSdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CBED7D7976CB9D911047936E /* Pods_PolarBleSdk.framework */; };
 		CC57B5E02E60642500E90F5B /* PolarExerciseSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC57B5DF2E60641200E90F5B /* PolarExerciseSession.swift */; };
-		F8DCBFC59F040E6DCFCD81D8 /* Pods_PolarBleSdkTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B12A5549B96A5802C5C88DF /* Pods_PolarBleSdkTests.framework */; };
+		CF7F1A25FDC78D507DA67B69 /* Pods_iOSCommunications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 119A850082BC99162095355C /* Pods_iOSCommunications.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -464,9 +464,16 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		1B12A5549B96A5802C5C88DF /* Pods_PolarBleSdkTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PolarBleSdkTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		2B75F02B91CD2A426140183F /* Pods-iOSCommunications.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSCommunications.release.xcconfig"; path = "Target Support Files/Pods-iOSCommunications/Pods-iOSCommunications.release.xcconfig"; sourceTree = "<group>"; };
-		5E77A40EA65A3E5233C6D9C4 /* Pods-PolarBleSdk.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdk.release.xcconfig"; path = "Target Support Files/Pods-PolarBleSdk/Pods-PolarBleSdk.release.xcconfig"; sourceTree = "<group>"; };
+		119A850082BC99162095355C /* Pods_iOSCommunications.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iOSCommunications.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		1654AE2486652C1371FDBEEB /* Pods-PolarBleSdkTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdkTests.debug.xcconfig"; path = "Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests.debug.xcconfig"; sourceTree = "<group>"; };
+		2B53CFCDD87ACF2297030478 /* Pods-PolarBleSdkWatchOs.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdkWatchOs.release.xcconfig"; path = "Target Support Files/Pods-PolarBleSdkWatchOs/Pods-PolarBleSdkWatchOs.release.xcconfig"; sourceTree = "<group>"; };
+		31CBF837AEFC4679AF13D8D4 /* Pods-iOSCommunications.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSCommunications.debug.xcconfig"; path = "Target Support Files/Pods-iOSCommunications/Pods-iOSCommunications.debug.xcconfig"; sourceTree = "<group>"; };
+		425280368159F4E5FF416098 /* Pods-PolarBleSdk.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdk.debug.xcconfig"; path = "Target Support Files/Pods-PolarBleSdk/Pods-PolarBleSdk.debug.xcconfig"; sourceTree = "<group>"; };
+		4592C66DA389FF07420D3379 /* Pods_PolarBleSdkTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PolarBleSdkTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		49A5107367704369EB9A6D26 /* Pods_PolarBleSdkWatchOs.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PolarBleSdkWatchOs.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4B05E5443D4BD82E84117A35 /* Pods_PolarBleSdk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PolarBleSdk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		64C3C9F5FC21E1BE328F8217 /* Pods-PolarBleSdkTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdkTests.release.xcconfig"; path = "Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests.release.xcconfig"; sourceTree = "<group>"; };
+		6A9605370BA977B96745D3BE /* Pods-PolarBleSdkWatchOs.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdkWatchOs.debug.xcconfig"; path = "Target Support Files/Pods-PolarBleSdkWatchOs/Pods-PolarBleSdkWatchOs.debug.xcconfig"; sourceTree = "<group>"; };
 		6C0C54FD1CFEB3C900FF23E9 /* TimeUtility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TimeUtility.swift; path = ble/common/TimeUtility.swift; sourceTree = "<group>"; };
 		6C1079201D6D6EA000931948 /* iOSCommunicationsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iOSCommunicationsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C32C6D6220AD3CA006615C3 /* CBScanningProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CBScanningProtocol.swift; path = ble/endpoints/corebluetooth/central/CBScanningProtocol.swift; sourceTree = "<group>"; };
@@ -503,7 +510,6 @@
 		6CB9DB982087188E00505269 /* RxUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RxUtils.swift; path = ble/common/RxUtils.swift; sourceTree = "<group>"; };
 		6CCFE3FF1E5D76C100FAA131 /* BlePsdClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlePsdClient.swift; path = ble/api/model/gatt/client/BlePsdClient.swift; sourceTree = "<group>"; };
 		6CD12AC9201F126500F3A417 /* BleGattException.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BleGattException.swift; path = ble/api/model/gatt/exceptions/BleGattException.swift; sourceTree = "<group>"; };
-		7F7795F96E6A815B6D6C3615 /* Pods_iOSCommunicationsTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iOSCommunicationsTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8403763C2D50EB080004AB66 /* PolarCaloriesData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarCaloriesData.swift; sourceTree = "<group>"; };
 		84059D102DEF09600013C470 /* exercise_samples2.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = exercise_samples2.pb.swift; sourceTree = "<group>"; };
 		840880BB2D072E6900883420 /* PolarNightlyRechargeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarNightlyRechargeData.swift; sourceTree = "<group>"; };
@@ -536,7 +542,8 @@
 		84FC57202F4F047E00676A9B /* PolarOfflineExerciseV2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarOfflineExerciseV2Tests.swift; sourceTree = "<group>"; };
 		84FC57312F4F1AB500676A9B /* PolarExerciseTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarExerciseTypes.swift; sourceTree = "<group>"; };
 		84FC57382F4F1E4200676A9B /* PolarExerciseSession+Parsing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PolarExerciseSession+Parsing.swift"; sourceTree = "<group>"; };
-		939B86D33F1DC1D60E16FCEA /* Pods-iOSCommunications.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSCommunications.debug.xcconfig"; path = "Target Support Files/Pods-iOSCommunications/Pods-iOSCommunications.debug.xcconfig"; sourceTree = "<group>"; };
+		869700D0971E27B1E230468A /* Pods-iOSCommunicationsTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSCommunicationsTests.release.xcconfig"; path = "Target Support Files/Pods-iOSCommunicationsTests/Pods-iOSCommunicationsTests.release.xcconfig"; sourceTree = "<group>"; };
+		87FB706CC2F9CABA4D82915F /* Pods-PolarBleSdk.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdk.release.xcconfig"; path = "Target Support Files/Pods-PolarBleSdk/Pods-PolarBleSdk.release.xcconfig"; sourceTree = "<group>"; };
 		9525FDE22F4DEA5600B3F072 /* PolarTemperatureApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarTemperatureApi.swift; sourceTree = "<group>"; };
 		9525FDE52F4DEA7300B3F072 /* PolarBleApiImpl+Temperature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PolarBleApiImpl+Temperature.swift"; sourceTree = "<group>"; };
 		952C88982F601A0800BD1BD8 /* polar_device_capabilities.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = polar_device_capabilities.json; path = Sources/iOSCommunications/Resources/polar_device_capabilities.json; sourceTree = SOURCE_ROOT; };
@@ -550,6 +557,7 @@
 		95EA2B992D3A2CCC00657DE5 /* PolarDeviceRestApiTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarDeviceRestApiTests.swift; sourceTree = "<group>"; };
 		95EA2B9E2D3E887E00657DE5 /* PolarDeviceRestApiUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarDeviceRestApiUtils.swift; sourceTree = "<group>"; };
 		95EA2BAE2D42179C00657DE5 /* PolarCompressionUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarCompressionUtils.swift; sourceTree = "<group>"; };
+		9F1D8481CB3836037355EFD4 /* Pods-iOSCommunicationsTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSCommunicationsTests.debug.xcconfig"; path = "Target Support Files/Pods-iOSCommunicationsTests/Pods-iOSCommunicationsTests.debug.xcconfig"; sourceTree = "<group>"; };
 		A518C36C2AFA61C7001F3724 /* OfflineRecordingUtilsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineRecordingUtilsTest.swift; sourceTree = "<group>"; };
 		A52DB1DA2A1F59770073E795 /* communications_pftp_request.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = communications_pftp_request.pb.swift; path = ble/api/model/protobuf/communications_pftp_request.pb.swift; sourceTree = "<group>"; };
 		A5346A3625F21858006752CA /* MockGattServiceTransmitterImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockGattServiceTransmitterImpl.swift; sourceTree = "<group>"; };
@@ -691,17 +699,9 @@
 		AAEEB2372D3E532200D2B4A7 /* types_proto3.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = types_proto3.pb.swift; sourceTree = "<group>"; };
 		AAEEB23C2D3E53A200D2B4A7 /* PolarSkinTemperatureUnitTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarSkinTemperatureUnitTest.swift; sourceTree = "<group>"; };
 		AAF7FEE72D94012400B13734 /* PolarPlainDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarPlainDate.swift; sourceTree = "<group>"; };
-		AD8B582F8AC7178972C47659 /* Pods-PolarBleSdkWatchOs.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdkWatchOs.debug.xcconfig"; path = "Target Support Files/Pods-PolarBleSdkWatchOs/Pods-PolarBleSdkWatchOs.debug.xcconfig"; sourceTree = "<group>"; };
-		B6068BC8B0776097B5E58899 /* Pods-iOSCommunicationsTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSCommunicationsTests.debug.xcconfig"; path = "Target Support Files/Pods-iOSCommunicationsTests/Pods-iOSCommunicationsTests.debug.xcconfig"; sourceTree = "<group>"; };
-		BB3BDA403106C23A385D34AB /* Pods-PolarBleSdk.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdk.debug.xcconfig"; path = "Target Support Files/Pods-PolarBleSdk/Pods-PolarBleSdk.debug.xcconfig"; sourceTree = "<group>"; };
-		BEEB375D3E5D80371A83343A /* Pods-PolarBleSdkTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdkTests.debug.xcconfig"; path = "Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests.debug.xcconfig"; sourceTree = "<group>"; };
-		C65B704E542A7C1DD1FAF722 /* Pods_iOSCommunications.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iOSCommunications.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		CBED7D7976CB9D911047936E /* Pods_PolarBleSdk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PolarBleSdk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B51D1928BB072A399C96061C /* Pods-iOSCommunications.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSCommunications.release.xcconfig"; path = "Target Support Files/Pods-iOSCommunications/Pods-iOSCommunications.release.xcconfig"; sourceTree = "<group>"; };
 		CC57B5DF2E60641200E90F5B /* PolarExerciseSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarExerciseSession.swift; sourceTree = "<group>"; };
-		E08CC6FD945F920B8D38DFDB /* Pods_PolarBleSdkWatchOs.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PolarBleSdkWatchOs.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		E33B0BA81F66AB596120F923 /* Pods-PolarBleSdkWatchOs.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdkWatchOs.release.xcconfig"; path = "Target Support Files/Pods-PolarBleSdkWatchOs/Pods-PolarBleSdkWatchOs.release.xcconfig"; sourceTree = "<group>"; };
-		F1BC764092750CDDE7913033 /* Pods-iOSCommunicationsTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iOSCommunicationsTests.release.xcconfig"; path = "Target Support Files/Pods-iOSCommunicationsTests/Pods-iOSCommunicationsTests.release.xcconfig"; sourceTree = "<group>"; };
-		FD30768603B5A8FAE3F8B670 /* Pods-PolarBleSdkTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PolarBleSdkTests.release.xcconfig"; path = "Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests.release.xcconfig"; sourceTree = "<group>"; };
+		EAAEDEC04BFC03AD734C3056 /* Pods_iOSCommunicationsTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iOSCommunicationsTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -710,7 +710,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6C10792D1D6D9C4800931948 /* iOSCommunications.framework in Frameworks */,
-				6DFEBAAF8D40DA3B3938C6A8 /* Pods_iOSCommunicationsTests.framework in Frameworks */,
+				19C40FCF6ADCE0C526429DCF /* Pods_iOSCommunicationsTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -718,7 +718,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55A1C9E0620F9D5EBF66501E /* Pods_iOSCommunications.framework in Frameworks */,
+				CF7F1A25FDC78D507DA67B69 /* Pods_iOSCommunications.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -726,7 +726,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5B64EB48FEE5A2E076261B04 /* Pods_PolarBleSdkWatchOs.framework in Frameworks */,
+				5A061CA47473A774AB6445EA /* Pods_PolarBleSdkWatchOs.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -734,7 +734,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B2CE16DB2DB1E79F9B105F72 /* Pods_PolarBleSdk.framework in Frameworks */,
+				4986E83D1B4BDC29063FC084 /* Pods_PolarBleSdk.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -743,7 +743,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A5743690291B81F500E901A4 /* PolarBleSdk.framework in Frameworks */,
-				F8DCBFC59F040E6DCFCD81D8 /* Pods_PolarBleSdkTests.framework in Frameworks */,
+				9708EE2D5CABD0771D2C3443 /* Pods_PolarBleSdkTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -753,18 +753,30 @@
 		427CAC3008CFEF6A777FB862 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				BB3BDA403106C23A385D34AB /* Pods-PolarBleSdk.debug.xcconfig */,
-				5E77A40EA65A3E5233C6D9C4 /* Pods-PolarBleSdk.release.xcconfig */,
-				BEEB375D3E5D80371A83343A /* Pods-PolarBleSdkTests.debug.xcconfig */,
-				FD30768603B5A8FAE3F8B670 /* Pods-PolarBleSdkTests.release.xcconfig */,
-				AD8B582F8AC7178972C47659 /* Pods-PolarBleSdkWatchOs.debug.xcconfig */,
-				E33B0BA81F66AB596120F923 /* Pods-PolarBleSdkWatchOs.release.xcconfig */,
-				939B86D33F1DC1D60E16FCEA /* Pods-iOSCommunications.debug.xcconfig */,
-				2B75F02B91CD2A426140183F /* Pods-iOSCommunications.release.xcconfig */,
-				B6068BC8B0776097B5E58899 /* Pods-iOSCommunicationsTests.debug.xcconfig */,
-				F1BC764092750CDDE7913033 /* Pods-iOSCommunicationsTests.release.xcconfig */,
+				425280368159F4E5FF416098 /* Pods-PolarBleSdk.debug.xcconfig */,
+				87FB706CC2F9CABA4D82915F /* Pods-PolarBleSdk.release.xcconfig */,
+				1654AE2486652C1371FDBEEB /* Pods-PolarBleSdkTests.debug.xcconfig */,
+				64C3C9F5FC21E1BE328F8217 /* Pods-PolarBleSdkTests.release.xcconfig */,
+				6A9605370BA977B96745D3BE /* Pods-PolarBleSdkWatchOs.debug.xcconfig */,
+				2B53CFCDD87ACF2297030478 /* Pods-PolarBleSdkWatchOs.release.xcconfig */,
+				31CBF837AEFC4679AF13D8D4 /* Pods-iOSCommunications.debug.xcconfig */,
+				B51D1928BB072A399C96061C /* Pods-iOSCommunications.release.xcconfig */,
+				9F1D8481CB3836037355EFD4 /* Pods-iOSCommunicationsTests.debug.xcconfig */,
+				869700D0971E27B1E230468A /* Pods-iOSCommunicationsTests.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		56E4F0941D295A3E24C428E5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4B05E5443D4BD82E84117A35 /* Pods_PolarBleSdk.framework */,
+				4592C66DA389FF07420D3379 /* Pods_PolarBleSdkTests.framework */,
+				49A5107367704369EB9A6D26 /* Pods_PolarBleSdkWatchOs.framework */,
+				119A850082BC99162095355C /* Pods_iOSCommunications.framework */,
+				EAAEDEC04BFC03AD734C3056 /* Pods_iOSCommunicationsTests.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		6C1079211D6D6EA000931948 /* iOSCommunicationsTests */ = {
@@ -808,7 +820,7 @@
 				A5E46E7D27A7C34300F33C80 /* Tests */,
 				6C34DE891CAA3F240083EB1F /* Products */,
 				427CAC3008CFEF6A777FB862 /* Pods */,
-				CB4A2A37421F6A8F7331E3D3 /* Frameworks */,
+				56E4F0941D295A3E24C428E5 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1264,18 +1276,6 @@
 			path = sleep;
 			sourceTree = "<group>";
 		};
-		CB4A2A37421F6A8F7331E3D3 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				CBED7D7976CB9D911047936E /* Pods_PolarBleSdk.framework */,
-				1B12A5549B96A5802C5C88DF /* Pods_PolarBleSdkTests.framework */,
-				E08CC6FD945F920B8D38DFDB /* Pods_PolarBleSdkWatchOs.framework */,
-				C65B704E542A7C1DD1FAF722 /* Pods_iOSCommunications.framework */,
-				7F7795F96E6A815B6D6C3615 /* Pods_iOSCommunicationsTests.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1307,11 +1307,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6C1079281D6D6EA000931948 /* Build configuration list for PBXNativeTarget "iOSCommunicationsTests" */;
 			buildPhases = (
-				FC91E0075256C05C713873DF /* [CP] Check Pods Manifest.lock */,
+				C2E005C0DA19AF589BF5EC88 /* [CP] Check Pods Manifest.lock */,
 				6C10791C1D6D6EA000931948 /* Sources */,
 				6C10791D1D6D6EA000931948 /* Frameworks */,
 				6C10791E1D6D6EA000931948 /* Resources */,
-				4814BFBCB95D3D7C23766B05 /* [CP] Embed Pods Frameworks */,
+				4AC738BD8FCE5964633C7AE8 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1327,7 +1327,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6C34DE901CAA3F240083EB1F /* Build configuration list for PBXNativeTarget "iOSCommunications" */;
 			buildPhases = (
-				119CF05B0E8CDE4058AB6FBB /* [CP] Check Pods Manifest.lock */,
+				D8955BD6D7EDD5A7235F6947 /* [CP] Check Pods Manifest.lock */,
 				6C34DE831CAA3F240083EB1F /* Sources */,
 				6C34DE841CAA3F240083EB1F /* Frameworks */,
 				6C34DE851CAA3F240083EB1F /* Headers */,
@@ -1347,7 +1347,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6C39E8C8209B0755001F7E44 /* Build configuration list for PBXNativeTarget "PolarBleSdkWatchOs" */;
 			buildPhases = (
-				2D1FF2238BF205EF2EADFA4F /* [CP] Check Pods Manifest.lock */,
+				1824EB4D8EB17BFB4854E115 /* [CP] Check Pods Manifest.lock */,
 				6C39E8BE209B0754001F7E44 /* Sources */,
 				6C39E8BF209B0754001F7E44 /* Frameworks */,
 				6C39E8C0209B0754001F7E44 /* Headers */,
@@ -1366,7 +1366,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6C770B73206B779A00F3D51D /* Build configuration list for PBXNativeTarget "PolarBleSdk" */;
 			buildPhases = (
-				C8C95988C86CB7CDD932B182 /* [CP] Check Pods Manifest.lock */,
+				D4545446CFBEE62AFA58DFAE /* [CP] Check Pods Manifest.lock */,
 				6C770B67206B779900F3D51D /* Sources */,
 				6C770B68206B779900F3D51D /* Frameworks */,
 				6C770B69206B779900F3D51D /* Headers */,
@@ -1385,11 +1385,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A5743693291B81F500E901A4 /* Build configuration list for PBXNativeTarget "PolarBleSdkTests" */;
 			buildPhases = (
-				22F782D7119456B0A0779A81 /* [CP] Check Pods Manifest.lock */,
+				1987B637829F3D86D41D0465 /* [CP] Check Pods Manifest.lock */,
 				A5743688291B81F500E901A4 /* Sources */,
 				A5743689291B81F500E901A4 /* Frameworks */,
 				A574368A291B81F500E901A4 /* Resources */,
-				353C53DAB17C44ED77BA101C /* [CP] Embed Pods Frameworks */,
+				5E26466A07328B91B93A9ACE /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1496,51 +1496,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		119CF05B0E8CDE4058AB6FBB /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-iOSCommunications-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		22F782D7119456B0A0779A81 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-PolarBleSdkTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		2D1FF2238BF205EF2EADFA4F /* [CP] Check Pods Manifest.lock */ = {
+		1824EB4D8EB17BFB4854E115 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1562,24 +1518,29 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		353C53DAB17C44ED77BA101C /* [CP] Embed Pods Frameworks */ = {
+		1987B637829F3D86D41D0465 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			name = "[CP] Embed Pods Frameworks";
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-PolarBleSdkTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests-frameworks.sh\"\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		4814BFBCB95D3D7C23766B05 /* [CP] Embed Pods Frameworks */ = {
+		4AC738BD8FCE5964633C7AE8 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1587,16 +1548,63 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iOSCommunicationsTests/Pods-iOSCommunicationsTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iOSCommunicationsTests/Pods-iOSCommunicationsTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-iOSCommunicationsTests/Pods-iOSCommunicationsTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C8C95988C86CB7CDD932B182 /* [CP] Check Pods Manifest.lock */ = {
+		5E26466A07328B91B93A9ACE /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PolarBleSdkTests/Pods-PolarBleSdkTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C2E005C0DA19AF589BF5EC88 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-iOSCommunicationsTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D4545446CFBEE62AFA58DFAE /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1618,7 +1626,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		FC91E0075256C05C713873DF /* [CP] Check Pods Manifest.lock */ = {
+		D8955BD6D7EDD5A7235F6947 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1633,7 +1641,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-iOSCommunicationsTests-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-iOSCommunications-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -2113,7 +2121,7 @@
 /* Begin XCBuildConfiguration section */
 		6C1079291D6D6EA000931948 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B6068BC8B0776097B5E58899 /* Pods-iOSCommunicationsTests.debug.xcconfig */;
+			baseConfigurationReference = 9F1D8481CB3836037355EFD4 /* Pods-iOSCommunicationsTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -2131,7 +2139,7 @@
 		};
 		6C10792A1D6D6EA000931948 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F1BC764092750CDDE7913033 /* Pods-iOSCommunicationsTests.release.xcconfig */;
+			baseConfigurationReference = 869700D0971E27B1E230468A /* Pods-iOSCommunicationsTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -2282,7 +2290,7 @@
 		};
 		6C34DE911CAA3F240083EB1F /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 939B86D33F1DC1D60E16FCEA /* Pods-iOSCommunications.debug.xcconfig */;
+			baseConfigurationReference = 31CBF837AEFC4679AF13D8D4 /* Pods-iOSCommunications.debug.xcconfig */;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
@@ -2322,7 +2330,7 @@
 		};
 		6C34DE921CAA3F240083EB1F /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2B75F02B91CD2A426140183F /* Pods-iOSCommunications.release.xcconfig */;
+			baseConfigurationReference = B51D1928BB072A399C96061C /* Pods-iOSCommunications.release.xcconfig */;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
@@ -2361,7 +2369,7 @@
 		};
 		6C39E8C9209B0755001F7E44 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = AD8B582F8AC7178972C47659 /* Pods-PolarBleSdkWatchOs.debug.xcconfig */;
+			baseConfigurationReference = 6A9605370BA977B96745D3BE /* Pods-PolarBleSdkWatchOs.debug.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = NO;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
@@ -2418,7 +2426,7 @@
 		};
 		6C39E8CA209B0755001F7E44 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E33B0BA81F66AB596120F923 /* Pods-PolarBleSdkWatchOs.release.xcconfig */;
+			baseConfigurationReference = 2B53CFCDD87ACF2297030478 /* Pods-PolarBleSdkWatchOs.release.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = NO;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
@@ -2470,7 +2478,7 @@
 		};
 		6C770B71206B779A00F3D51D /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BB3BDA403106C23A385D34AB /* Pods-PolarBleSdk.debug.xcconfig */;
+			baseConfigurationReference = 425280368159F4E5FF416098 /* Pods-PolarBleSdk.debug.xcconfig */;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -2530,7 +2538,7 @@
 		};
 		6C770B72206B779A00F3D51D /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5E77A40EA65A3E5233C6D9C4 /* Pods-PolarBleSdk.release.xcconfig */;
+			baseConfigurationReference = 87FB706CC2F9CABA4D82915F /* Pods-PolarBleSdk.release.xcconfig */;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -2586,7 +2594,7 @@
 		};
 		A5743694291B81F500E901A4 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BEEB375D3E5D80371A83343A /* Pods-PolarBleSdkTests.debug.xcconfig */;
+			baseConfigurationReference = 1654AE2486652C1371FDBEEB /* Pods-PolarBleSdkTests.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -2628,7 +2636,7 @@
 		};
 		A5743695291B81F500E901A4 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = FD30768603B5A8FAE3F8B670 /* Pods-PolarBleSdkTests.release.xcconfig */;
+			baseConfigurationReference = 64C3C9F5FC21E1BE328F8217 /* Pods-PolarBleSdkTests.release.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
