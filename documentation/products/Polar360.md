@@ -166,7 +166,8 @@ Activity and sleep data is passively recorded by the device overtime and will st
 | PPI              | PPI online stream or offline recording is not supported in SDK MODE             |
 | HR               | HR online stream or offline recording is not supported in SDK MODE              |
 
-[1] Sampling rate of 100Hz in PPG is not confirmed yet (FW. 2.0.8)
+[1] Sampling rate of 100Hz in PPG is not confirmed yet (FW. 2.0.8).
+
 Bolded values are available in normal mode, unbolded values are available in SDK mode only.
    
 ## Polar 360 and Polar Loop UI animations 
