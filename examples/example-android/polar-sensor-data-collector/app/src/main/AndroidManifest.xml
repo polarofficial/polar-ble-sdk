@@ -93,6 +93,11 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".ui.watchface.WatchFaceActivity"
+            android:exported="false"
+            android:label="@string/watch_face_complications_title"
+            android:theme="@style/AppTheme" />
+        <activity
             android:name=".ui.genericapi.GenericApiActivity"
             android:exported="false"
             android:foregroundServiceType="dataSync|connectedDevice"

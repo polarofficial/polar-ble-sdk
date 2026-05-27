@@ -1,10 +1,7 @@
 ///  Copyright © 2022 Polar. All rights reserved.
 
 import XCTest
-import RxTest
-import RxSwift
 @testable import iOSCommunications
-import CoreBluetooth
 
 final class PmdSettingTest: XCTestCase {
     func testPmdSettingsWithRange() {

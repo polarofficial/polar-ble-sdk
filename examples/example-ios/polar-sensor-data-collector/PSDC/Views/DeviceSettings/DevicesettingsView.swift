@@ -41,6 +41,7 @@ struct DeviceSettingsView: View {
     @State private var showGenericApiButton = false
     @State private var showGenericApiView = false
     @State private var genericButtonColor = Color.clear
+    @State private var showWatchFaceConfig = false
     @State private var toast: String? = nil
     @State private var bleSignalStrengthText: String = ""
     
@@ -63,7 +64,7 @@ struct DeviceSettingsView: View {
                             Text("Battery level: ")
                             if bleSdkManager.batteryStatusFeature.isSupported {
                                 Text("\(bleSdkManager.batteryStatusFeature.batteryLevel.map { "\($0)%" } ?? "Unknown")")
-                                Text("\(bleSdkManager.batteryStatusFeature.chargeState)")
+                                Text(String(describing: bleSdkManager.batteryStatusFeature.chargeState))
                             } else {
                                 Text("-")
                             }
@@ -112,12 +113,13 @@ struct DeviceSettingsView: View {
                             Text(bleSdkManager.firmwareUpdateFeature.status)
                                 .fontWeight(.bold)
                         }
+                        .disabled(bleSdkManager.firmwareUpdateFeature.inProgress == false)
                         .padding(.top, 8)
                         
                         Button("Set time",
                                action: {
-                            isPerformingTimeSet = true
                             Task {
+                                isPerformingTimeSet = true
                                 await bleSdkManager.setTime()
                                 isPerformingTimeSet = false
                             }
@@ -134,6 +136,7 @@ struct DeviceSettingsView: View {
                                    action: {
                                 isPerformingTimeGet = true
                                 Task {
+                                    isPerformingTimeGet = true
                                     await bleSdkManager.getTime()
                                     isPerformingTimeGet = false
                                 }
@@ -151,6 +154,7 @@ struct DeviceSettingsView: View {
                                    action: {
                                 isPerformingDiskSpaceGet = true
                                 Task {
+                                    isPerformingDiskSpaceGet = true
                                     await bleSdkManager.getDiskSpace()
                                     isPerformingDiskSpaceGet = false
                                 }
@@ -203,7 +207,7 @@ struct DeviceSettingsView: View {
                         }
                     }).buttonStyle(SecondaryButtonStyle(buttonState: ButtonState.released))
                     
-                    Button((bleSdkManager.deviceToHostNotificationDisposable != nil) ? "Stop observing device notifications" : "Start observing device notifications",
+                    Button(bleSdkManager.isObservingDeviceToHostNotifications ? "Stop observing device notifications" : "Start observing device notifications",
                            action: {
                         Task {
                             bleSdkManager.toggleDeviceToHostNotificationObservation()
@@ -229,7 +233,7 @@ struct DeviceSettingsView: View {
                     .alert("Confirm Factory Reset", isPresented: $showFactoryResetAlert) {
                         Button("Reset", role: .destructive) {
                             Task {
-                                await bleSdkManager.doFactoryReset()
+                                await await bleSdkManager.doFactoryReset()
                             }
                         }
                         Button("Cancel", role: .cancel) {}
@@ -278,15 +282,14 @@ struct DeviceSettingsView: View {
                     if bleSdkManager.fileTransferFeature.isSupported {
                         Button("Get physical data config") {
                             Task {
-                                guard let info = await bleSdkManager.getUserPhysicalConfiguration() else {
+                                let info = await bleSdkManager.getUserPhysicalConfiguration()
+                                guard let info else {
                                     errorMessage = "No physical configuration stored on device."
                                     showError = true
                                     return
                                 }
-                                
                                 let df = DateFormatter()
                                 df.dateFormat = "yyyy-MM-dd"
-                                
                                 let sleepMessage = if (info.sleepGoalMinutes > 0) {
                                     "\nSleep goal: \(info.sleepGoalMinutes) min"
                                 } else {
@@ -322,7 +325,7 @@ struct DeviceSettingsView: View {
                         Button("Get FTU status",
                                action: {
                             Task {
-                                await bleSdkManager.getFtuStatus()
+                                await await bleSdkManager.getFtuStatus()
                             }
                         })
                         .buttonStyle(SecondaryButtonStyle(buttonState: ButtonState.released))
@@ -393,7 +396,7 @@ struct DeviceSettingsView: View {
                     }
                     .task {
                         isPerformingMultiBleStatusGet = true
-                        await bleSdkManager.getMultiBleModeStatus()
+                        await await bleSdkManager.getMultiBleModeStatus()
                         isPerformingMultiBleStatusGet = false
                     }
                     if bleSdkManager.fileTransferFeature.isSupported {
@@ -593,6 +596,25 @@ struct DeviceSettingsView: View {
                             }
                         }
                         .buttonStyle(SecondaryButtonStyle(buttonState: .released))
+                    }
+                    if bleSdkManager.watchFaceFeature.isSupported {
+                        HStack {
+                            Button("Configure watch face complications") {
+                                showWatchFaceConfig = true
+                            }
+                            .sheet(isPresented: $showWatchFaceConfig) {
+                                VStack {
+                                    WatchFaceView()
+                                        .environmentObject(bleSdkManager)
+#if targetEnvironment(macCatalyst)
+                                    Button("Close", action: { showWatchFaceConfig = false })
+                                        .padding(.bottom)
+                                        .padding(.top)
+#endif
+                                }
+                            }
+                            .buttonStyle(SecondaryButtonStyle(buttonState: .released))
+                        }
                     }
                 }
             } else {

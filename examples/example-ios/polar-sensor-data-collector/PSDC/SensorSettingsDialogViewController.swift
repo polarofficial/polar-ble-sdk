@@ -1,12 +1,11 @@
 
 import UIKit
 import PolarBleSdk
-import RxSwift
 
 class SensorSettingsDialogViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var available = Set<UInt16>()
-    var obs: ((RxSwift.SingleEvent<UInt16>) -> ())?
+    private var continuation: CheckedContinuation<UInt16, Never>?
     
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var tableView: UITableView!
@@ -17,19 +16,13 @@ class SensorSettingsDialogViewController: UIViewController, UITableViewDelegate,
         tableView.rowHeight = 40
     }
     
-    func start(_ text: String, set: Set<UInt16>) -> Single<UInt16> {
+    func start(_ text: String, set: Set<UInt16>) async -> UInt16 {
         self.available = set
         self.titleLabel.text = text
-        return Single.create{ observer in
-            self.obs = observer
-            self.tableView.reloadData()
-            return Disposables.create {
-                if !self.isBeingDismissed {
-                    self.dismiss(animated: false) {
-                    }
-                }
-            }
-        }.subscribe(on: MainScheduler.instance)
+        tableView.reloadData()
+        return await withCheckedContinuation { cont in
+            self.continuation = cont
+        }
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -44,7 +37,9 @@ class SensorSettingsDialogViewController: UIViewController, UITableViewDelegate,
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        self.obs?(.success(available[available.index(available.startIndex, offsetBy: indexPath.row)]))
+        let value = available[available.index(available.startIndex, offsetBy: indexPath.row)]
+        continuation?.resume(returning: value)
+        continuation = nil
         self.dismiss(animated: false) {
         }
     }

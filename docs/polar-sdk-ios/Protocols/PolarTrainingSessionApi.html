@@ -17,7 +17,7 @@
     <a title="PolarTrainingSessionApi Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">PolarBleSdk 7.0.2 Docs</a> (41% documented)</p>
+        <p><a href="../index.html">PolarBleSdk 7.1.3 Docs</a> (40% documented)</p>
         <div class="header-right">
           <form role="search" action="../search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -40,15 +40,6 @@
           <li class="nav-group-name">
             <a href="../Classes.html">Classes</a>
             <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a href="../Classes/BleHtsClient.html">BleHtsClient</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Classes/BleHtsClient/TemperatureMeasurement.html">– TemperatureMeasurement</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Classes/HealthThermometer.html">HealthThermometer</a>
-              </li>
               <li class="nav-group-task">
                 <a href="../Classes/PolarActivityData.html">PolarActivityData</a>
               </li>
@@ -219,6 +210,9 @@
                 <a href="../Enums/PolarTrainingSessionFetchResult.html">PolarTrainingSessionFetchResult</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/PolarWatchFaceComplication.html">PolarWatchFaceComplication</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/PpgDataType.html">PpgDataType</a>
               </li>
               <li class="nav-group-task">
@@ -234,9 +228,6 @@
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
                 <a href="../Extensions/DateComponents.html">DateComponents</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Extensions/PrimitiveSequence.html">PrimitiveSequence</a>
               </li>
             </ul>
           </li>
@@ -305,6 +296,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarWatchFaceApi.html">PolarWatchFaceApi</a>
               </li>
             </ul>
           </li>
@@ -462,6 +456,9 @@
                 <a href="../Structs/PolarUserDeviceSettingsData.html">PolarUserDeviceSettingsData</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Structs/PolarWatchFaceConfig.html">PolarWatchFaceConfig</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Structs/SDLogConfig.html">SDLogConfig</a>
               </li>
               <li class="nav-group-task">
@@ -538,20 +535,30 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP03getdE10References10identifier8fromDate02toK07RxSwift10ObservableCyAA0adE9ReferenceVGSS_10Foundation0K0VSgAQtF"></a>
+                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP03getdE10References10identifier8fromDate02toK0SayAA0adE9ReferenceVGSS_10Foundation0K0VSgANtYaKF"></a>
                     <a name="//apple_ref/swift/Method/getTrainingSessionReferences(identifier:fromDate:toDate:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP03getdE10References10identifier8fromDate02toK07RxSwift10ObservableCyAA0adE9ReferenceVGSS_10Foundation0K0VSgAQtF">getTrainingSessionReferences(identifier:<wbr>fromDate:<wbr>toDate:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP03getdE10References10identifier8fromDate02toK0SayAA0adE9ReferenceVGSS_10Foundation0K0VSgANtYaKF">getTrainingSessionReferences(identifier:<wbr>fromDate:<wbr>toDate:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Get training session references for a given period. If fromDate and/or toDate are not given this method will return all training session references in the device.</p>
+                        <p>Get training session references for a given period. If fromDate and toDate are not given this
+method will return all training session references in the device.
+Otherwise returns list of training session references from the specified closed or
+half-open date interval.</p>
 <div class="aside aside-requires">
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
+
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors.
 
 </div>
 
@@ -564,7 +571,7 @@
     <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
     <span class="nv">fromDate</span><span class="p">:</span> <span class="kt">Date</span><span class="p">?,</span>
     <span class="nv">toDate</span><span class="p">:</span> <span class="kt">Date</span><span class="p">?</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarTrainingSessionReference.html">PolarTrainingSessionReference</a></span><span class="o">&gt;</span></code></pre>
+<span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt"><a href="../Structs/PolarTrainingSessionReference.html">PolarTrainingSessionReference</a></span><span class="p">]</span></code></pre>
 
                         </div>
                       </div>
@@ -613,7 +620,7 @@
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>An Observable emitting <code><a href="../Structs/PolarTrainingSessionReference.html">PolarTrainingSessionReference</a></code> objects for the specified period.</p>
+                        <p>An array of <code><a href="../Structs/PolarTrainingSessionReference.html">PolarTrainingSessionReference</a></code> objects for the specified period.</p>
                       </div>
                     </section>
                   </div>
@@ -621,10 +628,13 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP03getdE010identifier08trainingE9Reference7RxSwift17PrimitiveSequenceVyAG11SingleTraitOAA0adE0VGSS_AA0adeJ0VtF"></a>
+                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP03getdE010identifier08trainingE9ReferenceAA0adE0VSS_AA0adeJ0VtYaKF"></a>
                     <a name="//apple_ref/swift/Method/getTrainingSession(identifier:trainingSessionReference:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP03getdE010identifier08trainingE9Reference7RxSwift17PrimitiveSequenceVyAG11SingleTraitOAA0adE0VGSS_AA0adeJ0VtF">getTrainingSession(identifier:<wbr>trainingSessionReference:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP03getdE010identifier08trainingE9ReferenceAA0adE0VSS_AA0adeJ0VtYaKF">getTrainingSession(identifier:<wbr>trainingSessionReference:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -636,6 +646,10 @@
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors.
+
 </div>
 
                       </div>
@@ -646,7 +660,7 @@
                           <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getTrainingSession</span><span class="p">(</span>
     <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
     <span class="nv">trainingSessionReference</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarTrainingSessionReference.html">PolarTrainingSessionReference</a></span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarTrainingSession.html">PolarTrainingSession</a></span><span class="o">&gt;</span></code></pre>
+<span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/PolarTrainingSession.html">PolarTrainingSession</a></span></code></pre>
 
                         </div>
                       </div>
@@ -683,7 +697,7 @@
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>A Single emitting a <code><a href="../Structs/PolarTrainingSession.html">PolarTrainingSession</a></code> containing the session data.</p>
+                        <p><code><a href="../Structs/PolarTrainingSession.html">PolarTrainingSession</a></code> containing the session data.</p>
                       </div>
                     </section>
                   </div>
@@ -691,10 +705,13 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP03getdE12WithProgress10identifier08trainingE9Reference7RxSwift10ObservableCyAA0adE11FetchResultOGSS_AA0adeL0VtF"></a>
-                    <a name="//apple_ref/swift/Method/getTrainingSessionWithProgress(identifier:trainingSessionReference:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP03getdE12WithProgress10identifier08trainingE9Reference7RxSwift10ObservableCyAA0adE11FetchResultOGSS_AA0adeL0VtF">getTrainingSessionWithProgress(identifier:<wbr>trainingSessionReference:<wbr>)</a>
+                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP03getdE12WithProgress10identifier08trainingE9Reference15progressHandlerAA0adE0VSS_AA0adeL0VyAA0adeI0VctYaKF"></a>
+                    <a name="//apple_ref/swift/Method/getTrainingSessionWithProgress(identifier:trainingSessionReference:progressHandler:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP03getdE12WithProgress10identifier08trainingE9Reference15progressHandlerAA0adE0VSS_AA0adeL0VyAA0adeI0VctYaKF">getTrainingSessionWithProgress(identifier:<wbr>trainingSessionReference:<wbr>progressHandler:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -706,6 +723,10 @@
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors.
+
 </div>
 
                       </div>
@@ -715,8 +736,9 @@
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getTrainingSessionWithProgress</span><span class="p">(</span>
     <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
-    <span class="nv">trainingSessionReference</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarTrainingSessionReference.html">PolarTrainingSessionReference</a></span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Enums/PolarTrainingSessionFetchResult.html">PolarTrainingSessionFetchResult</a></span><span class="o">&gt;</span></code></pre>
+    <span class="nv">trainingSessionReference</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarTrainingSessionReference.html">PolarTrainingSessionReference</a></span><span class="p">,</span>
+    <span class="nv">progressHandler</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Structs/PolarTrainingSessionProgress.html">PolarTrainingSessionProgress</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span>
+<span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/PolarTrainingSession.html">PolarTrainingSession</a></span></code></pre>
 
                         </div>
                       </div>
@@ -748,12 +770,24 @@
                                 </div>
                               </td>
                             </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>progressHandler</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A closure called with <code><a href="../Structs/PolarTrainingSessionProgress.html">PolarTrainingSessionProgress</a></code> as the session data is being fetched.</p>
+                                </div>
+                              </td>
+                            </tr>
                           </tbody>
                         </table>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>An Observable emitting <code><a href="../Enums/PolarTrainingSessionFetchResult.html">PolarTrainingSessionFetchResult</a></code> containing either progress updates or the complete session data.</p>
+                        <p><code><a href="../Structs/PolarTrainingSession.html">PolarTrainingSession</a></code> containing the complete session data.</p>
                       </div>
                     </section>
                   </div>
@@ -761,10 +795,13 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP06deletedE010identifier9reference7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_AA0adE9ReferenceVtF"></a>
+                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP06deletedE010identifier9referenceySS_AA0adE9ReferenceVtYaKF"></a>
                     <a name="//apple_ref/swift/Method/deleteTrainingSession(identifier:reference:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP06deletedE010identifier9reference7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_AA0adE9ReferenceVtF">deleteTrainingSession(identifier:<wbr>reference:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP06deletedE010identifier9referenceySS_AA0adE9ReferenceVtYaKF">deleteTrainingSession(identifier:<wbr>reference:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -776,6 +813,10 @@
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -783,7 +824,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">deleteTrainingSession</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">reference</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarTrainingSessionReference.html">PolarTrainingSessionReference</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">deleteTrainingSession</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">reference</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarTrainingSessionReference.html">PolarTrainingSessionReference</a></span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -818,25 +859,19 @@
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable
-
-<ul>
-<li>success: When the training session has been deleted from the device</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP13startExercise10identifier7profile7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_AA0ahE0O12SportProfileOtF"></a>
+                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP13startExercise10identifier7profileySS_AA0ahE0O12SportProfileOtYaKF"></a>
                     <a name="//apple_ref/swift/Method/startExercise(identifier:profile:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP13startExercise10identifier7profile7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_AA0ahE0O12SportProfileOtF">startExercise(identifier:<wbr>profile:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP13startExercise10identifier7profileySS_AA0ahE0O12SportProfileOtYaKF">startExercise(identifier:<wbr>profile:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -848,6 +883,10 @@
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -855,7 +894,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startExercise</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">profile</span><span class="p">:</span> <span class="kt"><a href="../Enums/PolarExerciseSession.html">PolarExerciseSession</a></span><span class="o">.</span><span class="kt">SportProfile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startExercise</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">profile</span><span class="p">:</span> <span class="kt"><a href="../Enums/PolarExerciseSession.html">PolarExerciseSession</a></span><span class="o">.</span><span class="kt">SportProfile</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -890,20 +929,19 @@
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>A <code>Completable</code> that completes when the command has been delivered to the device.</p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP13pauseExercise10identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF"></a>
+                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP13pauseExercise10identifierySS_tYaKF"></a>
                     <a name="//apple_ref/swift/Method/pauseExercise(identifier:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP13pauseExercise10identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF">pauseExercise(identifier:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP13pauseExercise10identifierySS_tYaKF">pauseExercise(identifier:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -915,6 +953,10 @@
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -922,7 +964,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">pauseExercise</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">pauseExercise</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -945,20 +987,19 @@
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>A <code>Completable</code> that completes when the command has been delivered to the device.</p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP14resumeExercise10identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF"></a>
+                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP14resumeExercise10identifierySS_tYaKF"></a>
                     <a name="//apple_ref/swift/Method/resumeExercise(identifier:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP14resumeExercise10identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF">resumeExercise(identifier:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP14resumeExercise10identifierySS_tYaKF">resumeExercise(identifier:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -970,6 +1011,10 @@
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -977,7 +1022,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">resumeExercise</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">resumeExercise</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -1000,20 +1045,19 @@
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>A <code>Completable</code> that completes when the command has been delivered to the device.</p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP12stopExercise10identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF"></a>
+                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP12stopExercise10identifierySS_tYaKF"></a>
                     <a name="//apple_ref/swift/Method/stopExercise(identifier:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP12stopExercise10identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF">stopExercise(identifier:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP12stopExercise10identifierySS_tYaKF">stopExercise(identifier:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1027,6 +1071,10 @@
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -1034,7 +1082,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">stopExercise</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">stopExercise</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -1057,20 +1105,19 @@
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>A <code>Completable</code> that completes when the command has been delivered to the device.</p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP17getExerciseStatus10identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOAA0ahE0O0H4InfoVGSS_tF"></a>
+                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP17getExerciseStatus10identifierAA0ahE0O0H4InfoVSS_tYaKF"></a>
                     <a name="//apple_ref/swift/Method/getExerciseStatus(identifier:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP17getExerciseStatus10identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOAA0ahE0O0H4InfoVGSS_tF">getExerciseStatus(identifier:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP17getExerciseStatus10identifierAA0ahE0O0H4InfoVSS_tYaKF">getExerciseStatus(identifier:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1082,6 +1129,10 @@
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -1089,7 +1140,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getExerciseStatus</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Enums/PolarExerciseSession.html">PolarExerciseSession</a></span><span class="o">.</span><span class="kt">ExerciseInfo</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getExerciseStatus</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/PolarExerciseSession.html">PolarExerciseSession</a></span><span class="o">.</span><span class="kt">ExerciseInfo</span></code></pre>
 
                         </div>
                       </div>
@@ -1114,7 +1165,7 @@
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>A <code>Single</code> emitting the current <code><a href="../Enums/PolarExerciseSession/ExerciseInfo.html">PolarExerciseSession.ExerciseInfo</a></code> for the device.</p>
+                        <p>The current <code><a href="../Enums/PolarExerciseSession/ExerciseInfo.html">PolarExerciseSession.ExerciseInfo</a></code> for the device.</p>
                       </div>
                     </section>
                   </div>
@@ -1122,9 +1173,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP21observeExerciseStatus10identifier7RxSwift10ObservableCyAA0ahE0O0H4InfoVGSS_tF"></a>
+                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP21observeExerciseStatus10identifierScsyAA0ahE0O0H4InfoVs5Error_pGSS_tF"></a>
                     <a name="//apple_ref/swift/Method/observeExerciseStatus(identifier:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP21observeExerciseStatus10identifier7RxSwift10ObservableCyAA0ahE0O0H4InfoVGSS_tF">observeExerciseStatus(identifier:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP21observeExerciseStatus10identifierScsyAA0ahE0O0H4InfoVs5Error_pGSS_tF">observeExerciseStatus(identifier:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1144,7 +1195,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">observeExerciseStatus</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Enums/PolarExerciseSession.html">PolarExerciseSession</a></span><span class="o">.</span><span class="kt">ExerciseInfo</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">observeExerciseStatus</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">AsyncThrowingStream</span><span class="o">&lt;</span><span class="kt"><a href="../Enums/PolarExerciseSession.html">PolarExerciseSession</a></span><span class="o">.</span><span class="kt">ExerciseInfo</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1169,7 +1220,7 @@
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>An <code>Observable</code> emitting <code><a href="../Enums/PolarExerciseSession/ExerciseInfo.html">PolarExerciseSession.ExerciseInfo</a></code> whenever the session status changes.</p>
+                        <p><code>AsyncThrowingStream</code> emitting <code><a href="../Enums/PolarExerciseSession/ExerciseInfo.html">PolarExerciseSession.ExerciseInfo</a></code> whenever the session status changes.</p>
                       </div>
                     </section>
                   </div>
@@ -1179,7 +1230,7 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-04-20)</p>
+          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-05-26)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

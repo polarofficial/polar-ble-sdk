@@ -1,5 +1,4 @@
 import Foundation
-import RxSwift
 import SwiftProtobuf
 
 extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
@@ -8,301 +7,153 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
 
     private func handleError(_ error: Error) -> Error {
         let nsError = error as NSError
-
         if let mapped = Protocol_PbPFtpError(rawValue: nsError.code) {
-            return NSError(
-                domain: nsError.domain,
-                code: nsError.code,
-                userInfo: [
-                    NSLocalizedDescriptionKey:
-                        "\(mapped) (\(nsError.localizedDescription))"
-                ]
-            )
+            return NSError(domain: nsError.domain, code: nsError.code,
+                userInfo: [NSLocalizedDescriptionKey: "\(mapped) (\(nsError.localizedDescription))"])
         }
-
         return error
     }
+
+    // MARK: - PolarOfflineExerciseV2Api
 
     func startOfflineExerciseV2(
         identifier: String,
         sportProfile: PolarExerciseSession.SportProfile
-    ) -> Single<OfflineExerciseStartResult> {
-        
-
+    ) async throws -> OfflineExerciseStartResult {
         do {
             let session = try serviceClientUtils.sessionFtpClientReady(identifier)
-
-            guard let client = session.fetchGattClient(
-                BlePsFtpClient.PSFTP_SERVICE
-            ) as? BlePsFtpClient else {
-                return Single.error(PolarErrors.serviceNotFound)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                throw PolarErrors.serviceNotFound
             }
-
             var sportId = PbSportIdentifier()
             sportId.value = UInt64(sportProfile.rawValue)
-
             var params = Protocol_PbPFtpStartDmExerciseParams()
             params.sportIdentifier = sportId
-
-            let request = try params.serializedData()
-
-            return client.query(
-                Protocol_PbPFtpQuery.startDmExercise.rawValue,
-                parameters: request as NSData
-            )
-            .map { (response: NSData) -> OfflineExerciseStartResult in
-
-                let proto = try Protocol_PbPftpStartDmExerciseResult(
-                    serializedBytes: Data(response)
-                )
-
-                let result: OfflineExerciseStartResultType
-
-                switch proto.result {
-                case .resultSuccess: result = .success
-                case .resultExeOngoing: result = .exerciseOngoing
-                case .resultLowBattery: result = .lowBattery
-                case .resultSdkMode: result = .sdkMode
-                case .resultUnknownSport: result = .unknownSport
-                default: result = .other
-                }
-
-                return OfflineExerciseStartResult(
-                    result: result,
-                    directoryPath: proto.dmDirectoryPath
-                )
+            let response = try await client.query(Protocol_PbPFtpQuery.startDmExercise.rawValue, parameters: try params.serializedData() as NSData)
+            let proto = try Protocol_PbPftpStartDmExerciseResult(serializedBytes: Data(response))
+            let result: OfflineExerciseStartResultType
+            switch proto.result {
+            case .resultSuccess:     result = .success
+            case .resultExeOngoing:  result = .exerciseOngoing
+            case .resultLowBattery:  result = .lowBattery
+            case .resultSdkMode:     result = .sdkMode
+            case .resultUnknownSport: result = .unknownSport
+            default:                 result = .other
             }
-            .catch { error in
-                Single.error(self.handleError(error))
-            }
-
+            return OfflineExerciseStartResult(result: result, directoryPath: proto.dmDirectoryPath)
         } catch {
-            return Single.error(handleError(error))
+            throw handleError(error)
         }
     }
 
-    func stopOfflineExerciseV2(identifier: String) -> Completable {
-
+    func stopOfflineExerciseV2(identifier: String) async throws {
         do {
             let session = try serviceClientUtils.sessionFtpClientReady(identifier)
-
-            guard let client = session.fetchGattClient(
-                BlePsFtpClient.PSFTP_SERVICE
-            ) as? BlePsFtpClient else {
-                return Completable.error(PolarErrors.serviceNotFound)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                throw PolarErrors.serviceNotFound
             }
-
             var params = Protocol_PbPFtpStopExerciseParams()
             params.save = true
-
-            let request = try params.serializedData()
-
-            return client.query(
-                Protocol_PbPFtpQuery.stopExercise.rawValue,
-                parameters: request as NSData
-            )
-            .map { _ in () }
-            .asCompletable()
-            .catch { error in
-                Completable.error(self.handleError(error))
-            }
-
+            _ = try await client.query(Protocol_PbPFtpQuery.stopExercise.rawValue, parameters: try params.serializedData() as NSData)
         } catch {
-            return Completable.error(handleError(error))
+            throw handleError(error)
         }
     }
 
-    func getOfflineExerciseStatusV2(identifier: String) -> Single<Bool> {
-        
+    func getOfflineExerciseStatusV2(identifier: String) async throws -> Bool {
         do {
             let session = try serviceClientUtils.sessionFtpClientReady(identifier)
-
-            guard let client = session.fetchGattClient(
-                BlePsFtpClient.PSFTP_SERVICE
-            ) as? BlePsFtpClient else {
-                return Single.error(PolarErrors.serviceNotFound)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                throw PolarErrors.serviceNotFound
             }
-
-            return client.query(
-                Protocol_PbPFtpQuery.getExerciseStatus.rawValue,
-                parameters: Data() as NSData
-            )
-            .map { (response: NSData) -> Bool in
-
-                let proto = try Protocol_PbPftpGetExerciseStatusResult(
-                    serializedBytes: Data(response)
-                )
-
-                return proto.exerciseType == .exerciseTypeDataMerge &&
-                       proto.exerciseState == .exerciseStateRunning
-            }
-            .catch { error in
-                Single.error(self.handleError(error))
-            }
-
+            let response = try await client.query(Protocol_PbPFtpQuery.getExerciseStatus.rawValue, parameters: Data() as NSData)
+            let proto = try Protocol_PbPftpGetExerciseStatusResult(serializedBytes: Data(response))
+            return proto.exerciseType == .exerciseTypeDataMerge && proto.exerciseState == .exerciseStateRunning
         } catch {
-            return Single.error(handleError(error))
+            throw handleError(error)
         }
     }
 
-    func listOfflineExercisesV2(
-        identifier: String,
-        directoryPath: String
-    ) -> Observable<PolarExerciseEntry> {
-
-        let fileUtils = PolarFileUtils(
-            listener: listener,
-            serviceClientUtils: serviceClientUtils
-        )
-
-        let source: Observable<String> = fileUtils.listFiles(
-            identifier: identifier,
-            folderPath: directoryPath,
-            condition: { $0.hasSuffix(Self.samplesFile) },
-            recurseDeep: true
-        )
-
-        return source.map { path in
-            (
-                path: path,
-                date: Date(),
-                entryId: URL(fileURLWithPath: path).lastPathComponent
-            )
+    func listOfflineExercisesV2(identifier: String, directoryPath: String) -> AsyncThrowingStream<PolarExerciseEntry, Error> {
+        let fileUtilsLocal = PolarFileUtils(listener: listener, serviceClientUtils: serviceClientUtils)
+        return AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    for try await path in fileUtilsLocal.listFiles(identifier: identifier, folderPath: directoryPath, condition: { $0.hasSuffix(Self.samplesFile) }, recurseDeep: true) {
+                        continuation.yield((path: path, date: Date(), entryId: URL(fileURLWithPath: path).lastPathComponent))
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
         }
     }
 
-    func fetchOfflineExerciseV2(
-        identifier: String,
-        entry: PolarExerciseEntry
-    ) -> Single<PolarExerciseData> {
-        
+    func fetchOfflineExerciseV2(identifier: String, entry: PolarExerciseEntry) async throws -> PolarExerciseData {
         do {
             let session = try serviceClientUtils.sessionFtpClientReady(identifier)
-
-            guard let client = session.fetchGattClient(
-                BlePsFtpClient.PSFTP_SERVICE
-            ) as? BlePsFtpClient else {
-                return Single.error(PolarErrors.serviceNotFound)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                throw PolarErrors.serviceNotFound
             }
-
             var operation = Protocol_PbPFtpOperation()
             operation.command = .get
             operation.path = entry.path
-
-            let request = try operation.serializedData()
-
-            return client.request(request)
-                .map { (response: NSData) -> PolarExerciseData in
-
-                    let samples = try Data_PbExerciseSamples(
-                        serializedData: Data(response)
-                    )
-
-                    if samples.hasRrSamples {
-                        return PolarExerciseData(
-                            interval: samples.recordingInterval.seconds,
-                            samples: samples.rrSamples.rrIntervals
-                        )
-                    } else {
-                        return PolarExerciseData(
-                            interval: samples.recordingInterval.seconds,
-                            samples: samples.heartRateSamples
-                        )
-                    }
-                }
-                .catch { error in
-                    Single.error(self.handleError(error))
-                }
-
+            let response = try await client.request(try operation.serializedBytes())
+            let samples = try Data_PbExerciseSamples(serializedBytes: Data(response))
+            if samples.hasRrSamples {
+                return PolarExerciseData(interval: samples.recordingInterval.seconds, samples: samples.rrSamples.rrIntervals)
+            } else {
+                return PolarExerciseData(interval: samples.recordingInterval.seconds, samples: samples.heartRateSamples)
+            }
         } catch {
-            return Single.error(handleError(error))
+            throw handleError(error)
         }
     }
 
-    func removeOfflineExerciseV2(
-        identifier: String,
-        entry: PolarExerciseEntry
-    ) -> Completable {
-
+    func removeOfflineExerciseV2(identifier: String, entry: PolarExerciseEntry) async throws {
         do {
             let session = try serviceClientUtils.sessionFtpClientReady(identifier)
-
-            guard let client = session.fetchGattClient(
-                BlePsFtpClient.PSFTP_SERVICE
-            ) as? BlePsFtpClient else {
-                return Completable.error(PolarErrors.serviceNotFound)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                throw PolarErrors.serviceNotFound
             }
-
             var operation = Protocol_PbPFtpOperation()
             operation.command = .remove
             operation.path = entry.path
-
-            let request = try operation.serializedData()
-
-            return client.request(request)
-                .map { _ in () }
-                .asCompletable()
-                .catch { error in
-                    Completable.error(self.handleError(error))
-                }
-
+            _ = try await client.request(try operation.serializedBytes())
         } catch {
-            return Completable.error(handleError(error))
+            throw handleError(error)
         }
     }
 
-    func isOfflineExerciseV2Supported(identifier: String) -> Single<Bool> {
-
-        return waitDeviceSessionWithPftpToOpen(
-            identifier: identifier,
-            timeoutSeconds: 10,
-            waitForDeviceDownSeconds: 0
-        )
-        .andThen(
-            Single.deferred {
-
-                let session = try self.serviceClientUtils.sessionFtpClientReady(identifier)
-
+    func isOfflineExerciseV2Supported(identifier: String) async throws -> Bool {
+        // Wait for PFTP session to be ready (up to 10 seconds, polling every 5s)
+        let timeoutAt = Date().addingTimeInterval(10)
+        while Date() < timeoutAt {
+            do {
+                let session = try serviceClientUtils.sessionFtpClientReady(identifier)
                 let deviceType = session.advertisementContent.polarDeviceType
-                guard BlePolarDeviceCapabilitiesUtility.isRecordingSupported(deviceType) else {
-                    return Single.just(false)
-                }
-
-                guard let client = session.fetchGattClient(
-                    BlePsFtpClient.PSFTP_SERVICE
-                ) as? BlePsFtpClient else {
-                    return Single.just(false)
-                }
-
-                return self.checkDmExerciseSupport(client)
+                guard BlePolarDeviceCapabilitiesUtility.isRecordingSupported(deviceType) else { return false }
+                guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { return false }
+                return try await checkDmExerciseSupport(client)
+            } catch {
+                try? await Task.sleep(nanoseconds: 5_000_000_000)
             }
-        )
+        }
+        throw PolarErrors.timeout(description: "Timeout while waiting for device session, deviceId: \(identifier)")
     }
-    
-    private func checkDmExerciseSupport(_ client: BlePsFtpClient) -> Single<Bool> {
 
+    private func checkDmExerciseSupport(_ client: BlePsFtpClient) async throws -> Bool {
         var operation = Protocol_PbPFtpOperation()
         operation.command = .get
         operation.path = "/DEVICE.BPB"
-
         do {
-            let request = try operation.serializedData()
-
-            return client.request(request)
-                .map { (response: NSData) -> Bool in
-                    let deviceInfo = try Data_PbDeviceInfo(
-                        serializedBytes: Data(response)
-                    )
-
-                    return deviceInfo.capabilities.contains("dm_exercise")
-                }
-                .do(onError: { error in
-                    BleLogger.error("Failed to check dm_exercise capability: \(error)")
-                })
-                .catchAndReturn(false)
-
+            let response = try await client.request(try operation.serializedBytes())
+            let deviceInfo = try Data_PbDeviceInfo(serializedBytes: Data(response))
+            return deviceInfo.capabilities.contains("dm_exercise")
         } catch {
-            return Single.just(false)
+            BleLogger.error("Failed to check dm_exercise capability: \(error)")
+            return false
         }
     }
 }

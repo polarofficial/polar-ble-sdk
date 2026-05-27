@@ -1,6 +1,4 @@
 import XCTest
-import RxSwift
-import RxTest
 import Foundation
 @testable import PolarBleSdk
 
@@ -10,7 +8,7 @@ class PolarBackupManagerTest: XCTestCase {
     var backupManager: PolarBackupManager!
 
     override func setUpWithError() throws {
-        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockGattServiceTransmitterImpl())
+        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockPolarGattServiceTransmitter())
         backupManager = PolarBackupManager(client: mockClient)
     }
 
@@ -19,7 +17,7 @@ class PolarBackupManagerTest: XCTestCase {
         backupManager = nil
     }
 
-    func testBackupDevice() {
+    func testBackupDevice() async throws {
         // Arrange
         let mockBackupFileContent = "/SYS/BT/\n/U/*/USERID.BPB\n/RANDOM/FILE.TXT\n"
 
@@ -33,8 +31,7 @@ class PolarBackupManagerTest: XCTestCase {
 
         var directory = Protocol_PbPFtpDirectory()
         directory.entries = [backupEntry, btEntry]
-
-        let mockDirectoryContent = try! directory.serializedData()
+        let mockDirectoryContent = try directory.serializedData()
 
         var btDevEntry = Protocol_PbPFtpEntry()
         btDevEntry.name = "BTDEV.BPB"
@@ -46,47 +43,33 @@ class PolarBackupManagerTest: XCTestCase {
 
         var btDetailDirectory = Protocol_PbPFtpDirectory()
         btDetailDirectory.entries = [btDevEntry, svStatusEntry]
-
-        let mockBTDetailContent = try! btDetailDirectory.serializedData()
+        let mockBTDetailContent = try btDetailDirectory.serializedData()
 
         mockClient.requestReturnValueClosure = { requestData in
-            let requestDataString = String(data: requestData, encoding: .utf8) ?? ""
-            let request = try! Protocol_PbPFtpOperation(serializedData: requestData, partial: false)
-            
+            let request = try Protocol_PbPFtpOperation(serializedData: requestData, partial: false)
             if request.path.contains("/SYS/BACKUP.TXT") {
-                return Single.just(mockBackupFileContent.data(using: .utf8)!)
+                return mockBackupFileContent.data(using: .utf8)!
             } else if request.path.contains("/SYS/BT/") {
-                return Single.just(mockBTDetailContent)
+                return mockBTDetailContent
             } else if request.path.contains("/SYS/") {
-                return Single.just(mockDirectoryContent)
-            }  else {
-                return Single.just(Data())
+                return mockDirectoryContent
+            } else {
+                return Data()
             }
         }
 
         // Act
-        let expectation = XCTestExpectation(description: "Backup device")
-        let disposable = backupManager.backupDevice().subscribe { event in
-            switch event {
-            case .success(let files):
-                // Assert
-                XCTAssertTrue(files.contains { $0.directory + $0.fileName == "/U/0/USERID.BPB" })
-                XCTAssertTrue(files.contains { $0.directory + $0.fileName == "/SYS/BT/BTDEV.BPB" })
-                XCTAssertTrue(files.contains { $0.directory + $0.fileName == "/SYS/BT/SVSTATUS.BPB" })
-                XCTAssertTrue(files.contains { $0.directory + $0.fileName == "/RANDOM/FILE.TXT" })
-                expectation.fulfill()
-            case .failure(let error):
-                XCTFail("Backup failed with error: \(error)")
-            }
-        }
-        XCTAssertEqual(mockClient.requestCalls.count, 10)
+        let files = try await backupManager.backupDevice()
 
-        wait(for: [expectation], timeout: 5)
-        disposable.dispose()
+        // Assert
+        XCTAssertTrue(files.contains { $0.directory + $0.fileName == "/U/0/USERID.BPB" })
+        XCTAssertTrue(files.contains { $0.directory + $0.fileName == "/SYS/BT/BTDEV.BPB" })
+        XCTAssertTrue(files.contains { $0.directory + $0.fileName == "/SYS/BT/SVSTATUS.BPB" })
+        XCTAssertTrue(files.contains { $0.directory + $0.fileName == "/RANDOM/FILE.TXT" })
+        XCTAssertEqual(mockClient.requestCalls.count, 10)
     }
 
-
-    func testRestoreBackup() {
+    func testRestoreBackup() async throws {
         // Arrange
         let mockFileData = [
             PolarBackupManager.BackupFileData(data: Data(), directory: "/SYS/BT/", fileName: "BTDEV.BPB"),
@@ -94,23 +77,12 @@ class PolarBackupManagerTest: XCTestCase {
             PolarBackupManager.BackupFileData(data: Data(), directory: "/RANDOM/", fileName: "FILE.TXT")
         ]
 
-        mockClient.writeReturnValue = Observable.empty()
+        mockClient.writeReturnValue = AsyncThrowingStream { $0.finish() }
 
         // Act
-        let expectation = XCTestExpectation(description: "Restore backup")
-        let disposable = backupManager.restoreBackup(backupFiles: mockFileData).subscribe {
-            switch $0 {
-            case .completed:
-                expectation.fulfill()
-            case .error(let error):
-                XCTFail("Restore failed with error: \(error)")
-            }
-        }
+        try await backupManager.restoreBackup(backupFiles: mockFileData)
+
         // Assert
         XCTAssertEqual(mockClient.writeCalls.count, 3)
-        
-        wait(for: [expectation], timeout: 5)
-        disposable.dispose()
-
     }
 }

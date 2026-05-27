@@ -41,15 +41,6 @@ struct UserDeviceSettingsView: View {
                             }
                         }
                     }
-                }.task {
-                    let settings = await bleSdkManager.getUserDeviceSettings()
-                    selectedUserDeviceLocation = (settings?.deviceLocation.rawValue)!
-                    isUSBConnectionEnabled = settings?.usbConnectionMode ==  PolarUserDeviceSettings.UsbConnectionMode.ON ? true : false
-                    isAutomaticTrainingDetectionEnabled = settings?.automaticTrainingDetectionMode ==  PolarUserDeviceSettings.AutomaticTrainingDetectionMode.ON ? true : false
-                    automaticTrainingDetectionMinimumDuration = String(describing: settings?.minimumTrainingDurationSeconds ?? 0)
-                    automaticTrainingDetectionSensitity = String(describing: settings?.automaticTrainingDetectionSensitivity ?? 0)
-                    isTelemetryEnabled = settings?.telemetryEnabled ?? false
-                    isAutoOHREnabled = settings?.autosFilesEnabled ?? false
                 }
 
                 Section(header: Text("USB settings")) {
@@ -128,6 +119,16 @@ struct UserDeviceSettingsView: View {
             .opacity(formValidation.isOK ? 1 : 0.5)
 
         }.navigationBarTitle("User device settings", displayMode: .inline)
+        .task {
+            let settings = await bleSdkManager.getUserDeviceSettings()
+            selectedUserDeviceLocation = (settings?.deviceLocation.rawValue)!
+            isUSBConnectionEnabled = settings?.usbConnectionMode == PolarUserDeviceSettings.UsbConnectionMode.ON ? true : false
+            isAutomaticTrainingDetectionEnabled = settings?.automaticTrainingDetectionMode == PolarUserDeviceSettings.AutomaticTrainingDetectionMode.ON ? true : false
+            automaticTrainingDetectionMinimumDuration = String(describing: settings?.minimumTrainingDurationSeconds ?? 0)
+            automaticTrainingDetectionSensitity = String(describing: settings?.automaticTrainingDetectionSensitivity ?? 0)
+            isTelemetryEnabled = settings?.telemetryEnabled ?? false
+            isAutoOHREnabled = settings?.autosFilesEnabled ?? false
+        }
     }
 
     func submitData() async {

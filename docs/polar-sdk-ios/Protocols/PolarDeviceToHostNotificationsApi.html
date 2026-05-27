@@ -17,7 +17,7 @@
     <a title="PolarDeviceToHostNotificationsApi Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">PolarBleSdk 7.0.2 Docs</a> (41% documented)</p>
+        <p><a href="../index.html">PolarBleSdk 7.1.3 Docs</a> (40% documented)</p>
         <div class="header-right">
           <form role="search" action="../search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -40,15 +40,6 @@
           <li class="nav-group-name">
             <a href="../Classes.html">Classes</a>
             <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a href="../Classes/BleHtsClient.html">BleHtsClient</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Classes/BleHtsClient/TemperatureMeasurement.html">– TemperatureMeasurement</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Classes/HealthThermometer.html">HealthThermometer</a>
-              </li>
               <li class="nav-group-task">
                 <a href="../Classes/PolarActivityData.html">PolarActivityData</a>
               </li>
@@ -219,6 +210,9 @@
                 <a href="../Enums/PolarTrainingSessionFetchResult.html">PolarTrainingSessionFetchResult</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/PolarWatchFaceComplication.html">PolarWatchFaceComplication</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/PpgDataType.html">PpgDataType</a>
               </li>
               <li class="nav-group-task">
@@ -234,9 +228,6 @@
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
                 <a href="../Extensions/DateComponents.html">DateComponents</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Extensions/PrimitiveSequence.html">PrimitiveSequence</a>
               </li>
             </ul>
           </li>
@@ -305,6 +296,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarWatchFaceApi.html">PolarWatchFaceApi</a>
               </li>
             </ul>
           </li>
@@ -462,6 +456,9 @@
                 <a href="../Structs/PolarUserDeviceSettingsData.html">PolarUserDeviceSettingsData</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Structs/PolarWatchFaceConfig.html">PolarWatchFaceConfig</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Structs/SDLogConfig.html">SDLogConfig</a>
               </li>
               <li class="nav-group-task">
@@ -529,8 +526,7 @@
 
                 </div>
               </div>
-            <p>Device to host notifications. Device notifications are used to inform client apps of important device state
-changes, such as negotiating data syncing.</p>
+            <p>Device to host notifications.</p>
 
           </section>
           <section class="section task-group-section">
@@ -539,9 +535,9 @@ changes, such as negotiating data syncing.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A28DeviceToHostNotificationsApiP07observedefG010identifier7RxSwift10ObservableCyAA0A19D2HNotificationDataVGSS_tF"></a>
+                    <a name="/s:11PolarBleSdk0A28DeviceToHostNotificationsApiP07observedefG010identifierScsyAA0A19D2HNotificationDataVs5Error_pGSS_tF"></a>
                     <a name="//apple_ref/swift/Method/observeDeviceToHostNotifications(identifier:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A28DeviceToHostNotificationsApiP07observedefG010identifier7RxSwift10ObservableCyAA0A19D2HNotificationDataVGSS_tF">observeDeviceToHostNotifications(identifier:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A28DeviceToHostNotificationsApiP07observedefG010identifierScsyAA0A19D2HNotificationDataVs5Error_pGSS_tF">observeDeviceToHostNotifications(identifier:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -549,48 +545,16 @@ changes, such as negotiating data syncing.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Streams for received device to host notifications endlessly.
-Only dispose, take(1) etc&hellip; stops stream.</p>
-<div class="aside aside-requires">
-    <p class="aside-title">Requires</p>
-    <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code></p>
-
-</div>
+                        <p>Undocumented</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">observeDeviceToHostNotifications</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarD2HNotificationData.html">PolarD2HNotificationData</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">observeDeviceToHostNotifications</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">AsyncThrowingStream</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarD2HNotificationData.html">PolarD2HNotificationData</a></span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
-                      </div>
-                      <div>
-                        <h4>Parameters</h4>
-                        <table class="graybox">
-                          <tbody>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>identifier</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>Polar device ID or BT address</p>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Observable stream of PolarD2HNotificationData
-Produces   onNext after successfully received notification.
-        onCompleted not produced unless stream is further configured.
-        onError, see <code>BlePsFtpException, BleGattException</code></p>
                       </div>
                     </section>
                   </div>
@@ -600,7 +564,7 @@ Produces   onNext after successfully received notification.
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-04-20)</p>
+          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-05-26)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

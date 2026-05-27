@@ -2,7 +2,7 @@
 
 import Foundation
 
-public enum PmdRecordingType: UInt8, CaseIterable {
+public enum PmdRecordingType: UInt8, CaseIterable, Sendable {
     case online = 0
     case offline = 1
     

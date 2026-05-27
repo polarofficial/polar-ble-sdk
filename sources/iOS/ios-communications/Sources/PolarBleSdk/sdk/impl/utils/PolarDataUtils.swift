@@ -122,7 +122,10 @@ internal class PolarDataUtils {
 internal extension PmdSetting {
     func mapToPolarSettings() -> PolarSensorSetting {
         var settings: [PolarSensorSetting.SettingType : Set<UInt32>] = [:]
-        for (key, value) in self.settings {
+        let source: [PmdSetting.PmdSettingType: Set<UInt32>] = self.settings.isEmpty
+            ? self.selected.mapValues { Set([$0]) }
+            : self.settings
+        for (key, value) in source {
             switch(key) {
             case .sampleRate:
                 settings[PolarSensorSetting.SettingType.sampleRate] = value

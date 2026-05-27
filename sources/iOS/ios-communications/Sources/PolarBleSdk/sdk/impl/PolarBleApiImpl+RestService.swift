@@ -2,7 +2,6 @@
 
 import Foundation
 import CoreBluetooth
-import RxSwift
 
 /// Lists REST API services and corresponding paths
 ///
@@ -124,148 +123,80 @@ public struct PolarDeviceRestApiServiceDescription: Decodable {
 }
 
 /// Methods related to working with services conforming to SAGRFC95 Service discovery over PFTP
-///
 public protocol PolarRestServiceApi {
-   
-    /// Discover available services from device
-    ///
-    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_file_transfer`
-    ///
-    /// - parameters:
-    ///   - identifier: Polar Device ID or BT address
-    /// - returns:
-    ///   emits single `PolarDeviceRestApiServices` object listing service names and corresponding paths or error
-    ///
-    func listRestApiServices(identifier: String) -> Single<PolarDeviceRestApiServices>
-    
-    /// Get details related to particular REST API.
-    ///
-    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_file_transfer`
-    ///
-    /// - parameters:
-    ///   - identifier: Polar Device ID or BT address
-    ///   - path: the REST API path corresponding to a named service returned by listRestApiServices
-    /// - returns:
-    ///  emits single `PolarDeviceRestApiServiceDescription` object with detailed description of the service or error
-    ///
-    func getRestApiDescription(identifier: String, path: String) -> Single<PolarDeviceRestApiServiceDescription>
-    
-    /// Notify device via a REST API in the device.
-    ///
-    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_file_transfer`
-    ///
-    /// - parameters:
-    ///   - identifier: Polar device ID or BT address
-    ///   - notification: content of the notification in JSON format.
-    ///   - path:  the API endpoint that will be notified; the path of the REST API file in device + REST API parameters.
-    /// - returns: Completable emitting success or error
-    ///
-    func putNotification(identifier: String, notification: String, path: String) -> Completable
-    
-    /// Streams for received device REST API events  parameters decoded as given Decodable type T endlessly.
-    /// Only dispose , take(1) etc ... stops stream.
-    ///
-    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_file_transfer`
-    ///
-    /// Normally requires event action that enables subscribing to the event using putNotification()
-    /// - parameters:
-    ///   - identifier: Polar device ID or BT address
-    /// - Returns:
-    ///     Observable stream of REST API event parameters decoded as decodable T from JSON format.
-    ///     Produces   onNext after successfully received notification and decoded as [T].
-    ///             onCompleted not produced unless stream is further configured.
-    ///             onError, see `BlePsFtpException, BleGattException`
-    ///
-    func receiveRestApiEvents<T:Decodable>(identifier: String) -> Observable<[T]>
+    func listRestApiServices(identifier: String) async throws -> PolarDeviceRestApiServices
+    func getRestApiDescription(identifier: String, path: String) async throws -> PolarDeviceRestApiServiceDescription
+    func putNotification(identifier: String, notification: String, path: String) async throws
+    func receiveRestApiEvents<T: Decodable>(identifier: String) -> AsyncThrowingStream<[T], Error>
 }
 
-extension PolarBleApiImpl : PolarRestServiceApi {
-    
-    func listRestApiServices(identifier: String) -> Single<PolarDeviceRestApiServices> {
-        let observable: Single<PolarDeviceRestApiServices> =
-        getJSONDecodableFromPath(identifier: identifier, path: "/REST/SERVICE.API")
-        return observable
+extension PolarBleApiImpl: PolarRestServiceApi {
+
+    func listRestApiServices(identifier: String) async throws -> PolarDeviceRestApiServices {
+        return try await getJSONDecodableFromPath(identifier: identifier, path: "/REST/SERVICE.API")
     }
-    
-    func getRestApiDescription(identifier: String, path: String) -> Single<PolarDeviceRestApiServiceDescription> {
-        let observable: Single<PolarDeviceRestApiServiceDescription> =
-        getJSONDecodableFromPath(identifier: identifier, path: path)
-        return observable
+
+    func getRestApiDescription(identifier: String, path: String) async throws -> PolarDeviceRestApiServiceDescription {
+        return try await getJSONDecodableFromPath(identifier: identifier, path: path)
     }
-    
-    private func getJSONDecodableFromPath<T: Decodable>(identifier: String, path: String) -> Single<T> {
-        return getDataFromPath(identifier: identifier, path: path)
-            .map { try JSONDecoder().decode(T.self, from: $0) }
+
+    private func getJSONDecodableFromPath<T: Decodable>(identifier: String, path: String) async throws -> T {
+        let data = try await getDataFromPath(identifier: identifier, path: path)
+        return try JSONDecoder().decode(T.self, from: data)
     }
-    
-    private func getDataFromPath(identifier: String, path: String) -> Single<Data> {
-        return Single<Data>.create { single in
-            do {
-                let session = try self.serviceClientUtils.sessionFtpClientReady(identifier)
-                guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                    single(.failure(PolarErrors.serviceNotFound))
-                    return Disposables.create()
-                }
-                var operation = Protocol_PbPFtpOperation()
-                operation.command =  Protocol_PbPFtpOperation.Command.get
-                operation.path = path
-                let requestData = try operation.serializedData()
-                
-                let disposable = client.request(requestData)
-                    .subscribe(
-                        onSuccess: { responseData in
-                            single(.success(responseData as Data))
-                        },
-                        onFailure: { error in
-                            single(.failure(error))
-                        }
-                    )
-                return Disposables.create {
-                    disposable.dispose()
-                }
-            } catch {
-                single(.failure(error))
-                return Disposables.create()
-            }
+
+    private func getDataFromPath(identifier: String, path: String) async throws -> Data {
+        let session = try serviceClientUtils.sessionFtpClientReady(identifier)
+        guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+            throw PolarErrors.serviceNotFound
         }
+        var operation = Protocol_PbPFtpOperation()
+        operation.command = .get
+        operation.path = path
+        let requestData = try operation.serializedData()
+        let responseData = try await client.request(requestData)
+        return responseData as Data
     }
-    
-    func putNotification(identifier: String, notification: String, path: String) -> Completable {
-        return pFtpPutOperation(identifier: identifier, path: path, data: notification.data(using: .utf8)!)
+
+    func putNotification(identifier: String, notification: String, path: String) async throws {
+        try await pFtpPutOperation(identifier: identifier, path: path, data: notification.data(using: .utf8)!)
     }
-    
-    private func pFtpPutOperation(identifier: String, path: String, data: Data) -> Completable {
-        return pFtpWriteOperation(identifier: identifier, command:.put, path: path, data: data)
+
+    private func pFtpPutOperation(identifier: String, path: String, data: Data) async throws {
+        try await pFtpWriteOperation(identifier: identifier, command: .put, path: path, data: data)
     }
-    
-    private func pFtpWriteOperation(identifier: String, command: Protocol_PbPFtpOperation.Command, path: String, data: Data) -> Completable {
-        do {
-            let session = try self.serviceClientUtils.sessionFtpClientReady(identifier)
-            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                return Completable.error(PolarErrors.serviceNotFound)
-            }
-            var operation = Protocol_PbPFtpOperation()
-            operation.command = command
-            operation.path = path
-            let proto = try operation.serializedData()
-            let inputStream = InputStream(data: data)
-            
-            return client.write(proto as NSData, data: inputStream)
-                .ignoreElements().asCompletable()
-        } catch let err {
-            return Completable.error(err)
+
+    private func pFtpWriteOperation(identifier: String, command: Protocol_PbPFtpOperation.Command, path: String, data: Data) async throws {
+        let session = try serviceClientUtils.sessionFtpClientReady(identifier)
+        guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+            throw PolarErrors.serviceNotFound
         }
+        var operation = Protocol_PbPFtpOperation()
+        operation.command = command
+        operation.path = path
+        let proto = try operation.serializedData()
+        let inputStream = InputStream(data: data)
+        // Consume the write stream to completion (ignore progress values)
+        for try await _ in client.write(proto as NSData, data: inputStream) {}
     }
-    
-    func receiveRestApiEvents<T:Decodable>(identifier: String) -> Observable<[T]> {
-        do {
-            let session = try self.serviceClientUtils.sessionFtpClientReady(identifier)
-            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                return Observable.error(PolarErrors.serviceNotFound)
+
+    func receiveRestApiEvents<T: Decodable>(identifier: String) -> AsyncThrowingStream<[T], Error> {
+        return AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    let session = try self.serviceClientUtils.sessionFtpClientReady(identifier)
+                    guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                        continuation.finish(throwing: PolarErrors.serviceNotFound)
+                        return
+                    }
+                    for try await items in client.receiveRestApiEvents(identifier: identifier) as AsyncThrowingStream<[T], Error> {
+                        continuation.yield(items)
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
             }
-            return client.receiveRestApiEvents(identifier: identifier)
-        } catch let error {
-            return Observable.error(error)
         }
     }
 }

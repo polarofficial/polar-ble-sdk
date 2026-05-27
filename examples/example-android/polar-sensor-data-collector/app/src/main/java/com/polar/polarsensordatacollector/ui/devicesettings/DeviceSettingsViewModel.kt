@@ -132,6 +132,9 @@ internal class DeviceSettingsViewModel @Inject constructor(
     private val _uiDeviceToHostNotificationsState = MutableStateFlow(DeviceToHostNotificationsUiState())
     val uiDeviceToHostNotificationsState: StateFlow<DeviceToHostNotificationsUiState> = _uiDeviceToHostNotificationsState.asStateFlow()
 
+    private val _watchFaceConfigAvailable = MutableStateFlow(false)
+    val watchFaceConfigAvailable: StateFlow<Boolean> = _watchFaceConfigAvailable.asStateFlow()
+
     private var d2hNotificationsJob: Job? = null
 
     init {
@@ -176,6 +179,15 @@ internal class DeviceSettingsViewModel @Inject constructor(
             polarDeviceStreamingRepository.deviceSupportsSettings
                 .collect { support ->
                     _uiSettingsSupportUiState.update { support }
+                }
+        }
+
+        viewModelScope.launch {
+            polarDeviceStreamingRepository.sdkFeaturesReady
+                .collect { event ->
+                    _watchFaceConfigAvailable.update {
+                        event.readyFeatures.contains(PolarBleApi.PolarBleSdkFeature.FEATURE_WATCH_FACES_CONFIGURATION)
+                    }
                 }
         }
 

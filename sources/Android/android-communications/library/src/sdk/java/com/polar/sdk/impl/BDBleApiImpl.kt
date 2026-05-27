@@ -122,6 +122,7 @@ import fi.polar.remote.representation.protobuf.UserDeviceSettings.PbUserDeviceSe
 import fi.polar.remote.representation.protobuf.UserDeviceSettings.PbUserDeviceTelemetrySettings
 import com.polar.sdk.impl.utils.PolarTimeUtils
 import com.polar.sdk.impl.utils.PolarTimeUtils.javaLocalDateTimeToPbPftpSetLocalTime
+import com.polar.sdk.impl.utils.PolarTimeUtils.javaCalendarToPbPftpSetSystemTime
 import com.polar.sdk.impl.utils.PolarTimeUtils.pbLocalTimeToJavaLocalDateTime
 import com.polar.sdk.impl.utils.PolarTimeUtils.pbLocalTimeToZonedDateTime
 import java.io.ByteArrayInputStream
@@ -130,8 +131,6 @@ import java.io.File
 import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -146,6 +145,9 @@ import com.polar.sdk.impl.utils.PolarServiceClientUtils
 import com.polar.sdk.impl.utils.PolarServiceClientUtils.fetchSession
 import com.polar.sdk.impl.utils.PolarSleepUtils
 import com.polar.sdk.impl.utils.PolarTrainingSessionUtils
+import com.polar.sdk.impl.utils.PolarWatchFaceUtils
+import com.polar.sdk.api.model.PolarWatchFaceComplication
+import com.polar.sdk.api.model.PolarWatchFaceConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -227,6 +229,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 PolarBleSdkFeature.FEATURE_POLAR_DEVICE_CONTROL -> clients.add(BlePsFtpClient::class.java)
                 PolarBleSdkFeature.FEATURE_POLAR_FEATURES_CONFIGURATION_SERVICE -> clients.add(BlePfcClient::class.java)
                 PolarBleSdkFeature.FEATURE_POLAR_SPO2_TEST_DATA -> clients.add(BlePsFtpClient::class.java)
+                PolarBleSdkFeature.FEATURE_WATCH_FACES_CONFIGURATION -> clients.add(BlePsFtpClient::class.java)
             }
         }
 
@@ -411,6 +414,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     PolarServiceClientUtils.sessionPsFtpClientReady(deviceId, listener)
                     true
                 }
+
+                PolarBleSdkFeature.FEATURE_WATCH_FACES_CONFIGURATION -> {
+                    PolarServiceClientUtils.sessionPsFtpClientReady(deviceId, listener)
+                    true
+                }
             }
         } catch (ignored: Throwable) {
             false
@@ -464,7 +472,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
     private suspend fun setSystemTime(client: BlePsFtpClient, localDataTime: LocalDateTime) {
-        val pbTime = javaLocalDateTimeToPbPftpSetLocalTime(localDataTime)
+        val utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+            timeInMillis = localDataTime.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+        }
+        val pbTime = javaCalendarToPbPftpSetSystemTime(utcCalendar)
         client.query(PftpRequest.PbPFtpQuery.SET_SYSTEM_TIME_VALUE, pbTime.toByteArray())
     }
 
@@ -3401,6 +3412,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             PolarBleSdkFeature.FEATURE_POLAR_DEVICE_CONTROL -> isPsftpServiceAvailable(discoveredServices, session)
             PolarBleSdkFeature.FEATURE_POLAR_FEATURES_CONFIGURATION_SERVICE -> isPolarFeaturesConfigurationServiceFeatureAvailable(discoveredServices, session)
             PolarBleSdkFeature.FEATURE_POLAR_SPO2_TEST_DATA -> isPsftpServiceAvailable(discoveredServices, session)
+            PolarBleSdkFeature.FEATURE_WATCH_FACES_CONFIGURATION -> deviceIsWatchAndPsftpIsEnabled(discoveredServices, session)
         }
         if (available && deviceId != null) {
             withContext(Dispatchers.Main) {
@@ -3476,6 +3488,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         if (!discoveredServices.contains(BlePsFtpUtils.RFC77_PFTP_SERVICE)) return false
         val blePsftpClient = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient? ?: return false
         return try { blePsftpClient.clientReady(true); true } catch (e: Throwable) { false }
+    }
+
+    private suspend fun deviceIsWatchAndPsftpIsEnabled(discoveredServices: List<UUID>, session: BleDeviceSession): Boolean {
+        if (BlePolarDeviceCapabilitiesUtility.isDeviceSensor(session.polarDeviceType)) return false
+        return isPsftpServiceAvailable(discoveredServices, session)
     }
 
     private suspend fun isOfflineRecordingAvailable(discoveredServices: List<UUID>, session: BleDeviceSession): Boolean {
@@ -3582,5 +3599,22 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
     override suspend fun  getRSSIValue(identifier: String): Int {
         return PolarServiceClientUtils.getRSSIValue(identifier, listener)
+    }
+
+    override suspend fun getWatchFaceConfig(identifier: String): PolarWatchFaceConfig {
+        BleLogger.d(TAG, "getWatchFaceConfig: device=$identifier  key=${PolarWatchFaceUtils.WATCH_FACE_CONFIG_KVS_KEY}")
+        val fields = PolarWatchFaceUtils.readWatchFaceConfigFields(identifier, listener, ::handleError)
+        val complications = fields.complicationIds.mapNotNull { id ->
+            val c = PolarWatchFaceComplication.fromId(id)
+            if (c == null) BleLogger.w(TAG, "getWatchFaceConfig: id=$id not in enum, skipping")
+            c
+        }
+        BleLogger.d(TAG, "getWatchFaceConfig: resolved complications = ${complications.map { it.name }}")
+        return PolarWatchFaceConfig(complications)
+    }
+
+    override suspend fun setWatchFaceConfig(identifier: String, config: PolarWatchFaceConfig) {
+        val ids = config.enabledComplications.map { it.id }
+        PolarWatchFaceUtils.writeWatchFaceComplicationInts(identifier, ids, listener, ::handleError)
     }
 }

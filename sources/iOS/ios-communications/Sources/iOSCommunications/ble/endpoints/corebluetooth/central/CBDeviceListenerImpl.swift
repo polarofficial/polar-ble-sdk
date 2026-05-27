@@ -1,7 +1,6 @@
-
 import Foundation
 import CoreBluetooth
-import RxSwift
+import Combine
 
 
 public protocol SDKCBCentralManagerDelegate: CBCentralManagerDelegate {
@@ -35,17 +34,24 @@ public class CBDeviceListenerImpl: NSObject, SDKCBCentralManagerDelegate {
     
     private let SESSION_TEAR_DOWN_TIMEOUT_MS = 1000
     
-    fileprivate lazy var manager = SDKCBCentralManager(delegate: self, queue: queueBle, options: nil)
+    fileprivate let restoreIdentifier: String?
+    fileprivate lazy var manager: SDKCBCentralManager = {
+        var options: [String: Any]? = nil
+        if let restoreId = restoreIdentifier {
+            options = [CBCentralManagerOptionRestoreIdentifierKey: restoreId]
+        }
+        return SDKCBCentralManager(delegate: self, queue: queueBle, options: options)
+    }()
     
     fileprivate let sessions = AtomicList<CBDeviceSessionImpl>()
     fileprivate var queue: DispatchQueue
     fileprivate var queueBle: DispatchQueue
-    fileprivate var connectionObservers = AtomicList<RxObserver<(session: BleDeviceSession, state: BleDeviceSession.DeviceSessionState)>>()
-    fileprivate let powerObservers = AtomicList<RxObserver<BleState>>()
+    fileprivate let connectionStateSubject = PassthroughSubject<(session: BleDeviceSession, state: BleDeviceSession.DeviceSessionState), Never>()
+    fileprivate let bleStateSubject = CurrentValueSubject<BleState, Never>(.unknown)
     fileprivate lazy var scanner = CBScanner(manager, queue: queue, sessions: sessions)
     fileprivate let factory: BleGattClientFactory
     private var readRSSITimer: Timer!
-    private let disposeBag = DisposeBag()
+    private var cancellables = Set<AnyCancellable>()
     public var automaticH10Mapping = false
     public var automaticReconnection = true
     public var scanPreFilter: ((_ content: BleAdvertisementContent) -> Bool)?
@@ -57,14 +63,15 @@ public class CBDeviceListenerImpl: NSObject, SDKCBCentralManagerDelegate {
     public weak var deviceSessionStateObserver: BleDeviceSessionStateObserver?
     public weak var powerStateObserver: BlePowerStateObserver? {
         didSet {
-            powerStateObserver?.powerStateChanged(BleState(rawValue: self.manager.state.rawValue) ?? BleState.unknown)
+            powerStateObserver?.powerStateChanged(bleStateSubject.value)
         }
     }
     
-    public init(_ queue: DispatchQueue, clients: [(_ transport: BleAttributeTransportProtocol) -> BleGattClientBase], identifier: Int) {
+    public init(_ queue: DispatchQueue, clients: [(_ transport: BleAttributeTransportProtocol) -> BleGattClientBase], identifier: Int, restoreIdentifier: String? = nil) {
         self.queue = queue
         self.factory = BleGattClientFactory(clients)
         self.queueBle = DispatchQueue(label: "CBDeviceListenerImplQueue\(identifier)", attributes: [])
+        self.restoreIdentifier = restoreIdentifier
         super.init()
     }
     
@@ -76,9 +83,7 @@ public class CBDeviceListenerImpl: NSObject, SDKCBCentralManagerDelegate {
     
     fileprivate func updateSessionState(_ session: CBDeviceSessionImpl, state: BleDeviceSession.DeviceSessionState, error: Error? = nil) {
         session.updateSessionState(state, error: error)
-        RxUtils.emitNext(connectionObservers) { (object) in
-            object.obs.onNext((session: session, state: state))
-        }
+        connectionStateSubject.send((session: session, state: state))
         deviceSessionStateObserver?.stateChanged(session)
         if scanner.scanningNeeded() {
             scanner.enableScan()
@@ -139,14 +144,32 @@ public class CBDeviceListenerImpl: NSObject, SDKCBCentralManagerDelegate {
                 }
                 break
             case .poweredOn:
+                // Handle peripherals restored via willRestoreState.
+                // Only restore sessions that were actively open or opening when the app
+                // was suspended — i.e. previousState was .sessionOpen or .sessionOpening.
+                // Sessions whose previousState is .sessionClosed or .sessionClosing were
+                // intentionally disconnected by the user before the app was killed and
+                // must NOT be auto-reconnected on restart.
+                for session in self.sessions.list() {
+                    guard session.previousState == .sessionOpen ||
+                          session.previousState == .sessionOpening else {
+                        BleLogger.trace("Skipping restore for session \(session.advertisementContent.name): previousState was \(session.previousState.description())")
+                        continue
+                    }
+                    if session.peripheral.state == .connected && session.state == .sessionClosed {
+                        session.connected()
+                        self.updateSessionState(session, state: .sessionOpen)
+                    } else if session.peripheral.state == .connecting && session.state == .sessionClosed {
+                        self.updateSessionState(session, state: .sessionOpening)
+                    }
+                }
                 self.scanner.powerOn()
             @unknown default:
                 break
             }
-            RxUtils.emitNext(self.powerObservers, emitter: { (observer) in
-                observer.obs.onNext(BleState(rawValue: self.manager.state.rawValue) ?? BleState.unknown)
-            })
-            self.powerStateObserver?.powerStateChanged(BleState(rawValue: self.manager.state.rawValue) ?? BleState.unknown)
+            let newBleState = BleState(rawValue: self.manager.state.rawValue) ?? BleState.unknown
+            self.bleStateSubject.send(newBleState)
+            self.powerStateObserver?.powerStateChanged(newBleState)
         })
     }
     
@@ -205,11 +228,7 @@ public class CBDeviceListenerImpl: NSObject, SDKCBCentralManagerDelegate {
         queue.async(execute: {
             sess.advertisementContent.processAdvertisementData(RSSI.int32Value, advertisementData: advertisementData)
             
-            self.scanner.scanObservers.accessItem { scanObservers in
-                RxUtils.emitNext(scanObservers) { (observer) in
-                    observer.obs.onNext(sess)
-                }
-            }
+            self.scanner.scanSubject.send(sess)
             
             if sess.state == .sessionOpenPark {
                 if sess.isConnectable() {
@@ -318,6 +337,32 @@ public class CBDeviceListenerImpl: NSObject, SDKCBCentralManagerDelegate {
     public func centralManager(_ central: CBCentralManager, connectionEventDidOccur event: CBConnectionEvent, for peripheral: CBPeripheral) {
         // handle if needed
     }
+    
+    public func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
+        BleLogger.trace("willRestoreState called")
+        guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] else {
+            BleLogger.trace("willRestoreState: no peripherals to restore")
+            return
+        }
+        for peripheral in peripherals {
+            BleLogger.trace("willRestoreState: restoring peripheral \(peripheral.identifier) (state: \(peripheral.state.rawValue))")
+            if session(peripheral) == nil {
+                let restoredSession = CBDeviceSessionImpl(
+                    peripheral: peripheral,
+                    central: self.manager,
+                    scanner: self,
+                    factory: self.factory,
+                    queueBle: self.queueBle,
+                    queue: self.queue
+                )
+                // Set delegate so we don't miss callbacks, but do NOT call
+                // connected() or trigger state transitions yet — the central
+                // manager is not powered on at this point.
+                peripheral.delegate = restoredSession
+                sessions.append(restoredSession)
+            }
+        }
+    }
 }
 
 extension CBDeviceListenerImpl: CBScanningProtocol {
@@ -340,33 +385,21 @@ extension CBDeviceListenerImpl: BleDeviceListener {
         return manager.state == .poweredOn
     }
     
-    public func monitorBleState() -> Observable<BleState>{
-        var object: RxObserver<BleState>!
-        return Observable.create{ observer in
-            object = RxObserver<BleState>(obs: observer)
-            object.obs.onNext(BleState(rawValue: self.manager.state.rawValue)!)
-            self.powerObservers.append(object)
-            return Disposables.create {
-                BleLogger.trace("Power observer disposed")
-                self.powerObservers.remove({ (item) -> Bool in
-                    return item === object
-                })
-            }
-        }
+    public func monitorBleState() -> AnyPublisher<BleState, Error> {
+        return bleStateSubject
+            .setFailureType(to: Error.self)
+            .eraseToAnyPublisher()
     }
     
-    public func search(_ uuids: [CBUUID]?, identifiers: [UUID]?, fetchKnownDevices: Bool) -> Observable<BleDeviceSession> {
-        var object: RxObserver<BleDeviceSession>!
-    
-        return monitorBleState().filter { $0 == .poweredOn }
-            .take(1)
-            .flatMap { _ -> Observable<BleDeviceSession> in
-            Observable.create{ observer in
-                object = RxObserver<BleDeviceSession>(obs: observer)
-                self.scanner.addClient(object)
+    public func search(_ uuids: [CBUUID]?, identifiers: [UUID]?, fetchKnownDevices: Bool) -> AnyPublisher<BleDeviceSession, Error> {
+        return monitorBleState()
+            .filter { $0 == .poweredOn }
+            .prefix(1)
+            .flatMap { _ -> AnyPublisher<BleDeviceSession, Error> in
+                self.scanner.addClient()
                 
                 var foundPeripherals = [CBPeripheral]()
-        
+                
                 if uuids != nil {
                     foundPeripherals = self.manager.retrieveConnectedPeripherals(withServices: uuids!)
                         .filter {
@@ -382,7 +415,6 @@ extension CBDeviceListenerImpl: BleDeviceListener {
                         if device.name != nil {
                             advData[CBAdvertisementDataLocalNameKey] = device.name as Any?
                         }
-                        
                         if uuids != nil {
                             advData[CBAdvertisementDataServiceUUIDsKey] = uuids as Any?
                         }
@@ -392,15 +424,18 @@ extension CBDeviceListenerImpl: BleDeviceListener {
                 if fetchKnownDevices {
                     self.sessions.items.forEach { (sess) in
                         BleLogger.trace("search returning session \(sess.peripheral)")
-                        observer.onNext(sess)
+                        self.scanner.scanSubject.send(sess)
                     }
                 }
                 
-                return Disposables.create {
-                    self.scanner.removeClient(object)
-                }
+                return self.scanner.scanSubject
+                    .setFailureType(to: Error.self)
+                    .handleEvents(receiveCancel: {
+                        self.scanner.removeClient()
+                    })
+                    .eraseToAnyPublisher()
             }
-        }
+            .eraseToAnyPublisher()
     }
     
     public func openSessionDirect(_ session: BleDeviceSession){
@@ -421,23 +456,21 @@ extension CBDeviceListenerImpl: BleDeviceListener {
         }
     }
     
-    public func monitorDeviceSessionState() -> Observable<(session: BleDeviceSession, state: BleDeviceSession.DeviceSessionState)>{
-        var object: RxObserver<(session: BleDeviceSession, state: BleDeviceSession.DeviceSessionState)>!
-        return Observable.create{ observer in
-            object = RxObserver.init(obs: observer)
-            self.connectionObservers.append(object)
-            return Disposables.create {
-                self.connectionObservers.remove({ (obs) -> Bool in
-                    return obs === object
-                })
-            }
-        }
+    public func monitorDeviceSessionState() -> AnyPublisher<(session: BleDeviceSession, state: BleDeviceSession.DeviceSessionState), Error> {
+        return connectionStateSubject
+            .setFailureType(to: Error.self)
+            .eraseToAnyPublisher()
     }
     
     public func closeSessionDirect(_ session: BleDeviceSession){
         switch (session.state) {
         case .sessionOpening: fallthrough
         case .sessionOpen:
+            // Transition to .sessionClosing BEFORE starting teardown so that
+            // didDisconnectPeripheral (which may fire during or before the sink
+            // callback) sees .sessionClosing in handleDisconnected and correctly
+            // moves to .sessionClosed instead of .sessionOpenPark.
+            updateSessionState(session as! CBDeviceSessionImpl, state: .sessionClosing)
             completeSessionClose(session)
         case .sessionOpenPark where session.previousState == .sessionClosing:
             updateSessionState(session as! CBDeviceSessionImpl, state: .sessionClosing)
@@ -462,21 +495,24 @@ extension CBDeviceListenerImpl: BleDeviceListener {
     }
     
     private func completeSessionClose(_ session: BleDeviceSession) {
-        Observable
-            .from(session.gattClients)
-            .flatMap { client -> Completable in
-                return client.tearDown()
-            }
-            .timeout(RxTimeInterval.milliseconds(SESSION_TEAR_DOWN_TIMEOUT_MS), scheduler: MainScheduler.instance)
-            .catch { error in
+        let tearDownPublishers = session.gattClients.map { client -> AnyPublisher<Never, Error> in
+            return client.tearDown()
+        }
+        
+        Publishers.MergeMany(tearDownPublishers)
+            .timeout(.milliseconds(SESSION_TEAR_DOWN_TIMEOUT_MS), scheduler: DispatchQueue.main)
+            .catch { error -> Empty<Never, Error> in
                 BleLogger.trace("Catched error while closing the session \(session.advertisementContent.name). Error \(error)")
-                return Observable.empty()
+                return Empty()
             }
-            .subscribe( onCompleted: {
-                self.updateSessionState(session as! CBDeviceSessionImpl, state: .sessionClosing)
+            .sink(receiveCompletion: { [weak self] _ in
+                guard let self = self else { return }
+                // State was already set to .sessionClosing in closeSessionDirect.
+                // Just cancel the peripheral connection — didDisconnectPeripheral
+                // will fire and handleDisconnected will move it to .sessionClosed.
                 self.manager.cancelPeripheralConnection((session as! CBDeviceSessionImpl).peripheral)
                 BleLogger.trace("Completed session close tear down for session \(session.advertisementContent.name)")
-            })
-            .disposed(by: disposeBag)
+            }, receiveValue: { _ in })
+            .store(in: &cancellables)
     }
 }

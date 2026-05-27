@@ -3,7 +3,6 @@
 import Foundation
 import SwiftUI
 import PolarBleSdk
-import RxSwift
 
 struct DeviceSearchView: View {
 
@@ -34,27 +33,11 @@ struct DeviceSearchView: View {
                         .padding(.top)
                         .padding(.leading)
                         .onChange(of: deviceSearchNamePrefix) { newValue in
-                            print("New prefix: \(newValue)")
                             bleDeviceManager.setSearchPrefix(newValue)
-                        }
-                        .onAppear {
-                            deviceSearchNamePrefix = bleDeviceManager.deviceSearchNamePrefix
-                        }
-                    Spacer()
-                    Button(action: {
-                        if case .inProgress = bleDeviceManager.deviceSearch.isSearching {
-                            bleDeviceManager.stopDevicesSearch()
-                        } else {
                             bleDeviceManager.startDevicesSearch()
                         }
-                    }) {
-                        HStack {
-                            Text(getSearchButtonText(bleDeviceManager.deviceSearch.isSearching))
-                        }
-                    }
-                    .padding(.trailing)
-                    .padding(.top)
                 }
+
                 switch bleDeviceManager.deviceSearch.isSearching {
                 case .notStarted:
                     Spacer()
@@ -64,16 +47,16 @@ struct DeviceSearchView: View {
                         .multilineTextAlignment(.center)
                         .padding()
                 case .inProgress, .success:
-                    
                     List {
                         ForEach(sortedKnownDevices, id: \.deviceId) { knownDevice in
                             Button(action: {
                                 isPresented = false
+                                deviceSearchNamePrefix = ""
+                                bleDeviceManager.setSearchPrefix("")
                                 let bleSdkManager = appState.bleDeviceManager.sdkManager(for: knownDevice)
                                 bleSdkManager.connectToDevice(withId: knownDevice.deviceId)
                                 appState.switchTo(bleSdkManager)
-                            })
-                            {
+                            }) {
                                 DeviceSearchRow(polarDeviceInfo: knownDevice, isKnownDevice: true)
                             }
                         }
@@ -81,11 +64,12 @@ struct DeviceSearchView: View {
                         ForEach(sortedConnectableDevices, id: \.deviceId) { foundDevice in
                             Button(action: {
                                 isPresented = false
+                                deviceSearchNamePrefix = ""
+                                bleDeviceManager.setSearchPrefix("")
                                 let bleSdkManager = appState.bleDeviceManager.sdkManager(for: foundDevice)
                                 bleSdkManager.connectToDevice(withId: foundDevice.deviceId)
-                                appState.switchTo(bleSdkManager)                                
-                            })
-                            {
+                                appState.switchTo(bleSdkManager)
+                            }) {
                                 DeviceSearchRow(polarDeviceInfo: foundDevice, isKnownDevice: false)
                             }
                         }
@@ -94,30 +78,9 @@ struct DeviceSearchView: View {
                         bleDeviceManager.startDevicesSearch()
                     }
                 }
-            }.navigationBarTitle("")
-                .navigationBarHidden(true)
-        }.navigationViewStyle(StackNavigationViewStyle())
-    }
-    
-    private func getSearchButtonText(_ state: DeviceSearchState) -> String {
-        switch(state) {
-        case .inProgress:
-            return "Stop Search"
-        case .notStarted, .success:
-            return "Start Search"
-        case .failed(error: let error):
-            return "Restart Search"
-        }
-    }
-    
-    private func getSearchButtonIcon(_ state: DeviceSearchState) -> String {
-        switch(state) {
-        case .inProgress:
-            return "stop.circle"
-        case .notStarted, .success:
-            return "play.circle"
-        case .failed(error: let error):
-            return "play.circle"
+            }
+            .navigationBarTitle("")
+            .navigationBarHidden(true)
         }
     }
 }

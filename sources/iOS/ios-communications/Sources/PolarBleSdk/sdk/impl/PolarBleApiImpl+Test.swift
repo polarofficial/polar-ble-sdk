@@ -2,37 +2,27 @@
 
 import Foundation
 import CoreBluetooth
-import RxSwift
 
 extension PolarBleApiImpl: PolarTestApi {
 
-    func getSpo2TestData(identifier: String, fromDate: Date, toDate: Date) -> Single<[PolarSpo2TestData]> {
+    func getSpo2TestData(identifier: String, fromDate: Date, toDate: Date) async throws -> [PolarSpo2TestData] {
         if fromDate > toDate {
-            return Single.error(PolarErrors.invalidArgument(description: "toDate cannot be before fromDate."))
+            throw PolarErrors.invalidArgument(description: "toDate cannot be before fromDate.")
         }
-
-        do {
-            let session = try serviceClientUtils.sessionFtpClientReady(identifier)
-            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                return Single.error(PolarErrors.serviceNotFound)
-            }
-
-            var datesList = [Date]()
-            let calendar = Calendar.current
-            var currentDate = fromDate
-            while currentDate <= toDate {
-                datesList.append(currentDate)
-                guard let next = calendar.date(byAdding: .day, value: 1, to: currentDate) else { break }
-                currentDate = next
-            }
-
-            return Observable.from(datesList)
-            .flatMap { date in
-                PolarTestUtils.readSpo2TestFromDayDirectory(client: client, date: date)
-            }
-            .toArray()
-        } catch {
-            return Single.error(error)
+        let session = try serviceClientUtils.sessionFtpClientReady(identifier)
+        guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+            throw PolarErrors.serviceNotFound
         }
+        var results: [PolarSpo2TestData] = []
+        let calendar = Calendar.current
+        var currentDate = fromDate
+        while currentDate <= toDate {
+            for try await item in PolarTestUtils.readSpo2TestFromDayDirectory(client: client, date: currentDate) {
+                results.append(item)
+            }
+            guard let next = calendar.date(byAdding: .day, value: 1, to: currentDate) else { break }
+            currentDate = next
+        }
+        return results
     }
 }

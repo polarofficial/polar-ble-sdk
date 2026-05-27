@@ -2,7 +2,6 @@
 
 import SwiftUI
 import PolarBleSdk
-import RxSwift
 
 struct OfflineExerciseV2View: View {
 
@@ -13,7 +12,6 @@ struct OfflineExerciseV2View: View {
     @State private var shareFileURL: URL?
     @State private var isSharePresented = false
 
-    private let disposeBag = DisposeBag()
 
     var body: some View {
 
@@ -23,19 +21,14 @@ struct OfflineExerciseV2View: View {
                 statusHeader = "Start Exercise"
                 statusDetail = "Starting..."
 
-                bleSdkManager.startOfflineExerciseV2()
-                .observe(on: MainScheduler.instance)
-                .subscribe(
-                    onSuccess: { result in
-                        statusDetail = result.result == .success
-                        ? "Exercise started"
-                        : "Start failed: \(result.result)"
-                    },
-                    onFailure: { error in
+                Task { @MainActor in
+                    do {
+                        let result = try await bleSdkManager.startOfflineExerciseV2()
+                        statusDetail = result.result == .success ? "Exercise started" : "Start failed: \(result.result)"
+                    } catch {
                         statusDetail = "Start failed: \(error.localizedDescription)"
                     }
-                )
-                .disposed(by: disposeBag)
+                }
             }
             .buttonStyle(SecondaryButtonStyle(buttonState: getDefaultButtonState()))
 
@@ -43,17 +36,14 @@ struct OfflineExerciseV2View: View {
                 statusHeader = "Stop Exercise"
                 statusDetail = "Stopping..."
 
-                bleSdkManager.stopOfflineExerciseV2()
-                .observe(on: MainScheduler.instance)
-                .subscribe(
-                    onCompleted: {
+                Task { @MainActor in
+                    do {
+                        try await bleSdkManager.stopOfflineExerciseV2()
                         statusDetail = "Exercise stopped"
-                    },
-                    onError: { error in
+                    } catch {
                         statusDetail = "Stop failed: \(error.localizedDescription)"
                     }
-                )
-                .disposed(by: disposeBag)
+                }
             }
             .buttonStyle(SecondaryButtonStyle(buttonState: getDefaultButtonState()))
 
@@ -105,17 +95,14 @@ struct OfflineExerciseV2View: View {
                 statusHeader = "Remove Exercise"
                 statusDetail = "Removing..."
 
-                bleSdkManager.removeOfflineExerciseV2()
-                .observe(on: MainScheduler.instance)
-                .subscribe(
-                    onCompleted: {
+                Task { @MainActor in
+                    do {
+                        try await bleSdkManager.removeOfflineExerciseV2()
                         statusDetail = "Exercise removed"
-                    },
-                    onError: { error in
+                    } catch {
                         statusDetail = "Remove failed: \(error.localizedDescription)"
                     }
-                )
-                .disposed(by: disposeBag)
+                }
             }
             .buttonStyle(SecondaryButtonStyle(buttonState: getDefaultButtonState()))
 

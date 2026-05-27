@@ -1,8 +1,6 @@
 //  Copyright © 2025 Polar. All rights reserved.
 
 import XCTest
-import RxSwift
-import RxBlocking
 @testable import PolarBleSdk
 
 final class PolarOfflineRecordingUtilsTest: XCTestCase {
@@ -10,14 +8,14 @@ final class PolarOfflineRecordingUtilsTest: XCTestCase {
     private var mockClient: MockBlePsFtpClient!
     
     override func setUpWithError() throws {
-        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockGattServiceTransmitterImpl())
+        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockPolarGattServiceTransmitter())
     }
 
     override func tearDownWithError() throws {
         mockClient = nil
     }
 
-    func testListOfflineRecordingsV1_mergesSplitRecFiles() throws {
+    func testListOfflineRecordingsV1_mergesSplitRecFiles() async throws {
         // Arrange
         let sampleEntries: [(String, UInt)] = [
             ("/U/0/20250730/R/101010/ACC0.REC", 500_120),
@@ -27,23 +25,19 @@ final class PolarOfflineRecordingUtilsTest: XCTestCase {
             ("/U/0/20250730/R/101010/HR1.REC", 500_050),
             ("/U/0/20250730/R/101010/PPG0.REC", 300)
         ]
-
-        let fetchRecursively: (BlePsFtpClient, String, @escaping (String) -> Bool)
-            -> Observable<(String, UInt)> = { _, _, _ in
-            Observable.from(sampleEntries)
+        let fetchRecursively: (BlePsFtpClient, String, @escaping (String) -> Bool) async throws -> [(String, UInt)] = { _, _, _ in
+            sampleEntries
         }
 
         // Act
-        let emitted = try PolarOfflineRecordingUtils.listOfflineRecordingsV1(
+        let emitted = try await collectStream(PolarOfflineRecordingUtils.listOfflineRecordingsV1(
             client: mockClient,
             fetchRecursively: fetchRecursively
-        )
-        .toBlocking()
-        .toArray()
+        ))
 
         // Assert
         let accEntries = emitted.filter { $0.path.contains("ACC") }
-        let hrEntries = emitted.filter { $0.path.contains("HR") }
+        let hrEntries  = emitted.filter { $0.path.contains("HR") }
         let ppgEntries = emitted.filter { $0.path.contains("PPG") }
 
         XCTAssertEqual(accEntries.count, 1)
@@ -61,107 +55,67 @@ final class PolarOfflineRecordingUtilsTest: XCTestCase {
         emitted.forEach { XCTAssertNotNil($0.date) }
     }
 
-    func testListOfflineRecordingsV1_returns_empty_when_regex_fails() throws {
+    func testListOfflineRecordingsV1_returns_empty_when_regex_fails() async throws {
         // Arrange
-        let sampleEntries: [(String, UInt)] = [
-            ("/U/0/2025073/R/101010/PPG0.REC", 300)
-        ]
-
-        let fetchRecursively: (BlePsFtpClient, String, @escaping (String) -> Bool)
-            -> Observable<(String, UInt)> = { _, _, _ in
-            Observable.from(sampleEntries)
+        let sampleEntries: [(String, UInt)] = [("/U/0/2025073/R/101010/PPG0.REC", 300)]
+        let fetchRecursively: (BlePsFtpClient, String, @escaping (String) -> Bool) async throws -> [(String, UInt)] = { _, _, _ in
+            sampleEntries
         }
 
         // Act
-        let emitted = try PolarOfflineRecordingUtils.listOfflineRecordingsV1(
-            client: mockClient,
-            fetchRecursively: fetchRecursively
-        )
-        .toBlocking()
-        .toArray()
+        let emitted = try await collectStream(PolarOfflineRecordingUtils.listOfflineRecordingsV1(
+            client: mockClient, fetchRecursively: fetchRecursively))
 
         // Assert
-        let ppgEntries = emitted.filter { $0.path.contains("PPG") }
-
-        XCTAssertEqual(ppgEntries.count, 0)
+        XCTAssertEqual(emitted.filter { $0.path.contains("PPG") }.count, 0)
     }
 
-    func testListOfflineRecordingsV1_returns_empty_when_date_parsing_fails() throws {
+    func testListOfflineRecordingsV1_returns_empty_when_date_parsing_fails() async throws {
         // Arrange
-        let sampleEntries: [(String, UInt)] = [
-            ("/U/0/99999999/R/101010/PPG0.REC", 300)
-        ]
-
-        let fetchRecursively: (BlePsFtpClient, String, @escaping (String) -> Bool)
-            -> Observable<(String, UInt)> = { _, _, _ in
-            Observable.from(sampleEntries)
+        let sampleEntries: [(String, UInt)] = [("/U/0/99999999/R/101010/PPG0.REC", 300)]
+        let fetchRecursively: (BlePsFtpClient, String, @escaping (String) -> Bool) async throws -> [(String, UInt)] = { _, _, _ in
+            sampleEntries
         }
 
         // Act
-        let emitted = try PolarOfflineRecordingUtils.listOfflineRecordingsV1(
-            client: mockClient,
-            fetchRecursively: fetchRecursively
-        )
-        .toBlocking()
-        .toArray()
+        let emitted = try await collectStream(PolarOfflineRecordingUtils.listOfflineRecordingsV1(
+            client: mockClient, fetchRecursively: fetchRecursively))
 
         // Assert
-        let ppgEntries = emitted.filter { $0.path.contains("PPG") }
-
-        XCTAssertEqual(ppgEntries.count, 0)
+        XCTAssertEqual(emitted.filter { $0.path.contains("PPG") }.count, 0)
     }
 
-    func testListOfflineRecordingsV1_returns_empty_when_time_parsing_fails() throws {
+    func testListOfflineRecordingsV1_returns_empty_when_time_parsing_fails() async throws {
         // Arrange
-        let sampleEntries: [(String, UInt)] = [
-            ("/U/0/20250730/R/999999/PPG0.REC", 300)
-        ]
-
-        let fetchRecursively: (BlePsFtpClient, String, @escaping (String) -> Bool)
-            -> Observable<(String, UInt)> = { _, _, _ in
-            Observable.from(sampleEntries)
+        let sampleEntries: [(String, UInt)] = [("/U/0/20250730/R/999999/PPG0.REC", 300)]
+        let fetchRecursively: (BlePsFtpClient, String, @escaping (String) -> Bool) async throws -> [(String, UInt)] = { _, _, _ in
+            sampleEntries
         }
 
         // Act
-        let emitted = try PolarOfflineRecordingUtils.listOfflineRecordingsV1(
-            client: mockClient,
-            fetchRecursively: fetchRecursively
-        )
-        .toBlocking()
-        .toArray()
+        let emitted = try await collectStream(PolarOfflineRecordingUtils.listOfflineRecordingsV1(
+            client: mockClient, fetchRecursively: fetchRecursively))
 
         // Assert
-        let ppgEntries = emitted.filter { $0.path.contains("PPG") }
-
-        XCTAssertEqual(ppgEntries.count, 0)
+        XCTAssertEqual(emitted.filter { $0.path.contains("PPG") }.count, 0)
     }
 
-    func testListOfflineRecordingsV1_returns_empty_when_meas_type_parsing_fails() throws {
+    func testListOfflineRecordingsV1_returns_empty_when_meas_type_parsing_fails() async throws {
         // Arrange
-        let sampleEntries: [(String, UInt)] = [
-            ("/U/0/20250730/R/101010/ZZZ9.REC", 300)
-        ]
-
-        let fetchRecursively: (BlePsFtpClient, String, @escaping (String) -> Bool)
-            -> Observable<(String, UInt)> = { _, _, _ in
-            Observable.from(sampleEntries)
+        let sampleEntries: [(String, UInt)] = [("/U/0/20250730/R/101010/ZZZ9.REC", 300)]
+        let fetchRecursively: (BlePsFtpClient, String, @escaping (String) -> Bool) async throws -> [(String, UInt)] = { _, _, _ in
+            sampleEntries
         }
 
         // Act
-        let emitted = try PolarOfflineRecordingUtils.listOfflineRecordingsV1(
-            client: mockClient,
-            fetchRecursively: fetchRecursively
-        )
-        .toBlocking()
-        .toArray()
+        let emitted = try await collectStream(PolarOfflineRecordingUtils.listOfflineRecordingsV1(
+            client: mockClient, fetchRecursively: fetchRecursively))
 
         // Assert
-        let ppgEntries = emitted.filter { $0.path.contains("PPG") }
-
-        XCTAssertEqual(ppgEntries.count, 0)
+        XCTAssertEqual(emitted.filter { $0.path.contains("PPG") }.count, 0)
     }
 
-    func testListOfflineRecordingsV1_returns_empty_when_empty_file() throws {
+    func testListOfflineRecordingsV1_returns_empty_when_empty_file() async throws {
         // Arrange
         let sampleEntries: [(String, UInt)] = [
             ("/U/0/20250730/R/101010/ACC0.REC", 500_120),
@@ -171,23 +125,17 @@ final class PolarOfflineRecordingUtilsTest: XCTestCase {
             ("/U/0/20250730/R/101010/HR1.REC", 0),
             ("/U/0/20250730/R/101010/PPG0.REC", 0)
         ]
-
-        let fetchRecursively: (BlePsFtpClient, String, @escaping (String) -> Bool)
-            -> Observable<(String, UInt)> = { _, _, _ in
-            Observable.from(sampleEntries)
+        let fetchRecursively: (BlePsFtpClient, String, @escaping (String) -> Bool) async throws -> [(String, UInt)] = { _, _, _ in
+            sampleEntries
         }
 
         // Act
-        let emitted = try PolarOfflineRecordingUtils.listOfflineRecordingsV1(
-            client: mockClient,
-            fetchRecursively: fetchRecursively
-        )
-        .toBlocking()
-        .toArray()
+        let emitted = try await collectStream(PolarOfflineRecordingUtils.listOfflineRecordingsV1(
+            client: mockClient, fetchRecursively: fetchRecursively))
 
         // Assert
         let accEntries = emitted.filter { $0.path.contains("ACC") }
-        let hrEntries = emitted.filter { $0.path.contains("HR") }
+        let hrEntries  = emitted.filter { $0.path.contains("HR") }
         let ppgEntries = emitted.filter { $0.path.contains("PPG") }
 
         XCTAssertEqual(accEntries.count, 1)
@@ -215,15 +163,11 @@ final class PolarOfflineRecordingUtilsTest: XCTestCase {
         """.data(using: .utf8)!
 
         // Act
-        let emitted = try PolarOfflineRecordingUtils.listOfflineRecordingsV2(
-            fileData: pmdTxt
-        )
-        .toBlocking()
-        .single()
+        let emitted = try PolarOfflineRecordingUtils.listOfflineRecordingsV2(fileData: pmdTxt)
 
         // Assert
         let accEntries = emitted.filter { $0.path.contains("ACC") }
-        let hrEntries = emitted.filter { $0.path.contains("HR") }
+        let hrEntries  = emitted.filter { $0.path.contains("HR") }
         let ppgEntries = emitted.filter { $0.path.contains("PPG") }
 
         XCTAssertEqual(accEntries.count, 1)
@@ -253,15 +197,11 @@ final class PolarOfflineRecordingUtilsTest: XCTestCase {
         """.data(using: .utf8)!
 
         // Act
-        let emitted = try PolarOfflineRecordingUtils.listOfflineRecordingsV2(
-            fileData: pmdTxt
-        )
-            .toBlocking()
-            .single()
+        let emitted = try PolarOfflineRecordingUtils.listOfflineRecordingsV2(fileData: pmdTxt)
 
         // Assert
         let accEntries = emitted.filter { $0.path.contains("ACC") }
-        let hrEntries = emitted.filter { $0.path.contains("HR") }
+        let hrEntries  = emitted.filter { $0.path.contains("HR") }
         let ppgEntries = emitted.filter { $0.path.contains("PPG") }
 
         XCTAssertEqual(accEntries.count, 1)
@@ -275,5 +215,13 @@ final class PolarOfflineRecordingUtilsTest: XCTestCase {
         XCTAssertEqual(ppgEntries.count, 0)
 
         emitted.forEach { XCTAssertNotNil($0.date) }
+    }
+
+    // MARK: - Helpers
+
+    private func collectStream<T>(_ stream: AsyncThrowingStream<T, Error>) async throws -> [T] {
+        var results: [T] = []
+        for try await value in stream { results.append(value) }
+        return results
     }
 }

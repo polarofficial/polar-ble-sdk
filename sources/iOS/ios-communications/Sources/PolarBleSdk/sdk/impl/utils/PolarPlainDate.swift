@@ -17,10 +17,9 @@ public struct PolarPlainDate {
     /// - Returns: A date string, or `nil` if a valid date could not be created from `dateAsString`.
     public init?(from dateAsString: String, calendar: Calendar = .current) {
         let formatter = Self.createFormatter(timeZone: calendar.timeZone)
-        guard let date = formatter.date(from: dateAsString) else {
-            return nil
-        }
-
+        guard dateAsString.count == 10 else { return nil }
+        guard let date = formatter.date(from: dateAsString) else { return nil }
+        guard formatter.string(from: date) == dateAsString else { return nil }
         self.init(date: date, calendar: calendar, formatter: formatter)
     }
 

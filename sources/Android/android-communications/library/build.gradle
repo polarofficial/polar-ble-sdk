@@ -41,7 +41,7 @@ android {
 
     defaultConfig {
         compileSdk 35
-        minSdkVersion 33
+        minSdkVersion 26
         targetSdkVersion 33
         versionCode 14
         versionName "14"
@@ -138,6 +138,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-rx3:1.10.2"
     sdkImplementation 'com.google.protobuf:protobuf-javalite:3.20.0'
+    sdkImplementation 'com.google.flatbuffers:flatbuffers-java:25.2.10'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:5.23.0'
     testImplementation 'io.mockk:mockk:1.14.9'

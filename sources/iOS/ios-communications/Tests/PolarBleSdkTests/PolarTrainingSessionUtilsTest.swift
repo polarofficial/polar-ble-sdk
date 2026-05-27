@@ -1,23 +1,44 @@
 import Foundation
 import XCTest
-import RxSwift
-import RxTest
+import Combine
 import zlib
 @testable import PolarBleSdk
 
 final class PolarTrainingSessionUtilsTests: XCTestCase {
-    
+
     private var mockClient: MockBlePsFtpClient!
-    
+    private var cancellables = Set<AnyCancellable>()
+
     override func setUpWithError() throws {
-        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockGattServiceTransmitterImpl())
+        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockPolarGattServiceTransmitter())
     }
 
     override func tearDownWithError() throws {
         mockClient = nil
+        cancellables.removeAll()
     }
 
-    func test_getTrainingSessionReferences_shouldReturnAllTrainingSessionReferences() throws {
+    // MARK: - Helpers
+
+    private func awaitFirst<T>(_ publisher: AnyPublisher<T, Error>, timeout: TimeInterval = 5) throws -> T? {
+        var result: T?
+        var receivedError: Error?
+        let expectation = XCTestExpectation(description: "publisher completes")
+        publisher
+            .first()
+            .sink(receiveCompletion: { completion in
+                if case .failure(let e) = completion { receivedError = e }
+                expectation.fulfill()
+            }, receiveValue: { result = $0 })
+            .store(in: &cancellables)
+        wait(for: [expectation], timeout: timeout)
+        if let e = receivedError { throw e }
+        return result
+    }
+
+    // MARK: - Tests
+
+    func test_getTrainingSessionReferences_shouldReturnAllTrainingSessionReferences() async throws {
         // Arrange
         let date1 = "20250101"
         let time1 = "123000"
@@ -76,19 +97,17 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
         ]
 
         mockClient.requestReturnValueClosure = { header in
-            let op = try! Protocol_PbPFtpOperation(serializedData: header)
+            let op = try Protocol_PbPFtpOperation(serializedData: header)
             let path = op.path
             let dir = Protocol_PbPFtpDirectory.with {
                 $0.entries = responses[path, default: []]
             }
-            return Single.just(try! dir.serializedData())
+            return try dir.serializedData()
         }
 
         // Act
-        let references = try PolarTrainingSessionUtils
+        let references = try await PolarTrainingSessionUtils
             .getTrainingSessionReferences(client: mockClient)
-            .toBlocking()
-            .toArray()
 
         // Assert
         XCTAssertEqual(references.count, 2)
@@ -128,8 +147,7 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
         XCTAssertTrue(session2.exercises.isEmpty)
     }
 
-    
-    func test_readTrainingSession_shouldReturnTrainingSessionDataWithExercises() throws {
+    func test_readTrainingSession_shouldReturnTrainingSessionDataWithExercises() async throws {
         // Arrange
         let basePath = "/U/0/20250101/E/123000/TSESS.BPB"
 
@@ -195,12 +213,8 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
             $0.trusted = true
         }
 
-
-
         var sampleProto = Data_PbExerciseSamples()
-        sampleProto.recordingInterval = PbDuration.with {
-            $0.seconds = 1
-        }
+        sampleProto.recordingInterval = PbDuration.with { $0.seconds = 1 }
         sampleProto.heartRateSamples = [120, 125, 130]
         sampleProto.speedSamples = [2000, 2100]
         sampleProto.altitudeSamples = [300]
@@ -215,7 +229,6 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
         func gzipCompress(_ data: Data) throws -> Data {
             var stream = z_stream()
             var status: Int32 = Z_OK
-
             let bufferSize = 16384
             var output = Data()
 
@@ -229,9 +242,7 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
                 throw NSError(domain: "CompressionError", code: Int(status), userInfo: [NSLocalizedDescriptionKey: "Failed to init zlib deflate stream"])
             }
 
-            defer {
-                deflateEnd(&stream)
-            }
+            defer { deflateEnd(&stream) }
 
             let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
             defer { buffer.deallocate() }
@@ -239,12 +250,10 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
             repeat {
                 stream.next_out = buffer
                 stream.avail_out = uInt(bufferSize)
-
                 status = deflate(&stream, stream.avail_in == 0 ? Z_FINISH : Z_NO_FLUSH)
                 if status == Z_STREAM_ERROR {
                     throw NSError(domain: "CompressionError", code: Int(status), userInfo: [NSLocalizedDescriptionKey: "Compression failed with zlib error"])
                 }
-
                 let have = bufferSize - Int(stream.avail_out)
                 output.append(buffer, count: have)
             } while status != Z_STREAM_END
@@ -253,7 +262,7 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
         }
 
         let routeGzipData = try gzipCompress(try routeProto.serializedData())
-        
+
         var syncPoint = Data_PbExerciseRouteSyncPoint()
         syncPoint.index = 0
         var location = Data_PbLocationSyncPoint()
@@ -278,51 +287,35 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
             $0.exerciseCount = 2
         }
 
-        let routeFiles = [
-            "ROUTE.BPB",
-            "ROUTE.GZB",
-            "ROUTE2.BPB",
-            "ROUTE2.GZB"
-        ]
+        let routeFiles = ["ROUTE.BPB", "ROUTE.GZB", "ROUTE2.BPB", "ROUTE2.GZB"]
 
         mockClient.requestReturnValueClosure = { headerData in
-            guard let op = try? Protocol_PbPFtpOperation(serializedData: headerData) else {
-                XCTFail("Failed to parse PFtpOperation header")
-                return Single.error(NSError(domain: "Test", code: -1))
-            }
+            let op = try Protocol_PbPFtpOperation(serializedData: headerData)
             let path = op.path
             switch path {
             case basePath:
-                return Single.just(try! sessionProto.serializedData())
+                return try sessionProto.serializedData()
             case "/U/0/20250101/E/123000/00/BASE.BPB":
-                return Single.just(try! exerciseProto1.serializedData())
+                return try exerciseProto1.serializedData()
             case "/U/0/20250101/E/123000/01/BASE.BPB":
-                return Single.just(try! exerciseProto2.serializedData())
-            case "/U/0/20250101/E/123000/00/ROUTE.BPB":
-                return Single.just(try! routeProto.serializedData())
-            case "/U/0/20250101/E/123000/01/ROUTE.BPB":
-                return Single.just(try! routeProto.serializedData())
-            case "/U/0/20250101/E/123000/00/ROUTE.GZB":
-                return Single.just(routeGzipData)
-            case "/U/0/20250101/E/123000/01/ROUTE.GZB":
-                return Single.just(routeGzipData)
-            case "/U/0/20250101/E/123000/00/ROUTE2.BPB":
-                return Single.just(try! route2Proto.serializedData())
-            case "/U/0/20250101/E/123000/01/ROUTE2.BPB":
-                return Single.just(try! route2Proto.serializedData())
-            case "/U/0/20250101/E/123000/00/ROUTE2.GZB":
-                return Single.just(route2GzipData)
-            case "/U/0/20250101/E/123000/01/ROUTE2.GZB":
-                  return Single.just(route2GzipData)
+                return try exerciseProto2.serializedData()
+            case "/U/0/20250101/E/123000/00/ROUTE.BPB", "/U/0/20250101/E/123000/01/ROUTE.BPB":
+                return try routeProto.serializedData()
+            case "/U/0/20250101/E/123000/00/ROUTE.GZB", "/U/0/20250101/E/123000/01/ROUTE.GZB":
+                return routeGzipData
+            case "/U/0/20250101/E/123000/00/ROUTE2.BPB", "/U/0/20250101/E/123000/01/ROUTE2.BPB":
+                return try route2Proto.serializedData()
+            case "/U/0/20250101/E/123000/00/ROUTE2.GZB", "/U/0/20250101/E/123000/01/ROUTE2.GZB":
+                return route2GzipData
             case "/U/0/20250101/E/123000/00/SAMPLES.BPB", "/U/0/20250101/E/123000/01/SAMPLES.BPB":
-                return Single.just(try! sampleProto.serializedData())
+                return try sampleProto.serializedData()
             case "/U/0/20250101/E/123000/00/SAMPLES.GZB", "/U/0/20250101/E/123000/01/SAMPLES.GZB":
-                return Single.just(samplesGzipData)
+                return samplesGzipData
             case "/U/0/20250101/E/123000/00/SAMPLES2.GZB", "/U/0/20250101/E/123000/01/SAMPLES2.GZB":
-                return Single.just(samples2GzipData)
+                return samples2GzipData
             default:
-                XCTFail("Unexpected path: \(path)")
-                return Single.error(NSError(domain: "Unexpected path", code: 2))
+                throw NSError(domain: "UnexpectedPath", code: 2,
+                              userInfo: [NSLocalizedDescriptionKey: "Unexpected path: \(path)"])
             }
         }
 
@@ -348,42 +341,43 @@ final class PolarTrainingSessionUtilsTests: XCTestCase {
             )
 
             // Act
-            let session = try PolarTrainingSessionUtils
+            let session = try await PolarTrainingSessionUtils
                 .readTrainingSession(client: mockClient, reference: reference)
-                .toBlocking()
-                .first()
 
             // Assert
-            XCTAssertNotNil(session, "Session should not be nil for route file \(routeFile)")
-            XCTAssertEqual(session?.exercises.count, 2, "Expected 2 exercises for route file \(routeFile)")
-            
-            XCTAssertEqual(session?.sessionSummary.start.date.year, 2025)
-            XCTAssertEqual(session?.sessionSummary.start.date.month, 1)
-            XCTAssertEqual(session?.sessionSummary.start.date.day, 1)
-            XCTAssertEqual(session?.sessionSummary.start.time.hour, 12)
-            XCTAssertEqual(session?.sessionSummary.start.time.minute, 30)
-    
-            let firstExercise: PolarExercise? = session?.exercises[0]
+            XCTAssertEqual(session.exercises.count, 2, "Expected 2 exercises for route file \(routeFile)")
+
+            XCTAssertEqual(session.sessionSummary.start.date.year, 2025)
+            XCTAssertEqual(session.sessionSummary.start.date.month, 1)
+            XCTAssertEqual(session.sessionSummary.start.date.day, 1)
+            XCTAssertEqual(session.sessionSummary.start.time.hour, 12)
+            XCTAssertEqual(session.sessionSummary.start.time.minute, 30)
+
+            // Sort exercises by start hour so assertions are order-independent.
+            let sortedExercises = session.exercises.sorted {
+                ($0.exerciseSummary?.start.time.hour ?? 0) < ($1.exerciseSummary?.start.time.hour ?? 0)
+            }
+
+            let firstExercise: PolarExercise? = sortedExercises[0]
             XCTAssertEqual(firstExercise?.exerciseSummary?.start.time.hour, 12)
             XCTAssertEqual(firstExercise?.exerciseSummary?.walkingDistance, 10000)
             XCTAssertEqual(firstExercise?.exerciseSummary?.sport.value, 5)
             XCTAssertEqual(firstExercise?.samples?.heartRateSamples, [120, 125, 130])
             XCTAssertEqual(firstExercise?.samplesAdvanced?.exerciseIntervalledSample2List.map { $0.heartRateSamples }, [[131, 132, 133]])
-            
-            let secondExercise: PolarExercise? = session?.exercises[1]
+
+            let secondExercise: PolarExercise? = sortedExercises[1]
             XCTAssertEqual(secondExercise?.exerciseSummary?.start.time.hour, 14)
             XCTAssertEqual(secondExercise?.exerciseSummary?.walkingDistance, 12000)
             XCTAssertEqual(secondExercise?.exerciseSummary?.sport.value, 25)
             XCTAssertEqual(secondExercise?.samples?.heartRateSamples, [120, 125, 130])
             XCTAssertEqual(secondExercise?.samplesAdvanced?.exerciseIntervalledSample2List.map { $0.heartRateSamples }, [[131, 132, 133]])
 
-            
             let firstRoute = firstExercise?.route
             XCTAssertNotNil(firstRoute, "First route should not be nil for route file \(routeFile)")
-            
+
             let secondRoute = secondExercise?.route
             XCTAssertNotNil(secondRoute, "Second route should not be nil for route file \(routeFile)")
-            
+
             if routeFile.starts(with: "ROUTE") && !routeFile.contains("2") {
                 XCTAssertEqual(firstRoute?.latitude, [10], "Latitude mismatch for \(routeFile)")
                 XCTAssertEqual(firstRoute?.longitude, [20], "Longitude mismatch for \(routeFile)")

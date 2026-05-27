@@ -163,7 +163,7 @@ struct TriggerStatusView: View {
         
         isLoading = true
         do {
-            let triggerSetup = try await bleSdkManager.getOfflineRecordingTriggerSetup().value
+            let triggerSetup = try await bleSdkManager.getOfflineRecordingTriggerSetup()
             
             DispatchQueue.main.async {
                 triggerMode = mapTriggerMode(triggerSetup.triggerMode)
@@ -371,7 +371,7 @@ struct TriggerSetupView: View {
         self.isLoading = true
         for dataType in bleSdkManager.offlineRecordingFeature.isRecording {
             do {
-                try await bleSdkManager.getOfflineRecordingTriggerSettings(feature: dataType.key).value
+                try await bleSdkManager.getOfflineRecordingTriggerSettings(feature: dataType.key)
             } catch {
                 BleLogger.error("Failed to retrieve settings for \(dataType), error: \(error.localizedDescription)")
             }
@@ -490,15 +490,14 @@ struct TriggerSetupView: View {
 
         NSLog("[TriggerSetupView] Applying trigger mode: \(triggerMode), Features: \(triggerFeatures)")
 
-        _ = bleSdkManager.setOfflineRecordingTrigger(trigger: trigger, secret: nil)
-            .subscribe(
-                onCompleted: {
-                    NSLog("[TriggerSetupView] Successfully set offline recording trigger: Mode: \(triggerMode), Features: \(enabledTriggers)")
-                },
-                onError: { error in
-                    NSLog("[TriggerSetupView] Error setting offline recording trigger: \(error)")
-                }
-            )
+        Task {
+            do {
+                try await bleSdkManager.setOfflineRecordingTrigger(trigger: trigger, secret: nil)
+                NSLog("[TriggerSetupView] Successfully set offline recording trigger: Mode: \(triggerMode), Features: \(enabledTriggers)")
+            } catch {
+                NSLog("[TriggerSetupView] Error setting offline recording trigger: \(error)")
+            }
+        }
     }
 
     private func mapTriggerMode(_ mode: PolarOfflineRecordingTriggerMode) -> String {

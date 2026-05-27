@@ -24,21 +24,21 @@ struct SettingsView: View {
                         if(settings.type == PolarSensorSetting.SettingType.sampleRate) {
                             HStack {
                                 Picker("Sample rate", selection: $selectedSampleRate) {
-                                    ForEach(0..<settings.sortedValues.count) {
+                                    ForEach(settings.sortedValues.indices, id: \.self) {
                                         Text("\(settings.sortedValues[$0])")
                                     }
                                 }
                             }
                         } else if(settings.type == PolarSensorSetting.SettingType.range) {
                             Picker("Range", selection: $selectedRange) {
-                                ForEach(0..<settings.sortedValues.count) {
+                                ForEach(settings.sortedValues.indices, id: \.self) {
                                     Text("\(settings.sortedValues[$0])")
                                 }
                             }
                         } else if(settings.type == PolarSensorSetting.SettingType.resolution) {
                             HStack {
                                 Picker("Resolution", selection: $selectedResolution) {
-                                    ForEach(0..<settings.sortedValues.count) {
+                                    ForEach(settings.sortedValues.indices, id: \.self) {
                                         Text("\(settings.sortedValues[$0])")
                                     }
                                 }
@@ -46,7 +46,7 @@ struct SettingsView: View {
                         } else if(settings.type == PolarSensorSetting.SettingType.channels) {
                             HStack {
                                 Picker("Channels", selection: $selectedChannels) {
-                                    ForEach(0..<settings.sortedValues.count) {
+                                    ForEach(settings.sortedValues.indices, id: \.self) {
                                         Text("\(settings.sortedValues[$0])")
                                     }
                                 }

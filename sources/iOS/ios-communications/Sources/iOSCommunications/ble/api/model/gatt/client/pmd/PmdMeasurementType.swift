@@ -1,6 +1,6 @@
 import Foundation
 
-public enum PmdMeasurementType: UInt8, CaseIterable {
+public enum PmdMeasurementType: UInt8, CaseIterable, Sendable {
     case ecg = 0
     case ppg = 1
     case acc = 2

@@ -13,7 +13,6 @@ import java.io.IOException
 import java.io.OutputStream
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.math.log
 
 class DataCollector(private val context: Context) {
     companion object {
@@ -131,7 +130,6 @@ class DataCollector(private val context: Context) {
 
     private val logStreams: MutableMap<StreamType, FileOperations> = EnumMap(StreamType::class.java)
     private var latestTimeStamp: Long = 0
-    private var ppgTimeStamp: Long = 0
 
     private fun startNewLogWithTag(tag: String, logId: String, startTime: LocalDateTime = LocalDateTime.now()): FileOperations {
         val timeTag = startTime.toString()
@@ -155,7 +153,9 @@ class DataCollector(private val context: Context) {
 
     @Throws(IOException::class)
     fun startPpgLog(logId: String, startTime: LocalDateTime = LocalDateTime.now()) {
-        logStreams[StreamType.PPG] = startNewLogWithTag("PPG", logId, startTime)
+        if (!logStreams.containsKey(StreamType.PPG)) {
+            logStreams[StreamType.PPG] = startNewLogWithTag("PPG", logId, startTime)
+        }
     }
 
     @Throws(IOException::class)
@@ -292,14 +292,13 @@ class DataCollector(private val context: Context) {
     fun logPpgData(ppgData: PolarPpgData) {
         logStreams[StreamType.PPG]?.let { stream ->
             if (!stream.isStarted()) {
-                stream.write("PPG FRAME TYPE ${ppgData.type}\n")
                 val ppgChannels = ppgData.samples[0].channelSamples
                 val ppgStatuses = ppgData.samples[0].statusBits
                 var headerLine = "TIMESTAMP"
                 var index = 0
                 for (channel in ppgChannels) {
                     headerLine = headerLine.plus(" ")
-                    headerLine = headerLine.plus("CHANNEL${index++}")
+                    headerLine = headerLine.plus("PPG${index++}")
                 }
                 index = 0
                 for (status in ppgStatuses) {

@@ -1,23 +1,14 @@
 //  Copyright © 2026 Polar. All rights reserved.
 
 import XCTest
-import RxSwift
-import RxTest
 @testable import PolarBleSdk
 
 class PolarTestUtilsTests: XCTestCase {
 
     var mockClient: MockBlePsFtpClient!
 
-    private let dateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "yyyyMMdd"
-        f.locale = Locale(identifier: "en_US_POSIX")
-        return f
-    }()
-
     override func setUpWithError() throws {
-        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockGattServiceTransmitterImpl())
+        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockPolarGattServiceTransmitter())
     }
 
     override func tearDownWithError() throws {
@@ -26,14 +17,14 @@ class PolarTestUtilsTests: XCTestCase {
 
     // MARK: - Success: full proto
 
-    func testReadSpo2TestFromDayDirectory_Success_AllFields() throws {
+    func testReadSpo2TestFromDayDirectory_Success_AllFields() async throws {
         // Arrange
         let date = makeDate(year: 2026, month: 4, day: 13)
         let proto = buildSpo2TestProto()
-        mockClient.requestReturnValues = try makeDirThenFileSingles(proto: proto)
+        mockClient.requestReturnValues = try makeDirThenFileResults(proto: proto)
 
         // Act
-        let result = try awaitFirst(
+        let result = try await awaitFirst(
             PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: date))
 
         // Assert – all non-zero/non-empty fields should be mapped
@@ -53,19 +44,18 @@ class PolarTestUtilsTests: XCTestCase {
 
     // MARK: - Success: date from testTime proto field (UInt64 ms since epoch)
 
-    func testReadSpo2TestFromDayDirectory_Success_UsesTestTimeWhenPresent() throws {
+    func testReadSpo2TestFromDayDirectory_Success_UsesTestTimeWhenPresent() async throws {
         // Arrange – testTime = ms since epoch for 2026-04-13 14:25:07 UTC
         // 1744554307000 ms = 2026-04-13T14:25:07Z
         let fallbackDate = makeDate(year: 2026, month: 4, day: 13)
         var proto = Data_PbSpo2TestResult()
         proto.bloodOxygenPercent = 95
         proto.testTime = 1744554307000  // 2026-04-13 14:25:07 UTC
-        mockClient.requestReturnValues = try makeDirThenFileSingles(proto: proto)
+        mockClient.requestReturnValues = try makeDirThenFileResults(proto: proto)
 
         // Act
-        let result = try awaitFirst(
-            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: fallbackDate)
-        )
+        let result = try await awaitFirst(
+            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: fallbackDate))
 
         // Assert – result date should not equal fallback (testTime was decoded)
         XCTAssertNotEqual(result.date, fallbackDate)
@@ -78,18 +68,17 @@ class PolarTestUtilsTests: XCTestCase {
 
     // MARK: - Success: fallback date used when testTime is zero
 
-    func testReadSpo2TestFromDayDirectory_Success_FallsBackToDateWhenTestTimeAbsent() throws {
+    func testReadSpo2TestFromDayDirectory_Success_FallsBackToDateWhenTestTimeAbsent() async throws {
         // Arrange – testTime left at default 0
         let fallbackDate = makeDate(year: 2026, month: 4, day: 13)
         var proto = Data_PbSpo2TestResult()
         proto.bloodOxygenPercent = 95
         // testTime == 0 → treated as absent
-        mockClient.requestReturnValues = try makeDirThenFileSingles(proto: proto)
+        mockClient.requestReturnValues = try makeDirThenFileResults(proto: proto)
 
         // Act
-        let result = try awaitFirst(
-            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: fallbackDate)
-        )
+        let result = try await awaitFirst(
+            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: fallbackDate))
 
         // Assert – when folder name is "142507" (from makeDirThenFileSingles default), date should be parsed from folder
         // but since we used fallbackDate as dayDate the year/month/day should match
@@ -99,17 +88,16 @@ class PolarTestUtilsTests: XCTestCase {
         XCTAssertEqual(components.day, 13)
     }
 
-    // MARK: - triggerType is always nil (not in proto)
+    // MARK: - Zero values map to nil
 
-    func testReadSpo2TestFromDayDirectory_Success_ZeroValuesMapToNil() throws {
+    func testReadSpo2TestFromDayDirectory_Success_ZeroValuesMapToNil() async throws {
         // Arrange – empty proto: all numeric fields are zero, strings empty
         let proto = Data_PbSpo2TestResult()
-        mockClient.requestReturnValues = try makeDirThenFileSingles(proto: proto)
+        mockClient.requestReturnValues = try makeDirThenFileResults(proto: proto)
 
         // Act
-        let result = try awaitFirst(
-            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: Date())
-        )
+        let result = try await awaitFirst(
+            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: Date()))
 
         // Assert – optional fields should be nil when proto value is zero / empty
         XCTAssertNil(result.recordingDevice)
@@ -121,17 +109,15 @@ class PolarTestUtilsTests: XCTestCase {
         XCTAssertNil(result.altitudeMeters)
     }
 
-    // MARK: - Success: correct paths are requested
+    // MARK: - Correct paths are requested
 
-    func testReadSpo2TestFromDayDirectory_CorrectPathsRequested() throws {
+    func testReadSpo2TestFromDayDirectory_CorrectPathsRequested() async throws {
         // Arrange
         let date = makeDate(year: 2026, month: 4, day: 13)
-        let proto = buildSpo2TestProto()
-        mockClient.requestReturnValues = try makeDirThenFileSingles(proto: proto, subDirName: "142507")
+        mockClient.requestReturnValues = try makeDirThenFileResults(proto: buildSpo2TestProto(), subDirName: "142507")
 
-        _ = try awaitAll(
-            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: date)
-        )
+        _ = try await awaitAll(
+            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: date))
 
         // Assert – first call lists the SPO2TEST directory, second fetches the file
         XCTAssertEqual(mockClient.requestCalls.count, 2)
@@ -143,122 +129,111 @@ class PolarTestUtilsTests: XCTestCase {
         XCTAssertEqual(secondOp.path, "/U/0/20260413/SPO2TEST/142507/SPO2TRES.BPB")
     }
 
-    // MARK: - Empty directory (no subdirectory entries) → completes empty
+    // MARK: - Empty directory → completes empty
 
-    func testReadSpo2TestFromDayDirectory_EmptyDirectory_CompletesEmpty() throws {
+    func testReadSpo2TestFromDayDirectory_EmptyDirectory_CompletesEmpty() async throws {
         // Arrange – SPO2TEST/ directory exists but has no entries
         var emptyDir = Protocol_PbPFtpDirectory()
         emptyDir.entries = []
-        mockClient.requestReturnValues = [Single.just(try emptyDir.serializedData())]
+        mockClient.requestReturnValues = [.success(try emptyDir.serializedData())]
 
         // Act & Assert
-        let results = try awaitAll(
-            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: Date())
-        )
+        let results = try await awaitAll(
+            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: Date()))
         XCTAssertTrue(results.isEmpty)
     }
 
     // MARK: - Directory has only file entries (no subdirectory) → completes empty
 
-    func testReadSpo2TestFromDayDirectory_DirectoryHasNoSubdirs_CompletesEmpty() throws {
+    func testReadSpo2TestFromDayDirectory_DirectoryHasNoSubdirs_CompletesEmpty() async throws {
         // Arrange – entry without trailing slash is a file, not a subdir
         var dir = Protocol_PbPFtpDirectory()
         var fileEntry = Protocol_PbPFtpEntry()
         fileEntry.name = "SPO2TRES.BPB"   // no trailing slash
         fileEntry.size = 0
         dir.entries = [fileEntry]
-        mockClient.requestReturnValues = [Single.just(try dir.serializedData())]
+        mockClient.requestReturnValues = [.success(try dir.serializedData())]
 
         // Act & Assert
-        let results = try awaitAll(
-            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: Date())
-        )
+        let results = try await awaitAll(
+            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: Date()))
         XCTAssertTrue(results.isEmpty)
     }
 
     // MARK: - Directory listing fails → completes empty
 
-    func testReadSpo2TestFromDayDirectory_DirectoryListingFails_CompletesEmpty() {
+    func testReadSpo2TestFromDayDirectory_DirectoryListingFails_CompletesEmpty() async throws {
         // Arrange – simulate device error 103 (file/directory not found)
         mockClient.requestReturnValues = [
-            Single.error(NSError(domain: "BLE", code: 103, userInfo: nil))
+            .failure(NSError(domain: "BLE", code: 103, userInfo: nil))
         ]
 
-        let results = try! awaitAll(
-            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: Date())
-        )
+        let results = try await awaitAll(
+            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: Date()))
         XCTAssertTrue(results.isEmpty)
     }
 
     // MARK: - File fetch fails after directory found → completes empty
 
-    func testReadSpo2TestFromDayDirectory_FileFetchFails_CompletesEmpty() throws {
+    func testReadSpo2TestFromDayDirectory_FileFetchFails_CompletesEmpty() async throws {
         // Arrange – directory listing succeeds, but file request errors
         var dir = Protocol_PbPFtpDirectory()
         var entry = Protocol_PbPFtpEntry()
-        entry.name = "142507/"
-        entry.size = 0
+        entry.name = "142507/"; entry.size = 0
         dir.entries = [entry]
 
         mockClient.requestReturnValues = [
-            Single.just(try dir.serializedData()),
-            Single.error(NSError(domain: "BLE", code: 103, userInfo: nil))
+            .success(try dir.serializedData()),
+            .failure(NSError(domain: "BLE", code: 103, userInfo: nil))
         ]
 
         // Act & Assert
-        let results = try awaitAll(
-            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: Date())
-        )
+        let results = try await awaitAll(
+            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: Date()))
         XCTAssertTrue(results.isEmpty)
     }
 
     // MARK: - Malformed file data → completes empty
 
-    func testReadSpo2TestFromDayDirectory_MalformedFileData_CompletesEmpty() throws {
+    func testReadSpo2TestFromDayDirectory_MalformedFileData_CompletesEmpty() async throws {
         // Arrange – directory listing succeeds but the proto bytes are garbage
         var dir = Protocol_PbPFtpDirectory()
         var entry = Protocol_PbPFtpEntry()
-        entry.name = "142507/"
-        entry.size = 0
+        entry.name = "142507/"; entry.size = 0
         dir.entries = [entry]
 
         mockClient.requestReturnValues = [
-            Single.just(try dir.serializedData()),
-            Single.just(Data([0xFF, 0xFE, 0xFD]))
+            .success(try dir.serializedData()),
+            .success(Data([0xFF, 0xFE, 0xFD]))
         ]
 
         // Act & Assert
-        let results = try awaitAll(
-            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: Date())
-        )
+        let results = try await awaitAll(
+            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: Date()))
         XCTAssertTrue(results.isEmpty)
     }
 
     // MARK: - Multiple subdirectories → all are returned
 
-    func testReadSpo2TestFromDayDirectory_MultipleSubdirs_ReturnsAll() throws {
+    func testReadSpo2TestFromDayDirectory_MultipleSubdirs_ReturnsAll() async throws {
         // Arrange – two time subdirectories; both should be read and returned
         var dir = Protocol_PbPFtpDirectory()
         var entry1 = Protocol_PbPFtpEntry(); entry1.name = "093635/"; entry1.size = 0
         var entry2 = Protocol_PbPFtpEntry(); entry2.name = "093751/"; entry2.size = 0
         dir.entries = [entry1, entry2]
 
-        var proto1 = buildSpo2TestProto()
-        proto1.bloodOxygenPercent = 97
-
-        var proto2 = buildSpo2TestProto()
-        proto2.bloodOxygenPercent = 95
+        var proto1 = buildSpo2TestProto(); proto1.bloodOxygenPercent = 97
+        var proto2 = buildSpo2TestProto(); proto2.bloodOxygenPercent = 95
 
         mockClient.requestReturnValues = [
-            Single.just(try dir.serializedData()),
-            Single.just(try proto1.serializedData()),
-            Single.just(try proto2.serializedData())
+            .success(try dir.serializedData()),
+            .success(try proto1.serializedData()),
+            .success(try proto2.serializedData())
         ]
 
         let date = makeDate(year: 2026, month: 4, day: 13)
-        let results = try awaitAll(
-            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: date)
-        )
+        let results = try await awaitAll(
+            PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: date))
 
         // Both subdirectories should produce a result
         XCTAssertEqual(results.count, 2)
@@ -312,9 +287,9 @@ class PolarTestUtilsTests: XCTestCase {
         XCTAssertNil(PolarSpo2TestData.Spo2TestTriggerType(rawValue: 99))
     }
 
-    // MARK: - Enum mapping: each Spo2TestStatus value round-trips from proto
+    // MARK: - Round-trip: each Spo2TestStatus from proto
 
-    func testAllSpo2TestStatuses_RoundTripFromProto() throws {
+    func testAllSpo2TestStatuses_RoundTripFromProto() async throws {
         let statuses: [(Data_PbSpo2TestStatus, PolarSpo2TestData.Spo2TestStatus)] = [
             (.spo2TestPassed, .passed),
             (.spo2TestInconclusiveTooLowQualityInSamples, .inconclusiveTooLowQualityInSamples),
@@ -325,19 +300,18 @@ class PolarTestUtilsTests: XCTestCase {
             var proto = Data_PbSpo2TestResult()
             proto.testStatus = protoStatus
             proto.bloodOxygenPercent = 95
-            mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockGattServiceTransmitterImpl())
-            mockClient.requestReturnValues = try makeDirThenFileSingles(proto: proto)
+            mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockPolarGattServiceTransmitter())
+            mockClient.requestReturnValues = try makeDirThenFileResults(proto: proto)
 
-            let result = try awaitFirst(
-                PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: Date())
-            )
+            let result = try await awaitFirst(
+                PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: Date()))
             XCTAssertEqual(result.testStatus, expected, "testStatus mismatch for \(protoStatus)")
         }
     }
 
-    // MARK: - Enum mapping: each Spo2Class value round-trips from proto
+    // MARK: - Round-trip: each Spo2Class from proto
 
-    func testAllSpo2Classes_RoundTripFromProto() throws {
+    func testAllSpo2Classes_RoundTripFromProto() async throws {
         let classes: [(Data_PbSpo2Class, PolarSpo2TestData.Spo2Class)] = [
             (.spo2ClassUnknown, .unknown),
             (.spo2ClassVeryLow, .veryLow),
@@ -348,19 +322,17 @@ class PolarTestUtilsTests: XCTestCase {
             var proto = Data_PbSpo2TestResult()
             proto.spo2Class = protoClass
             proto.bloodOxygenPercent = 95
-            mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockGattServiceTransmitterImpl())
-            mockClient.requestReturnValues = try makeDirThenFileSingles(proto: proto)
+            mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockPolarGattServiceTransmitter())
+            mockClient.requestReturnValues = try makeDirThenFileResults(proto: proto)
 
-            let result = try awaitFirst(
-                PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: Date())
-            )
+            let result = try await awaitFirst(
+                PolarTestUtils.readSpo2TestFromDayDirectory(client: mockClient, date: Date()))
             XCTAssertEqual(result.spo2Class, expected, "spo2Class mismatch for \(protoClass)")
         }
     }
 
     // MARK: - Helpers
 
-    /// Build a fully-populated SPO2 test proto using the real generated field names.
     private func buildSpo2TestProto() -> Data_PbSpo2TestResult {
         var proto = Data_PbSpo2TestResult()
         proto.recordingDevice = "Polar Vantage V3"
@@ -378,47 +350,42 @@ class PolarTestUtilsTests: XCTestCase {
         return proto
     }
 
-    /// Build [directorySingle, fileSingle] to feed requestReturnValues.
-    private func makeDirThenFileSingles(
+    /// Build [directoryResult, fileResult] to feed requestReturnValues.
+    private func makeDirThenFileResults(
         proto: Data_PbSpo2TestResult,
         subDirName: String = "142507"
-    ) throws -> [Single<Data>] {
+    ) throws -> [Result<Data, Error>] {
         var dir = Protocol_PbPFtpDirectory()
         var entry = Protocol_PbPFtpEntry()
         entry.name = "\(subDirName)/"
         entry.size = 0
         dir.entries = [entry]
         return [
-            Single.just(try dir.serializedData()),
-            Single.just(try proto.serializedData())
+            .success(try dir.serializedData()),
+            .success(try proto.serializedData())
         ]
     }
 
-    /// Convenience: collect all emitted values from an Observable.
+    /// Collect all values emitted by an AsyncThrowingStream.
     @discardableResult
-    private func awaitAll<T>(_ observable: Observable<T>, timeout: TimeInterval = 2.0) throws -> [T] {
+    private func awaitAll<T>(_ stream: AsyncThrowingStream<T, Error>) async throws -> [T] {
         var results: [T] = []
-        var capturedError: Error?
-        let exp = expectation(description: "awaitAll")
-        let disposable = observable.subscribe(
-            onNext: { results.append($0) },
-            onError: { capturedError = $0; exp.fulfill() },
-            onCompleted: { exp.fulfill() }
-        )
-        wait(for: [exp], timeout: timeout)
-        disposable.dispose()
-        if let error = capturedError { throw error }
+        for try await value in stream {
+            results.append(value)
+        }
         return results
     }
 
-    /// Convenience: assert the Observable emits at least one value and return the first.
+    /// Return the first value from an AsyncThrowingStream, or throw if the stream completes empty.
     @discardableResult
-    private func awaitFirst<T>(_ observable: Observable<T>, timeout: TimeInterval = 2.0) throws -> T {
-        let results = try awaitAll(observable, timeout: timeout)
-        return try XCTUnwrap(results.first, "Expected at least one emitted value")
+    private func awaitFirst<T>(_ stream: AsyncThrowingStream<T, Error>) async throws -> T {
+        for try await value in stream {
+            return value
+        }
+        throw XCTestError(.timeoutWhileWaiting)
     }
 
-    /// Create a Date at midnight UTC for a given year/month/day.
+    /// Create a Date at midnight for a given year/month/day using the Gregorian calendar.
     private func makeDate(year: Int, month: Int, day: Int) -> Date {
         var c = DateComponents()
         c.year = year; c.month = month; c.day = day
@@ -426,4 +393,3 @@ class PolarTestUtilsTests: XCTestCase {
         return Calendar(identifier: .gregorian).date(from: c)!
     }
 }
-

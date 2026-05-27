@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
 abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineStreamingApi,
     PolarOfflineRecordingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi,
     PolarActivityApi, PolarSleepApi, PolarRestServiceApi, PolarTemperatureApi, PolarTrainingSessionApi,
-    PolarBleLowLevelApi, PolarDeviceToHostNotificationsApi, PolarTestApi {
+    PolarBleLowLevelApi, PolarDeviceToHostNotificationsApi, PolarTestApi, PolarWatchFaceApi {
 
     /**
      * Features available in Polar BLE SDK library
@@ -124,7 +124,12 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
         /**
          * Feature to read and set device configuration through Polar Features Configuration Service.
          */
-        FEATURE_POLAR_FEATURES_CONFIGURATION_SERVICE
+        FEATURE_POLAR_FEATURES_CONFIGURATION_SERVICE,
+
+        /**
+         * Feature to configure watch face complications on PolarOS watches.
+         */
+        FEATURE_WATCH_FACES_CONFIGURATION
     }
 
     /**

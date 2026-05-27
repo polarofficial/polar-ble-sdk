@@ -1,22 +1,19 @@
-
 import Foundation
 import CoreBluetooth
-import RxSwift
+import Combine
 
 class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeTransportProtocol {
     private(set) var peripheral: CBPeripheral
     private let central: CBCentralManager
     private let scanner: CBScanningProtocol
-    private var serviceMonitors = AtomicList<RxObserver<CBUUID>>()
+    private let serviceMonitors = StreamContinuationList<CBUUID>()
     private var serviceCount = AtomicInteger.init(initialValue: 0)
     private var attNotifyQueue = AtomicList<CBCharacteristic>()
     private let queueBle: DispatchQueue
     private let queue: DispatchQueue
     
-    // non nil if there is pending write to be finished. Write can be completed by disposing the disposable.
-    fileprivate var pendingPeripheralWrite:Disposable? = nil
-    
-    private static let WRITE_FREEZE_SAFEGUARD_TIMEOUT_MS = 20
+    // non nil if there is a pending write-without-response waiting for peripheralIsReady callback
+    fileprivate var pendingWriteData: (packet: Data, characteristic: CBCharacteristic, parent: BleGattClientBase, characteristicUuid: CBUUID)?
     
     init(peripheral: CBPeripheral,
          central: CBCentralManager,
@@ -99,41 +96,27 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
                 attNotifyQueue.removeAll()
             }
         }
-        RxUtils.postErrorAndClearList(serviceMonitors, error: BleGattException.gattDisconnected)
+        serviceMonitors.finish(throwing: BleGattException.gattDisconnected)
     }
     
-    override func monitorServicesDiscovered(_ checkConnection: Bool) -> Observable<CBUUID> {
-        var object: RxObserver<CBUUID>!
-        return Observable.create{ observer in
-            object = RxObserver<CBUUID>.init(obs: observer)
-            if self.isConnected() {
-                if self.peripheral.services != nil &&
-                    self.peripheral.services?.count != 0 &&
-                    
-                    self.serviceCount.get() >= (self.peripheral.services?.count)! {
-                    for service in (self.peripheral.services)! {
-                        observer.onNext(service.uuid)
-                    }
-                    observer.onCompleted()
-                } else {
-                    if self.serviceCount.get() > 0 && self.peripheral.services != nil {
-                        for service in (self.peripheral.services)! {
-                            if service.characteristics != nil && service.characteristics?.count != 0 {
-                                observer.onNext(service.uuid)
-                            }
-                        }
-                    }
-                    self.serviceMonitors.append(object)
-                }
-            } else {
-                observer.onError(BleGattException.gattDisconnected)
-            }
-            return Disposables.create {
-                self.serviceMonitors.remove({ (item) -> Bool in
-                    return item === object
-                })
+    override func monitorServicesDiscovered(_ checkConnection: Bool) -> AsyncThrowingStream<CBUUID, Error> {
+        guard isConnected() else {
+            return AsyncThrowingStream { $0.finish(throwing: BleGattException.gattDisconnected) }
+        }
+        if let services = peripheral.services, !services.isEmpty,
+           serviceCount.get() >= services.count {
+            // All services already discovered — emit everything and complete immediately.
+            return AsyncThrowingStream { cont in
+                services.forEach { cont.yield($0.uuid) }
+                cont.finish()
             }
         }
+        // Discovery still in progress — collect any already-discovered services as initial
+        // values so a late subscriber doesn't miss them, then join the shared monitor list.
+        let initialValues: [CBUUID] = peripheral.services?
+            .filter { $0.characteristics?.isEmpty == false }
+            .map(\.uuid) ?? []
+        return serviceMonitors.makeStream(transport: nil, checkConnection: false, initialValues: initialValues)
     }
     
     // from BleGattTransmitter
@@ -184,20 +167,11 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
                         peripheral.writeValue(packet, for: characteristic, type: CBCharacteristicWriteType.withResponse)
                     } else if( characteristic.properties.rawValue & CBCharacteristicProperties.writeWithoutResponse.rawValue != 0){
                         if(peripheral.canSendWriteWithoutResponse) {
-                            peripheral.writeValue(packet, for: characteristic, type:CBCharacteristicWriteType.withoutResponse);
+                            peripheral.writeValue(packet, for: characteristic, type:CBCharacteristicWriteType.withoutResponse)
                             parent.serviceDataWritten(characteristicUuid, err: 0)
                         } else {
-                            // the delay is used to safe guard the scenario peripheralIsReady() is never called
-                            pendingPeripheralWrite = Completable.empty()
-                                .delay(RxTimeInterval.milliseconds(CBDeviceSessionImpl.WRITE_FREEZE_SAFEGUARD_TIMEOUT_MS), scheduler: SerialDispatchQueueScheduler(internalSerialQueueName: ""))
-                                .do( onDispose: {
-                                    self.peripheral.writeValue(packet, for: characteristic, type: CBCharacteristicWriteType.withoutResponse)
-                                    parent.serviceDataWritten(characteristicUuid, err: 0)
-                                }).subscribe(
-                                    onCompleted: {},
-                                    onError: { error in
-                                        BleLogger.trace("write failed: \(error)")
-                                    })
+                            // Store the pending write — peripheralIsReady will execute it when the peripheral is ready
+                            pendingWriteData = (packet, characteristic, parent, characteristicUuid)
                         }
                     } else {
                         throw BleGattException.gattCharacteristicError
@@ -295,10 +269,10 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
                 }
             } else {
                 BleLogger.error("No services present")
-                RxUtils.postErrorAndClearList(serviceMonitors, error: BleGattException.gattServicesNotFound)
+                serviceMonitors.finish(throwing: BleGattException.gattServicesNotFound)
             }
         } else {
-            RxUtils.postErrorAndClearList(serviceMonitors, error: error!)
+            serviceMonitors.finish(throwing: error!)
         }
     }
     
@@ -333,14 +307,12 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
                     BleLogger.error("Service has no characteristics")
                 }
             }
-            RxUtils.emitNext(serviceMonitors) { (observer) in
-                observer.obs.onNext(service.uuid)
-                if serviceCount.get() >= (peripheral.services?.count)! {
-                    observer.obs.onCompleted()
-                }
+            serviceMonitors.yield(service.uuid)
+            if serviceCount.get() >= (peripheral.services?.count)! {
+                serviceMonitors.finish()
             }
         } else {
-            RxUtils.postErrorAndClearList(serviceMonitors, error: error!)
+            serviceMonitors.finish(throwing: error!)
         }
     }
     
@@ -402,8 +374,8 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
         
         guard let error = error else { return }
         
-        if let error = error as? NSError, error.domain == CBATTError.errorDomain {
-            let cbAttError = CBATTError(_nsError: error)
+        if (error as NSError).domain == CBATTError.errorDomain {
+            let cbAttError = CBATTError(_nsError: error as NSError)
             if cbAttError.code == .insufficientEncryption { // pairing removed from iOS
                 BleLogger.trace("Special handling needed for security re-establish")
                 attNotifyQueue.removeAll()
@@ -413,8 +385,8 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
                 return
             }
         }
-        if let error = error as? NSError, error.domain == CBError.errorDomain{
-            let cbError = CBError(_nsError: error)
+        if (error as NSError).domain == CBError.errorDomain {
+            let cbError = CBError(_nsError: error as NSError)
             
             if cbError.code == .encryptionTimedOut {
                 BleLogger.trace("Special handling needed for security re-establish")
@@ -437,8 +409,11 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     
     func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheral) {
         BleLogger.trace("peripheralIsReadyToSendWriteWithoutResponse")
-        pendingPeripheralWrite?.dispose()
-        pendingPeripheralWrite = nil
+        if let pending = pendingWriteData {
+            pendingWriteData = nil
+            peripheral.writeValue(pending.packet, for: pending.characteristic, type: .withoutResponse)
+            pending.parent.serviceDataWritten(pending.characteristicUuid, err: 0)
+        }
     }
 }
 

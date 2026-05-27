@@ -1,9 +1,6 @@
-//
 //  Copyright © 2025 Polar. All rights reserved.
-//
 
 import Foundation
-import RxSwift
 
 private let ARABICA_USER_ROOT_FOLDER = "/U/0/"
 private let SKIN_TEMPERATURE_DIRECTORY = "SKINTEMP/"
@@ -17,39 +14,22 @@ private let dateFormat: DateFormatter = {
 private let TAG = "PolarSkinTemperatureUtils"
 
 internal class PolarSkinTemperatureUtils {
-
-    /// Read skin temperature data for the given date.
-    static func readSkinTemperatureData(client: BlePsFtpClient, date: Date) -> Maybe<PolarSkinTemperatureData.PolarSkinTemperatureResult> {
+    static func readSkinTemperatureData(client: BlePsFtpClient, date: Date) async -> PolarSkinTemperatureData.PolarSkinTemperatureResult? {
         BleLogger.trace(TAG, "readSkinTemperatureData: \(date)")
-        return Maybe<PolarSkinTemperatureData.PolarSkinTemperatureResult>.create { emitter in
-            let skinTemperatureFilePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(SKIN_TEMPERATURE_DIRECTORY)\(SKIN_TEMPERATURE_PROTO)"
-            let operation = Protocol_PbPFtpOperation.with {
-                $0.command = .get
-                $0.path = skinTemperatureFilePath
-            }
-            let disposable = client.request(try! operation.serializedData()).subscribe(
-                onSuccess: { response in
-                    do {
-                        let skinTemp = try Data_TemperatureMeasurementPeriod(serializedData: Data(response))
-                        let polarSkinTemperatureResult = PolarSkinTemperatureData.PolarSkinTemperatureResult(
-                            date: date, sensorLocation: try PolarSkinTemperatureData.SkinTemperatureSensorLocation.getByValue(value: skinTemp.sensorLocation),
-                            measurementType: try PolarSkinTemperatureData.SkinTemperatureMeasurementType.getByValue(value: skinTemp.measurementType),
-                            skinTemperatureList: PolarSkinTemperatureData.fromPbTemperatureMeasurementSamples(pbTemperatureMeasurementData: skinTemp.temperatureMeasurementSamples)
-                        )
-                        emitter(.success(polarSkinTemperatureResult))
-                    } catch {
-                        BleLogger.error("readSkinTemperatureData() failed for path: \(skinTemperatureFilePath), error: \(error)")
-                        emitter(.completed)
-                    }
-                },
-                onFailure: { error in
-                    BleLogger.error("readSkinTemperatureData() failed for path: \(skinTemperatureFilePath), error: \(error)")
-                    emitter(.completed)
-                }
+        let filePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(SKIN_TEMPERATURE_DIRECTORY)\(SKIN_TEMPERATURE_PROTO)"
+        let operation = Protocol_PbPFtpOperation.with { $0.command = .get; $0.path = filePath }
+        do {
+            let response = try await client.request(try operation.serializedBytes())
+            let skinTemp = try Data_TemperatureMeasurementPeriod(serializedBytes: Data(response))
+            return PolarSkinTemperatureData.PolarSkinTemperatureResult(
+                date: date,
+                sensorLocation: try PolarSkinTemperatureData.SkinTemperatureSensorLocation.getByValue(value: skinTemp.sensorLocation),
+                measurementType: try PolarSkinTemperatureData.SkinTemperatureMeasurementType.getByValue(value: skinTemp.measurementType),
+                skinTemperatureList: PolarSkinTemperatureData.fromPbTemperatureMeasurementSamples(pbTemperatureMeasurementData: skinTemp.temperatureMeasurementSamples)
             )
-            return Disposables.create {
-                disposable.dispose()
-            }
+        } catch {
+            BleLogger.error("readSkinTemperatureData() failed for path: \(filePath), error: \(error)")
+            return nil
         }
     }
 }

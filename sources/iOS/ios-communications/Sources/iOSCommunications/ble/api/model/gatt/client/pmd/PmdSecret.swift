@@ -4,7 +4,7 @@ import Foundation
 import CryptoKit
 import CommonCrypto
 
-public struct PmdSecret {
+public struct PmdSecret: @unchecked Sendable {
     let strategy: SecurityStrategy
     let key: Data
     private let keySymmetric: SymmetricKey?

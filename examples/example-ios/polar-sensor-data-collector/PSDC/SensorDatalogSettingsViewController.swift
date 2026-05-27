@@ -1,15 +1,12 @@
 
 import UIKit
 import PolarBleSdk
-import RxSwift
 
 class SensorDatalogSettingsViewController: UIViewController {
     
     var available = Set<UInt16>()
-    var obs: ((RxSwift.SingleEvent<UInt16>) -> ())?
     var api: PolarBleApi!
     var deviceId = String()
-    private let disposeBag = DisposeBag()
     
     weak var delegate: ViewController!
     @IBOutlet weak var ohrSwitch: UISwitch!
@@ -21,7 +18,6 @@ class SensorDatalogSettingsViewController: UIViewController {
     
     @IBOutlet weak var sdLogCancelButton: UIButton!
     @IBOutlet weak var sdLogSetButton: UIButton!
-    var disposable: Disposable?
     var logConfig: SDLogConfig?
     
     override func viewDidLoad() {
@@ -31,24 +27,22 @@ class SensorDatalogSettingsViewController: UIViewController {
         sdLogSetButton.layer.cornerRadius = 10
         sdLogSetButton.clipsToBounds = true
         
-        api.getSDLogConfiguration(deviceId)
-            .observe(on: MainScheduler.instance)
-            .subscribe{ [self] e in
-                switch e {
-                case .success(let config):
-                    self.logConfig = config
-                    ohrSwitch.isOn = config.ohrLogEnabled
-                    accSwitch.isOn = config.accelerationLogEnabled
-                    skinTempSwitch.isOn = config.skinTemperatureLogEnabled
-                    metSwitch.isOn = config.metLogEnabled
-                    caloriesSwitch.isOn = config.caloriesLogEnabled
-                    sleepSwitch.isOn = config.sleepLogEnabled
-
-                case .failure(let err):
-                    print("Failed to load sensor datalog settings, \(err)")
-                    self.dismiss(animated: false)
-                }
-            }.disposed(by: disposeBag)
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                let config = try await api.getSDLogConfiguration(deviceId)
+                logConfig = config
+                ohrSwitch.isOn = config.ohrLogEnabled
+                accSwitch.isOn = config.accelerationLogEnabled
+                skinTempSwitch.isOn = config.skinTemperatureLogEnabled
+                metSwitch.isOn = config.metLogEnabled
+                caloriesSwitch.isOn = config.caloriesLogEnabled
+                sleepSwitch.isOn = config.sleepLogEnabled
+            } catch {
+                print("Failed to load sensor datalog settings, \(error)")
+                dismiss(animated: false)
+            }
+        }
     }
     
     @IBAction func setSDLogButtonSelected(_ sender: Any) {
@@ -57,40 +51,33 @@ class SensorDatalogSettingsViewController: UIViewController {
     }
     
     @IBAction func cancel(_ sender: Any) {
-        disposable?.dispose()
         self.dismiss(animated: false) {
             // do nothing
         }
     }
     
     @IBAction func setOhr(_ sender: Any) {
-        disposable?.dispose()
         self.logConfig?.ohrLogEnabled = ohrSwitch.isOn
     }
     
     @IBAction func setAcc(_ sender: Any) {
-        disposable?.dispose()
         self.logConfig?.accelerationLogEnabled = accSwitch.isOn
     }
     
     @IBAction func setSkinTemp(_ sender: Any) {
-        disposable?.dispose()
         self.logConfig?.skinTemperatureLogEnabled = skinTempSwitch.isOn
     }
     
     @IBAction func setMet(_ sender: Any) {
-        disposable?.dispose()
         self.logConfig?.metLogEnabled = metSwitch.isOn
     }
     
     @IBAction func setCalories(_ sender: Any) {
-        disposable?.dispose()
         caloriesSwitch.isOn = ((self.logConfig?.caloriesLogEnabled) != nil)
         self.logConfig?.caloriesLogEnabled = caloriesSwitch.isOn
     }
     
     @IBAction func setSleep(_ sender: Any) {
-        disposable?.dispose()
         self.logConfig?.sleepLogEnabled = sleepSwitch.isOn
     }
     

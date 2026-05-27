@@ -10,6 +10,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
@@ -25,6 +26,7 @@ import com.polar.polarsensordatacollector.ui.graph.AccGraphFragment
 import com.polar.polarsensordatacollector.ui.graph.HrGraphFragment
 import com.polar.polarsensordatacollector.ui.utils.DataViewer
 import com.polar.polarsensordatacollector.ui.utils.DialogUtility.showAllSettingsDialog
+import com.polar.polarsensordatacollector.ui.utils.ZipCompressionHelper
 import com.polar.polarsensordatacollector.ui.utils.showSnackBar
 import com.polar.sdk.api.PolarBleApi.PolarDeviceDataType
 import com.polar.sdk.api.model.*
@@ -1288,14 +1290,44 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                     if (markerUri != null) {
                         uriArrWithOneUri.add(markerUri)
                     }
-                    val intent = Intent().apply {
-                        action = Intent.ACTION_SEND_MULTIPLE
+
+                    val totalSize = ZipCompressionHelper.calculateTotalSize(requireContext(), uriArrWithOneUri)
+                    val zipPrefix = "${feature.name.lowercase()}-online-recording"
+                    val compressionResult = ZipCompressionHelper.compressFilesIfNeeded(requireContext(), uriArrWithOneUri, zipPrefix)
+
+                    val finalUriList = if (compressionResult.uri != null) {
+                        Log.d(TAG, "Files compressed from ${totalSize / (1024 * 1024)}MB to ZIP")
+                        showToast(getString(R.string.file_compression_completed))
+                        ArrayList<Uri>().apply { add(compressionResult.uri) }
+                    } else {
+                        uriArrWithOneUri
+                    }
+
+                    val shareIntent = Intent().apply {
+                        action = if (finalUriList.size > 1) Intent.ACTION_SEND_MULTIPLE else Intent.ACTION_SEND
                         putExtra(Intent.EXTRA_SUBJECT, "Stream data")
                         type = "plain/text"
-                        putParcelableArrayListExtra(Intent.EXTRA_STREAM, uriArrWithOneUri)
+                        if (finalUriList.size > 1) {
+                            putParcelableArrayListExtra(Intent.EXTRA_STREAM, finalUriList)
+                        } else {
+                            putExtra(Intent.EXTRA_STREAM, finalUriList[0])
+                        }
                     }
-                    startActivity(intent)
-                    onlineViewModel.fileShareCompleted()
+
+                    if (compressionResult.isOverEmailSizeLimit) {
+                        AlertDialog.Builder(requireContext())
+                            .setTitle(getString(R.string.file_too_large_for_email_title))
+                            .setMessage(getString(R.string.file_too_large_for_email_message))
+                            .setPositiveButton(getString(R.string.file_too_large_share_anyway)) { _, _ ->
+                                startActivity(Intent.createChooser(shareIntent, getString(R.string.file_too_large_chooser_title)))
+                                onlineViewModel.fileShareCompleted()
+                            }
+                            .setNegativeButton(android.R.string.cancel, null)
+                            .show()
+                    } else {
+                        startActivity(shareIntent)
+                        onlineViewModel.fileShareCompleted()
+                    }
                     Log.d(TAG, "Shared ${outputFileUris.size} files")
                 }
             } else {
@@ -1372,5 +1404,10 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
 
     private fun openAccGraph() {
         AccGraphFragment().show(parentFragmentManager, null)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        ZipCompressionHelper.cleanupOldZipFiles(requireContext())
     }
 }

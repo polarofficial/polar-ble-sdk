@@ -2,7 +2,7 @@
 
 import Foundation
 
-public enum PmdOfflineRecTriggerMode: UInt8, CaseIterable {
+public enum PmdOfflineRecTriggerMode: UInt8, CaseIterable, Sendable {
     case disabled = 0
     case systemStart = 1
     case exerciseStart = 2
@@ -16,7 +16,7 @@ public enum PmdOfflineRecTriggerMode: UInt8, CaseIterable {
     }
 }
 
-public enum PmdOfflineRecTriggerStatus: UInt8, CaseIterable {
+public enum PmdOfflineRecTriggerStatus: UInt8, CaseIterable, Sendable {
     case disabled = 0
     case enabled = 1
     

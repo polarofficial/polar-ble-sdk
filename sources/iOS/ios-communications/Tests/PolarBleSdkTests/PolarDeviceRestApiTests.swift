@@ -2,8 +2,6 @@
 ///  Copyright © 2024 Polar. All rights reserved.
 
 import XCTest
-import RxSwift
-import RxBlocking
 
 @testable import PolarBleSdk
 
@@ -12,7 +10,7 @@ class PolarDeviceRestApiServiceTests: XCTestCase {
     var mockClient: MockBlePsFtpClient!
     
     override func setUpWithError() throws {
-        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockGattServiceTransmitterImpl())
+        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockPolarGattServiceTransmitter())
     }
     
     override func tearDownWithError() throws {
@@ -263,7 +261,7 @@ class PolarDeviceRestApiServiceTests: XCTestCase {
     }
     
     
-    func testReceivesRestApiEventWhenUncompressed() throws {
+    func testReceivesRestApiEventWhenUncompressed() async throws {
         
         // Arrange
         let notificationParameters = self.testNotificationParameters(compressed: false).map { [$0] }
@@ -271,21 +269,20 @@ class PolarDeviceRestApiServiceTests: XCTestCase {
             (self.restApiEventNotifiationId, [$0], false)
         }
         
-        mockClient.receiveNotificationCalls.append(contentsOf:notifications)
+        mockClient.receiveNotificationCalls.append(contentsOf: notifications)
 
         // Act
-        let result =
-        try mockClient.receiveRestApiEventData(identifier: UUID().uuidString)
-            .toArray()
-            .toBlocking()
-            .last()
+        var result: [[Data]] = []
+        for try await batch in mockClient.receiveRestApiEventData(identifier: UUID().uuidString) {
+            result.append(batch)
+        }
         
         // Assert
-        XCTAssertNotNil(result)
+        XCTAssertFalse(result.isEmpty)
         XCTAssertEqual(result, notificationParameters)
     }
     
-    func testReceivesRestApiEventWhenCompressed() throws {
+    func testReceivesRestApiEventWhenCompressed() async throws {
         
         // Arrange
         let notificationParameters = self.testNotificationParameters(compressed: false).map { [$0] }
@@ -294,14 +291,13 @@ class PolarDeviceRestApiServiceTests: XCTestCase {
         }
         let notificationParametersCompressed = notificationsWithCompressedData.map { $0.1 }
         
-        mockClient.receiveNotificationCalls.append(contentsOf:notificationsWithCompressedData)
+        mockClient.receiveNotificationCalls.append(contentsOf: notificationsWithCompressedData)
 
         // Act
-        let result =
-        try mockClient.receiveRestApiEventData(identifier: UUID().uuidString)
-            .toArray()
-            .toBlocking()
-            .last()
+        var result: [[Data]] = []
+        for try await batch in mockClient.receiveRestApiEventData(identifier: UUID().uuidString) {
+            result.append(batch)
+        }
         
         // Assert
         
@@ -310,7 +306,7 @@ class PolarDeviceRestApiServiceTests: XCTestCase {
         XCTAssertNotEqual(notificationParameters, notificationParametersCompressed)
         
         // Check that result received expected uncompressed values
-        XCTAssertNotNil(result)
+        XCTAssertFalse(result.isEmpty)
         XCTAssertEqual(result, notificationParameters)
     }
 }

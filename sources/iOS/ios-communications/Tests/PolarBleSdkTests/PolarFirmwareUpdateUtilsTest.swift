@@ -1,7 +1,6 @@
 //  Copyright © 2024 Polar. All rights reserved.
 
 import XCTest
-import RxSwift
 @testable import PolarBleSdk
 
 class PolarFirmwareUpdateUtilsTest: XCTestCase {
@@ -9,14 +8,14 @@ class PolarFirmwareUpdateUtilsTest: XCTestCase {
     var mockClient: MockBlePsFtpClient!
 
     override func setUpWithError() throws {
-        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockGattServiceTransmitterImpl())
+        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockPolarGattServiceTransmitter())
     }
 
     override func tearDownWithError() throws {
         mockClient = nil
     }
 
-    func testReadDeviceFirmwareInfo_shouldReturnFirmwareInfo() {
+    func testReadDeviceFirmwareInfo_shouldReturnFirmwareInfo() async throws {
         // Arrange
         let expectedDeviceId = "123456"
         let expectedFirmwareVersion = "1.2.0"
@@ -32,12 +31,11 @@ class PolarFirmwareUpdateUtilsTest: XCTestCase {
             $0.modelName = expectedModelName
             $0.hardwareCode = expectedHardwareCode
         }
-    
-        let mockResponseData = try! proto.serializedData()
-        mockClient.requestReturnValue = Single.just(mockResponseData)
+        
+        mockClient.requestReturnValue = .success(try proto.serializedData())
 
         // Act
-        let firmwareInfo = PolarFirmwareUpdateUtils.readDeviceFirmwareInfo(client: mockClient, deviceId: expectedDeviceId)
+        let firmwareInfo = await PolarFirmwareUpdateUtils.readDeviceFirmwareInfo(client: mockClient, deviceId: expectedDeviceId)
 
         // Assert
         XCTAssertEqual(firmwareInfo?.deviceFwVersion, expectedFirmwareVersion)

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>BleHtsClient Class Reference</title>
+    <title>PolarWatchFaceApi Protocol Reference</title>
     <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
     <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
     <meta charset='utf-8'>
@@ -13,11 +13,11 @@
     <script src="../js/jazzy.search.js" defer></script>
   </head>
   <body>
-    <a name="//apple_ref/swift/Class/BleHtsClient" class="dashAnchor"></a>
-    <a title="BleHtsClient Class Reference"></a>
+    <a name="//apple_ref/swift/Protocol/PolarWatchFaceApi" class="dashAnchor"></a>
+    <a title="PolarWatchFaceApi Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">PolarBleSdk 7.0.2 Docs</a> (41% documented)</p>
+        <p><a href="../index.html">PolarBleSdk 7.1.3 Docs</a> (40% documented)</p>
         <div class="header-right">
           <form role="search" action="../search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -29,9 +29,9 @@
       <p id="breadcrumbs">
         <a href="../index.html">PolarBleSdk</a>
         <img id="carat" src="../img/carat.png" alt=""/>
-        <a href="../Classes.html">Classes</a>
+        <a href="../Protocols.html">Protocols</a>
         <img id="carat" src="../img/carat.png" alt=""/>
-        BleHtsClient Class Reference
+        PolarWatchFaceApi Protocol Reference
       </p>
     </div>
     <div class="content-wrapper">
@@ -40,15 +40,6 @@
           <li class="nav-group-name">
             <a href="../Classes.html">Classes</a>
             <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a href="../Classes/BleHtsClient.html">BleHtsClient</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Classes/BleHtsClient/TemperatureMeasurement.html">– TemperatureMeasurement</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Classes/HealthThermometer.html">HealthThermometer</a>
-              </li>
               <li class="nav-group-task">
                 <a href="../Classes/PolarActivityData.html">PolarActivityData</a>
               </li>
@@ -219,6 +210,9 @@
                 <a href="../Enums/PolarTrainingSessionFetchResult.html">PolarTrainingSessionFetchResult</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/PolarWatchFaceComplication.html">PolarWatchFaceComplication</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/PpgDataType.html">PpgDataType</a>
               </li>
               <li class="nav-group-task">
@@ -234,9 +228,6 @@
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
                 <a href="../Extensions/DateComponents.html">DateComponents</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Extensions/PrimitiveSequence.html">PrimitiveSequence</a>
               </li>
             </ul>
           </li>
@@ -305,6 +296,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarWatchFaceApi.html">PolarWatchFaceApi</a>
               </li>
             </ul>
           </li>
@@ -462,6 +456,9 @@
                 <a href="../Structs/PolarUserDeviceSettingsData.html">PolarUserDeviceSettingsData</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Structs/PolarWatchFaceConfig.html">PolarWatchFaceConfig</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Structs/SDLogConfig.html">SDLogConfig</a>
               </li>
               <li class="nav-group-task">
@@ -521,15 +518,20 @@
       <article class="main-content">
         <section>
           <section class="section">
-            <h1>BleHtsClient</h1>
+            <h1>PolarWatchFaceApi</h1>
               <div class="declaration">
                 <div class="language">
                   
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">BleHtsClient</span> <span class="p">:</span> <span class="kt">BleGattClientBase</span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">PolarWatchFaceApi</span></code></pre>
 
                 </div>
               </div>
-            <p>Undocumented</p>
+            <p>Polar watch face configuration API.</p>
+
+<p>Allows reading and writing complications configuration on PolarOS-based Polar devices.
+Complications are configurable UI elements on a watch face (e.g. SpO2, heart rate, steps).</p>
+
+<p>Requires feature <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO39feature_polar_watch_faces_configurationyA2CmF">PolarBleSdkFeature.feature_polar_watch_faces_configuration</a></code>.</p>
 
           </section>
           <section class="section task-group-section">
@@ -538,27 +540,62 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0B9HtsClientC22TemperatureMeasurementV"></a>
-                    <a name="//apple_ref/swift/Struct/TemperatureMeasurement" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0B9HtsClientC22TemperatureMeasurementV">TemperatureMeasurement</a>
+                    <a name="/s:11PolarBleSdk0A12WatchFaceApiP03getdE6ConfigyAA0adeH0VSSYaKF"></a>
+                    <a name="//apple_ref/swift/Method/getWatchFaceConfig(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A12WatchFaceApiP03getdE6ConfigyAA0adeH0VSSYaKF">getWatchFaceConfig(_:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Read the current watch face configuration from the device KVS.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO39feature_polar_watch_faces_configurationyA2CmF">PolarBleSdkFeature.feature_polar_watch_faces_configuration</a></code>
 
-                        <a href="../Classes/BleHtsClient/TemperatureMeasurement.html" class="slightly-smaller">See more</a>
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors
+
+</div>
+
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">TemperatureMeasurement</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getWatchFaceConfig</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/PolarWatchFaceConfig.html">PolarWatchFaceConfig</a></span></code></pre>
 
                         </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device ID or BT address.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p><code><a href="../Structs/PolarWatchFaceConfig.html">PolarWatchFaceConfig</a></code> reflecting what is currently on the device,
+       or a config with an empty list if no complications are configured.</p>
                       </div>
                     </section>
                   </div>
@@ -566,107 +603,71 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0B9HtsClientC22gattServiceTransmitterAcA0B26AttributeTransportProtocol_p_tcfc"></a>
-                    <a name="//apple_ref/swift/Method/init(gattServiceTransmitter:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0B9HtsClientC22gattServiceTransmitterAcA0B26AttributeTransportProtocol_p_tcfc">init(gattServiceTransmitter:<wbr>)</a>
+                    <a name="/s:11PolarBleSdk0A12WatchFaceApiP03setdE6Config_6configySS_AA0adeH0VtYaKF"></a>
+                    <a name="//apple_ref/swift/Method/setWatchFaceConfig(_:config:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A12WatchFaceApiP03setdE6Config_6configySS_AA0adeH0VtYaKF">setWatchFaceConfig(_:<wbr>config:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Set the watch face complications on the device.</p>
+
+<p>Writes the provided complication list to the device KVS watch face configuration.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO39feature_polar_watch_faces_configurationyA2CmF">PolarBleSdkFeature.feature_polar_watch_faces_configuration</a></code>
+
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors
+
+</div>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">gattServiceTransmitter</span><span class="p">:</span> <span class="kt">BleAttributeTransportProtocol</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setWatchFaceConfig</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">config</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarWatchFaceConfig.html">PolarWatchFaceConfig</a></span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:11PolarBleSdk0B9HtsClientC12disconnectedyyF"></a>
-                    <a name="//apple_ref/swift/Method/disconnected()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0B9HtsClientC12disconnectedyyF">disconnected()</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Undocumented</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">override</span> <span class="kd">public</span> <span class="kd">func</span> <span class="nf">disconnected</span><span class="p">()</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:11PolarBleSdk0B9HtsClientC18processServiceData_4data3errySo6CBUUIDC_10Foundation0H0VSitF"></a>
-                    <a name="//apple_ref/swift/Method/processServiceData(_:data:err:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0B9HtsClientC18processServiceData_4data3errySo6CBUUIDC_10Foundation0H0VSitF">processServiceData(_:<wbr>data:<wbr>err:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Undocumented</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">override</span> <span class="kd">public</span> <span class="kd">func</span> <span class="nf">processServiceData</span><span class="p">(</span><span class="n">_</span> <span class="nv">chr</span><span class="p">:</span> <span class="kt">CBUUID</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="kt">Data</span><span class="p">,</span> <span class="nv">err</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:11PolarBleSdk0B9HtsClientC07observeD13Notifications15checkConnection7RxSwift10ObservableCyAC22TemperatureMeasurementVGSb_tF"></a>
-                    <a name="//apple_ref/swift/Method/observeHtsNotifications(checkConnection:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0B9HtsClientC07observeD13Notifications15checkConnection7RxSwift10ObservableCyAC22TemperatureMeasurementVGSb_tF">observeHtsNotifications(checkConnection:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Undocumented</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">observeHtsNotifications</span><span class="p">(</span><span class="nv">checkConnection</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Classes/BleHtsClient/TemperatureMeasurement.html">TemperatureMeasurement</a></span><span class="o">&gt;</span></code></pre>
-
-                        </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Polar device ID or BT address.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>config</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Watch face configuration containing the ordered list of complications to enable.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                     </section>
                   </div>
@@ -676,7 +677,7 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-04-20)</p>
+          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-05-26)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

@@ -1,7 +1,7 @@
 
 import Foundation
 import CoreBluetooth
-import RxSwift
+
 
 public class BleAdvertisementContent {
     public private(set) var polarHrAdvertisementData = BlePolarHrAdvertisement()

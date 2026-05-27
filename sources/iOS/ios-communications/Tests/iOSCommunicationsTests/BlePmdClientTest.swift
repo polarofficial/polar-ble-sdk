@@ -2,29 +2,22 @@
 
 import XCTest
 @testable import iOSCommunications
-import RxTest
-import RxSwift
 
 class BlePmdClientTest: XCTestCase {
-    var scheduler: TestScheduler!
-    var mockGattServiceTransmitterImpl: MockGattServiceTransmitterImpl!
+
+    var mockGattServiceTransmitterImpl: MockPolarGattServiceTransmitter!
     var blePmdClient: BlePmdClient!
-    var disposeBag: DisposeBag!
-    
+
     override func setUpWithError() throws {
-        scheduler = TestScheduler(initialClock: 0)
-        mockGattServiceTransmitterImpl = MockGattServiceTransmitterImpl()
-        disposeBag = DisposeBag()
+        mockGattServiceTransmitterImpl = MockPolarGattServiceTransmitter()
         blePmdClient = BlePmdClient(gattServiceTransmitter: mockGattServiceTransmitterImpl)
     }
-    
+
     override func tearDownWithError() throws {
-        scheduler = nil
         mockGattServiceTransmitterImpl = nil
         blePmdClient = nil
-        disposeBag = nil
     }
-    
+
     func testProcessControlPointResponseWhenStatusIsSuccess() throws {
         // Arrange
         // HEX: F0 01 00 00 00 00 00 00 70 FF
@@ -36,67 +29,75 @@ class BlePmdClientTest: XCTestCase {
             0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x70, 0xFF
         ])
         let successErrCode = 0x00
-        
+
         // Act
         blePmdClient.processServiceData(BlePmdClient.PMD_CP, data: controlPointResponse, err: successErrCode)
-        
+
         // Assert
         let data = try blePmdClient.pmdCpResponseQueue.pop()
         XCTAssertEqual(controlPointResponse, data)
     }
-    
-    func testProcessMeasurementStopControlPointCommand() throws {
+
+    func testProcessMeasurementStopControlPointCommand() async throws {
         // Arrange
         // HEX: 01 01 02
         // index    type                                data
         // 0:      Online Measurement Stopped           01
-        // 1...:   Measurement types                    01, 02
-        let controlPointResponse = Data([
-            0x01, 0x01, 0x02
-        ])
+        // 1...:   Measurement types                    01 (PPG), 02 (ACC)
+        let controlPointResponse = Data([0x01, 0x01, 0x02])
         let successErrCode = 0x00
-        
-        let observerPpg = scheduler.createObserver(PpgData.self)
-        let observerAcc = scheduler.createObserver(AccData.self)
-        let observerPpi = scheduler.createObserver(PpiData.self)
-        
-        blePmdClient.observePpg().subscribe(observerPpg).disposed(by: disposeBag)
-        blePmdClient.observeAcc().subscribe(observerAcc).disposed(by: disposeBag)
-        blePmdClient.observePpi().subscribe(observerPpi).disposed(by: disposeBag)
-        scheduler.start()
-        
+
+        let ppgStream = blePmdClient.observePpg()
+        let accStream = blePmdClient.observeAcc()
+        let ppiStream = blePmdClient.observePpi()
+
+        // Start tasks that consume the streams — they will unblock when streams close
+        let ppgTask = Task<Error?, Never> {
+            do { for try await _ in ppgStream {} } catch { return error }
+            return nil
+        }
+        let accTask = Task<Error?, Never> {
+            do { for try await _ in accStream {} } catch { return error }
+            return nil
+        }
+
+        // Give tasks a moment to start iterating before the stop command arrives
+        try await Task.sleep(nanoseconds: 20_000_000) // 20ms
+
         // Act
         blePmdClient.processServiceData(BlePmdClient.PMD_CP, data: controlPointResponse, err: successErrCode)
-        
-        // Assert
-        XCTAssertEqual(1, observerPpg.events.count)
-        for event in observerPpg.events {
-            switch event.value {
-            case .next((let _)):
-                XCTFail()
-            case .error(let error):
-                guard case BlePmdError.bleOnlineStreamClosed = error else {
-                    return XCTFail()
-                }
-            case .completed:
-                XCTFail()
-            }
+
+        // Await the stream close errors
+        let ppgError = await ppgTask.value
+        let accError = await accTask.value
+
+        // Assert PPG stream closed with bleOnlineStreamClosed
+        XCTAssertNotNil(ppgError, "PPG stream should have closed with an error")
+        guard case BlePmdError.bleOnlineStreamClosed = ppgError! else {
+            return XCTFail("Expected bleOnlineStreamClosed for PPG, got \(ppgError!)")
         }
-        
-        XCTAssertEqual(1, observerAcc.events.count)
-        for event in observerAcc.events {
-            switch event.value {
-            case .next((let _)):
-                XCTFail()
-            case .error(let error):
-                guard case BlePmdError.bleOnlineStreamClosed = error else {
-                    return XCTFail()
-                }
-            case .completed:
-                XCTFail()
-            }
+
+        // Assert ACC stream closed with bleOnlineStreamClosed
+        XCTAssertNotNil(accError, "ACC stream should have closed with an error")
+        guard case BlePmdError.bleOnlineStreamClosed = accError! else {
+            return XCTFail("Expected bleOnlineStreamClosed for ACC, got \(accError!)")
         }
-        
-        XCTAssertEqual(0, observerPpi.events.count)
+
+        // Assert PPI stream was NOT closed (type 0x03 was not in the stop command)
+        // Race the stream against a short timeout — timeout should win (stream still open)
+        let ppiClosedWithError = await withTaskGroup(of: Bool.self) { group in
+            group.addTask {
+                do { for try await _ in ppiStream {} } catch { return true }
+                return false
+            }
+            group.addTask {
+                try? await Task.sleep(nanoseconds: 50_000_000) // 50ms timeout
+                return false
+            }
+            let result = await group.next() ?? false
+            group.cancelAll()
+            return result
+        }
+        XCTAssertFalse(ppiClosedWithError, "PPI stream should NOT have been closed by the stop command")
     }
 }

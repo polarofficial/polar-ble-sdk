@@ -1,6 +1,6 @@
 import Foundation
 
-public struct PmdSetting {
+public struct PmdSetting: @unchecked Sendable {
     public enum PmdSettingType: UInt8, CaseIterable {
         case sampleRate = 0
         case resolution

@@ -667,9 +667,7 @@ class OnlineRecordingViewModel @Inject constructor(
 
     @Throws(IOException::class)
     private fun logPpgData(polarPpgData: PolarPpgData) {
-        for (sample in polarPpgData.samples) {
-            collector.logPpgData(polarPpgData)
-        }
+        collector.logPpgData(polarPpgData)
     }
 
     @Throws(IOException::class)

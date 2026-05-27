@@ -1,7 +1,6 @@
 
 import UIKit
 import PolarBleSdk
-import RxSwift
 
 class SensorSelectPopupViewController: UIViewController, UITableViewDelegate, UITableViewDataSource  {
     
@@ -10,34 +9,33 @@ class SensorSelectPopupViewController: UIViewController, UITableViewDelegate, UI
     weak var delegate: ViewController!
     var api: PolarBleApi!
     var devices = [PolarDeviceInfo]()
-    var disposable: Disposable?
-    var connectedDevices: [(PolarDeviceInfo, Disposable?)] = []
+    var searchTask: Task<Void, Never>?
+    var connectedDevices: [PolarDeviceInfo] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
         cancelButton.layer.cornerRadius = 10
         cancelButton.clipsToBounds = true
         self.tableView.layer.cornerRadius = 5
-        disposable = api.searchForDevice()
-            .observe(on: MainScheduler.instance)
-            .subscribe{ e in
-                switch e {
-                case .completed:
-                    break
-                case .error(let err):
-                    print("scan error: \(err)")
-                case .next(let value):
-                    self.devices.append(value)
-                    self.devices.sort(by: { (info1, info2) -> Bool in
-                        return info1.rssi > info2.rssi
-                    })
-                    self.tableView.reloadData()
+        searchTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                for try await value in api.searchForDevice() {
+                    await MainActor.run {
+                        self.devices.append(value)
+                        self.devices.sort(by: { $0.rssi > $1.rssi })
+                        self.tableView.reloadData()
+                    }
                 }
+            } catch {
+                print("scan error: \(error)")
             }
+        }
     }
     
     @IBAction func cancel(_ sender: Any) {
-        disposable?.dispose()
+        searchTask?.cancel()
+        searchTask = nil
         self.dismiss(animated: false) {
             // do nothing
         }
@@ -53,7 +51,7 @@ class SensorSelectPopupViewController: UIViewController, UITableViewDelegate, UI
         cell.label1.text = info.name
         cell.label2.text = "\(info.rssi)"
         
-        if connectedDevices.contains(where: { $0.0.deviceId == info.deviceId }) {
+        if connectedDevices.contains(where: { $0.deviceId == info.deviceId }) {
             cell.backgroundColor = UIColor(hex: ColorConstants.BLUETOOTH_BLUE)
         } else {
             cell.backgroundColor = UIColor.clear
@@ -62,7 +60,8 @@ class SensorSelectPopupViewController: UIViewController, UITableViewDelegate, UI
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        disposable?.dispose()
+        searchTask?.cancel()
+        searchTask = nil
         self.dismiss(animated: false) {
             self.delegate!.setDevice(self.devices[indexPath.row])
         }

@@ -223,4 +223,55 @@ open class BlePolarDeviceCapabilitiesUtility {
         guard ensureInitialized() else { return false }
         return capabilities[deviceType.lowercased()]?.isDeviceSensor ?? defaults?.isDeviceSensor ?? false
     }
+
+    // MARK: - Testing support
+
+    /// Resets all state and injects synthetic capabilities for unit tests.
+    /// Only available in DEBUG builds.
+    ///
+    /// - Parameters:
+    ///   - deviceFileSystemTypes: Map of device-type string (case-insensitive) to `FileSystemType`.
+    ///   - defaultFileSystemType: `FileSystemType` used for any device not in the map.
+    ///   - defaultRecordingSupported: Default recording-supported flag for unknown devices.
+    #if DEBUG
+    public static func resetAndInitializeForTesting(
+        deviceFileSystemTypes: [String: FileSystemType] = [:],
+        defaultFileSystemType: FileSystemType = .unknownFileSystem,
+        defaultRecordingSupported: Bool = false
+    ) {
+        lock.lock()
+        defer { lock.unlock() }
+        capabilities = [:]
+        defaults = nil
+        initialized = false
+
+        func fsString(_ type: FileSystemType) -> String? {
+            switch type {
+            case .h10FileSystem:      return "H10_FILE_SYSTEM"
+            case .polarFileSystemV2:  return "POLAR_FILE_SYSTEM_V2"
+            case .unknownFileSystem:  return nil
+            }
+        }
+
+        defaults = DeviceCapabilities(
+            fileSystemType: fsString(defaultFileSystemType),
+            recordingSupported: defaultRecordingSupported,
+            firmwareUpdateSupported: nil,
+            activityDataSupported: nil,
+            isDeviceSensor: nil
+        )
+
+        for (deviceType, fsType) in deviceFileSystemTypes {
+            let recordingSupported = (fsType == .h10FileSystem)
+            capabilities[deviceType.lowercased()] = DeviceCapabilities(
+                fileSystemType: fsString(fsType),
+                recordingSupported: recordingSupported,
+                firmwareUpdateSupported: nil,
+                activityDataSupported: nil,
+                isDeviceSensor: nil
+            )
+        }
+        initialized = true
+    }
+    #endif
 }

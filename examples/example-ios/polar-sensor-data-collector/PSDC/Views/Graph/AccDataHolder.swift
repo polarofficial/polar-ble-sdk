@@ -13,6 +13,7 @@ struct AccState {
     var currentSample: AccSample = AccSample(x: 0, y: 0, z: 0)
 }
 
+@MainActor
 class AccDataHolder: ObservableObject {
     static let shared = AccDataHolder()
     

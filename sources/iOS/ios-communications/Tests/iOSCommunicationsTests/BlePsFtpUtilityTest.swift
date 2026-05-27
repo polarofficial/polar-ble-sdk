@@ -149,6 +149,64 @@ class BlePsFtpUtilityTest: XCTestCase {
         XCTAssertEqual(resultFrame.error, expectedError)
     }
     
+    func test_processHeaderOnlyMoreFrame() throws {
+        // Arrange
+        // HEX 16
+        // index    type                                            data:
+        // 0        header                                          0x16
+        //      bit0 :       next                                     0b (first frame)
+        //      bit1..2 :    status                                  11b (MORE - more frames to come)
+        //      bit3 :       RFU
+        //      bit4..7:     sequence number                       0001b (sequence 1)
+        // 1..MAX   payload                                         N/A (0 bytes)
+        let expectedNext = 0
+        let expectedStatus = BlePsFtpUtility.RFC76_STATUS_MORE
+        let expectedSequenceNumber = 1
+        let expectedPayload = Data()
+        let expectedError: Int? = nil
+
+        // Act
+        let deviceNotifyingData = Data([0x16])
+        let resultFrame = try BlePsFtpUtility.processRfc76MessageFrame(deviceNotifyingData)
+
+        // Assert
+        XCTAssertEqual(resultFrame.next, expectedNext)
+        XCTAssertEqual(resultFrame.status, expectedStatus)
+        XCTAssertEqual(resultFrame.sequenceNumber, expectedSequenceNumber)
+        XCTAssertEqual(resultFrame.payload, expectedPayload)
+        XCTAssertEqual(resultFrame.error, expectedError)
+    }
+
+    func test_processHeaderOnlyLastFrame() throws {
+        // Arrange
+        // A header-only LAST frame (status=01, no payload) — valid EOF signal from device.
+        //
+        // HEX 02
+        // index    type                                            data:
+        // 0        header                                          0x02
+        //      bit0 :       next                                     0b (first frame)
+        //      bit1..2 :    status                                  01b (LAST)
+        //      bit3 :       RFU
+        //      bit4..7:     sequence number                       0000b
+        // 1..MAX   payload                                         N/A (0 bytes)
+        let expectedNext = 0
+        let expectedStatus = BlePsFtpUtility.RFC76_STATUS_LAST
+        let expectedSequenceNumber = 0
+        let expectedPayload = Data()
+        let expectedError: Int? = nil
+
+        // Act
+        let deviceNotifyingData = Data([0x02])
+        let resultFrame = try BlePsFtpUtility.processRfc76MessageFrame(deviceNotifyingData)
+
+        // Assert
+        XCTAssertEqual(resultFrame.next, expectedNext)
+        XCTAssertEqual(resultFrame.status, expectedStatus)
+        XCTAssertEqual(resultFrame.sequenceNumber, expectedSequenceNumber)
+        XCTAssertEqual(resultFrame.payload, expectedPayload)
+        XCTAssertEqual(resultFrame.error, expectedError)
+    }
+
     func test_processInteruptFrame() throws {
         // Arrange
         // HEX 00

@@ -1,51 +1,33 @@
-
 import Foundation
-import RxSwift
 import CoreBluetooth
 
 @objc open class BleDeviceSession: NSObject {
-    
-    public enum DeviceSessionState{
-        case
-        /// Disconnected state
-        sessionClosed,
-        /// Connection attempting/connecting at the moment
-        sessionOpening,
-        /// Device is disconnected, but is waiting for advertisement head for reconnection, or power on event
-        sessionOpenPark,
-        /// Device is connected
-        sessionOpen,
-        /// Disconnecting at the moment
-        sessionClosing
-        
+
+    public enum DeviceSessionState {
+        case sessionClosed, sessionOpening, sessionOpenPark, sessionOpen, sessionClosing
+
         public func description() -> String {
             switch self {
-            case .sessionClosed:
-                return "sessionClosed"
-            case .sessionOpening:
-                return "sessionOpening"
-            case .sessionOpenPark:
-                return "sessionOpenPark"
-            case .sessionOpen:
-                return "sessionOpen"
-            case .sessionClosing:
-                return "sessionClosing"
+            case .sessionClosed:  return "sessionClosed"
+            case .sessionOpening: return "sessionOpening"
+            case .sessionOpenPark: return "sessionOpenPark"
+            case .sessionOpen:    return "sessionOpen"
+            case .sessionClosing: return "sessionClosing"
             }
         }
     }
-    
+
     // Put initial value that is well below actual BLE sensitivity.
     public var rssi: Int = -120
 
     public enum ConnectionType {
         /// connection attempt is directly requested after disconnection
         case directConnection
-        /// connection attempt is requested after first advertisement head, precondition is that device is connectable prior to connection attempt
+        /// connection attempt is requested after first advertisement head
         case connectFromAdvertisementHead
     }
-    
-    // apis to access
-    public let address:UUID
+
+    public let address: UUID
     public let advertisementContent: BleAdvertisementContent
     public var state = DeviceSessionState.sessionClosed
     public var error: Error? = nil
@@ -53,38 +35,30 @@ import CoreBluetooth
 
     /// by default connect only from adv head
     public var connectionType = ConnectionType.connectFromAdvertisementHead
-    var gattClients=[BleGattClientBase]()
-    
-    public init(_ addr: UUID, advertisementContent: BleAdvertisementContent?=nil){
+    var gattClients = [BleGattClientBase]()
+
+    public init(_ addr: UUID, advertisementContent: BleAdvertisementContent? = nil) {
         self.advertisementContent = advertisementContent ?? BleAdvertisementContent()
-        self.address=addr
+        self.address = addr
     }
-    
-    /// helper to return BleGattClientBase instane based on service uuid
-    ///
-    /// - Parameter serviceUuid: service uuid to look for
-    /// - Returns: instance of client implementation
+
+    /// helper to return BleGattClientBase instance based on service uuid
     public func fetchGattClient(_ serviceUuid: CBUUID) -> BleGattClientBase? {
-        return gattClients.first(where: { (client: BleGattClientBase) -> Bool in
-            client.serviceBelongsToClient(serviceUuid)
-        })
+        return gattClients.first(where: { $0.serviceBelongsToClient(serviceUuid) })
     }
-    
-    /// helper to check is the advertisement type connectable
-    ///
-    /// - Returns: Bool
+
     public func isConnectable() -> Bool {
         fatalError("not implemented")
     }
-    
-    /// Helper observable to asynchronously wait all services discovered
+
+    /// Monitor services discovered on the device.
     ///
     /// - Parameter checkConnection: check current connection
-    /// - Returns: Observable<CBUUID>
-    public func monitorServicesDiscovered(_ checkConnection: Bool) -> Observable<CBUUID> {
+    /// - Returns: AsyncThrowingStream emitting discovered service UUIDs, completing when all services are ready, or throwing on error
+    public func monitorServicesDiscovered(_ checkConnection: Bool) -> AsyncThrowingStream<CBUUID, Error> {
         fatalError("not implemented")
     }
-    
+
     public var disconnectedDueRemovedPairing: Bool {
         return self.error?.indicatesBLEPairingProblem ?? false
     }

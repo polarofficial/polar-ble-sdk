@@ -1,7 +1,6 @@
 //  Copyright © 2026 Polar. All rights reserved.
 
 import Foundation
-import RxSwift
 
 public protocol PolarBleLowLevelApi {
     
@@ -14,12 +13,13 @@ public protocol PolarBleLowLevelApi {
     /// - Parameters:
     ///  - identifier Polar device ID or BT address
     ///  - filePath Path to the desired file in a Polar device.
-    /// - Returns: Maybe (ByteArray or empty)
+    /// - Returns: File contents as `Data`, or `nil` if the file is empty or not found.
+    /// - Throws: See `PolarErrors` for possible errors.
     ////
     func readFile(
         identifier: String,
         filePath: String
-    ) -> Maybe<Data>
+    ) async throws -> Data?
     
     ///
     /// Write any file over PFtp BLE client. API user must know the exact path to the desired file.
@@ -30,13 +30,13 @@ public protocol PolarBleLowLevelApi {
     ///  -  identifier Polar device ID or BT address
     ///  -  filePath Path to the directory in device  in a Polar device.
     ///  -  fileData, file data in already serialized into ByteArray format.
-    /// - Returns: Completable or error
+    /// - Throws: See `PolarErrors` for possible errors.
     ////
     func writeFile(
         identifier: String,
         filePath: String,
         fileData: Data
-    ) -> Completable
+    ) async throws
     
     ///
     /// Delete any file or directory over PFtp BLE client. API user must know the exact path to the desired file.
@@ -46,12 +46,12 @@ public protocol PolarBleLowLevelApi {
     /// - Parameters:
     ///  -  identifier Polar device ID or BT address
     ///  -  filePath Path of the file or directory to be deleted at a Polar device.
-    /// - Returns: Completable or error
+    /// - Throws: See `PolarErrors` for possible errors.
     ///
     func deleteFileOrDirectory(
         identifier: String,
         filePath: String
-    ) -> Completable
+    ) async throws
     
     ///
     /// List all files in the given path
@@ -61,12 +61,12 @@ public protocol PolarBleLowLevelApi {
     ///  -  identifier Polar device ID or BT address
     ///  -  directoryPath Path to the desired directory in a Polar device from which to list all files.
     ///  -  recurseDeep Recursion goes to the bottom of the file tree when true.
-    /// - Returns: List of files or error
-
+    /// - Returns: List of file paths found in the given directory.
+    /// - Throws: See `PolarErrors` for possible errors.
     ///
     func getFileList(
         identifier: String,
         directoryPath: String,
         recurseDeep: Bool
-    ) -> Single<[String]>
+    ) async throws -> [String]
 }

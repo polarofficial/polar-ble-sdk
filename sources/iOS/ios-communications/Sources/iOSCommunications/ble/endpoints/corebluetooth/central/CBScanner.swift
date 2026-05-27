@@ -1,7 +1,6 @@
-
 import Foundation
 import CoreBluetooth
-import RxSwift
+import Combine
 
 class CBScanner {
     
@@ -47,77 +46,61 @@ class CBScanner {
     
     let central: CBCentralManager
     var state = ScannerState.idle
-    var scanObservers = AtomicType(initialValue: Set<RxObserver<BleDeviceSession>>())
-    var scanDisposable: Disposable?
+    let scanSubject = PassthroughSubject<BleDeviceSession, Never>()
+    private var clientCount = 0
+    var scanCancellable: AnyCancellable?
     var services: [CBUUID]?
     var adminStops = 0
     let sessions: AtomicList<CBDeviceSessionImpl>
-    let scheduler: SerialDispatchQueueScheduler
+    let queue: DispatchQueue
     var isScanning: Bool {
-        get {
-            return state == .scanning
-        }
+        return state == .scanning
     }
-    
-    init(_ central: CBCentralManager, queue: DispatchQueue, sessions: AtomicList<CBDeviceSessionImpl>){
+
+    init(_ central: CBCentralManager, queue: DispatchQueue, sessions: AtomicList<CBDeviceSessionImpl>) {
         self.central = central
         self.sessions = sessions
-        self.scheduler = SerialDispatchQueueScheduler.init(queue: queue, internalSerialQueueName: "CBScannerQueue")
+        self.queue = queue
     }
-    
-    func setServices(_ services : [CBUUID]?){
-        scheduler.schedule(()) { _ in
+
+    func setServices(_ services: [CBUUID]?) {
+        queue.async {
             self.commandState(ScanAction.adminStopScan)
             self.services = services
             self.commandState(ScanAction.adminStartScan)
-            return Disposables.create()
         }
     }
-    
-    func addClient(_ scanner: RxObserver<BleDeviceSession>){
-        scheduler.schedule(()) { _ in
-            self.scanObservers.accessItem { $0.insert(scanner) }
+
+    func addClient() {
+        queue.async {
+            self.clientCount += 1
             self.commandState(ScanAction.clientStartScan)
-            return Disposables.create()
         }
     }
-    
-    func removeClient(_ scanner: RxObserver<BleDeviceSession>){
-        scheduler.schedule(()) { _ in
-            self.scanObservers.accessItem { $0.remove(scanner) }
+
+    func removeClient() {
+        queue.async {
+            self.clientCount -= 1
             self.commandState(ScanAction.clientRemoved)
-            return Disposables.create()
         }
     }
-    
-    func stopScan(){
-        scheduler.schedule(()) { _ in
-            self.commandState(ScanAction.adminStopScan)
-            return Disposables.create()
-        }
+
+    func stopScan() {
+        queue.async { self.commandState(ScanAction.adminStopScan) }
     }
-    
-    func startScan(){
-        scheduler.schedule(()) { _ in
-            self.commandState(ScanAction.adminStartScan)
-            return Disposables.create()
-        }
+
+    func startScan() {
+        queue.async { self.commandState(ScanAction.adminStartScan) }
     }
-    
-    func powerOn(){
-        scheduler.schedule(()) { _ in
-            self.commandState(ScanAction.blePowerOn)
-            return Disposables.create()
-        }
+
+    func powerOn() {
+        queue.async { self.commandState(ScanAction.blePowerOn) }
     }
-    
-    func powerOff(){
-        scheduler.schedule(()) { _ in
-            self.commandState(ScanAction.blePowerOff)
-            return Disposables.create()
-        }
+
+    func powerOff() {
+        queue.async { self.commandState(ScanAction.blePowerOff) }
     }
-    
+
     private func commandState(_ action: ScanAction){
         BleLogger.trace("commandState state:" + state.description() + " action: " + action.description())
         switch (state){
@@ -150,11 +133,9 @@ class CBScanner {
     
     func scanningNeeded() -> Bool {
         let list = sessions.list()
-        var scanObserversCount: Int = 0
-        scanObservers.accessItem { scanObserversCount = $0.count }
         return list.first { (session: CBDeviceSessionImpl) -> Bool in
             return session.state == .sessionOpenPark
-        } != nil || scanObserversCount != 0
+        } != nil || clientCount != 0
     }
     
     private func scannerIdleState(_ action: ScanAction){
@@ -205,33 +186,27 @@ class CBScanner {
         }
     }
     
-    private func scannerScanningState(_ action: ScanAction){
-        switch (action){
+    private func scannerScanningState(_ action: ScanAction) {
+        switch action {
         case .entry:
             BleLogger.trace("start scan services: \(String(describing: services))")
-            // start scanning
-            self.central.scanForPeripherals(withServices: services, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
-            scanDisposable = Observable<NSInteger>.interval(.seconds(10), scheduler: scheduler).subscribe{ e in
-                switch e {
-                case .completed:
-                    BleLogger.trace("Scan complete")
-                case .error(let error):
-                    BleLogger.error("Scanning error: \(error))")
-                case .next( _):
+            central.scanForPeripherals(withServices: services, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
+            scanCancellable = Timer.publish(every: 10, on: .main, in: .default)
+                .autoconnect()
+                .receive(on: queue)
+                .sink { [weak self] _ in
+                    guard let self else { return }
                     BleLogger.trace("Scanning next:")
                     self.central.stopScan()
-                    self.central.scanForPeripherals(withServices: self.services, options:   [CBCentralManagerScanOptionAllowDuplicatesKey: true])
+                    self.central.scanForPeripherals(withServices: self.services, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
                 }
-            }
         case .exit:
-            // stop scanning
             if central.state == .poweredOn {
                 central.stopScan()
             }
-            scanDisposable?.dispose()
-            scanDisposable = nil
+            scanCancellable?.cancel()
+            scanCancellable = nil
         case .clientStartScan:
-            // do nothing
             break
         case .clientRemoved where !scanningNeeded():
             changeState(.idle)

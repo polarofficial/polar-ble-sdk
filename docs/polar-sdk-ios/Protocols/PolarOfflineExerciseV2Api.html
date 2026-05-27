@@ -17,7 +17,7 @@
     <a title="PolarOfflineExerciseV2Api Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">PolarBleSdk 7.0.2 Docs</a> (41% documented)</p>
+        <p><a href="../index.html">PolarBleSdk 7.1.3 Docs</a> (40% documented)</p>
         <div class="header-right">
           <form role="search" action="../search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -40,15 +40,6 @@
           <li class="nav-group-name">
             <a href="../Classes.html">Classes</a>
             <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a href="../Classes/BleHtsClient.html">BleHtsClient</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Classes/BleHtsClient/TemperatureMeasurement.html">– TemperatureMeasurement</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Classes/HealthThermometer.html">HealthThermometer</a>
-              </li>
               <li class="nav-group-task">
                 <a href="../Classes/PolarActivityData.html">PolarActivityData</a>
               </li>
@@ -219,6 +210,9 @@
                 <a href="../Enums/PolarTrainingSessionFetchResult.html">PolarTrainingSessionFetchResult</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/PolarWatchFaceComplication.html">PolarWatchFaceComplication</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/PpgDataType.html">PpgDataType</a>
               </li>
               <li class="nav-group-task">
@@ -234,9 +228,6 @@
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
                 <a href="../Extensions/DateComponents.html">DateComponents</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Extensions/PrimitiveSequence.html">PrimitiveSequence</a>
               </li>
             </ul>
           </li>
@@ -305,6 +296,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarWatchFaceApi.html">PolarWatchFaceApi</a>
               </li>
             </ul>
           </li>
@@ -462,6 +456,9 @@
                 <a href="../Structs/PolarUserDeviceSettingsData.html">PolarUserDeviceSettingsData</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Structs/PolarWatchFaceConfig.html">PolarWatchFaceConfig</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Structs/SDLogConfig.html">SDLogConfig</a>
               </li>
               <li class="nav-group-task">
@@ -540,7 +537,7 @@ device is not connected.</p>
 <code>PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2</code>
 and the device must have the <code>dm_exercise</code> capability.</p>
 
-<p>All operations are asynchronous and return RxSwift primitives.</p>
+<p>All operations are asynchronous and use Swift async/await or <code>AsyncThrowingStream</code>.</p>
 
           </section>
           <section class="section task-group-section">
@@ -549,40 +546,32 @@ and the device must have the <code>dm_exercise</code> capability.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiP05startdeF010identifier12sportProfile7RxSwift17PrimitiveSequenceVyAG11SingleTraitOAA0dE11StartResultVGSS_AA0aE7SessionO05SportK0OtF"></a>
+                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiP05startdeF010identifier12sportProfileAA0dE11StartResultVSS_AA0aE7SessionO05SportK0OtYaKF"></a>
                     <a name="//apple_ref/swift/Method/startOfflineExerciseV2(identifier:sportProfile:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiP05startdeF010identifier12sportProfile7RxSwift17PrimitiveSequenceVyAG11SingleTraitOAA0dE11StartResultVGSS_AA0aE7SessionO05SportK0OtF">startOfflineExerciseV2(identifier:<wbr>sportProfile:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiP05startdeF010identifier12sportProfileAA0dE11StartResultVSS_AA0aE7SessionO05SportK0OtYaKF">startOfflineExerciseV2(identifier:<wbr>sportProfile:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Starts a new offline exercise session on the device.</p>
+                        <p>Start an offline exercise session on the device.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors.
 
-<p>Requires feature <code>PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2</code>.</p>
-
-<ul>
-<li><p>Errors:
-Emits an error if:</p>
-
-<ul>
-<li>The device is not connected.</li>
-<li>The PSFTP service is not available.</li>
-<li>The device returns a protocol-level error.</li>
-</ul></li>
-</ul>
+</div>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startOfflineExerciseV2</span><span class="p">(</span>
-    <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
-    <span class="nv">sportProfile</span><span class="p">:</span> <span class="kt"><a href="../Enums/PolarExerciseSession.html">PolarExerciseSession</a></span><span class="o">.</span><span class="kt">SportProfile</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/OfflineExerciseStartResult.html">OfflineExerciseStartResult</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startOfflineExerciseV2</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">sportProfile</span><span class="p">:</span> <span class="kt"><a href="../Enums/PolarExerciseSession.html">PolarExerciseSession</a></span><span class="o">.</span><span class="kt">SportProfile</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/OfflineExerciseStartResult.html">OfflineExerciseStartResult</a></span></code></pre>
 
                         </div>
                       </div>
@@ -598,7 +587,7 @@ Emits an error if:</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>The unique device identifier.</p>
+                                  <p>Polar device ID or BT address.</p>
                                 </div>
                               </td>
                             </tr>
@@ -619,8 +608,7 @@ Emits an error if:</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>A <code>Single</code> emitting <code><a href="../Structs/OfflineExerciseStartResult.html">OfflineExerciseStartResult</a></code>
-       describing the outcome of the start request.</p>
+                        <p><code><a href="../Structs/OfflineExerciseStartResult.html">OfflineExerciseStartResult</a></code> containing the outcome and created directory path.</p>
                       </div>
                     </section>
                   </div>
@@ -628,33 +616,32 @@ Emits an error if:</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiP04stopdeF010identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF"></a>
+                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiP04stopdeF010identifierySS_tYaKF"></a>
                     <a name="//apple_ref/swift/Method/stopOfflineExerciseV2(identifier:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiP04stopdeF010identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF">stopOfflineExerciseV2(identifier:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiP04stopdeF010identifierySS_tYaKF">stopOfflineExerciseV2(identifier:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Stops the currently running offline exercise session.</p>
+                        <p>Stop the ongoing offline exercise session on the device.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors.
 
-<p>Requires feature <code>PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2</code>.</p>
-
-<ul>
-<li><p>Errors:
-Emits an error if stopping fails or the device is not ready.</p></li>
-</ul>
+</div>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">stopOfflineExerciseV2</span><span class="p">(</span>
-    <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">stopOfflineExerciseV2</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -670,17 +657,12 @@ Emits an error if stopping fails or the device is not ready.</p></li>
                               </td>
                               <td>
                                 <div>
-                                  <p>The unique device identifier.</p>
+                                  <p>Polar device ID or BT address.</p>
                                 </div>
                               </td>
                             </tr>
                           </tbody>
                         </table>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>A <code>Completable</code> that completes when the device
-       confirms the stop operation.</p>
                       </div>
                     </section>
                   </div>
@@ -688,33 +670,32 @@ Emits an error if stopping fails or the device is not ready.</p></li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiP03getde6StatusF010identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOSbGSS_tF"></a>
+                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiP03getde6StatusF010identifierSbSS_tYaKF"></a>
                     <a name="//apple_ref/swift/Method/getOfflineExerciseStatusV2(identifier:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiP03getde6StatusF010identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOSbGSS_tF">getOfflineExerciseStatusV2(identifier:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiP03getde6StatusF010identifierSbSS_tYaKF">getOfflineExerciseStatusV2(identifier:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Retrieves the current offline exercise state.</p>
+                        <p>Check whether an offline exercise session is currently ongoing on the device.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors.
 
-<p>Requires feature <code>PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2</code>.</p>
-
-<ul>
-<li><p>Errors:
-Emits an error if the status request fails.</p></li>
-</ul>
+</div>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getOfflineExerciseStatusV2</span><span class="p">(</span>
-    <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt">Bool</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getOfflineExerciseStatusV2</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
 
                         </div>
                       </div>
@@ -730,7 +711,7 @@ Emits an error if the status request fails.</p></li>
                               </td>
                               <td>
                                 <div>
-                                  <p>The unique device identifier.</p>
+                                  <p>Polar device ID or BT address.</p>
                                 </div>
                               </td>
                             </tr>
@@ -739,12 +720,7 @@ Emits an error if the status request fails.</p></li>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>A <code>Single</code> emitting:</p>
-
-<ul>
-<li><code>true</code> if a Data Merge exercise is currently running.</li>
-<li><code>false</code> otherwise.</li>
-</ul>
+                        <p><code>true</code> if an exercise session is ongoing, <code>false</code> otherwise.</p>
                       </div>
                     </section>
                   </div>
@@ -752,9 +728,9 @@ Emits an error if the status request fails.</p></li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiP04listd9ExercisesF010identifier13directoryPath7RxSwift10ObservableCySS4path_10Foundation4DateV4dateSS7entryIdtGSS_SStF"></a>
+                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiP04listd9ExercisesF010identifier13directoryPathScsySS4path_10Foundation4DateV4dateSS7entryIdts5Error_pGSS_SStF"></a>
                     <a name="//apple_ref/swift/Method/listOfflineExercisesV2(identifier:directoryPath:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiP04listd9ExercisesF010identifier13directoryPath7RxSwift10ObservableCySS4path_10Foundation4DateV4dateSS7entryIdtGSS_SStF">listOfflineExercisesV2(identifier:<wbr>directoryPath:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiP04listd9ExercisesF010identifier13directoryPathScsySS4path_10Foundation4DateV4dateSS7entryIdts5Error_pGSS_SStF">listOfflineExercisesV2(identifier:<wbr>directoryPath:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -762,19 +738,14 @@ Emits an error if the status request fails.</p></li>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Lists offline exercise entries stored in the device.</p>
-
-<p>Requires feature <code>PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2</code>.</p>
+                        <p>List offline exercise entries found under the given directory path on the device.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">listOfflineExercisesV2</span><span class="p">(</span>
-    <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
-    <span class="nv">directoryPath</span><span class="p">:</span> <span class="kt">String</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">listOfflineExercisesV2</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">directoryPath</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">AsyncThrowingStream</span><span class="o">&lt;</span><span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -790,7 +761,7 @@ Emits an error if the status request fails.</p></li>
                               </td>
                               <td>
                                 <div>
-                                  <p>The unique device identifier.</p>
+                                  <p>Polar device ID or BT address.</p>
                                 </div>
                               </td>
                             </tr>
@@ -802,7 +773,7 @@ Emits an error if the status request fails.</p></li>
                               </td>
                               <td>
                                 <div>
-                                  <p>Root directory path to search from.</p>
+                                  <p>Root directory path to search. Use <code>&quot;/&quot;</code> to list all exercises.</p>
                                 </div>
                               </td>
                             </tr>
@@ -811,8 +782,7 @@ Emits an error if the status request fails.</p></li>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>An <code>Observable</code> emitting <code><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></code>
-       objects representing available exercise files.</p>
+                        <p><code>AsyncThrowingStream</code> emitting <code><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></code> for each found exercise file.</p>
                       </div>
                     </section>
                   </div>
@@ -820,29 +790,32 @@ Emits an error if the status request fails.</p></li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiP05fetchdeF010identifier5entry7RxSwift17PrimitiveSequenceVyAG11SingleTraitOs6UInt32V8interval_SayAMG7samplestGSS_SS4path_10Foundation4DateV4dateSS0J2IdttF"></a>
+                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiP05fetchdeF010identifier5entrys6UInt32V8interval_SayAHG7samplestSS_SS4path_10Foundation4DateV4dateSS0J2IdttYaKF"></a>
                     <a name="//apple_ref/swift/Method/fetchOfflineExerciseV2(identifier:entry:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiP05fetchdeF010identifier5entry7RxSwift17PrimitiveSequenceVyAG11SingleTraitOs6UInt32V8interval_SayAMG7samplestGSS_SS4path_10Foundation4DateV4dateSS0J2IdttF">fetchOfflineExerciseV2(identifier:<wbr>entry:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiP05fetchdeF010identifier5entrys6UInt32V8interval_SayAHG7samplestSS_SS4path_10Foundation4DateV4dateSS0J2IdttYaKF">fetchOfflineExerciseV2(identifier:<wbr>entry:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Fetches offline exercise data from the device.</p>
+                        <p>Fetch the data for a specific offline exercise entry.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors.
 
-<p>Requires feature <code>PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2</code>.</p>
+</div>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">fetchOfflineExerciseV2</span><span class="p">(</span>
-    <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
-    <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A12ExerciseDataa">PolarExerciseData</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">fetchOfflineExerciseV2</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A12ExerciseDataa">PolarExerciseData</a></span></code></pre>
 
                         </div>
                       </div>
@@ -858,7 +831,7 @@ Emits an error if the status request fails.</p></li>
                               </td>
                               <td>
                                 <div>
-                                  <p>The unique device identifier.</p>
+                                  <p>Polar device ID or BT address.</p>
                                 </div>
                               </td>
                             </tr>
@@ -870,7 +843,7 @@ Emits an error if the status request fails.</p></li>
                               </td>
                               <td>
                                 <div>
-                                  <p>The exercise entry to fetch.</p>
+                                  <p>The <code><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></code> referencing the exercise to fetch.</p>
                                 </div>
                               </td>
                             </tr>
@@ -879,8 +852,7 @@ Emits an error if the status request fails.</p></li>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>A <code>Single</code> emitting <code><a href="../Typealiases.html#/s:11PolarBleSdk0A12ExerciseDataa">PolarExerciseData</a></code>
-       containing parsed exercise samples.</p>
+                        <p><code><a href="../Typealiases.html#/s:11PolarBleSdk0A12ExerciseDataa">PolarExerciseData</a></code> containing the recorded exercise data.</p>
                       </div>
                     </section>
                   </div>
@@ -888,29 +860,32 @@ Emits an error if the status request fails.</p></li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiP06removedeF010identifier5entry7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_SS4path_10Foundation4DateV4dateSS0J2IdttF"></a>
+                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiP06removedeF010identifier5entryySS_SS4path_10Foundation4DateV4dateSS0J2IdttYaKF"></a>
                     <a name="//apple_ref/swift/Method/removeOfflineExerciseV2(identifier:entry:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiP06removedeF010identifier5entry7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_SS4path_10Foundation4DateV4dateSS0J2IdttF">removeOfflineExerciseV2(identifier:<wbr>entry:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiP06removedeF010identifier5entryySS_SS4path_10Foundation4DateV4dateSS0J2IdttYaKF">removeOfflineExerciseV2(identifier:<wbr>entry:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Removes an offline exercise from the device.</p>
+                        <p>Remove a specific offline exercise entry from the device.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors.
 
-<p>Requires feature <code>PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2</code>.</p>
+</div>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">removeOfflineExerciseV2</span><span class="p">(</span>
-    <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
-    <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">removeOfflineExerciseV2</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -926,7 +901,7 @@ Emits an error if the status request fails.</p></li>
                               </td>
                               <td>
                                 <div>
-                                  <p>The unique device identifier.</p>
+                                  <p>Polar device ID or BT address.</p>
                                 </div>
                               </td>
                             </tr>
@@ -938,17 +913,12 @@ Emits an error if the status request fails.</p></li>
                               </td>
                               <td>
                                 <div>
-                                  <p>The exercise entry to remove.</p>
+                                  <p>The <code><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></code> referencing the exercise to delete.</p>
                                 </div>
                               </td>
                             </tr>
                           </tbody>
                         </table>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>A <code>Completable</code> that completes once removal
-       has been confirmed by the device.</p>
                       </div>
                     </section>
                   </div>
@@ -956,29 +926,32 @@ Emits an error if the status request fails.</p></li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiP02isdeF9Supported10identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOSbGSS_tF"></a>
+                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiP02isdeF9Supported10identifierSbSS_tYaKF"></a>
                     <a name="//apple_ref/swift/Method/isOfflineExerciseV2Supported(identifier:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiP02isdeF9Supported10identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOSbGSS_tF">isOfflineExerciseV2Supported(identifier:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiP02isdeF9Supported10identifierSbSS_tYaKF">isOfflineExerciseV2Supported(identifier:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Checks whether the connected device supports
-Offline Exercise V2 functionality (<code>dm_exercise</code> capability).</p>
+                        <p>Check whether the device supports the Offline Exercise V2 feature.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors.
 
-<p>Requires feature <code>PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2</code>.</p>
+</div>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">isOfflineExerciseV2Supported</span><span class="p">(</span>
-    <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt">Bool</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">isOfflineExerciseV2Supported</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
 
                         </div>
                       </div>
@@ -994,7 +967,7 @@ Offline Exercise V2 functionality (<code>dm_exercise</code> capability).</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>The unique device identifier.</p>
+                                  <p>Polar device ID or BT address.</p>
                                 </div>
                               </td>
                             </tr>
@@ -1003,12 +976,7 @@ Offline Exercise V2 functionality (<code>dm_exercise</code> capability).</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>A <code>Single</code> emitting:</p>
-
-<ul>
-<li><code>true</code> if the device supports <code>dm_exercise</code>.</li>
-<li><code>false</code> otherwise.</li>
-</ul>
+                        <p><code>true</code> if the device supports Offline Exercise V2, <code>false</code> otherwise.</p>
                       </div>
                     </section>
                   </div>
@@ -1029,8 +997,7 @@ Offline Exercise V2 functionality (<code>dm_exercise</code> capability).</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Name of the exercise samples file stored inside
-exercise directories on the device.</p>
+                        <p>The filename used for exercise sample data files on the device.</p>
 
                       </div>
                       <h4>Default Implementation</h4>
@@ -1051,12 +1018,12 @@ exercise directories on the device.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiPAAE05startdeF010identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOAA0dE11StartResultVGSS_tF"></a>
+                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiPAAE05startdeF010identifierAA0dE11StartResultVSS_tYaKF"></a>
                     <a name="//apple_ref/swift/Method/startOfflineExerciseV2(identifier:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiPAAE05startdeF010identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOAA0dE11StartResultVGSS_tF">startOfflineExerciseV2(identifier:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiPAAE05startdeF010identifierAA0dE11StartResultVSS_tYaKF">startOfflineExerciseV2(identifier:<wbr>)</a>
                     </code>
                       <span class="declaration-note">
-                        Extension method
+                        Extension method, asynchronous
                       </span>
                   </div>
                   <div class="height-container">
@@ -1064,59 +1031,16 @@ exercise directories on the device.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Starts a new offline exercise session on the device using the default sport profile.</p>
-
-<p>This is a convenience method that calls
-<code><a href="../Protocols/PolarOfflineExerciseV2Api.html#/s:11PolarBleSdk0A20OfflineExerciseV2ApiP05startdeF010identifier12sportProfile7RxSwift17PrimitiveSequenceVyAG11SingleTraitOAA0dE11StartResultVGSS_AA0aE7SessionO05SportK0OtF">startOfflineExerciseV2(identifier:sportProfile:)</a></code> internally
-with <code>PolarExerciseSession.SportProfile.OTHER_OUTDOOR</code> as the default sport profile.</p>
-
-<p>Requires feature <code>PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2</code>.</p>
-
-<ul>
-<li><p>Errors:
-Emits an error if:</p>
-
-<ul>
-<li>The device is not connected.</li>
-<li>The PSFTP service is not available.</li>
-<li>The device returns a protocol-level error.</li>
-</ul></li>
-</ul>
+                        <p>Undocumented</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startOfflineExerciseV2</span><span class="p">(</span>
-    <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/OfflineExerciseStartResult.html">OfflineExerciseStartResult</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startOfflineExerciseV2</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/OfflineExerciseStartResult.html">OfflineExerciseStartResult</a></span></code></pre>
 
                         </div>
-                      </div>
-                      <div>
-                        <h4>Parameters</h4>
-                        <table class="graybox">
-                          <tbody>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>identifier</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>The unique device identifier.</p>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>A <code>Single</code> emitting <code><a href="../Structs/OfflineExerciseStartResult.html">OfflineExerciseStartResult</a></code>
-       describing the outcome of the start request.</p>
                       </div>
                     </section>
                   </div>
@@ -1124,9 +1048,9 @@ Emits an error if:</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiPAAE04listd9ExercisesF010identifier7RxSwift10ObservableCySS4path_10Foundation4DateV4dateSS7entryIdtGSS_tF"></a>
+                    <a name="/s:11PolarBleSdk0A20OfflineExerciseV2ApiPAAE04listd9ExercisesF010identifierScsySS4path_10Foundation4DateV4dateSS7entryIdts5Error_pGSS_tF"></a>
                     <a name="//apple_ref/swift/Method/listOfflineExercisesV2(identifier:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiPAAE04listd9ExercisesF010identifier7RxSwift10ObservableCySS4path_10Foundation4DateV4dateSS7entryIdtGSS_tF">listOfflineExercisesV2(identifier:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A20OfflineExerciseV2ApiPAAE04listd9ExercisesF010identifierScsySS4path_10Foundation4DateV4dateSS7entryIdts5Error_pGSS_tF">listOfflineExercisesV2(identifier:<wbr>)</a>
                     </code>
                       <span class="declaration-note">
                         Extension method
@@ -1137,47 +1061,16 @@ Emits an error if:</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Lists offline exercise entries stored in the device using the default directory (<code>&quot;/&quot;</code>).</p>
-
-<p>This is a convenience method that calls
-<code><a href="../Protocols/PolarOfflineExerciseV2Api.html#/s:11PolarBleSdk0A20OfflineExerciseV2ApiP04listd9ExercisesF010identifier13directoryPath7RxSwift10ObservableCySS4path_10Foundation4DateV4dateSS7entryIdtGSS_SStF">listOfflineExercisesV2(identifier:directoryPath:)</a></code> internally.</p>
-
-<p>Requires feature <code>PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2</code>.</p>
+                        <p>Undocumented</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">listOfflineExercisesV2</span><span class="p">(</span>
-    <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">listOfflineExercisesV2</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">AsyncThrowingStream</span><span class="o">&lt;</span><span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
-                      </div>
-                      <div>
-                        <h4>Parameters</h4>
-                        <table class="graybox">
-                          <tbody>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>identifier</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>The unique device identifier.</p>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>An <code>Observable</code> emitting <code><a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a></code> objects
-       representing available exercise files in the default directory.</p>
                       </div>
                     </section>
                   </div>
@@ -1187,7 +1080,7 @@ Emits an error if:</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-04-20)</p>
+          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-05-26)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

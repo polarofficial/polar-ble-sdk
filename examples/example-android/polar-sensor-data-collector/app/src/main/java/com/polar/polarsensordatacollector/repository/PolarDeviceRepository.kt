@@ -9,7 +9,6 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.PowerSourcesSta
 import com.polar.androidcommunications.api.ble.model.gatt.client.BatteryPresentState
 import com.polar.androidcommunications.api.ble.model.gatt.client.PowerSourceState
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
-import com.polar.androidcommunications.api.ble.model.polar.BlePolarDeviceCapabilitiesUtility
 import com.polar.polarsensordatacollector.DataCollector
 import com.polar.polarsensordatacollector.crypto.SecretKeyManager
 import com.polar.sdk.api.PolarBleApi
@@ -27,6 +26,7 @@ import com.polar.sdk.api.model.sleep.PolarNightlyRechargeData
 import com.polar.sdk.api.model.PolarSkinTemperatureData
 import com.polar.sdk.api.model.activity.Polar247PPiSamplesData
 import com.polar.sdk.api.model.activity.PolarActiveTimeData
+import com.polar.sdk.api.model.PolarWatchFaceConfig
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference
 import com.polar.sdk.api.model.activity.PolarActivitySamplesDayData
 import com.polar.sdk.api.model.activity.PolarDailySummaryData
@@ -1145,4 +1145,24 @@ class PolarDeviceRepository @Inject constructor(
             ResultOfRequest.Failure(e.message.toString(), e)
         }
     }
+
+    suspend fun getWatchFaceConfig(deviceId: String): ResultOfRequest<PolarWatchFaceConfig> =
+        withContext(Dispatchers.IO) {
+            return@withContext try {
+                val config = api.getWatchFaceConfig(deviceId)
+                ResultOfRequest.Success(config)
+            } catch (e: Exception) {
+                ResultOfRequest.Failure(e.message.toString(), e)
+            }
+        }
+
+    suspend fun setWatchFaceConfig(deviceId: String, config: PolarWatchFaceConfig): ResultOfRequest<Unit> =
+        withContext(Dispatchers.IO) {
+            return@withContext try {
+                api.setWatchFaceConfig(deviceId, config)
+                ResultOfRequest.Success(Unit)
+            } catch (e: Exception) {
+                ResultOfRequest.Failure(e.message.toString(), e)
+            }
+        }
 }

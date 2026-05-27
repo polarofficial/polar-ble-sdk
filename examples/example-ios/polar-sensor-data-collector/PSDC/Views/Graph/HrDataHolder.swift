@@ -11,6 +11,7 @@ struct HrState {
     var currentHr: Int = 0
 }
 
+@MainActor
 class HrDataHolder: ObservableObject {
     static let shared = HrDataHolder()
     

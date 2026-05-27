@@ -126,6 +126,7 @@ $dokka.location:com.polar.sdk.api.model/PolarSensorSetting.TemperatureMeasuremen
 $dokka.location:com.polar.sdk.api.model/PolarTemperatureData.PolarTemperatureDataSample///PointingToDeclaration/com/polar/sdk/api/model/PolarTemperatureData.PolarTemperatureDataSample.html
 $dokka.location:com.polar.sdk.api.model/PolarUserDeviceSettings.Companion///PointingToDeclaration/com/polar/sdk/api/model/PolarUserDeviceSettings.Companion.html
 $dokka.location:com.polar.sdk.api.model/PolarUserDeviceSettings.DeviceLocation///PointingToDeclaration/com/polar/sdk/api/model/PolarUserDeviceSettings.DeviceLocation.html
+$dokka.location:com.polar.sdk.api.model/PolarWatchFaceComplication.Companion///PointingToDeclaration/com/polar/sdk/api/model/PolarWatchFaceComplication.Companion.html
 $dokka.location:com.polar.sdk.api.model/SkinTemperatureMeasurementType.Companion///PointingToDeclaration/com/polar/sdk/api/model/SkinTemperatureMeasurementType.Companion.html
 $dokka.location:com.polar.sdk.api.model/SkinTemperatureSensorLocation.Companion///PointingToDeclaration/com/polar/sdk/api/model/SkinTemperatureSensorLocation.Companion.html
 $dokka.location:com.polar.sdk.api.model/Spo2Class.Companion///PointingToDeclaration/com/polar/sdk/api/model/Spo2Class.Companion.html

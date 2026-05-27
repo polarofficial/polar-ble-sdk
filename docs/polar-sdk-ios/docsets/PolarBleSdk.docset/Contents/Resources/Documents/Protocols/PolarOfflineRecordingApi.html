@@ -17,7 +17,7 @@
     <a title="PolarOfflineRecordingApi Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">PolarBleSdk 7.0.2 Docs</a> (41% documented)</p>
+        <p><a href="../index.html">PolarBleSdk 7.1.3 Docs</a> (40% documented)</p>
         <div class="header-right">
           <form role="search" action="../search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -40,15 +40,6 @@
           <li class="nav-group-name">
             <a href="../Classes.html">Classes</a>
             <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a href="../Classes/BleHtsClient.html">BleHtsClient</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Classes/BleHtsClient/TemperatureMeasurement.html">– TemperatureMeasurement</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Classes/HealthThermometer.html">HealthThermometer</a>
-              </li>
               <li class="nav-group-task">
                 <a href="../Classes/PolarActivityData.html">PolarActivityData</a>
               </li>
@@ -219,6 +210,9 @@
                 <a href="../Enums/PolarTrainingSessionFetchResult.html">PolarTrainingSessionFetchResult</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/PolarWatchFaceComplication.html">PolarWatchFaceComplication</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/PpgDataType.html">PpgDataType</a>
               </li>
               <li class="nav-group-task">
@@ -234,9 +228,6 @@
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
                 <a href="../Extensions/DateComponents.html">DateComponents</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Extensions/PrimitiveSequence.html">PrimitiveSequence</a>
               </li>
             </ul>
           </li>
@@ -305,6 +296,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarWatchFaceApi.html">PolarWatchFaceApi</a>
               </li>
             </ul>
           </li>
@@ -462,6 +456,9 @@
                 <a href="../Structs/PolarUserDeviceSettingsData.html">PolarUserDeviceSettingsData</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Structs/PolarWatchFaceConfig.html">PolarWatchFaceConfig</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Structs/SDLogConfig.html">SDLogConfig</a>
               </li>
               <li class="nav-group-task">
@@ -553,10 +550,13 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP012getAvailabledE9DataTypesy7RxSwift17PrimitiveSequenceVyAE11SingleTraitOShyAA0a6DeviceI4TypeOGGSSF"></a>
+                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP012getAvailabledE9DataTypesyShyAA0a6DeviceI4TypeOGSSYaKF"></a>
                     <a name="//apple_ref/swift/Method/getAvailableOfflineRecordingDataTypes(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP012getAvailabledE9DataTypesy7RxSwift17PrimitiveSequenceVyAE11SingleTraitOShyAA0a6DeviceI4TypeOGGSSF">getAvailableOfflineRecordingDataTypes(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP012getAvailabledE9DataTypesyShyAA0a6DeviceI4TypeOGSSYaKF">getAvailableOfflineRecordingDataTypes(_:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -568,6 +568,10 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
     <p class="aside-title">Requires</p>
     <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_offline_recordingyA2CmF">PolarBleSdkFeature.feature_polar_offline_recording</a></code></p>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p><code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</p>
+
 </div>
 
                       </div>
@@ -575,18 +579,13 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getAvailableOfflineRecordingDataTypes</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt">Set</span><span class="o">&lt;</span><span class="kt"><a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a></span><span class="o">&gt;&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getAvailableOfflineRecordingDataTypes</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Set</span><span class="o">&lt;</span><span class="kt"><a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a></span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single stream</p>
-
-<ul>
-<li>success:  set of available offline recording data types in this device</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul>
+                        <p>set of available offline recording data types in this device</p>
                       </div>
                     </section>
                   </div>
@@ -594,10 +593,13 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP07requestdE8Settings_7feature7RxSwift17PrimitiveSequenceVyAF11SingleTraitOAA0A13SensorSettingVGSS_AA0A14DeviceDataTypeOtF"></a>
+                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP07requestdE8Settings_7featureAA0A13SensorSettingVSS_AA0A14DeviceDataTypeOtYaKF"></a>
                     <a name="//apple_ref/swift/Method/requestOfflineRecordingSettings(_:feature:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP07requestdE8Settings_7feature7RxSwift17PrimitiveSequenceVyAF11SingleTraitOAA0A13SensorSettingVGSS_AA0A14DeviceDataTypeOtF">requestOfflineRecordingSettings(_:<wbr>feature:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP07requestdE8Settings_7featureAA0A13SensorSettingVSS_AA0A14DeviceDataTypeOtYaKF">requestOfflineRecordingSettings(_:<wbr>feature:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -610,6 +612,10 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
     <p class="aside-title">Requires</p>
     <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_offline_recordingyA2CmF">PolarBleSdkFeature.feature_polar_offline_recording</a></code></p>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p><code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</p>
+
 </div>
 
                       </div>
@@ -617,18 +623,13 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">requestOfflineRecordingSettings</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">feature</span><span class="p">:</span> <span class="kt"><a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">requestOfflineRecordingSettings</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">feature</span><span class="p">:</span> <span class="kt"><a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a></span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a></span></code></pre>
 
                         </div>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single stream</p>
-
-<ul>
-<li>success: once after settings received from device</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul>
+                        <p><code><a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a></code> with the available settings received from the device</p>
                       </div>
                     </section>
                   </div>
@@ -636,10 +637,13 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP011requestFulldE8Settings_7feature7RxSwift17PrimitiveSequenceVyAF11SingleTraitOAA0A13SensorSettingVGSS_AA0A14DeviceDataTypeOtF"></a>
+                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP011requestFulldE8Settings_7featureAA0A13SensorSettingVSS_AA0A14DeviceDataTypeOtYaKF"></a>
                     <a name="//apple_ref/swift/Method/requestFullOfflineRecordingSettings(_:feature:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP011requestFulldE8Settings_7feature7RxSwift17PrimitiveSequenceVyAF11SingleTraitOAA0A13SensorSettingVGSS_AA0A14DeviceDataTypeOtF">requestFullOfflineRecordingSettings(_:<wbr>feature:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP011requestFulldE8Settings_7featureAA0A13SensorSettingVSS_AA0A14DeviceDataTypeOtYaKF">requestFullOfflineRecordingSettings(_:<wbr>feature:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -651,6 +655,10 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
     <p class="aside-title">Requires</p>
     <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_offline_recordingyA2CmF">PolarBleSdkFeature.feature_polar_offline_recording</a></code></p>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p><code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</p>
+
 </div>
 
                       </div>
@@ -658,18 +666,13 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">requestFullOfflineRecordingSettings</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">feature</span><span class="p">:</span> <span class="kt"><a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">requestFullOfflineRecordingSettings</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">feature</span><span class="p">:</span> <span class="kt"><a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a></span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a></span></code></pre>
 
                         </div>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single stream</p>
-
-<ul>
-<li>success: once after settings received from device</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul>
+                        <p><code><a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a></code> with all available settings received from the device</p>
                       </div>
                     </section>
                   </div>
@@ -677,10 +680,13 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP03getdE6Statusy7RxSwift17PrimitiveSequenceVyAE11SingleTraitOSDyAA0A14DeviceDataTypeOSbGGSSF"></a>
+                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP03getdE6StatusySDyAA0A14DeviceDataTypeOSbGSSYaKF"></a>
                     <a name="//apple_ref/swift/Method/getOfflineRecordingStatus(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP03getdE6Statusy7RxSwift17PrimitiveSequenceVyAE11SingleTraitOSDyAA0A14DeviceDataTypeOSbGGSSF">getOfflineRecordingStatus(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP03getdE6StatusySDyAA0A14DeviceDataTypeOSbGSSYaKF">getOfflineRecordingStatus(_:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -692,6 +698,10 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
     <p class="aside-title">Requires</p>
     <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_offline_recordingyA2CmF">PolarBleSdkFeature.feature_polar_offline_recording</a></code></p>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p><code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</p>
+
 </div>
 
                       </div>
@@ -699,7 +709,7 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getOfflineRecordingStatus</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="p">[</span><span class="kt"><a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a></span> <span class="p">:</span> <span class="kt">Bool</span><span class="p">]</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getOfflineRecordingStatus</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt"><a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a></span> <span class="p">:</span> <span class="kt">Bool</span><span class="p">]</span></code></pre>
 
                         </div>
                       </div>
@@ -724,12 +734,7 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single stream</p>
-
-<ul>
-<li>success: the dictionary indicating the offline recording status, if the value in dictionary is true the offline recording is currently recording</li>
-<li>error: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul>
+                        <p>dictionary mapping each <code><a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a></code> to a <code>Bool</code> indicating whether offline recording is currently active for that type</p>
                       </div>
                     </section>
                   </div>
@@ -737,9 +742,9 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP04listD10Recordingsy7RxSwift10ObservableCyAA0adE5EntryVGSSF"></a>
+                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP04listD10RecordingsyScsyAA0adE5EntryVs5Error_pGSSF"></a>
                     <a name="//apple_ref/swift/Method/listOfflineRecordings(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP04listD10Recordingsy7RxSwift10ObservableCyAA0adE5EntryVGSSF">listOfflineRecordings(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP04listD10RecordingsyScsyAA0adE5EntryVs5Error_pGSSF">listOfflineRecordings(_:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -759,7 +764,7 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">listOfflineRecordings</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">listOfflineRecordings</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">AsyncThrowingStream</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -784,13 +789,7 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Completable</p>
-
-<ul>
-<li>next :  the found offline recording entry</li>
-<li>completed: the listing completed</li>
-<li>error: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul>
+                        <p><code>AsyncThrowingStream</code> emitting <code><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></code> values as they are found, or throwing an error</p>
                       </div>
                     </section>
                   </div>
@@ -798,23 +797,30 @@ With Offline recording the Polar device and phone don&rsquo;t need to be connect
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP03getD6Record_5entry6secret7RxSwift17PrimitiveSequenceVyAG11SingleTraitOAA0adE4DataOGSS_AA0adE5EntryVAA0aE6SecretVSgtF"></a>
+                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP03getD6Record_5entry6secretAA0adE4DataOSS_AA0adE5EntryVAA0aE6SecretVSgtYaKF"></a>
                     <a name="//apple_ref/swift/Method/getOfflineRecord(_:entry:secret:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP03getD6Record_5entry6secret7RxSwift17PrimitiveSequenceVyAG11SingleTraitOAA0adE4DataOGSS_AA0adE5EntryVAA0aE6SecretVSgtF">getOfflineRecord(_:<wbr>entry:<wbr>secret:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP03getD6Record_5entry6secretAA0adE4DataOSS_AA0adE5EntryVAA0aE6SecretVSgtYaKF">getOfflineRecord(_:<wbr>entry:<wbr>secret:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Fetch recording from the  device.</p>
+                        <p>Fetch recjiöording from the device.</p>
 
 <p>Note, the fetching of the recording may take several seconds if the recording is big.
 Note, if a faulty data block is encountered while parsing offline data from device that particular data block will be discarded. This will lead to gaps in the data.</p>
 <div class="aside aside-requires">
     <p class="aside-title">Requires</p>
     <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_offline_recordingyA2CmF">PolarBleSdkFeature.feature_polar_offline_recording</a></code></p>
+
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p><code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</p>
 
 </div>
 
@@ -823,7 +829,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getOfflineRecord</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">,</span> <span class="nv">secret</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a></span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getOfflineRecord</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">,</span> <span class="nv">secret</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a></span><span class="p">?)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a></span></code></pre>
 
                         </div>
                       </div>
@@ -851,7 +857,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                               </td>
                               <td>
                                 <div>
-                                  <p>The offline recording to be fetched</p>
+                                  <p>the offline recording to be fetched</p>
                                 </div>
                               </td>
                             </tr>
@@ -863,7 +869,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                               </td>
                               <td>
                                 <div>
-                                  <p>If the secret is provided in <code>startOfflineRecording</code> or <code>setOfflineRecordingTrigger</code> then the same secret must be provided when fetching the offline record</p>
+                                  <p>if the secret is provided in <code>startOfflineRecording</code> or <code>setOfflineRecordingTrigger</code> then the same secret must be provided when fetching the offline record</p>
                                 </div>
                               </td>
                             </tr>
@@ -872,12 +878,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single</p>
-
-<ul>
-<li>success :  the offline recording data</li>
-<li>error: fetch recording request failed. see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul>
+                        <p><code><a href="../Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a></code> containing the fetched offline recording data</p>
                       </div>
                     </section>
                   </div>
@@ -885,9 +886,9 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP03getD18RecordWithProgress_5entry6secret7RxSwift10ObservableCyAA0adE6ResultOGSS_AA0adE5EntryVAA0aE6SecretVSgtF"></a>
+                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP03getD18RecordWithProgress_5entry6secretScsyAA0adE6ResultOs5Error_pGSS_AA0adE5EntryVAA0aE6SecretVSgtF"></a>
                     <a name="//apple_ref/swift/Method/getOfflineRecordWithProgress(_:entry:secret:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP03getD18RecordWithProgress_5entry6secret7RxSwift10ObservableCyAA0adE6ResultOGSS_AA0adE5EntryVAA0aE6SecretVSgtF">getOfflineRecordWithProgress(_:<wbr>entry:<wbr>secret:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP03getD18RecordWithProgress_5entry6secretScsyAA0adE6ResultOs5Error_pGSS_AA0adE5EntryVAA0aE6SecretVSgtF">getOfflineRecordWithProgress(_:<wbr>entry:<wbr>secret:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -910,7 +911,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getOfflineRecordWithProgress</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">,</span> <span class="nv">secret</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a></span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Enums/PolarOfflineRecordingResult.html">PolarOfflineRecordingResult</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getOfflineRecordWithProgress</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">,</span> <span class="nv">secret</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a></span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">AsyncThrowingStream</span><span class="o">&lt;</span><span class="kt"><a href="../Enums/PolarOfflineRecordingResult.html">PolarOfflineRecordingResult</a></span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -938,7 +939,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                               </td>
                               <td>
                                 <div>
-                                  <p>The offline recording to be fetched</p>
+                                  <p>the offline recording to be fetched</p>
                                 </div>
                               </td>
                             </tr>
@@ -950,7 +951,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                               </td>
                               <td>
                                 <div>
-                                  <p>If the secret is provided in <code>startOfflineRecording</code> or <code>setOfflineRecordingTrigger</code> then the same secret must be provided when fetching the offline record</p>
+                                  <p>if the secret is provided in <code>startOfflineRecording</code> or <code>setOfflineRecordingTrigger</code> then the same secret must be provided when fetching the offline record</p>
                                 </div>
                               </td>
                             </tr>
@@ -959,12 +960,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Observable</p>
-
-<ul>
-<li>next: <code><a href="../Enums/PolarOfflineRecordingResult.html">PolarOfflineRecordingResult</a></code> containing either progress updates or the complete recording data</li>
-<li>error: fetch recording request failed. see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul>
+                        <p><code>AsyncThrowingStream</code> emitting <code><a href="../Enums/PolarOfflineRecordingResult.html">PolarOfflineRecordingResult</a></code> values containing either progress updates or the complete recording data, or throwing an error</p>
                       </div>
                     </section>
                   </div>
@@ -972,20 +968,27 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP06getSubE5Count10identifier5entry7RxSwift17PrimitiveSequenceVyAG11SingleTraitOSiGSS_AA0adE5EntryVtF"></a>
+                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP06getSubE5Count10identifier5entrySiSS_AA0adE5EntryVtYaKF"></a>
                     <a name="//apple_ref/swift/Method/getSubRecordingCount(identifier:entry:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP06getSubE5Count10identifier5entry7RxSwift17PrimitiveSequenceVyAG11SingleTraitOSiGSS_AA0adE5EntryVtF">getSubRecordingCount(identifier:<wbr>entry:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP06getSubE5Count10identifier5entrySiSS_AA0adE5EntryVtYaKF">getSubRecordingCount(identifier:<wbr>entry:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Fetch number sub recordings in recording from the  device.</p>
+                        <p>Fetch number of sub recordings in recording from the device.</p>
 <div class="aside aside-requires">
     <p class="aside-title">Requires</p>
     <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_offline_recordingyA2CmF">PolarBleSdkFeature.feature_polar_offline_recording</a></code></p>
+
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p><code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</p>
 
 </div>
 
@@ -995,7 +998,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Getting subrecordings has been deprecated. Use getOfflineRecord to get full recording instead."</span><span class="p">)</span>
-<span class="kd">func</span> <span class="nf">getSubRecordingCount</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt">Int</span><span class="o">&gt;</span></code></pre>
+<span class="kd">func</span> <span class="nf">getSubRecordingCount</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Int</span></code></pre>
 
                         </div>
                       </div>
@@ -1023,7 +1026,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                               </td>
                               <td>
                                 <div>
-                                  <p>The offline recording whose subrecording count will be checked</p>
+                                  <p>the offline recording whose subrecording count will be checked</p>
                                 </div>
                               </td>
                             </tr>
@@ -1032,12 +1035,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single</p>
-
-<ul>
-<li>success :  the offline recording subrecording count</li>
-<li>error: fetch recording request failed. see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul>
+                        <p>the number of sub recordings in the offline recording</p>
                       </div>
                     </section>
                   </div>
@@ -1045,9 +1043,9 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP09listSplitD10Recordingsy7RxSwift10ObservableCyAA0adE5EntryVGSSF"></a>
+                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP09listSplitD10RecordingsyScsyAA0adE5EntryVs5Error_pGSSF"></a>
                     <a name="//apple_ref/swift/Method/listSplitOfflineRecordings(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP09listSplitD10Recordingsy7RxSwift10ObservableCyAA0adE5EntryVGSSF">listSplitOfflineRecordings(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP09listSplitD10RecordingsyScsyAA0adE5EntryVs5Error_pGSSF">listSplitOfflineRecordings(_:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1068,7 +1066,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Listing split offline recordings has been deprecated. Use getOfflineRecord to get full recording instead."</span><span class="p">)</span>
-<span class="kd">func</span> <span class="nf">listSplitOfflineRecordings</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="o">&gt;</span></code></pre>
+<span class="kd">func</span> <span class="nf">listSplitOfflineRecordings</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">AsyncThrowingStream</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1093,13 +1091,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Completable</p>
-
-<ul>
-<li>next :  the found split offline recording entry</li>
-<li>completed: the listing completed</li>
-<li>error: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul>
+                        <p><code>AsyncThrowingStream</code> emitting <code><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></code> values as they are found, or throwing an error</p>
                       </div>
                     </section>
                   </div>
@@ -1107,10 +1099,13 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP08getSplitD6Record_5entry6secret7RxSwift17PrimitiveSequenceVyAG11SingleTraitOAA0adE4DataOGSS_AA0adE5EntryVAA0aE6SecretVSgtF"></a>
+                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP08getSplitD6Record_5entry6secretAA0adE4DataOSS_AA0adE5EntryVAA0aE6SecretVSgtYaKF"></a>
                     <a name="//apple_ref/swift/Method/getSplitOfflineRecord(_:entry:secret:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP08getSplitD6Record_5entry6secret7RxSwift17PrimitiveSequenceVyAG11SingleTraitOAA0adE4DataOGSS_AA0adE5EntryVAA0aE6SecretVSgtF">getSplitOfflineRecord(_:<wbr>entry:<wbr>secret:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP08getSplitD6Record_5entry6secretAA0adE4DataOSS_AA0adE5EntryVAA0aE6SecretVSgtYaKF">getSplitOfflineRecord(_:<wbr>entry:<wbr>secret:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1125,6 +1120,10 @@ Note, if a faulty data block is encountered while parsing offline data from devi
     <p class="aside-title">Requires</p>
     <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_offline_recordingyA2CmF">PolarBleSdkFeature.feature_polar_offline_recording</a></code></p>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p><code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</p>
+
 </div>
 
                       </div>
@@ -1133,7 +1132,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Getting split offline records has been deprecated. Use getOfflineRecord to get full recording instead."</span><span class="p">)</span>
-<span class="kd">func</span> <span class="nf">getSplitOfflineRecord</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">,</span> <span class="nv">secret</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a></span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a></span><span class="o">&gt;</span></code></pre>
+<span class="kd">func</span> <span class="nf">getSplitOfflineRecord</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">,</span> <span class="nv">secret</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a></span><span class="p">?)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a></span></code></pre>
 
                         </div>
                       </div>
@@ -1161,7 +1160,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                               </td>
                               <td>
                                 <div>
-                                  <p>The split offline recording to be fetched</p>
+                                  <p>the split offline recording to be fetched</p>
                                 </div>
                               </td>
                             </tr>
@@ -1173,7 +1172,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                               </td>
                               <td>
                                 <div>
-                                  <p>If the secret is provided in <code>startOfflineRecording</code> or <code>setOfflineRecordingTrigger</code> then the same secret must be provided when fetching the offline record</p>
+                                  <p>if the secret is provided in <code>startOfflineRecording</code> or <code>setOfflineRecordingTrigger</code> then the same secret must be provided when fetching the offline record</p>
                                 </div>
                               </td>
                             </tr>
@@ -1182,12 +1181,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single</p>
-
-<ul>
-<li>success :  the offline recording data</li>
-<li>error: fetch recording request failed. see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul>
+                        <p><code><a href="../Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a></code> containing the fetched offline recording data</p>
                       </div>
                     </section>
                   </div>
@@ -1195,10 +1189,13 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP06removeD6Record_5entry7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_AA0adE5EntryVtF"></a>
+                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP06removeD6Record_5entryySS_AA0adE5EntryVtYaKF"></a>
                     <a name="//apple_ref/swift/Method/removeOfflineRecord(_:entry:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP06removeD6Record_5entry7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_AA0adE5EntryVtF">removeOfflineRecord(_:<wbr>entry:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP06removeD6Record_5entryySS_AA0adE5EntryVtYaKF">removeOfflineRecord(_:<wbr>entry:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1210,6 +1207,10 @@ Note, if a faulty data block is encountered while parsing offline data from devi
     <p class="aside-title">Requires</p>
     <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_offline_recordingyA2CmF">PolarBleSdkFeature.feature_polar_offline_recording</a></code></p>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p><code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</p>
+
 </div>
 
                       </div>
@@ -1217,7 +1218,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">removeOfflineRecord</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">removeOfflineRecord</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -1252,25 +1253,19 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable</p>
-
-<ul>
-<li>completed :  offline record or record with subrecords is removed</li>
-<li>error:  offline record removal failed, see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP06removeD7Records_5entry7RxSwift17PrimitiveSequenceVyAF11SingleTraitOSbGSS_AA0adE5EntryVtF"></a>
+                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP06removeD7Records_5entrySbSS_AA0adE5EntryVtYaKF"></a>
                     <a name="//apple_ref/swift/Method/removeOfflineRecords(_:entry:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP06removeD7Records_5entry7RxSwift17PrimitiveSequenceVyAF11SingleTraitOSbGSS_AA0adE5EntryVtF">removeOfflineRecords(_:<wbr>entry:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP06removeD7Records_5entrySbSS_AA0adE5EntryVtYaKF">removeOfflineRecords(_:<wbr>entry:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1282,6 +1277,10 @@ Note, if a faulty data block is encountered while parsing offline data from devi
     <p class="aside-title">Requires</p>
     <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_offline_recordingyA2CmF">PolarBleSdkFeature.feature_polar_offline_recording</a></code></p>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p><code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</p>
+
 </div>
 
                       </div>
@@ -1290,7 +1289,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Use removeOfflineRecord to remove recording including subrecords instead."</span><span class="p">)</span>
-<span class="kd">func</span> <span class="nf">removeOfflineRecords</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt">Bool</span><span class="o">&gt;</span></code></pre>
+<span class="kd">func</span> <span class="nf">removeOfflineRecords</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">entry</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a></span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
 
                         </div>
                       </div>
@@ -1327,12 +1326,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single</p>
-
-<ul>
-<li>success :  Offline record and its subrecords is/are removed. All empty parent directories up to day directory are removed.</li>
-<li>error:  offline record removal failed, see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul>
+                        <p><code>true</code> if the offline record and its subrecords were successfully removed</p>
                       </div>
                     </section>
                   </div>
@@ -1340,10 +1334,13 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP05startdE0_7feature8settings6secret7RxSwift17PrimitiveSequenceVyAH16CompletableTraitOs5NeverOGSS_AA0A14DeviceDataTypeOAA0A13SensorSettingVSgAA0aE6SecretVSgtF"></a>
+                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP05startdE0_7feature8settings6secretySS_AA0A14DeviceDataTypeOAA0A13SensorSettingVSgAA0aE6SecretVSgtYaKF"></a>
                     <a name="//apple_ref/swift/Method/startOfflineRecording(_:feature:settings:secret:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP05startdE0_7feature8settings6secret7RxSwift17PrimitiveSequenceVyAH16CompletableTraitOs5NeverOGSS_AA0A14DeviceDataTypeOAA0A13SensorSettingVSgAA0aE6SecretVSgtF">startOfflineRecording(_:<wbr>feature:<wbr>settings:<wbr>secret:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP05startdE0_7feature8settings6secretySS_AA0A14DeviceDataTypeOAA0A13SensorSettingVSgAA0aE6SecretVSgtYaKF">startOfflineRecording(_:<wbr>feature:<wbr>settings:<wbr>secret:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1355,6 +1352,10 @@ Note, if a faulty data block is encountered while parsing offline data from devi
     <p class="aside-title">Requires</p>
     <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_offline_recordingyA2CmF">PolarBleSdkFeature.feature_polar_offline_recording</a></code></p>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p><code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</p>
+
 </div>
 
                       </div>
@@ -1362,7 +1363,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startOfflineRecording</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">feature</span><span class="p">:</span> <span class="kt"><a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a></span><span class="p">,</span> <span class="nv">settings</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a></span><span class="p">?,</span> <span class="nv">secret</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a></span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startOfflineRecording</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">feature</span><span class="p">:</span> <span class="kt"><a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a></span><span class="p">,</span> <span class="nv">settings</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a></span><span class="p">?,</span> <span class="nv">secret</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a></span><span class="p">?)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -1406,17 +1407,20 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                                 </div>
                               </td>
                             </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>secret</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>if the secret is provided the offline recordings are encrypted in device</p>
+                                </div>
+                              </td>
+                            </tr>
                           </tbody>
                         </table>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable</p>
-
-<ul>
-<li>completed :  offline recording is started successfully</li>
-<li>error: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul>
                       </div>
                     </section>
                   </div>
@@ -1424,10 +1428,13 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP04stopdE0_7feature7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_AA0A14DeviceDataTypeOtF"></a>
+                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP04stopdE0_7featureySS_AA0A14DeviceDataTypeOtYaKF"></a>
                     <a name="//apple_ref/swift/Method/stopOfflineRecording(_:feature:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP04stopdE0_7feature7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_AA0A14DeviceDataTypeOtF">stopOfflineRecording(_:<wbr>feature:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP04stopdE0_7featureySS_AA0A14DeviceDataTypeOtYaKF">stopOfflineRecording(_:<wbr>feature:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1439,6 +1446,10 @@ Note, if a faulty data block is encountered while parsing offline data from devi
     <p class="aside-title">Requires</p>
     <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_offline_recordingyA2CmF">PolarBleSdkFeature.feature_polar_offline_recording</a></code></p>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p><code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</p>
+
 </div>
 
                       </div>
@@ -1446,7 +1457,7 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">stopOfflineRecording</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">feature</span><span class="p">:</span> <span class="kt"><a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">stopOfflineRecording</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">feature</span><span class="p">:</span> <span class="kt"><a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a></span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -1481,25 +1492,19 @@ Note, if a faulty data block is encountered while parsing offline data from devi
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable</p>
-
-<ul>
-<li>completed :  offline recording is stop successfully</li>
-<li>error: offline recording stop failed. see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP03setdE7Trigger_7trigger6secret7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_AA0adeH0VAA0aE6SecretVSgtF"></a>
+                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP03setdE7Trigger_7trigger6secretySS_AA0adeH0VAA0aE6SecretVSgtYaKF"></a>
                     <a name="//apple_ref/swift/Method/setOfflineRecordingTrigger(_:trigger:secret:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP03setdE7Trigger_7trigger6secret7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_AA0adeH0VAA0aE6SecretVSgtF">setOfflineRecordingTrigger(_:<wbr>trigger:<wbr>secret:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP03setdE7Trigger_7trigger6secretySS_AA0adeH0VAA0aE6SecretVSgtYaKF">setOfflineRecordingTrigger(_:<wbr>trigger:<wbr>secret:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1518,6 +1523,10 @@ recording is not stopped by disable.</p>
     <p class="aside-title">Requires</p>
     <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_offline_recordingyA2CmF">PolarBleSdkFeature.feature_polar_offline_recording</a></code></p>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p><code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</p>
+
 </div>
 
                       </div>
@@ -1529,7 +1538,7 @@ recording is not stopped by disable.</p>
     <span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
     <span class="nv">trigger</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingTrigger.html">PolarOfflineRecordingTrigger</a></span><span class="p">,</span>
     <span class="nv">secret</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a></span><span class="p">?</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+<span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -1576,25 +1585,19 @@ recording is not stopped by disable.</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable</p>
-
-<ul>
-<li>completed :  the offline recording trigger was set successfully</li>
-<li>error: the offline recording trigger was not set successfully; see PolarErrors for possible errors that may be invoked.</li>
-</ul>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP03getdE12TriggerSetupy7RxSwift17PrimitiveSequenceVyAE11SingleTraitOAA0adeH0VGSSF"></a>
+                    <a name="/s:11PolarBleSdk0A19OfflineRecordingApiP03getdE12TriggerSetupyAA0adeH0VSSYaKF"></a>
                     <a name="//apple_ref/swift/Method/getOfflineRecordingTriggerSetup(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP03getdE12TriggerSetupy7RxSwift17PrimitiveSequenceVyAE11SingleTraitOAA0adeH0VGSSF">getOfflineRecordingTriggerSetup(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0A19OfflineRecordingApiP03getdE12TriggerSetupyAA0adeH0VSSYaKF">getOfflineRecordingTriggerSetup(_:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1606,6 +1609,10 @@ recording is not stopped by disable.</p>
     <p class="aside-title">Requires</p>
     <p>Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_offline_recordingyA2CmF">PolarBleSdkFeature.feature_polar_offline_recording</a></code></p>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p><code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</p>
+
 </div>
 
                       </div>
@@ -1613,7 +1620,7 @@ recording is not stopped by disable.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getOfflineRecordingTriggerSetup</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarOfflineRecordingTrigger.html">PolarOfflineRecordingTrigger</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getOfflineRecordingTriggerSetup</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/PolarOfflineRecordingTrigger.html">PolarOfflineRecordingTrigger</a></span></code></pre>
 
                         </div>
                       </div>
@@ -1638,12 +1645,7 @@ recording is not stopped by disable.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Completable</p>
-
-<ul>
-<li>success : the offline recording trigger setup in the device</li>
-<li>error: fetching recording trigger setup failed, see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul>
+                        <p><code><a href="../Structs/PolarOfflineRecordingTrigger.html">PolarOfflineRecordingTrigger</a></code> describing the current trigger setup in the device</p>
                       </div>
                     </section>
                   </div>
@@ -1653,7 +1655,7 @@ recording is not stopped by disable.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-04-20)</p>
+          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-05-26)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

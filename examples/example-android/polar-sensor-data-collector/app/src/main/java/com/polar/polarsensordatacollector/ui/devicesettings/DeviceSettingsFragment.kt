@@ -166,6 +166,8 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
     private lateinit var genericText: TextView
     private var genericButtonCounter: Int = 0
 
+    private lateinit var watchFaceComplicationsGroup: ConstraintLayout
+
     interface DateRangeSelectedListener {
         fun onDateRangeSelected(fromDate: LocalDate?, toDate: LocalDate?)
     }
@@ -509,9 +511,21 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
             }
         }
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.watchFaceConfigAvailable.collect { available ->
+                    watchFaceComplicationsGroup.visibility = if (available) VISIBLE else GONE
+                }
+            }
+        }
+
         bleMultiConnectionEnableButton.setOnClickListener {
             val enableDisableBleMultiConnection = bleMultiConnectionEnabledSwitch.isChecked
             viewModel.setBleMultiConnection(enabled = enableDisableBleMultiConnection)
+        }
+
+        view.findViewById<Button>(R.id.watch_face_complications_button).setOnClickListener {
+            com.polar.polarsensordatacollector.ui.watchface.WatchFaceActivity.launch(requireContext())
         }
     }
 
@@ -637,6 +651,8 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
 
         getBLESignalStrengthButton = view.findViewById(R.id.ble_signal_strength_button)
         getBLESignalStrengthHeader = view.findViewById(R.id.ble_signal_strength_header)
+
+        watchFaceComplicationsGroup = view.findViewById(R.id.watch_face_complications_group)
     }
 
     private fun settingsSupportUiState(settingsSupportUiState: SettingsSupportUiState) {

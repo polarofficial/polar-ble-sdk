@@ -1,21 +1,19 @@
 import XCTest
-import RxSwift
-import RxTest
-
 @testable import PolarBleSdk
 
 class PolarNightlyRechargeUtilsTests: XCTestCase {
     
     var mockClient: MockBlePsFtpClient!
+
     override func setUpWithError() throws {
-        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockGattServiceTransmitterImpl())
+        mockClient = MockBlePsFtpClient(gattServiceTransmitter: MockPolarGattServiceTransmitter())
     }
     
     override func tearDownWithError() throws {
         mockClient = nil
     }
 
-    func testReadNightlyRechargeData_shouldReturnNightlyRechargeData() {
+    func testReadNightlyRechargeData_shouldReturnNightlyRechargeData() async throws {
         // Arrange
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyyMMdd"
@@ -23,38 +21,16 @@ class PolarNightlyRechargeUtilsTests: XCTestCase {
         let expectedPath = "/U/0/\(dateFormatter.string(from: date))/NR/NR.BPB"
 
         let proto = Data_PbNightlyRecoveryStatus.with {
-            $0.sleepResultDate = PbDate.with { date in
-                date.year = 2024
-                date.month = 12
-                date.day = 5
+            $0.sleepResultDate = PbDate.with { $0.year = 2024; $0.month = 12; $0.day = 5 }
+            $0.createdTimestamp = PbSystemDateTime.with {
+                $0.date = PbDate.with { $0.year = 2023; $0.month = 12; $0.day = 5 }
+                $0.time = PbTime.with { $0.hour = 10; $0.minute = 0; $0.seconds = 0; $0.millis = 0 }
+                $0.trusted = true
             }
-            $0.createdTimestamp = PbSystemDateTime.with { timestamp in
-                timestamp.date = PbDate.with { date in
-                    date.year = 2023
-                    date.month = 12
-                    date.day = 5
-                }
-                timestamp.time = PbTime.with { time in
-                    time.hour = 10
-                    time.minute = 0
-                    time.seconds = 0
-                    time.millis = 0
-                }
-                timestamp.trusted = true
-            }
-            $0.modifiedTimestamp = PbSystemDateTime.with { timestamp in
-                timestamp.date = PbDate.with { date in
-                    date.year = 2023
-                    date.month = 12
-                    date.day = 5
-                }
-                timestamp.time = PbTime.with { time in
-                    time.hour = 10
-                    time.minute = 30
-                    time.seconds = 0
-                    time.millis = 0
-                }
-                timestamp.trusted = true
+            $0.modifiedTimestamp = PbSystemDateTime.with {
+                $0.date = PbDate.with { $0.year = 2023; $0.month = 12; $0.day = 5 }
+                $0.time = PbTime.with { $0.hour = 10; $0.minute = 30; $0.seconds = 0; $0.millis = 0 }
+                $0.trusted = true
             }
             $0.ansStatus = 5.5
             $0.recoveryIndicator = 3
@@ -75,8 +51,7 @@ class PolarNightlyRechargeUtilsTests: XCTestCase {
             $0.exerciseTip = "Exercise tip 3"
         }
 
-        let protoData = try! proto.serializedData()
-        mockClient.requestReturnValue = Single.just(protoData)
+        mockClient.requestReturnValue = .success(try proto.serializedData())
 
         let createdTimestamp = DateComponents(calendar: Calendar.current, year: 2023, month: 12, day: 5, hour: 10, minute: 0).date!
         let modifiedTimestamp = DateComponents(calendar: Calendar.current, year: 2023, month: 12, day: 5, hour: 10, minute: 30).date!
@@ -106,23 +81,10 @@ class PolarNightlyRechargeUtilsTests: XCTestCase {
         )
 
         // Act
-        let result = PolarNightlyRechargeUtils.readNightlyRechargeData(client: mockClient, date: date)
-
-        var testResult: PolarNightlyRechargeData?
-        let expectation = self.expectation(description: "Read nightly recovery should return nightly recovery data")
-
-        _ = result.subscribe(onSuccess: { data in
-            testResult = data
-            expectation.fulfill()
-        }, onError: { error in
-            XCTFail("Unexpected error: \(error)")
-        }, onCompleted: {
-            XCTFail("Completed without emitting a value")
-        })
-
-        wait(for: [expectation], timeout: 1.0)
+        let testResult = await PolarNightlyRechargeUtils.readNightlyRechargeData(client: mockClient, date: date)
 
         // Assert
+        XCTAssertNotNil(testResult)
         XCTAssertEqual(testResult?.createdTimestamp, expectedResult.createdTimestamp)
         XCTAssertEqual(testResult?.modifiedTimestamp, expectedResult.modifiedTimestamp)
         XCTAssertEqual(testResult?.ansStatus, expectedResult.ansStatus)
@@ -143,32 +105,20 @@ class PolarNightlyRechargeUtilsTests: XCTestCase {
         XCTAssertEqual(testResult?.vitalityTip, expectedResult.vitalityTip)
         XCTAssertEqual(testResult?.exerciseTip, expectedResult.exerciseTip)
         XCTAssertEqual(testResult?.sleepResultDate, expectedResult.sleepResultDate)
-
-        let actualPath = String(data: mockClient.requestCalls[0], encoding: .utf8)?.trimmingCharacters(in: .controlCharacters)
-        XCTAssertEqual(actualPath, expectedPath)
         XCTAssertEqual(mockClient.requestCalls.count, 1)
+
+        let actualPath = try Protocol_PbPFtpOperation(serializedBytes: mockClient.requestCalls[0]).path
+        XCTAssertEqual(actualPath, expectedPath)
     }
     
-    func testReadNightlyRechargeFromDayDirectory_FileNotFound() {
+    func testReadNightlyRechargeFromDayDirectory_FileNotFound() async {
         // Arrange
-        let expectedError = NSError(domain: "File not found", code: 103, userInfo: nil)
-        mockClient.requestReturnValue = Single.error(expectedError)
+        mockClient.requestReturnValue = .failure(NSError(domain: "File not found", code: 103, userInfo: nil))
 
-        // Act
-        let expectation = XCTestExpectation(description: "Read nightly recovery should complete if nightly recovery file not found")
-        
-        let disposable = PolarNightlyRechargeUtils.readNightlyRechargeData(client: mockClient, date: Date())
-            .subscribe(onSuccess: { nightlyRecoveryData in
-                XCTFail("Expected completion, but got data: \(nightlyRecoveryData)")
-                expectation.fulfill()
-            }, onError: { error in
-                XCTFail("Expected completion, but got error: \(error)")
-                expectation.fulfill()
-            }, onDisposed: {
-                expectation.fulfill()
-            })
+        // Act — errors are swallowed; method returns nil
+        let result = await PolarNightlyRechargeUtils.readNightlyRechargeData(client: mockClient, date: Date())
 
-        wait(for: [expectation], timeout: 5)
-        disposable.dispose()
+        // Assert
+        XCTAssertNil(result, "Expected nil when nightly recovery file is not found")
     }
 }

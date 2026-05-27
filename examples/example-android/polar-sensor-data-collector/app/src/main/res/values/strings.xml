@@ -383,4 +383,27 @@
     <string name="hr_label_rrsms">rrsMs: </string>
     <string name="hr_label_contact">contact: </string>
     <string name="hr_rr_not_available">Not available</string>
+
+    <!-- Watch face configuration -->
+    <string name="watch_face_complications_title">Watch face complications</string>
+    <string name="watch_face_complications_configure">Configure</string>
+    <string name="watch_face_screen_title">Watch Face Complications</string>
+    <string name="watch_face_apply_button">Apply to device</string>
+    <string name="watch_face_slot_label">Slot %d</string>
+    <string name="watch_face_complication_empty">Empty</string>
+    <string name="watch_face_applied_success">Complications applied successfully, watch restart may be needed to update the UI</string>
+    <string name="watch_face_failed_prefix">Failed: </string>
+    <string name="watch_face_status_reading">Reading from device…</string>
+    <string name="watch_face_status_read_null">Read returned null</string>
+    <string name="watch_face_status_loaded">Loaded %d slot(s) from device</string>
+    <string name="watch_face_status_read_failed_prefix">Read failed</string>
+    <string name="watch_face_status_read_failed">Read failed: %s</string>
+
+    <!-- File compression for email sharing -->
+    <string name="file_compression_completed">Files compressed to ZIP for email compatibility</string>
+    <string name="file_too_large_for_email_title">File too large for email</string>
+    <string name="file_too_large_for_email_message">The file is too large to send via email even after compression. You can still share it using cloud storage, Files app, or other apps.</string>
+    <string name="file_too_large_share_anyway">Share anyway</string>
+    <string name="file_too_large_chooser_title">Share via…</string>
+    <string name="file_compression_failed">Failed to compress files: %1$s</string>
 </resources>

@@ -2,11 +2,11 @@
 
 import Foundation
 import PolarBleSdk
-import RxSwift
 import CoreBluetooth
 
 /// Device manager uses PolarBleSdk API to search for connectable devices and
 /// maintains one PolarBleSdkManager instance per connected device
+@MainActor
 class PolarBleDeviceManager: ObservableObject {
     
     @Published var isBluetoothOn: Bool
@@ -14,16 +14,19 @@ class PolarBleDeviceManager: ObservableObject {
     
     public var deviceSearchNamePrefix:String = ""
     
-    // NOTICE this example utilises all available features
+    // Single shared api instance used for both scanning and device connections.
+    // Sharing ensures peripherals discovered during scan are in the same session
+    // map that connectToDevice looks up — preventing "session not found" errors.
     private var api =
-        PolarBleApiDefaultImpl.polarImplementation(DispatchQueue.main, features: [])
+        PolarBleApiDefaultImpl.polarImplementation(DispatchQueue.main, features: [], restoreIdentifier: "com.polar.PolarSensorDataCollector-iOS.scan")
     
-    private let disposeBag = DisposeBag()
     private var h10ExerciseEntry: PolarExerciseEntry?
     private var searchDevicesTask: Task<Void, Never>? = nil
     
+    private var managersByDeviceId: [String: (PolarDeviceInfo, PolarBleSdkManager)] = [:]
+
     init() {
-        self.isBluetoothOn = api.isBlePowered
+        self.isBluetoothOn = false
         api.polarFilter(true)
         api.powerStateObserver = self
         api.logger = self
@@ -33,11 +36,8 @@ class PolarBleDeviceManager: ObservableObject {
         deviceSearchNamePrefix = prefix
         searchDevicesTask?.cancel()
         searchDevicesTask = nil
-        Task { @MainActor in
-            self.deviceSearch.foundDevices.removeAll()
-            self.managersByDeviceId.removeAll()
-            self.deviceSearch.isSearching = .notStarted
-        }
+        deviceSearch.foundDevices.removeAll()
+        deviceSearch.isSearching = .notStarted
     }
     
     func startDevicesSearch() {
@@ -49,42 +49,33 @@ class PolarBleDeviceManager: ObservableObject {
     func stopDevicesSearch() {
         searchDevicesTask?.cancel()
         searchDevicesTask = nil
-        Task { @MainActor in
-            self.deviceSearch.isSearching = DeviceSearchState.success
-        }
+        deviceSearch.isSearching = DeviceSearchState.success
     }
     
     private func searchDevicesAsync() async {
-        Task { @MainActor in
-            self.deviceSearch.foundDevices.removeAll()
-            self.deviceSearch.isSearching = DeviceSearchState.inProgress
-        }
-        
+        deviceSearch.foundDevices.removeAll()
+        deviceSearch.isSearching = DeviceSearchState.inProgress
+
         do {
-            for try await value in api.searchForDevice(withRequiredDeviceNamePrefix: deviceSearchNamePrefix).values {
-                Task { @MainActor in
-                    self.deviceSearch.foundDevices.append(value)
-                }
+            for try await value in api.searchForDevice(withRequiredDeviceNamePrefix: deviceSearchNamePrefix) {
+                guard !deviceSearch.foundDevices.contains(where: { $0.deviceId == value.deviceId }) else { continue }
+                deviceSearch.foundDevices.append(value)
             }
-            Task { @MainActor in
-                self.deviceSearch.isSearching = DeviceSearchState.success
-            }
+            deviceSearch.isSearching = DeviceSearchState.success
         } catch let err {
-            
             guard searchDevicesTask != nil else {
                 // was cancelled by user
                 return
             }
-            
             let deviceSearchFailed = "device search failed: \(err)"
             NSLog(deviceSearchFailed)
-            Task { @MainActor in
-                self.deviceSearch.isSearching = DeviceSearchState.failed(error: deviceSearchFailed)
-            }
+            deviceSearch.isSearching = DeviceSearchState.failed(error: deviceSearchFailed)
         }
     }
-    
-    private var managersByDeviceId: [String: (PolarDeviceInfo, PolarBleSdkManager)] = [:]
+
+    func makeSdkManager() -> PolarBleSdkManager {
+        return PolarBleSdkManager(api: api)
+    }
 
     func sdkManager(for device: PolarDeviceInfo, autoConnect: Bool = true) -> PolarBleSdkManager {
         if let (_, manager) = managersByDeviceId[device.deviceId] {
@@ -93,7 +84,9 @@ class PolarBleDeviceManager: ObservableObject {
             }
             return manager
         }
-        let manager = PolarBleSdkManager()
+        // Pass the shared api so the peripheral already in the scan session map
+        // is immediately available to connectToDevice — no second api instance needed.
+        let manager = PolarBleSdkManager(api: api)
         managersByDeviceId[device.deviceId] = (device, manager)
         if autoConnect {
             manager.connectToDevice(withId: device.deviceId)
@@ -102,7 +95,7 @@ class PolarBleDeviceManager: ObservableObject {
     }
     
     func disconnect(_ device: PolarDeviceInfo) -> (PolarDeviceInfo, PolarBleSdkManager)? {
-        if let (device, manager) = managersByDeviceId.removeValue(forKey: device.deviceId) {
+        if let (_, manager) = managersByDeviceId[device.deviceId] {
             manager.disconnectFromDevice(device: device)
         }
         return managersByDeviceId.values.first
@@ -110,7 +103,6 @@ class PolarBleDeviceManager: ObservableObject {
     
     func disconnectAll() {
         managersByDeviceId.values.forEach { $0.1.disconnectFromDevice(device: $0.0) }
-        managersByDeviceId.removeAll()
     }
     
     func connectedDevices() -> [PolarDeviceInfo] {
@@ -122,7 +114,7 @@ class PolarBleDeviceManager: ObservableObject {
 }
 
 // MARK: - PolarBleApiLogger
-extension PolarBleDeviceManager : PolarBleApiLogger {
+extension PolarBleDeviceManager : @MainActor PolarBleApiLogger {
     func message(_ str: String) {
         let timestamp = Date.now
         NSLog("\(timestamp) Polar SDK log:  \(str) [DevMgr]")

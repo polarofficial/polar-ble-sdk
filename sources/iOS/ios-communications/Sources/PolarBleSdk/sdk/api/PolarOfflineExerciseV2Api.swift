@@ -1,7 +1,6 @@
 //  Copyright © 2026 Polar. All rights reserved.
 
 import Foundation
-import RxSwift
 
 /// Represents the possible outcomes when attempting to start
 /// an offline exercise session on a supported Polar device.
@@ -66,175 +65,75 @@ public struct OfflineExerciseStartResult {
 /// `PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2`
 /// and the device must have the `dm_exercise` capability.
 ///
-/// All operations are asynchronous and return RxSwift primitives.
+/// All operations are asynchronous and use Swift async/await or `AsyncThrowingStream`.
 public protocol PolarOfflineExerciseV2Api {
 
-    /// Starts a new offline exercise session on the device.
-    ///
-    /// Requires feature `PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2`.
+    /// Start an offline exercise session on the device.
     ///
     /// - Parameters:
-    ///   - identifier: The unique device identifier.
+    ///   - identifier: Polar device ID or BT address.
     ///   - sportProfile: The sport profile to use for the session.
-    ///
-    /// - Returns: A `Single` emitting `OfflineExerciseStartResult`
-    ///            describing the outcome of the start request.
-    ///
-    /// - Errors:
-    ///   Emits an error if:
-    ///   - The device is not connected.
-    ///   - The PSFTP service is not available.
-    ///   - The device returns a protocol-level error.
-    func startOfflineExerciseV2(
-        identifier: String,
-        sportProfile: PolarExerciseSession.SportProfile
-    ) -> Single<OfflineExerciseStartResult>
+    /// - Returns: `OfflineExerciseStartResult` containing the outcome and created directory path.
+    /// - Throws: See `PolarErrors` for possible errors.
+    func startOfflineExerciseV2(identifier: String, sportProfile: PolarExerciseSession.SportProfile) async throws -> OfflineExerciseStartResult
 
-    /// Stops the currently running offline exercise session.
+    /// Stop the ongoing offline exercise session on the device.
     ///
-    /// Requires feature `PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2`.
-    ///
-    /// - Parameter identifier: The unique device identifier.
-    ///
-    /// - Returns: A `Completable` that completes when the device
-    ///            confirms the stop operation.
-    ///
-    /// - Errors:
-    ///   Emits an error if stopping fails or the device is not ready.
-    func stopOfflineExerciseV2(
-        identifier: String
-    ) -> Completable
+    /// - Parameter identifier: Polar device ID or BT address.
+    /// - Throws: See `PolarErrors` for possible errors.
+    func stopOfflineExerciseV2(identifier: String) async throws
 
-    /// Retrieves the current offline exercise state.
+    /// Check whether an offline exercise session is currently ongoing on the device.
     ///
-    /// Requires feature `PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2`.
-    ///
-    /// - Parameter identifier: The unique device identifier.
-    ///
-    /// - Returns: A `Single` emitting:
-    ///   - `true` if a Data Merge exercise is currently running.
-    ///   - `false` otherwise.
-    ///
-    /// - Errors:
-    ///   Emits an error if the status request fails.
-    func getOfflineExerciseStatusV2(
-        identifier: String
-    ) -> Single<Bool>
+    /// - Parameter identifier: Polar device ID or BT address.
+    /// - Returns: `true` if an exercise session is ongoing, `false` otherwise.
+    /// - Throws: See `PolarErrors` for possible errors.
+    func getOfflineExerciseStatusV2(identifier: String) async throws -> Bool
 
-    /// Lists offline exercise entries stored in the device.
-    ///
-    /// Requires feature `PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2`.
+    /// List offline exercise entries found under the given directory path on the device.
     ///
     /// - Parameters:
-    ///   - identifier: The unique device identifier.
-    ///   - directoryPath: Root directory path to search from.
-    ///
-    /// - Returns: An `Observable` emitting `PolarExerciseEntry`
-    ///            objects representing available exercise files.
-    func listOfflineExercisesV2(
-        identifier: String,
-        directoryPath: String
-    ) -> Observable<PolarExerciseEntry>
+    ///   - identifier: Polar device ID or BT address.
+    ///   - directoryPath: Root directory path to search. Use `"/"` to list all exercises.
+    /// - Returns: `AsyncThrowingStream` emitting `PolarExerciseEntry` for each found exercise file.
+    func listOfflineExercisesV2(identifier: String, directoryPath: String) -> AsyncThrowingStream<PolarExerciseEntry, Error>
 
-    /// Fetches offline exercise data from the device.
-    ///
-    /// Requires feature `PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2`.
+    /// Fetch the data for a specific offline exercise entry.
     ///
     /// - Parameters:
-    ///   - identifier: The unique device identifier.
-    ///   - entry: The exercise entry to fetch.
-    ///
-    /// - Returns: A `Single` emitting `PolarExerciseData`
-    ///            containing parsed exercise samples.
-    func fetchOfflineExerciseV2(
-        identifier: String,
-        entry: PolarExerciseEntry
-    ) -> Single<PolarExerciseData>
+    ///   - identifier: Polar device ID or BT address.
+    ///   - entry: The `PolarExerciseEntry` referencing the exercise to fetch.
+    /// - Returns: `PolarExerciseData` containing the recorded exercise data.
+    /// - Throws: See `PolarErrors` for possible errors.
+    func fetchOfflineExerciseV2(identifier: String, entry: PolarExerciseEntry) async throws -> PolarExerciseData
 
-    /// Removes an offline exercise from the device.
-    ///
-    /// Requires feature `PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2`.
+    /// Remove a specific offline exercise entry from the device.
     ///
     /// - Parameters:
-    ///   - identifier: The unique device identifier.
-    ///   - entry: The exercise entry to remove.
-    ///
-    /// - Returns: A `Completable` that completes once removal
-    ///            has been confirmed by the device.
-    func removeOfflineExerciseV2(
-        identifier: String,
-        entry: PolarExerciseEntry
-    ) -> Completable
+    ///   - identifier: Polar device ID or BT address.
+    ///   - entry: The `PolarExerciseEntry` referencing the exercise to delete.
+    /// - Throws: See `PolarErrors` for possible errors.
+    func removeOfflineExerciseV2(identifier: String, entry: PolarExerciseEntry) async throws
 
-    /// Checks whether the connected device supports
-    /// Offline Exercise V2 functionality (`dm_exercise` capability).
+    /// Check whether the device supports the Offline Exercise V2 feature.
     ///
-    /// Requires feature `PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2`.
-    ///
-    /// - Parameter identifier: The unique device identifier.
-    ///
-    /// - Returns: A `Single` emitting:
-    ///   - `true` if the device supports `dm_exercise`.
-    ///   - `false` otherwise.
-    func isOfflineExerciseV2Supported(
-        identifier: String
-    ) -> Single<Bool>
+    /// - Parameter identifier: Polar device ID or BT address.
+    /// - Returns: `true` if the device supports Offline Exercise V2, `false` otherwise.
+    /// - Throws: See `PolarErrors` for possible errors.
+    func isOfflineExerciseV2Supported(identifier: String) async throws -> Bool
 
-    /// Name of the exercise samples file stored inside
-    /// exercise directories on the device.
+    /// The filename used for exercise sample data files on the device.
     static var exerciseSamplesFile: String { get }
 }
 
 public extension PolarOfflineExerciseV2Api {
+    static var exerciseSamplesFile: String { return "SAMPLES.BPB" }
 
-    static var exerciseSamplesFile: String {
-        return "SAMPLES.BPB"
+    func startOfflineExerciseV2(identifier: String) async throws -> OfflineExerciseStartResult {
+        return try await startOfflineExerciseV2(identifier: identifier, sportProfile: .otherOutdoor)
     }
-    
-    /// Starts a new offline exercise session on the device using the default sport profile.
-    ///
-    /// This is a convenience method that calls
-    /// `startOfflineExerciseV2(identifier:sportProfile:)` internally
-    /// with `PolarExerciseSession.SportProfile.OTHER_OUTDOOR` as the default sport profile.
-    ///
-    /// Requires feature `PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2`.
-    ///
-    /// - Parameter identifier: The unique device identifier.
-    ///
-    /// - Returns: A `Single` emitting `OfflineExerciseStartResult`
-    ///            describing the outcome of the start request.
-    ///
-    /// - Errors:
-    ///   Emits an error if:
-    ///   - The device is not connected.
-    ///   - The PSFTP service is not available.
-    ///   - The device returns a protocol-level error.
-    func startOfflineExerciseV2(
-        identifier: String
-    ) -> Single<OfflineExerciseStartResult> {
-        return startOfflineExerciseV2(
-            identifier: identifier,
-            sportProfile: .otherOutdoor
-        )
-    }
-    
-    /// Lists offline exercise entries stored in the device using the default directory (`"/"`).
-    ///
-    /// This is a convenience method that calls
-    /// `listOfflineExercisesV2(identifier:directoryPath:)` internally.
-    ///
-    /// Requires feature `PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_EXERCISE_V2`.
-    ///
-    /// - Parameter identifier: The unique device identifier.
-    ///
-    /// - Returns: An `Observable` emitting `PolarExerciseEntry` objects
-    ///            representing available exercise files in the default directory.
-    func listOfflineExercisesV2(
-        identifier: String
-    ) -> Observable<PolarExerciseEntry> {
-        return listOfflineExercisesV2(
-            identifier: identifier,
-            directoryPath: "/"
-        )
+
+    func listOfflineExercisesV2(identifier: String) -> AsyncThrowingStream<PolarExerciseEntry, Error> {
+        return listOfflineExercisesV2(identifier: identifier, directoryPath: "/")
     }
 }

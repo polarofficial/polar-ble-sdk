@@ -47,7 +47,6 @@ class AtomicList<T> {
     }
     
     func pop() throws -> T {
-        var item: T
         lock.lock()
         guard let item = items.first else {
             throw AtomicListException.emptyQueueSignal
@@ -96,6 +95,16 @@ class AtomicList<T> {
         ret.append(contentsOf: items)
         lock.unlock()
         return ret
+    }
+
+    /// Atomically removes all items from the list and returns them.
+    /// This guarantees no item can be appended between the snapshot and the clear.
+    func drain() -> [T] {
+        lock.lock()
+        let snapshot = items
+        items.removeAll()
+        lock.unlock()
+        return snapshot
     }
     
     func poll( _ secs: TimeInterval, canceled: BlockOperation, cancelError: Error ) throws -> T {

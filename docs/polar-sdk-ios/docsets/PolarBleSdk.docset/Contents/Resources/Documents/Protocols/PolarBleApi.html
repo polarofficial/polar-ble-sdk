@@ -17,7 +17,7 @@
     <a title="PolarBleApi Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">PolarBleSdk 7.0.2 Docs</a> (41% documented)</p>
+        <p><a href="../index.html">PolarBleSdk 7.1.3 Docs</a> (40% documented)</p>
         <div class="header-right">
           <form role="search" action="../search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -40,15 +40,6 @@
           <li class="nav-group-name">
             <a href="../Classes.html">Classes</a>
             <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a href="../Classes/BleHtsClient.html">BleHtsClient</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Classes/BleHtsClient/TemperatureMeasurement.html">– TemperatureMeasurement</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Classes/HealthThermometer.html">HealthThermometer</a>
-              </li>
               <li class="nav-group-task">
                 <a href="../Classes/PolarActivityData.html">PolarActivityData</a>
               </li>
@@ -219,6 +210,9 @@
                 <a href="../Enums/PolarTrainingSessionFetchResult.html">PolarTrainingSessionFetchResult</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/PolarWatchFaceComplication.html">PolarWatchFaceComplication</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/PpgDataType.html">PpgDataType</a>
               </li>
               <li class="nav-group-task">
@@ -234,9 +228,6 @@
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
                 <a href="../Extensions/DateComponents.html">DateComponents</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Extensions/PrimitiveSequence.html">PrimitiveSequence</a>
               </li>
             </ul>
           </li>
@@ -305,6 +296,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarWatchFaceApi.html">PolarWatchFaceApi</a>
               </li>
             </ul>
           </li>
@@ -462,6 +456,9 @@
                 <a href="../Structs/PolarUserDeviceSettingsData.html">PolarUserDeviceSettingsData</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Structs/PolarWatchFaceConfig.html">PolarWatchFaceConfig</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Structs/SDLogConfig.html">SDLogConfig</a>
               </li>
               <li class="nav-group-task">
@@ -525,7 +522,7 @@
               <div class="declaration">
                 <div class="language">
                   
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">PolarBleApi</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/PolarActivityApi.html">PolarActivityApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarBleLowLevelApi.html">PolarBleLowLevelApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarDeviceToHostNotificationsApi.html">PolarDeviceToHostNotificationsApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarFirmwareUpdateApi.html">PolarFirmwareUpdateApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarOfflineExerciseV2Api.html">PolarOfflineExerciseV2Api</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarOnlineStreamingApi.html">PolarOnlineStreamingApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarRestServiceApi.html">PolarRestServiceApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarSdkModeApi.html">PolarSdkModeApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarSleepApi.html">PolarSleepApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarTemperatureApi.html">PolarTemperatureApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarTestApi.html">PolarTestApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a></span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">PolarBleApi</span> <span class="p">:</span> <span class="kt"><a href="../Protocols/PolarActivityApi.html">PolarActivityApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarBleLowLevelApi.html">PolarBleLowLevelApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarDeviceToHostNotificationsApi.html">PolarDeviceToHostNotificationsApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarFirmwareUpdateApi.html">PolarFirmwareUpdateApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarOfflineExerciseV2Api.html">PolarOfflineExerciseV2Api</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarOnlineStreamingApi.html">PolarOnlineStreamingApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarRestServiceApi.html">PolarRestServiceApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarSdkModeApi.html">PolarSdkModeApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarSleepApi.html">PolarSleepApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarTemperatureApi.html">PolarTemperatureApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarTestApi.html">PolarTestApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a></span><span class="p">,</span> <span class="kt"><a href="../Protocols/PolarWatchFaceApi.html">PolarWatchFaceApi</a></span></code></pre>
 
                 </div>
               </div>
@@ -621,10 +618,13 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP24startAutoConnectToDevice_7service05polarI4Type7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSi_So6CBUUIDCSgSSSgtF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP24startAutoConnectToDevice_7service05polarI4TypeySi_So6CBUUIDCSgSSSgtYaKF"></a>
                     <a name="//apple_ref/swift/Method/startAutoConnectToDevice(_:service:polarDeviceType:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP24startAutoConnectToDevice_7service05polarI4Type7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSi_So6CBUUIDCSgSSSgtF">startAutoConnectToDevice(_:<wbr>service:<wbr>polarDeviceType:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP24startAutoConnectToDevice_7service05polarI4TypeySi_So6CBUUIDCSgSSSgtYaKF">startAutoConnectToDevice(_:<wbr>service:<wbr>polarDeviceType:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -644,7 +644,7 @@ invoked when a connection is established.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startAutoConnectToDevice</span><span class="p">(</span><span class="n">_</span> <span class="nv">rssi</span><span class="p">:</span> <span class="kt">Int</span><span class="p">,</span> <span class="nv">service</span><span class="p">:</span> <span class="kt">CBUUID</span><span class="p">?,</span> <span class="nv">polarDeviceType</span><span class="p">:</span> <span class="kt">String</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startAutoConnectToDevice</span><span class="p">(</span><span class="n">_</span> <span class="nv">rssi</span><span class="p">:</span> <span class="kt">Int</span><span class="p">,</span> <span class="nv">service</span><span class="p">:</span> <span class="kt">CBUUID</span><span class="p">?,</span> <span class="nv">polarDeviceType</span><span class="p">:</span> <span class="kt">String</span><span class="p">?)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -693,7 +693,7 @@ invoked when a connection is established.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Completable. Complete called when scan for nearby device has ended and connection attempt is started and deviceConnecting callback will be invoked.</p>
+                        <p>Completes when scan for nearby device has ended and connection attempt is started and deviceConnecting callback will be invoked.</p>
                       </div>
                     </section>
                   </div>
@@ -811,9 +811,9 @@ invoked when a connection is established.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP15searchForDevice7RxSwift10ObservableCySS8deviceId_10Foundation4UUIDV7addressSi4rssiSS4nameSb11connectableSb19hasSAGRFCFileSystemtGyF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP15searchForDeviceScsySS8deviceId_10Foundation4UUIDV7addressSi4rssiSS4nameSb11connectableSb19hasSAGRFCFileSystemts5Error_pGyF"></a>
                     <a name="//apple_ref/swift/Method/searchForDevice()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP15searchForDevice7RxSwift10ObservableCySS8deviceId_10Foundation4UUIDV7addressSi4rssiSS4nameSb11connectableSb19hasSAGRFCFileSystemtGyF">searchForDevice()</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP15searchForDeviceScsySS8deviceId_10Foundation4UUIDV7addressSi4rssiSS4nameSb11connectableSb19hasSAGRFCFileSystemts5Error_pGyF">searchForDevice()</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -821,7 +821,7 @@ invoked when a connection is established.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Start searching for Polar device(s)</p>
+                        <p>Start searching for Polar device(s).</p>
 <div class="aside aside-requires">
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): None (core API).
@@ -833,36 +833,13 @@ invoked when a connection is established.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">searchForDevice</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A10DeviceInfoa">PolarDeviceInfo</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">searchForDevice</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">AsyncThrowingStream</span><span class="o">&lt;</span><span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A10DeviceInfoa">PolarDeviceInfo</a></span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
                       <div>
-                        <h4>Parameters</h4>
-                        <table class="graybox">
-                          <tbody>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>onNext</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>for every new Polar device found</p>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div>
                         <h4>Return Value</h4>
-                        <p>Observable stream
-
-<ul>
-<li>onNext: for every new Polar device found</li>
-</ul></p>
+                        <p><code>AsyncThrowingStream</code> emitting <code><a href="../Typealiases.html#/s:11PolarBleSdk0A10DeviceInfoa">PolarDeviceInfo</a></code> for every new Polar device found.</p>
                       </div>
                     </section>
                   </div>
@@ -870,9 +847,9 @@ invoked when a connection is established.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP15searchForDevice012withRequiredG10NamePrefix7RxSwift10ObservableCySS8deviceId_10Foundation4UUIDV7addressSi4rssiSS4nameSb11connectableSb19hasSAGRFCFileSystemtGSSSg_tF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP15searchForDevice012withRequiredG10NamePrefixScsySS8deviceId_10Foundation4UUIDV7addressSi4rssiSS4nameSb11connectableSb19hasSAGRFCFileSystemts5Error_pGSSSg_tF"></a>
                     <a name="//apple_ref/swift/Method/searchForDevice(withRequiredDeviceNamePrefix:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP15searchForDevice012withRequiredG10NamePrefix7RxSwift10ObservableCySS8deviceId_10Foundation4UUIDV7addressSi4rssiSS4nameSb11connectableSb19hasSAGRFCFileSystemtGSSSg_tF">searchForDevice(withRequiredDeviceNamePrefix:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP15searchForDevice012withRequiredG10NamePrefixScsySS8deviceId_10Foundation4UUIDV7addressSi4rssiSS4nameSb11connectableSb19hasSAGRFCFileSystemts5Error_pGSSSg_tF">searchForDevice(withRequiredDeviceNamePrefix:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -880,7 +857,7 @@ invoked when a connection is established.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Start searching for compatible device(s) with given device  name prefix</p>
+                        <p>Start searching for compatible device(s) with a given device name prefix.</p>
 <div class="aside aside-requires">
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): None (core API).
@@ -892,7 +869,8 @@ invoked when a connection is established.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">searchForDevice</span><span class="p">(</span><span class="nv">withRequiredDeviceNamePrefix</span><span class="p">:</span> <span class="kt">String</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A10DeviceInfoa">PolarDeviceInfo</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Use searchForDevice(withNameContaining: String﹚ instead."</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">searchForDevice</span><span class="p">(</span><span class="nv">withRequiredDeviceNamePrefix</span><span class="p">:</span> <span class="kt">String</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">AsyncThrowingStream</span><span class="o">&lt;</span><span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A10DeviceInfoa">PolarDeviceInfo</a></span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -903,12 +881,12 @@ invoked when a connection is established.</p>
                             <tr>
                               <td>
                                 <code>
-                                <em>requiredDeviceNamePrefix</em>
+                                <em>withRequiredDeviceNamePrefix</em>
                                 </code>
                               </td>
                               <td>
                                 <div>
-                                  <p>returned devices are filtered based on given device name prefix string. Default: &ldquo;Polar&rdquo;</p>
+                                  <p>Returned devices are filtered based on the given device name prefix. Pass <code>nil</code> to return all devices. Default: <code>&quot;Polar&quot;</code></p>
                                 </div>
                               </td>
                             </tr>
@@ -917,11 +895,7 @@ invoked when a connection is established.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Observable stream
-
-<ul>
-<li>onNext: for every new device found</li>
-</ul></p>
+                        <p><code>AsyncThrowingStream</code> emitting <code><a href="../Typealiases.html#/s:11PolarBleSdk0A10DeviceInfoa">PolarDeviceInfo</a></code> for every new device found.</p>
                       </div>
                     </section>
                   </div>
@@ -929,9 +903,64 @@ invoked when a connection is established.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP014startListenForA12HrBroadcastsy7RxSwift10ObservableCySS8deviceId_10Foundation4UUIDV7addressSi4rssiSS4nameSb11connectableSb19hasSAGRFCFileSystemt0M4Info_s5UInt8V2hrSb13batteryStatustGShySSGSgF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP15searchForDevice18withNameContainingScsySS8deviceId_10Foundation4UUIDV7addressSi4rssiSS4nameSb11connectableSb19hasSAGRFCFileSystemts5Error_pGSSSg_tF"></a>
+                    <a name="//apple_ref/swift/Method/searchForDevice(withNameContaining:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP15searchForDevice18withNameContainingScsySS8deviceId_10Foundation4UUIDV7addressSi4rssiSS4nameSb11connectableSb19hasSAGRFCFileSystemts5Error_pGSSSg_tF">searchForDevice(withNameContaining:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Start searching for compatible device(s) with a given device name prefix.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): None (core API).
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">searchForDevice</span><span class="p">(</span><span class="nv">withNameContaining</span><span class="p">:</span> <span class="kt">String</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">AsyncThrowingStream</span><span class="o">&lt;</span><span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A10DeviceInfoa">PolarDeviceInfo</a></span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>withNameContaining</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Returned devices are filtered based on the given device name prefix. Pass <code>nil</code> to return all devices. Default: <code>&quot;Polar&quot;</code></p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p><code>AsyncThrowingStream</code> emitting <code><a href="../Typealiases.html#/s:11PolarBleSdk0A10DeviceInfoa">PolarDeviceInfo</a></code> for every new device found.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB3ApiP014startListenForA12HrBroadcastsyScsySS8deviceId_10Foundation4UUIDV7addressSi4rssiSS4nameSb11connectableSb19hasSAGRFCFileSystemt0J4Info_s5UInt8V2hrSb13batteryStatusts5Error_pGShySSGSgF"></a>
                     <a name="//apple_ref/swift/Method/startListenForPolarHrBroadcasts(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP014startListenForA12HrBroadcastsy7RxSwift10ObservableCySS8deviceId_10Foundation4UUIDV7addressSi4rssiSS4nameSb11connectableSb19hasSAGRFCFileSystemt0M4Info_s5UInt8V2hrSb13batteryStatustGShySSGSgF">startListenForPolarHrBroadcasts(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP014startListenForA12HrBroadcastsyScsySS8deviceId_10Foundation4UUIDV7addressSi4rssiSS4nameSb11connectableSb19hasSAGRFCFileSystemt0J4Info_s5UInt8V2hrSb13batteryStatusts5Error_pGShySSGSgF">startListenForPolarHrBroadcasts(_:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -954,7 +983,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startListenForPolarHrBroadcasts</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifiers</span><span class="p">:</span> <span class="kt">Set</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A15HrBroadcastDataa">PolarHrBroadcastData</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startListenForPolarHrBroadcasts</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifiers</span><span class="p">:</span> <span class="kt">Set</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">AsyncThrowingStream</span><span class="o">&lt;</span><span class="kt"><a href="../Typealiases.html#/s:11PolarBleSdk0A15HrBroadcastDataa">PolarHrBroadcastData</a></span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -979,7 +1008,7 @@ from the BLE advertisement</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Observable stream</p>
+                        <p>AnyPublisher emitting multiple values</p>
                       </div>
                     </section>
                   </div>
@@ -1054,10 +1083,13 @@ from the BLE advertisement</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP12setLocalTime_4time4zone7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_10Foundation4DateVAO0G4ZoneVtF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP12setLocalTime_4time4zoneySS_10Foundation4DateVAG0G4ZoneVtYaKF"></a>
                     <a name="//apple_ref/swift/Method/setLocalTime(_:time:zone:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP12setLocalTime_4time4zone7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_10Foundation4DateVAO0G4ZoneVtF">setLocalTime(_:<wbr>time:<wbr>zone:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP12setLocalTime_4time4zoneySS_10Foundation4DateVAG0G4ZoneVtYaKF">setLocalTime(_:<wbr>time:<wbr>zone:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1069,6 +1101,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_device_time_setupyA2CmF">PolarBleSdkFeature.feature_polar_device_time_setup</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked
+
 </div>
 
                       </div>
@@ -1076,7 +1112,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setLocalTime</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">time</span><span class="p">:</span> <span class="kt">Date</span><span class="p">,</span> <span class="nv">zone</span><span class="p">:</span> <span class="kt">TimeZone</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setLocalTime</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">time</span><span class="p">:</span> <span class="kt">Date</span><span class="p">,</span> <span class="nv">zone</span><span class="p">:</span> <span class="kt">TimeZone</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -1123,25 +1159,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: when time has been set to device</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP12getLocalTimey7RxSwift17PrimitiveSequenceVyAE11SingleTraitO10Foundation4DateVGSSF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP12getLocalTimey10Foundation4DateVSSYaKF"></a>
                     <a name="//apple_ref/swift/Method/getLocalTime(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP12getLocalTimey7RxSwift17PrimitiveSequenceVyAE11SingleTraitO10Foundation4DateVGSSF">getLocalTime(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP12getLocalTimey10Foundation4DateVSSYaKF">getLocalTime(_:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1153,6 +1183,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_device_time_setupyA2CmF">PolarBleSdkFeature.feature_polar_device_time_setup</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -1161,7 +1195,7 @@ from the BLE advertisement</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Use getLocalTimeWithZone(﹚ instead to also get timezone"</span><span class="p">)</span>
-<span class="kd">func</span> <span class="nf">getLocalTime</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt">Date</span><span class="o">&gt;</span></code></pre>
+<span class="kd">func</span> <span class="nf">getLocalTime</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Date</span></code></pre>
 
                         </div>
                       </div>
@@ -1181,41 +1215,12 @@ from the BLE advertisement</p>
                                 </div>
                               </td>
                             </tr>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>time</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>time to set</p>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>zone</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>time zone to set</p>
-                                </div>
-                              </td>
-                            </tr>
                           </tbody>
                         </table>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single stream
-
-<ul>
-<li>success: once after settings received from device</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+                        <p><code>Date</code> representing the current device time.</p>
                       </div>
                     </section>
                   </div>
@@ -1223,10 +1228,13 @@ from the BLE advertisement</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP20getLocalTimeWithZoney7RxSwift17PrimitiveSequenceVyAE11SingleTraitO10Foundation4DateV_AJ0gI0VtGSSF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP20getLocalTimeWithZoney10Foundation4DateV_AE0gI0VtSSYaKF"></a>
                     <a name="//apple_ref/swift/Method/getLocalTimeWithZone(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP20getLocalTimeWithZoney7RxSwift17PrimitiveSequenceVyAE11SingleTraitO10Foundation4DateV_AJ0gI0VtGSSF">getLocalTimeWithZone(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP20getLocalTimeWithZoney10Foundation4DateV_AE0gI0VtSSYaKF">getLocalTimeWithZone(_:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1238,6 +1246,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO31feature_polar_device_time_setupyA2CmF">PolarBleSdkFeature.feature_polar_device_time_setup</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -1245,7 +1257,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getLocalTimeWithZone</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="p">(</span><span class="kt">Date</span><span class="p">,</span> <span class="kt">TimeZone</span><span class="p">)</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getLocalTimeWithZone</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="kt">Date</span><span class="p">,</span> <span class="kt">TimeZone</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
@@ -1270,12 +1282,7 @@ from the BLE advertisement</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single stream
-
-<ul>
-<li>success: once after settings received from device, emits <code>(Date, TimeZone)</code></li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+                        <p><code>(Date, TimeZone)</code> representing the current device time and timezone.</p>
                       </div>
                     </section>
                   </div>
@@ -1283,10 +1290,13 @@ from the BLE advertisement</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP12getDiskSpacey7RxSwift17PrimitiveSequenceVyAE11SingleTraitOAA0afG4DataVGSSF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP12getDiskSpaceyAA0afG4DataVSSYaKF"></a>
                     <a name="//apple_ref/swift/Method/getDiskSpace(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP12getDiskSpacey7RxSwift17PrimitiveSequenceVyAE11SingleTraitOAA0afG4DataVGSSF">getDiskSpace(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP12getDiskSpaceyAA0afG4DataVSSYaKF">getDiskSpace(_:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1298,6 +1308,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -1305,7 +1319,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getDiskSpace</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarDiskSpaceData.html">PolarDiskSpaceData</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getDiskSpace</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/PolarDiskSpaceData.html">PolarDiskSpaceData</a></span></code></pre>
 
                         </div>
                       </div>
@@ -1330,12 +1344,7 @@ from the BLE advertisement</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single stream
-
-<ul>
-<li>success: once after disk space received from device</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+                        <p><code><a href="../Structs/PolarDiskSpaceData.html">PolarDiskSpaceData</a></code> with disk space information from the device.</p>
                       </div>
                     </section>
                   </div>
@@ -1343,10 +1352,13 @@ from the BLE advertisement</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP12setLedConfig_03ledG07RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_AA0fG0VtF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP12setLedConfig_03ledG0ySS_AA0fG0VtYaKF"></a>
                     <a name="//apple_ref/swift/Method/setLedConfig(_:ledConfig:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP12setLedConfig_03ledG07RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_AA0fG0VtF">setLedConfig(_:<wbr>ledConfig:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP12setLedConfig_03ledG0ySS_AA0fG0VtYaKF">setLedConfig(_:<wbr>ledConfig:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1358,6 +1370,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_led_animationyA2CmF">PolarBleSdkFeature.feature_polar_led_animation</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -1365,7 +1381,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setLedConfig</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">ledConfig</span><span class="p">:</span> <span class="kt"><a href="../Structs/LedConfig.html">LedConfig</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setLedConfig</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">ledConfig</span><span class="p">:</span> <span class="kt"><a href="../Structs/LedConfig.html">LedConfig</a></span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -1400,25 +1416,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: when enable or disable sent to device</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP19setTelemetryEnabled_7enabled7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SbtF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP19setTelemetryEnabled_7enabledySS_SbtYaKF"></a>
                     <a name="//apple_ref/swift/Method/setTelemetryEnabled(_:enabled:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP19setTelemetryEnabled_7enabled7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SbtF">setTelemetryEnabled(_:<wbr>enabled:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP19setTelemetryEnabled_7enabledySS_SbtYaKF">setTelemetryEnabled(_:<wbr>enabled:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1430,6 +1440,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -1437,7 +1451,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setTelemetryEnabled</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">enabled</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setTelemetryEnabled</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">enabled</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -1472,20 +1486,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable (success or error)</p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP14doFactoryReset_26preservePairingInformation7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SbtF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP14doFactoryReset_26preservePairingInformationySS_SbtYaKF"></a>
                     <a name="//apple_ref/swift/Method/doFactoryReset(_:preservePairingInformation:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP14doFactoryReset_26preservePairingInformation7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SbtF">doFactoryReset(_:<wbr>preservePairingInformation:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP14doFactoryReset_26preservePairingInformationySS_SbtYaKF">doFactoryReset(_:<wbr>preservePairingInformation:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1497,6 +1510,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -1505,7 +1522,7 @@ from the BLE advertisement</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Use doFactoryReset(_ identifier: String﹚ instead."</span><span class="p">)</span>
-<span class="kd">func</span> <span class="nf">doFactoryReset</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">preservePairingInformation</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+<span class="kd">func</span> <span class="nf">doFactoryReset</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">preservePairingInformation</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -1540,25 +1557,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: when factory reset notification sent to device</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP14doFactoryResety7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP14doFactoryResetyySSYaKF"></a>
                     <a name="//apple_ref/swift/Method/doFactoryReset(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP14doFactoryResety7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF">doFactoryReset(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP14doFactoryResetyySSYaKF">doFactoryReset(_:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1570,6 +1581,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -1577,7 +1592,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">doFactoryReset</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">doFactoryReset</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -1600,25 +1615,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: when factory reset notification sent to device</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP9doRestart_26preservePairingInformation7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SbtF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP9doRestart_26preservePairingInformationySS_SbtYaKF"></a>
                     <a name="//apple_ref/swift/Method/doRestart(_:preservePairingInformation:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP9doRestart_26preservePairingInformation7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SbtF">doRestart(_:<wbr>preservePairingInformation:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP9doRestart_26preservePairingInformationySS_SbtYaKF">doRestart(_:<wbr>preservePairingInformation:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1630,6 +1639,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -1638,7 +1651,7 @@ from the BLE advertisement</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Use doRestart(_ identifier: String﹚ instead."</span><span class="p">)</span>
-<span class="kd">func</span> <span class="nf">doRestart</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">preservePairingInformation</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+<span class="kd">func</span> <span class="nf">doRestart</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">preservePairingInformation</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -1673,25 +1686,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: when restart notification sent to device</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP9doRestarty7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP9doRestartyySSYaKF"></a>
                     <a name="//apple_ref/swift/Method/doRestart(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP9doRestarty7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF">doRestart(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP9doRestartyySSYaKF">doRestart(_:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1703,6 +1710,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -1710,7 +1721,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">doRestart</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">doRestart</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -1733,25 +1744,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: when restart notification sent to device</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP21getSDLogConfigurationy7RxSwift17PrimitiveSequenceVyAE11SingleTraitOAA0F6ConfigVGSSF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP21getSDLogConfigurationyAA0F6ConfigVSSYaKF"></a>
                     <a name="//apple_ref/swift/Method/getSDLogConfiguration(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP21getSDLogConfigurationy7RxSwift17PrimitiveSequenceVyAE11SingleTraitOAA0F6ConfigVGSSF">getSDLogConfiguration(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP21getSDLogConfigurationyAA0F6ConfigVSSYaKF">getSDLogConfiguration(_:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1763,6 +1768,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -1770,7 +1779,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getSDLogConfiguration</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/SDLogConfig.html">SDLogConfig</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getSDLogConfiguration</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/SDLogConfig.html">SDLogConfig</a></span></code></pre>
 
                         </div>
                       </div>
@@ -1795,12 +1804,7 @@ from the BLE advertisement</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single stream
-
-<ul>
-<li>success: A motley crew of boolean values describing the SD log configuration</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+                        <p><code><a href="../Structs/SDLogConfig.html">SDLogConfig</a></code> describing the current SD log configuration on the device.</p>
                       </div>
                     </section>
                   </div>
@@ -1808,10 +1812,13 @@ from the BLE advertisement</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP21setSDLogConfiguration_03logG07RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_AA0F6ConfigVtF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP21setSDLogConfiguration_03logG0ySS_AA0F6ConfigVtYaKF"></a>
                     <a name="//apple_ref/swift/Method/setSDLogConfiguration(_:logConfiguration:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP21setSDLogConfiguration_03logG07RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_AA0F6ConfigVtF">setSDLogConfiguration(_:<wbr>logConfiguration:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP21setSDLogConfiguration_03logG0ySS_AA0F6ConfigVtYaKF">setSDLogConfiguration(_:<wbr>logConfiguration:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1823,6 +1830,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -1830,7 +1841,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setSDLogConfiguration</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">logConfiguration</span><span class="p">:</span> <span class="kt"><a href="../Structs/SDLogConfig.html">SDLogConfig</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setSDLogConfiguration</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">logConfiguration</span><span class="p">:</span> <span class="kt"><a href="../Structs/SDLogConfig.html">SDLogConfig</a></span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -1865,25 +1876,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: When SD log configuration has been written to the device</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP14doFirstTimeUse_9ftuConfig7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_AA0afghJ0VtF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP14doFirstTimeUse_9ftuConfigySS_AA0afghJ0VtYaKF"></a>
                     <a name="//apple_ref/swift/Method/doFirstTimeUse(_:ftuConfig:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP14doFirstTimeUse_9ftuConfig7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_AA0afghJ0VtF">doFirstTimeUse(_:<wbr>ftuConfig:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP14doFirstTimeUse_9ftuConfigySS_AA0afghJ0VtYaKF">doFirstTimeUse(_:<wbr>ftuConfig:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1894,6 +1899,10 @@ from the BLE advertisement</p>
 <div class="aside aside-requires">
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
 
 </div><ul>
 <li>[PolarFirstTimeUseConfig] class enforces specific ranges and valid values for each parameter:
@@ -1916,7 +1925,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">doFirstTimeUse</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">ftuConfig</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarFirstTimeUseConfig.html">PolarFirstTimeUseConfig</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">doFirstTimeUse</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">ftuConfig</span><span class="p">:</span> <span class="kt"><a href="../Structs/PolarFirstTimeUseConfig.html">PolarFirstTimeUseConfig</a></span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -1951,25 +1960,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: when enable or disable sent to device</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP9isFtuDoney7RxSwift17PrimitiveSequenceVyAE11SingleTraitOSbGSSF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP9isFtuDoneySbSSYaKF"></a>
                     <a name="//apple_ref/swift/Method/isFtuDone(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP9isFtuDoney7RxSwift17PrimitiveSequenceVyAE11SingleTraitOSbGSSF">isFtuDone(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP9isFtuDoneySbSSYaKF">isFtuDone(_:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -1981,6 +1984,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -1988,7 +1995,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">isFtuDone</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt">Bool</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">isFtuDone</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
 
                         </div>
                       </div>
@@ -2013,12 +2020,7 @@ from the BLE advertisement</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Boolean
-
-<ul>
-<li>success: true when FTU has been done, false otherwise</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+                        <p><code>true</code> when FTU has been done, <code>false</code> otherwise.</p>
                       </div>
                     </section>
                   </div>
@@ -2026,20 +2028,27 @@ from the BLE advertisement</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP28getUserPhysicalConfigurationy7RxSwift17PrimitiveSequenceVyAE10MaybeTraitOAA0agH0VSgGSSF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP28getUserPhysicalConfigurationyAA0agH0VSgSSYaKF"></a>
                     <a name="//apple_ref/swift/Method/getUserPhysicalConfiguration(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP28getUserPhysicalConfigurationy7RxSwift17PrimitiveSequenceVyAE10MaybeTraitOAA0agH0VSgGSSF">getUserPhysicalConfiguration(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP28getUserPhysicalConfigurationyAA0agH0VSgSSYaKF">getUserPhysicalConfiguration(_:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Get the user¨s physical data from the given Polar device.</p>
+                        <p>Get the user&rsquo;s physical data from the given Polar device.</p>
 <div class="aside aside-requires">
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
 
 </div>
 
@@ -2048,7 +2057,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getUserPhysicalConfiguration</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Maybe</span><span class="o">&lt;</span><span class="kt"><a href="../Structs/PolarPhysicalConfiguration.html">PolarPhysicalConfiguration</a></span><span class="p">?</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getUserPhysicalConfiguration</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/PolarPhysicalConfiguration.html">PolarPhysicalConfiguration</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -2073,13 +2082,7 @@ from the BLE advertisement</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p><code>Maybe&lt;PolarPhysicalConfiguration?&gt;</code>
-
-<ul>
-<li>Emits the <code><a href="../Structs/PolarPhysicalConfiguration.html">PolarPhysicalConfiguration</a></code> if available</li>
-<li>Emits <code>nil</code> if not available</li>
-<li>Errors are propagated as <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code></li>
-</ul></p>
+                        <p><code><a href="../Structs/PolarPhysicalConfiguration.html">PolarPhysicalConfiguration</a></code> if available, or <code>nil</code> if not set on device.</p>
                       </div>
                     </section>
                   </div>
@@ -2087,10 +2090,13 @@ from the BLE advertisement</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP17setWarehouseSleepy7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP17setWarehouseSleepyySSYaKF"></a>
                     <a name="//apple_ref/swift/Method/setWarehouseSleep(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP17setWarehouseSleepy7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF">setWarehouseSleep(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP17setWarehouseSleepyySSYaKF">setWarehouseSleep(_:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -2102,6 +2108,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -2109,7 +2119,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setWarehouseSleep</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setWarehouseSleep</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -2132,25 +2142,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: when warehouse sleep has been set together with  factory reset</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP13turnDeviceOffy7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP13turnDeviceOffyySSYaKF"></a>
                     <a name="//apple_ref/swift/Method/turnDeviceOff(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP13turnDeviceOffy7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF">turnDeviceOff(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP13turnDeviceOffyySSYaKF">turnDeviceOff(_:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -2162,6 +2166,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -2169,7 +2177,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">turnDeviceOff</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">turnDeviceOff</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -2192,25 +2200,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: when device has successfully set to sleep</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP03getA18UserDeviceSettings10identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOAA0afgH0C0afgH6ResultVGSS_tF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP03getA18UserDeviceSettings10identifierAA0afgH0C0afgH6ResultVSS_tYaKF"></a>
                     <a name="//apple_ref/swift/Method/getPolarUserDeviceSettings(identifier:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP03getA18UserDeviceSettings10identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOAA0afgH0C0afgH6ResultVGSS_tF">getPolarUserDeviceSettings(identifier:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP03getA18UserDeviceSettings10identifierAA0afgH0C0afgH6ResultVSS_tYaKF">getPolarUserDeviceSettings(identifier:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -2222,6 +2224,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -2229,7 +2235,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getPolarUserDeviceSettings</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt"><a href="../Classes/PolarUserDeviceSettings.html">PolarUserDeviceSettings</a></span><span class="o">.</span><span class="kt">PolarUserDeviceSettingsResult</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getPolarUserDeviceSettings</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/PolarUserDeviceSettings.html">PolarUserDeviceSettings</a></span><span class="o">.</span><span class="kt">PolarUserDeviceSettingsResult</span></code></pre>
 
                         </div>
                       </div>
@@ -2254,12 +2260,7 @@ from the BLE advertisement</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single stream
-
-<ul>
-<li>success: Collection of user device settings, like device location on user.</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+                        <p><code><a href="../Classes/PolarUserDeviceSettings/PolarUserDeviceSettingsResult.html">PolarUserDeviceSettings.PolarUserDeviceSettingsResult</a></code> containing the user device settings.</p>
                       </div>
                     </section>
                   </div>
@@ -2267,10 +2268,13 @@ from the BLE advertisement</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP03setA18UserDeviceSettings_05polarfgH07RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_AA0afgH0CtF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP03setA18UserDeviceSettings_05polarfgH0ySS_AA0afgH0CtYaKF"></a>
                     <a name="//apple_ref/swift/Method/setPolarUserDeviceSettings(_:polarUserDeviceSettings:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP03setA18UserDeviceSettings_05polarfgH07RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_AA0afgH0CtF">setPolarUserDeviceSettings(_:<wbr>polarUserDeviceSettings:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP03setA18UserDeviceSettings_05polarfgH0ySS_AA0afgH0CtYaKF">setPolarUserDeviceSettings(_:<wbr>polarUserDeviceSettings:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -2282,6 +2286,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -2289,7 +2297,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setPolarUserDeviceSettings</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">polarUserDeviceSettings</span><span class="p">:</span> <span class="kt"><a href="../Classes/PolarUserDeviceSettings.html">PolarUserDeviceSettings</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setPolarUserDeviceSettings</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">polarUserDeviceSettings</span><span class="p">:</span> <span class="kt"><a href="../Classes/PolarUserDeviceSettings.html">PolarUserDeviceSettings</a></span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -2324,25 +2332,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: When Device User Settings configuration has been written to the device</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP22deleteStoredDeviceData_8dataType5until7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_AA0afhJ0C0fhJ0O10Foundation4DateVSgtF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP22deleteStoredDeviceData_8dataType5untilySS_AA0afhJ0C0fhJ0O10Foundation4DateVSgtYaKF"></a>
                     <a name="//apple_ref/swift/Method/deleteStoredDeviceData(_:dataType:until:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP22deleteStoredDeviceData_8dataType5until7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_AA0afhJ0C0fhJ0O10Foundation4DateVSgtF">deleteStoredDeviceData(_:<wbr>dataType:<wbr>until:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP22deleteStoredDeviceData_8dataType5untilySS_AA0afhJ0C0fhJ0O10Foundation4DateVSgtYaKF">deleteStoredDeviceData(_:<wbr>dataType:<wbr>until:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -2354,6 +2356,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -2361,7 +2367,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">deleteStoredDeviceData</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">dataType</span><span class="p">:</span> <span class="kt"><a href="../Classes/PolarStoredDataType.html">PolarStoredDataType</a></span><span class="o">.</span><span class="kt">StoredDataType</span><span class="p">,</span> <span class="nv">until</span><span class="p">:</span> <span class="kt">Date</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">deleteStoredDeviceData</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">dataType</span><span class="p">:</span> <span class="kt"><a href="../Classes/PolarStoredDataType.html">PolarStoredDataType</a></span><span class="o">.</span><span class="kt">StoredDataType</span><span class="p">,</span> <span class="nv">until</span><span class="p">:</span> <span class="kt">Date</span><span class="p">?)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -2408,20 +2414,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable emitting success or error</p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP23deleteDeviceDateFolders_04fromG002toG07RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_10Foundation0G0VSgARtF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP23deleteDeviceDateFolders_04fromG002toG0ySS_10Foundation0G0VSgAJtYaKF"></a>
                     <a name="//apple_ref/swift/Method/deleteDeviceDateFolders(_:fromDate:toDate:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP23deleteDeviceDateFolders_04fromG002toG07RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_10Foundation0G0VSgARtF">deleteDeviceDateFolders(_:<wbr>fromDate:<wbr>toDate:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP23deleteDeviceDateFolders_04fromG002toG0ySS_10Foundation0G0VSgAJtYaKF">deleteDeviceDateFolders(_:<wbr>fromDate:<wbr>toDate:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -2433,6 +2438,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -2440,7 +2449,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">deleteDeviceDateFolders</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">fromDate</span><span class="p">:</span> <span class="kt">Date</span><span class="p">?,</span> <span class="nv">toDate</span><span class="p">:</span> <span class="kt">Date</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">deleteDeviceDateFolders</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">fromDate</span><span class="p">:</span> <span class="kt">Date</span><span class="p">?,</span> <span class="nv">toDate</span><span class="p">:</span> <span class="kt">Date</span><span class="p">?)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -2487,25 +2496,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: when date folders successfully deleted</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP19deleteTelemetryDatay7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP19deleteTelemetryDatayySSYaKF"></a>
                     <a name="//apple_ref/swift/Method/deleteTelemetryData(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP19deleteTelemetryDatay7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF">deleteTelemetryData(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP19deleteTelemetryDatayySSYaKF">deleteTelemetryData(_:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -2517,6 +2520,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -2524,7 +2531,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">deleteTelemetryData</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">deleteTelemetryData</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -2547,25 +2554,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: when date folders successfully deleted</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP17waitForConnectiony7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP17waitForConnectionyySSYaKF"></a>
                     <a name="//apple_ref/swift/Method/waitForConnection(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP17waitForConnectiony7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF">waitForConnection(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP17waitForConnectionyySSYaKF">waitForConnection(_:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -2577,6 +2578,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): None (core API).
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -2584,18 +2589,9 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">waitForConnection</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">waitForConnection</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: When connection is established</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
                       </div>
                     </section>
                   </div>
@@ -2603,10 +2599,13 @@ from the BLE advertisement</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP21setUserDeviceLocation_8location7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SitF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP21setUserDeviceLocation_8locationySS_SitYaKF"></a>
                     <a name="//apple_ref/swift/Method/setUserDeviceLocation(_:location:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP21setUserDeviceLocation_8location7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SitF">setUserDeviceLocation(_:<wbr>location:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP21setUserDeviceLocation_8locationySS_SitYaKF">setUserDeviceLocation(_:<wbr>location:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -2618,6 +2617,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -2625,7 +2628,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setUserDeviceLocation</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">location</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setUserDeviceLocation</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">location</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -2660,25 +2663,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: when location is set successfully</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP20setUsbConnectionMode_7enabled7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SbtF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP20setUsbConnectionMode_7enabledySS_SbtYaKF"></a>
                     <a name="//apple_ref/swift/Method/setUsbConnectionMode(_:enabled:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP20setUsbConnectionMode_7enabled7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SbtF">setUsbConnectionMode(_:<wbr>enabled:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP20setUsbConnectionMode_7enabledySS_SbtYaKF">setUsbConnectionMode(_:<wbr>enabled:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -2690,6 +2687,10 @@ from the BLE advertisement</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -2697,7 +2698,7 @@ from the BLE advertisement</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setUsbConnectionMode</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">enabled</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setUsbConnectionMode</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">enabled</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -2732,25 +2733,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: when USB mode is set successfully</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP37setAutomaticTrainingDetectionSettings_4mode11sensitivity15minimumDuration7RxSwift17PrimitiveSequenceVyAH16CompletableTraitOs5NeverOGSS_SbS2itF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP37setAutomaticTrainingDetectionSettings_4mode11sensitivity15minimumDurationySS_SbS2itYaKF"></a>
                     <a name="//apple_ref/swift/Method/setAutomaticTrainingDetectionSettings(_:mode:sensitivity:minimumDuration:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP37setAutomaticTrainingDetectionSettings_4mode11sensitivity15minimumDuration7RxSwift17PrimitiveSequenceVyAH16CompletableTraitOs5NeverOGSS_SbS2itF">setAutomaticTrainingDetectionSettings(_:<wbr>mode:<wbr>sensitivity:<wbr>minimumDuration:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP37setAutomaticTrainingDetectionSettings_4mode11sensitivity15minimumDurationySS_SbS2itYaKF">setAutomaticTrainingDetectionSettings(_:<wbr>mode:<wbr>sensitivity:<wbr>minimumDuration:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -2761,6 +2756,10 @@ from the BLE advertisement</p>
 <div class="aside aside-requires">
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
+
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
 
 </div>
 
@@ -2774,7 +2773,7 @@ from the BLE advertisement</p>
     <span class="nv">mode</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">,</span>
     <span class="nv">sensitivity</span><span class="p">:</span> <span class="kt">Int</span><span class="p">,</span>
     <span class="nv">minimumDuration</span><span class="p">:</span> <span class="kt">Int</span>
- <span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+<span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -2833,25 +2832,19 @@ from the BLE advertisement</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: when settings are applied successfully</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP21setDaylightSavingTimey7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP21setDaylightSavingTimeyySSYaKF"></a>
                     <a name="//apple_ref/swift/Method/setDaylightSavingTime(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP21setDaylightSavingTimey7RxSwift17PrimitiveSequenceVyAE16CompletableTraitOs5NeverOGSSF">setDaylightSavingTime(_:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP21setDaylightSavingTimeyySSYaKF">setDaylightSavingTime(_:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -2864,6 +2857,10 @@ Gets the current timezone from the device and sets DST value based on that.</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -2871,7 +2868,7 @@ Gets the current timezone from the device and sets DST value based on that.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setDaylightSavingTime</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setDaylightSavingTime</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -2894,25 +2891,19 @@ Gets the current timezone from the device and sets DST value based on that.</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: when DST has been successfully set to the device</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP25getMultiBLEConnectionMode10identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOSbGSS_tF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP25getMultiBLEConnectionMode10identifierSbSS_tYaKF"></a>
                     <a name="//apple_ref/swift/Method/getMultiBLEConnectionMode(identifier:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP25getMultiBLEConnectionMode10identifier7RxSwift17PrimitiveSequenceVyAF11SingleTraitOSbGSS_tF">getMultiBLEConnectionMode(identifier:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP25getMultiBLEConnectionMode10identifierSbSS_tYaKF">getMultiBLEConnectionMode(identifier:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -2924,6 +2915,10 @@ Gets the current timezone from the device and sets DST value based on that.</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO44feature_polar_features_configuration_serviceyA2CmF">PolarBleSdkFeature.feature_polar_features_configuration_service</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -2931,7 +2926,7 @@ Gets the current timezone from the device and sets DST value based on that.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getMultiBLEConnectionMode</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt">Bool</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getMultiBLEConnectionMode</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
 
                         </div>
                       </div>
@@ -2956,12 +2951,7 @@ Gets the current timezone from the device and sets DST value based on that.</p>
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Single stream
-
-<ul>
-<li>success: Boolean: true if multi BLE connection has been enabled, false otherwise.</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
+                        <p><code>true</code> if multi BLE connection mode is enabled, <code>false</code> otherwise.</p>
                       </div>
                     </section>
                   </div>
@@ -2969,10 +2959,13 @@ Gets the current timezone from the device and sets DST value based on that.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP25setMultiBLEConnectionMode10identifier6enable7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_SbtF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP25setMultiBLEConnectionMode10identifier6enableySS_SbtYaKF"></a>
                     <a name="//apple_ref/swift/Method/setMultiBLEConnectionMode(identifier:enable:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP25setMultiBLEConnectionMode10identifier6enable7RxSwift17PrimitiveSequenceVyAG16CompletableTraitOs5NeverOGSS_SbtF">setMultiBLEConnectionMode(identifier:<wbr>enable:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP25setMultiBLEConnectionMode10identifier6enableySS_SbtYaKF">setMultiBLEConnectionMode(identifier:<wbr>enable:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -2984,6 +2977,10 @@ Gets the current timezone from the device and sets DST value based on that.</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO44feature_polar_features_configuration_serviceyA2CmF">PolarBleSdkFeature.feature_polar_features_configuration_service</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -2991,7 +2988,7 @@ Gets the current timezone from the device and sets DST value based on that.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setMultiBLEConnectionMode</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">enable</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setMultiBLEConnectionMode</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">enable</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -3026,25 +3023,19 @@ Gets the current timezone from the device and sets DST value based on that.</p>
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: when multi BLE connection mode has been successfully set</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP43sendInitializationAndStartSyncNotifications10identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP43sendInitializationAndStartSyncNotifications10identifierySS_tYaKF"></a>
                     <a name="//apple_ref/swift/Method/sendInitializationAndStartSyncNotifications(identifier:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP43sendInitializationAndStartSyncNotifications10identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF">sendInitializationAndStartSyncNotifications(identifier:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP43sendInitializationAndStartSyncNotifications10identifierySS_tYaKF">sendInitializationAndStartSyncNotifications(identifier:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -3057,6 +3048,10 @@ It also will cause the device to flush the latest data to files giving you the m
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -3064,7 +3059,7 @@ It also will cause the device to flush the latest data to files giving you the m
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">sendInitializationAndStartSyncNotifications</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">sendInitializationAndStartSyncNotifications</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -3087,25 +3082,19 @@ It also will cause the device to flush the latest data to files giving you the m
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: Initialization and synchronization start nofifications have been successfully sent</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP37sendTerminateAndStopSyncNotifications10identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP37sendTerminateAndStopSyncNotifications10identifierySS_tYaKF"></a>
                     <a name="//apple_ref/swift/Method/sendTerminateAndStopSyncNotifications(identifier:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP37sendTerminateAndStopSyncNotifications10identifier7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_tF">sendTerminateAndStopSyncNotifications(identifier:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP37sendTerminateAndStopSyncNotifications10identifierySS_tYaKF">sendTerminateAndStopSyncNotifications(identifier:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -3117,6 +3106,10 @@ It also will cause the device to flush the latest data to files giving you the m
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -3124,7 +3117,7 @@ It also will cause the device to flush the latest data to files giving you the m
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">sendTerminateAndStopSyncNotifications</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">sendTerminateAndStopSyncNotifications</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -3147,25 +3140,19 @@ It also will cause the device to flush the latest data to files giving you the m
                           </tbody>
                         </table>
                       </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable stream
-
-<ul>
-<li>success: Initialization and synchronization stop nofifications have been successfully sent</li>
-<li>onError: see <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked</li>
-</ul></p>
-                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11PolarBleSdk0aB3ApiP33setAutomaticOHRMeasurementEnabled_7enabled7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SbtF"></a>
+                    <a name="/s:11PolarBleSdk0aB3ApiP33setAutomaticOHRMeasurementEnabled_7enabledySS_SbtYaKF"></a>
                     <a name="//apple_ref/swift/Method/setAutomaticOHRMeasurementEnabled(_:enabled:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP33setAutomaticOHRMeasurementEnabled_7enabled7RxSwift17PrimitiveSequenceVyAF16CompletableTraitOs5NeverOGSS_SbtF">setAutomaticOHRMeasurementEnabled(_:<wbr>enabled:<wbr>)</a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB3ApiP33setAutomaticOHRMeasurementEnabled_7enabledySS_SbtYaKF">setAutomaticOHRMeasurementEnabled(_:<wbr>enabled:<wbr>)</a>
                     </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
                   </div>
                   <div class="height-container">
                     <div class="pointer-container"></div>
@@ -3179,6 +3166,10 @@ Status of this setting can be read with getUserDeviceSettings().</p>
     <p class="aside-title">Requires</p>
     Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO28feature_polar_device_controlyA2CmF">PolarBleSdkFeature.feature_polar_device_control</a></code>
 
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+
 </div>
 
                       </div>
@@ -3186,7 +3177,7 @@ Status of this setting can be read with getUserDeviceSettings().</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setAutomaticOHRMeasurementEnabled</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">enabled</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Completable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">setAutomaticOHRMeasurementEnabled</span><span class="p">(</span><span class="n">_</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">enabled</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
@@ -3220,10 +3211,6 @@ Status of this setting can be read with getUserDeviceSettings().</p>
                             </tr>
                           </tbody>
                         </table>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>Completable (success or error)</p>
                       </div>
                     </section>
                   </div>
@@ -3645,7 +3632,7 @@ Will return -1 if battery battery charging percentage level is not available.</p
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-04-20)</p>
+          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-05-26)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

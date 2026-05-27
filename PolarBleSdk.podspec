@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|  
     s.name              = 'PolarBleSdk'
-    s.version		 = '7.1.0'
+    s.version		 = '8.0.0'
     s.summary           = 'SDK for Polar sensors'
     s.homepage          = 'https://github.com/polarofficial/polar-ble-sdk'
     s.license           = { :type => 'Custom', :file => 'Polar_SDK_License.txt' }
@@ -13,8 +13,7 @@ Pod::Spec.new do |s|
     
     s.source_files = 'Sources/**/*.{swift,h}'
     s.exclude_files = '**/Tests/**/*', '**/*Tests*'
-    s.resources    = ['sources/iOS/ios-communications/Sources/iOSCommunications/Resources/polar_device_capabilities.json']
-    s.dependency 'RxSwift', '~> 6.8.0'
+    s.resources		 = ['sources/iOS/ios-communications/Sources/iOSCommunications/Resources/polar_device_capabilities.json']
     s.dependency 'SwiftProtobuf', '~> 1.0'
     s.dependency 'Zip', '~> 2.1.2'
 end

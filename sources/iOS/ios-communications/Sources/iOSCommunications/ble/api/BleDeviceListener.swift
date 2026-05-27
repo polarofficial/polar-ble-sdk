@@ -1,10 +1,9 @@
-
-import RxSwift
 import Foundation
 import CoreBluetooth
+import Combine
 
 /// BleState mapping from CB state
-public enum BleState : Int {
+public enum BleState: Int {
     case unknown
     case resetting
     case unsupported
@@ -14,65 +13,55 @@ public enum BleState : Int {
 }
 
 /// Ble central api
-public protocol BleDeviceListener{
-    
+public protocol BleDeviceListener {
+
     /// helper to ask ble power state
-    ///
-    /// - Returns: true ble powered
     func blePowered() -> Bool
-    
+
     /// power state observer
-    var powerStateObserver: BlePowerStateObserver? {get set}
-    
+    var powerStateObserver: BlePowerStateObserver? { get set }
+
     /// enable or disable automatic reconnection
-    var automaticReconnection: Bool {get set}
+    var automaticReconnection: Bool { get set }
 
     /// enable or disable scan uuid filter
-    var servicesToScanFor: [CBUUID]? {get set}
-    
+    var servicesToScanFor: [CBUUID]? { get set }
+
     /// enable or disable scan pre filter
-    var scanPreFilter: ((_ content: BleAdvertisementContent) -> Bool)? {get set}
-    
+    var scanPreFilter: ((_ content: BleAdvertisementContent) -> Bool)? { get set }
+
     /// enable or disable automatic H10 mapping
-    var automaticH10Mapping: Bool {get set}
-    
-    /// Start scanning ble devices
+    var automaticH10Mapping: Bool { get set }
+
+    /// Start scanning ble devices.
     ///
     /// - Parameters:
-    ///   - uuids: optional list of services, to look for from corebluetooth
-    ///   - identifiers: optional list of device identifiers to look for from corebluetooth
-    ///   - preFilter: pre filter before memory allocation, for performance reason
-    /// - Returns: Observable stream of device advertisements
-    func search(_ uuids: [CBUUID]?, identifiers: [UUID]?, fetchKnownDevices: Bool) -> Observable<BleDeviceSession>
-    
-    /// Start connection request for device, callbacks are informed to monitorDeviceSessionState or
-    /// deviceSessionStateObserver
-    ///
-    /// - Parameter session: session instance
-    /// - Returns:
+    ///   - uuids: optional list of service UUIDs to filter by
+    ///   - identifiers: optional list of device identifiers
+    ///   - fetchKnownDevices: if true, also emit already known sessions
+    /// - Returns: AnyPublisher emitting device advertisements
+    func search(_ uuids: [CBUUID]?, identifiers: [UUID]?, fetchKnownDevices: Bool) -> AnyPublisher<BleDeviceSession, Error>
+
+    /// Start connection request for device.
     func openSessionDirect(_ session: BleDeviceSession)
 
-    
-    /// Start disconnection request for device, callbacks are informed to monitorDeviceSessionState or
-    /// deviceSessionStateObserver
-    ///
-    /// - Parameter session: device to be disconnected
-    /// - Returns:
+    /// Start disconnection request for device.
     func closeSessionDirect(_ session: BleDeviceSession)
-    
+
     /// request to clear all cached sessions
-    ///
-    /// - Parameter inState: set of states allowed to be removed default Closed | Park
-    /// - Returns: count of session removed successfully
     @discardableResult
     func removeAllSessions(_ inState: Set<BleDeviceSession.DeviceSessionState>) -> Int
     @discardableResult
     func removeAllSessions() -> Int
-    
+
     /// return all known sessions
-    ///
-    /// - Returns: list of sessions
     func allSessions() -> [BleDeviceSession]
+
+    /// Monitor BLE power state changes. Immediately emits the current state upon subscription.
+    func monitorBleState() -> AnyPublisher<BleState, Error>
+
+    /// Monitor device session state changes for all sessions.
+    func monitorDeviceSessionState() -> AnyPublisher<(session: BleDeviceSession, state: BleDeviceSession.DeviceSessionState), Error>
 }
 
 public protocol BleDeviceSessionStateObserver: AnyObject {
@@ -84,28 +73,23 @@ public protocol BlePowerStateObserver: AnyObject {
 }
 
 public extension BleDeviceListener {
-    func search(_ uuids: [CBUUID]? = nil, identifiers: [UUID]?=nil, fetchKnownDevices: Bool = false)  -> Observable<BleDeviceSession> {
+    func search(_ uuids: [CBUUID]? = nil, identifiers: [UUID]? = nil, fetchKnownDevices: Bool = false) -> AnyPublisher<BleDeviceSession, Error> {
         return search(uuids, identifiers: identifiers, fetchKnownDevices: fetchKnownDevices)
     }
 }
 
-/// extension to provide distinct 
-public extension Observable where Element: Hashable {
-    func distinct() -> Observable<Element> {
-        var set = Set<Element>()
-        return concatMap { element -> Observable<Element> in
-            objc_sync_enter(self)
-            defer {
-                objc_sync_exit(self)
+/// Extension to provide distinct filtering on any Publisher whose Output is Hashable.
+public extension Publisher where Output: Hashable {
+    func distinct() -> AnyPublisher<Output, Failure> {
+        var seen = Set<Output>()
+        return self
+            .filter { element in
+                objc_sync_enter(self as AnyObject)
+                defer { objc_sync_exit(self as AnyObject) }
+                guard !seen.contains(element) else { return false }
+                seen.insert(element)
+                return true
             }
-            if set.contains(element) {
-                return RxSwift.Observable<Element>.empty()
-            } else {
-                set.insert(element)
-                return RxSwift.Observable<Element>.just(element)
-            }
-        }.do(onDispose:  {
-            set = Set<Element>()
-        })
+            .eraseToAnyPublisher()
     }
 }

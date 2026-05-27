@@ -4,6 +4,8 @@ import Foundation
 import CoreBluetooth
 @testable import iOSCommunications
 
+typealias MockPolarGattServiceTransmitter = MockGattServiceTransmitterImpl
+
 class MockGattServiceTransmitterImpl: BleAttributeTransportProtocol {
     var mockConnectionStatus: Bool = true
     var setCharacteristicsNotifyCache: [(characteristicUuid: CBUUID, notify: Bool)] = []

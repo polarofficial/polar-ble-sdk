@@ -2,7 +2,7 @@
 
 import Foundation
 import CoreBluetooth
-import RxSwift
+import Combine
 
 /// Data types available in Polar devices for online streaming or offline recording.
 public enum PolarDeviceDataType: CaseIterable {
@@ -85,6 +85,9 @@ public enum PolarBleSdkFeature: CaseIterable {
     
     /// Feature to receive SPO2 test data from Polar device.
     case feature_polar_spo2_test_data
+
+    /// Feature to configure watch face complications on PolarOS watches.
+    case feature_polar_watch_faces_configuration
 }
 
 ///
@@ -228,7 +231,7 @@ public typealias PolarPpiData = (timeStamp: UInt64, samples: [(timeStamp: UInt64
 public typealias PolarRecordingStatus = (ongoing: Bool, entryId: String)
 
 /// API.
-public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi, PolarActivityApi, PolarTemperatureApi, PolarSleepApi, PolarTrainingSessionApi, PolarDeviceToHostNotificationsApi, PolarBleLowLevelApi, PolarRestServiceApi, PolarOfflineExerciseV2Api, PolarTestApi {
+public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi, PolarActivityApi, PolarTemperatureApi, PolarSleepApi, PolarTrainingSessionApi, PolarDeviceToHostNotificationsApi, PolarBleLowLevelApi, PolarRestServiceApi, PolarOfflineExerciseV2Api, PolarTestApi, PolarWatchFaceApi {
     
     /// remove all known devices, which are not in use
     ///
@@ -250,9 +253,9 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Parameter rssi: (Received Signal Strength Indicator) value is typically between -40 to -55 dBm.
     /// - Parameter service: optional service to contain in device advertisement prior to connection attempt
     /// - Parameter polarDeviceType: like H10, OH1 etc... or nil for any polar device
-    /// - Returns: Completable. Complete called when scan for nearby device has ended and connection attempt is started and deviceConnecting callback will be invoked.
+    /// - Returns: Completes when scan for nearby device has ended and connection attempt is started and deviceConnecting callback will be invoked.
     ///
-    func startAutoConnectToDevice(_ rssi: Int, service: CBUUID?, polarDeviceType: String?) -> Completable
+    func startAutoConnectToDevice(_ rssi: Int, service: CBUUID?, polarDeviceType: String?) async throws
     
     /// Request a connection to a Polar device. Invokes `PolarBleApiObservers` polarDeviceConnected.
     ///
@@ -270,24 +273,30 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///
     func disconnectFromDevice(_ identifier: String) throws
     
-    /// Start searching for Polar device(s)
+    /// Start searching for Polar device(s).
     ///
     /// - Requires SDK feature(s): None (core API).
-    /// - Parameter onNext: Invoked once for each device
-    /// - Returns: Observable stream
-    ///  - onNext: for every new Polar device found
+    /// - Returns: `AsyncThrowingStream` emitting `PolarDeviceInfo` for every new Polar device found.
     ///
-    func searchForDevice() -> Observable<PolarDeviceInfo>
+    func searchForDevice() -> AsyncThrowingStream<PolarDeviceInfo, Error>
 
-    /// Start searching for compatible device(s) with given device  name prefix
+    /// Start searching for compatible device(s) with a given device name prefix.
     ///
     /// - Requires SDK feature(s): None (core API).
-    /// - Parameter requiredDeviceNamePrefix:returned devices are filtered based on given device name prefix string. Default: "Polar"
-    /// - Returns: Observable stream
-    ///  - onNext: for every new device found
+    /// - Parameter withRequiredDeviceNamePrefix: Returned devices are filtered based on the given device name prefix. Pass `nil` to return all devices. Default: `"Polar"`
+    /// - Returns: `AsyncThrowingStream` emitting `PolarDeviceInfo` for every new device found.
     ///
-    func searchForDevice(withRequiredDeviceNamePrefix: String?) -> Observable<PolarDeviceInfo>
-
+    @available(*, deprecated, message: "Use searchForDevice(withNameContaining: String) instead.")
+    func searchForDevice(withRequiredDeviceNamePrefix: String?) -> AsyncThrowingStream<PolarDeviceInfo, Error>
+    
+    /// Start searching for compatible device(s) with a given device name prefix.
+    ///
+    /// - Requires SDK feature(s): None (core API).
+    /// - Parameter withNameContaining: Returned devices are filtered based on the given device name prefix. Pass `nil` to return all devices. Default: `"Polar"`
+    /// - Returns: `AsyncThrowingStream` emitting `PolarDeviceInfo` for every new device found.
+    ///
+    func searchForDevice(withNameContaining: String?) -> AsyncThrowingStream<PolarDeviceInfo, Error>
+    
 
     /// Start listening the heart rate from Polar devices when subscribed.
     /// This observable listens BLE broadcast and parses heart rate from BLE broadcast. The
@@ -296,9 +305,9 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///
     /// - Requires SDK feature(s): None (core API).
     /// - Parameter identifiers: set of Polar device ids to filter or null for a any Polar device
-    /// - Returns: Observable stream
+    /// - Returns: AnyPublisher emitting multiple values
     ///
-    func startListenForPolarHrBroadcasts(_ identifiers: Set<String>?) -> Observable<PolarHrBroadcastData>
+    func startListenForPolarHrBroadcasts(_ identifiers: Set<String>?) -> AsyncThrowingStream<PolarHrBroadcastData, Error>
     
     /// Check if the feature is ready.
     ///
@@ -317,46 +326,39 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - identifier: polar device id or UUID
     ///   - time: time to set
     ///   - zone: time zone to set
-    /// - Returns: Completable stream
-    ///   - success: when time has been set to device
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: see `PolarErrors` for possible errors invoked
     ///
-    func setLocalTime(_ identifier: String, time: Date, zone: TimeZone) -> Completable
+    func setLocalTime(_ identifier: String, time: Date, zone: TimeZone) async throws
     
     /// Get current time in device. Note, the H10 is not supporting time read.
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_time_setup`
     /// - Parameters:
     ///   - identifier: polar device id or UUID
-    ///   - time: time to set
-    ///   - zone: time zone to set
-    /// - Returns: Single stream
-    ///   - success: once after settings received from device
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Returns: `Date` representing the current device time.
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
     @available(*, deprecated, message: "Use getLocalTimeWithZone() instead to also get timezone")
-    func getLocalTime(_ identifier: String) -> Single<Date>
+    func getLocalTime(_ identifier: String) async throws -> Date
     
     /// Get current time and timezone from device.
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_time_setup`
     /// - Parameter identifier: Polar device id or UUID
-    /// - Returns: Single stream
-    ///   - success: once after settings received from device, emits `(Date, TimeZone)`
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Returns: `(Date, TimeZone)` representing the current device time and timezone.
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func getLocalTimeWithZone(_ identifier: String) -> Single<(Date, TimeZone)>
+    func getLocalTimeWithZone(_ identifier: String) async throws -> (Date, TimeZone)
     
     /// Get `PolarDiskSpaceData` from device.
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_control`
     /// - Parameters:
     ///   - identifier: polar device id or UUID
-    /// - Returns: Single stream
-    ///   - success: once after disk space received from device
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Returns: `PolarDiskSpaceData` with disk space information from the device.
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func getDiskSpace(_ identifier: String) -> Single<PolarDiskSpaceData>
+    func getDiskSpace(_ identifier: String) async throws -> PolarDiskSpaceData
 
     /// Set [LedConfig] to enable or disable blinking LEDs (Verity Sense 2.2.1+).
     ///
@@ -364,11 +366,9 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Parameters:
     ///   - identifier: polar device id or UUID
     ///   - ledConfig: to enable or disable LEDs blinking
-    /// - Returns: Completable stream
-    ///   - success: when enable or disable sent to device
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func setLedConfig(_ identifier: String, ledConfig: LedConfig) -> Completable
+    func setLedConfig(_ identifier: String, ledConfig: LedConfig) async throws
     
     ///
     /// Enable or disable telemetry (trace logging / diagnostics) on the device.
@@ -376,9 +376,9 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_control`
     /// - Parameter identifier: Polar device ID or BT address
     /// - Parameter enabled: true = telemetry on, false = off
-    /// - Returns: Completable (success or error)
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func setTelemetryEnabled(_ identifier: String, enabled: Bool) -> Completable
+    func setTelemetryEnabled(_ identifier: String, enabled: Bool) async throws
 
     /// Perform factory reset to given device.
     ///
@@ -386,23 +386,19 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Parameters:
     ///   - identifier: polar device id or UUID
     ///   - preservePairingInformation: preserve pairing information during factory reset
-    /// - Returns: Completable stream
-    ///   - success: when factory reset notification sent to device
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
     @available(*, deprecated, message: "Use doFactoryReset(_ identifier: String) instead.")
-    func doFactoryReset(_ identifier: String, preservePairingInformation: Bool) -> Completable
+    func doFactoryReset(_ identifier: String, preservePairingInformation: Bool) async throws
 
     /// Perform factory reset to given device.
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_control`
     /// - Parameters:
     ///   - identifier: polar device id or UUID
-    /// - Returns: Completable stream
-    ///   - success: when factory reset notification sent to device
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func doFactoryReset(_ identifier: String) -> Completable
+    func doFactoryReset(_ identifier: String) async throws
 
     /// Perform restart to given device.
     ///
@@ -410,34 +406,29 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Parameters:
     ///   - identifier: polar device id or UUID
     ///   - preservePairingInformation: preserve pairing information during restart
-    /// - Returns: Completable stream
-    ///   - success: when restart notification sent to device
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
     @available(*, deprecated, message: "Use doRestart(_ identifier: String) instead.")
-    func doRestart(_ identifier: String, preservePairingInformation: Bool) -> Completable
-    
+    func doRestart(_ identifier: String, preservePairingInformation: Bool) async throws
+
     /// Perform restart to given device.
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_control`
     /// - Parameters:
     ///   - identifier: polar device id or UUID
-    /// - Returns: Completable stream
-    ///   - success: when restart notification sent to device
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func doRestart(_ identifier: String) -> Completable
+    func doRestart(_ identifier: String) async throws
 
     /// Get SD log configuration from a device (SDLOGS.BPB)
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_control`
     /// - Parameters:
     ///   - identifier: polar device id or UUID
-    /// - Returns: Single stream
-    ///   - success: A motley crew of boolean values describing the SD log configuration
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Returns: `SDLogConfig` describing the current SD log configuration on the device.
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func getSDLogConfiguration(_ identifier: String) -> Single<SDLogConfig>
+    func getSDLogConfiguration(_ identifier: String) async throws -> SDLogConfig
     
     /// Set SD log configuration to a device (SDLOGS.BPB)
     ///
@@ -445,11 +436,9 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Parameters:
     ///   - identifier: polar device id or UUID
     ///   - logConfiguration: A motley crew of boolean values describing the SD log configuration
-    /// - Returns: Completable stream
-    ///   - success: When SD log configuration has been written to the device
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func setSDLogConfiguration(_ identifier: String, logConfiguration: SDLogConfig) -> Completable
+    func setSDLogConfiguration(_ identifier: String, logConfiguration: SDLogConfig) async throws
 
     ///Set [FtuConfig] for device
     ///
@@ -457,9 +446,7 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Parameters:
     ///   - identifier: polar device id or UUID
     ///   - ftuConfig: Configuration data for the first-time use, encapsulated in [PolarFirstTimeUseConfig].
-    /// - Returns: Completable stream
-    ///   - success: when enable or disable sent to device
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     /// - [PolarFirstTimeUseConfig] class enforces specific ranges and valid values for each parameter:
     ///   - Gender: "Male" or "Female"
     ///   - Height: 90 to 240 cm
@@ -471,62 +458,54 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - Typical day: One of [TypicalDay] values
     ///   - Sleep goal: Minutes, valid range [300-660]
     ///
-    func doFirstTimeUse(_ identifier: String, ftuConfig: PolarFirstTimeUseConfig) -> Completable
+    func doFirstTimeUse(_ identifier: String, ftuConfig: PolarFirstTimeUseConfig) async throws
     
     /// Check if the First Time Use has been done for the given Polar device.
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_control`
     /// - Parameters:
     ///   - identifier: Polar device id or UUID
-    /// - Returns: Boolean
-    ///   - success: true when FTU has been done, false otherwise
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Returns: `true` when FTU has been done, `false` otherwise.
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func isFtuDone(_ identifier: String) -> Single<Bool>
+    func isFtuDone(_ identifier: String) async throws -> Bool
 
-    /// Get the user¨s physical data from the given Polar device.
+    /// Get the user's physical data from the given Polar device.
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_control`
     /// - Parameters:
     ///   - identifier: Polar device ID or UUID
-    /// - Returns: `Maybe<PolarPhysicalConfiguration?>`
-    ///   - Emits the `PolarPhysicalConfiguration` if available
-    ///   - Emits `nil` if not available
-    ///   - Errors are propagated as `PolarErrors`
-    func getUserPhysicalConfiguration(_ identifier: String) -> Maybe<PolarPhysicalConfiguration?>
+    /// - Returns: `PolarPhysicalConfiguration` if available, or `nil` if not set on device.
+    /// - Throws: See `PolarErrors` for possible errors invoked.
+    func getUserPhysicalConfiguration(_ identifier: String) async throws -> PolarPhysicalConfiguration?
 
     /// Set the device to warehouse sleep state. Factory reset will be performed in order to enable the setting.
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_control`
     /// - Parameters:
     ///   - identifier: polar device id or UUID
-    /// - Returns: Completable stream
-    ///   - success: when warehouse sleep has been set together with  factory reset
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func setWarehouseSleep(_ identifier: String) -> Completable
+    func setWarehouseSleep(_ identifier: String) async throws
     
     /// Turn of device by setting the device to sleep state.
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_control`
     /// - Parameters:
     ///   - identifier: polar device id or UUID
-    /// - Returns: Completable stream
-    ///   - success: when device has successfully set to sleep
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func turnDeviceOff(_ identifier: String) -> Completable
-    
+    func turnDeviceOff(_ identifier: String) async throws
+
     /// Get Device User Settings to a device from proto in device (UDEVSET.BPB)
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_control`
     /// - Parameters:
     ///   - identifier: polar device id or UUID
-    /// - Returns: Single stream
-    ///   - success: Collection of user device settings, like device location on user.
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Returns: `PolarUserDeviceSettings.PolarUserDeviceSettingsResult` containing the user device settings.
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func getPolarUserDeviceSettings(identifier: String) -> Single<PolarUserDeviceSettings.PolarUserDeviceSettingsResult>
+    func getPolarUserDeviceSettings(identifier: String) async throws -> PolarUserDeviceSettings.PolarUserDeviceSettingsResult
     
     /// Set Device User Settings to a device (UDEVSET.BPB)
     ///
@@ -534,11 +513,9 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Parameters:
     ///   - identifier: Polar device id or UUID
     ///   - polarUserDeviceSettings: Collection of user device settings, like device location on user.
-    /// - Returns: Completable stream
-    ///   - success: When Device User Settings configuration has been written to the device
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func setPolarUserDeviceSettings(_ identifier: String, polarUserDeviceSettings: PolarUserDeviceSettings) -> Completable
+    func setPolarUserDeviceSettings(_ identifier: String, polarUserDeviceSettings: PolarUserDeviceSettings) async throws
 
     /// Delete data [PolarStoredDataType] from a device.
     ///
@@ -547,9 +524,9 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - identifier: Polar device ID or BT address
     ///   - dataType: `PolarStoredDataType` — a specific data type that shall be deleted
     ///   - until: Data will be deleted from device from history until this date.
-    /// - Returns: Completable emitting success or error
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func deleteStoredDeviceData(_ identifier: String, dataType: PolarStoredDataType.StoredDataType, until: Date?) -> Completable
+    func deleteStoredDeviceData(_ identifier: String, dataType: PolarStoredDataType.StoredDataType, until: Date?) async throws
     
     /// Delete device date folders from a device.
     ///
@@ -558,33 +535,27 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - identifier: Polar device id or UUID
     ///   - fromDate: The starting date to delete date folders from
     ///   - toDate: The ending date of last date to delete folders from
-    /// - Returns: Completable stream
-    ///   - success: when date folders successfully deleted
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func deleteDeviceDateFolders(_ identifier: String, fromDate: Date?, toDate: Date?) -> Completable
+    func deleteDeviceDateFolders(_ identifier: String, fromDate: Date?, toDate: Date?) async throws
     
     /// Delete telemetry data files from a device.
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_control`
     /// - Parameters:
     ///   - identifier: Polar device id or UUID
-    /// - Returns: Completable stream
-    ///   - success: when date folders successfully deleted
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func deleteTelemetryData(_ identifier: String) -> Completable
+    func deleteTelemetryData(_ identifier: String) async throws
 
     /// Waits for the device to establish a connection.
     ///
     /// - Requires SDK feature(s): None (core API).
     /// - Parameters:
     ///  - identifier: Polar device ID or Bluetooth UUID
-    /// - Returns: Completable stream
-    ///   - success: When connection is established
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func waitForConnection(_ identifier: String) -> Completable
+    func waitForConnection(_ identifier: String) async throws
     
     /// Set user device location on a device.
     ///
@@ -592,11 +563,9 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Parameters:
     ///   - identifier: Polar device id or UUID
     ///   - location: Device location as an integer value (see `PolarUserDeviceSettings.DeviceLocation`)
-    /// - Returns: Completable stream
-    ///   - success: when location is set successfully
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func setUserDeviceLocation(_ identifier: String, location: Int) -> Completable
+    func setUserDeviceLocation(_ identifier: String, location: Int) async throws
 
     /// Set USB connection mode on a device.
     ///
@@ -604,11 +573,9 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Parameters:
     ///   - identifier: Polar device id or UUID
     ///   - enabled: Boolean flag to enable or disable USB connection mode
-    /// - Returns: Completable stream
-    ///   - success: when USB mode is set successfully
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func setUsbConnectionMode(_ identifier: String, enabled: Bool) -> Completable
+    func setUsbConnectionMode(_ identifier: String, enabled: Bool) async throws
 
     /// Set automatic training detection settings on a device.
     ///
@@ -618,16 +585,14 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     ///   - mode: Boolean flag to enable or disable automatic training detection
     ///   - sensitivity: Sensitivity level as integer, range [0, 100]. Higher values cause training to trigger more easily
     ///   - minimumDuration: Minimum training duration in seconds
-    /// - Returns: Completable stream
-    ///   - success: when settings are applied successfully
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
     func setAutomaticTrainingDetectionSettings(
         _ identifier: String,
         mode: Bool,
         sensitivity: Int,
         minimumDuration: Int
-     ) -> Completable
+    ) async throws
     
     /// Set the next Daylight Saving Time (DST) settings on the device in the current timezone.
     /// Gets the current timezone from the device and sets DST value based on that.
@@ -635,22 +600,19 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_control`
     /// - Parameters:
     ///   - identifier: Polar device id or UUID
-    /// - Returns: Completable stream
-    ///   - success: when DST has been successfully set to the device
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func setDaylightSavingTime(_ identifier: String) -> Completable
+    func setDaylightSavingTime(_ identifier: String) async throws
 
     /// Request multi BLE connection mode status from device.
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_features_configuration_service`
     /// - Parameters:
     ///   - identifier: Polar device id or UUID
-    /// - Returns: Single stream
-    ///   - success: Boolean: true if multi BLE connection has been enabled, false otherwise.
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Returns: `true` if multi BLE connection mode is enabled, `false` otherwise.
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func getMultiBLEConnectionMode(identifier: String) -> Single<Bool>
+    func getMultiBLEConnectionMode(identifier: String) async throws -> Bool
     
     /// Enable multi BLE connection mode on a given device.
     ///
@@ -658,11 +620,9 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Parameters:
     ///   - identifier: Polar device id or UUID
     ///   - enable: Boolean flag to enable or disable multi BLE connection mode
-    /// - Returns: Completable stream
-    ///   - success: when multi BLE connection mode has been successfully set
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func setMultiBLEConnectionMode(identifier: String, enable: Bool) -> Completable
+    func setMultiBLEConnectionMode(identifier: String, enable: Bool) async throws
     
     /// Notify device of the incoming data transfer operation(s). By using this method the device will handle data transfer operations more efficiently by setting it to faster data transfer mode.
     /// It also will cause the device to flush the latest data to files giving you the most up-to-date data.
@@ -670,22 +630,18 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_control`
     /// - Parameters:
     ///   - identifier: Polar device id or UUID
-    /// - Returns: Completable stream
-    ///   - success: Initialization and synchronization start nofifications have been successfully sent
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func sendInitializationAndStartSyncNotifications(identifier: String) -> Completable
+    func sendInitializationAndStartSyncNotifications(identifier: String) async throws
 
     /// Notify device that data transfer operations are completed. By calling this API device will set itself back to normal data transfer mode that will use less battery.
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_control`
     /// - Parameters:
     ///   - identifier: Polar device id or UUID
-    /// - Returns: Completable stream
-    ///   - success: Initialization and synchronization stop nofifications have been successfully sent
-    ///   - onError: see `PolarErrors` for possible errors invoked
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func sendTerminateAndStopSyncNotifications(identifier: String) -> Completable
+    func sendTerminateAndStopSyncNotifications(identifier: String) async throws
     
     /// Enable or disable AUTOS file generation on the device.
     /// AUTOS files contain 24/7 OHR data.
@@ -694,9 +650,9 @@ public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, 
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_device_control`
     /// - parameter identifier: Polar device ID or BT address
     /// - parameter enabled: true = AUTOS files enabled, false = disabled
-    /// - returns: Completable (success or error)
+    /// - Throws: See `PolarErrors` for possible errors invoked.
     ///
-    func setAutomaticOHRMeasurementEnabled(_ identifier: String, enabled: Bool) -> Completable
+    func setAutomaticOHRMeasurementEnabled(_ identifier: String, enabled: Bool) async throws
 
     /// Get last received RSSI (Received Signal Strength Indicator) value for the connected device.
     /// The value is obtained from iOS BLE in 1 second interval.

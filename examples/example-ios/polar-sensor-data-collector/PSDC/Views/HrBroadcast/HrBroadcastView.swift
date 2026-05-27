@@ -3,7 +3,6 @@
 import Foundation
 import SwiftUI
 import PolarBleSdk
-import RxSwift
 
 struct HrBroadcastView: View {
     
@@ -12,7 +11,6 @@ struct HrBroadcastView: View {
     
     @State private var deviceHrDataMap: [String: HrBroadcastEntry] = [:]
     @State private var stoppedDevices: Set<String> = []
-    @State private var hrDisposable: Disposable?
     @State private var staleCheckTimer: Timer?
     
     private let buttonColor = Color(red: 0xd4/255.0, green: 0x10/255.0, blue: 0x29/255.0)
@@ -91,6 +89,18 @@ struct HrBroadcastView: View {
             stopListening()
             staleCheckTimer?.invalidate()
         }
+        .onChange(of: bleSdkManager.hrBroadcastUpdateCount) { _ in
+            guard let hrData = bleSdkManager.lastHrBroadcastData else { return }
+            let deviceId = hrData.deviceInfo.deviceId
+            guard !stoppedDevices.contains(deviceId) else { return }
+            let entry = HrBroadcastEntry(
+                deviceId: deviceId,
+                deviceName: hrData.deviceInfo.name,
+                hr: Int(hrData.hr),
+                isListening: true
+            )
+            deviceHrDataMap[deviceId] = entry
+        }
     }
     
     private var sortedDevices: [HrBroadcastEntry] {
@@ -98,32 +108,12 @@ struct HrBroadcastView: View {
     }
     
     private func startListening() {
-        hrDisposable?.dispose()
         let filteredDevices = stoppedDevices.isEmpty ? nil : stoppedDevices
-        
-        hrDisposable = bleSdkManager.startListenForPolarHrBroadcasts(filteredDevices)
-            .observe(on: MainScheduler.instance)
-            .subscribe(
-                onNext: { [self] hrData in
-                    let deviceId = hrData.deviceInfo.deviceId
-                    guard !stoppedDevices.contains(deviceId) else { return }
-                    let entry = HrBroadcastEntry(
-                        deviceId: deviceId,
-                        deviceName: hrData.deviceInfo.name,
-                        hr: Int(hrData.hr),
-                        isListening: true
-                    )
-                    deviceHrDataMap[deviceId] = entry
-                },
-                onError: { error in
-                    NSLog("HR broadcast error: \(error)")
-                }
-            )
+        bleSdkManager.startListenForPolarHrBroadcasts(filteredDevices)
     }
     
     private func stopListening() {
-        hrDisposable?.dispose()
-        hrDisposable = nil
+        bleSdkManager.stopListenForPolarHrBroadcasts()
     }
     
     private func startStaleDeviceCheck() {

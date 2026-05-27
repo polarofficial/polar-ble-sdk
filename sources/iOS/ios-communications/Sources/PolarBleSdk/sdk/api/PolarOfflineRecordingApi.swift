@@ -1,7 +1,6 @@
 /// Copyright © 2023 Polar Electro Oy. All rights reserved.
 
 import Foundation
-import RxSwift
 
 /// Offline recording API.
 ///
@@ -24,10 +23,9 @@ public protocol PolarOfflineRecordingApi {
     ///
     /// - Parameters:
     ///   - identifier: polar device id
-    /// - Returns: Single stream
-    ///   - success:  set of available offline recording data types in this device
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func getAvailableOfflineRecordingDataTypes(_ identifier: String) -> Single<Set<PolarDeviceDataType>>
+    /// - Returns: set of available offline recording data types in this device
+    /// - Throws: `PolarErrors` for possible errors invoked
+    func getAvailableOfflineRecordingDataTypes(_ identifier: String) async throws -> Set<PolarDeviceDataType>
     
     ///  Request the offline recording settings available in current operation mode. This request shall be used before the offline recording is started
     ///  to decide currently available settings. The available settings depend on the state of the device.
@@ -36,11 +34,10 @@ public protocol PolarOfflineRecordingApi {
     ///
     /// - Parameters:
     ///   - identifier: polar device id
-    ///   - feature: selected feature from`PolarDeviceDataType`
-    /// - Returns: Single stream
-    ///   - success: once after settings received from device
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func requestOfflineRecordingSettings(_ identifier: String, feature: PolarDeviceDataType) -> Single<PolarSensorSetting>
+    ///   - feature: selected feature from `PolarDeviceDataType`
+    /// - Returns: `PolarSensorSetting` with the available settings received from the device
+    /// - Throws: `PolarErrors` for possible errors invoked
+    func requestOfflineRecordingSettings(_ identifier: String, feature: PolarDeviceDataType) async throws -> PolarSensorSetting
     
     ///  Request all the settings available in the device. The request returns the all capabilities of the requested streaming feature not limited by the current operation mode.
     ///
@@ -48,11 +45,10 @@ public protocol PolarOfflineRecordingApi {
     ///
     /// - Parameters:
     ///   - identifier: polar device id
-    ///   - feature: selected feature from`PolarDeviceDataType`
-    /// - Returns: Single stream
-    ///   - success: once after settings received from device
-    ///   - onError: see `PolarErrors` for possible errors invoked
-    func requestFullOfflineRecordingSettings(_ identifier: String, feature: PolarDeviceDataType) -> Single<PolarSensorSetting>
+    ///   - feature: selected feature from `PolarDeviceDataType`
+    /// - Returns: `PolarSensorSetting` with all available settings received from the device
+    /// - Throws: `PolarErrors` for possible errors invoked
+    func requestFullOfflineRecordingSettings(_ identifier: String, feature: PolarDeviceDataType) async throws -> PolarSensorSetting
     
     /// Get status of offline recordings.
     ///
@@ -60,10 +56,9 @@ public protocol PolarOfflineRecordingApi {
     ///
     /// - Parameters:
     ///   - identifier: polar device id
-    /// - Returns: Single stream
-    ///   - success: the dictionary indicating the offline recording status, if the value in dictionary is true the offline recording is currently recording
-    ///   - error: see `PolarErrors` for possible errors invoked
-    func getOfflineRecordingStatus(_ identifier: String)-> Single<[PolarDeviceDataType:Bool]>
+    /// - Returns: dictionary mapping each `PolarDeviceDataType` to a `Bool` indicating whether offline recording is currently active for that type
+    /// - Throws: `PolarErrors` for possible errors invoked
+    func getOfflineRecordingStatus(_ identifier: String) async throws -> [PolarDeviceDataType: Bool]
     
     /// List offline recordings stored in the device.
     ///
@@ -71,13 +66,10 @@ public protocol PolarOfflineRecordingApi {
     ///
     /// - Parameters:
     ///   - identifier: polar device id
-    /// - Returns: Completable
-    ///   - next :  the found offline recording entry
-    ///   - completed: the listing completed
-    ///   - error: see `PolarErrors` for possible errors invoked
-    func listOfflineRecordings(_ identifier: String) -> Observable<PolarOfflineRecordingEntry>
+    /// - Returns: `AsyncThrowingStream` emitting `PolarOfflineRecordingEntry` values as they are found, or throwing an error
+    func listOfflineRecordings(_ identifier: String) -> AsyncThrowingStream<PolarOfflineRecordingEntry, Error>
     
-    /// Fetch recording from the  device.
+    /// Fetch recjiöording from the device.
     ///
     /// Note, the fetching of the recording may take several seconds if the recording is big.
     /// Note, if a faulty data block is encountered while parsing offline data from device that particular data block will be discarded. This will lead to gaps in the data.
@@ -86,40 +78,37 @@ public protocol PolarOfflineRecordingApi {
     ///
     /// - Parameters:
     ///   - identifier: polar device id
-    ///   - entry:  The offline recording to be fetched
-    ///   - secret: If the secret is provided in `startOfflineRecording` or `setOfflineRecordingTrigger` then the same secret must be provided when fetching the offline record
-    /// - Returns: Single
-    ///   - success :  the offline recording data
-    ///   - error: fetch recording request failed. see `PolarErrors` for possible errors invoked
-    func getOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret?) -> Single< PolarOfflineRecordingData>
+    ///   - entry: the offline recording to be fetched
+    ///   - secret: if the secret is provided in `startOfflineRecording` or `setOfflineRecordingTrigger` then the same secret must be provided when fetching the offline record
+    /// - Returns: `PolarOfflineRecordingData` containing the fetched offline recording data
+    /// - Throws: `PolarErrors` for possible errors invoked
+    func getOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret?) async throws -> PolarOfflineRecordingData
     
     /// Fetch recording from the device with progress updates.
     ///
     /// Note, the fetching of the recording may take several seconds if the recording is big.
     /// Note, if a faulty data block is encountered while parsing offline data from device that particular data block will be discarded. This will lead to gaps in the data.
+    ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
     ///
     /// - Parameters:
     ///   - identifier: polar device id
-    ///   - entry:  The offline recording to be fetched
-    ///   - secret: If the secret is provided in `startOfflineRecording` or `setOfflineRecordingTrigger` then the same secret must be provided when fetching the offline record
-    /// - Returns: Observable
-    ///   - next: `PolarOfflineRecordingResult` containing either progress updates or the complete recording data
-    ///   - error: fetch recording request failed. see `PolarErrors` for possible errors invoked
-    func getOfflineRecordWithProgress(_ identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret?) -> Observable<PolarOfflineRecordingResult>
+    ///   - entry: the offline recording to be fetched
+    ///   - secret: if the secret is provided in `startOfflineRecording` or `setOfflineRecordingTrigger` then the same secret must be provided when fetching the offline record
+    /// - Returns: `AsyncThrowingStream` emitting `PolarOfflineRecordingResult` values containing either progress updates or the complete recording data, or throwing an error
+    func getOfflineRecordWithProgress(_ identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret?) -> AsyncThrowingStream<PolarOfflineRecordingResult, Error>
 
-    /// Fetch number sub recordings in recording from the  device.
+    /// Fetch number of sub recordings in recording from the device.
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
     ///
     /// - Parameters:
     ///   - identifier: polar device id
-    ///   - entry:  The offline recording whose subrecording count will be checked
-    /// - Returns: Single
-    ///   - success :  the offline recording subrecording count
-    ///   - error: fetch recording request failed. see `PolarErrors` for possible errors invoked
+    ///   - entry: the offline recording whose subrecording count will be checked
+    /// - Returns: the number of sub recordings in the offline recording
+    /// - Throws: `PolarErrors` for possible errors invoked
     @available(*, deprecated, message:  "Getting subrecordings has been deprecated. Use getOfflineRecord to get full recording instead.")
-    func getSubRecordingCount(identifier: String, entry: PolarOfflineRecordingEntry) -> Single<Int>
+    func getSubRecordingCount(identifier: String, entry: PolarOfflineRecordingEntry) async throws -> Int
 
     /// List split offline recordings stored in the device.
     ///
@@ -127,12 +116,9 @@ public protocol PolarOfflineRecordingApi {
     ///
     /// - Parameters:
     ///   - identifier: polar device id
-    /// - Returns: Completable
-    ///   - next :  the found split offline recording entry
-    ///   - completed: the listing completed
-    ///   - error: see `PolarErrors` for possible errors invoked
+    /// - Returns: `AsyncThrowingStream` emitting `PolarOfflineRecordingEntry` values as they are found, or throwing an error
     @available(*, deprecated, message:  "Listing split offline recordings has been deprecated. Use getOfflineRecord to get full recording instead.")
-    func listSplitOfflineRecordings(_ identifier: String) -> Observable<PolarOfflineRecordingEntry>
+    func listSplitOfflineRecordings(_ identifier: String) -> AsyncThrowingStream<PolarOfflineRecordingEntry, Error>
 
     /// Fetch split recording from the device.
     ///
@@ -143,13 +129,12 @@ public protocol PolarOfflineRecordingApi {
     ///
     /// - Parameters:
     ///   - identifier: polar device id
-    ///   - entry:  The split offline recording to be fetched
-    ///   - secret: If the secret is provided in `startOfflineRecording` or `setOfflineRecordingTrigger` then the same secret must be provided when fetching the offline record
-    /// - Returns: Single
-    ///   - success :  the offline recording data
-    ///   - error: fetch recording request failed. see `PolarErrors` for possible errors invoked
+    ///   - entry: the split offline recording to be fetched
+    ///   - secret: if the secret is provided in `startOfflineRecording` or `setOfflineRecordingTrigger` then the same secret must be provided when fetching the offline record
+    /// - Returns: `PolarOfflineRecordingData` containing the fetched offline recording data
+    /// - Throws: `PolarErrors` for possible errors invoked
     @available(*, deprecated, message:  "Getting split offline records has been deprecated. Use getOfflineRecord to get full recording instead.")
-    func getSplitOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret?) -> Single<PolarOfflineRecordingData>
+    func getSplitOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret?) async throws -> PolarOfflineRecordingData
 
     /// Removes offline recording from the device. Empty parent directories are removed up to day directory.
     ///
@@ -158,10 +143,8 @@ public protocol PolarOfflineRecordingApi {
     /// - Parameters:
     ///   - identifier: polar device id
     ///   - entry: entry to be removed
-    /// - Returns: Completable
-    ///   - completed :  offline record or record with subrecords is removed
-    ///   - error:  offline record removal failed, see `PolarErrors` for possible errors invoked
-    func removeOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry) -> Completable
+    /// - Throws: `PolarErrors` for possible errors invoked
+    func removeOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry) async throws
 
     /// Removes offline recording with all the subrecordings from the device. Empty parent directories are removed up to day directory.
     ///
@@ -170,11 +153,10 @@ public protocol PolarOfflineRecordingApi {
     /// - Parameters:
     ///   - identifier: polar device id
     ///   - entry: entry with the path to the offline recording
-    /// - Returns: Single
-    ///   - success :  Offline record and its subrecords is/are removed. All empty parent directories up to day directory are removed.
-    ///   - error:  offline record removal failed, see `PolarErrors` for possible errors invoked
+    /// - Returns: `true` if the offline record and its subrecords were successfully removed
+    /// - Throws: `PolarErrors` for possible errors invoked
     @available(*, deprecated, message:  "Use removeOfflineRecord to remove recording including subrecords instead.")
-    func removeOfflineRecords(_ identifier: String, entry: PolarOfflineRecordingEntry) -> Single<Bool>
+    func removeOfflineRecords(_ identifier: String, entry: PolarOfflineRecordingEntry) async throws -> Bool
 
     /// Start offline recording.
     ///
@@ -184,23 +166,19 @@ public protocol PolarOfflineRecordingApi {
     ///   - identifier: polar device id
     ///   - feature: the feature to be started
     ///   - settings: optional settings used for offline recording. `PolarDeviceDataType.hr` and `PolarDeviceDataType.ppi` do not require settings
-    ///  - secret if the secret is provided the offline recordings are encrypted in device
-    /// - Returns: Completable
-    ///   - completed :  offline recording is started successfully
-    ///   - error: see `PolarErrors` for possible errors invoked
-    func startOfflineRecording(_ identifier: String, feature: PolarDeviceDataType, settings: PolarSensorSetting?, secret: PolarRecordingSecret?) -> Completable
+    ///   - secret: if the secret is provided the offline recordings are encrypted in device
+    /// - Throws: `PolarErrors` for possible errors invoked
+    func startOfflineRecording(_ identifier: String, feature: PolarDeviceDataType, settings: PolarSensorSetting?, secret: PolarRecordingSecret?) async throws
     
     /// Request to stop offline recording.
     ///
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_offline_recording`
     ///
     /// - Parameters:
-    ///   - identifier:  polar device id
+    ///   - identifier: polar device id
     ///   - feature: the feature to be stopped
-    /// - Returns: Completable
-    ///   - completed :  offline recording is stop successfully
-    ///   - error: offline recording stop failed. see `PolarErrors` for possible errors invoked
-    func stopOfflineRecording(_ identifier: String, feature: PolarDeviceDataType) -> Completable
+    /// - Throws: `PolarErrors` for possible errors invoked
+    func stopOfflineRecording(_ identifier: String, feature: PolarDeviceDataType) async throws
     
     /// Sets the offline recording triggers for a given Polar device. The offline recording can be started automatically in the device by setting the triggers.
     /// The changes to the trigger settings will take effect on the next device startup.
@@ -217,14 +195,12 @@ public protocol PolarOfflineRecordingApi {
     ///   - identifier: Polar device ID
     ///   - trigger: type of trigger to set
     ///   - secret: optional secret; if provided, the offline recordings are encrypted in the device
-    /// - Returns: Completable
-    ///   - completed :  the offline recording trigger was set successfully
-    ///   - error: the offline recording trigger was not set successfully; see PolarErrors for possible errors that may be invoked.
+    /// - Throws: `PolarErrors` for possible errors invoked
     func setOfflineRecordingTrigger(
         _ identifier: String,
         trigger: PolarOfflineRecordingTrigger,
         secret: PolarRecordingSecret?
-    ) -> Completable
+    ) async throws
     
     /// Retrieves the current offline recording trigger setup in the device.
     ///
@@ -232,8 +208,7 @@ public protocol PolarOfflineRecordingApi {
     ///
     /// - Parameters:
     ///   - identifier: polar device id
-    /// - Returns: Completable
-    ///   - success : the offline recording trigger setup in the device
-    ///   - error: fetching recording trigger setup failed, see `PolarErrors` for possible errors invoked
-    func getOfflineRecordingTriggerSetup(_ identifier: String) -> Single<PolarOfflineRecordingTrigger>
+    /// - Returns: `PolarOfflineRecordingTrigger` describing the current trigger setup in the device
+    /// - Throws: `PolarErrors` for possible errors invoked
+    func getOfflineRecordingTriggerSetup(_ identifier: String) async throws -> PolarOfflineRecordingTrigger
 }
