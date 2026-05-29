@@ -19,6 +19,8 @@ strategy follows these rules, which an AI agent must apply at every call site:
 | `-> Completable` | `async throws` (returns `Void`) |
 | `-> Observable<T>` (infinite stream) | `-> AsyncThrowingStream<T, Error>` |
 | `-> Observable<T>` (multi-cast / hot stream) | `-> AnyPublisher<T, Error>` (Combine) |
+| `-> Observable<T>` (accumulator / list) | `async throws -> [T]` ⚠ see §2.1 |
+| `-> Maybe<T>` | `async throws -> T?` ⚠ see §2.1 — semantic change; if original `T` was already `T?` (e.g. `Maybe<Foo?>`), the double-optional flattens to `Foo?` |
 | `.subscribe(onNext:onError:onCompleted:)` | `for try await value in stream { }` |
 | `.subscribe(onSuccess:onError:)` | `try await` |
 | `DisposeBag` / `.disposed(by:)` | `Task` cancellation (`task.cancel()`) |
@@ -50,7 +52,123 @@ import Combine
 
 ---
 
-## 3. Method-by-Method Migration Reference
+## 2.1 Signature-Change Exceptions
+
+> **These cases cannot be derived from the mechanical mapping rules in Section 1.**  
+> Before migrating any call site, check whether the method appears in this section.  
+> If it does, use the pattern shown here **instead of** the generic rule.
+
+### 2.1.1 Stream → Void (async throws, no loop)
+
+Some methods that were previously `Observable<Never>` / `Completable` streams are now plain
+`async throws` functions that return `Void`. Any `for try await _ in ... {}` loop wrapping
+such a call **must be deleted** and replaced with a single `try await`.
+
+**Affected example: `doFirstTimeUse(_:ftuConfig:)`**
+
+```swift
+// BEFORE (7.x RxSwift — returns Completable / Observable<Never>)
+api.doFirstTimeUse("deviceId", ftuConfig: config)
+    .subscribe(onCompleted: { ... }, onError: { ... })
+    .disposed(by: disposeBag)
+
+// WRONG migration (do not do this — there is no stream to iterate)
+for try await _ in api.doFirstTimeUse("deviceId", ftuConfig: config).values { }
+
+// CORRECT
+try await api.doFirstTimeUse("deviceId", ftuConfig: config)
+```
+
+**Generic rule:** If the old method returned `Completable` or `Observable<Never>` and the new
+signature is `async throws` with no return value, replace the entire subscription (including any
+accumulator or iteration loop) with a single `try await` call.
+
+---
+
+### 2.1.2 Observable accumulator → async throws -> [T] (single try await, not for try await)
+
+Some methods that previously emitted multiple values into an accumulator loop now return the
+complete collection in a single `async throws -> [T]` call. An `for try await` loop on such a
+call site is **incorrect** — it will not compile. Replace the entire accumulator pattern with a
+single `try await`.
+
+**Affected example: `getTrainingSessionReferences(identifier:fromDate:toDate:)`**
+
+```swift
+// BEFORE (7.x RxSwift — emits one reference at a time, accumulated)
+var refs: [PolarTrainingSessionReference] = []
+api.getTrainingSessionReferences(identifier: "deviceId", fromDate: nil, toDate: nil)
+    .subscribe(
+        onNext: { ref in refs.append(ref) },
+        onCompleted: { use(refs) },
+        onError: { error in ... }
+    )
+    .disposed(by: disposeBag)
+
+// WRONG migration (for try await does not apply — method returns [T], not AsyncThrowingStream)
+var refs: [PolarTrainingSessionReference] = []
+for try await ref in api.getTrainingSessionReferences(...) { refs.append(ref) }
+
+// CORRECT — collect in one call
+let refs = try await api.getTrainingSessionReferences(
+    identifier: "deviceId", fromDate: nil, toDate: nil)
+```
+
+**Generic rule:** If the old method emitted values one-by-one into an accumulator and the new
+signature is `async throws -> [T]`, replace the entire subscription + accumulator with a single
+`let results = try await` assignment.
+
+---
+
+### 2.1.3 Maybe<T> → async throws -> T? (semantic collapse)
+
+`Maybe<T>` has three terminal states: `success(T)`, `completed` (empty, no value), and `error`.
+`async throws -> T?` has only two: a returned optional (`nil` = no value) and `throw` (error).
+
+The **"completed without a value"** state of the old `Maybe` now maps to `return nil`, which is
+**indistinguishable from an explicit `nil` value**. Code that previously distinguished these two
+states must be updated.
+
+When the original `T` was itself optional — e.g. `Maybe<PolarPhysicalConfiguration?>` — the
+naive substitution would produce `async throws -> PolarPhysicalConfiguration??`. Swift flattens
+this to `async throws -> PolarPhysicalConfiguration?`, so the final signature looks identical to
+the non-nested case, but there were originally **four** distinguishable states that now collapse
+to two:
+
+| Old `Maybe<T?>` state | New `async throws -> T?` result |
+|---|---|
+| `.success(.some(value))` | returns `value` (non-nil) |
+| `.success(.none)` | returns `nil` |
+| `.completed` (empty) | returns `nil` — **indistinguishable from above** |
+| `.error(e)` | `throw e` |
+
+**Affected example: `getUserPhysicalConfiguration(_:)`** — old type `Maybe<PolarPhysicalConfiguration?>`,
+new type `async throws -> PolarPhysicalConfiguration?`.
+
+```swift
+// BEFORE — could distinguish "no value" from "value was nil"
+api.someMethod("deviceId")
+    .subscribe(
+        onSuccess: { value in /* value is T */ },
+        onCompleted: { /* completed empty — no value emitted */ },
+        onError: { error in ... }
+    )
+    .disposed(by: disposeBag)
+
+// AFTER — both "no value" and nil collapse to nil
+let result: T? = try await api.someMethod("deviceId")
+if let value = result {
+    // value is present
+} else {
+    // nil — was either "completed empty" or a genuine nil value
+    // these cases can no longer be distinguished
+}
+```
+
+**Generic rule:** Remove any `onCompleted` handler that treated an empty completion differently
+from `nil`. After migration both cases produce `nil` and should be handled uniformly.
+
+---
 
 ### 3.1 `PolarBleApi` — Core API
 
@@ -406,6 +524,12 @@ When migrating a file, apply the following transformations **in order**:
 2. **Add** `import Combine` if the file uses `AnyPublisher` or `AnyCancellable`.
 3. **Replace** `DisposeBag` property with `Set<AnyCancellable>` and/or `[Task<Void, Never>]`.
 4. **Replace** `.disposed(by: disposeBag)` with `.store(in: &cancellables)` (Combine) or store the `Task`.
+4a. **Before substituting the consumption pattern for any individual call site, check Section 2.1.**
+    Some methods changed their emission signature — not just their type — and require a different
+    transformation than the generic rules in step 5–7 would produce:
+    - If the method is in §2.1.1 (stream → Void): delete any loop, use a single `try await`.
+    - If the method is in §2.1.2 (accumulator → list): delete the accumulator loop, use `let results = try await`.
+    - If the method is in §2.1.3 (Maybe → optional): collapse `onCompleted` and `nil` handlers.
 5. For each `.subscribe(onNext:onError:onCompleted:)`:
    - If call site is on a **stream method** (returns `AsyncThrowingStream`): wrap in `Task { for try await value in ... { } }`.
    - If call site is on a **Combine method** (returns `AnyPublisher`): use `.sink(receiveCompletion:receiveValue:).store(in:&cancellables)`.
@@ -422,15 +546,17 @@ When migrating a file, apply the following transformations **in order**:
 
 ## 8. Which Methods Use Which Pattern
 
-| Return type | How to consume |
-|---|---|
-| `AsyncThrowingStream<T, Error>` | `for try await value in stream { }` in a `Task` |
-| `async throws -> T` | `try await` in a `Task` or `async` func |
-| `async throws` (Void) | `try await` in a `Task` or `async` func |
-| `AnyPublisher<T, Error>` | `.sink(receiveCompletion:receiveValue:).store(in:&cancellables)` |
-| `throws -> T` (sync) | regular `try` call, no Task needed |
+| Return type | Signature | How to consume |
+|---|---|---|
+| `AsyncThrowingStream<T, Error>` | `stream` | `for try await value in stream { }` in a `Task` |
+| `async throws -> T` | `single-value` | `let x = try await` in a `Task` or `async` func |
+| `async throws -> [T]` | `list` ⚠ §2.1.2 | `let xs = try await` — **not** `for try await` |
+| `async throws` (Void) | `void` | `try await` — **no loop**, not even `.values` |
+| `async throws -> T?` | `single-value` ⚠ §2.1.3 | `let x = try await` — `nil` covers both "empty" and nil |
+| `AnyPublisher<T, Error>` | `stream` (Combine) | `.sink(receiveCompletion:receiveValue:).store(in:&cancellables)` |
+| `throws -> T` (sync) | `single-value` | regular `try` call, no Task needed |
 
-### Methods returning `AsyncThrowingStream`
+### Methods returning `AsyncThrowingStream` (signature: `stream`)
 - `searchForDevice()` / `searchForDevice(withRequiredDeviceNamePrefix:)`
 - `startListenForPolarHrBroadcasts(_:)`
 - `startHrStreaming(_:)`
@@ -447,7 +573,28 @@ When migrating a file, apply the following transformations **in order**:
 - `listExercises(_:)` (H10)
 - `updateFirmware(_:fwZipData:)` (firmware update status stream)
 
-### All other public methods — `async throws`
+### Methods returning `async throws -> [T]` (signature: `list` ⚠ §2.1.2 — single `try await`, not `for try await`)
+- `getTrainingSessionReferences(identifier:fromDate:toDate:)`
+
+### Methods returning `async throws` Void (signature: `void` ⚠ §2.1.1 — no loop)
+- `doFirstTimeUse(_:ftuConfig:)`
+- `setLocalTime(_:time:zone:)`
+- `setLedConfig(_:ledConfig:)`
+- `doFactoryReset(_:)`
+- `doRestart(_:)`
+- `setWarehouseSleep(_:)`
+- `turnDeviceOff(_:)`
+- `waitForConnection(_:)`
+- `startRecording(_:exerciseId:interval:sampleType:)` (H10)
+- `stopRecording(_:)` (H10)
+- `removeExercise(_:entry:)` (H10)
+- `startOfflineRecording(_:feature:settings:secret:)`
+- `stopOfflineRecording(_:feature:)`
+- `removeOfflineRecord(_:entry:)`
+- `enableSDKMode(_:)` / `disableSDKMode(_:)`
+- All other `set*` / `delete*` / `do*` methods
+
+### All other public methods — `async throws -> T` (signature: `single-value`)
 Everything else in `PolarBleApi`, `PolarOnlineStreamingApi`, `PolarOfflineRecordingApi`,
 `PolarH10OfflineExerciseApi`, `PolarTrainingSessionApi`, `PolarSdkModeApi`, etc.
 
