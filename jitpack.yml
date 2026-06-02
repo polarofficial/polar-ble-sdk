@@ -1,5 +1,5 @@
 jdk:
-  - openjdk21
+  - openjdk17
 
 before_install:
   - find . -mindepth 1 -maxdepth 1 -not \( -name sources -o -name .git \) -exec rm -rf '{}' \;
