@@ -25,13 +25,15 @@ if [ -n $RELEASE_JAVA ] && [[ $RELEASE_JAVA == "true" ]]; then
 
     echo "\nPreparing release for Java 17 branch of android-communications library..."
     git show-ref --quiet --branches master-java17
+    echo "Dollar: $?"
     if [ $? -ne 0 ]; then
         echo "Branch master-java17 does not exist in android-communications repository. I'll create it."
         sed -i '' "s/.JavaVersion.VERSION_21/ JavaVersion.VERSION_17/" $ANDROID_SDK_PATH/library/build.gradle
         git add -A
         git commit -m "Prepare master-java17 branch for Java 17 release"
         git checkout -b master-java17
-       #  git push -u origin master-java17
+       # git push -u origin master-java17
+        git checkout master
     else
         echo "Branch master-java17 already exists in android-communications repository. I'll use it for Java 17 release preparations."
         git checkout master-java17
