@@ -35,8 +35,13 @@ public struct Pmd {
     }
 
     static func parseDeltaFramesToSamples(_ data: Data, channels: UInt8, resolution: UInt8) -> [[Int32]] {
+        let refSampleSizeInBytes = Int(channels) * Int(ceil(Double(resolution) / 8.0))
+        guard data.count >= refSampleSizeInBytes else {
+            BleLogger.error("parseDeltaFramesToSamples() data too short for reference samples. data.count=\(data.count), required=\(refSampleSizeInBytes)")
+            return []
+        }
         let refSamples = parseDeltaFrameRefSamples(data, channels: channels, resolution: resolution)
-        var offset = Int(channels * UInt8(ceil(Double(resolution) / 8.0)))
+        var offset = refSampleSizeInBytes
         var samples = [[Int32]]()
         samples.append(refSamples)
         while offset < data.count {
