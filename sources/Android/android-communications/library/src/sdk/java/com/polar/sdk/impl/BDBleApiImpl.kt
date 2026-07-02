@@ -1908,7 +1908,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         )
     }
 
-    override suspend fun setWareHouseSleep(identifier: String) {
+    override suspend fun setWarehouseSleep(identifier: String) {
         val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
             ?: throw PolarServiceNotAvailable()
@@ -2937,26 +2937,20 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
-    override suspend fun sendInitializationAndStartSyncNotifications(identifier: String): Boolean {
+    override suspend fun sendInitializationAndStartSyncNotifications(identifier: String) {
         BleLogger.d(TAG, "Sending initialize session and start sync notifications")
-        return try {
-            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-                ?: return false
-            client.query(PftpRequest.PbPFtpQuery.REQUEST_SYNCHRONIZATION_VALUE, null)
-            client.sendNotification(
-                PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE,
-                null
-            )
-            client.sendNotification(
-                PftpNotification.PbPFtpHostToDevNotification.START_SYNC_VALUE,
-                null
-            )
-            true
-        } catch (e: Throwable) {
-            BleLogger.e(TAG, "sendInitializationAndStartSyncNotifications failed: $e")
-            false
-        }
+        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: throw PolarServiceNotAvailable()
+        client.query(PftpRequest.PbPFtpQuery.REQUEST_SYNCHRONIZATION_VALUE, null)
+        client.sendNotification(
+            PftpNotification.PbPFtpHostToDevNotification.INITIALIZE_SESSION_VALUE,
+            null
+        )
+        client.sendNotification(
+            PftpNotification.PbPFtpHostToDevNotification.START_SYNC_VALUE,
+            null
+        )
     }
 
     override suspend fun sendTerminateAndStopSyncNotifications(identifier: String) {

@@ -2173,7 +2173,7 @@ extension PolarBleSdkManager {
                 spo2DateTimeFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
                 spo2DateTimeFormatter.timeZone = TimeZone(identifier: "UTC")
                 encoder.dateEncodingStrategy = .millisecondsSince1970
-                let spo2Data = try await api.getSpo2TestData(identifier: device.deviceId, fromDate: start, toDate: end)
+                let spo2Data = try await api.getSpo2Test(identifier: device.deviceId, fromDate: start, toDate: end)
                 Task { @MainActor in
                     if !spo2Data.isEmpty {
                         let spo2Json = try encoder.encode(spo2Data)

@@ -130,7 +130,7 @@ Following flowchart depicts generic background sync flow that can be used as ske
 When starting or resuming sync fetch phase, call
 `sendInitializationAndStartSyncNotifications(identifier)`
 
-App should not continue sync until this method returns success indicating device is ready for syncing data. Failure indicates device is not ready for syncing data.
+App should not continue sync until this method completes successfully, indicating device is ready for syncing data. If the method throws, the device is not ready for syncing data.
 
 One typical situation causing this is an ongoing training session, which causes device to respond to sync request with error 202 (SYSTEM_BUSY). Note that this may be returned by any SDK data fetch operation.
 

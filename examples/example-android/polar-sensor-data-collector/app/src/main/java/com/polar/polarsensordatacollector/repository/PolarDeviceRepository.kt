@@ -630,7 +630,7 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun doFactoryReset(deviceId: String) = withContext(Dispatchers.IO) { api.doFactoryReset(deviceId) }
 
-    suspend fun setWarehouseSleep(deviceId: String) = withContext(Dispatchers.IO) { api.setWareHouseSleep(deviceId) }
+    suspend fun setWarehouseSleep(deviceId: String) = withContext(Dispatchers.IO) { api.setWarehouseSleep(deviceId) }
 
     suspend fun setHibernateMode(deviceId: String) = withContext(Dispatchers.IO) { api.setHibernateMode(deviceId) }
 

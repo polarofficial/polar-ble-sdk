@@ -429,7 +429,17 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @param identifier Polar device ID or BT address
      * @return Success or error
      */
-    abstract suspend fun setWareHouseSleep(identifier: String)
+    abstract suspend fun setWarehouseSleep(identifier: String)
+
+    /**
+     * Set warehouse sleep setting to a given device. Requires feature [PolarBleSdkFeature.FEATURE_POLAR_DEVICE_CONTROL] Warehouse sleep does factory reset to the device
+     * and makes it sleep.
+     *
+     * @param identifier Polar device ID or BT address
+     * @return Success or error
+     */
+    @Deprecated("Use setWarehouseSleep() instead", ReplaceWith("setWarehouseSleep(identifier)"))
+    open suspend fun setWareHouseSleep(identifier: String) = setWarehouseSleep(identifier)
 
     /**
      * Set hibernate mode on a given device. Requires feature [PolarBleSdkFeature.FEATURE_POLAR_DEVICE_CONTROL]
@@ -650,9 +660,9 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * It also will cause the device to flush the latest data to files giving you the most up-to-date data.
      *
      * @param identifier Polar device ID or BT address
-     * @return true if start sync notifications sending was successful, false otherwise.
+     * @throws Throwable if the operation fails
      */
-    abstract suspend fun sendInitializationAndStartSyncNotifications(identifier: String): Boolean
+    abstract suspend fun sendInitializationAndStartSyncNotifications(identifier: String)
 
     /**
      * Notify device that data transfer operations are completed. Requires feature [PolarBleSdkFeature.FEATURE_POLAR_DEVICE_CONTROL]
