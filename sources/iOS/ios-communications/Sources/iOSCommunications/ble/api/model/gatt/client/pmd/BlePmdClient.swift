@@ -546,8 +546,11 @@ open class BlePmdClient: BleGattClientBase, @unchecked Sendable {
                     var packet = Data([PmdControlPointCommandClientToService.SET_OFFLINE_RECORDING_TRIGGER_SETTINGS,
                                        triggerStatus.rawValue, type.rawValue])
                     if triggerStatus == .enabled {
-                        packet.append(setting?.serialize() ?? Data())
-                        packet.append(secret?.serializeToPmdSettings() ?? Data())
+                        let settingBytes = setting?.serialize() ?? Data()
+                        let secretBytes = secret?.serializeToPmdSettings() ?? Data()
+                        packet.append(UInt8(settingBytes.count + secretBytes.count))
+                        packet.append(settingBytes)
+                        packet.append(secretBytes)
                     }
                     let response = try self.sendControlPointCommand(packet)
                     if response.errorCode == .success { continuation.resume() }
