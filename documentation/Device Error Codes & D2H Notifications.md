@@ -38,9 +38,6 @@ These error codes are returned in the **PMD Control Point response** (characteri
 | `0x0C` | 12 | `PMD_ERROR_INVALID_STATE` | The device is in a state that does not allow the requested operation. This can occur when: the device is not yet ready to accept commands; PPI or offline HR measurement is requested while SDK mode is active; SDK mode is requested while measurements are active; an offline recording start was attempted while another operation was in progress; **or first-time-use (FTU) setup has not been completed on the device**. | Ensure FTU has been completed (`doFirstTimeUse()`), the device is fully connected, and no conflicting modes are active. If SDK mode is on and you need PPI/HR offline data, disable SDK mode first. |
 | `0x0D` | 13 | `PMD_ERROR_DEVICE_IN_CHARGER` | The device is currently connected to a USB charger. Certain measurements cannot be started while the device is charging. | Disconnect the charger and retry. |
 | `0x0E` | 14 | `PMD_ERROR_DISK_FULL` | Offline recording cannot be started because the device's storage is full; there is no space to write new data. | Call `getDiskSpace()` to check available space, and remove old recordings with `removeOfflineRecord()` to free up storage before starting an offline recording. |
-
-| Error Code | Value | Error Name | Description | Hint |
-|:---:|:---:|:---|:---|:---|
 | `0x0F` | 15 | `PMD_ERROR_INVALID_DERIVED_MEASUREMENT_METHOD` | The derived measurement method (computation algorithm) specified in the start-measurement request is not recognised by the device. | Call `requestStreamSettings()` (online) or `requestOfflineRecordingSettings()` (offline) to retrieve the settings supported by the device, and build the request from those values only. In SDK mode, use `requestFullStreamSettings()` or `requestFullOfflineRecordingSettings()` to obtain the complete capability set including derived methods. |
 | `0x10` | 16 | `PMD_ERROR_INVALID_SOURCE_MEASUREMENT_TYPE` | The source measurement type specified for the derived measurement is incompatible: the requested derivation cannot be applied to that source type. | Check which source measurement types are compatible with the intended derived measurement by querying the available settings with `requestStreamSettings()` (online) or `requestOfflineRecordingSettings()` (offline), and select a source type from those results. |
 | `0x11` | 17 | `PMD_ERROR_INVALID_SOURCE_MEASUREMENT_RATE` | The sample rate specified for the source measurement in the derived measurement request is not supported by the device in the current state. | Call `requestStreamSettings()` (online) or `requestOfflineRecordingSettings()` (offline) to retrieve the available sample rates for the source measurement type, and select one of the returned values before starting. |
@@ -105,7 +102,7 @@ The table below lists all defined D2H notification types together with a **Polar
 > - ❌ Not sent — Polar360 does not send this notification
 > - 🔧 Manufacturing only — sent exclusively during factory / production tests, not during end-user use
 
-| Value | SDK Enum (`PolarDeviceToHostNotification`) | Description | Polar360 |
+| Value | SDK Enum (`PolarDeviceToHostNotification`) — iOS: `lowerCamelCase` · Android: `UPPER_SNAKE_CASE` | Description | Polar360 |
 |:---:|:---|:---|:---:|
 | 0 | `filesystemModified` | The device filesystem was modified (a file or directory was created, updated, or removed). Signals the host that new data may be available for sync. | ❌ |
 | 1 | `internalTestEvent` | A production test event occurred on the device. Not relevant to end-user applications. | 🔧 |
