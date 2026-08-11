@@ -100,6 +100,10 @@ Full, current definitions:
 - Android: [sdk/api/errors/](sources/Android/android-communications/library/src/sdk/java/com/polar/sdk/api/errors/)
 - iOS: [PolarErrors.swift](sources/iOS/ios-communications/Sources/PolarBleSdk/sdk/api/errors/PolarErrors.swift)
 
+Error codes from devices: 
+
+[Device Error Codes](documentation/Device%20Error%20Codes%20&amp;%20D2H%20Notifications.md)
+
 ## Lifecycle management
 
 - Release the SDK when its owner is destroyed (`api.shutDown()` on Android; clear observers and drop the instance on iOS).
