@@ -216,4 +216,45 @@ internal class EcgDataTest {
 
         Assert.assertEquals(dataFrame.timeStamp, (ecgData.ecgSamples[1] as EcgData.EcgSampleFrameType3).timeStamp)
     }
+
+    @Test
+    fun `process compressed ecg data type 0`() {
+        // Arrange
+        // HEX: 00 00 94 35 77 00 00 00 00 80
+        // index                                                   data:
+        // 0        type                                           00 (Ecg)
+        // 1..9     timestamp                                      00 94 35 77 00 00 00 00
+        // 10       frame type                                     80 (compressed, type 0)
+        val timeStamp = 2000000000uL
+        val ecgDataFrameHeader = byteArrayOf(
+            0x00.toByte(),
+            0x00.toByte(), 0x94.toByte(), 0x35.toByte(), 0x77.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x80.toByte(),
+        )
+        val previousTimeStamp = 100uL
+
+        // Data format: [24-bit reference sample] [deltaSize] [sampleCount] [packed deltas]
+        // reference sample = -32766 (0xFF8002), 4-bit deltas: +1, +2
+        val ecgDataFrameContent = byteArrayOf(
+            0x02.toByte(), 0x80.toByte(), 0xFF.toByte(),
+            0x04.toByte(), 0x02.toByte(), 0x21.toByte(),
+        )
+
+        val factor = 1.0f
+        val dataFrame = PmdDataFrame(
+            data = ecgDataFrameHeader + ecgDataFrameContent,
+            getPreviousTimeStamp = { _: PmdMeasurementType, _: PmdDataFrame.PmdDataFrameType -> previousTimeStamp },
+            getFactor = { factor }
+        ) { 0 }
+
+        // Act
+        val ecgData = EcgData.parseDataFromDataFrame(dataFrame)
+
+        // Assert
+        Assert.assertEquals(3, ecgData.ecgSamples.size)
+        Assert.assertEquals(-32766, (ecgData.ecgSamples[0] as EcgData.EcgSample).microVolts)
+        Assert.assertEquals(-32765, (ecgData.ecgSamples[1] as EcgData.EcgSample).microVolts)
+        Assert.assertEquals(-32763, (ecgData.ecgSamples[2] as EcgData.EcgSample).microVolts)
+        Assert.assertEquals(timeStamp, (ecgData.ecgSamples[2] as EcgData.EcgSample).timeStamp)
+    }
 }
