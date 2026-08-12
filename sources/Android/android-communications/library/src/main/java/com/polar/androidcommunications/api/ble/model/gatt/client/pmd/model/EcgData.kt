@@ -1,6 +1,7 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient.Companion.parseDeltaFramesAll
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame.PmdDataFrameType
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrameUtils
@@ -31,6 +32,8 @@ internal class EcgData {
 
     companion object {
         private const val TYPE_0_SAMPLE_SIZE_IN_BYTES = 3
+        private const val TYPE_0_SAMPLE_SIZE_IN_BITS = TYPE_0_SAMPLE_SIZE_IN_BYTES * 8
+        private const val TYPE_0_CHANNELS_IN_SAMPLE = 1
         private const val TYPE_1_SAMPLE_SIZE_IN_BYTES = 3
         private const val TYPE_2_SAMPLE_SIZE_IN_BYTES = 3
 
@@ -41,7 +44,10 @@ internal class EcgData {
 
         fun parseDataFromDataFrame(frame: PmdDataFrame): EcgData {
             return if (frame.isCompressedFrame) {
-                throw java.lang.Exception("Compressed FrameType: ${frame.frameType} is not supported by EcgData data parser")
+                when (frame.frameType) {
+                    PmdDataFrameType.TYPE_0 -> dataFromCompressedType0(frame)
+                    else -> throw java.lang.Exception("Compressed FrameType: ${frame.frameType} is not supported by EcgData data parser")
+                }
             } else {
                 when (frame.frameType) {
                     PmdDataFrameType.TYPE_0 -> dataFromRawType0(frame)
@@ -119,6 +125,31 @@ internal class EcgData {
                     )
                 )
                 timeStampIndex++
+            }
+            return ecgData
+        }
+
+        private fun dataFromCompressedType0(frame: PmdDataFrame): EcgData {
+            val ecgData = EcgData()
+            val samples = parseDeltaFramesAll(
+                frame.dataContent,
+                TYPE_0_CHANNELS_IN_SAMPLE,
+                TYPE_0_SAMPLE_SIZE_IN_BITS,
+                BlePMDClient.PmdDataFieldEncoding.SIGNED_INT
+            )
+            val timeStamps = PmdTimeStampUtils.getTimeStamps(
+                previousFrameTimeStamp = frame.previousTimeStamp,
+                frameTimeStamp = frame.timeStamp,
+                samplesSize = samples.size,
+                frame.sampleRate
+            )
+            for ((index, sample) in samples.withIndex()) {
+                val microVolts = if (frame.factor != 1.0f) {
+                    (sample[0].toFloat() * frame.factor).toInt()
+                } else {
+                    sample[0]
+                }
+                ecgData.ecgSamples.add(EcgSample(timeStamp = timeStamps[index], microVolts = microVolts))
             }
             return ecgData
         }
