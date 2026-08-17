@@ -55,5 +55,22 @@ class BleUtilsTest {
         assertTrue(result.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC))
     }
 
+    @Test
+    fun advertisementBytes2Map_withUnknownAdType_doesNotThrowAndMapsToUnknown() {
+        // Regression test: AD type 0x19 (Appearance, decimal 25) is a valid Bluetooth SIG type
+        val adv = byteArrayOf(
+            0x02, 0x01, 0x06,                  // GAP_ADTYPE_FLAGS
+            0x03, 0x19, 0xC0.toByte(), 0x03,   // Appearance (unknown AD type 0x19)
+            0x03, 0x09, 0x41, 0x42             // GAP_ADTYPE_LOCAL_NAME_COMPLETE "AB"
+        )
+
+        val result = BleUtils.advertisementBytes2Map(adv)
+
+        assertEquals(3, result.size)
+        assertTrue(result.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_FLAGS))
+        assertTrue(result.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_LOCAL_NAME_COMPLETE))
+        assertTrue(result.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_UNKNOWN))
+    }
+
 
 }
