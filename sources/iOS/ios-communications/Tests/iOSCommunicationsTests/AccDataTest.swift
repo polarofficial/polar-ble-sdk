@@ -258,4 +258,12 @@ final class AccDataTest: XCTestCase {
         XCTAssertEqual(101, accData.samples[0].timeStamp)
         XCTAssertEqual(timeStamp, accData.samples[1].timeStamp)
     }
+    func testParseDeltaFramesToSamplesTooShortForReferenceSampleReturnsEmpty() {
+        for tooShortLength in 0..<6 {
+            let data = Data(Array(repeating: 0xFF, count: tooShortLength))
+            let samples = Pmd.parseDeltaFramesToSamples(data, channels: 3, resolution: 16)
+            XCTAssertTrue(samples.isEmpty,
+                          "\(tooShortLength) bytes is too short for the 6-byte reference sample; must return [] without trapping")
+        }
+    }
 }
