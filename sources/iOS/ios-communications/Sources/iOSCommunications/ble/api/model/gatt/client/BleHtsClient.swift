@@ -39,6 +39,11 @@ public class BleHtsClient: BleGattClientBase, @unchecked Sendable {
         if err == 0 {
             if chr == HealthThermometer.TEMPERATURE_MEASUREMENT {
                 BleLogger.trace_hex("TEMPERATURE_MEASUREMENT ", data: data)
+                // HTS TEMPERATURE_MEASUREMENT: 1 flags byte + 3 mantissa bytes + 1 exponent byte = 5 bytes minimum
+                guard data.count >= 5 else {
+                    BleLogger.error("HTS temperature measurement data too short: \(data.count) bytes")
+                    return
+                }
                 let flags = UInt8(data[0])
                 let isFahrenheit = (flags & 0x01) != 0
                 let exponent = Int8(bitPattern: data[4])

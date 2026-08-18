@@ -258,4 +258,117 @@ final class AccDataTest: XCTestCase {
         XCTAssertEqual(101, accData.samples[0].timeStamp)
         XCTAssertEqual(timeStamp, accData.samples[1].timeStamp)
     }
+
+    // MARK: - Error handling tests
+
+    func testPmdDataFrame_tooShortData_throwsError() {
+        // Arrange – only 5 bytes (fewer than the required 10)
+        let tooShortData = Data([0x02, 0x00, 0x94, 0x35, 0x77])
+
+        // Act & Assert
+        XCTAssertThrowsError(try PmdDataFrame(data: tooShortData, { _,_ in 0 }, { _ in 1.0 }, { _ in 0 })) { error in
+            XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError for short frame, got \(error)")
+        }
+    }
+
+    func testPmdDataFrame_emptyData_throwsError() {
+        // Act & Assert
+        XCTAssertThrowsError(try PmdDataFrame(data: Data(), { _,_ in 0 }, { _ in 1.0 }, { _ in 0 })) { error in
+            XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError for empty data, got \(error)")
+        }
+    }
+
+    func testProcessAccRawDataFrameType0_emptyContent_throwsError() throws {
+        // Arrange – valid header, empty data content
+        let header = Data([
+            0x02,
+            0x00, 0x94, 0x35, 0x77, 0x00, 0x00, 0x00, 0x00,
+            0x00  // raw type 0
+        ])
+        let dataFrame = try PmdDataFrame(data: header, { _,_ in 0 }, { _ in 1.0 }, { _ in 52 })
+
+        // Act & Assert
+        XCTAssertThrowsError(try AccData.parseDataFromDataFrame(frame: dataFrame)) { error in
+            XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError for empty TYPE_0 content, got \(error)")
+        }
+    }
+
+    func testProcessAccRawDataFrameType0_misalignedContent_throwsError() throws {
+        // Arrange – TYPE_0: 1 byte/channel * 3 channels = 3 bytes/sample.
+        // 5 bytes is not a multiple of 3 → should throw.
+        let header = Data([
+            0x02,
+            0x00, 0x94, 0x35, 0x77, 0x00, 0x00, 0x00, 0x00,
+            0x00  // raw type 0
+        ])
+        let misalignedContent = Data([0x01, 0x02, 0x03, 0x04, 0x05])  // 5 bytes
+        let dataFrame = try PmdDataFrame(data: header + misalignedContent, { _,_ in 0 }, { _ in 1.0 }, { _ in 52 })
+
+        // Act & Assert
+        XCTAssertThrowsError(try AccData.parseDataFromDataFrame(frame: dataFrame)) { error in
+            XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError for misaligned TYPE_0 content, got \(error)")
+        }
+    }
+
+    func testProcessAccRawDataFrameType1_emptyContent_throwsError() throws {
+        // Arrange – valid header, empty data content, raw type 1
+        let header = Data([
+            0x02,
+            0x00, 0x94, 0x35, 0x77, 0x00, 0x00, 0x00, 0x00,
+            0x01  // raw type 1
+        ])
+        let dataFrame = try PmdDataFrame(data: header, { _,_ in 0 }, { _ in 1.0 }, { _ in 52 })
+
+        // Act & Assert
+        XCTAssertThrowsError(try AccData.parseDataFromDataFrame(frame: dataFrame)) { error in
+            XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError for empty TYPE_1 content, got \(error)")
+        }
+    }
+
+    func testProcessAccRawDataFrameType1_misalignedContent_throwsError() throws {
+        // Arrange – TYPE_1: 2 bytes/channel * 3 channels = 6 bytes/sample.
+        // 7 bytes is not a multiple of 6 → should throw.
+        let header = Data([
+            0x02,
+            0x00, 0x94, 0x35, 0x77, 0x00, 0x00, 0x00, 0x00,
+            0x01  // raw type 1
+        ])
+        let misalignedContent = Data([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07])  // 7 bytes
+        let dataFrame = try PmdDataFrame(data: header + misalignedContent, { _,_ in 0 }, { _ in 1.0 }, { _ in 52 })
+
+        // Act & Assert
+        XCTAssertThrowsError(try AccData.parseDataFromDataFrame(frame: dataFrame)) { error in
+            XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError for misaligned TYPE_1 content, got \(error)")
+        }
+    }
+
+    func testProcessAccCompressedFrameType0_emptyContent_throwsError() throws {
+        // Arrange – compressed type 0, empty data content
+        let header = Data([
+            0x02,
+            0x00, 0x94, 0x35, 0x77, 0x00, 0x00, 0x00, 0x00,
+            0x80  // compressed type 0
+        ])
+        let dataFrame = try PmdDataFrame(data: header, { _,_ in 0 }, { _ in 1.0 }, { _ in 0 })
+
+        // Act & Assert
+        XCTAssertThrowsError(try AccData.parseDataFromDataFrame(frame: dataFrame)) { error in
+            XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError for empty compressed TYPE_0 content, got \(error)")
+        }
+    }
+
+    func testProcessAccCompressedFrameType1_emptyContent_throwsError() throws {
+        // Arrange – compressed type 1, empty data content
+        let header = Data([
+            0x02,
+            0x00, 0x94, 0x35, 0x77, 0x00, 0x00, 0x00, 0x00,
+            0x81  // compressed type 1
+        ])
+        let dataFrame = try PmdDataFrame(data: header, { _,_ in 0 }, { _ in 1.0 }, { _ in 0 })
+
+        // Act & Assert
+        XCTAssertThrowsError(try AccData.parseDataFromDataFrame(frame: dataFrame)) { error in
+            XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError for empty compressed TYPE_1 content, got \(error)")
+        }
+    }
 }

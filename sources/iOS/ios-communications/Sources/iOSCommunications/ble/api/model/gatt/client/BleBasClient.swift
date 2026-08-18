@@ -93,7 +93,10 @@ public class BleBasClient: BleGattClientBase, @unchecked Sendable {
     private func parseChargeState(from data: Data) -> ChargeState {
         let dataHex = data.map { String(format: "%02X", $0) }.joined(separator: " ")
         BleLogger.trace("Parsing charge state from data: \(dataHex)")
-        guard data.count > 0 else { return .unknown }
+        guard data.count >= 2 else {
+            BleLogger.error("Battery status data too short for charge state: \(data.count) bytes")
+            return .unknown
+        }
         let chargeStateValue = (data[1] & 0x60) >> 5
         switch chargeStateValue {
         case 1: return .charging
@@ -104,7 +107,8 @@ public class BleBasClient: BleGattClientBase, @unchecked Sendable {
     }
 
     private func parsePowerSourcesState(from data: Data) -> PowerSourcesState {
-        guard data.count > 0 else {
+        guard data.count >= 2 else {
+            BleLogger.error("Battery status data too short for power sources state: \(data.count) bytes")
             return PowerSourcesState(batteryPresent: .unknown, wiredExternalPowerConnected: .unknown, wirelessExternalPowerConnected: .unknown)
         }
         let batteryPresent: BatteryPresentState = (data[1] & 0x01) == 1 ? .present : .notPresent

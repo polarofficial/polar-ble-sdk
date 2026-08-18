@@ -48,8 +48,8 @@ class ListRecordingsViewModel @Inject constructor(
     private val polarDeviceStreamingRepository: PolarDeviceRepository,
     state: SavedStateHandle
 ) : ViewModel() {
-    private val deviceId = state.get<String>("deviceIdFragmentArgument")
-        ?: throw Exception("ListRecordingsViewModel requires deviceId")
+    private val identifier = state.get<String>("deviceIdFragmentArgument")
+        ?: throw Exception("ListRecordingsViewModel requires device identifier")
 
     var offlineRecordingsUiState by mutableStateOf(
         OfflineRecordingsUiState(
@@ -84,7 +84,7 @@ class ListRecordingsViewModel @Inject constructor(
     }
 
     fun listOfflineRecordings() {
-        Log.d(TAG, "listOfflineRecordings for device $deviceId")
+        Log.d(TAG, "listOfflineRecordings for device $identifier")
         viewModelScope.launch {
             try {
                 listOfRecordings.clear()
@@ -92,7 +92,7 @@ class ListRecordingsViewModel @Inject constructor(
                     fetchStatus = OfflineRecordingFetch.InProgress(emptyList())
                 )
 
-                polarDeviceStreamingRepository.listOfflineRecordings(deviceId)
+                polarDeviceStreamingRepository.listOfflineRecordings(identifier)
                     .onCompletion { error ->
                         if (error == null) {
                             Log.d(TAG, "Offline recordings listing completed. Total: ${listOfRecordings.size}")
@@ -132,13 +132,13 @@ class ListRecordingsViewModel @Inject constructor(
     }
 
     fun deleteRecording(entry: PolarOfflineRecordingEntry) {
-        Log.d(TAG, "deleteRecording from device $deviceId, path: ${entry.path}")
+        Log.d(TAG, "deleteRecording from device $identifier, path: ${entry.path}")
         viewModelScope.launch {
             offlineRecordingsUiState = offlineRecordingsUiState.copy(
                 deletingEntryPath = entry.path
             )
 
-            when (val result = polarDeviceStreamingRepository.deleteRecording(deviceId, entry.path)) {
+            when (val result = polarDeviceStreamingRepository.deleteRecording(identifier, entry.path)) {
                 is ResultOfRequest.Success -> {
                     Log.d(TAG, "Recording deleted successfully: ${entry.path}")
 

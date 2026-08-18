@@ -2,6 +2,7 @@ import Foundation
 
 extension PolarBleApiImpl: PolarDeviceToHostNotificationsApi {
     func observeDeviceToHostNotifications(identifier: String) -> AsyncThrowingStream<PolarD2HNotificationData, Error> {
+        logApiCall("observeDeviceToHostNotifications", ("identifier", identifier))
         return AsyncThrowingStream { continuation in
             Task {
                 do {

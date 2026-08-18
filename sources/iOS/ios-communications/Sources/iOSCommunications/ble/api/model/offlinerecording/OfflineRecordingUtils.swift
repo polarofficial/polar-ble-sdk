@@ -4,7 +4,7 @@ import Foundation
 class OfflineRecordingUtils {
         
     static func mapOfflineRecordingFileNameToMeasurementType(fileName: String) throws -> PmdMeasurementType {
-        let fileNameWithoutExtension = fileName.components(separatedBy: ".").first!
+        let fileNameWithoutExtension = fileName.components(separatedBy: ".").first ?? fileName
         switch fileNameWithoutExtension.replacingOccurrences(of: "\\d+", with: "", options: .regularExpression) {
             case "ACC": return .acc
             case "GYRO": return .gyro

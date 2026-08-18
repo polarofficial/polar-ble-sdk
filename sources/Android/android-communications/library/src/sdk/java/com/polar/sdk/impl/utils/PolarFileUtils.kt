@@ -278,6 +278,42 @@ internal object PolarFileUtils {
     }
 
     // Low level API method
+    suspend fun createFolder(
+        identifier: String,
+        folderPath: String,
+        listener: BleDeviceListener?,
+        tag: String
+    ) {
+        // Ensure the path ends with '/' so the device interprets it as a directory
+        val normalizedPath = if (folderPath.endsWith("/")) folderPath else "$folderPath/"
+
+        val session = try {
+            sessionPsFtpClientReady(identifier, listener)
+        } catch (error: Throwable) {
+            throw handleError(error)
+        }
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: throw PolarServiceNotAvailable()
+
+        val builder = PftpRequest.PbPFtpOperation.newBuilder()
+        builder.command = PftpRequest.PbPFtpOperation.Command.PUT
+        builder.path = normalizedPath
+
+        // An empty payload signals folder creation to the device
+        val emptyData = ByteArrayInputStream(ByteArray(0))
+        try {
+            client.write(builder.build().toByteArray(), emptyData)
+                .collect { progress ->
+                    BleLogger.d(tag, "createFolder write progress $progress: $normalizedPath")
+                }
+            BleLogger.d(tag, "createFolder: folder created at $normalizedPath on device $identifier")
+        } catch (error: Throwable) {
+            BleLogger.e(tag, "createFolder: failed to create $normalizedPath on device $identifier, error: $error")
+            throw handleError(error)
+        }
+    }
+
+    // Low level API method
     suspend fun removeFileOrDirectory(
         identifier: String,
         filePath: String,

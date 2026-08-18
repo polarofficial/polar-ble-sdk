@@ -285,3 +285,4 @@ private val measurementFrameAccType0Short = byteArrayOf(
 //      Sample 0 (aka. reference sample):
 //      channel 0: 5D FF => 0xFF5D => -163
 private const val accShortSample0Channel0 = -163
+

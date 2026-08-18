@@ -24,21 +24,34 @@ public class PpiData {
     
     static func parseDataFromDataFrame(frame: PmdDataFrame) throws -> PpiData {
         if (frame.isCompressedFrame) {
-            throw BleGattException.gattDataError(description: "Compressed FrameType: \(frame.frameType) is not supported by PPI data parser")
+            throw PmdDataParseError(message: "Compressed FrameType: \(frame.frameType) is not supported by PPI data parser")
         } else {
             switch (frame.frameType) {
             case PmdDataFrameType.type_0: return try dataFromRawType0(frame: frame)
-            default: throw BleGattException.gattDataError(description: "Raw FrameType: \(frame.frameType) is not supported by PPI data parser")
+            default: throw PmdDataParseError(message: "Raw FrameType: \(frame.frameType) is not supported by PPI data parser")
             }
         }
     }
     
     private static func dataFromRawType0(frame: PmdDataFrame) throws -> PpiData {
-        let data = PpiData(samples: stride(from: 0, to: frame.dataContent.count, by: PPI_SAMPLE_CHUNK)
+        guard frame.dataContent.count % PPI_SAMPLE_CHUNK == 0 else {
+            throw PmdDataParseError(
+                message: "PPI raw TYPE_0 dataContent size \(frame.dataContent.count) is not a " +
+                "non-zero multiple of expected sample chunk size \(PPI_SAMPLE_CHUNK)")
+        }
+        let data = PpiData(samples: try stride(from: 0, to: frame.dataContent.count, by: PPI_SAMPLE_CHUNK)
             .map { (start) -> Data in
-                return frame.dataContent.subdata(in: start..<start.advanced(by: PPI_SAMPLE_CHUNK))
+                let end = start.advanced(by: PPI_SAMPLE_CHUNK)
+                guard end <= frame.dataContent.count else {
+                    throw PmdDataParseError(message: "Incomplete PPI sample chunk at offset \(start): expected \(PPI_SAMPLE_CHUNK) bytes")
+                }
+                return frame.dataContent.subdata(in: start..<end)
             }
-            .map { (data) -> PpiSample in
+            .map { (data) throws -> PpiSample in
+                guard data.count >= PPI_SAMPLE_CHUNK else {
+                    throw PmdDataParseError(message: "Insufficient data for PPI sample: expected \(PPI_SAMPLE_CHUNK) bytes, got \(data.count)")
+                }
+
                 let hr = Int(data[0])
                 let ppInMs = UInt16(UInt16(data[2]) << 8 | UInt16(data[1]))
                 let ppErrorEstimate = UInt16(UInt16(data[4]) << 8 | UInt16(data[3]))

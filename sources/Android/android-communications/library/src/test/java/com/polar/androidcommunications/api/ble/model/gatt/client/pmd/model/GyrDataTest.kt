@@ -214,4 +214,39 @@ class GyrDataTest {
 
         Assert.assertEquals(timeStamp, gyroData.gyrSamples[1].timeStamp)
     }
+
+    // ── Bounds-checking / invalid-data tests ────────────────────────────────
+
+    private fun gyrHeader(frameTypeByte: Byte) = byteArrayOf(
+        0x05.toByte(),
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+        frameTypeByte
+    )
+
+    @Test
+    fun `Gyro compressed type 0 throws PmdDataParseException when dataContent is empty`() {
+        // 0x80 = compressed, type 0
+        val frame = PmdDataFrame(gyrHeader(0x80.toByte()), { _, _ -> 100uL }, { 1.0f }) { 0 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            GyrData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `Gyro compressed type 1 throws PmdDataParseException when dataContent is empty`() {
+        // 0x81 = compressed, type 1
+        val frame = PmdDataFrame(gyrHeader(0x81.toByte()), { _, _ -> 100uL }, { 1.0f }) { 0 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            GyrData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `Gyro raw type throws PmdDataParseException`() {
+        // Gyro has no supported raw types
+        val frame = PmdDataFrame(gyrHeader(0x00), { _, _ -> 100uL }, { 1.0f }) { 0 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            GyrData.parseDataFromDataFrame(frame)
+        }
+    }
 }

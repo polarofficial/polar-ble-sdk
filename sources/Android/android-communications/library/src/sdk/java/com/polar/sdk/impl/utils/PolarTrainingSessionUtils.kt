@@ -292,6 +292,14 @@ internal object PolarTrainingSessionUtils {
 
     suspend fun deleteTrainingSession(client: BlePsFtpClient, reference: PolarTrainingSessionReference) {
         val components = reference.path.split("/").toTypedArray()
+        // Expected path format: /U/0/<date>/E/<time>/<exercise>
+        // components[3] = <date>, components[5] = <time>
+        if (components.size < 4) {
+            throw IllegalArgumentException(
+                "deleteTrainingSession: unexpected path format '${reference.path}' " +
+                "(expected at least 4 components, got ${components.size})"
+            )
+        }
         val exerciseParent = ARABICA_USER_ROOT_FOLDER + components[3] + "/E/"
 
         val listOp = PftpRequest.PbPFtpOperation.newBuilder()
@@ -305,6 +313,12 @@ internal object PolarTrainingSessionUtils {
             val removePath = if (directory.entriesCount <= 1) {
                 "/U/0/${components[3]}/E/"
             } else {
+                if (components.size < 6) {
+                    throw IllegalArgumentException(
+                        "deleteTrainingSession: path '${reference.path}' too short to resolve exercise sub-path " +
+                        "(need at least 6 components for multi-exercise deletion, got ${components.size})"
+                    )
+                }
                 "/U/0/${components[3]}/E/${components[5]}/"
             }
             val removeOp = PftpRequest.PbPFtpOperation.newBuilder()

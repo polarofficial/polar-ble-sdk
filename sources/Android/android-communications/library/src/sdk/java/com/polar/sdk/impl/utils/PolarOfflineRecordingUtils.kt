@@ -29,7 +29,7 @@ internal object PolarOfflineRecordingUtils {
             "HR" -> PmdMeasurementType.OFFLINE_HR
             "TEMP" -> PmdMeasurementType.TEMPERATURE
             "SKINTEMP" -> PmdMeasurementType.SKIN_TEMP
-            else -> throw IllegalArgumentException("Unknown offline file $fileName")
+            else -> throw PolarInvalidArgument("Unknown offline recording file name: '$fileName'")
         }
     }
 
@@ -43,7 +43,7 @@ internal object PolarOfflineRecordingUtils {
             PmdMeasurementType.OFFLINE_HR -> PolarBleApi.PolarDeviceDataType.HR
             PmdMeasurementType.TEMPERATURE -> PolarBleApi.PolarDeviceDataType.TEMPERATURE
             PmdMeasurementType.SKIN_TEMP -> PolarBleApi.PolarDeviceDataType.SKIN_TEMPERATURE
-            else -> throw IllegalArgumentException("Unknown PMD measurement type: $type")
+            else -> throw PolarInvalidArgument("Unknown PMD measurement type for offline recording: '$type'")
         }
     }
 

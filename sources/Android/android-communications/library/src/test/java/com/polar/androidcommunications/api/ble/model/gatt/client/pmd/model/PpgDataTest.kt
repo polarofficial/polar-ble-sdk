@@ -1,7 +1,6 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
 import androidx.test.espresso.matcher.ViewMatchers.assertThat
-import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
 import org.hamcrest.Matchers.equalTo
@@ -11,7 +10,6 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.function.ThrowingRunnable
-import kotlin.experimental.and
 
 class PpgDataTest {
     @Test
@@ -718,7 +716,7 @@ class PpgDataTest {
 
         var throwingRunnable = ThrowingRunnable { PpgData.parseDataFromDataFrame(dataFrame) }
         val exception = assertThrows(java.lang.Exception::class.java, throwingRunnable)
-        assertThat(exception.message, equalTo("Raw FrameType: TYPE_10 is not supported by PPG data parser"))
+        assertThat(exception.message, equalTo("PPG raw frame type TYPE_10 is not supported"))
     }
 
     @Test
@@ -862,7 +860,7 @@ class PpgDataTest {
 
         var throwingRunnable = ThrowingRunnable { PpgData.parseDataFromDataFrame(dataFrame) }
         val exception = assertThrows(java.lang.Exception::class.java, throwingRunnable)
-        assertThat(exception.message, equalTo("Raw FrameType: TYPE_13 is not supported by PPG data parser"))
+        assertThat(exception.message, equalTo("PPG raw frame type TYPE_13 is not supported"))
     }
 
     @Test
@@ -927,6 +925,67 @@ class PpgDataTest {
 
         var throwingRunnable = ThrowingRunnable { PpgData.parseDataFromDataFrame(dataFrame) }
         val exception = assertThrows(java.lang.Exception::class.java, throwingRunnable)
-        assertThat(exception.message, equalTo("Compressed FrameType: TYPE_14 is not supported by PPG data parser"))
+        assertThat(exception.message, equalTo("PPG compressed frame type TYPE_14 is not supported"))
+    }
+
+    // ── Bounds-checking / invalid-data tests ────────────────────────────────
+
+    private fun ppgHeader(frameTypeByte: Byte) = byteArrayOf(
+        0x01.toByte(),
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+        frameTypeByte
+    )
+
+    @Test
+    fun `PPG raw type 0 throws PmdDataParseException when dataContent is empty`() {
+        val frame = PmdDataFrame(ppgHeader(0x00), { _, _ -> 0uL }, { 1.0f }) { 13 }
+        assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            PpgData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `PPG raw type 0 throws PmdDataParseException when dataContent size is not multiple of sample size`() {
+        // TYPE_0: 3 bytes/channel × 4 channels = 12; send 11 bytes (not a multiple)
+        val frame = PmdDataFrame(ppgHeader(0x00) + ByteArray(11), { _, _ -> 0uL }, { 1.0f }) { 13 }
+        assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            PpgData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `PPG raw type 5 throws PmdDataParseException when dataContent size is not multiple of 4`() {
+        // TYPE_5 sample = 4 bytes; send 5 bytes
+        val frame = PmdDataFrame(ppgHeader(0x05) + ByteArray(5), { _, _ -> 0uL }, { 1.0f }) { 13 }
+        assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            PpgData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `PPG raw type 6 throws PmdDataParseException when dataContent is too short`() {
+        // TYPE_6 requires at least 8 bytes (sport ID); send 7 bytes
+        val frame = PmdDataFrame(ppgHeader(0x06) + ByteArray(7), { _, _ -> 0uL }, { 1.0f }) { 13 }
+        assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            PpgData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `PPG compressed type 0 throws PmdDataParseException when dataContent is empty`() {
+        // 0x80 = compressed, type 0
+        val frame = PmdDataFrame(ppgHeader(0x80.toByte()), { _, _ -> 100uL }, { 1.0f }) { 13 }
+        assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            PpgData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `PPG compressed type 7 throws PmdDataParseException when dataContent is empty`() {
+        // 0x87 = compressed, type 7
+        val frame = PmdDataFrame(ppgHeader(0x87.toByte()), { _, _ -> 100uL }, { 1.0f }) { 13 }
+        assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            PpgData.parseDataFromDataFrame(frame)
+        }
     }
 }

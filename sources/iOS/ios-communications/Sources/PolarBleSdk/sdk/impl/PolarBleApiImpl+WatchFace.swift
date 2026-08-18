@@ -7,6 +7,7 @@ private let TAG = "PolarWatchFace"
 extension PolarBleApiImpl: PolarWatchFaceApi {
 
     func getWatchFaceConfig(_ identifier: String) async throws -> PolarWatchFaceConfig {
+        logApiCall("getWatchFaceConfig", ("identifier", identifier))
         BleLogger.trace("\(TAG): getWatchFaceConfig: device=\(identifier) key=\(PolarWatchFaceUtils.WATCH_FACE_CONFIG_KVS_KEY)")
         let fields = try await PolarWatchFaceUtils.readWatchFaceConfigFields(identifier, serviceClientUtils: serviceClientUtils)
         let complications = fields.complicationIds.compactMap { id -> PolarWatchFaceComplication? in
@@ -21,6 +22,7 @@ extension PolarBleApiImpl: PolarWatchFaceApi {
     }
 
     func setWatchFaceConfig(_ identifier: String, config: PolarWatchFaceConfig) async throws {
+        logApiCall("setWatchFaceConfig", ("identifier", identifier), ("complications", config.enabledComplications.map { $0.id }))
         let ids = config.enabledComplications.map { $0.id }
         BleLogger.trace("\(TAG): setWatchFaceConfig: device=\(identifier) ids=\(ids)")
         try await PolarWatchFaceUtils.writeWatchFaceComplicationInts(identifier,

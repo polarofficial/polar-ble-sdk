@@ -25,6 +25,7 @@ fun GenericApiActivityScreen (
     var writeData by remember { mutableStateOf ("") }
     var deleteFilePath by remember { mutableStateOf ("") }
     var deleteDeep by remember { mutableStateOf (false) }
+    var createFolderPath by remember { mutableStateOf ("") }
 
     Column(
         modifier = Modifier
@@ -245,6 +246,48 @@ fun GenericApiActivityScreen (
                     .padding(end = 6.dp),
                 shape = RoundedCornerShape(8.dp)
             ) { Text(stringResource(R.string.generic_api_button_delete)) }
+
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        Text(
+            text = stringResource(R.string.generic_api_do_create_folder_header),
+            style = MaterialTheme.typography.h6,
+            color = MaterialTheme.colors.onSurface,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 32.dp)
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+        ) {
+            TextField(
+                value = createFolderPath,
+                onValueChange = {
+                    createFolderPath = it
+                },
+                label = { Text(text = stringResource(R.string.generic_api_do_create_folder)) },
+                placeholder = { Text(text = "") },
+                modifier = Modifier
+                    .padding(vertical = 4.dp),
+                shape = RoundedCornerShape(8.dp),
+                textStyle = TextStyle(color = Color.White)
+            )
+
+            Spacer(Modifier.width(12.dp))
+
+            Button(
+                onClick = { viewModel.createFolder(createFolderPath) },
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 6.dp),
+                shape = RoundedCornerShape(8.dp)
+            ) { Text(stringResource(R.string.generic_api_button_create_folder)) }
 
         }
     }

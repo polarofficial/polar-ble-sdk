@@ -171,7 +171,7 @@ class LoggingFragment: Fragment(R.layout.fragment_logging) {
     private fun shareDeviceLogs(logs: List<PolarDeviceLog>) {
         try {
             val logPairs = logs.map { it.path to it.data }
-            val zipFile = ZipCompressionHelper.createDeviceLogsZipFile(requireContext(), logPairs, viewModel.uiDeviceId)
+            val zipFile = ZipCompressionHelper.createDeviceLogsZipFile(requireContext(), logPairs, viewModel.uiIdentifier)
             val uri: Uri = FileProvider.getUriForFile(
                 requireContext(),
                 "com.polar.polarsensordatacollector.fileprovider",

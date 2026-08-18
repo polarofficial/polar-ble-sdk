@@ -26,6 +26,7 @@ class GetGattCallbackTest {
         every { sessions.getSession(gatt) } returns deviceSession
         every { connectionHandler.deviceDisconnected(any()) } just runs
         every { gatt.close() } just runs
+        every { gatt.device } returns mockk(relaxed = true) { every { address } returns "AA:BB:CC:DD:EE:FF" }
 
         val initializedLatch = CountDownLatch(1)
         every { connectionHandler.connectionInitialized(deviceSession) } answers {

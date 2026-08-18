@@ -23,9 +23,13 @@ public class PolarBackupManager {
     }
 
     let client: BlePsFtpClient
+    let identifier: String
+    let lowLevelApi: PolarBleLowLevelApi
 
-    public init(client: BlePsFtpClient) {
+    public init(client: BlePsFtpClient, identifier: String, lowLevelApi: PolarBleLowLevelApi) {
         self.client = client
+        self.identifier = identifier
+        self.lowLevelApi = lowLevelApi
     }
 
     public func backupDevice() async throws -> [BackupFileData] {
@@ -85,7 +89,30 @@ public class PolarBackupManager {
     public func restoreBackup(backupFiles: [BackupFileData]) async throws {
         BleLogger.trace("Starting backup restoration for \(backupFiles.count) files")
         var failedFiles: [(fileName: String, error: Error)] = []
+        var createdFolders: [String] = []
         for backupFileData in backupFiles {
+            
+            let segments = backupFileData.directory
+                .components(separatedBy: "/")
+                .filter { !$0.isEmpty }
+
+            if segments.count > 0 {
+                let paths = (1...segments.count).map { i in
+                    "/" + segments[0..<i].joined(separator: "/") + "/"
+                }.filter { $0.hasPrefix(ARABICA_USER_ROOT_FOLDER) }
+
+                for path in paths {
+                    if !createdFolders.contains(path) {
+                        createdFolders.append(path)
+                        do {
+                            try await lowLevelApi.createFolder(identifier: identifier, folderPath: path)
+                            BleLogger.trace("Created folder: \(path)")
+                        } catch {
+                            BleLogger.error("Failed to create folder \(path), error: \(error)")
+                        }
+                    }
+                }
+            }
             BleLogger.trace("Restoring: \(backupFileData.fileName)")
             do {
                 var operation = Protocol_PbPFtpOperation()

@@ -277,6 +277,14 @@ public interface <span class="typeNameLabel"><a href=PolarBleLowLevelApi.html>Po
                                             <td class="colLast">List all files in the given path</td>
                                         </tr>
                                         
+                                        <tr id="i4" class="altColor">
+                                            <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleLowLevelApi.html#createFolder(java.lang.String,java.lang.String)>createFolder</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> folderPath) </code>
+                                            </th>
+                                            <td class="colLast">Create a new folder on the device using the low-level PFTP API.</td>
+                                        </tr>
+                                        
                                         </tbody>
                                     </table>
                                 </div>
@@ -440,7 +448,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleLowLevelApi.html>Po
                                     <!--   -->
                                 </a>
                                 <ul class=
-                                              "blockListLast"
+                                              "blockList"
                                           >
                                     <li class="blockList">
                                         <h4>getFileList</h4>
@@ -467,6 +475,43 @@ public interface <span class="typeNameLabel"><a href=PolarBleLowLevelApi.html>Po
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
                                             <dd><p>List of files or error</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="createFolder(java.lang.String,java.lang.String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>createFolder</h4>
+                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBleLowLevelApi.html#createFolder(java.lang.String,java.lang.String)>createFolder</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> folderPath)</pre>
+                                        <div class="block"><p>Create a new folder on the device using the low-level PFTP API. The folder path must end with a '/'. If it does not, one will be appended automatically. NOTE: this is an experimental API intended for Polar internal use only. Polar will not support 3rd party users with this API.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device ID or BT address</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>folderPath</code> - Path of the folder to create on the Polar device (e.g.</dd>
+                                            
+                                            
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>Success or error</p></dd>
                                         
 
                                         

@@ -5,12 +5,14 @@ import com.polar.androidcommunications.api.ble.model.BleDeviceSession
 import com.polar.androidcommunications.api.ble.model.advertisement.BleAdvertisementContent
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Companion.HR_SERVICE
+import com.polar.androidcommunications.api.ble.model.gatt.client.BleMdsClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BlePfcClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
 import com.polar.sdk.api.errors.PolarDeviceDisconnected
 import com.polar.sdk.api.errors.PolarDeviceNotFound
 import com.polar.sdk.api.errors.PolarInvalidArgument
+import com.polar.sdk.api.errors.PolarNotificationNotEnabled
 import com.polar.sdk.api.errors.PolarServiceNotAvailable
 import com.polar.sdk.impl.utils.PolarServiceClientUtils
 import io.mockk.every
@@ -452,6 +454,123 @@ class PolarServiceClientUtilsTest {
             fail("Test testFetchSessionThrows failed: fetchSession did not throw when device does not match deviceID filters.")
         } catch (e: Exception) {
             Assert.assertEquals(true,  PolarDeviceDisconnected().toString().contentEquals(e.toString()))
+        }
+    }
+
+    @Test
+    fun testSessionMdsClientReady() {
+        // Arrange
+        val deviceId = "E123456F"
+
+        val client = mockk<BleMdsClient>()
+        val listener = mockk<BleDeviceListener>()
+        val session = mockk<BleDeviceSession>()
+        val sessions = mockk<Set<BleDeviceSession>>()
+        val advContent = mockk<BleAdvertisementContent>()
+
+        every { listener.deviceSessions() } returns sessions
+        every { sessions.iterator().hasNext() } returns true
+        every { sessions.iterator().next() } returns session
+        every { session.advertisementContent } returns advContent
+        every { session.advertisementContent.polarDeviceId } returns deviceId
+        every { session.polarDeviceType } returns "Polar360"
+        every { session.sessionState } returns BleDeviceSession.DeviceSessionState.SESSION_OPEN
+        every { session.fetchClient(any()) } returns client
+        every { client.isServiceDiscovered } returns true
+
+        // Act
+        val testMdsSession = PolarServiceClientUtils.sessionMdsClientReady(deviceId, listener)
+
+        // Assert
+        Assert.assertEquals(testMdsSession.sessionState, BleDeviceSession.DeviceSessionState.SESSION_OPEN)
+    }
+
+    @Test
+    fun testSessionMdsClient_Throws_When_DeviceDisconnected() {
+        // Arrange
+        val deviceId = "E123456F"
+
+        val listener = mockk<BleDeviceListener>()
+        val session = mockk<BleDeviceSession>()
+        val sessions = mockk<Set<BleDeviceSession>>()
+        val advContent = mockk<BleAdvertisementContent>()
+
+        every { listener.deviceSessions() } returns sessions
+        every { sessions.iterator().hasNext() } returns true
+        every { sessions.iterator().next() } returns session
+        every { session.advertisementContent } returns advContent
+        every { session.advertisementContent.polarDeviceId } returns deviceId
+        every { session.polarDeviceType } returns "Polar360"
+        every { session.sessionState } returns BleDeviceSession.DeviceSessionState.SESSION_CLOSED
+
+        // Act&Assert
+        try {
+            PolarServiceClientUtils.sessionMdsClientReady(deviceId, listener)
+            fail("Test testSessionMdsClientThrows failed: sessionMdsClientReady did not throw when no connection to device.")
+        } catch (e: Exception) {
+            Assert.assertEquals(true, PolarDeviceDisconnected().toString().contentEquals(e.toString()))
+        }
+    }
+
+    @Test
+    fun testSessionMdsClient_Throws_When_ServiceNotAvailable() {
+        // Arrange
+        val deviceId = "E123456F"
+
+        val client = mockk<BleMdsClient>()
+        val listener = mockk<BleDeviceListener>()
+        val session = mockk<BleDeviceSession>()
+        val sessions = mockk<Set<BleDeviceSession>>()
+        val advContent = mockk<BleAdvertisementContent>()
+
+        every { listener.deviceSessions() } returns sessions
+        every { sessions.iterator().hasNext() } returns true
+        every { sessions.iterator().next() } returns session
+        every { session.advertisementContent } returns advContent
+        every { session.advertisementContent.polarDeviceId } returns deviceId
+        every { session.polarDeviceType } returns "Polar360"
+        every { session.sessionState } returns BleDeviceSession.DeviceSessionState.SESSION_OPEN
+        // sessionServiceReady finds the client, but fetchClient cast to BleMdsClient returns null
+        every { session.fetchClient(BleMdsClient.MDS_SERVICE) } returnsMany listOf(client, null)
+        every { client.isServiceDiscovered } returns true
+
+        // Act&Assert
+        try {
+            PolarServiceClientUtils.sessionMdsClientReady(deviceId, listener)
+            fail("Test testSessionMdsClientThrowsWhenServiceNotAvailable failed: sessionMdsClientReady did not throw when MDS client is unavailable.")
+        } catch (e: Exception) {
+            Assert.assertEquals(true, PolarServiceNotAvailable().toString().contentEquals(e.toString()))
+        }
+    }
+
+    @Test
+    fun testSessionMdsClient_Throws_When_ServiceNotDiscovered() {
+        // Arrange
+        val deviceId = "E123456F"
+
+        val client = mockk<BleMdsClient>()
+        val listener = mockk<BleDeviceListener>()
+        val session = mockk<BleDeviceSession>()
+        val sessions = mockk<Set<BleDeviceSession>>()
+        val advContent = mockk<BleAdvertisementContent>()
+
+        every { listener.deviceSessions() } returns sessions
+        every { sessions.iterator().hasNext() } returns true
+        every { sessions.iterator().next() } returns session
+        every { session.advertisementContent } returns advContent
+        every { session.advertisementContent.polarDeviceId } returns deviceId
+        every { session.polarDeviceType } returns "Polar360"
+        every { session.sessionState } returns BleDeviceSession.DeviceSessionState.SESSION_OPEN
+        every { session.fetchClient(BleMdsClient.MDS_SERVICE) } returns client
+        // Return true on first call (sessionServiceReady check), false on second (sessionMdsClientReady check)
+        every { client.isServiceDiscovered } returnsMany listOf(true, false)
+
+        // Act&Assert
+        try {
+            PolarServiceClientUtils.sessionMdsClientReady(deviceId, listener)
+            fail("Test testSessionMdsClientThrowsWhenServiceNotDiscovered failed: sessionMdsClientReady did not throw when MDS service is not discovered.")
+        } catch (e: Exception) {
+            Assert.assertEquals(true, PolarNotificationNotEnabled().toString().contentEquals(e.toString()))
         }
     }
 

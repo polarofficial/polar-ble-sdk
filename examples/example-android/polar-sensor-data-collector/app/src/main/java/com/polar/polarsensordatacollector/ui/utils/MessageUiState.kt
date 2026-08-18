@@ -10,6 +10,6 @@ import kotlin.random.Random
  * For example if the same message is wanted to show again on view with Snackbar or Toast
  */
 
-class MessageUiState(val header: String, val description: String? = "") {
+class MessageUiState(val header: String, val description: String? = "", val timeout: Long? = null) {
     private var random = Random.nextInt()
 }

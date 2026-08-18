@@ -84,4 +84,38 @@ internal class PpiDataTest {
 
         assertEquals(2, ppiData.ppiSamples.size)
     }
+
+    // ── Bounds-checking / invalid-data tests ────────────────────────────────
+
+    private fun ppiHeader(frameTypeByte: Byte) = byteArrayOf(
+        0x03.toByte(),
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+        frameTypeByte
+    )
+
+    @Test
+    fun `PPI raw type 0 throws PmdDataParseException when dataContent is empty`() {
+        val frame = PmdDataFrame(ppiHeader(0x00), { _, _ -> 0uL }, { 1.0f }) { 0 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            PpiData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `PPI raw type 0 throws PmdDataParseException when dataContent size is not multiple of 6`() {
+        // PPI sample = 6 bytes; send 5 bytes (not a multiple)
+        val frame = PmdDataFrame(ppiHeader(0x00) + byteArrayOf(0x01, 0x02, 0x03, 0x04, 0x05), { _, _ -> 0uL }, { 1.0f }) { 0 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            PpiData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `PPI compressed type throws PmdDataParseException`() {
+        // 0x80 = compressed bit — PPI has no supported compressed types
+        val frame = PmdDataFrame(ppiHeader(0x80.toByte()) + byteArrayOf(0x01), { _, _ -> 0uL }, { 1.0f }) { 0 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            PpiData.parseDataFromDataFrame(frame)
+        }
+    }
 }

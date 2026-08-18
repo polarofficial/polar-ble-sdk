@@ -23,7 +23,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.function.Predicate
-import kotlin.streams.toList
+import java.util.stream.Collectors
 
 internal class BDScanCallback(
     context: Context,
@@ -290,7 +290,7 @@ internal class BDScanCallback(
             return
         }
         val isWithinScanWindow = Predicate<Long> { aLong -> System.currentTimeMillis() - aLong < SCAN_WINDOW_LIMIT }
-        val scanWindowList = scanPool.stream().filter(isWithinScanWindow).toList()
+        val scanWindowList = scanPool.stream().filter(isWithinScanWindow).collect(Collectors.toList())
         scanPool.clear()
         scanPool.addAll(scanWindowList)
         scanPool.add(System.currentTimeMillis())

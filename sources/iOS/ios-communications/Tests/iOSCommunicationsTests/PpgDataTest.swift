@@ -171,9 +171,7 @@ final class PpgDataTest: XCTestCase {
         // Act, Assert
         XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame), "Compressed FrameType: type_4 is not supported by PPG data parser")
         XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame)) { error in
-            guard case BleGattException.gattDataError = error else {
-                return XCTFail()
-            }
+            XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError, got \(error)")
         }
     }
     
@@ -235,9 +233,7 @@ final class PpgDataTest: XCTestCase {
         // Act, Assert
         XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame), "Compressed FrameType: type_5 is not supported by PPG data parser")
         XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame)) { error in
-            guard case BleGattException.gattDataError = error else {
-                return XCTFail()
-            }
+            XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError, got \(error)")
         }
     }
     
@@ -294,9 +290,7 @@ final class PpgDataTest: XCTestCase {
         
         XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame), "Compressed FrameType: type_6 is not supported by PPG data parser")
         XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame)) { error in
-            guard case BleGattException.gattDataError = error else {
-                return XCTFail()
-            }
+            XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError, got \(error)")
         }
     }
     
@@ -426,9 +420,7 @@ final class PpgDataTest: XCTestCase {
         // Act, Assert
         XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame), "Compressed FrameType: type_8 is not supported by PPG data parser")
         XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame)) { error in
-            guard case BleGattException.gattDataError = error else {
-                return XCTFail()
-            }
+            XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError, got \(error)")
         }
     }
     
@@ -533,9 +525,7 @@ final class PpgDataTest: XCTestCase {
         // Act, Assert
         XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame), "Compressed FrameType: type_9 is not supported by PPG data parser")
         XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame)) { error in
-            guard case BleGattException.gattDataError = error else {
-                return XCTFail()
-            }
+            XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError, got \(error)")
         }
     }
     
@@ -792,12 +782,10 @@ final class PpgDataTest: XCTestCase {
        // Act, Assert
        XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame), "Raw FrameType: TYPE_10 is not supported by PPG data parser")
        XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame)) { error in
-           guard case BleGattException.gattDataError = error else {
-               return XCTFail()
-           }
+           XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError, got \(error)")
        }
-   }
-    
+    }
+
     func testCompressedPpgFrameType13() throws {
 
         // Arrange
@@ -882,9 +870,7 @@ final class PpgDataTest: XCTestCase {
        // Act, Assert
        XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame), "Raw FrameType: TYPE_13 is not supported by PPG data parser")
        XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame)) { error in
-           guard case BleGattException.gattDataError = error else {
-               return XCTFail()
-           }
+           XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError, got \(error)")
        }
    }
     
@@ -951,9 +937,7 @@ final class PpgDataTest: XCTestCase {
         // Act, Assert
         XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame), "Compressed FrameType: type_14 is not supported by PPG data parser")
         XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame)) { error in
-            guard case BleGattException.gattDataError = error else {
-                return XCTFail()
-            }
+            XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError, got \(error)")
         }
     }
 }

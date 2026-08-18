@@ -8,6 +8,7 @@ extension PolarBleApiImpl: PolarDerivedMeasurementApi {
         _ identifier: String,
         sourceType: PolarDeviceDataType
     ) async throws -> Set<Int> {
+        logApiCall("requestDerivedMeasurementGroupIds", ("identifier", identifier), ("sourceType", sourceType))
         let session = try serviceClientUtils.sessionPmdClientReady(identifier)
         guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else {
             throw PolarErrors.serviceNotFound
@@ -23,6 +24,7 @@ extension PolarBleApiImpl: PolarDerivedMeasurementApi {
         _ identifier: String,
         groupId: Int
     ) async throws -> PolarDerivedMeasurementSettingsGroup {
+        logApiCall("requestDerivedMeasurementSettingsGroup", ("identifier", identifier), ("groupId", groupId))
         let session = try serviceClientUtils.sessionPmdClientReady(identifier)
         guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else {
             throw PolarErrors.serviceNotFound
@@ -37,6 +39,7 @@ extension PolarBleApiImpl: PolarDerivedMeasurementApi {
         settings: PolarDerivedMeasurementSettings,
         secret: PolarRecordingSecret? = nil
     ) async throws {
+        logApiCall("startDerivedOfflineRecording", ("identifier", identifier), ("groupId", settings.groupId), ("sourceMeasurementType", settings.sourceMeasurementType))
         let session = try serviceClientUtils.sessionPmdClientReady(identifier)
         guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else {
             throw PolarErrors.serviceNotFound
@@ -51,6 +54,7 @@ extension PolarBleApiImpl: PolarDerivedMeasurementApi {
     }
 
     func stopDerivedOfflineRecording(_ identifier: String) async throws {
+        logApiCall("stopDerivedOfflineRecording", ("identifier", identifier))
         let session = try serviceClientUtils.sessionPmdClientReady(identifier)
         guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else {
             throw PolarErrors.serviceNotFound

@@ -24,6 +24,12 @@ class PolarServiceClientUtils {
                ftpClient.isCharacteristicNotificationEnabled(BlePsFtpClient.PSFTP_D2H_NOTIFICATION_CHARACTERISTIC)
     }
 
+    /// Returns `true` when the MDS DATA_EXPORT notification is enabled.
+    static func mdsNotificationsEnabled(_ session: BleDeviceSession) -> Bool {
+        guard let mdsClient = session.fetchGattClient(BleMdsClient.MDS_SERVICE) as? BleMdsClient else { return false }
+        return mdsClient.isCharacteristicNotificationEnabled(BleMdsClient.MDS_DATA_EXPORT)
+    }
+    
     func sessionPmdClientReady(_ identifier: String) throws -> BleDeviceSession {
         let session = try sessionServiceReady(identifier, service: BlePmdClient.PMD_SERVICE)
         if PolarServiceClientUtils.pmdNotificationsEnabled(session) { return session }
@@ -44,6 +50,13 @@ class PolarServiceClientUtils {
             if PolarServiceClientUtils.psFtpNotificationsEnabled(session) { return session }
             Thread.sleep(forTimeInterval: 0.1)
         }
+        throw PolarErrors.notificationNotEnabled
+    }
+    
+    internal func sessionMdsClientReady(_ identifier: String) throws -> BleDeviceSession {
+        let session = try sessionServiceReady(identifier, service: BleMdsClient.MDS_SERVICE)
+        let client = session.fetchGattClient(BleMdsClient.MDS_SERVICE) as! BleMdsClient
+        if client.isServiceDiscovered() { return session }
         throw PolarErrors.notificationNotEnabled
     }
 
@@ -91,6 +104,12 @@ class PolarServiceClientUtils {
             throw PolarErrors.deviceNotConnected
         }
         throw PolarErrors.deviceNotFound
+    }
+    
+    /// Async version: waits for MDS client to be ready (service discovered).
+    func waitMdsClientReady(_ identifier: String) async throws -> BleDeviceSession {
+        let session = try await waitForServiceDiscovered(identifier, service: BleMdsClient.MDS_SERVICE)
+        return session
     }
 
     private func waitForServiceDiscovered(_ identifier: String, service: CBUUID) async throws -> BleDeviceSession {

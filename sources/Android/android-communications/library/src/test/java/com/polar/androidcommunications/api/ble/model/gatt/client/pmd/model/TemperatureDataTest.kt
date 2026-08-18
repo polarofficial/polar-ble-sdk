@@ -93,4 +93,36 @@ class TemperatureDataTest {
         Assert.assertEquals(sample0, temperatureData.temperatureSamples[0].temperature)
         Assert.assertEquals(timeStamp, temperatureData.temperatureSamples[0].timeStamp)
     }
+
+    // ── Bounds-checking / invalid-data tests ────────────────────────────────
+
+    private fun tempHeader(frameTypeByte: Byte) = byteArrayOf(
+        0x0C.toByte(),
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+        frameTypeByte
+    )
+
+    @Test
+    fun `Temperature raw type 0 throws PmdDataParseException when dataContent is empty`() {
+        val frame = PmdDataFrame(tempHeader(0x00), { _, _ -> 0uL }, { 1.0f }) { 100 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            TemperatureData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `Temperature raw type 0 throws PmdDataParseException when dataContent size is not multiple of 4`() {
+        val frame = PmdDataFrame(tempHeader(0x00) + byteArrayOf(0x01, 0x02, 0x03, 0x04, 0x05), { _, _ -> 0uL }, { 1.0f }) { 100 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            TemperatureData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `Temperature compressed type 0 throws PmdDataParseException when dataContent is empty`() {
+        val frame = PmdDataFrame(tempHeader(0x80.toByte()), { _, _ -> 100uL }, { 1.0f }) { 0 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            TemperatureData.parseDataFromDataFrame(frame)
+        }
+    }
 }

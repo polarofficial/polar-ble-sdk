@@ -23,9 +23,9 @@ class H10ExerciseViewModel @Inject constructor(
     state: SavedStateHandle
 ) : ViewModel() {
 
-    private val deviceId =
+    private val identifier =
         state.get<String>(ONLINE_OFFLINE_KEY_DEVICE_ID)
-            ?: throw Exception("Device settings viewModel must know the deviceId")
+            ?: throw Exception("Device settings viewModel must know the identifier")
 
     private val _statusText = MutableStateFlow("")
 
@@ -35,7 +35,7 @@ class H10ExerciseViewModel @Inject constructor(
         _statusText.value = ""
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val (enabled, _) = repository.requestRecordingStatus(deviceId)
+                val (enabled, _) = repository.requestRecordingStatus(identifier)
                 repository.updateStatus(isSupported = true, isEnabled = enabled)
             } catch (e: Exception) {
                 Log.e(TAG, "requestRecordingStatus() failed", e)
@@ -46,7 +46,7 @@ class H10ExerciseViewModel @Inject constructor(
     fun listExercises(onResult: (Int) -> Unit, onError: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val entries = repository.listExercises(deviceId)
+                val entries = repository.listExercises(identifier)
                 launch(Dispatchers.Main) { onResult(entries.size) }
             } catch (e: Exception) {
                 Log.e(TAG, "listExercises() failed", e)
@@ -58,9 +58,9 @@ class H10ExerciseViewModel @Inject constructor(
     fun readFirstExercise(onExercise: (PolarExerciseData) -> Unit, onError: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val entries = repository.listExercises(deviceId)
+                val entries = repository.listExercises(identifier)
                 if (entries.isEmpty()) throw Exception("No exercises")
-                val exercise = repository.readExercise(deviceId, entries.first())
+                val exercise = repository.readExercise(identifier, entries.first())
                 launch(Dispatchers.Main) { onExercise(exercise) }
             } catch (e: Exception) {
                 Log.e(TAG, "readFirstExercise() failed", e)
@@ -72,9 +72,9 @@ class H10ExerciseViewModel @Inject constructor(
     fun removeFirstExercise(onComplete: () -> Unit, onError: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val entries = repository.listExercises(deviceId)
+                val entries = repository.listExercises(identifier)
                 if (entries.isEmpty()) throw Exception("No exercises")
-                repository.removeExercise(deviceId, entries.first())
+                repository.removeExercise(identifier, entries.first())
                 launch(Dispatchers.Main) { onComplete() }
             } catch (e: Exception) {
                 Log.e(TAG, "removeFirstExercise() failed", e)
@@ -88,10 +88,10 @@ class H10ExerciseViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 if (feature.isEnabled) {
-                    repository.stopRecording(deviceId)
+                    repository.stopRecording(identifier)
                 } else {
                     val exerciseId = "H10_EX_${System.currentTimeMillis()}"
-                    repository.startRecording(deviceId, exerciseId)
+                    repository.startRecording(identifier, exerciseId)
                 }
                 repository.updateRecordingEnabled(!feature.isEnabled)
             } catch (e: Exception) {

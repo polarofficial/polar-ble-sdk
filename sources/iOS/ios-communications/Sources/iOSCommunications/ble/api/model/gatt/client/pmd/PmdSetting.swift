@@ -44,7 +44,7 @@ public struct PmdSetting: @unchecked Sendable {
         self.settings = try PmdSetting.parsePmdSettingsData(data)
         self.selected = settings.reduce(into: [:]) { (result, arg1) in
             let (key, value) = arg1
-            result[PmdSetting.PmdSettingType(rawValue: UInt8(key.rawValue)) ?? PmdSetting.PmdSettingType.unknown]=value.max()!
+            result[PmdSetting.PmdSettingType(rawValue: UInt8(key.rawValue)) ?? PmdSetting.PmdSettingType.unknown] = value.max() ?? 0
         }
     }
     
@@ -72,8 +72,8 @@ public struct PmdSetting: @unchecked Sendable {
     
     mutating func updatePmdSettingsFromStartResponse(_ data: Data) throws {
         let settingsFromStartResponse = try PmdSetting.parsePmdSettingsData(data)
-        if let factor = settingsFromStartResponse[PmdSettingType.factor] {
-            selected[PmdSettingType.factor] = factor.first!
+        if let factor = settingsFromStartResponse[PmdSettingType.factor], let value = factor.first {
+            selected[PmdSettingType.factor] = value
         }
     }
     

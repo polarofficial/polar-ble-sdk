@@ -71,7 +71,7 @@ internal object PolarActivityUtils {
                     stepCount += proto.stepsSamplesList.sum()
                 } catch (error: Throwable) {
                     BleLogger.w(TAG, "readStepsFromDayDirectory() failed for file: $file, error: $error")
-                    return 0
+                    continue
                 }
             }
             stepCount
@@ -203,7 +203,7 @@ internal object PolarActivityUtils {
                     sampleList.add(activitySamplesData)
                 } catch (error: Throwable) {
                     BleLogger.w(TAG, "readActivitySamplesDataFromDayDirectory() failed for file: $file, error: $error")
-                    return dayData
+                    continue
                 }
             }
 
@@ -217,11 +217,12 @@ internal object PolarActivityUtils {
 
     /**
      * Read and return daily summary data for a given date.
+     * Returns null if no data is available or parsing fails.
      */
     suspend fun readDailySummaryDataFromDayDirectory(
         client: BlePsFtpClient,
         date: LocalDate
-    ): PolarDailySummaryData {
+    ): PolarDailySummaryData? {
         BleLogger.d(TAG, "readDailySummaryDataFromDayDirectory: $date")
         val dailySummaryFilePath =
             "$ARABICA_USER_ROOT_FOLDER${date.format(dateFormatter)}/$DAILY_SUMMARY_DIRECTORY$DAILY_SUMMARY_PROTO"
@@ -237,7 +238,7 @@ internal object PolarActivityUtils {
             parsePbDailySummary(proto)
         } catch (error: Throwable) {
             BleLogger.w(TAG, "readDailySummaryDataFromDayDirectory() failed for file: $dailySummaryFilePath, error: $error")
-            PolarDailySummaryData()
+            null
         }
     }
 

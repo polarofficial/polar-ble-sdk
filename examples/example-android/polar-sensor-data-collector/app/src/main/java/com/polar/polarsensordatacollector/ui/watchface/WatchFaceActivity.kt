@@ -51,7 +51,7 @@ class WatchFaceActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val deviceId = polarDeviceRepository.deviceConnectionStatus.value.deviceId
+        val deviceId = polarDeviceRepository.deviceConnectionStatus.value.identifier
         if (deviceId.isEmpty()) {
             Toast.makeText(this, getString(R.string.toast_no_device), Toast.LENGTH_SHORT).show()
             finish(); return

@@ -1,6 +1,7 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
 import com.polar.androidcommunications.api.ble.BleLogger
+import com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
 import com.polar.androidcommunications.common.ble.TypeUtils
@@ -156,7 +157,9 @@ internal class DerivedAccData(val activeMethods: Set<Int> = emptySet()) {
                 PmdDataFrame.PmdDataFrameType.TYPE_0 -> 2
                 PmdDataFrame.PmdDataFrameType.TYPE_1 -> 4
                 PmdDataFrame.PmdDataFrameType.TYPE_2 -> 3
-                else -> throw Exception("FrameType $frameType is not supported by DerivedAcc data parser")
+                else -> throw PmdDataParseException(
+                    "DerivedAcc frame type $frameType is not supported"
+                )
             }
 
         private fun readValue(data: ByteArray, offset: Int, length: Int, unsigned: Boolean): Int =

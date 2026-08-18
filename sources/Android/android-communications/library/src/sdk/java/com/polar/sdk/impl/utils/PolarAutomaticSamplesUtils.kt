@@ -30,7 +30,12 @@ internal object PolarAutomaticSamplesUtils {
             .setPath(autoSamplesPath)
 
         val response = client.request(builder.build().toByteArray())
-        val dir = PbPFtpDirectory.parseFrom(response.toByteArray())
+        val dir = try {
+            PbPFtpDirectory.parseFrom(response.toByteArray())
+        } catch (e: Exception) {
+            BleLogger.e(TAG, "Failed to parse 247 HR samples directory listing: ${e.message}")
+            return emptyList()
+        }
         val pattern = Pattern.compile(AUTOMATIC_SAMPLES_PATTERN)
         val filteredFiles = dir.entriesList
             .filter { pattern.matcher(it.name).matches() }
@@ -45,7 +50,12 @@ internal object PolarAutomaticSamplesUtils {
                 .setPath(filePath)
             BleLogger.d(TAG, "Sending GET request for file: $filePath")
             val fileResponse = client.request(fileBuilder.build().toByteArray())
-            val sampleSessions = PbAutomaticSampleSessions.parseFrom(fileResponse.toByteArray())
+            val sampleSessions = try {
+                PbAutomaticSampleSessions.parseFrom(fileResponse.toByteArray())
+            } catch (e: Exception) {
+                BleLogger.e(TAG, "Failed to parse 247 HR samples file $filePath: ${e.message}")
+                continue
+            }
             val sampleDate = PolarTimeUtils.pbDateToLocalDate(sampleSessions.day)
             if (sampleDate in fromDate..toDate) {
                 hrSamplesDataList.add(Polar247HrSamplesData.fromProto(sampleSessions))
@@ -66,7 +76,12 @@ internal object PolarAutomaticSamplesUtils {
             .setPath(autoSamplesPath)
 
         val response = client.request(builder.build().toByteArray())
-        val dir = PbPFtpDirectory.parseFrom(response.toByteArray())
+        val dir = try {
+            PbPFtpDirectory.parseFrom(response.toByteArray())
+        } catch (e: Exception) {
+            BleLogger.e(TAG, "Failed to parse 247 PPi samples directory listing: ${e.message}")
+            return emptyList()
+        }
         val pattern = Pattern.compile(AUTOMATIC_SAMPLES_PATTERN)
         val filteredFiles = dir.entriesList
             .filter { pattern.matcher(it.name).matches() }
@@ -81,7 +96,12 @@ internal object PolarAutomaticSamplesUtils {
                 .setPath(filePath)
             BleLogger.d(TAG, "Sending GET request for file: $filePath")
             val fileResponse = client.request(fileBuilder.build().toByteArray())
-            val sampleSessions = PbAutomaticSampleSessions.parseFrom(fileResponse.toByteArray())
+            val sampleSessions = try {
+                PbAutomaticSampleSessions.parseFrom(fileResponse.toByteArray())
+            } catch (e: Exception) {
+                BleLogger.e(TAG, "Failed to parse 247 PPi samples file $filePath: ${e.message}")
+                continue
+            }
             val sampleDateProto = sampleSessions.day
             val sampleDateForCheck = LocalDate.of(sampleDateProto.year, sampleDateProto.month, sampleDateProto.day)
             for (sample in sampleSessions.ppiSamplesList) {

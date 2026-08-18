@@ -67,13 +67,13 @@ class RecordingDataViewModel @Inject constructor(
     internal var devConnectionState: StateFlow<RecordingDataDevConnectionState> =
         _devConnectionState.asStateFlow()
 
-    private val deviceId = state.get<String>("deviceIdFragmentArgument")
-        ?: throw Exception("RecordingDataViewModel requires deviceId")
+    private val identifier = state.get<String>("deviceIdFragmentArgument")
+        ?: throw Exception("RecordingDataViewModel requires device identifier")
     private val path = state.get<String>("recordingPathFragmentArgument")
         ?: throw Exception("RecordingDataViewModel requires path")
 
     var recordingDataUiState: RecordingDataUiState by mutableStateOf(
-        polarDeviceStreamingRepository.getOfflineEntryFromCache(deviceId, path)?.let { entry ->
+        polarDeviceStreamingRepository.getOfflineEntryFromCache(identifier, path)?.let { entry ->
             RecordingDataUiState.Loading(entry.size, entry.type)
         } ?: RecordingDataUiState.Loading(0L, PolarBleApi.PolarDeviceDataType.HR)
     )
@@ -100,13 +100,13 @@ class RecordingDataViewModel @Inject constructor(
                 }
         }
 
-        fetchRecording(deviceId, path)
+        fetchRecording(identifier, path)
     }
 
-    private fun fetchRecording(deviceId: String, path: String) {
-        Log.d(TAG, "fetchRecording from device $deviceId, path: $path")
+    private fun fetchRecording(identifier: String, path: String) {
+        Log.d(TAG, "fetchRecording from device $identifier, path: $path")
         viewModelScope.launch {
-            polarDeviceStreamingRepository.getOfflineRecordingWithProgress(deviceId, path)
+            polarDeviceStreamingRepository.getOfflineRecordingWithProgress(identifier, path)
                 .collect { resultOfRequest ->
                     recordingDataUiState = when (resultOfRequest) {
                         is ResultOfRequest.Success -> {
@@ -167,11 +167,11 @@ class RecordingDataViewModel @Inject constructor(
     }
 
     fun deleteRecording() {
-        Log.d(TAG, "deleteRecording from device $deviceId, path: $path")
+        Log.d(TAG, "deleteRecording from device $identifier, path: $path")
         viewModelScope.launch {
             recordingDataUiState = RecordingDataUiState.IsDeleting
             recordingDataUiState =
-                when (val result = polarDeviceStreamingRepository.deleteRecording(deviceId, path)) {
+                when (val result = polarDeviceStreamingRepository.deleteRecording(identifier, path)) {
                     is ResultOfRequest.Success -> {
                         Log.d(TAG, "Recording deleted successfully")
                         RecordingDataUiState.RecordingDeleted

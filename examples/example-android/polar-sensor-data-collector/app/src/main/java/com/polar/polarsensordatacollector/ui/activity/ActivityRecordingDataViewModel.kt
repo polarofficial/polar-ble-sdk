@@ -65,7 +65,7 @@ class ActivityRecordingDataViewModel @Inject constructor(
     private val _devConnectionState = MutableStateFlow(ActivityRecordingDataDevConnectionState(true))
     internal var devConnectionState: StateFlow<ActivityRecordingDataDevConnectionState> = _devConnectionState.asStateFlow()
 
-    private val deviceId = state.get<String>("deviceIdFragmentArgument") ?: throw Exception("ActivityRecordingDataViewModel model requires deviceId")
+    private val identifier = state.get<String>("deviceIdFragmentArgument") ?: throw Exception("ActivityRecordingDataViewModel model requires device identifier")
     private val type = state.get<String>("activityTypeFragmentArgument") ?: throw Exception("ActivityRecordingDataViewModel model requires type")
     private val startDate = state.get<String>("activityStartDateFragmentArgument") ?: throw Exception("ActivityRecordingDataViewModel model requires start date")
     private val endDate = state.get<String>("activityEndDateFragmentArgument") ?: throw Exception("ActivityRecordingDataViewModel model requires end date")
@@ -101,7 +101,7 @@ class ActivityRecordingDataViewModel @Inject constructor(
             fetchRecording(
                 LocalDate.parse(startDate, DateTimeFormatter.BASIC_ISO_DATE),
                 LocalDate.parse(endDate, DateTimeFormatter.BASIC_ISO_DATE),
-                deviceId,
+                identifier,
                 PolarBleApi.PolarActivityDataType.valueOf(type)
             )
         }
@@ -110,15 +110,15 @@ class ActivityRecordingDataViewModel @Inject constructor(
     private fun fetchRecording(
         startDate: LocalDate,
         endDate: LocalDate,
-        deviceId: String,
+        identifier: String,
         activityRecordingType: PolarBleApi.PolarActivityDataType
     ) {
-        Log.d(TAG, "fetchRecording $deviceId and type $activityRecordingType")
+        Log.d(TAG, "fetchRecording $identifier and type $activityRecordingType")
         viewModelScope.launch(Dispatchers.IO) {
             val startTime = System.currentTimeMillis()
             when (activityRecordingType) {
                 PolarBleApi.PolarActivityDataType.SLEEP ->
-                    when (val sleepRecording = polarDeviceStreamingRepository.getSleepData(deviceId, startDate, endDate)) {
+                    when (val sleepRecording = polarDeviceStreamingRepository.getSleepData(identifier, startDate, endDate)) {
                         is ResultOfRequest.Success -> {
                             if (sleepRecording.value != null) {
                                 val gson = GsonBuilder()
@@ -151,7 +151,7 @@ class ActivityRecordingDataViewModel @Inject constructor(
 
                 PolarBleApi.PolarActivityDataType.STEPS ->
                     when (val stepsRecording = polarDeviceStreamingRepository.getStepsData(
-                        deviceId,
+                        identifier,
                         startDate,
                         endDate
                     )) {
@@ -175,7 +175,7 @@ class ActivityRecordingDataViewModel @Inject constructor(
 
                 PolarBleApi.PolarActivityDataType.CALORIES ->
                     when (val caloriesRecording = polarDeviceStreamingRepository.getCaloriesData(
-                        deviceId,
+                        identifier,
                         startDate,
                         endDate,
                         caloriesType
@@ -200,7 +200,7 @@ class ActivityRecordingDataViewModel @Inject constructor(
 
                 PolarBleApi.PolarActivityDataType.HR_SAMPLES ->
                     when (val hrRecording = polarDeviceStreamingRepository.get247HrSamplesData(
-                            deviceId,
+                            identifier,
                             startDate,
                             endDate
                     )) {
@@ -232,7 +232,7 @@ class ActivityRecordingDataViewModel @Inject constructor(
                     }
                 PolarBleApi.PolarActivityDataType.NIGHTLY_RECHARGE ->
                     when (val nightlyRechargeRecording = polarDeviceStreamingRepository.getNightlyRechargeData(
-                        deviceId,
+                        identifier,
                         startDate,
                         endDate
                     )) {
@@ -261,7 +261,7 @@ class ActivityRecordingDataViewModel @Inject constructor(
                     }
                 PolarBleApi.PolarActivityDataType.PPI_SAMPLES ->
                     when (val ppiRecording = polarDeviceStreamingRepository.get247PPiSamples (
-                        deviceId,
+                        identifier,
                         startDate,
                         endDate
                     )) {
@@ -294,7 +294,7 @@ class ActivityRecordingDataViewModel @Inject constructor(
 
                 PolarBleApi.PolarActivityDataType.SKIN_TEMPERATURE ->
                     when (val skinTemperatureRecording = polarDeviceStreamingRepository.getSkinTemperatureData(
-                            deviceId, startDate, endDate)) {
+                            identifier, startDate, endDate)) {
                         is ResultOfRequest.Success -> {
                             if (skinTemperatureRecording.value != null) {
                                 val gson = GsonBuilder()
@@ -321,7 +321,7 @@ class ActivityRecordingDataViewModel @Inject constructor(
 
                 PolarBleApi.PolarActivityDataType.ACTIVE_TIME ->
                     when (val activeTimeRecording = polarDeviceStreamingRepository.getActiveTimeData(
-                        deviceId,
+                        identifier,
                         startDate,
                         endDate
                     )) {
@@ -351,7 +351,7 @@ class ActivityRecordingDataViewModel @Inject constructor(
 
                 PolarBleApi.PolarActivityDataType.ACTIVITY_SAMPLES ->
                     when (val activitySamplesData = polarDeviceStreamingRepository.getActivitySamplesData(
-                        deviceId,
+                        identifier,
                         startDate,
                         endDate
                     )) {
@@ -381,7 +381,7 @@ class ActivityRecordingDataViewModel @Inject constructor(
 
                 PolarBleApi.PolarActivityDataType.DAILY_SUMMARY ->
                     when (val dailySummaryData = polarDeviceStreamingRepository.getDailySummaryData(
-                        deviceId, startDate, endDate)) {
+                        identifier, startDate, endDate)) {
                         is ResultOfRequest.Success -> {
                             if (dailySummaryData.value != null) {
                                 val gson = GsonBuilder()
@@ -408,7 +408,7 @@ class ActivityRecordingDataViewModel @Inject constructor(
 
                 PolarBleApi.PolarActivityDataType.SPO2_TEST ->
                     when (val spo2TestData = polarDeviceStreamingRepository.getSpo2TestData(
-                        deviceId, startDate, endDate)) {
+                        identifier, startDate, endDate)) {
                         is ResultOfRequest.Success -> {
                             if (spo2TestData.value != null) {
                                 val gson = GsonBuilder()

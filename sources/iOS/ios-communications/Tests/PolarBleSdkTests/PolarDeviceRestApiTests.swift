@@ -1,5 +1,4 @@
-
-///  Copyright © 2024 Polar. All rights reserved.
+//  Copyright © 2024 Polar. All rights reserved.
 
 import XCTest
 

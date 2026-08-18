@@ -4,6 +4,7 @@ import com.polar.androidcommunications.api.ble.BleLogger.Companion.e
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleBattClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleDisClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient
+import com.polar.androidcommunications.api.ble.model.gatt.client.BleMdsClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BlePfcClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BlePsdClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleRscClient
@@ -51,6 +52,9 @@ class BleGattFactory(clients: Set<Class<out BleGattBase>>) {
                 }
                 if (classesRemote.contains(BlePMDClient::class.java)) {
                     serviceBases.add(BlePMDClient(txInterface))
+                }
+                if (classesRemote.contains(BleMdsClient::class.java)) {
+                    serviceBases.add(BleMdsClient(txInterface))
                 }
                 return serviceBases
             }

@@ -5,7 +5,6 @@ import androidx.annotation.IntRange
 import com.polar.androidcommunications.api.ble.model.gatt.client.ChargeState
 import com.polar.sdk.api.errors.PolarInvalidArgument
 import com.polar.sdk.api.model.*
-import fi.polar.remote.representation.protobuf.UserDeviceSettings.*
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -20,7 +19,7 @@ import java.util.concurrent.TimeUnit
 abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineStreamingApi,
     PolarOfflineRecordingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi,
     PolarActivityApi, PolarSleepApi, PolarRestServiceApi, PolarTemperatureApi, PolarTrainingSessionApi,
-    PolarBleLowLevelApi, PolarDeviceToHostNotificationsApi, PolarTestApi, PolarWatchFaceApi, PolarLoggingApi {
+    PolarBleLowLevelApi, PolarDeviceToHostNotificationsApi, PolarTestApi, PolarWatchFaceApi, PolarLoggingApi, PolarBleTelemetryApi {
 
     /**
      * Features available in Polar BLE SDK library
@@ -129,7 +128,12 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
         /**
          * Feature to configure watch face complications on PolarOS watches.
          */
-        FEATURE_WATCH_FACES_CONFIGURATION
+        FEATURE_WATCH_FACES_CONFIGURATION,
+
+        /**
+         * Feature to receive device telemetry data with Memfault MDS BLE service.
+         */
+        FEATURE_TELEMETRY
     }
 
     /**
@@ -208,11 +212,11 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
     /**
      * Check if the feature is ready.
      *
-     * @param deviceId polar device id or bt address
+     * @param identifier polar device id or bt address
      * @param feature  feature to be requested
      * @return true if feature is ready for use,
      */
-    abstract fun isFeatureReady(deviceId: String, feature: PolarBleSdkFeature): Boolean
+    abstract fun isFeatureReady(identifier: String, feature: PolarBleSdkFeature): Boolean
 
     /**
      * Optionally call when application enters to the foreground. By calling foregroundEntered() you make
@@ -361,10 +365,10 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * broadcast and parses heart rate from BLE broadcast. The BLE device don't need to be connected when
      * using this function, the heart rate is parsed from the BLE advertisement
      *
-     * @param deviceIds set of Polar device ids to filter or null for a any Polar device
+     * @param identifiers set of Polar device ids to filter or null for a any Polar device
      * @return Flow of [PolarHrBroadcastData]
      */
-    abstract fun startListenForPolarHrBroadcasts(deviceIds: Set<String>?): Flow<PolarHrBroadcastData>
+    abstract fun startListenForPolarHrBroadcasts(identifiers: Set<String>?): Flow<PolarHrBroadcastData>
 
     /**
      * Get file as [ByteArray] from device. Requires feature [PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER]
@@ -571,7 +575,7 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @param enabled true = telemetry on, false = off
      * @return Success or error
      */
-    abstract suspend fun setTelemetryEnabled(deviceId: String, enabled: Boolean)
+    abstract suspend fun setTelemetryEnabled(identifier: String, enabled: Boolean)
 
     /**
      * Deletes device day (YYYMMDD) folders from the given date range from a device. Requires feature [PolarBleSdkFeature.FEATURE_POLAR_DEVICE_CONTROL]
@@ -713,3 +717,27 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      */
     abstract suspend fun  getRSSIValue(identifier: String): Int
 }
+
+/** @deprecated Parameter `deviceId` has been renamed to `identifier`. */
+@Deprecated(
+    "Parameter renamed from 'deviceId' to 'identifier'",
+    ReplaceWith("isFeatureReady(identifier = deviceId, feature = feature)")
+)
+fun PolarBleApi.isFeatureReady(deviceId: String, feature: PolarBleApi.PolarBleSdkFeature): Boolean =
+    isFeatureReady(identifier = deviceId, feature = feature)
+
+/** @deprecated Parameter `deviceIds` has been renamed to `identifiers`. */
+@Deprecated(
+    "Parameter renamed from 'deviceIds' to 'identifiers'",
+    ReplaceWith("startListenForPolarHrBroadcasts(identifiers = deviceIds)")
+)
+fun PolarBleApi.startListenForPolarHrBroadcasts(deviceIds: Set<String>?): kotlinx.coroutines.flow.Flow<PolarHrBroadcastData> =
+    startListenForPolarHrBroadcasts(identifiers = deviceIds)
+
+/** @deprecated Parameter `deviceId` has been renamed to `identifier`. */
+@Deprecated(
+    "Parameter renamed from 'deviceId' to 'identifier'",
+    ReplaceWith("setTelemetryEnabled(identifier = deviceId, enabled = enabled)")
+)
+suspend fun PolarBleApi.setTelemetryEnabled(deviceId: String, enabled: Boolean) =
+    setTelemetryEnabled(identifier = deviceId, enabled = enabled)

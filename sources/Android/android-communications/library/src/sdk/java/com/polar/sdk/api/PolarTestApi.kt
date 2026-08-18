@@ -21,6 +21,22 @@ interface PolarTestApi {
      * @param toDate The ending date of the period to retrieve data from.
      * @return A list of [PolarSpo2TestData] representing the SPO2 test data for the specified period.
      */
+    suspend fun getSpo2TestData(identifier: String, fromDate: LocalDate, toDate: LocalDate): List<PolarSpo2TestData>
+
+    /**
+     * Get SPO2 test data for a given period.
+     *
+     * Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SPO2_TEST_DATA].
+     *
+     * @param identifier The Polar device ID or BT address.
+     * @param fromDate The starting date of the period to retrieve data from.
+     * @param toDate The ending date of the period to retrieve data from.
+     * @return A list of [PolarSpo2TestData] representing the SPO2 test data for the specified period.
+     */
+    @Deprecated(
+        message = "Use getSpo2TestData instead",
+        replaceWith = ReplaceWith("getSpo2TestData(identifier, fromDate, toDate)")
+    )
     suspend fun getSpo2Test(identifier: String, fromDate: LocalDate, toDate: LocalDate): List<PolarSpo2TestData>
 }
 

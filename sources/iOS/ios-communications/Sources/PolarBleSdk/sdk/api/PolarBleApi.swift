@@ -88,6 +88,9 @@ public enum PolarBleSdkFeature: CaseIterable {
 
     /// Feature to configure watch face complications on PolarOS watches.
     case feature_polar_watch_faces_configuration
+    
+    /// Feature to receive telemetry data from Polar devices.
+    case feature_telemetry_data_streaming
 }
 
 ///
@@ -231,7 +234,7 @@ public typealias PolarPpiData = (timeStamp: UInt64, samples: [(timeStamp: UInt64
 public typealias PolarRecordingStatus = (ongoing: Bool, entryId: String)
 
 /// API.
-public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi, PolarActivityApi, PolarTemperatureApi, PolarSleepApi, PolarTrainingSessionApi, PolarDeviceToHostNotificationsApi, PolarBleLowLevelApi, PolarRestServiceApi, PolarOfflineExerciseV2Api, PolarTestApi, PolarWatchFaceApi, PolarDerivedMeasurementApi, PolarLoggingApi {
+public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi, PolarActivityApi, PolarTemperatureApi, PolarSleepApi, PolarTrainingSessionApi, PolarDeviceToHostNotificationsApi, PolarBleLowLevelApi, PolarRestServiceApi, PolarOfflineExerciseV2Api, PolarTestApi, PolarWatchFaceApi, PolarDerivedMeasurementApi, PolarLoggingApi, PolarDeviceTelemetryApi {
 
     /// remove all known devices, which are not in use
     ///

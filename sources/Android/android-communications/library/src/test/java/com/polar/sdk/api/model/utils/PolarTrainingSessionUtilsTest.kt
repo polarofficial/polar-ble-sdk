@@ -23,6 +23,7 @@ import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertThrows
 import org.junit.Test
 import protocol.PftpRequest
 import protocol.PftpResponse.PbPFtpDirectory
@@ -395,5 +396,141 @@ class PolarTrainingSessionUtilsTest {
             client.request(PftpRequest.PbPFtpOperation.newBuilder().setCommand(PftpRequest.PbPFtpOperation.Command.GET).setPath("/U/0/20250101/E/101200/SAMPLES2.GZB").build().toByteArray())
         }
         confirmVerified(client)
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    // deleteTrainingSession — path bounds checks
+    // ──────────────────────────────────────────────────────────────────
+
+    @Test
+    fun `deleteTrainingSession() throws IllegalArgumentException when path has fewer than 4 components`() = runTest {
+        val client = mockk<BlePsFtpClient>()
+        // "/" splits into ["", ""] — only 2 components
+        val badRef = PolarTrainingSessionReference(
+            date = LocalDate.of(2025, 1, 1),
+            path = "/U/0",          // ["", "U", "0"] — 3 components
+            trainingDataTypes = emptyList(),
+            exercises = emptyList()
+        )
+
+        assertThrows(IllegalArgumentException::class.java) {
+            kotlinx.coroutines.runBlocking {
+                PolarTrainingSessionUtils.deleteTrainingSession(client, badRef)
+            }
+        }
+    }
+
+    @Test
+    fun `deleteTrainingSession() throws IllegalArgumentException when path has fewer than 4 components (empty path)`() = runTest {
+        val client = mockk<BlePsFtpClient>()
+        val badRef = PolarTrainingSessionReference(
+            date = LocalDate.of(2025, 1, 1),
+            path = "",              // [""] — 1 component
+            trainingDataTypes = emptyList(),
+            exercises = emptyList()
+        )
+
+        assertThrows(IllegalArgumentException::class.java) {
+            kotlinx.coroutines.runBlocking {
+                PolarTrainingSessionUtils.deleteTrainingSession(client, badRef)
+            }
+        }
+    }
+
+    @Test
+    fun `deleteTrainingSession() throws IllegalArgumentException when multi-exercise path is too short`() = runTest {
+        // Path only has 5 components — passes the first check (>= 4) but fails the inner check
+        // when the directory listing shows multiple exercises (entriesCount > 1).
+        val client = mockk<BlePsFtpClient>()
+        val shortRef = PolarTrainingSessionReference(
+            date = LocalDate.of(2025, 1, 1),
+            path = "/U/0/20250101/E",   // ["", "U", "0", "20250101", "E"] — 5 components
+            trainingDataTypes = emptyList(),
+            exercises = emptyList()
+        )
+
+        // Directory listing reports two exercises → multi-exercise branch → components[5] needed
+        val multiExerciseDir = ByteArrayOutputStream().apply {
+            PbPFtpDirectory.newBuilder()
+                .addAllEntries(listOf(
+                    PbPFtpEntry.newBuilder().setName("101200/").setSize(1024L).build(),
+                    PbPFtpEntry.newBuilder().setName("121500/").setSize(1024L).build()
+                )).build().writeTo(this)
+        }
+        coEvery { client.request(any<ByteArray>()) } answers { multiExerciseDir }
+
+        assertThrows(IllegalArgumentException::class.java) {
+            kotlinx.coroutines.runBlocking {
+                PolarTrainingSessionUtils.deleteTrainingSession(client, shortRef)
+            }
+        }
+    }
+
+    @Test
+    fun `deleteTrainingSession() deletes single exercise session successfully`() = runTest {
+        // Path: /U/0/20250101/E/101200/TSESS.BPB → components[3]="20250101", components[5]="101200"
+        // Directory listing shows only 1 entry → date-level removal path is used.
+        val client = mockk<BlePsFtpClient>()
+        val ref = PolarTrainingSessionReference(
+            date = LocalDate.of(2025, 1, 1),
+            path = "/U/0/20250101/E/101200/TSESS.BPB",
+            trainingDataTypes = listOf(PolarTrainingSessionDataTypes.TRAINING_SESSION_SUMMARY),
+            exercises = emptyList()
+        )
+
+        val singleExerciseDir = ByteArrayOutputStream().apply {
+            PbPFtpDirectory.newBuilder()
+                .addAllEntries(listOf(
+                    PbPFtpEntry.newBuilder().setName("101200/").setSize(1024L).build()
+                )).build().writeTo(this)
+        }
+        val removeResponse = ByteArrayOutputStream()  // empty OK response
+
+        coEvery { client.request(any<ByteArray>()) } answers { singleExerciseDir } andThen removeResponse
+
+        // Act — must not throw
+        PolarTrainingSessionUtils.deleteTrainingSession(client, ref)
+
+        // Assert that a REMOVE operation was issued for the date-level E/ folder
+        coVerify {
+            client.request(PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.REMOVE)
+                .setPath("/U/0/20250101/E/")
+                .build().toByteArray())
+        }
+    }
+
+    @Test
+    fun `deleteTrainingSession() deletes one exercise from multi-exercise session successfully`() = runTest {
+        // Directory listing reports two exercises → only the specific exercise sub-path is removed.
+        val client = mockk<BlePsFtpClient>()
+        val ref = PolarTrainingSessionReference(
+            date = LocalDate.of(2025, 2, 2),
+            path = "/U/0/20250202/E/163020/TSESS.BPB",
+            trainingDataTypes = listOf(PolarTrainingSessionDataTypes.TRAINING_SESSION_SUMMARY),
+            exercises = emptyList()
+        )
+
+        val multiExerciseDir = ByteArrayOutputStream().apply {
+            PbPFtpDirectory.newBuilder()
+                .addAllEntries(listOf(
+                    PbPFtpEntry.newBuilder().setName("163020/").setSize(1024L).build(),
+                    PbPFtpEntry.newBuilder().setName("180000/").setSize(1024L).build()
+                )).build().writeTo(this)
+        }
+        val removeResponse = ByteArrayOutputStream()
+
+        coEvery { client.request(any<ByteArray>()) } answers { multiExerciseDir } andThen removeResponse
+
+        // Act
+        PolarTrainingSessionUtils.deleteTrainingSession(client, ref)
+
+        // Assert that REMOVE targets the specific exercise time-folder, not the whole E/ folder
+        coVerify {
+            client.request(PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.REMOVE)
+                .setPath("/U/0/20250202/E/163020/")
+                .build().toByteArray())
+        }
     }
 }

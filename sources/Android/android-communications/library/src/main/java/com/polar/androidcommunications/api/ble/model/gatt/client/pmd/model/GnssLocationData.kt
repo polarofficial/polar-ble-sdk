@@ -1,5 +1,6 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
+import com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient.PmdDataFieldEncoding
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrameUtils.parseFrameDataField
@@ -94,20 +95,32 @@ internal class GnssLocationData {
         private const val TYPE_2_SAMPLE_IN_BYTES = 41
 
         fun parseDataFromDataFrame(frame: PmdDataFrame): GnssLocationData {
+            // GNSS data contains GPS coordinates — raw bytes are NOT included in exception
+            // messages as they contain personally identifiable information.
             return if (frame.isCompressedFrame) {
-                throw Exception("Compressed FrameType: ${frame.frameType} is not supported by Location data parser")
+                throw PmdDataParseException(
+                    "Location compressed frame type ${frame.frameType} is not supported"
+                )
             } else {
                 when (frame.frameType) {
                     PmdDataFrame.PmdDataFrameType.TYPE_0 -> dataFromRawType0(frame)
                     PmdDataFrame.PmdDataFrameType.TYPE_1 -> dataFromRawType1(frame)
                     PmdDataFrame.PmdDataFrameType.TYPE_2 -> dataFromRawType2(frame)
                     PmdDataFrame.PmdDataFrameType.TYPE_3 -> dataFromRawType3(frame)
-                    else -> throw Exception("Raw FrameType: ${frame.frameType} is not supported by Location data parser")
+                    else -> throw PmdDataParseException(
+                        "Location raw frame type ${frame.frameType} is not supported"
+                    )
                 }
             }
         }
 
         private fun dataFromRawType0(frame: PmdDataFrame): GnssLocationData {
+            if (frame.dataContent.isEmpty() || frame.dataContent.size % TYPE_0_SAMPLE_IN_BYTES != 0) {
+                throw PmdDataParseException(
+                    "Location raw TYPE_0 dataContent size ${frame.dataContent.size} is not a " +
+                    "non-zero multiple of expected sample size $TYPE_0_SAMPLE_IN_BYTES"
+                )
+            }
             val locationData = GnssLocationData()
             var offset = 0
 
@@ -179,6 +192,12 @@ internal class GnssLocationData {
         }
 
         private fun dataFromRawType1(frame: PmdDataFrame): GnssLocationData {
+            if (frame.dataContent.isEmpty() || frame.dataContent.size % TYPE_1_SAMPLE_IN_BYTES != 0) {
+                throw PmdDataParseException(
+                    "Location raw TYPE_1 dataContent size ${frame.dataContent.size} is not a " +
+                    "non-zero multiple of expected sample size $TYPE_1_SAMPLE_IN_BYTES"
+                )
+            }
             val locationData = GnssLocationData()
             var offset = 0
 
@@ -205,6 +224,12 @@ internal class GnssLocationData {
         }
 
         private fun dataFromRawType2(frame: PmdDataFrame): GnssLocationData {
+            if (frame.dataContent.isEmpty() || frame.dataContent.size % TYPE_2_SAMPLE_IN_BYTES != 0) {
+                throw PmdDataParseException(
+                    "Location raw TYPE_2 dataContent size ${frame.dataContent.size} is not a " +
+                    "non-zero multiple of expected sample size $TYPE_2_SAMPLE_IN_BYTES"
+                )
+            }
             val locationData = GnssLocationData()
             var offset = 0
 
@@ -214,55 +239,55 @@ internal class GnssLocationData {
 
             while (offset < frame.dataContent.size) {
                 val seenBand1 = GnssSatelliteSummary(
-                    gpsNbrOfSat = frame.dataContent[0].toUByte(),
-                    gpsMaxSnr = frame.dataContent[1].toUByte(),
-                    glonassNbrOfSat = frame.dataContent[2].toUByte(),
-                    glonassMaxSnr = frame.dataContent[3].toUByte(),
-                    galileoNbrOfSat = frame.dataContent[4].toUByte(),
-                    galileoMaxSnr = frame.dataContent[5].toUByte(),
-                    beidouNbrOfSat = frame.dataContent[6].toUByte(),
-                    beidouMaxSnr = frame.dataContent[7].toUByte(),
-                    nbrOfSat = frame.dataContent[8].toUByte(),
-                    snrTop5Avg = frame.dataContent[9].toUByte()
+                    gpsNbrOfSat = frame.dataContent[offset + 0].toUByte(),
+                    gpsMaxSnr = frame.dataContent[offset + 1].toUByte(),
+                    glonassNbrOfSat = frame.dataContent[offset + 2].toUByte(),
+                    glonassMaxSnr = frame.dataContent[offset + 3].toUByte(),
+                    galileoNbrOfSat = frame.dataContent[offset + 4].toUByte(),
+                    galileoMaxSnr = frame.dataContent[offset + 5].toUByte(),
+                    beidouNbrOfSat = frame.dataContent[offset + 6].toUByte(),
+                    beidouMaxSnr = frame.dataContent[offset + 7].toUByte(),
+                    nbrOfSat = frame.dataContent[offset + 8].toUByte(),
+                    snrTop5Avg = frame.dataContent[offset + 9].toUByte()
                 )
                 offset += 10
                 val usedBand1 = GnssSatelliteSummary(
-                    gpsNbrOfSat = frame.dataContent[10].toUByte(),
-                    gpsMaxSnr = frame.dataContent[11].toUByte(),
-                    glonassNbrOfSat = frame.dataContent[12].toUByte(),
-                    glonassMaxSnr = frame.dataContent[13].toUByte(),
-                    galileoNbrOfSat = frame.dataContent[14].toUByte(),
-                    galileoMaxSnr = frame.dataContent[15].toUByte(),
-                    beidouNbrOfSat = frame.dataContent[16].toUByte(),
-                    beidouMaxSnr = frame.dataContent[17].toUByte(),
-                    nbrOfSat = frame.dataContent[18].toUByte(),
-                    snrTop5Avg = frame.dataContent[19].toUByte()
+                    gpsNbrOfSat = frame.dataContent[offset + 0].toUByte(),
+                    gpsMaxSnr = frame.dataContent[offset + 1].toUByte(),
+                    glonassNbrOfSat = frame.dataContent[offset + 2].toUByte(),
+                    glonassMaxSnr = frame.dataContent[offset + 3].toUByte(),
+                    galileoNbrOfSat = frame.dataContent[offset + 4].toUByte(),
+                    galileoMaxSnr = frame.dataContent[offset + 5].toUByte(),
+                    beidouNbrOfSat = frame.dataContent[offset + 6].toUByte(),
+                    beidouMaxSnr = frame.dataContent[offset + 7].toUByte(),
+                    nbrOfSat = frame.dataContent[offset + 8].toUByte(),
+                    snrTop5Avg = frame.dataContent[offset + 9].toUByte()
                 )
                 offset += 10
                 val seenBand2 = GnssSatelliteSummary(
-                    gpsNbrOfSat = frame.dataContent[20].toUByte(),
-                    gpsMaxSnr = frame.dataContent[21].toUByte(),
-                    glonassNbrOfSat = frame.dataContent[22].toUByte(),
-                    glonassMaxSnr = frame.dataContent[23].toUByte(),
-                    galileoNbrOfSat = frame.dataContent[24].toUByte(),
-                    galileoMaxSnr = frame.dataContent[25].toUByte(),
-                    beidouNbrOfSat = frame.dataContent[26].toUByte(),
-                    beidouMaxSnr = frame.dataContent[27].toUByte(),
-                    nbrOfSat = frame.dataContent[28].toUByte(),
-                    snrTop5Avg = frame.dataContent[29].toUByte()
+                    gpsNbrOfSat = frame.dataContent[offset + 0].toUByte(),
+                    gpsMaxSnr = frame.dataContent[offset + 1].toUByte(),
+                    glonassNbrOfSat = frame.dataContent[offset + 2].toUByte(),
+                    glonassMaxSnr = frame.dataContent[offset + 3].toUByte(),
+                    galileoNbrOfSat = frame.dataContent[offset + 4].toUByte(),
+                    galileoMaxSnr = frame.dataContent[offset + 5].toUByte(),
+                    beidouNbrOfSat = frame.dataContent[offset + 6].toUByte(),
+                    beidouMaxSnr = frame.dataContent[offset + 7].toUByte(),
+                    nbrOfSat = frame.dataContent[offset + 8].toUByte(),
+                    snrTop5Avg = frame.dataContent[offset + 9].toUByte()
                 )
                 offset += 10
                 val usedBand2 = GnssSatelliteSummary(
-                    gpsNbrOfSat = frame.dataContent[30].toUByte(),
-                    gpsMaxSnr = frame.dataContent[31].toUByte(),
-                    glonassNbrOfSat = frame.dataContent[32].toUByte(),
-                    glonassMaxSnr = frame.dataContent[33].toUByte(),
-                    galileoNbrOfSat = frame.dataContent[34].toUByte(),
-                    galileoMaxSnr = frame.dataContent[35].toUByte(),
-                    beidouNbrOfSat = frame.dataContent[36].toUByte(),
-                    beidouMaxSnr = frame.dataContent[37].toUByte(),
-                    nbrOfSat = frame.dataContent[38].toUByte(),
-                    snrTop5Avg = frame.dataContent[39].toUByte()
+                    gpsNbrOfSat = frame.dataContent[offset + 0].toUByte(),
+                    gpsMaxSnr = frame.dataContent[offset + 1].toUByte(),
+                    glonassNbrOfSat = frame.dataContent[offset + 2].toUByte(),
+                    glonassMaxSnr = frame.dataContent[offset + 3].toUByte(),
+                    galileoNbrOfSat = frame.dataContent[offset + 4].toUByte(),
+                    galileoMaxSnr = frame.dataContent[offset + 5].toUByte(),
+                    beidouNbrOfSat = frame.dataContent[offset + 6].toUByte(),
+                    beidouMaxSnr = frame.dataContent[offset + 7].toUByte(),
+                    nbrOfSat = frame.dataContent[offset + 8].toUByte(),
+                    snrTop5Avg = frame.dataContent[offset + 9].toUByte()
                 )
                 offset += 10
                 val maxSnr = parseFrameDataField(frame.dataContent.sliceArray(offset..offset), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
@@ -283,18 +308,38 @@ internal class GnssLocationData {
         }
 
         private fun dataFromRawType3(frame: PmdDataFrame): GnssLocationData {
+            // Minimum frame: 4 (measurementPeriod) + 2 (messageLength) + 1 (statusFlags) = 7 bytes
+            if (frame.dataContent.size < 7) {
+                throw PmdDataParseException(
+                    "Location raw TYPE_3 dataContent size ${frame.dataContent.size} is smaller " +
+                    "than minimum expected 7 bytes"
+                )
+            }
             val locationData = GnssLocationData()
             var offset = 0
 
             while (offset < frame.dataContent.size) {
+                if (frame.dataContent.size - offset < 7) {
+                    throw PmdDataParseException(
+                        "Location raw TYPE_3 insufficient bytes remaining at offset $offset: " +
+                        "${frame.dataContent.size - offset} bytes remain but at least 7 are required"
+                    )
+                }
                 val measurementPeriod = parseFrameDataField(frame.dataContent.sliceArray(offset..(offset + 3)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
                 offset += 4
                 val messageLength = parseFrameDataField(frame.dataContent.sliceArray(offset..(offset + 1)), PmdDataFieldEncoding.UNSIGNED_INT) as UInt
                 offset += 2
                 val statusFlags = parseFrameDataField(frame.dataContent.sliceArray(offset..offset), PmdDataFieldEncoding.UNSIGNED_BYTE) as UByte
                 offset += 1
-                val nmeaMessage = String(frame.dataContent.sliceArray(offset until (offset + messageLength.toInt())))
-                offset += messageLength.toInt()
+                val messageLengthInt = messageLength.toInt()
+                if (frame.dataContent.size - offset < messageLengthInt) {
+                    throw PmdDataParseException(
+                        "Location raw TYPE_3 NMEA message length $messageLengthInt exceeds " +
+                        "remaining data size ${frame.dataContent.size - offset}"
+                    )
+                }
+                val nmeaMessage = String(frame.dataContent.sliceArray(offset until (offset + messageLengthInt)))
+                offset += messageLengthInt
                 val sample = GnssGpsNMEASample(timeStamp = frame.timeStamp, measurementPeriod = measurementPeriod, messageLength = messageLength, statusFlags = statusFlags, nmeaMessage = nmeaMessage)
                 locationData.gnssLocationDataSamples.add(sample)
             }

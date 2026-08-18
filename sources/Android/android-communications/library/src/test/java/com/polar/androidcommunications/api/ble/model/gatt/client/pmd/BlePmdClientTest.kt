@@ -3,7 +3,6 @@ package com.polar.androidcommunications.api.ble.model.gatt.client.pmd
 import com.polar.androidcommunications.api.ble.exceptions.BleCharacteristicNotificationNotEnabled
 import com.polar.androidcommunications.api.ble.exceptions.BleControlPointCommandError
 import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected
-import com.polar.androidcommunications.api.ble.exceptions.BleNotImplemented
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.errors.BleOnlineStreamClosed
@@ -35,7 +34,6 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -97,7 +95,7 @@ internal class BlePmdClientTest {
         // index    type                                data
         // 0:      Measurement type                     01 (ppg data)
         // 1..8:   64-bit Timestamp                     00 00 00 00 00 00 00 70 (0x7000000000000000 = 8070450532247928832)
-        // 9:      Frame type                           FF (compressed, frame type 0x7F)
+        // 9:      Frame type                           FF (compressed, frame type 0x7F = unknown)
 
         val locationDataFromService = byteArrayOf(
             0x01.toByte(),
@@ -106,9 +104,9 @@ internal class BlePmdClientTest {
         )
 
         // Act && Assert
-        assertThrows(BleNotImplemented::class.java) {
-            blePmdClient.processServiceData(BlePMDClient.PMD_DATA, locationDataFromService, 0, false)
-        }
+        // Unknown frame types are caught internally to prevent crashes.
+        // The frame is dropped and an error is logged; no exception propagates to the caller.
+        blePmdClient.processServiceData(BlePMDClient.PMD_DATA, locationDataFromService, 0, false)
     }
 
     @Test
@@ -1132,5 +1130,58 @@ internal class BlePmdClientTest {
         // packet[1] = ONLINE.asBitField() OR ECG.numVal = 0x00 OR 0x00 = 0x00
         val expectedFirstByte = (PmdRecordingType.ONLINE.asBitField() or PmdMeasurementType.ECG.numVal).toByte()
         assertEquals("Second byte should encode ONLINE recording type + ECG measurement", expectedFirstByte, capturedPacket.captured[1])
+    }
+
+    // ── safeParseAndEmit error-propagation tests ─────────────────────────────
+
+    /**
+     * Verifies that when a parser throws a [PmdDataParseException] for invalid device data,
+     * the exception is caught by [BlePMDClient.safeParseAndEmit] and forwarded to all active
+     * stream subscribers — terminating the flow with the parse exception rather than crashing
+     * the application.
+     */
+    @Test
+    fun `parse error propagates to stream subscriber via safeParseAndEmit`() = runTest {
+        // Arrange — ECG PMD frame with valid 10-byte header (ECG type + timestamp + frame type 0)
+        val ecgDataFromService = byteArrayOf(
+            0x00.toByte(),
+            0x38.toByte(), 0x6C.toByte(), 0x31.toByte(), 0x72.toByte(), 0xA4.toByte(), 0xD3.toByte(), 0x23.toByte(), 0x0D.toByte(),
+            0x00.toByte(),
+            0x01.toByte(), 0x02.toByte(), 0x03.toByte(), 0x04.toByte(), // 4 bytes content — not a multiple of 3 (TYPE_0 sample size)
+        )
+        val parseException = com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException(
+            "ECG raw TYPE_0 dataContent size 4 is not a non-zero multiple of expected sample size 3"
+        )
+        every { EcgData.parseDataFromDataFrame(any()) } throws parseException
+
+        var receivedError: Throwable? = null
+        val job = launch {
+            try {
+                blePmdClient.monitorEcgNotifications(false).collect {}
+            } catch (e: Throwable) {
+                receivedError = e
+            }
+        }
+        testScheduler.advanceUntilIdle()
+
+        // Act
+        blePmdClient.processServiceData(BlePMDClient.PMD_DATA, ecgDataFromService, 0, false)
+        testScheduler.advanceUntilIdle()
+        job.join()
+
+        // Assert — the subscriber must have received an error (not a silent crash)
+        Assert.assertNotNull("Expected stream subscriber to receive a parse error", receivedError)
+    }
+
+    /**
+     * Verifies that [BlePMDClient.processServiceData] does NOT throw when the PMD data frame
+     * header is too short to be parsed — the error is caught and logged internally.
+     */
+    @Test
+    fun `too short PMD frame is handled without crashing`() {
+        // Only 5 bytes — below the 10-byte minimum; should be swallowed with a log, not re-thrown
+        val tooShortData = byteArrayOf(0x01, 0x00, 0x00, 0x00, 0x00)
+        // Should not throw
+        blePmdClient.processServiceData(BlePMDClient.PMD_DATA, tooShortData, 0, false)
     }
 }

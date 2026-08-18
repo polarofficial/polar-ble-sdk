@@ -67,9 +67,7 @@ class OfflineRecTriggerStatusFragment : Fragment(R.layout.fragment_offline_trigg
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 offlineTriggerStatusViewModel.uiShowError.collect {
-                    if (it.header.isNotEmpty()) {
                         showSnackBar(rootView = requireView(), header = it.header, description = it.description ?: "", showAsError = true)
-                    }
                 }
             }
         }
@@ -77,9 +75,7 @@ class OfflineRecTriggerStatusFragment : Fragment(R.layout.fragment_offline_trigg
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 offlineTriggerStatusViewModel.uiShowInfo.collect {
-                    if (it.header.isNotEmpty()) {
-                        showSnackBar(rootView = requireView(), it.header, it.description ?: "")
-                    }
+                        showSnackBar(rootView = requireView(), it.header, it.description ?: "", timeout = it.timeout)
                 }
             }
         }

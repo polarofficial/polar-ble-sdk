@@ -21,18 +21,23 @@ public class EcgData {
     
     static func parseDataFromDataFrame(frame: PmdDataFrame) throws -> EcgData {
         if (frame.isCompressedFrame) {
-            throw BleGattException.gattDataError(description: "Compressed FrameType: \(frame.frameType) is not supported by ECG data parser")
+            throw PmdDataParseError(message: "Compressed FrameType: \(frame.frameType) is not supported by ECG data parser")
         } else {
             switch (frame.frameType) {
             case PmdDataFrameType.type_0: return try dataFromRawType0(frame: frame)
-            default: throw BleGattException.gattDataError(description: "Raw FrameType: \(frame.frameType) is not supported by ECG data parser")
+            default: throw PmdDataParseError(message: "Raw FrameType: \(frame.frameType) is not supported by ECG data parser")
             }
         }
     }
     
     private static func dataFromRawType0(frame: PmdDataFrame) throws -> EcgData {
-        var offset = 0
         let step = TYPE_0_SAMPLE_SIZE_IN_BYTES
+        guard !frame.dataContent.isEmpty && frame.dataContent.count % step == 0 else {
+            throw PmdDataParseError(
+                message: "ECG raw TYPE_0 dataContent size \(frame.dataContent.count) is not a " +
+                "non-zero multiple of expected sample size \(step). Data: \(PmdDataParseError.toHex(frame.dataContent))")
+        }
+        var offset = 0
         let samplesSize = Int(Double(frame.dataContent.count) / Double(step))
         let timeStamps = try PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp: frame.previousTimeStamp, frameTimeStamp: frame.timeStamp, samplesSize: UInt(samplesSize), sampleRate: frame.sampleRate)
         

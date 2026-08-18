@@ -10,6 +10,7 @@ struct OnlineStreamsView: View {
     @State private var showHrGraph = false
     @State private var showAccGraph = false
     @State private var showEcgGraph = false
+    @State private var selectedTypes: Set<PolarDeviceDataType> = []
 
     struct ShownData: Identifiable {
         let dataType: String
@@ -22,38 +23,138 @@ struct OnlineStreamsView: View {
     func shareURL(url: URL) {
         urlToShare = IdentifiableURL(url: url)
     }
-    
+
+    private func toggleSelection(_ dataType: PolarDeviceDataType) {
+        if selectedTypes.contains(dataType) {
+            selectedTypes.remove(dataType)
+        } else {
+            selectedTypes.insert(dataType)
+        }
+    }
+
+    private func isAnyStreamActive() -> Bool {
+        return PolarDeviceDataType.allCases.contains { bleSdkManager.isStreamOn(feature: $0) }
+    }
+
+    private func stopAllStreams() {
+        for dataType in PolarDeviceDataType.allCases {
+            if bleSdkManager.isStreamOn(feature: dataType) {
+                bleSdkManager.onlineStreamStop(feature: dataType)
+            }
+        }
+    }
+
+    private func startSelected() {
+        bleSdkManager.beginStreamingSession()
+        for dataType in PolarDeviceDataType.allCases {
+            guard selectedTypes.contains(dataType) else { continue }
+            guard bleSdkManager.onlineStreamingFeature.availableOnlineDataTypes[dataType] == true else { continue }
+            guard !bleSdkManager.isStreamOn(feature: dataType) else { continue }
+            bleSdkManager.onlineStreamStartMaxSettings(feature: dataType)
+        }
+    }
+
+    /// Returns true for data types that require a settings dialog before streaming.
+    private func needsSettings(_ dataType: PolarDeviceDataType) -> Bool {
+        return dataType != .ppi && dataType != .hr
+    }
+
     var body: some View {
 
         if case .connected = bleSdkManager.deviceConnectionState,
            bleSdkManager.onlineStreamingFeature.isSupported {
-            VStack {
-                ForEach(PolarDeviceDataType.allCases) { dataType in
-                    HStack {
-                        OnlineStreamingButton(dataType: dataType)
-                        if case let .success(urlOptional) = bleSdkManager.onlineStreamingFeature.isStreaming[dataType],
-                           let url = urlOptional {
-                            
-                            ShareButton() { shareURL(url: url) }
-                            Spacer()
-                            ShowButton() {
-                                let data = (try? String(contentsOf: url, encoding: .utf8)) ?? ""
-                                shownData = ShownData(dataType: dataType.displayName, data: data)
+            VStack(spacing: 0) {
+                // Sensor rows — only show available types
+                ForEach(PolarDeviceDataType.allCases.filter {
+                    bleSdkManager.onlineStreamingFeature.availableOnlineDataTypes[$0] == true
+                }) { dataType in
+                    VStack(spacing: 0) {
+                        HStack(spacing: 12) {
+                            // Measurement type label — red
+                            Text(dataType.displayName)
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.red)
+                                .frame(minWidth: 70, alignment: .leading)
+
+                            // Checkbox — red
+                            Button(action: { toggleSelection(dataType) }) {
+                                Image(systemName: selectedTypes.contains(dataType)
+                                      ? "checkmark.square.fill" : "square")
+                                    .font(.system(size: 22))
+                                    .foregroundColor(.red)
                             }
-                            .padding(.trailing)
+                            .buttonStyle(.plain)
+
+                            // SETTINGS button right after checkbox — red text & outline
+                            if needsSettings(dataType) {
+                                Button(action: {
+                                    bleSdkManager.getOnlineStreamSettings(feature: dataType)
+                                }) {
+                                    Text("SETTINGS")
+                                        .font(.system(size: 13, weight: .medium))
+                                        .foregroundColor(.red)
+                                        .padding(.horizontal, 14)
+                                        .padding(.vertical, 7)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(Color.red, lineWidth: 1.5)
+                                        )
+                                }
+                                .buttonStyle(.plain)
+                            }
+
                             Spacer()
+
+                            // Share & Show buttons when stream file is available
+                            if case let .success(urlOptional) = bleSdkManager.onlineStreamingFeature.isStreaming[dataType],
+                               let url = urlOptional {
+                                ShareButton() { shareURL(url: url) }
+                                ShowButton() {
+                                    let data = (try? String(contentsOf: url, encoding: .utf8)) ?? ""
+                                    shownData = ShownData(dataType: dataType.displayName, data: data)
+                                }
+                            }
                         }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        Divider()
                     }
                 }
+
+                let streaming = isAnyStreamActive()
+                let canStart = !selectedTypes.isEmpty
+                Button(action: {
+                    if streaming {
+                        stopAllStreams()
+                    } else {
+                        startSelected()
+                    }
+                }) {
+                    Text(streaming ? "STOP STREAMING" : "START STREAMING")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(!streaming && !canStart ? Color.gray : Color.red)
+                        .cornerRadius(8)
+                        .opacity(1.0)
+                }
+                .buttonStyle(.plain)
+                .disabled(!streaming && !canStart)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+
+                // Live streaming values
                 OnlineStreamValues(
                     showHrGraph: $showHrGraph,
                     showAccGraph: $showAccGraph,
                     showEcgGraph: $showEcgGraph
                 )
+                .padding(.horizontal, 12)
             }
             .fullScreenCover(item: $bleSdkManager.onlineStreamSettings) { streamSettings in
                 let settings = streamSettings
-                SettingsView(streamedFeature: settings.feature, streamSettings: settings)
+                SettingsView(streamedFeature: settings.feature, streamSettings: settings, saveOnly: true)
             }
             .sheet(
                 item: Binding(
@@ -164,17 +265,14 @@ struct OnlineStreamingButton: View {
     }
 
     private func getStreamButtonText(_ feature:PolarDeviceDataType, _ isStreaming: OnlineStreamingState?) -> String {
-        let text = getShortNameForDataType(feature)
-        let buttonText:String
         switch(isStreaming!) {
         case .inProgress:
-            buttonText = "Stop \(text) Stream"
+            return "Stop"
         case .success(url: _):
-            buttonText = "Start \(text) Stream"
+            return "Start"
         case .failed(error: _):
-            buttonText = "Start \(text) Stream"
+            return "Start"
         }
-        return buttonText
     }
     
     private func streamButtonToggle(_ feature:PolarDeviceDataType) {
@@ -227,6 +325,7 @@ struct OnlineStreamValues: View {
                                 showEcgGraph = true
                             }
                             .padding(.top, 4)
+                            Divider()
                         }
                     }
                 case .acc:
@@ -241,6 +340,7 @@ struct OnlineStreamValues: View {
                                 showAccGraph = true
                             }
                             .padding(.top, 4)
+                            Divider()
                         }
                     }
                 case .ppg:
@@ -274,6 +374,7 @@ struct OnlineStreamValues: View {
                                         .font(.system(size: 14))
                                 }
                             }
+                            Divider()
                         }
                     }
                 case .ppi:
@@ -287,6 +388,7 @@ struct OnlineStreamValues: View {
                                 .font(.system(size: 14))
                             Text("PP error estimate: \(bleSdkManager.ppiRecordingData.ppErrorEstimate)")
                                 .font(.system(size: 14))
+                            Divider()
                         }
                     }
                 case .gyro:
@@ -296,6 +398,7 @@ struct OnlineStreamValues: View {
                                 .font(.system(size: 16)).bold()
                             Text("Gyroscope: x: \(String(format: "%.2f", bleSdkManager.gyroRecordingData.x)), y: \(String(format: "%.2f", bleSdkManager.gyroRecordingData.y)), z: \(String(format: "%.2f", bleSdkManager.gyroRecordingData.z))")
                                 .font(.system(size: 14))
+                            Divider()
                         }
                     }
                 case .magnetometer:
@@ -305,6 +408,7 @@ struct OnlineStreamValues: View {
                                 .font(.system(size: 16)).bold()
                             Text("Magnetometer: x: \(String(format: "%.2f", bleSdkManager.magnetometerRecordingData.x)), y: \(String(format: "%.2f", bleSdkManager.magnetometerRecordingData.y)), z: \(String(format: "%.2f", bleSdkManager.magnetometerRecordingData.z))")
                                 .font(.system(size: 14))
+                            Divider()
                         }
                     }
                 case .hr:
@@ -329,6 +433,7 @@ struct OnlineStreamValues: View {
                                           showHrGraph = true
                                       }
                                       .padding(.top, 4)
+                                    Divider()
                                 }
                             }
                         }
@@ -340,6 +445,7 @@ struct OnlineStreamValues: View {
                                 .font(.system(size: 16)).bold()
                             Text("Temperature \(String(format: "%.2f", bleSdkManager.temperatureRecordingData.temperature))")
                                 .font(.system(size: 14))
+                            Divider()
                         }
                     }
                 case .pressure:
@@ -349,6 +455,7 @@ struct OnlineStreamValues: View {
                                 .font(.system(size: 16)).bold()
                             Text("Pressure \(String(format: "%.2f", bleSdkManager.pressureRecordingData.pressure))")
                                 .font(.system(size: 14))
+                            Divider()
                         }
                     }
                 case .skinTemperature:
@@ -358,6 +465,7 @@ struct OnlineStreamValues: View {
                                 .font(.system(size: 16)).bold()
                             Text("Skin temperature \(String(format: "%.2f", bleSdkManager.skinTemperatureRecordingData.temperature))")
                                 .font(.system(size: 14))
+                            Divider()
                         }
                     }
                 }

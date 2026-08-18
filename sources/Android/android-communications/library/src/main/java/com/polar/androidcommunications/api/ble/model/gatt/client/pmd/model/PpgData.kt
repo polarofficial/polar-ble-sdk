@@ -1,10 +1,11 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
+import com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException
+import com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException.Companion.toHex
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrameUtils
 import com.polar.androidcommunications.common.ble.TypeUtils
-import java.nio.ByteBuffer
 import kotlin.experimental.and
 
 /**
@@ -136,7 +137,9 @@ internal class PpgData {
                     PmdDataFrame.PmdDataFrameType.TYPE_8 -> dataFromCompressedType8(frame)
                     PmdDataFrame.PmdDataFrameType.TYPE_10 -> dataFromCompressedType10(frame)
                     PmdDataFrame.PmdDataFrameType.TYPE_13 -> dataFromCompressedType13(frame)
-                    else -> throw java.lang.Exception("Compressed FrameType: ${frame.frameType} is not supported by PPG data parser")
+                    else -> throw PmdDataParseException(
+                        "PPG compressed frame type ${frame.frameType} is not supported"
+                    )
                 }
             } else {
                 when (frame.frameType) {
@@ -146,12 +149,22 @@ internal class PpgData {
                     PmdDataFrame.PmdDataFrameType.TYPE_6 -> dataFromRawType6(frame)
                     PmdDataFrame.PmdDataFrameType.TYPE_9 -> dataFromRawType9(frame)
                     PmdDataFrame.PmdDataFrameType.TYPE_14 -> dataFromRawType14(frame)
-                    else -> throw java.lang.Exception("Raw FrameType: ${frame.frameType} is not supported by PPG data parser")
+                    else -> throw PmdDataParseException(
+                        "PPG raw frame type ${frame.frameType} is not supported"
+                    )
                 }
             }
         }
 
         private fun dataFromRawType0(frame: PmdDataFrame): PpgData {
+            val sampleByteSize = TYPE_0_SAMPLE_SIZE_IN_BYTES * TYPE_0_CHANNELS_IN_SAMPLE
+            if (frame.dataContent.isEmpty() || frame.dataContent.size % sampleByteSize != 0) {
+                throw PmdDataParseException(
+                    "PPG raw TYPE_0 dataContent size ${frame.dataContent.size} is not a " +
+                    "non-zero multiple of expected sample size $sampleByteSize. " +
+                    "Data: ${frame.dataContent.toHex()}"
+                )
+            }
             val ppgData = PpgData()
             val step = TYPE_0_SAMPLE_SIZE_IN_BYTES
 
@@ -184,6 +197,13 @@ internal class PpgData {
         }
 
         private fun dataFromRawType4(frame: PmdDataFrame): PpgData {
+            if (frame.dataContent.isEmpty() || frame.dataContent.size % TYPE_4_SAMPLE_SIZE_IN_BYTES != 0) {
+                throw PmdDataParseException(
+                    "PPG raw TYPE_4 dataContent size ${frame.dataContent.size} is not a " +
+                    "non-zero multiple of expected sample size $TYPE_4_SAMPLE_SIZE_IN_BYTES. " +
+                    "Data: ${frame.dataContent.toHex()}"
+                )
+            }
             val ppgData = PpgData()
 
             val samplesSize = frame.dataContent.size / TYPE_4_SAMPLE_SIZE_IN_BYTES
@@ -224,6 +244,13 @@ internal class PpgData {
         }
 
         private fun dataFromRawType5(frame: PmdDataFrame): PpgData {
+            if (frame.dataContent.isEmpty() || frame.dataContent.size % TYPE_5_SAMPLE_SIZE_IN_BYTES != 0) {
+                throw PmdDataParseException(
+                    "PPG raw TYPE_5 dataContent size ${frame.dataContent.size} is not a " +
+                    "non-zero multiple of expected sample size $TYPE_5_SAMPLE_SIZE_IN_BYTES. " +
+                    "Data: ${frame.dataContent.toHex()}"
+                )
+            }
             val ppgData = PpgData()
             var offset = 0
 
@@ -254,6 +281,13 @@ internal class PpgData {
         }
 
         private fun dataFromRawType6(frame: PmdDataFrame): PpgData {
+            if (frame.dataContent.size < TYPE_6_SAMPLE_SIZE_IN_BYTES) {
+                throw PmdDataParseException(
+                    "PPG raw TYPE_6 dataContent size ${frame.dataContent.size} is smaller than " +
+                    "expected minimum $TYPE_6_SAMPLE_SIZE_IN_BYTES. " +
+                    "Data: ${frame.dataContent.toHex()}"
+                )
+            }
             val ppgData = PpgData()
             val sportId = PmdDataFrameUtils.parseFrameDataField(
                 frame.dataContent.sliceArray(0 until TYPE_6_SAMPLE_SIZE_IN_BYTES),
@@ -278,6 +312,13 @@ internal class PpgData {
         }
 
         private fun dataFromRawType9(frame: PmdDataFrame): PpgData {
+            if (frame.dataContent.isEmpty() || frame.dataContent.size % TYPE_9_SAMPLE_SIZE_IN_BYTES != 0) {
+                throw PmdDataParseException(
+                    "PPG raw TYPE_9 dataContent size ${frame.dataContent.size} is not a " +
+                    "non-zero multiple of expected sample size $TYPE_9_SAMPLE_SIZE_IN_BYTES. " +
+                    "Data: ${frame.dataContent.toHex()}"
+                )
+            }
             val ppgData = PpgData()
 
             val samplesSize = frame.dataContent.size / TYPE_9_SAMPLE_SIZE_IN_BYTES
@@ -318,6 +359,15 @@ internal class PpgData {
         }
 
         private fun dataFromRawType10(frame: PmdDataFrame): PpgData {
+            // TYPE_10 raw: each sample is 3x TYPE_10_SAMPLE_SIZE_IN_BYTES (grn/red/ir) + TYPE_10_STATUS_SIZE
+            val expectedSampleBytes = TYPE_10_SAMPLE_SIZE_IN_BYTES * 3 + TYPE_10_STATUS_SIZE
+            if (frame.dataContent.isEmpty() || frame.dataContent.size % expectedSampleBytes != 0) {
+                throw PmdDataParseException(
+                    "PPG raw TYPE_10 dataContent size ${frame.dataContent.size} is not a " +
+                    "non-zero multiple of expected sample size $expectedSampleBytes. " +
+                    "Data: ${frame.dataContent.toHex()}"
+                )
+            }
             val ppgData = PpgData()
 
             val samplesSize = frame.dataContent.size / TYPE_10_SAMPLE_SIZE_IN_BYTES
@@ -372,6 +422,13 @@ internal class PpgData {
         }
 
         private fun dataFromRawType14(frame: PmdDataFrame): PpgData {
+            if (frame.dataContent.isEmpty() || frame.dataContent.size % TYPE_14_SAMPLE_SIZE_IN_BYTES != 0) {
+                throw PmdDataParseException(
+                    "PPG raw TYPE_14 dataContent size ${frame.dataContent.size} is not a " +
+                    "non-zero multiple of expected sample size $TYPE_14_SAMPLE_SIZE_IN_BYTES. " +
+                    "Data: ${frame.dataContent.toHex()}"
+                )
+            }
             val ppgData = PpgData()
 
             val samplesSize = frame.dataContent.size / TYPE_14_SAMPLE_SIZE_IN_BYTES
@@ -412,6 +469,11 @@ internal class PpgData {
         }
 
         private fun dataFromCompressedType0(frame: PmdDataFrame): PpgData {
+            if (frame.dataContent.isEmpty()) {
+                throw PmdDataParseException(
+                    "PPG compressed TYPE_0 dataContent is empty"
+                )
+            }
             val ppgData = PpgData()
             val samples = BlePMDClient.parseDeltaFramesAll(
                 frame.dataContent,
@@ -444,6 +506,11 @@ internal class PpgData {
         }
 
         private fun dataFromCompressedType7(frame: PmdDataFrame): PpgData {
+            if (frame.dataContent.isEmpty()) {
+                throw PmdDataParseException(
+                    "PPG compressed TYPE_7 dataContent is empty"
+                )
+            }
             val ppgData = PpgData()
             val samples = BlePMDClient.parseDeltaFramesAll(
                 frame.dataContent,
@@ -478,6 +545,11 @@ internal class PpgData {
         }
 
         private fun dataFromCompressedType8(frame: PmdDataFrame): PpgData {
+            if (frame.dataContent.isEmpty()) {
+                throw PmdDataParseException(
+                    "PPG compressed TYPE_8 dataContent is empty"
+                )
+            }
             val ppgData = PpgData()
             val samples = BlePMDClient.parseDeltaFramesAll(
                 frame.dataContent,
@@ -511,6 +583,11 @@ internal class PpgData {
         }
 
         private fun dataFromCompressedType10(frame: PmdDataFrame): PpgData {
+            if (frame.dataContent.isEmpty()) {
+                throw PmdDataParseException(
+                    "PPG compressed TYPE_10 dataContent is empty"
+                )
+            }
             val ppgData = PpgData()
             val samples = BlePMDClient.parseDeltaFramesAll(
                 frame.dataContent,
@@ -566,6 +643,11 @@ internal class PpgData {
         }
 
         private fun dataFromCompressedType13(frame: PmdDataFrame): PpgData {
+            if (frame.dataContent.isEmpty()) {
+                throw PmdDataParseException(
+                    "PPG compressed TYPE_13 dataContent is empty"
+                )
+            }
             val ppgData = PpgData()
             val samples = BlePMDClient.parseDeltaFramesAll(
                 frame.dataContent,

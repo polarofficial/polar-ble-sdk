@@ -216,4 +216,61 @@ internal class EcgDataTest {
 
         Assert.assertEquals(dataFrame.timeStamp, (ecgData.ecgSamples[1] as EcgData.EcgSampleFrameType3).timeStamp)
     }
+
+    // ── Bounds-checking / invalid-data tests ────────────────────────────────
+
+    private fun ecgHeader(frameTypeByte: Byte) = byteArrayOf(
+        0x00.toByte(),
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+        frameTypeByte
+    )
+
+    @Test
+    fun `ECG raw type 0 throws PmdDataParseException when dataContent size is not multiple of sample size`() {
+        // TYPE_0 sample = 3 bytes; send 4 bytes (not a multiple)
+        val frame = PmdDataFrame(ecgHeader(0x00) + byteArrayOf(0x01, 0x02, 0x03, 0x04), { _, _ -> 0uL }, { 1.0f }) { 100 }
+        val ex = org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            EcgData.parseDataFromDataFrame(frame)
+        }
+        org.junit.Assert.assertTrue(ex.message!!.contains("TYPE_0"))
+    }
+
+    @Test
+    fun `ECG raw type 1 throws PmdDataParseException when dataContent size is not multiple of sample size`() {
+        // TYPE_1 sample = 3 bytes; send 2 bytes
+        val frame = PmdDataFrame(ecgHeader(0x01) + byteArrayOf(0x01, 0x02), { _, _ -> 0uL }, { 1.0f }) { 100 }
+        val ex = org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            EcgData.parseDataFromDataFrame(frame)
+        }
+        org.junit.Assert.assertTrue(ex.message!!.contains("TYPE_1"))
+    }
+
+    @Test
+    fun `ECG raw type 2 throws PmdDataParseException when dataContent size is not multiple of sample size`() {
+        // TYPE_2 sample = 3 bytes; send 4 bytes
+        val frame = PmdDataFrame(ecgHeader(0x02) + byteArrayOf(0x01, 0x02, 0x03, 0x04), { _, _ -> 0uL }, { 1.0f }) { 100 }
+        val ex = org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            EcgData.parseDataFromDataFrame(frame)
+        }
+        org.junit.Assert.assertTrue(ex.message!!.contains("TYPE_2"))
+    }
+
+    @Test
+    fun `ECG raw type 3 throws PmdDataParseException when dataContent size is not multiple of sample size`() {
+        // TYPE_3 sample = 7 bytes (3+3+1); send 8 bytes (not a multiple)
+        val frame = PmdDataFrame(ecgHeader(0x03) + ByteArray(8) { 0x01 }, { _, _ -> 0uL }, { 1.0f }) { 100 }
+        val ex = org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            EcgData.parseDataFromDataFrame(frame)
+        }
+        org.junit.Assert.assertTrue(ex.message!!.contains("TYPE_3"))
+    }
+
+    @Test
+    fun `ECG compressed type throws PmdDataParseException`() {
+        // 0x80 = compressed bit set, frame type 0 — ECG has no supported compressed types
+        val frame = PmdDataFrame(ecgHeader(0x80.toByte()) + byteArrayOf(0x01), { _, _ -> 0uL }, { 1.0f }) { 100 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            EcgData.parseDataFromDataFrame(frame)
+        }
+    }
 }

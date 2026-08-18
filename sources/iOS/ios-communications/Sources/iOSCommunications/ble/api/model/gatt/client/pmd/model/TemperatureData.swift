@@ -23,18 +23,20 @@ public class TemperatureData {
         if (frame.isCompressedFrame) {
             switch (frame.frameType) {
             case PmdDataFrameType.type_0: return try dataFromCompressedType0(frame: frame)
-            default: throw BleGattException.gattDataError(description: "Raw FrameType: \(frame.frameType) is not supported by Temperature data parser")
+            default: throw PmdDataParseError(message: "Compressed FrameType: \(frame.frameType) is not supported by Temperature data parser")
             }
         } else {
             switch (frame.frameType) {
             case PmdDataFrameType.type_0: return try dataFromRawType0(frame: frame)
-            default: throw BleGattException.gattDataError(description: "Raw FrameType: \(frame.frameType) is not supported by Temperature data parser")
+            default: throw PmdDataParseError(message: "Raw FrameType: \(frame.frameType) is not supported by Temperature data parser")
             }
         }
     }
 
     private static func dataFromCompressedType0(frame: PmdDataFrame) throws -> TemperatureData {
-
+        guard !frame.dataContent.isEmpty else {
+            throw PmdDataParseError(message: "Temperature compressed TYPE_0 dataContent is empty")
+        }
         let temperatureData = TemperatureData()
         let samples = Pmd.parseDeltaFramesToSamples(frame.dataContent, channels: TYPE_0_CHANNELS_IN_SAMPLE, resolution: TYPE_0_SAMPLE_SIZE_IN_BITS)
         let timeStamps = try PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp: frame.previousTimeStamp, frameTimeStamp: frame.timeStamp, samplesSize: UInt(samples.count), sampleRate: frame.sampleRate)
@@ -42,7 +44,10 @@ public class TemperatureData {
         var temperatureSamples = [TemperatureSample]()
 
         for (index, sample) in samples.enumerated() {
-            let temperature = Float.init(bitPattern: UInt32(sample.first!))
+            guard let rawBits = sample.first else {
+                throw PmdDataParseError(message: "Temperature compressed TYPE_0 sample at index \(index) is empty")
+            }
+            let temperature = Float.init(bitPattern: UInt32(bitPattern: rawBits))
             temperatureSamples.append(TemperatureSample(timeStamp: timeStamps[index], temperature: temperature))
         }
         temperatureData.samples = temperatureSamples
@@ -50,10 +55,14 @@ public class TemperatureData {
     }
 
     private static func dataFromRawType0(frame: PmdDataFrame) throws -> TemperatureData {
-
+        let step = Int(TYPE_0_SAMPLE_SIZE_IN_BYTES)
+        guard !frame.dataContent.isEmpty && frame.dataContent.count % step == 0 else {
+            throw PmdDataParseError(
+                message: "Temperature raw TYPE_0 dataContent size \(frame.dataContent.count) is not a " +
+                "non-zero multiple of expected sample size \(step)")
+        }
         let temperatureData = TemperatureData()
-        let step = TYPE_0_SAMPLE_SIZE_IN_BYTES
-        let samplesSize = Int(Double(frame.dataContent.count) / Double(step))
+        let samplesSize = frame.dataContent.count / step
         var offset = 0
         var timeStampIndex = 0
 

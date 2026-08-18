@@ -7,6 +7,7 @@ import CoreBluetooth
 extension PolarBleApiImpl: PolarTemperatureApi {
 
     func getSkinTemperature(identifier: String, fromDate: Date, toDate: Date) async throws -> [PolarSkinTemperatureData.PolarSkinTemperatureResult] {
+        logApiCall("getSkinTemperature", ("identifier", identifier))
         guard toDate >= fromDate else {
                  BleLogger.error("getSkinTemperature: Invalid date range: toDate \(toDate) is before fromDate \(fromDate)")
                  throw PolarErrors.invalidArgument(description: "toDate must be greater than or equal to fromDate")

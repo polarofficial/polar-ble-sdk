@@ -85,7 +85,7 @@ internal class OfflineHrDataTest {
         val exception = Assert.assertThrows(Exception::class.java, throwingRunnable)
         ViewMatchers.assertThat(
             exception.message,
-            Matchers.equalTo("Compressed FrameType: TYPE_0 is not supported by Offline HR data parser")
+            Matchers.equalTo("Offline HR compressed frame type TYPE_0 is not supported")
         )
     }
 
@@ -137,7 +137,40 @@ internal class OfflineHrDataTest {
         val exception = Assert.assertThrows(Exception::class.java, throwingRunnable)
         ViewMatchers.assertThat(
             exception.message,
-            Matchers.equalTo("Compressed FrameType: TYPE_1 is not supported by Offline HR data parser")
+            Matchers.equalTo("Offline HR compressed frame type TYPE_1 is not supported")
         )
+    }
+
+    // ── Bounds-checking / invalid-data tests ────────────────────────────────
+
+    private fun hrHeader(frameTypeByte: Byte) = byteArrayOf(
+        0x0E.toByte(),
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+        frameTypeByte
+    )
+
+    @Test
+    fun `Offline HR raw type 0 throws PmdDataParseException when dataContent is empty`() {
+        val frame = PmdDataFrame(hrHeader(0x00), { _, _ -> 0uL }, { 1.0f }) { 0 }
+        Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            OfflineHrData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `Offline HR raw type 1 throws PmdDataParseException when dataContent is empty`() {
+        val frame = PmdDataFrame(hrHeader(0x01), { _, _ -> 0uL }, { 1.0f }) { 0 }
+        Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            OfflineHrData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `Offline HR raw type 1 throws PmdDataParseException when dataContent size is not multiple of 3`() {
+        // TYPE_1 sample = 3 bytes (hr + ppgQuality + correctedHr); send 4 bytes (not a multiple)
+        val frame = PmdDataFrame(hrHeader(0x01) + byteArrayOf(0x48, 0x56, 0x47, 0x51), { _, _ -> 0uL }, { 1.0f }) { 0 }
+        Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            OfflineHrData.parseDataFromDataFrame(frame)
+        }
     }
 }

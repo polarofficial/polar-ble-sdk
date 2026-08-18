@@ -1,6 +1,8 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd
 
 import com.polar.androidcommunications.api.ble.exceptions.BleNotImplemented
+import com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException
+import com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException.Companion.toHex
 import com.polar.androidcommunications.common.ble.TypeUtils
 
 class PmdDataFrame(
@@ -12,10 +14,11 @@ class PmdDataFrame(
     companion object {
         private const val DELTA_FRAME_BIT_MASK = 0x80.toByte()
         private const val FRAME_TYPE_BIT_MASK = 0x7F.toByte()
+        private const val MIN_FRAME_SIZE = 10
     }
 
-    val measurementType: PmdMeasurementType = PmdMeasurementType.fromId(data[0])
-    val timeStamp: ULong = TypeUtils.convertArrayToUnsignedLong(data, 1, 8)
+    val measurementType: PmdMeasurementType
+    val timeStamp: ULong
     val frameType: PmdDataFrameType
     val isCompressedFrame: Boolean
     val dataContent: ByteArray
@@ -25,6 +28,14 @@ class PmdDataFrame(
     val sampleRate: Int
 
     init {
+        if (data.size < MIN_FRAME_SIZE) {
+            throw PmdDataParseException(
+                "PMD data frame is too short: expected at least $MIN_FRAME_SIZE bytes " +
+                "but received ${data.size}. Data: ${data.toHex()}"
+            )
+        }
+        measurementType = PmdMeasurementType.fromId(data[0])
+        timeStamp = TypeUtils.convertArrayToUnsignedLong(data, 1, 8)
         val frameTypeField = data[9].toUByte()
         frameType = PmdDataFrameType.getTypeFromFrameDataByte(frameTypeField)
         isCompressedFrame = isCompressedFrame(frameTypeField)

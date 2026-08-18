@@ -118,6 +118,11 @@ var pathtoroot = "../../../../";
                             ,
                             
                             
+                            <code>com.polar.sdk.api.PolarBleTelemetryApi</code>
+                            
+                            ,
+                            
+                            
                             <code>com.polar.sdk.api.PolarDeviceToHostNotificationsApi</code>
                             
                             ,
@@ -188,7 +193,7 @@ var pathtoroot = "../../../../";
                     <pre class="wrap-overflow">
 
 public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>PolarBleApi</a></span>
- implements <a href=PolarOnlineStreamingApi.html>PolarOnlineStreamingApi</a>, <a href=PolarOfflineRecordingApi.html>PolarOfflineRecordingApi</a>, <a href=PolarH10OfflineExerciseApi.html>PolarH10OfflineExerciseApi</a>, <a href=PolarSdkModeApi.html>PolarSdkModeApi</a>, <a href=PolarFirmwareUpdateApi.html>PolarFirmwareUpdateApi</a>, <a href=PolarActivityApi.html>PolarActivityApi</a>, <a href=PolarSleepApi.html>PolarSleepApi</a>, <a href=PolarRestServiceApi.html>PolarRestServiceApi</a>, <a href=PolarTemperatureApi.html>PolarTemperatureApi</a>, <a href=PolarTrainingSessionApi.html>PolarTrainingSessionApi</a>, <a href=PolarBleLowLevelApi.html>PolarBleLowLevelApi</a>, <a href=PolarDeviceToHostNotificationsApi.html>PolarDeviceToHostNotificationsApi</a>, <a href=PolarTestApi.html>PolarTestApi</a>, <a href=PolarWatchFaceApi.html>PolarWatchFaceApi</a>, <a href=PolarLoggingApi.html>PolarLoggingApi</a>
+ implements <a href=PolarOnlineStreamingApi.html>PolarOnlineStreamingApi</a>, <a href=PolarOfflineRecordingApi.html>PolarOfflineRecordingApi</a>, <a href=PolarH10OfflineExerciseApi.html>PolarH10OfflineExerciseApi</a>, <a href=PolarSdkModeApi.html>PolarSdkModeApi</a>, <a href=PolarFirmwareUpdateApi.html>PolarFirmwareUpdateApi</a>, <a href=PolarActivityApi.html>PolarActivityApi</a>, <a href=PolarSleepApi.html>PolarSleepApi</a>, <a href=PolarRestServiceApi.html>PolarRestServiceApi</a>, <a href=PolarTemperatureApi.html>PolarTemperatureApi</a>, <a href=PolarTrainingSessionApi.html>PolarTrainingSessionApi</a>, <a href=PolarBleLowLevelApi.html>PolarBleLowLevelApi</a>, <a href=PolarDeviceToHostNotificationsApi.html>PolarDeviceToHostNotificationsApi</a>, <a href=PolarTestApi.html>PolarTestApi</a>, <a href=PolarWatchFaceApi.html>PolarWatchFaceApi</a>, <a href=PolarLoggingApi.html>PolarLoggingApi</a>, <a href=PolarBleTelemetryApi.html>PolarBleTelemetryApi</a>
                     </pre>
                     <div class="block"><p>Polar BLE API.</p></div>
 
@@ -408,7 +413,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         <tr id="i5" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#isFeatureReady(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarBleSdkFeature)>isFeatureReady</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a> feature) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#isFeatureReady(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarBleSdkFeature)>isFeatureReady</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a> feature) </code>
                                             </th>
                                             <td class="colLast">Check if the feature is ready.</td>
                                         </tr>
@@ -528,7 +533,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         <tr id="i20" class="altColor">
                                             <td class="colFirst"><code>abstract Flow&lt;<a href=model/PolarHrBroadcastData.html>PolarHrBroadcastData</a>&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#startListenForPolarHrBroadcasts(java.util.Set)>startListenForPolarHrBroadcasts</a>(<a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; deviceIds) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#startListenForPolarHrBroadcasts(java.util.Set)>startListenForPolarHrBroadcasts</a>(<a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; identifiers) </code>
                                             </th>
                                             <td class="colLast">Start listening the heart rate from Polar devices when subscribed.</td>
                                         </tr>
@@ -688,7 +693,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         <tr id="i40" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setTelemetryEnabled(java.lang.String,java.lang.Boolean)>setTelemetryEnabled</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> enabled) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApi.html#setTelemetryEnabled(java.lang.String,java.lang.Boolean)>setTelemetryEnabled</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> enabled) </code>
                                             </th>
                                             <td class="colLast">Enable or disable telemetry (trace logging / diagnostics) on the device.</td>
                                         </tr>
@@ -874,7 +879,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <!--   -->
                                         </a>
                                             <h3>Methods inherited from class&nbsp;com.polar.sdk.api.PolarBleLowLevelApi</h3>
-                                            <code>deleteFileOrDirectory, getFileList, readFile, writeFile</code></li>
+                                            <code>createFolder, deleteFileOrDirectory, getFileList, readFile, writeFile</code></li>
                                  
                                     <li class="blockList"><a id="methods.inherited.from.class.com.polar.sdk.api.PolarDeviceToHostNotificationsApi">
                                             <!--   -->
@@ -886,7 +891,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <!--   -->
                                         </a>
                                             <h3>Methods inherited from class&nbsp;com.polar.sdk.api.PolarTestApi</h3>
-                                            <code>getSpo2Test</code></li>
+                                            <code>getSpo2Test, getSpo2TestData</code></li>
                                  
                                     <li class="blockList"><a id="methods.inherited.from.class.com.polar.sdk.api.PolarWatchFaceApi">
                                             <!--   -->
@@ -899,6 +904,12 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         </a>
                                             <h3>Methods inherited from class&nbsp;com.polar.sdk.api.PolarLoggingApi</h3>
                                             <code>exportDeviceLogs, getLogConfig, setLogConfig</code></li>
+                                 
+                                    <li class="blockList"><a id="methods.inherited.from.class.com.polar.sdk.api.PolarBleTelemetryApi">
+                                            <!--   -->
+                                        </a>
+                                            <h3>Methods inherited from class&nbsp;com.polar.sdk.api.PolarBleTelemetryApi</h3>
+                                            <code>getAvailableTelemetryTypes, getDeviceTelemetryConfiguration, startTelemetry, stopTelemetry</code></li>
                                  
                                     <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
                                         <!--   -->
@@ -1086,7 +1097,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                           >
                                     <li class="blockList">
                                         <h4>isFeatureReady</h4>
-                                        <pre class="methodSignature"> abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarBleApi.html#isFeatureReady(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarBleSdkFeature)>isFeatureReady</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a> feature)</pre>
+                                        <pre class="methodSignature"> abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarBleApi.html#isFeatureReady(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarBleSdkFeature)>isFeatureReady</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a> feature)</pre>
                                         <div class="block"><p>Check if the feature is ready.</p></div>
 
                                         <dl>
@@ -1095,7 +1106,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
-                                            <dd><code>deviceId</code> - polar device id or bt address</dd>
+                                            <dd><code>identifier</code> - polar device id or bt address</dd>
                                             
                                             
                                             
@@ -1571,7 +1582,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                           >
                                     <li class="blockList">
                                         <h4>startListenForPolarHrBroadcasts</h4>
-                                        <pre class="methodSignature"> abstract Flow&lt;<a href=model/PolarHrBroadcastData.html>PolarHrBroadcastData</a>&gt; <a href=PolarBleApi.html#startListenForPolarHrBroadcasts(java.util.Set)>startListenForPolarHrBroadcasts</a>(<a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; deviceIds)</pre>
+                                        <pre class="methodSignature"> abstract Flow&lt;<a href=model/PolarHrBroadcastData.html>PolarHrBroadcastData</a>&gt; <a href=PolarBleApi.html#startListenForPolarHrBroadcasts(java.util.Set)>startListenForPolarHrBroadcasts</a>(<a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; identifiers)</pre>
                                         <div class="block"><p>Start listening the heart rate from Polar devices when subscribed. This observable listens BLE broadcast and parses heart rate from BLE broadcast. The BLE device don't need to be connected when using this function, the heart rate is parsed from the BLE advertisement</p></div>
 
                                         <dl>
@@ -1580,7 +1591,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
-                                            <dd><code>deviceIds</code> - set of Polar device ids to filter or null for a any Polar device</dd>
+                                            <dd><code>identifiers</code> - set of Polar device ids to filter or null for a any Polar device</dd>
                                             
                                             
                                         
@@ -2273,7 +2284,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                           >
                                     <li class="blockList">
                                         <h4>setTelemetryEnabled</h4>
-                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBleApi.html#setTelemetryEnabled(java.lang.String,java.lang.Boolean)>setTelemetryEnabled</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> deviceId, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> enabled)</pre>
+                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBleApi.html#setTelemetryEnabled(java.lang.String,java.lang.Boolean)>setTelemetryEnabled</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> enabled)</pre>
                                         <div class="block"><p>Enable or disable telemetry (trace logging / diagnostics) on the device. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_DEVICE_CONTROL>PolarBleSdkFeature.FEATURE_POLAR_DEVICE_CONTROL</a></p></div>
 
                                         <dl>
@@ -2281,6 +2292,8 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApi.html>Polar
                                         
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
+                                            
+                                            <dd><code>identifier</code> - Polar device ID or BT address</dd>
                                             
                                             
                                             

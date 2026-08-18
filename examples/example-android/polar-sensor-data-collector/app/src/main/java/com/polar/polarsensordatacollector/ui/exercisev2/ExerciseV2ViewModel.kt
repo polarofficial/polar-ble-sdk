@@ -22,13 +22,13 @@ class ExerciseV2ViewModel @Inject constructor(
     state: SavedStateHandle
 ) : ViewModel() {
 
-    private val deviceId: String = state.get<String>(ONLINE_OFFLINE_KEY_DEVICE_ID)
-        ?: throw Exception("ExerciseV2ViewModel must know the deviceId")
+    private val identifier: String = state.get<String>(ONLINE_OFFLINE_KEY_DEVICE_ID)
+        ?: throw Exception("ExerciseV2ViewModel must know the identifier")
 
     fun startOfflineExercise(onResult: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val result = repository.startOfflineExerciseV2(deviceId)
+                val result = repository.startOfflineExerciseV2(identifier)
                 Log.d(TAG, "startOfflineExercise: result=${result.result}, path=${result.directoryPath}")
                 if (result.result.name == "SUCCESS") {
                     launch(Dispatchers.Main) { onResult() }
@@ -47,7 +47,7 @@ class ExerciseV2ViewModel @Inject constructor(
     fun stopOfflineExercise(onResult: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                repository.stopOfflineExerciseV2(deviceId)
+                repository.stopOfflineExerciseV2(identifier)
                 Log.d(TAG, "stopOfflineExercise: success")
                 launch(Dispatchers.Main) { onResult() }
             } catch (e: Exception) {
@@ -60,7 +60,7 @@ class ExerciseV2ViewModel @Inject constructor(
     fun listOfflineExercises(onNext: (PolarExerciseEntry) -> Unit, onError: (String) -> Unit, onComplete: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                repository.listOfflineExercisesV2(deviceId).collect { entry ->
+                repository.listOfflineExercisesV2(identifier).collect { entry ->
                     Log.d(TAG, "listOfflineExercises: Found exercise ${entry.identifier}")
                     launch(Dispatchers.Main) { onNext(entry) }
                 }
@@ -76,10 +76,10 @@ class ExerciseV2ViewModel @Inject constructor(
     fun fetchOfflineExercise(onResult: (PolarExerciseData) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val entry = repository.listOfflineExercisesV2(deviceId).toList().firstOrNull()
+                val entry = repository.listOfflineExercisesV2(identifier).toList().firstOrNull()
                     ?: throw Exception("No exercises found")
                 Log.d(TAG, "fetchOfflineExercise: Fetching first exercise ${entry.identifier}")
-                val data = repository.fetchOfflineExerciseV2(deviceId, entry)
+                val data = repository.fetchOfflineExerciseV2(identifier, entry)
                 Log.d(TAG, "fetchOfflineExercise: Success")
                 launch(Dispatchers.Main) { onResult(data) }
             } catch (e: Exception) {
@@ -92,10 +92,10 @@ class ExerciseV2ViewModel @Inject constructor(
     fun removeOfflineExercise(onResult: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val entry = repository.listOfflineExercisesV2(deviceId).toList().firstOrNull()
+                val entry = repository.listOfflineExercisesV2(identifier).toList().firstOrNull()
                     ?: throw Exception("No exercises found")
                 Log.d(TAG, "removeOfflineExercise: Removing first exercise ${entry.identifier}")
-                repository.removeOfflineExerciseV2(deviceId, entry)
+                repository.removeOfflineExerciseV2(identifier, entry)
                 Log.d(TAG, "removeOfflineExercise: Success")
                 launch(Dispatchers.Main) { onResult() }
             } catch (e: Exception) {
@@ -108,7 +108,7 @@ class ExerciseV2ViewModel @Inject constructor(
     fun getOfflineExerciseStatus(onResult: (Boolean) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val running = repository.getOfflineExerciseStatusV2(deviceId)
+                val running = repository.getOfflineExerciseStatusV2(identifier)
                 Log.d(TAG, "getOfflineExerciseStatus: running=$running")
                 launch(Dispatchers.Main) { onResult(running) }
             } catch (e: Exception) {
@@ -124,8 +124,8 @@ class ExerciseV2ViewModel @Inject constructor(
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val running = repository.getOfflineExerciseStatusV2(deviceId)
-                val entries = repository.listOfflineExercisesV2(deviceId).toList()
+                val running = repository.getOfflineExerciseStatusV2(identifier)
+                val entries = repository.listOfflineExercisesV2(identifier).toList()
                 Log.d(TAG, "checkStatusAndList: running=$running, exerciseCount=${entries.size}")
                 launch(Dispatchers.Main) { onResult(running, entries.isNotEmpty(), entries.firstOrNull()) }
             } catch (e: Exception) {

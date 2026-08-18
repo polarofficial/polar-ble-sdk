@@ -19,7 +19,6 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.confirmVerified
 import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import protocol.PftpResponse.PbPFtpDirectory
@@ -244,6 +243,130 @@ class PolarAutomaticSamplesUtilsTest {
         assert(result[0].samples.statusList[1] == PPiSampleStatus(skinContact = SkinContact.NO_SKIN_CONTACT, movement = Movement.MOVING_DETECTED, intervalStatus = IntervalStatus.INTERVAL_IS_ONLINE))
         assert(result[0].samples.statusList[2] == PPiSampleStatus(skinContact = SkinContact.SKIN_CONTACT_DETECTED, movement = Movement.MOVING_DETECTED, intervalStatus = IntervalStatus.INTERVAL_IS_ONLINE))
         assert(result[0].samples.statusList[3] == PPiSampleStatus(skinContact = SkinContact.NO_SKIN_CONTACT, movement = Movement.NO_MOVING_DETECTED, intervalStatus = IntervalStatus.INTERVAL_DENOTES_OFFLINE_PERIOD))
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    // Corruption-resilience: corrupt directory listing
+    // ──────────────────────────────────────────────────────────────────
+
+    @Test
+    fun `read247HrSamples() should return empty list when directory listing is corrupt`() = runTest {
+        // Arrange — return garbage bytes that cannot be parsed as PbPFtpDirectory
+        val corruptData = ByteArrayOutputStream().apply { write(byteArrayOf(0xFF.toByte(), 0xFE.toByte(), 0x00, 0x01)) }
+
+        coEvery { mockClient.request(any<ByteArray>()) } answers { corruptData }
+
+        // Act
+        val result = PolarAutomaticSamplesUtils.read247HrSamples(
+            mockClient,
+            LocalDate.of(2024, 10, 1),
+            LocalDate.of(2024, 10, 31)
+        )
+
+        // Assert — corrupt directory listing → empty result, no crash
+        assert(result.isEmpty()) { "Expected empty list on corrupt directory listing" }
+    }
+
+    @Test
+    fun `read247HrSamples() should skip corrupt files and continue with valid ones`() = runTest {
+        // Arrange
+        val fromDate = LocalDate.of(2024, 10, 1)
+        val toDate = LocalDate.of(2024, 10, 31)
+
+        val mockDirectoryContent = ByteArrayOutputStream().apply {
+            PbPFtpDirectory.newBuilder()
+                .addAllEntries(listOf(
+                    PbPFtpEntry.newBuilder().setName("AUTOS000.BPB").setSize(111L).build(),  // corrupt
+                    PbPFtpEntry.newBuilder().setName("AUTOS001.BPB").setSize(222L).build()   // valid
+                )).build().writeTo(this)
+        }
+
+        val corruptFile = ByteArrayOutputStream().apply {
+            write(byteArrayOf(0xDE.toByte(), 0xAD.toByte(), 0xBE.toByte(), 0xEF.toByte()))
+        }
+
+        val validFile = ByteArrayOutputStream().apply {
+            PbAutomaticSampleSessions.newBuilder()
+                .addAllSamples(listOf(
+                    PbAutomaticHeartRateSamples.newBuilder()
+                        .addAllHeartRate(listOf(65, 66))
+                        .setTime(PbTime.newBuilder().setHour(9).setMinute(0).setSeconds(0).build())
+                        .setTriggerType(PbMeasTriggerType.TRIGGER_TYPE_TIMED).build()
+                ))
+                .setDay(PbDate.newBuilder().setYear(2024).setMonth(10).setDay(15).build())
+                .build().writeTo(this)
+        }
+
+        coEvery { mockClient.request(any<ByteArray>()) } answers { mockDirectoryContent } andThen corruptFile andThen validFile
+
+        // Act
+        val result = PolarAutomaticSamplesUtils.read247HrSamples(mockClient, fromDate, toDate)
+
+        // Assert — first file (corrupt) is skipped, second file's data is returned
+        assert(result.size == 1) { "Expected 1 result from the valid file, got ${result.size}" }
+        assert(result[0].date == LocalDate.of(2024, 10, 15))
+        assert(result[0].samples[0].triggerType == AutomaticSampleTriggerType.TRIGGER_TYPE_TIMED)
+    }
+
+    @Test
+    fun `read247PPiSamples() should return empty list when directory listing is corrupt`() = runTest {
+        // Arrange
+        val corruptData = ByteArrayOutputStream().apply { write(byteArrayOf(0xFF.toByte(), 0xFE.toByte(), 0x00, 0x01)) }
+
+        coEvery { mockClient.request(any<ByteArray>()) } answers { corruptData }
+
+        // Act
+        val result = PolarAutomaticSamplesUtils.read247PPiSamples(
+            mockClient,
+            LocalDate.of(2024, 10, 1),
+            LocalDate.of(2024, 10, 31)
+        )
+
+        // Assert — corrupt directory listing → empty result, no crash
+        assert(result.isEmpty()) { "Expected empty list on corrupt directory listing" }
+    }
+
+    @Test
+    fun `read247PPiSamples() should skip corrupt files and continue with valid ones`() = runTest {
+        // Arrange
+        val fromDate = LocalDate.of(2024, 11, 1)
+        val toDate = LocalDate.of(2024, 11, 30)
+
+        val mockDirectoryContent = ByteArrayOutputStream().apply {
+            PbPFtpDirectory.newBuilder()
+                .addAllEntries(listOf(
+                    PbPFtpEntry.newBuilder().setName("AUTOS000.BPB").setSize(111L).build(),  // corrupt
+                    PbPFtpEntry.newBuilder().setName("AUTOS001.BPB").setSize(222L).build()   // valid
+                )).build().writeTo(this)
+        }
+
+        val corruptFile = ByteArrayOutputStream().apply {
+            write(byteArrayOf(0xDE.toByte(), 0xAD.toByte(), 0xBE.toByte(), 0xEF.toByte()))
+        }
+
+        val validFile = ByteArrayOutputStream().apply {
+            PbAutomaticSampleSessions.newBuilder()
+                .addAllPpiSamples(listOf(
+                    PbPpIntervalAutoSamples.newBuilder()
+                        .setRecordingTime(PbTime.newBuilder().setHour(1).setMinute(1).setSeconds(1).setMillis(1).build())
+                        .setTriggerType(PbPpIntervalAutoSamples.PbPpIntervalRecordingTriggerType.PPI_TRIGGER_TYPE_AUTOMATIC)
+                        .setPpi(PbPpIntervalSamples.newBuilder()
+                            .addAllPpiDelta(listOf(2500))
+                            .addAllPpiErrorEstimateDelta(listOf(700))
+                            .addAllStatus(listOf(1)).build()).build()
+                ))
+                .setDay(PbDate.newBuilder().setYear(2024).setMonth(11).setDay(15).build())
+                .build().writeTo(this)
+        }
+
+        coEvery { mockClient.request(any<ByteArray>()) } answers { mockDirectoryContent } andThen corruptFile andThen validFile
+
+        // Act
+        val result = PolarAutomaticSamplesUtils.read247PPiSamples(mockClient, fromDate, toDate)
+
+        // Assert — corrupt file is skipped, valid file's data is returned
+        assert(result.size == 1) { "Expected 1 result from the valid file, got ${result.size}" }
+        assert(result[0].date == LocalDate.of(2024, 11, 15))
     }
 
     @Test

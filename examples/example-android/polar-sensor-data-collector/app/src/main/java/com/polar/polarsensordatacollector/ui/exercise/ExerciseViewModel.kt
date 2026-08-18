@@ -171,7 +171,7 @@ class ExerciseViewModel(
 
 class ExerciseViewModelFactory(
     private val api: PolarBleApi,
-    private val deviceId: String,
+    private val identifier: String,
     private val context: Context
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
@@ -181,7 +181,7 @@ class ExerciseViewModelFactory(
         val repo = ExerciseRepository(
             api as com.polar.sdk.api.PolarTrainingSessionApi,
             api,
-            deviceId,
+            identifier,
             prefs
         )
         return ExerciseViewModel(repo, AndroidStringProvider(appCtx)) as T

@@ -1,31 +1,32 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client
 
-import android.util.Pair
 import androidx.annotation.VisibleForTesting
 import com.polar.androidcommunications.api.ble.BleLogger.Companion.w
 import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError
 import com.polar.androidcommunications.api.ble.exceptions.BleCharacteristicNotificationNotEnabled
-import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected
 import com.polar.androidcommunications.api.ble.exceptions.BleNotSupported
 import com.polar.androidcommunications.api.ble.exceptions.BleTimeout
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import java.nio.ByteBuffer
 import java.util.UUID
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.locks.ReentrantLock
 
 class BlePfcClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, PFC_SERVICE) {
     @VisibleForTesting
-    val pfcCpInputQueue: LinkedBlockingQueue<Pair<ByteArray, Int>> = LinkedBlockingQueue()
-    private var pfcFeature: PfcFeature? = null
-    private val mutexFeature = ReentrantLock()
+    val pfcCpResponseChannel: Channel<Pair<ByteArray, Int>> = Channel(Channel.UNLIMITED)
+    private val pfcFeatureFlow: MutableStateFlow<PfcFeature?> = MutableStateFlow(null)
+    private val pfcMutex = Mutex()
     private val pfcCpEnabled: AtomicInteger?
-    private val pfcMutex = Any()
 
     enum class PfcMessage(val numVal: Int) {
         PFC_UNKNOWN(0),
@@ -133,11 +134,8 @@ class BlePfcClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
 
     override fun reset() {
         super.reset()
-        pfcCpInputQueue.clear()
-        synchronized(mutexFeature) {
-            pfcFeature = null
-            (mutexFeature as Object).notifyAll()
-        }
+        while (pfcCpResponseChannel.tryReceive().isSuccess) { /* drain stale responses */ }
+        pfcFeatureFlow.value = null
     }
 
     override fun processServiceData(
@@ -147,15 +145,10 @@ class BlePfcClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
         notifying: Boolean
     ) {
         if (characteristic == PFC_CP) {
-            pfcCpInputQueue.add(Pair(data, status))
+            pfcCpResponseChannel.trySend(Pair(data, status))
         } else if (characteristic == PFC_FEATURE) {
             if (status == ATT_SUCCESS) {
-                synchronized(mutexFeature) {
-                    if (status == 0) {
-                        pfcFeature = PfcFeature(data)
-                    }
-                    (mutexFeature as Object).notifyAll()
-                }
+                pfcFeatureFlow.value = PfcFeature(data)
             } else {
                 w(
                     TAG,
@@ -170,13 +163,13 @@ class BlePfcClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
     }
 
     override fun toString(): String {
-        return "PFC service with values broadcast supported: " + pfcFeature?.broadcastSupported + " 5khz supported: " + pfcFeature?.khzSupported
+        return "PFC service with values broadcast supported: " + pfcFeatureFlow.value?.broadcastSupported + " 5khz supported: " + pfcFeatureFlow.value?.khzSupported
     }
 
     @Throws(Exception::class)
-    private fun sendPfcCommandAndProcessResponse(packet: ByteArray): PfcResponse {
+    private suspend fun sendPfcCommandAndProcessResponse(packet: ByteArray): PfcResponse {
         txInterface.transmitMessages(PFC_SERVICE, PFC_CP, listOf(packet), true)
-        val pair = pfcCpInputQueue.poll(30, TimeUnit.SECONDS)
+        val pair = withTimeoutOrNull(30_000L) { pfcCpResponseChannel.receive() }
         if (pair != null) {
             if (pair.second == 0) {
                 return PfcResponse(pair.first)
@@ -206,9 +199,9 @@ class BlePfcClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
      */
     suspend fun sendControlPointCommand(command: PfcMessage, params: ByteArray? = null): PfcResponse = withContext(Dispatchers.IO) {
         if (params == null) return@withContext PfcResponse()
-        synchronized(pfcMutex) {
+        pfcMutex.withLock {
             if (pfcCpEnabled?.get() == ATT_SUCCESS) {
-                pfcCpInputQueue.clear()
+                while (pfcCpResponseChannel.tryReceive().isSuccess) { /* drain stale responses */ }
                 when (command) {
                     PfcMessage.PFC_CONFIGURE_ANT_PLUS_SETTING,
                     PfcMessage.PFC_CONFIGURE_MULTI_CONNECTION_SETTING,
@@ -220,7 +213,7 @@ class BlePfcClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
                         val bb = ByteBuffer.allocate(1 + params.size)
                         bb.put(command.numVal.toByte())
                         bb.put(params)
-                        return@synchronized sendPfcCommandAndProcessResponse(bb.array())
+                        sendPfcCommandAndProcessResponse(bb.array())
                     }
                     PfcMessage.PFC_REQUEST_MULTI_CONNECTION_SETTING,
                     PfcMessage.PFC_REQUEST_ANT_PLUS_SETTING,
@@ -230,7 +223,7 @@ class BlePfcClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
                     PfcMessage.PFC_REQUEST_SECURITY_MODE,
                     PfcMessage.PFC_REQUEST_SENSOR_INITIATED_SECURITY_MODE -> {
                         val packet = byteArrayOf(command.numVal.toByte())
-                        return@synchronized sendPfcCommandAndProcessResponse(packet)
+                        sendPfcCommandAndProcessResponse(packet)
                     }
                     else -> throw BleNotSupported("Unknown pfc command acquired")
                 }
@@ -246,19 +239,7 @@ class BlePfcClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
      * @return [PfcFeature] on success
      * @throws Throwable on any error
      */
-    suspend fun readFeature(): PfcFeature = withContext(Dispatchers.IO) {
-        synchronized(mutexFeature) {
-            if (pfcFeature == null) {
-                (mutexFeature as Object).wait()
-            }
-            pfcFeature?.let { return@withContext it }
-            if (!txInterface.isConnected()) {
-                throw BleDisconnected()
-            } else {
-                throw BleNotSupported("PFC feature read failed")
-            }
-        }
-    }
+    suspend fun readFeature(): PfcFeature = pfcFeatureFlow.filterNotNull().first()
 
     companion object {
         private val TAG: String = BlePfcClient::class.java.simpleName

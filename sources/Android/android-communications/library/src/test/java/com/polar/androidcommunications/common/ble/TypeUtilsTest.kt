@@ -77,7 +77,7 @@ class TypeUtilsTest {
         val byteArray = byteArrayOf(0x00, 0x00, 0x00, 0x00, 0x00)
 
         // Act & Assert
-        assertThrows(AssertionError::class.java) {
+        assertThrows(IllegalArgumentException::class.java) {
             TypeUtils.convertArrayToUnsignedInt(byteArray)
         }
     }
@@ -140,7 +140,7 @@ class TypeUtilsTest {
         val byteArray = byteArrayOf(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)
 
         // Act & Assert
-        assertThrows(AssertionError::class.java) {
+        assertThrows(IllegalArgumentException::class.java) {
             TypeUtils.convertArrayToUnsignedLong(byteArray)
         }
     }
@@ -204,7 +204,7 @@ class TypeUtilsTest {
         val byteArray = byteArrayOf(0x00, 0x00, 0x00, 0x00, 0x00)
 
         // Act & Assert
-        assertThrows(AssertionError::class.java) {
+        assertThrows(IllegalArgumentException::class.java) {
             TypeUtils.convertArrayToSignedInt(byteArray)
         }
     }

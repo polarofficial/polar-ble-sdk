@@ -5,12 +5,25 @@ import Combine
 public struct Pmd {
 
     static func parseDeltaFrameRefSamples(_ data: Data, channels: UInt8, resolution: UInt8) -> [Int32] {
+        // Guard against resolution == 0 to prevent division issues and infinite loop
+        guard resolution > 0 else {
+            BleLogger.error("parseDeltaFrameRefSamples() resolution is 0, skipping as data may be malformed")
+            return []
+        }
+
         let resolutionInBytes = Int(ceil(Double(resolution) / 8.0))
-        return Array(stride(from: 0, to: (resolutionInBytes * Int(channels)), by: resolutionInBytes).map { start -> Int32 in
+        let requiredBytes = resolutionInBytes * Int(channels)
+
+        // Guard against insufficient data to prevent index out of bounds crash
+        guard data.count >= requiredBytes else {
+            BleLogger.error("parseDeltaFrameRefSamples() data too short. Expected \(requiredBytes), got \(data.count)")
+            return []
+        }
+
+        return Array(stride(from: 0, to: requiredBytes, by: resolutionInBytes).map { start -> Int32 in
             return BlePmdClient.arrayToInt(data.subdata(in: start..<start.advanced(by: resolutionInBytes)), offset: 0, size: resolutionInBytes)
         })
     }
-
 
     static func parseDeltaFrame(_ data: Data, channels: UInt32, bitWidth: UInt32, totalBitLength: UInt32) -> [[Int32]] {
         // Guard against bitWidth == 0 to prevent UInt32 underflow and Int32 overflow crash.
@@ -36,6 +49,13 @@ public struct Pmd {
 
     static func parseDeltaFramesToSamples(_ data: Data, channels: UInt8, resolution: UInt8) -> [[Int32]] {
         let refSamples = parseDeltaFrameRefSamples(data, channels: channels, resolution: resolution)
+
+        // Guard against empty refSamples to prevent crash in delta processing
+        guard !refSamples.isEmpty else {
+            BleLogger.error("parseDeltaFramesToSamples() refSamples is empty, cannot process deltas")
+            return []
+        }
+
         var offset = Int(channels * UInt8(ceil(Double(resolution) / 8.0)))
         var samples = [[Int32]]()
         samples.append(refSamples)
@@ -218,7 +238,7 @@ open class BlePmdClient: BleGattClientBase, @unchecked Sendable {
         do {
             frame = try PmdDataFrame(data: data, getPreviousFrameTimeStamp, getFactor, getSampleRate)
         } catch {
-            print("Couldn't parse the data frame. Reason: \(error)")
+            BleLogger.error("PMD data frame header parsing failed: \(error)")
             return
         }
         setPreviousFrameTimeStamp(frame.measurementType, frame.frameType, frame.timeStamp)
@@ -541,8 +561,11 @@ open class BlePmdClient: BleGattClientBase, @unchecked Sendable {
                     var packet = Data([PmdControlPointCommandClientToService.SET_OFFLINE_RECORDING_TRIGGER_SETTINGS,
                                        triggerStatus.rawValue, type.rawValue])
                     if triggerStatus == .enabled {
-                        packet.append(setting?.serialize() ?? Data())
-                        packet.append(secret?.serializeToPmdSettings() ?? Data())
+                        let settingBytes = setting?.serialize() ?? Data()
+                        let secretBytes = secret?.serializeToPmdSettings() ?? Data()
+                        packet.append(UInt8(settingBytes.count + secretBytes.count))
+                        packet.append(settingBytes)
+                        packet.append(secretBytes)
                     }
                     let response = try self.sendControlPointCommand(packet)
                     if response.errorCode == .success { continuation.resume() }

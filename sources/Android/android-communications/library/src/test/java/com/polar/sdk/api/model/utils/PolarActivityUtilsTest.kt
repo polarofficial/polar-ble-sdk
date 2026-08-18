@@ -28,6 +28,8 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Test
 import protocol.PftpRequest
 import protocol.PftpResponse.PbPFtpDirectory
@@ -640,7 +642,8 @@ class PolarActivityUtilsTest {
         val result = PolarActivityUtils.readDailySummaryDataFromDayDirectory(client, date)
 
         // Assert
-        assert(result.activityGoalSummary?.activityGoal == expectedActivityGoal)
+        assertNotNull(result)
+        assert(result!!.activityGoalSummary?.activityGoal == expectedActivityGoal)
         assert(result.activityGoalSummary?.achievedActivity == expectedAchievedGoal)
         assert(result.activityDistance == expectedDistance)
         assert(result.activityGoalSummary?.timeToGoUp == expectedTimeToGo)
@@ -668,7 +671,7 @@ class PolarActivityUtilsTest {
     }
 
     @Test
-    fun `readDailySummaryDataFromDayDirectory() should return default PolarDailySummaryData if error occurs`() = runTest {
+    fun `readDailySummaryDataFromDayDirectory() should return null if error occurs`() = runTest {
         // Arrange
         val client = mockk<BlePsFtpClient>()
         val date = LocalDate.now()
@@ -679,8 +682,8 @@ class PolarActivityUtilsTest {
         // Act
         val result = PolarActivityUtils.readDailySummaryDataFromDayDirectory(client, date)
 
-        // Assert — returns default/empty DailySummaryData without throwing
-        assert(result.activityDistance == null || result.activityDistance == 0f)
+        // Assert — returns null without throwing
+        assertNull(result)
 
         coVerifyOrder {
             client.request(PftpRequest.PbPFtpOperation.newBuilder()

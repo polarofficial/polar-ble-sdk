@@ -175,4 +175,25 @@ public protocol PolarOnlineStreamingApi {
     ///   - onNext: for every air packet received. see `PolarTemperatureData`
     ///   - onError: see `PolarErrors` for possible errors invoked
     func startSkinTemperatureStreaming(_ identifier: String, settings: PolarSensorSetting) -> AsyncThrowingStream<PolarTemperatureData, Error>
+
+    /// Stops online data stream of the selected type.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_online_streaming`
+    /// - Parameters:
+    ///   - identifier: Polar device id or device address
+    ///   - type: PmdMeasurement type to stop. See `PmdMeasurementType` for available types
+    ///   Returns:
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func stopStreaming(_ identifier: String, type: PmdMeasurementType) async throws
+
+    /// Stops heart rate stream.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_online_streaming`
+    /// - Parameters:
+    ///   - identifier: Polar device id or device address
+    ///   Returns:
+    ///   - onError: see `PolarErrors` for possible errors invoked
+    func stopHrStreaming(_ identifier: String) async throws
+
 }
+

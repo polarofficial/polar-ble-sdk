@@ -1,8 +1,6 @@
 package com.polar.androidcommunications.common.ble
 
-import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
@@ -16,12 +14,12 @@ class BleUtilsTest {
     }
 
     @Test
-    fun validate_whenInvalid_throwsAssertionErrorWithMessage() {
+    fun validate_whenInvalid_throwsIllegalArgumentExceptionWithMessage() {
         try {
             // method invocation
             BleUtils.validate(false, "validation failed")
-            fail("Expected AssertionError to be thrown")
-        } catch (e: AssertionError) {
+            fail("Expected IllegalArgumentException to be thrown")
+        } catch (e: IllegalArgumentException) {
             // required assertions
             assertEquals("validation failed", e.message)
         }
@@ -55,5 +53,20 @@ class BleUtilsTest {
         assertTrue(result.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC))
     }
 
+    @Test
+    fun advertisementBytes2Map_withUnknownLargeAdType_returnsGapAdTypeUnknownWithoutCrash() {
+        // Arrange – AD type byte 0x7F (127) is beyond the known enum entries and should
+        // not cause an IndexOutOfBoundsException; it must be mapped to GAP_ADTYPE_UNKNOWN.
+        val unknownAdType: Byte = 0x7F.toByte()  // value beyond last known AD_TYPE entry
+        val adv = byteArrayOf(
+            0x02, unknownAdType, 0x01  // length=2, type=0x7F, one data byte
+        )
+
+        // Act
+        val result = BleUtils.advertisementBytes2Map(adv)
+
+        // Assert
+        assertTrue(result.containsKey(BleUtils.AD_TYPE.GAP_ADTYPE_UNKNOWN))
+    }
 
 }

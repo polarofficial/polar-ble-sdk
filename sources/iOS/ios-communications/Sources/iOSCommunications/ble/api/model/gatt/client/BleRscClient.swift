@@ -26,6 +26,11 @@ public class BleRscClient: BleGattClientBase, @unchecked Sendable {
     override public func processServiceData(_ chr: CBUUID, data: Data, err: Int) {
         if err == 0 {
             if chr.isEqual(RSC_MEASUREMENT) {
+                // RSC measurement requires at least 4 bytes: 1 flags + 2 speed + 1 cadence
+                guard data.count >= 4 else {
+                    BleLogger.error("RSC measurement data too short: \(data.count) bytes")
+                    return
+                }
                 var index = 0
                 let flags = data[0]
                 index += 1
@@ -40,10 +45,18 @@ public class BleRscClient: BleGattClientBase, @unchecked Sendable {
                 var strideLength = 0
                 var totalDistance = 0.0
                 if strideLenPresent {
+                    guard index + 2 <= data.count else {
+                        BleLogger.error("RSC measurement data too short for stride length field: \(data.count) bytes")
+                        return
+                    }
                     strideLength = Int(UInt16(data[index]) | UInt16(UInt16(data[index + 1]) << 8))
                     index += 2
                 }
                 if totalDistancePresent {
+                    guard index + 4 <= data.count else {
+                        BleLogger.error("RSC measurement data too short for total distance field: \(data.count) bytes")
+                        return
+                    }
                     var distance = 0
                     memcpy(&distance, (data.subdata(in: index..<(index + 4)) as NSData).bytes, 4)
                     totalDistance = Double(distance) * 0.1

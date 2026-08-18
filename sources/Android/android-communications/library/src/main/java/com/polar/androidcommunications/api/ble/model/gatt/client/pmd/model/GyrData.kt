@@ -1,5 +1,6 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
+import com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient.PmdDataFieldEncoding
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
@@ -31,14 +32,23 @@ internal class GyrData {
                 when (frame.frameType) {
                     PmdDataFrame.PmdDataFrameType.TYPE_0 -> dataFromCompressedType0(frame)
                     PmdDataFrame.PmdDataFrameType.TYPE_1 -> dataFromCompressedType1(frame)
-                    else -> throw java.lang.Exception("Compressed FrameType: ${frame.frameType} is not supported by Gyro data parser")
+                    else -> throw PmdDataParseException(
+                        "Gyro compressed frame type ${frame.frameType} is not supported"
+                    )
                 }
             } else {
-                throw java.lang.Exception("Raw FrameType: ${frame.frameType} is not supported by Gyro data parser")
+                throw PmdDataParseException(
+                    "Gyro raw frame type ${frame.frameType} is not supported"
+                )
             }
         }
 
         private fun dataFromCompressedType0(frame: PmdDataFrame): GyrData {
+            if (frame.dataContent.isEmpty()) {
+                throw PmdDataParseException(
+                    "Gyro compressed TYPE_0 dataContent is empty"
+                )
+            }
             val samples = BlePMDClient.parseDeltaFramesAll(frame.dataContent, TYPE_0_CHANNELS_IN_SAMPLE, TYPE_0_SAMPLE_SIZE_IN_BITS, PmdDataFieldEncoding.SIGNED_INT)
             val gyrData = GyrData()
 
@@ -55,6 +65,11 @@ internal class GyrData {
         }
 
         private fun dataFromCompressedType1(frame: PmdDataFrame): GyrData {
+            if (frame.dataContent.isEmpty()) {
+                throw PmdDataParseException(
+                    "Gyro compressed TYPE_1 dataContent is empty"
+                )
+            }
             val samples = BlePMDClient.parseDeltaFramesAll(frame.dataContent, TYPE_1_CHANNELS_IN_SAMPLE, TYPE_1_SAMPLE_SIZE_IN_BITS, PmdDataFieldEncoding.FLOAT_IEEE754)
             val gyrData = GyrData()
 

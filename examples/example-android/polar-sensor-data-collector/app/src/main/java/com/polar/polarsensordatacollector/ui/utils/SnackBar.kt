@@ -10,7 +10,8 @@ fun showSnackBar(
     header: String,
     description: String = "",
     showAsError: Boolean = false,
-    action: Pair<String, () -> Unit>? = null
+    action: Pair<String, () -> Unit>? = null,
+    timeout: Long? = null
 ) {
     val message = if (showAsError) {
         var errorMessage = "ERROR\n$header"
@@ -23,7 +24,8 @@ fun showSnackBar(
         "$header\n$description"
     }
 
-    val snackBar = Snackbar.make(rootView, message, Snackbar.LENGTH_INDEFINITE)
+    val duration = if (timeout != null) (timeout * 1000).toInt() else Snackbar.LENGTH_INDEFINITE
+    val snackBar = Snackbar.make(rootView, message, duration)
     val snackBarView = snackBar.view
     val textView = snackBarView.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
     textView.maxLines = 5
@@ -36,7 +38,7 @@ fun showSnackBar(
             action.second()
             snackBar.dismiss()
         }
-    } else {
+    } else if (timeout == null) {
         snackBar.setAction("OK") {
             snackBar.dismiss()
         }

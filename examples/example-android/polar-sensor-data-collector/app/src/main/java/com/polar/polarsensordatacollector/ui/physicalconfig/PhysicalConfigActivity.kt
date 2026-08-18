@@ -173,7 +173,12 @@ class PhysicalConfigActivity : AppCompatActivity() {
         }
 
         buttonOk.setOnClickListener {
-            saveUserData()
+            try {
+                saveUserData()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to save user physical information", e)
+                showToast("Failed to save user physical information. Error: ${e.message}")
+            }
         }
     }
 

@@ -31,7 +31,7 @@ data class WatchFaceUiState(
 
 class WatchFaceViewModel(
     private val repository: PolarDeviceRepository,
-    private val deviceId: String,
+    private val identifier: String,
     private val app: Application
 ) : ViewModel() {
 
@@ -45,10 +45,10 @@ class WatchFaceViewModel(
     /** Read the current watch face config from the device and pre-populate checkboxes. */
     fun loadCurrentConfig() {
         viewModelScope.launch {
-            Log.d(TAG, "loadCurrentConfig: reading device=$deviceId")
+            Log.d(TAG, "loadCurrentConfig: reading device=$identifier")
             _uiState.update { it.copy(isLoading = true, readStatus = app.getString(R.string.watch_face_status_reading), resultMessage = null) }
 
-            when (val result = repository.getWatchFaceConfig(deviceId)) {
+            when (val result = repository.getWatchFaceConfig(identifier)) {
                 is ResultOfRequest.Success -> {
                     val config = result.value
                     if (config == null) {
@@ -100,13 +100,13 @@ class WatchFaceViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, resultMessage = null) }
             val ordered = _uiState.value.slots.map { it ?: PolarWatchFaceComplication.EMPTY }
-            Log.d(TAG, "applyComplications: writing ${ordered.size} slots for device=$deviceId")
+            Log.d(TAG, "applyComplications: writing ${ordered.size} slots for device=$identifier")
             ordered.forEachIndexed { i, c ->
                 Log.d(TAG, "  slot[$i] ${c.name}  id=${c.id}")
             }
-            val result = repository.setWatchFaceConfig(deviceId, PolarWatchFaceConfig(ordered))
+            val result = repository.setWatchFaceConfig(identifier, PolarWatchFaceConfig(ordered))
             if (result is ResultOfRequest.Success) {
-                Log.d(TAG, "applyComplications: success: $deviceId")
+                Log.d(TAG, "applyComplications: success: $identifier")
             }
             _uiState.update { s ->
                 s.copy(
@@ -123,10 +123,10 @@ class WatchFaceViewModel(
 
 class WatchFaceViewModelFactory(
     private val repository: PolarDeviceRepository,
-    private val deviceId: String,
+    private val identifier: String,
     private val app: Application
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T =
-        WatchFaceViewModel(repository, deviceId, app) as T
+        WatchFaceViewModel(repository, identifier, app) as T
 }

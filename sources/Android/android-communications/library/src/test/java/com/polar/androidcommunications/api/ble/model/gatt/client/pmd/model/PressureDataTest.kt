@@ -139,4 +139,37 @@ class PressureDataTest {
         Assert.assertEquals(sample0, pressureData.pressureSamples[0].pressure)
         Assert.assertEquals(timeStamp, pressureData.pressureSamples[0].timeStamp)
     }
+
+    // ── Bounds-checking / invalid-data tests ────────────────────────────────
+
+    private fun pressureHeader(frameTypeByte: Byte) = byteArrayOf(
+        0x0B.toByte(),
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+        frameTypeByte
+    )
+
+    @Test
+    fun `Pressure raw type 0 throws PmdDataParseException when dataContent is empty`() {
+        val frame = PmdDataFrame(pressureHeader(0x00), { _, _ -> 0uL }, { 1.0f }) { 100 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            PressureData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `Pressure raw type 0 throws PmdDataParseException when dataContent size is not multiple of 4`() {
+        // TYPE_0 sample = 4 bytes (IEEE 754 float); send 5 bytes
+        val frame = PmdDataFrame(pressureHeader(0x00) + byteArrayOf(0x01, 0x02, 0x03, 0x04, 0x05), { _, _ -> 0uL }, { 1.0f }) { 100 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            PressureData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `Pressure compressed type 0 throws PmdDataParseException when dataContent is empty`() {
+        val frame = PmdDataFrame(pressureHeader(0x80.toByte()), { _, _ -> 100uL }, { 1.0f }) { 0 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            PressureData.parseDataFromDataFrame(frame)
+        }
+    }
 }

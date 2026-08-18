@@ -61,4 +61,18 @@ interface PolarBleLowLevelApi {
         filePath: String,
         recurseDeep: Boolean
     ): List<String>
+
+    /**
+     * Create a new folder on the device using the low-level PFTP API.
+     * The folder path must end with a '/'. If it does not, one will be appended automatically.
+     * NOTE: this is an experimental API intended for Polar internal use only. Polar will not support 3rd party users with this API.
+     * @param identifier Polar device ID or BT address
+     * @param folderPath Path of the folder to create on the Polar device (e.g. "/U/0/20240101/ACT/").
+     * @return Success or error
+     */
+    @OptIn
+    suspend fun createFolder(
+        identifier: String,
+        folderPath: String
+    )
 }

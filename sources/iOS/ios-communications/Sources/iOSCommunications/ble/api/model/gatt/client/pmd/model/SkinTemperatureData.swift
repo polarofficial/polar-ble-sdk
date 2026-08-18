@@ -31,12 +31,12 @@ public class SkinTemperatureData {
         if (frame.isCompressedFrame) {
             switch (frame.frameType) {
             case PmdDataFrameType.type_0: return try dataFromCompressedType0(frame: frame)
-            default: throw BleGattException.gattDataError(description: "Raw FrameType: \(frame.frameType) is not supported by SkinTemperature data parser")
+            default: throw PmdDataParseError(message: "Compressed FrameType: \(frame.frameType) is not supported by SkinTemperature data parser")
             }
         } else {
             switch (frame.frameType) {
             case PmdDataFrameType.type_0: return try dataFromRawType0(frame: frame)
-            default: throw BleGattException.gattDataError(description: "Raw FrameType: \(frame.frameType) is not supported by SkinTemperature data parser")
+            default: throw PmdDataParseError(message: "Raw FrameType: \(frame.frameType) is not supported by SkinTemperature data parser")
             }
         }
     }
@@ -75,7 +75,10 @@ public class SkinTemperatureData {
         var skinTemperatureSamples = [SkinTemperatureSample]()
 
         for (index, sample) in samples.enumerated() {
-            let skinTemperature = Float(bitPattern: UInt32(sample.first!))
+            guard let rawBits = sample.first else {
+                throw PmdDataParseError(message: "SkinTemperature compressed TYPE_0 sample at index \(index) is empty")
+            }
+            let skinTemperature = Float(bitPattern: UInt32(bitPattern: rawBits))
             skinTemperatureSamples.append(
                 SkinTemperatureSample(
                     timeStamp: timeStamps[index],

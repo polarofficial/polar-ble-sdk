@@ -123,7 +123,7 @@ public class PpgData {
             case PmdDataFrameType.type_8: return try dataFromCompressedType8(frame: frame)
             case PmdDataFrameType.type_10: return try dataFromCompressedType10(frame: frame)
             case PmdDataFrameType.type_13: return try dataFromCompressedType13(frame: frame)
-            default: throw BleGattException.gattDataError(description: "Compressed FrameType: \(frame.frameType) is not supported by PPG data parser")
+            default: throw PmdDataParseError(message: "Compressed FrameType: \(frame.frameType) is not supported by PPG data parser")
             }
         } else {
             switch (frame.frameType) {
@@ -133,16 +133,22 @@ public class PpgData {
             case PmdDataFrameType.type_6: return try dataFromRawType6(frame: frame)
             case PmdDataFrameType.type_9: return try dataFromRawType9(frame: frame)
             case PmdDataFrameType.type_14: return try dataFromRawType14(frame: frame)
-            default: throw BleGattException.gattDataError(description: "Raw FrameType: \(frame.frameType) is not supported by PPG data parser")
+            default: throw PmdDataParseError(message: "Raw FrameType: \(frame.frameType) is not supported by PPG data parser")
             }
         }
     }
 
     private static func dataFromRawType0(frame: PmdDataFrame) throws -> PpgData {
-        var offset = 0
         let step = TYPE_0_SAMPLE_SIZE_IN_BYTES
-        let samplesSize = Int(Double(frame.dataContent.count) / Double(step * TYPE_0_CHANNELS_IN_SAMPLE))
-        
+        let sampleByteSize = Int(step * TYPE_0_CHANNELS_IN_SAMPLE)
+        guard !frame.dataContent.isEmpty && frame.dataContent.count % sampleByteSize == 0 else {
+            throw PmdDataParseError(
+                message: "PPG raw TYPE_0 dataContent size \(frame.dataContent.count) is not a " +
+                "non-zero multiple of expected sample size \(sampleByteSize)")
+        }
+        var offset = 0
+        let samplesSize = frame.dataContent.count / sampleByteSize
+
         let timeStamps = try PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp: frame.previousTimeStamp, frameTimeStamp: frame.timeStamp, samplesSize: UInt(samplesSize), sampleRate: frame.sampleRate)
 
         var timeStampIndex = 0
@@ -165,8 +171,12 @@ public class PpgData {
     }
     
     private static func dataFromRawType4(frame: PmdDataFrame) throws -> PpgData {
-        
-        let samplesSize = Int(Double(frame.dataContent.count) / Double(TYPE_4_SAMPLE_SIZE_IN_BYTES))
+        guard !frame.dataContent.isEmpty && frame.dataContent.count % TYPE_4_SAMPLE_SIZE_IN_BYTES == 0 else {
+            throw PmdDataParseError(
+                message: "PPG raw TYPE_4 dataContent size \(frame.dataContent.count) is not a " +
+                "non-zero multiple of expected sample size \(TYPE_4_SAMPLE_SIZE_IN_BYTES)")
+        }
+        let samplesSize = frame.dataContent.count / TYPE_4_SAMPLE_SIZE_IN_BYTES
         let timeStamps = try PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp: frame.previousTimeStamp, frameTimeStamp: frame.timeStamp, samplesSize: UInt(samplesSize), sampleRate: frame.sampleRate)
         var ppgSamples = [PpgSample]()
         var timeStampIndex = 0
@@ -204,14 +214,19 @@ public class PpgData {
     }
     
     private static func dataFromRawType5(frame: PmdDataFrame) throws -> PpgData {
-        let samplesSize = Int(Double(frame.dataContent.count) / Double(TYPE_0_CHANNELS_IN_SAMPLE))
+        guard !frame.dataContent.isEmpty && frame.dataContent.count % TYPE_5_SAMPLE_SIZE_IN_BYTES == 0 else {
+            throw PmdDataParseError(
+                message: "PPG raw TYPE_5 dataContent size \(frame.dataContent.count) is not a " +
+                "non-zero multiple of expected sample size \(TYPE_5_SAMPLE_SIZE_IN_BYTES)")
+        }
+        let samplesSize = frame.dataContent.count / TYPE_5_SAMPLE_SIZE_IN_BYTES
         let timeStamps = try PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp: frame.previousTimeStamp, frameTimeStamp: frame.timeStamp, samplesSize: UInt(samplesSize), sampleRate: frame.sampleRate)
         var ppgSamples = [PpgSample]()
         var timeStampIndex = 0
         var offset = 0
 
         while (offset < frame.dataContent.count) {
-            let operationMode = TypeUtils.convertArrayToUnsignedInt64(frame.dataContent, offset: 0, size: offset + TYPE_5_SAMPLE_SIZE_IN_BYTES)
+            let operationMode = TypeUtils.convertArrayToUnsignedInt64(frame.dataContent, offset: offset, size: TYPE_5_SAMPLE_SIZE_IN_BYTES)
             offset += TYPE_5_SAMPLE_SIZE_IN_BYTES
             ppgSamples.append(PpgDataFrameType5(timeStamp: timeStamps[timeStampIndex], frameType: frame.frameType, operationMode: operationMode))
             timeStampIndex+=1
@@ -220,20 +235,32 @@ public class PpgData {
     }
 
     private static func dataFromRawType6(frame: PmdDataFrame) throws -> PpgData {
+        guard frame.dataContent.count >= TYPE_6_SAMPLE_SIZE_IN_BYTES else {
+            throw PmdDataParseError(
+                message: "PPG raw TYPE_6 dataContent size \(frame.dataContent.count) is less than " +
+                "expected minimum \(TYPE_6_SAMPLE_SIZE_IN_BYTES) bytes")
+        }
         var ppgSamples = [PpgSample]()
         
         let sportId = TypeUtils.convertArrayToUnsignedInt64(frame.dataContent, offset: 0, size: TYPE_6_SAMPLE_SIZE_IN_BYTES)
         let samplesSize = frame.dataContent.count / TYPE_6_SAMPLE_SIZE_IN_BYTES
         let timeStamps = try PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp: frame.previousTimeStamp, frameTimeStamp: frame.timeStamp, samplesSize: UInt(samplesSize), sampleRate: frame.sampleRate)
-        ppgSamples.append(PpgDataFrameType6( timeStamp: timeStamps.first!, frameType: frame.frameType, sportId: Int32(sportId)))
-        
-        return PpgData(timeStamp: timeStamps.first!, samples: ppgSamples)
+        guard let firstTimestamp = timeStamps.first else {
+            throw PmdDataParseError(message: "PPG raw TYPE_6 produced no timestamps")
+        }
+        ppgSamples.append(PpgDataFrameType6( timeStamp: firstTimestamp, frameType: frame.frameType, sportId: Int32(sportId)))
+
+        return PpgData(timeStamp: firstTimestamp, samples: ppgSamples)
     }
     
     private static func dataFromRawType9(frame: PmdDataFrame) throws -> PpgData {
-        
-        let step = TYPE_0_SAMPLE_SIZE_IN_BYTES
-        let samplesSize = Int(Double(frame.dataContent.count) / Double(step * TYPE_0_CHANNELS_IN_SAMPLE))
+        let sampleByteSize = TYPE_9_SAMPLE_SIZE_IN_BYTES
+        guard !frame.dataContent.isEmpty && frame.dataContent.count % sampleByteSize == 0 else {
+            throw PmdDataParseError(
+                message: "PPG raw TYPE_9 dataContent size \(frame.dataContent.count) is not a " +
+                "non-zero multiple of expected sample size \(sampleByteSize)")
+        }
+        let samplesSize = frame.dataContent.count / sampleByteSize
         let timeStamps = try PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp: frame.previousTimeStamp, frameTimeStamp: frame.timeStamp, samplesSize: UInt(samplesSize), sampleRate: frame.sampleRate)
         var ppgSamples = [PpgSample]()
         var timeStampIndex = 0
@@ -271,8 +298,12 @@ public class PpgData {
     }
 
     private static func dataFromRawType14(frame: PmdDataFrame) throws -> PpgData {
-
-        let samplesSize = Int(Double(frame.dataContent.count) / Double(TYPE_14_SAMPLE_SIZE_IN_BYTES))
+        guard !frame.dataContent.isEmpty && frame.dataContent.count % TYPE_14_SAMPLE_SIZE_IN_BYTES == 0 else {
+            throw PmdDataParseError(
+                message: "PPG raw TYPE_14 dataContent size \(frame.dataContent.count) is not a " +
+                "non-zero multiple of expected sample size \(TYPE_14_SAMPLE_SIZE_IN_BYTES)")
+        }
+        let samplesSize = frame.dataContent.count / TYPE_14_SAMPLE_SIZE_IN_BYTES
         let timeStamps = try PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp: frame.previousTimeStamp, frameTimeStamp: frame.timeStamp, samplesSize: UInt(samplesSize), sampleRate: frame.sampleRate)
         var ppgSamples = [PpgSample]()
         var timeStampIndex = 0

@@ -62,6 +62,7 @@ internal class ConnectionHandlerTest {
         every { mockDeviceSession.sessionState } returns BleDeviceSession.DeviceSessionState.SESSION_CLOSED
         every { mockDeviceSession.isConnectableAdvertisement } returns true
         every { mockDeviceSession.connectionUuids } returns ArrayList()
+        every { mockDeviceSession.address } returns "AA:BB:CC:DD:EE:FF"
     }
 
     @After
@@ -183,6 +184,7 @@ internal class ConnectionHandlerTest {
         }
         every { mockDeviceSession1.isConnectableAdvertisement } returns true
         every { mockDeviceSession1.connectionUuids } returns ArrayList()
+        every { mockDeviceSession1.address } returns "AA:BB:CC:DD:EE:01"
 
         val capturedSessionStates2 = mutableListOf<BleDeviceSession.DeviceSessionState>()
         every { mockDeviceSession2.setSessionStates(capture(capturedSessionStates2)) } just runs
@@ -191,6 +193,7 @@ internal class ConnectionHandlerTest {
         }
         every { mockDeviceSession2.isConnectableAdvertisement } returns true
         every { mockDeviceSession2.connectionUuids } returns ArrayList()
+        every { mockDeviceSession2.address } returns "AA:BB:CC:DD:EE:02"
 
         val sessionInit = slot<BDDeviceSessionImpl>()
         every { mockConnectionInterface.connectDevice(capture(sessionInit)) } answers {

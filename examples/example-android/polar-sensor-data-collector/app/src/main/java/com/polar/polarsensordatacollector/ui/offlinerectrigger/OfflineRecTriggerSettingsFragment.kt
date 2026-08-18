@@ -89,14 +89,12 @@ class OfflineRecTriggerSettingsFragment : Fragment(R.layout.fragment_offline_tri
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 offlineTriggerViewModel.uiShowError.collect {
-                    if (it.header.isNotEmpty()) {
                         showSnackBar(
                             rootView = requireView(),
                             header = it.header,
                             description = it.description ?: "",
                             showAsError = true
                         )
-                    }
                 }
             }
         }
@@ -104,13 +102,7 @@ class OfflineRecTriggerSettingsFragment : Fragment(R.layout.fragment_offline_tri
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 offlineTriggerViewModel.uiShowInfo.collect {
-                    if (it.header.isNotEmpty()) {
-                        showSnackBar(
-                            rootView = requireView(),
-                            header = it.header,
-                            description = it.description ?: ""
-                        )
-                    }
+                        showSnackBar(rootView = requireView(), header = it.header, description = it.description ?: "", timeout = it.timeout)
                 }
             }
         }

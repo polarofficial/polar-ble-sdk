@@ -50,14 +50,17 @@ public class MagData {
             switch (frame.frameType) {
             case PmdDataFrameType.type_0: return try dataFromCompressedType0(frame: frame)
             case PmdDataFrameType.type_1: return try dataFromCompressedType1(frame: frame)
-            default: throw BleGattException.gattDataError(description: "Compressed FrameType: \(frame.frameType) is not supported by Magnetometer data parser")
+            default: throw PmdDataParseError(message: "Compressed FrameType: \(frame.frameType) is not supported by Magnetometer data parser")
             }
         } else {
-            throw BleGattException.gattDataError(description: "Raw FrameType: \(frame.frameType) is not supported by Magnetometer data parser")
+            throw PmdDataParseError(message: "Raw FrameType: \(frame.frameType) is not supported by Magnetometer data parser")
         }
     }
     
     private static func dataFromCompressedType0(frame: PmdDataFrame) throws -> MagData {
+        guard !frame.dataContent.isEmpty else {
+            throw PmdDataParseError(message: "Magnetometer compressed TYPE_0 dataContent is empty")
+        }
         let samples = Pmd.parseDeltaFramesToSamples(frame.dataContent, channels: TYPE_0_CHANNELS_IN_SAMPLE, resolution: TYPE_0_SAMPLE_SIZE_IN_BITS)
         let timeStamps = try PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp: frame.previousTimeStamp, frameTimeStamp: frame.timeStamp, samplesSize: UInt(samples.count), sampleRate: frame.sampleRate)
         
@@ -82,6 +85,9 @@ public class MagData {
     }
     
     private static func dataFromCompressedType1(frame: PmdDataFrame) throws -> MagData {
+        guard !frame.dataContent.isEmpty else {
+            throw PmdDataParseError(message: "Magnetometer compressed TYPE_1 dataContent is empty")
+        }
         let samples = Pmd.parseDeltaFramesToSamples(frame.dataContent, channels: TYPE_1_CHANNELS_IN_SAMPLE, resolution: TYPE_1_SAMPLE_SIZE_IN_BITS)
         
         let timeStamps = try PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp: frame.previousTimeStamp, frameTimeStamp: frame.timeStamp, samplesSize: UInt(samples.count), sampleRate: frame.sampleRate)

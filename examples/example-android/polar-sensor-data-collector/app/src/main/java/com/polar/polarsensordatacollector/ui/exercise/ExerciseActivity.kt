@@ -44,7 +44,7 @@ class ExerciseActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        deviceId = polarDeviceRepository.deviceConnectionStatus.value.deviceId
+        deviceId = polarDeviceRepository.deviceConnectionStatus.value.identifier
         if (deviceId.isEmpty()) {
             toast(getString(R.string.toast_no_device))
             finish(); return

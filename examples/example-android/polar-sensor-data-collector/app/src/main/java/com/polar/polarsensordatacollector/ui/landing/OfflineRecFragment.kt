@@ -89,9 +89,7 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 offlineViewModel.uiShowError.collect {
-                    if (it.header.isNotEmpty()) {
                         showSnackBar(rootView = requireView(), it.header, it.description ?: "", showAsError = true)
-                    }
                 }
             }
         }
@@ -99,9 +97,7 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 offlineViewModel.uiShowInfo.collect {
-                    if (it.header.isNotEmpty()) {
-                        showSnackBar(rootView = requireView(), it.header, it.description ?: "")
-                    }
+                        showSnackBar(rootView = requireView(), it.header, it.description ?: "", timeout = it.timeout)
                 }
             }
         }
@@ -179,7 +175,7 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
 
     private fun askStreamSettingsFromUser(identifier: String, feature: PolarDeviceDataType) {
         getOfflineRecSettingsButtonView(feature)?.isEnabled = false
-        offlineViewModel.requestOfflineRecSettings(deviceId = identifier, feature = feature)
+        offlineViewModel.requestOfflineRecSettings(identifier = identifier, feature = feature)
     }
 
     private fun setupViews(view: View) {

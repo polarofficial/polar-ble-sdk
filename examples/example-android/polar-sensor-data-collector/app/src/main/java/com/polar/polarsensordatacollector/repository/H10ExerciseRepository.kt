@@ -37,13 +37,13 @@ class H10ExerciseRepository @Inject constructor(
         _featureState.value = _featureState.value.copy(isEnabled = isEnabled)
     }
 
-    suspend fun requestRecordingStatus(deviceId: String): Pair<Boolean, String> {
-        return api.requestRecordingStatus(deviceId)
+    suspend fun requestRecordingStatus(identifier: String): Pair<Boolean, String> {
+        return api.requestRecordingStatus(identifier)
     }
 
-    suspend fun listExercises(deviceId: String): List<PolarExerciseEntry> {
+    suspend fun listExercises(identifier: String): List<PolarExerciseEntry> {
         return try {
-            api.listExercises(deviceId)
+            api.listExercises(identifier)
                 .catch { e -> Log.e(TAG, "listExercises() failed", e); throw e }
                 .toList()
         } catch (e: Exception) {
@@ -52,8 +52,8 @@ class H10ExerciseRepository @Inject constructor(
         }
     }
 
-    fun listExercisesAsFlow(deviceId: String): Flow<PolarExerciseEntry> {
-        return api.listExercises(deviceId)
+    fun listExercisesAsFlow(identifier: String): Flow<PolarExerciseEntry> {
+        return api.listExercises(identifier)
             .catch { e ->
                 Log.e(TAG, "listExercises() failed", e)
                 throw e
@@ -61,11 +61,11 @@ class H10ExerciseRepository @Inject constructor(
     }
 
     suspend fun readExercise(
-        deviceId: String,
+        identifier: String,
         entry: PolarExerciseEntry
     ): PolarExerciseData {
         return try {
-            api.fetchExercise(deviceId, entry)
+            api.fetchExercise(identifier, entry)
         } catch (e: Exception) {
             Log.e(TAG, "readExercise() failed", e)
             throw e
@@ -73,11 +73,11 @@ class H10ExerciseRepository @Inject constructor(
     }
 
     suspend fun removeExercise(
-        deviceId: String,
+        identifier: String,
         entry: PolarExerciseEntry
     ) {
         try {
-            api.removeExercise(deviceId, entry)
+            api.removeExercise(identifier, entry)
         } catch (e: Exception) {
             Log.e(TAG, "removeExercise() failed", e)
             throw e
@@ -85,27 +85,27 @@ class H10ExerciseRepository @Inject constructor(
     }
 
     suspend fun startRecording(
-        deviceId: String,
+        identifier: String,
         exerciseId: String
     ) {
         try {
             api.startRecording(
-                deviceId,
+                identifier,
                 exerciseId,
                 PolarH10OfflineExerciseApi.RecordingInterval.INTERVAL_1S,
                 PolarH10OfflineExerciseApi.SampleType.HR
             )
-            Log.d(TAG, "Recording started for $deviceId, exerciseId=$exerciseId")
+            Log.d(TAG, "Recording started for $identifier, exerciseId=$exerciseId")
         } catch (e: Exception) {
             Log.e(TAG, "startRecording() failed", e)
             throw e
         }
     }
 
-    suspend fun stopRecording(deviceId: String) {
+    suspend fun stopRecording(identifier: String) {
         try {
-            api.stopRecording(deviceId)
-            Log.d(TAG, "Recording stopped for $deviceId")
+            api.stopRecording(identifier)
+            Log.d(TAG, "Recording stopped for $identifier")
         } catch (e: Exception) {
             Log.e(TAG, "stopRecording() failed", e)
             throw e

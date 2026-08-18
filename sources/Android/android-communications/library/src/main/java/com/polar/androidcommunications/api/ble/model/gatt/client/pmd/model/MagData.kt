@@ -1,5 +1,6 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
+import com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
 
@@ -48,14 +49,23 @@ internal class MagData() {
                 when (frame.frameType) {
                     PmdDataFrame.PmdDataFrameType.TYPE_0 -> dataCompressedFromType0(frame)
                     PmdDataFrame.PmdDataFrameType.TYPE_1 -> dataCompressedFromType1(frame)
-                    else -> throw java.lang.Exception("Compressed FrameType: ${frame.frameType} is not supported by Magnetometer data parser")
+                    else -> throw PmdDataParseException(
+                        "Magnetometer compressed frame type ${frame.frameType} is not supported"
+                    )
                 }
             } else {
-                throw java.lang.Exception("Raw FrameType: ${frame.frameType} is not supported by Magnetometer data parser")
+                throw PmdDataParseException(
+                    "Magnetometer raw frame type ${frame.frameType} is not supported"
+                )
             }
         }
 
         private fun dataCompressedFromType0(frame: PmdDataFrame): MagData {
+            if (frame.dataContent.isEmpty()) {
+                throw PmdDataParseException(
+                    "Magnetometer compressed TYPE_0 dataContent is empty"
+                )
+            }
             val samples = BlePMDClient.parseDeltaFramesAll(frame.dataContent, TYPE_0_CHANNELS_IN_SAMPLE, TYPE_0_SAMPLE_SIZE_IN_BITS, BlePMDClient.PmdDataFieldEncoding.SIGNED_INT)
             val magData = MagData()
 
@@ -71,6 +81,11 @@ internal class MagData() {
         }
 
         private fun dataCompressedFromType1(frame: PmdDataFrame): MagData {
+            if (frame.dataContent.isEmpty()) {
+                throw PmdDataParseException(
+                    "Magnetometer compressed TYPE_1 dataContent is empty"
+                )
+            }
             val samples = BlePMDClient.parseDeltaFramesAll(frame.dataContent, TYPE_1_CHANNELS_IN_SAMPLE, TYPE_1_SAMPLE_SIZE_IN_BITS, BlePMDClient.PmdDataFieldEncoding.SIGNED_INT)
             val magData = MagData()
 

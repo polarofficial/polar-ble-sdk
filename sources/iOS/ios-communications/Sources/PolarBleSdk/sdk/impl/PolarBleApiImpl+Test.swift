@@ -6,6 +6,7 @@ import CoreBluetooth
 extension PolarBleApiImpl: PolarTestApi {
 
     func getSpo2TestData(identifier: String, fromDate: Date, toDate: Date) async throws -> [PolarSpo2TestData] {
+        logApiCall("getSpo2TestData", ("identifier", identifier))
         if fromDate > toDate {
             throw PolarErrors.invalidArgument(description: "toDate cannot be before fromDate.")
         }

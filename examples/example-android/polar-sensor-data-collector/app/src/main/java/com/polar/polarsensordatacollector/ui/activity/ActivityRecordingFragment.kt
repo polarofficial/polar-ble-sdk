@@ -75,9 +75,7 @@ class ActivityRecordingFragment : Fragment(R.layout.fragment_activity_recording)
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiShowError.collect {
-                    if (it.header.isNotEmpty()) {
                         showSnackBar(rootView = requireView(), it.header, it.description ?: "", showAsError = true)
-                    }
                 }
             }
         }
@@ -85,9 +83,7 @@ class ActivityRecordingFragment : Fragment(R.layout.fragment_activity_recording)
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiShowInfo.collect {
-                    if (it.header.isNotEmpty()) {
-                        showSnackBar(rootView = requireView(), it.header, it.description ?: "")
-                    }
+                        showSnackBar(rootView = requireView(), it.header, it.description ?: "", timeout = it.timeout)
                 }
             }
         }
@@ -213,7 +209,7 @@ class ActivityRecordingFragment : Fragment(R.layout.fragment_activity_recording)
                 } else {
                     val polarActivityDataType = type as PolarBleApi.PolarActivityDataType
                     val navigateAction = MainFragmentDirections.activityToActivityTriggerAction(
-                        viewModel.deviceId,
+                        viewModel.identifier,
                         fromDate!!.format(this.dateFormatter),
                         toDate!!.format(this.dateFormatter),
                         polarActivityDataType.name,

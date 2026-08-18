@@ -306,4 +306,79 @@ internal class GnssLocationDataTest {
         Assert.assertEquals(nmeaMessage, (gnssData.gnssLocationDataSamples[0] as GnssLocationData.GnssGpsNMEASample).nmeaMessage)
         Assert.assertEquals(timeStamp, (gnssData.gnssLocationDataSamples[0] as GnssLocationData.GnssGpsNMEASample).timeStamp)
     }
+
+    // ── Bounds-checking / invalid-data tests ────────────────────────────────
+
+    private fun gnssHeader(frameTypeByte: Byte) = byteArrayOf(
+        0x0A.toByte(),
+        0x00, 0x94.toByte(), 0x35.toByte(), 0x77.toByte(), 0x00, 0x00, 0x00, 0x00,
+        frameTypeByte
+    )
+
+    @Test
+    fun `GNSS raw type 0 throws PmdDataParseException when dataContent size is not multiple of 51`() {
+        // TYPE_0 sample = 51 bytes; send 50 bytes
+        val frame = PmdDataFrame(gnssHeader(0x00) + ByteArray(50), { _, _ -> 100uL }, { 1.0f }) { 0 }
+        val ex = org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            GnssLocationData.parseDataFromDataFrame(frame)
+        }
+        org.junit.Assert.assertTrue(ex.message!!.contains("TYPE_0"))
+    }
+
+    @Test
+    fun `GNSS raw type 1 throws PmdDataParseException when dataContent size is not multiple of 6`() {
+        // TYPE_1 sample = 6 bytes; send 5 bytes
+        val frame = PmdDataFrame(gnssHeader(0x01) + ByteArray(5), { _, _ -> 100uL }, { 1.0f }) { 0 }
+        val ex = org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            GnssLocationData.parseDataFromDataFrame(frame)
+        }
+        org.junit.Assert.assertTrue(ex.message!!.contains("TYPE_1"))
+    }
+
+    @Test
+    fun `GNSS raw type 2 throws PmdDataParseException when dataContent size is not multiple of 41`() {
+        // TYPE_2 sample = 41 bytes; send 40 bytes
+        val frame = PmdDataFrame(gnssHeader(0x02) + ByteArray(40), { _, _ -> 100uL }, { 1.0f }) { 0 }
+        val ex = org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            GnssLocationData.parseDataFromDataFrame(frame)
+        }
+        org.junit.Assert.assertTrue(ex.message!!.contains("TYPE_2"))
+    }
+
+    @Test
+    fun `GNSS raw type 3 throws PmdDataParseException when dataContent is too short`() {
+        // Minimum TYPE_3 = 7 bytes; send 6 bytes
+        val frame = PmdDataFrame(gnssHeader(0x03) + ByteArray(6), { _, _ -> 100uL }, { 1.0f }) { 0 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            GnssLocationData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `GNSS raw type 2 correctly parses two samples using offset-based indexing`() {
+        // Regression test for the bug where absolute indices (frame.dataContent[0..39]) were used
+        // instead of offset-based indices (frame.dataContent[offset + 0..offset + 39]).
+        // Two distinct 41-byte samples are provided; the second must be parsed differently from the first.
+        val sample1MaxSnr: UInt = 0x01u
+        val sample2MaxSnr: UInt = 0x02u
+
+        // Build two 41-byte satellite summary payloads that differ in the maxSnr byte (last byte).
+        // All other bytes are 0x00.
+        val sample1 = ByteArray(40) { 0x00 } + byteArrayOf(sample1MaxSnr.toByte())
+        val sample2 = ByteArray(40) { 0x00 } + byteArrayOf(sample2MaxSnr.toByte())
+        val twoSampleContent = sample1 + sample2
+
+        val frame = PmdDataFrame(gnssHeader(0x02) + twoSampleContent, { _, _ -> 100uL }, { 1.0f }) { 0 }
+        val gnssData = GnssLocationData.parseDataFromDataFrame(frame)
+
+        org.junit.Assert.assertEquals(2, gnssData.gnssLocationDataSamples.size)
+        org.junit.Assert.assertEquals(
+            sample1MaxSnr,
+            (gnssData.gnssLocationDataSamples[0] as GnssLocationData.GnssSatelliteSummarySample).maxSnr
+        )
+        org.junit.Assert.assertEquals(
+            sample2MaxSnr,
+            (gnssData.gnssLocationDataSamples[1] as GnssLocationData.GnssSatelliteSummarySample).maxSnr
+        )
+    }
 }

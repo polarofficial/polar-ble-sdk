@@ -133,10 +133,12 @@ public protocol PolarRestServiceApi {
 extension PolarBleApiImpl: PolarRestServiceApi {
 
     func listRestApiServices(identifier: String) async throws -> PolarDeviceRestApiServices {
+        logApiCall("listRestApiServices", ("identifier", identifier))
         return try await getJSONDecodableFromPath(identifier: identifier, path: "/REST/SERVICE.API")
     }
 
     func getRestApiDescription(identifier: String, path: String) async throws -> PolarDeviceRestApiServiceDescription {
+        logApiCall("getRestApiDescription", ("identifier", identifier), ("path", path))
         return try await getJSONDecodableFromPath(identifier: identifier, path: path)
     }
 
@@ -159,6 +161,7 @@ extension PolarBleApiImpl: PolarRestServiceApi {
     }
 
     func putNotification(identifier: String, notification: String, path: String) async throws {
+        logApiCall("putNotification", ("identifier", identifier), ("path", path))
         try await pFtpPutOperation(identifier: identifier, path: path, data: notification.data(using: .utf8)!)
     }
 
@@ -181,6 +184,7 @@ extension PolarBleApiImpl: PolarRestServiceApi {
     }
 
     func receiveRestApiEvents<T: Decodable>(identifier: String) -> AsyncThrowingStream<[T], Error> {
+        logApiCall("receiveRestApiEvents", ("identifier", identifier))
         return AsyncThrowingStream { continuation in
             Task {
                 do {

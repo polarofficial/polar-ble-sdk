@@ -145,6 +145,73 @@ final class PolarBleApiImplTests: XCTestCase {
         }, timeout: timeout).forEach { results.append($0) }
         return results
     }
+    
+    private func awaitFirstValue<T>(_ stream: AsyncThrowingStream<T, Error>, timeout: TimeInterval = 2) throws -> T {
+        try awaitSingleAsync({
+            var iterator = stream.makeAsyncIterator()
+            guard let value = try await iterator.next() else {
+                throw NSError(domain: "PolarBleApiImplTests.awaitFirstValue", code: 0)
+            }
+            return value
+        }, timeout: timeout)
+    }
+
+    private func awaitStreamError<T>(_ stream: AsyncThrowingStream<T, Error>, timeout: TimeInterval = 2) -> Error? {
+        awaitErrorAsync({
+            for try await _ in stream {}
+        }, timeout: timeout)
+    }
+
+    private func readAll(from stream: InputStream) -> Data {
+        stream.open()
+        defer { stream.close() }
+        var data = Data()
+        var buffer = [UInt8](repeating: 0, count: 256)
+        while stream.hasBytesAvailable {
+            let read = stream.read(&buffer, maxLength: buffer.count)
+            if read <= 0 { break }
+            data.append(buffer, count: read)
+        }
+        return data
+    }
+
+    private func makeUserDeviceSettingsProto(
+        deviceLocation: PbDeviceLocation = .deviceLocationWristLeft,
+        usbMode: Data_PbUsbConnectionSettings.PbUsbConnectionMode = .off,
+        telemetryEnabled: Bool = false,
+        autosEnabled: Bool = false,
+        atdState: Data_PbAutomaticTrainingDetectionSettings.PbAutomaticTrainingDetectionState = .off,
+        atdSensitivity: UInt32 = 10,
+        minimumDuration: UInt32 = 300
+    ) throws -> Data {
+        var proto = Data_PbUserDeviceSettings()
+        proto.generalSettings.deviceLocation = deviceLocation
+        proto.lastModified = PolarTimeUtils.dateToPbSystemDateTime(date: Date())
+        proto.usbConnectionSettings.mode = usbMode
+        proto.telemetrySettings.telemetryEnabled = telemetryEnabled
+        proto.automaticMeasurementSettings.automaticOhrMeasurement.state = autosEnabled ? .alwaysOn : .off
+        proto.automaticMeasurementSettings.automaticTrainingDetectionSettings.state = atdState
+        proto.automaticMeasurementSettings.automaticTrainingDetectionSettings.sensitivity = atdSensitivity
+        proto.automaticMeasurementSettings.automaticTrainingDetectionSettings.minimumTrainingDurationSeconds = minimumDuration
+        return try proto.serializedData()
+    }
+
+    private func makeDynamicApi() -> (MockDynamicBleApiImpl, MockDynamicServiceClientUtils) {
+        let utils = MockDynamicServiceClientUtils(listener: MockCBDeviceListenerImpl())
+        return (MockDynamicBleApiImpl(serviceUtils: utils), utils)
+    }
+
+    private func makeDate(_ year: Int, _ month: Int, _ day: Int) -> Date {
+        var comps = DateComponents()
+        comps.year = year
+        comps.month = month
+        comps.day = day
+        comps.hour = 0
+        comps.minute = 0
+        comps.second = 0
+        comps.timeZone = TimeZone(secondsFromGMT: 0)
+        return Calendar(identifier: .gregorian).date(from: comps)!
+    }
 
     // MARK: - getLocalTime
 
@@ -806,10 +873,6 @@ final class PolarBleApiImplTests: XCTestCase {
         wait(for: [exp], timeout: 2)
     }
 
-    // MARK: - PMD helpers (shared by requestStreamSettings / requestFullStreamSettings /
-    //         requestOfflineRecordingSettings / requestFullOfflineRecordingSettings /
-    //         getAvailableOfflineRecordingDataTypes / getOfflineRecordingStatus)
-
     private var pmdApi: MockPmdBleApiImpl!
     private var mockPmdSession: MockPmdBleDeviceSession!
     private var mockPmdClient: MockBlePmdClient!
@@ -984,515 +1047,6 @@ final class PolarBleApiImplTests: XCTestCase {
     func test_requestFullStreamSettings_sessionNotReady_propagatesError() {
         setUpPmdApi(); (pmdApi.serviceClientUtils as! MockPmdServiceClientUtils).stubError = PolarErrors.deviceNotConnected
         XCTAssertNotNil(awaitErrorAsync { [self] in try await pmdApi.requestFullStreamSettings(deviceId, feature: .ecg) })
-    }
-
-    // MARK: - requestOfflineRecordingSettings tests
-
-    func test_requestOfflineRecordingSettings_ppi_returnsOperationNotSupported() {
-        let e = awaitErrorAsync { [self] in try await v2Api.requestOfflineRecordingSettings(deviceId, feature: .ppi) }
-        XCTAssertNotNil(e); if case PolarErrors.operationNotSupported = e! { } else { XCTFail() }
-    }
-
-    func test_requestOfflineRecordingSettings_hr_returnsOperationNotSupported() {
-        let e = awaitErrorAsync { [self] in try await v2Api.requestOfflineRecordingSettings(deviceId, feature: .hr) }
-        XCTAssertNotNil(e); if case PolarErrors.operationNotSupported = e! { } else { XCTFail() }
-    }
-
-    func test_requestOfflineRecordingSettings_ecg_queriesEcgTypeOffline() throws {
-        setUpPmdApi(); mockPmdClient.querySettingsReturnValue = .success(try makeSuccessPmdSetting())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.requestOfflineRecordingSettings(deviceId, feature: .ecg) }
-        XCTAssertEqual(mockPmdClient.querySettingsCalls.first?.type, .ecg)
-        XCTAssertEqual(mockPmdClient.querySettingsCalls.first?.recordingType, .offline)
-    }
-
-    func test_requestOfflineRecordingSettings_acc_queriesAccTypeOffline() throws {
-        setUpPmdApi(); mockPmdClient.querySettingsReturnValue = .success(try makeSuccessPmdSetting())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.requestOfflineRecordingSettings(deviceId, feature: .acc) }
-        XCTAssertEqual(mockPmdClient.querySettingsCalls.first?.type, .acc)
-        XCTAssertEqual(mockPmdClient.querySettingsCalls.first?.recordingType, .offline)
-    }
-
-    func test_requestOfflineRecordingSettings_ppg_queriesPpgTypeOffline() throws {
-        setUpPmdApi(); mockPmdClient.querySettingsReturnValue = .success(try makeSuccessPmdSetting())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.requestOfflineRecordingSettings(deviceId, feature: .ppg) }
-        XCTAssertEqual(mockPmdClient.querySettingsCalls.first?.type, .ppg)
-        XCTAssertEqual(mockPmdClient.querySettingsCalls.first?.recordingType, .offline)
-    }
-
-    func test_requestOfflineRecordingSettings_magnetometer_queriesMgnTypeOffline() throws {
-        setUpPmdApi(); mockPmdClient.querySettingsReturnValue = .success(try makeSuccessPmdSetting())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.requestOfflineRecordingSettings(deviceId, feature: .magnetometer) }
-        XCTAssertEqual(mockPmdClient.querySettingsCalls.first?.type, .mgn)
-        XCTAssertEqual(mockPmdClient.querySettingsCalls.first?.recordingType, .offline)
-    }
-
-    func test_requestOfflineRecordingSettings_gyro_queriesGyroTypeOffline() throws {
-        setUpPmdApi(); mockPmdClient.querySettingsReturnValue = .success(try makeSuccessPmdSetting())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.requestOfflineRecordingSettings(deviceId, feature: .gyro) }
-        XCTAssertEqual(mockPmdClient.querySettingsCalls.first?.type, .gyro)
-        XCTAssertEqual(mockPmdClient.querySettingsCalls.first?.recordingType, .offline)
-    }
-
-    func test_requestOfflineRecordingSettings_temperature_queriesTemperatureTypeOffline() throws {
-        setUpPmdApi(); mockPmdClient.querySettingsReturnValue = .success(try makeSuccessPmdSetting())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.requestOfflineRecordingSettings(deviceId, feature: .temperature) }
-        XCTAssertEqual(mockPmdClient.querySettingsCalls.first?.type, .temperature)
-        XCTAssertEqual(mockPmdClient.querySettingsCalls.first?.recordingType, .offline)
-    }
-
-    func test_requestOfflineRecordingSettings_skinTemperature_queriesSkinTemperatureTypeOffline() throws {
-        setUpPmdApi(); mockPmdClient.querySettingsReturnValue = .success(try makeSuccessPmdSetting())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.requestOfflineRecordingSettings(deviceId, feature: .skinTemperature) }
-        XCTAssertEqual(mockPmdClient.querySettingsCalls.first?.type, .skinTemperature)
-        XCTAssertEqual(mockPmdClient.querySettingsCalls.first?.recordingType, .offline)
-    }
-
-    func test_requestOfflineRecordingSettings_pressure_queriesPressureTypeOffline() throws {
-        setUpPmdApi(); mockPmdClient.querySettingsReturnValue = .success(try makeSuccessPmdSetting())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.requestOfflineRecordingSettings(deviceId, feature: .pressure) }
-        XCTAssertEqual(mockPmdClient.querySettingsCalls.first?.type, .pressure)
-        XCTAssertEqual(mockPmdClient.querySettingsCalls.first?.recordingType, .offline)
-    }
-
-    func test_requestOfflineRecordingSettings_mapsSettingsCorrectly() throws {
-        setUpPmdApi(); mockPmdClient.querySettingsReturnValue = .success(try makeSuccessPmdSetting())
-        let result = try awaitSingleAsync { [self] in try await pmdApi.requestOfflineRecordingSettings(deviceId, feature: .ecg) }
-        XCTAssertEqual(result.settings[.sampleRate], [130]); XCTAssertEqual(result.settings[.resolution], [16])
-    }
-
-    func test_requestOfflineRecordingSettings_usesOfflineNotOnlineRecordingType() throws {
-        setUpPmdApi(); mockPmdClient.querySettingsReturnValue = .success(try makeSuccessPmdSetting())
-        for feature: PolarDeviceDataType in [.ecg, .acc, .ppg, .magnetometer, .gyro, .temperature, .skinTemperature, .pressure] {
-            mockPmdClient.querySettingsCalls.removeAll()
-            _ = try awaitSingleAsync { [self] in try await pmdApi.requestOfflineRecordingSettings(deviceId, feature: feature) }
-            XCTAssertEqual(mockPmdClient.querySettingsCalls.first?.recordingType, .offline, "\(feature) should use .offline")
-        }
-    }
-
-    func test_requestOfflineRecordingSettings_doesNotCallQueryFullSettings() throws {
-        setUpPmdApi(); mockPmdClient.querySettingsReturnValue = .success(try makeSuccessPmdSetting())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.requestOfflineRecordingSettings(deviceId, feature: .ecg) }
-        XCTAssertEqual(mockPmdClient.queryFullSettingsCalls.count, 0)
-    }
-
-    func test_requestOfflineRecordingSettings_queryError_wrappedAsDeviceError() {
-        setUpPmdApi(); mockPmdClient.querySettingsReturnValue = .failure(NSError(domain: "pmd.offline", code: 7))
-        let e = awaitErrorAsync { [self] in try await pmdApi.requestOfflineRecordingSettings(deviceId, feature: .ecg) }
-        XCTAssertNotNil(e); if case PolarErrors.deviceError = e! { } else { XCTFail("Expected deviceError") }
-    }
-
-    func test_requestOfflineRecordingSettings_sessionNotReady_propagatesError() {
-        setUpPmdApi(); (pmdApi.serviceClientUtils as! MockPmdServiceClientUtils).stubError = PolarErrors.deviceNotConnected
-        XCTAssertNotNil(awaitErrorAsync { [self] in try await pmdApi.requestOfflineRecordingSettings(deviceId, feature: .ecg) })
-    }
-
-    // MARK: - requestFullOfflineRecordingSettings tests
-
-    func test_requestFullOfflineRecordingSettings_ppi_returnsOperationNotSupported() {
-        let e = awaitErrorAsync { [self] in try await v2Api.requestFullOfflineRecordingSettings(deviceId, feature: .ppi) }
-        XCTAssertNotNil(e); if case PolarErrors.operationNotSupported = e! { } else { XCTFail() }
-    }
-
-    func test_requestFullOfflineRecordingSettings_hr_returnsOperationNotSupported() {
-        let e = awaitErrorAsync { [self] in try await v2Api.requestFullOfflineRecordingSettings(deviceId, feature: .hr) }
-        XCTAssertNotNil(e); if case PolarErrors.operationNotSupported = e! { } else { XCTFail() }
-    }
-
-    func test_requestFullOfflineRecordingSettings_pressure_returnsOperationNotSupported() {
-        let e = awaitErrorAsync { [self] in try await v2Api.requestFullOfflineRecordingSettings(deviceId, feature: .pressure) }
-        XCTAssertNotNil(e); if case PolarErrors.operationNotSupported = e! { } else { XCTFail() }
-    }
-
-    func test_requestFullOfflineRecordingSettings_ecg_queriesEcgTypeOffline() throws {
-        setUpPmdApi(); mockPmdClient.queryFullSettingsReturnValue = .success(try makeSuccessPmdSetting())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.requestFullOfflineRecordingSettings(deviceId, feature: .ecg) }
-        XCTAssertEqual(mockPmdClient.queryFullSettingsCalls.first?.type, .ecg)
-        XCTAssertEqual(mockPmdClient.queryFullSettingsCalls.first?.recordingType, .offline)
-    }
-
-    func test_requestFullOfflineRecordingSettings_acc_queriesAccTypeOffline() throws {
-        setUpPmdApi(); mockPmdClient.queryFullSettingsReturnValue = .success(try makeSuccessPmdSetting())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.requestFullOfflineRecordingSettings(deviceId, feature: .acc) }
-        XCTAssertEqual(mockPmdClient.queryFullSettingsCalls.first?.type, .acc)
-    }
-
-    func test_requestFullOfflineRecordingSettings_ppg_queriesPpgTypeOffline() throws {
-        setUpPmdApi(); mockPmdClient.queryFullSettingsReturnValue = .success(try makeSuccessPmdSetting())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.requestFullOfflineRecordingSettings(deviceId, feature: .ppg) }
-        XCTAssertEqual(mockPmdClient.queryFullSettingsCalls.first?.type, .ppg)
-    }
-
-    func test_requestFullOfflineRecordingSettings_magnetometer_queriesMgnTypeOffline() throws {
-        setUpPmdApi(); mockPmdClient.queryFullSettingsReturnValue = .success(try makeSuccessPmdSetting())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.requestFullOfflineRecordingSettings(deviceId, feature: .magnetometer) }
-        XCTAssertEqual(mockPmdClient.queryFullSettingsCalls.first?.type, .mgn)
-    }
-
-    func test_requestFullOfflineRecordingSettings_gyro_queriesGyroTypeOffline() throws {
-        setUpPmdApi(); mockPmdClient.queryFullSettingsReturnValue = .success(try makeSuccessPmdSetting())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.requestFullOfflineRecordingSettings(deviceId, feature: .gyro) }
-        XCTAssertEqual(mockPmdClient.queryFullSettingsCalls.first?.type, .gyro)
-    }
-
-    func test_requestFullOfflineRecordingSettings_temperature_queriesTemperatureTypeOffline() throws {
-        setUpPmdApi(); mockPmdClient.queryFullSettingsReturnValue = .success(try makeSuccessPmdSetting())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.requestFullOfflineRecordingSettings(deviceId, feature: .temperature) }
-        XCTAssertEqual(mockPmdClient.queryFullSettingsCalls.first?.type, .temperature)
-    }
-
-    func test_requestFullOfflineRecordingSettings_skinTemperature_queriesSkinTemperatureTypeOffline() throws {
-        setUpPmdApi(); mockPmdClient.queryFullSettingsReturnValue = .success(try makeSuccessPmdSetting())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.requestFullOfflineRecordingSettings(deviceId, feature: .skinTemperature) }
-        XCTAssertEqual(mockPmdClient.queryFullSettingsCalls.first?.type, .skinTemperature)
-    }
-
-    func test_requestFullOfflineRecordingSettings_mapsSettingsCorrectly() throws {
-        setUpPmdApi(); mockPmdClient.queryFullSettingsReturnValue = .success(try makeSuccessPmdSetting())
-        let result = try awaitSingleAsync { [self] in try await pmdApi.requestFullOfflineRecordingSettings(deviceId, feature: .ecg) }
-        XCTAssertEqual(result.settings[.sampleRate], [130]); XCTAssertEqual(result.settings[.resolution], [16])
-    }
-
-    func test_requestFullOfflineRecordingSettings_usesOfflineNotOnlineRecordingType() throws {
-        setUpPmdApi(); mockPmdClient.queryFullSettingsReturnValue = .success(try makeSuccessPmdSetting())
-        for feature: PolarDeviceDataType in [.ecg, .acc, .ppg, .magnetometer, .gyro, .temperature, .skinTemperature] {
-            mockPmdClient.queryFullSettingsCalls.removeAll()
-            _ = try awaitSingleAsync { [self] in try await pmdApi.requestFullOfflineRecordingSettings(deviceId, feature: feature) }
-            XCTAssertEqual(mockPmdClient.queryFullSettingsCalls.first?.recordingType, .offline, "\(feature) should use .offline")
-        }
-    }
-
-    func test_requestFullOfflineRecordingSettings_doesNotCallQuerySettings() throws {
-        setUpPmdApi(); mockPmdClient.queryFullSettingsReturnValue = .success(try makeSuccessPmdSetting())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.requestFullOfflineRecordingSettings(deviceId, feature: .ecg) }
-        XCTAssertEqual(mockPmdClient.querySettingsCalls.count, 0)
-    }
-
-    func test_requestFullOfflineRecordingSettings_queryError_wrappedAsDeviceError() {
-        setUpPmdApi(); mockPmdClient.queryFullSettingsReturnValue = .failure(NSError(domain: "pmd.fullOffline", code: 3))
-        let e = awaitErrorAsync { [self] in try await pmdApi.requestFullOfflineRecordingSettings(deviceId, feature: .ecg) }
-        XCTAssertNotNil(e); if case PolarErrors.deviceError = e! { } else { XCTFail("Expected deviceError") }
-    }
-
-    func test_requestFullOfflineRecordingSettings_sessionNotReady_propagatesError() {
-        setUpPmdApi(); (pmdApi.serviceClientUtils as! MockPmdServiceClientUtils).stubError = PolarErrors.deviceNotConnected
-        XCTAssertNotNil(awaitErrorAsync { [self] in try await pmdApi.requestFullOfflineRecordingSettings(deviceId, feature: .ecg) })
-    }
-
-    // MARK: - getAvailableOfflineRecordingDataTypes tests
-
-    func test_getAvailableOfflineRecordingDataTypes_emptyFeatureSet_returnsEmptySet() throws {
-        setUpPmdApi()
-        mockPmdClient.readFeatureReturnValue = .success(Set<PmdMeasurementType>())
-        XCTAssertTrue(try awaitSingleAsync { [self] in try await pmdApi.getAvailableOfflineRecordingDataTypes(deviceId) }.isEmpty)
-    }
-
-    func test_getAvailableOfflineRecordingDataTypes_ecg_mappedCorrectly() throws {
-        setUpPmdApi()
-        mockPmdClient.readFeatureReturnValue = .success(Set([PmdMeasurementType.ecg]))
-        XCTAssertEqual(try awaitSingleAsync { [self] in try await pmdApi.getAvailableOfflineRecordingDataTypes(deviceId) }, [.ecg])
-    }
-
-    func test_getAvailableOfflineRecordingDataTypes_acc_mappedCorrectly() throws {
-        setUpPmdApi()
-        mockPmdClient.readFeatureReturnValue = .success(Set([PmdMeasurementType.acc]))
-        XCTAssertEqual(try awaitSingleAsync { [self] in try await pmdApi.getAvailableOfflineRecordingDataTypes(deviceId) }, [.acc])
-    }
-
-    func test_getAvailableOfflineRecordingDataTypes_ppg_mappedCorrectly() throws {
-        setUpPmdApi()
-        mockPmdClient.readFeatureReturnValue = .success(Set([PmdMeasurementType.ppg]))
-        XCTAssertEqual(try awaitSingleAsync { [self] in try await pmdApi.getAvailableOfflineRecordingDataTypes(deviceId) }, [.ppg])
-    }
-
-    func test_getAvailableOfflineRecordingDataTypes_ppi_mappedCorrectly() throws {
-        setUpPmdApi()
-        mockPmdClient.readFeatureReturnValue = .success(Set([PmdMeasurementType.ppi]))
-        XCTAssertEqual(try awaitSingleAsync { [self] in try await pmdApi.getAvailableOfflineRecordingDataTypes(deviceId) }, [.ppi])
-    }
-
-    func test_getAvailableOfflineRecordingDataTypes_gyro_mappedCorrectly() throws {
-        setUpPmdApi()
-        mockPmdClient.readFeatureReturnValue = .success(Set([PmdMeasurementType.gyro]))
-        XCTAssertEqual(try awaitSingleAsync { [self] in try await pmdApi.getAvailableOfflineRecordingDataTypes(deviceId) }, [.gyro])
-    }
-
-    func test_getAvailableOfflineRecordingDataTypes_mgn_mappedToMagnetometer() throws {
-        setUpPmdApi()
-        mockPmdClient.readFeatureReturnValue = .success(Set([PmdMeasurementType.mgn]))
-        XCTAssertEqual(try awaitSingleAsync { [self] in try await pmdApi.getAvailableOfflineRecordingDataTypes(deviceId) }, [.magnetometer])
-    }
-
-    func test_getAvailableOfflineRecordingDataTypes_offlineHr_mappedToHr() throws {
-        setUpPmdApi()
-        mockPmdClient.readFeatureReturnValue = .success(Set([PmdMeasurementType.offline_hr]))
-        XCTAssertEqual(try awaitSingleAsync { [self] in try await pmdApi.getAvailableOfflineRecordingDataTypes(deviceId) }, [.hr])
-    }
-
-    func test_getAvailableOfflineRecordingDataTypes_temperature_mappedCorrectly() throws {
-        setUpPmdApi()
-        mockPmdClient.readFeatureReturnValue = .success(Set([PmdMeasurementType.temperature]))
-        XCTAssertEqual(try awaitSingleAsync { [self] in try await pmdApi.getAvailableOfflineRecordingDataTypes(deviceId) }, [.temperature])
-    }
-
-    func test_getAvailableOfflineRecordingDataTypes_skinTemperature_mappedCorrectly() throws {
-        setUpPmdApi()
-        mockPmdClient.readFeatureReturnValue = .success(Set([PmdMeasurementType.skinTemperature]))
-        XCTAssertEqual(try awaitSingleAsync { [self] in try await pmdApi.getAvailableOfflineRecordingDataTypes(deviceId) }, [.skinTemperature])
-    }
-
-    func test_getAvailableOfflineRecordingDataTypes_multipleTypes_allMapped() throws {
-        setUpPmdApi()
-        let pmdTypes: Set<PmdMeasurementType> = [.ecg, .acc, .ppg, .gyro, .mgn, .offline_hr, .temperature, .skinTemperature]
-        mockPmdClient.readFeatureReturnValue = .success(pmdTypes)
-        let result = try awaitSingleAsync { [self] in try await pmdApi.getAvailableOfflineRecordingDataTypes(deviceId) }
-        XCTAssertEqual(result, [.ecg, .acc, .ppg, .gyro, .magnetometer, .hr, .temperature, .skinTemperature])
-    }
-
-    func test_getAvailableOfflineRecordingDataTypes_passesCheckConnectionTrue() throws {
-        setUpPmdApi()
-        mockPmdClient.readFeatureReturnValue = .success(Set<PmdMeasurementType>())
-        _ = try awaitSingleAsync { [self] in try await pmdApi.getAvailableOfflineRecordingDataTypes(deviceId) }
-        XCTAssertEqual(mockPmdClient.readFeatureCalls.first, true)
-    }
-
-    func test_getAvailableOfflineRecordingDataTypes_readFeatureError_propagatesError() {
-        setUpPmdApi()
-        mockPmdClient.readFeatureReturnValue = .failure(NSError(domain: "pmd.readFeature", code: 5))
-        XCTAssertNotNil(awaitErrorAsync { [self] in try await pmdApi.getAvailableOfflineRecordingDataTypes(deviceId) })
-    }
-
-    func test_getAvailableOfflineRecordingDataTypes_sessionNotReady_propagatesError() {
-        setUpPmdApi(); (pmdApi.serviceClientUtils as! MockPmdServiceClientUtils).stubError = PolarErrors.deviceNotConnected
-        XCTAssertNotNil(awaitErrorAsync { [self] in try await pmdApi.getAvailableOfflineRecordingDataTypes(deviceId) })
-    }
-
-    // MARK: - getOfflineRecordingStatus tests
-
-    func test_getOfflineRecordingStatus_emptyStatus_returnsEmptyDictionary() throws {
-        setUpPmdApi()
-        mockPmdClient.readMeasurementStatusReturnValue = .success([])
-        XCTAssertTrue(try awaitSingleAsync { [self] in try await pmdApi.getOfflineRecordingStatus(deviceId) }.isEmpty)
-    }
-
-    func test_getOfflineRecordingStatus_offlineMeasurementActive_returnsTrueForFeature() throws {
-        setUpPmdApi()
-        mockPmdClient.readMeasurementStatusReturnValue = .success([(PmdMeasurementType.ecg, PmdActiveMeasurement.offline_measurement_active)])
-        XCTAssertEqual(try awaitSingleAsync { [self] in try await pmdApi.getOfflineRecordingStatus(deviceId) }[.ecg], true)
-    }
-
-    func test_getOfflineRecordingStatus_onlineOfflineMeasurementActive_returnsTrueForFeature() throws {
-        setUpPmdApi()
-        mockPmdClient.readMeasurementStatusReturnValue = .success([(PmdMeasurementType.acc, PmdActiveMeasurement.online_offline_measurement_active)])
-        XCTAssertEqual(try awaitSingleAsync { [self] in try await pmdApi.getOfflineRecordingStatus(deviceId) }[.acc], true)
-    }
-
-    func test_getOfflineRecordingStatus_noMeasurementActive_returnsFalseForFeature() throws {
-        setUpPmdApi()
-        mockPmdClient.readMeasurementStatusReturnValue = .success([(PmdMeasurementType.ppg, PmdActiveMeasurement.no_measurement_active)])
-        XCTAssertEqual(try awaitSingleAsync { [self] in try await pmdApi.getOfflineRecordingStatus(deviceId) }[.ppg], false)
-    }
-
-    func test_getOfflineRecordingStatus_onlineMeasurementActive_returnsFalseForFeature() throws {
-        setUpPmdApi()
-        mockPmdClient.readMeasurementStatusReturnValue = .success([(PmdMeasurementType.gyro, PmdActiveMeasurement.online_measurement_active)])
-        XCTAssertEqual(try awaitSingleAsync { [self] in try await pmdApi.getOfflineRecordingStatus(deviceId) }[.gyro], false)
-    }
-
-    func test_getOfflineRecordingStatus_mgn_mappedToMagnetometer() throws {
-        setUpPmdApi()
-        mockPmdClient.readMeasurementStatusReturnValue = .success([(PmdMeasurementType.mgn, PmdActiveMeasurement.offline_measurement_active)])
-        XCTAssertEqual(try awaitSingleAsync { [self] in try await pmdApi.getOfflineRecordingStatus(deviceId) }[.magnetometer], true)
-    }
-
-    func test_getOfflineRecordingStatus_offlineHr_mappedToHr() throws {
-        setUpPmdApi()
-        mockPmdClient.readMeasurementStatusReturnValue = .success([(PmdMeasurementType.offline_hr, PmdActiveMeasurement.offline_measurement_active)])
-        XCTAssertEqual(try awaitSingleAsync { [self] in try await pmdApi.getOfflineRecordingStatus(deviceId) }[.hr], true)
-    }
-
-    func test_getOfflineRecordingStatus_temperature_mappedCorrectly() throws {
-        setUpPmdApi()
-        mockPmdClient.readMeasurementStatusReturnValue = .success([(PmdMeasurementType.temperature, PmdActiveMeasurement.offline_measurement_active)])
-        XCTAssertEqual(try awaitSingleAsync { [self] in try await pmdApi.getOfflineRecordingStatus(deviceId) }[.temperature], true)
-    }
-
-    func test_getOfflineRecordingStatus_pressure_mappedCorrectly() throws {
-        setUpPmdApi()
-        mockPmdClient.readMeasurementStatusReturnValue = .success([(PmdMeasurementType.pressure, PmdActiveMeasurement.no_measurement_active)])
-        XCTAssertEqual(try awaitSingleAsync { [self] in try await pmdApi.getOfflineRecordingStatus(deviceId) }[.pressure], false)
-    }
-
-    func test_getOfflineRecordingStatus_multipleFeatures_allMappedCorrectly() throws {
-        setUpPmdApi()
-        mockPmdClient.readMeasurementStatusReturnValue = .success([
-            (PmdMeasurementType.ecg,  PmdActiveMeasurement.offline_measurement_active),
-            (PmdMeasurementType.acc,  PmdActiveMeasurement.no_measurement_active),
-            (PmdMeasurementType.ppg,  PmdActiveMeasurement.online_offline_measurement_active),
-            (PmdMeasurementType.gyro, PmdActiveMeasurement.online_measurement_active)
-        ])
-        let result = try awaitSingleAsync { [self] in try await pmdApi.getOfflineRecordingStatus(deviceId) }
-        XCTAssertEqual(result[.ecg], true); XCTAssertEqual(result[.acc], false)
-        XCTAssertEqual(result[.ppg], true); XCTAssertEqual(result[.gyro], false)
-    }
-
-    func test_getOfflineRecordingStatus_unmappablePmdType_propagatesError() {
-        setUpPmdApi()
-        mockPmdClient.readMeasurementStatusReturnValue = .success([(PmdMeasurementType.unknown_type, PmdActiveMeasurement.offline_measurement_active)])
-        XCTAssertNotNil(awaitErrorAsync { [self] in try await pmdApi.getOfflineRecordingStatus(deviceId) })
-    }
-
-    func test_getOfflineRecordingStatus_readMeasurementStatusError_propagatesError() {
-        setUpPmdApi()
-        mockPmdClient.readMeasurementStatusReturnValue = .failure(NSError(domain: "pmd.status", code: 8))
-        XCTAssertNotNil(awaitErrorAsync { [self] in try await pmdApi.getOfflineRecordingStatus(deviceId) })
-    }
-
-    func test_getOfflineRecordingStatus_sessionNotReady_propagatesError() {
-        setUpPmdApi(); (pmdApi.serviceClientUtils as! MockPmdServiceClientUtils).stubError = PolarErrors.deviceNotConnected
-        XCTAssertNotNil(awaitErrorAsync { [self] in try await pmdApi.getOfflineRecordingStatus(deviceId) })
-    }
-
-    func test_getOfflineRecordingStatus_callsReadMeasurementStatus() throws {
-        setUpPmdApi()
-        mockPmdClient.readMeasurementStatusReturnValue = .success([])
-        _ = try awaitSingleAsync { [self] in try await pmdApi.getOfflineRecordingStatus(deviceId) }
-        XCTAssertEqual(mockPmdClient.readMeasurementStatusCalls, 1)
-    }
-
-    // MARK: - listOfflineRecordings helpers
-
-    private func makePmdFilesTxtData(entries: [(size: Int, path: String)]) -> Data {
-        (entries.map { "\($0.size) \($0.path)" }.joined(separator: "\n")).data(using: .utf8)!
-    }
-
-    private func makeDirectoryProtoData(entries: [(name: String, size: UInt64)]) throws -> Data {
-        var dir = Protocol_PbPFtpDirectory()
-        dir.entries = entries.map { e in
-            var entry = Protocol_PbPFtpEntry(); entry.name = e.name; entry.size = e.size; return entry
-        }
-        return try dir.serializedData()
-    }
-
-    private func makeRequestClosure(_ responses: [String: () throws -> Data]) -> (Data) async throws -> Data {
-        return { headerData in
-            guard let op = try? Protocol_PbPFtpOperation(serializedBytes: headerData) else {
-                throw NSError(domain: "test.proto", code: 0)
-            }
-            if let builder = responses[op.path] {
-                return try builder()
-            }
-            throw NSError(domain: "test.unrouted", code: 0,
-                          userInfo: [NSLocalizedDescriptionKey: "Unrouted: \(op.path)"])
-        }
-    }
-
-    // MARK: - listOfflineRecordings tests
-
-    func test_listOfflineRecordings_sessionNotReady_propagatesError() {
-        XCTAssertNotNil(awaitErrorAsync { [self] in
-            for try await _ in MockDisconnectBleApiImpl(mockDeviceSession: v2MockSession).listOfflineRecordings(self.deviceId) {}
-        })
-    }
-
-    func test_listOfflineRecordings_v2Path_singleEntry_emitsEntry() throws {
-        v2MockClient.requestReturnValueClosure = makeRequestClosure([
-            "/PMDFILES.TXT": { self.makePmdFilesTxtData(entries: [(size: 1024, path: "/U/0/20240615/R/103000/ACC.REC")]) }
-        ])
-        let entries = try collectAllAsync(v2Api.listOfflineRecordings(deviceId))
-        XCTAssertEqual(entries.count, 1); XCTAssertEqual(entries.first?.type, .acc)
-    }
-
-    func test_listOfflineRecordings_v2Path_multipleEntries_allEmitted() throws {
-        v2MockClient.requestReturnValueClosure = makeRequestClosure([
-            "/PMDFILES.TXT": { self.makePmdFilesTxtData(entries: [
-                (size: 1024, path: "/U/0/20240615/R/103000/ACC.REC"),
-                (size: 2048, path: "/U/0/20240615/R/103000/GYRO.REC")
-            ]) }
-        ])
-        let entries = try collectAllAsync(v2Api.listOfflineRecordings(deviceId))
-        XCTAssertEqual(entries.count, 2)
-        let types = Set(entries.map { $0.type })
-        XCTAssertTrue(types.contains(.acc)); XCTAssertTrue(types.contains(.gyro))
-    }
-
-    func test_listOfflineRecordings_v2Path_zeroSizeEntry_ignored() throws {
-        v2MockClient.requestReturnValueClosure = makeRequestClosure([
-            "/PMDFILES.TXT": { self.makePmdFilesTxtData(entries: [(size: 0, path: "/U/0/20240615/R/103000/ACC.REC")]) }
-        ])
-        XCTAssertTrue(try collectAllAsync(v2Api.listOfflineRecordings(deviceId)).isEmpty)
-    }
-
-    func test_listOfflineRecordings_v2Path_invalidPathTooFewComponents_ignored() throws {
-        v2MockClient.requestReturnValueClosure = makeRequestClosure([
-            "/PMDFILES.TXT": { self.makePmdFilesTxtData(entries: [(size: 1024, path: "/U/0/20240615/ACC.REC")]) }
-        ])
-        XCTAssertTrue(try collectAllAsync(v2Api.listOfflineRecordings(deviceId)).isEmpty)
-    }
-
-    func test_listOfflineRecordings_v2Path_unknownFileType_ignored() throws {
-        v2MockClient.requestReturnValueClosure = makeRequestClosure([
-            "/PMDFILES.TXT": { self.makePmdFilesTxtData(entries: [(size: 1024, path: "/U/0/20240615/R/103000/UNKNOWN.REC")]) }
-        ])
-        XCTAssertTrue(try collectAllAsync(v2Api.listOfflineRecordings(deviceId)).isEmpty)
-    }
-
-    func test_listOfflineRecordings_v2Path_entryTypesMappedCorrectly() throws {
-        let cases: [(file: String, expected: PolarDeviceDataType)] = [
-            ("ACC.REC", .acc), ("GYRO.REC", .gyro), ("MAGNETOMETER.REC", .magnetometer),
-            ("PPG.REC", .ppg), ("PPI.REC", .ppi), ("HR.REC", .hr),
-            ("TEMP.REC", .temperature), ("SKINTEMP.REC", .skinTemperature)
-        ]
-        for (fileName, expectedType) in cases {
-            v2MockClient.requestReturnValueClosure = nil; cancellables.removeAll()
-            v2MockClient.requestReturnValueClosure = makeRequestClosure([
-                "/PMDFILES.TXT": { self.makePmdFilesTxtData(entries: [(size: 512, path: "/U/0/20240615/R/103000/\(fileName)")]) }
-            ])
-            let entries = try collectAllAsync(v2Api.listOfflineRecordings(deviceId))
-            XCTAssertEqual(entries.count, 1, "\(fileName) should produce one entry")
-            XCTAssertEqual(entries.first?.type, expectedType, "\(fileName) → \(expectedType)")
-        }
-    }
-
-    func test_listOfflineRecordings_v2Path_dateAndSizeParsedCorrectly() throws {
-        v2MockClient.requestReturnValueClosure = makeRequestClosure([
-            "/PMDFILES.TXT": { self.makePmdFilesTxtData(entries: [(size: 4096, path: "/U/0/20240615/R/103000/ACC.REC")]) }
-        ])
-        let entry = try XCTUnwrap(collectAllAsync(v2Api.listOfflineRecordings(deviceId)).first)
-        XCTAssertEqual(entry.size, 4096)
-        let comps = Calendar(identifier: .gregorian).dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: entry.date)
-        XCTAssertEqual(comps.year, 2024); XCTAssertEqual(comps.month, 6); XCTAssertEqual(comps.day, 15)
-    }
-
-    func test_listOfflineRecordings_v2Path_emptyPmdFileTxt_fallsBackToV1WithNoEntries() throws {
-        v2MockClient.requestReturnValueClosure = makeRequestClosure([
-            "/PMDFILES.TXT": { Data() },
-            "/U/0/":         { try self.makeDirectoryProtoData(entries: []) }
-        ])
-        XCTAssertTrue(try collectAllAsync(v2Api.listOfflineRecordings(deviceId)).isEmpty)
-    }
-
-    func test_listOfflineRecordings_v1Path_validDirectoryStructure_emitsEntry() throws {
-        v2MockClient.requestReturnValueClosure = makeRequestClosure([
-            "/PMDFILES.TXT":             { Data() },
-            "/U/0/":                     { try self.makeDirectoryProtoData(entries: [("20240615/", 0)]) },
-            "/U/0/20240615/":            { try self.makeDirectoryProtoData(entries: [("R/", 0)]) },
-            "/U/0/20240615/R/":          { try self.makeDirectoryProtoData(entries: [("103000/", 0)]) },
-            "/U/0/20240615/R/103000/":   { try self.makeDirectoryProtoData(entries: [("ACC.REC", 2048)]) }
-        ])
-        let entries = try collectAllAsync(v2Api.listOfflineRecordings(deviceId))
-        XCTAssertEqual(entries.count, 1); XCTAssertEqual(entries.first?.type, .acc)
-        XCTAssertEqual(entries.first?.size, 2048)
-    }
-
-    func test_listOfflineRecordings_v1Path_zeroSizeFile_ignored() throws {
-        v2MockClient.requestReturnValueClosure = makeRequestClosure([
-            "/PMDFILES.TXT":             { Data() },
-            "/U/0/":                     { try self.makeDirectoryProtoData(entries: [("20240615/", 0)]) },
-            "/U/0/20240615/":            { try self.makeDirectoryProtoData(entries: [("R/", 0)]) },
-            "/U/0/20240615/R/":          { try self.makeDirectoryProtoData(entries: [("103000/", 0)]) },
-            "/U/0/20240615/R/103000/":   { try self.makeDirectoryProtoData(entries: [("ACC.REC", 0)]) }
-        ])
-        XCTAssertTrue(try collectAllAsync(v2Api.listOfflineRecordings(deviceId)).isEmpty)
     }
 
     // MARK: - removeExercise
@@ -1759,4 +1313,1290 @@ final class PolarBleApiImplTests: XCTestCase {
         // Assert
         XCTAssertNotNil(error)
     }
+
+    // MARK: - Low-level API (PolarBleLowLevelApi)
+
+    // MARK: readFile
+
+    func test_readFile_success_returnsData() throws {
+        // Arrange
+        v2MockClient.requestReturnValue = .success(Data([0x01, 0x02, 0x03]))
+
+        // Act
+        let result = try awaitSingleAsync { [self] in try await v2Api.readFile(identifier: deviceId, filePath: "/U/0/TEST.BPB") }
+
+        // Assert
+        XCTAssertEqual(result, Data([0x01, 0x02, 0x03]))
+        XCTAssertEqual(v2MockClient.requestCalls.count, 1)
+        let op = try Protocol_PbPFtpOperation(serializedBytes: v2MockClient.requestCalls[0])
+        XCTAssertEqual(op.command, .get)
+        XCTAssertEqual(op.path, "/U/0/TEST.BPB")
+    }
+
+    func test_readFile_failure_propagatesError() {
+        // Arrange
+        v2MockClient.requestReturnValue = .failure(PolarErrors.deviceNotConnected)
+
+        // Act & Assert
+        XCTAssertNotNil(awaitErrorAsync { [self] in try await v2Api.readFile(identifier: deviceId, filePath: "/U/0/TEST.BPB") })
+    }
+
+    // MARK: writeFile
+
+    func test_writeFile_success_sendsCorrectPutCommand() throws {
+        // Arrange
+        let payload = Data([0xAA, 0xBB])
+        v2MockClient.writeReturnValue = AsyncThrowingStream { $0.yield(0); $0.finish() }
+
+        // Act
+        try awaitVoidAsync { [self] in try await v2Api.writeFile(identifier: deviceId, filePath: "/U/0/OUT.BPB", fileData: payload) }
+
+        // Assert
+        XCTAssertEqual(v2MockClient.writeCalls.count, 1)
+        let op = try Protocol_PbPFtpOperation(serializedBytes: v2MockClient.writeCalls[0].header as Data)
+        XCTAssertEqual(op.command, .put)
+        XCTAssertEqual(op.path, "/U/0/OUT.BPB")
+    }
+
+    func test_writeFile_failure_propagatesError() {
+        // Arrange
+        v2MockClient.writeReturnValue = AsyncThrowingStream { $0.finish(throwing: PolarErrors.deviceNotConnected) }
+
+        // Act & Assert
+        XCTAssertNotNil(awaitErrorAsync { [self] in
+            try await v2Api.writeFile(identifier: deviceId, filePath: "/U/0/OUT.BPB", fileData: Data([0x01]))
+        })
+    }
+
+    // MARK: deleteFileOrDirectory
+
+    func test_deleteFileOrDirectory_success_sendsCorrectRemoveCommand() throws {
+        // Arrange
+        v2MockClient.requestReturnValue = .success(Data())
+
+        // Act
+        try awaitVoidAsync { [self] in
+            try await v2Api.deleteFileOrDirectory(identifier: deviceId, filePath: "/U/0/20260101/DSUM/DSUM.BPB")
+        }
+
+        // Assert
+        XCTAssertEqual(v2MockClient.requestCalls.count, 1)
+        let op = try Protocol_PbPFtpOperation(serializedBytes: v2MockClient.requestCalls[0])
+        XCTAssertEqual(op.command, .remove)
+        XCTAssertEqual(op.path, "/U/0/20260101/DSUM/DSUM.BPB")
+    }
+
+    func test_deleteFileOrDirectory_failure_propagatesError() {
+        // Arrange
+        v2MockClient.requestReturnValue = .failure(PolarErrors.deviceNotConnected)
+
+        // Act & Assert
+        XCTAssertNotNil(awaitErrorAsync { [self] in
+            try await v2Api.deleteFileOrDirectory(identifier: deviceId, filePath: "/U/0/20260101/DSUM/DSUM.BPB")
+        })
+    }
+
+    private func makePmdFilesTxtData(entries: [(size: Int, path: String)]) -> Data {
+        (entries.map { "\($0.size) \($0.path)" }.joined(separator: "\n")).data(using: .utf8)!
+    }
+
+    private func makeDirectoryProtoData(entries: [(name: String, size: UInt64)]) throws -> Data {
+        var dir = Protocol_PbPFtpDirectory()
+        dir.entries = entries.map { e in
+            var entry = Protocol_PbPFtpEntry()
+            entry.name = e.name
+            entry.size = e.size
+            return entry
+        }
+        return try dir.serializedData()
+    }
+
+    private func makeRequestClosure(_ responses: [String: () throws -> Data]) -> (Data) async throws -> Data {
+        return { headerData in
+            guard let op = try? Protocol_PbPFtpOperation(serializedBytes: headerData) else {
+                throw NSError(domain: "test.proto", code: 0)
+            }
+            if let builder = responses[op.path] {
+                return try builder()
+            }
+            throw NSError(domain: "test.unrouted", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unrouted: \(op.path)"])
+        }
+    }
+
+    private func makeCommandAwareRequestClosure(_ responses: [String: [() throws -> Data]]) -> (Data) async throws -> Data {
+        var remaining = responses
+        return { headerData in
+            guard let op = try? Protocol_PbPFtpOperation(serializedBytes: headerData) else {
+                throw NSError(domain: "test.proto", code: 0)
+            }
+            let key = "\(op.command.rawValue)|\(op.path)"
+            if var builders = remaining[key], !builders.isEmpty {
+                let builder = builders.removeFirst()
+                remaining[key] = builders
+                return try builder()
+            }
+            throw NSError(domain: "test.unrouted", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unrouted: \(key)"])
+        }
+    }
+
+    // MARK: getFileList
+
+    func test_getFileList_recurseDeepTrue_returnsFiles() throws {
+        // Arrange
+        v2MockClient.requestReturnValueClosure = makeRequestClosure([
+            "/U/0/":                    { try self.makeDirectoryProtoData(entries: [("20260101/", 0)]) },
+            "/U/0/20260101/":           { try self.makeDirectoryProtoData(entries: [("DSUM/", 0)]) },
+            "/U/0/20260101/DSUM/":      { try self.makeDirectoryProtoData(entries: [("DSUM.BPB", 1024)]) }
+        ])
+
+        // Act
+        let result = try awaitSingleAsync { [self] in
+            try await v2Api.getFileList(identifier: deviceId, directoryPath: "/U/0/", recurseDeep: true)
+        }
+
+        // Assert
+        XCTAssertEqual(result, ["/U/0/20260101/DSUM/DSUM.BPB"])
+    }
+
+    func test_getFileList_recurseDeepFalse_returnsOnlyMatchingEntries() throws {
+        // Arrange – only a file with an extension passes the internal condition
+        v2MockClient.requestReturnValueClosure = makeRequestClosure([
+            "/U/0/": { try self.makeDirectoryProtoData(entries: [("AUTOS000.BPB", 512)]) }
+        ])
+
+        // Act
+        let result = try awaitSingleAsync { [self] in
+            try await v2Api.getFileList(identifier: deviceId, directoryPath: "/U/0/", recurseDeep: false)
+        }
+
+        // Assert
+        XCTAssertEqual(result, ["/U/0/AUTOS000.BPB"])
+    }
+
+    func test_getFileList_failure_propagatesError() {
+        // Arrange
+        v2MockClient.requestReturnValue = .failure(PolarErrors.deviceNotConnected)
+
+        // Act & Assert
+        XCTAssertNotNil(awaitErrorAsync { [self] in
+            try await v2Api.getFileList(identifier: deviceId, directoryPath: "/U/0/", recurseDeep: false)
+        })
+    }
+
+    // MARK: createFolder
+
+    func test_createFolder_success_sendsCorrectPutCommand() throws {
+        // Arrange
+        v2MockClient.writeReturnValue = AsyncThrowingStream { $0.yield(0); $0.finish() }
+
+        // Act
+        try awaitVoidAsync { [self] in
+            try await v2Api.createFolder(identifier: deviceId, folderPath: "/U/0/20240622/ACT/")
+        }
+
+        // Assert
+        XCTAssertEqual(v2MockClient.writeCalls.count, 1)
+        let op = try Protocol_PbPFtpOperation(serializedBytes: v2MockClient.writeCalls[0].header as Data)
+        XCTAssertEqual(op.command, .put)
+        XCTAssertEqual(op.path, "/U/0/20240622/ACT/")
+    }
+
+    func test_createFolder_normalizesPathWhenMissingTrailingSlash() throws {
+        // Arrange
+        v2MockClient.writeReturnValue = AsyncThrowingStream { $0.yield(0); $0.finish() }
+
+        // Act
+        try awaitVoidAsync { [self] in
+            try await v2Api.createFolder(identifier: deviceId, folderPath: "/U/0/20240622/ACT")
+        }
+
+        // Assert – path must be normalized to end with '/'
+        XCTAssertEqual(v2MockClient.writeCalls.count, 1)
+        let op = try Protocol_PbPFtpOperation(serializedBytes: v2MockClient.writeCalls[0].header as Data)
+        XCTAssertEqual(op.path, "/U/0/20240622/ACT/")
+    }
+
+    func test_createFolder_sendsEmptyPayload() throws {
+        // Arrange
+        v2MockClient.writeReturnValue = AsyncThrowingStream { $0.yield(0); $0.finish() }
+
+        // Act
+        try awaitVoidAsync { [self] in
+            try await v2Api.createFolder(identifier: deviceId, folderPath: "/U/0/20240622/SLP/")
+        }
+
+        // Assert – empty payload signals folder creation to the device
+        XCTAssertEqual(v2MockClient.writeCalls.count, 1)
+        let stream = v2MockClient.writeCalls[0].data
+        stream.open()
+        var buffer = [UInt8](repeating: 0, count: 64)
+        let bytesRead = stream.read(&buffer, maxLength: 64)
+        stream.close()
+        XCTAssertEqual(bytesRead, 0, "Payload must be empty for folder creation")
+    }
+
+    func test_createFolder_failure_writeFails_propagatesError() {
+        // Arrange
+        v2MockClient.writeReturnValue = AsyncThrowingStream { $0.finish(throwing: PolarErrors.deviceNotConnected) }
+
+        // Act & Assert
+        XCTAssertNotNil(awaitErrorAsync { [self] in
+            try await v2Api.createFolder(identifier: deviceId, folderPath: "/U/0/20240622/ACT/")
+        })
+    }
+
+    func test_createFolder_failure_pftpResponseError_propagatesError() {
+        // Arrange
+        v2MockClient.writeReturnValue = AsyncThrowingStream {
+            $0.finish(throwing: BlePsFtpException.responseError(errorCode: 201))
+        }
+
+        // Act & Assert
+        XCTAssertNotNil(awaitErrorAsync { [self] in
+            try await v2Api.createFolder(identifier: deviceId, folderPath: "/U/0/20240622/ACT/")
+        })
+    }
+
+       func test_cleanup_polarFilter_isFeatureReady_and_connectToDeviceWithoutSession_behaveAsExpected() throws {
+           v2Api.cleanup()
+           XCTAssertTrue(v2Api.listener.allSessions().isEmpty)
+           XCTAssertFalse(v2Api.isFeatureReady(deviceId, feature: .feature_hr))
+
+           v2Api.polarFilter(true)
+           XCTAssertNotNil(v2Api.listener.scanPreFilter)
+           v2Api.polarFilter(false)
+           XCTAssertNil(v2Api.listener.scanPreFilter)
+
+           let (api, utils) = makeDynamicApi()
+           utils.fetchSessionHandler = { _ in nil }
+           try api.connectToDevice(self.deviceId)
+           XCTAssertNotNil(api.connectSubscriptions[self.deviceId])
+           api.connectSubscriptions[self.deviceId]?.cancel()
+       }
+
+       func test_checkFirmwareUpdate_and_updateFirmware_emitFailureStatuses_whenNoFtpClientExists() throws {
+           let noFtpApi = PolarBleApiImplWithNoFtpSession(mockDeviceSession: MockNoFtpClientBleDeviceSession())
+
+           let checkStatuses = try collectAllAsync(noFtpApi.checkFirmwareUpdate(deviceId))
+           if case .checkFwUpdateFailed(let details) = try XCTUnwrap(checkStatuses.first) {
+               XCTAssertTrue(details.contains("No BlePsFtpClient available"))
+           } else {
+               XCTFail("Expected checkFwUpdateFailed")
+           }
+
+           let updateStatuses = try collectAllAsync(noFtpApi.updateFirmware(deviceId))
+           if case .fwUpdateFailed(let details) = try XCTUnwrap(updateStatuses.first) {
+               XCTAssertTrue(details.contains("No BlePsFtpClient available"))
+           } else {
+               XCTFail("Expected fwUpdateFailed")
+           }
+
+           let urlStatuses = try collectAllAsync(noFtpApi.updateFirmware(deviceId, fromFirmwareURL: URL(fileURLWithPath: "/tmp/fw.zip")))
+           if case .fwUpdateFailed(let details) = try XCTUnwrap(urlStatuses.first) {
+               XCTAssertTrue(details.contains("No BlePsFtpClient available"))
+           } else {
+               XCTFail("Expected fwUpdateFailed")
+           }
+       }
+
+       func test_setLedConfig_writesExpectedBytes() throws {
+           try awaitVoidAsync { [self] in
+               try await v2Api.setLedConfig(deviceId, ledConfig: LedConfig(sdkModeLedEnabled: true, ppiModeLedEnabled: false))
+           }
+
+           let writeCall = try XCTUnwrap(v2MockClient.writeCalls.first)
+           let header = try Protocol_PbPFtpOperation(serializedBytes: writeCall.header as Data)
+           XCTAssertEqual(header.command, .put)
+           XCTAssertEqual(header.path, LedConfig.LED_CONFIG_FILENAME)
+           XCTAssertEqual(readAll(from: writeCall.data), Data([LedConfig.LED_ANIMATION_ENABLE_BYTE, LedConfig.LED_ANIMATION_DISABLE_BYTE]))
+       }
+
+       func test_resetAndSyncHelpers_sendExpectedNotifications() throws {
+           try awaitVoidAsync { [self] in try await v2Api.doFactoryReset(deviceId, preservePairingInformation: true) }
+           var params = try Protocol_PbPFtpFactoryResetParams(serializedBytes: try XCTUnwrap(v2MockClient.sendNotificationCalls.last?.parameters as Data?))
+           XCTAssertTrue(params.otaFwupdate)
+
+           try awaitVoidAsync { [self] in try await v2Api.doRestart(deviceId) }
+           params = try Protocol_PbPFtpFactoryResetParams(serializedBytes: try XCTUnwrap(v2MockClient.sendNotificationCalls.last?.parameters as Data?))
+           XCTAssertFalse(params.doFactoryDefaults)
+           XCTAssertFalse(params.otaFwupdate)
+
+           try awaitVoidAsync { [self] in try await v2Api.setWarehouseSleep(deviceId) }
+           params = try Protocol_PbPFtpFactoryResetParams(serializedBytes: try XCTUnwrap(v2MockClient.sendNotificationCalls.last?.parameters as Data?))
+           XCTAssertTrue(params.sleep)
+
+           try awaitVoidAsync { [self] in try await v2Api.turnDeviceOff(deviceId) }
+           params = try Protocol_PbPFtpFactoryResetParams(serializedBytes: try XCTUnwrap(v2MockClient.sendNotificationCalls.last?.parameters as Data?))
+           XCTAssertTrue(params.sleep)
+           XCTAssertFalse(params.doFactoryDefaults)
+
+           try awaitVoidAsync { [self] in try await v2Api.sendInitializationAndStartSyncNotifications(identifier: deviceId) }
+           XCTAssertEqual(v2MockClient.queryCalls.last?.id, Protocol_PbPFtpQuery.requestSynchronization.rawValue)
+           XCTAssertEqual(v2MockClient.sendNotificationCalls.suffix(2).map(\.notification), [
+               Protocol_PbPFtpHostToDevNotification.initializeSession.rawValue,
+               Protocol_PbPFtpHostToDevNotification.startSync.rawValue,
+           ])
+       }
+
+       func test_exerciseControlQueries_and_statusObservation_work() throws {
+           var status = Protocol_PbPftpGetExerciseStatusResult()
+           status.exerciseState = .exerciseStateRunning
+           status.sportIdentifier.value = UInt64(PolarExerciseSession.SportProfile.running.rawValue)
+           let statusData = try status.serializedData()
+           v2MockClient.queryReturnValues = [.success(Data()), .success(Data()), .success(Data()), .success(Data()), .success(statusData)]
+
+           try awaitVoidAsync { [self] in try await v2Api.startExercise(identifier: deviceId, profile: .running) }
+           try awaitVoidAsync { [self] in try await v2Api.pauseExercise(identifier: deviceId) }
+           try awaitVoidAsync { [self] in try await v2Api.resumeExercise(identifier: deviceId) }
+           try awaitVoidAsync { [self] in try await v2Api.stopExercise(identifier: deviceId) }
+           let result = try awaitSingleAsync { [self] in try await v2Api.getExerciseStatus(identifier: deviceId) }
+
+           XCTAssertEqual(v2MockClient.queryCalls.map(\.id), [
+               Protocol_PbPFtpQuery.startExercise.rawValue,
+               Protocol_PbPFtpQuery.pauseExercise.rawValue,
+               Protocol_PbPFtpQuery.resumeExercise.rawValue,
+               Protocol_PbPFtpQuery.stopExercise.rawValue,
+               Protocol_PbPFtpQuery.getExerciseStatus.rawValue,
+           ])
+           XCTAssertEqual(result.status, .inProgress)
+           XCTAssertEqual(result.sportProfile, .running)
+
+           v2MockClient.receiveNotificationCalls = [
+               (notification: Protocol_PbPFtpDevToHostNotification.exerciseStatus.rawValue, parameters: [statusData], compressed: false)
+           ]
+           let notifications = try collectAllAsync(v2Api.observeExerciseStatus(identifier: deviceId))
+           XCTAssertEqual(notifications.first?.status, .inProgress)
+       }
+
+    private func makeActivityAndTrainingErrorContext() -> (
+        api: MockDynamicBleApiImpl,
+        fromDate: Date,
+        toDate: Date,
+        reference: PolarTrainingSessionReference,
+        exerciseEntry: PolarExerciseEntry
+    ) {
+        let (api, utils) = makeDynamicApi()
+        utils.ftpError = PolarErrors.deviceNotConnected
+        let fromDate = makeDate(2024, 6, 1)
+        let toDate = makeDate(2024, 6, 2)
+        let reference = PolarTrainingSessionReference(date: fromDate, path: "/U/0/20240601/TSESS.BPB", trainingDataTypes: [.trainingSessionSummary], exercises: [])
+        let exerciseEntry = PolarExerciseEntry(path: "/U/0/EX/SAMPLES.BPB", date: Date(), entryId: "x")
+        return (api, fromDate, toDate, reference, exerciseEntry)
+    }
+
+    func test_activityAndTrainingApis_fetchExercise_returnsError_whenFtpLookupFails() {
+        let context = makeActivityAndTrainingErrorContext()
+        XCTAssertNotNil(awaitErrorAsync { try await context.api.fetchExercise(self.deviceId, entry: context.exerciseEntry) })
+    }
+
+    func test_activityAndTrainingApis_listExercisesStream_returnsError_whenFtpLookupFails() {
+        let context = makeActivityAndTrainingErrorContext()
+        XCTAssertNotNil(awaitStreamError(context.api.listExercises(self.deviceId)))
+    }
+
+    func test_activityAndTrainingApis_getSteps_returnsError_whenFtpLookupFails() {
+        let context = makeActivityAndTrainingErrorContext()
+        XCTAssertNotNil(awaitErrorAsync { try await context.api.getSteps(identifier: self.deviceId, fromDate: context.fromDate, toDate: context.toDate) })
+    }
+
+    func test_activityAndTrainingApis_getDistance_returnsError_whenFtpLookupFails() {
+        let context = makeActivityAndTrainingErrorContext()
+        XCTAssertNotNil(awaitErrorAsync { try await context.api.getDistance(identifier: self.deviceId, fromDate: context.fromDate, toDate: context.toDate) })
+    }
+
+    func test_activityAndTrainingApis_get247HrSamples_returnsError_whenFtpLookupFails() {
+        let context = makeActivityAndTrainingErrorContext()
+        XCTAssertNotNil(awaitErrorAsync { try await context.api.get247HrSamples(identifier: self.deviceId, fromDate: context.fromDate, toDate: context.toDate) })
+    }
+
+    func test_activityAndTrainingApis_get247PPiSamples_returnsError_whenFtpLookupFails() {
+        let context = makeActivityAndTrainingErrorContext()
+        XCTAssertNotNil(awaitErrorAsync { try await context.api.get247PPiSamples(identifier: self.deviceId, fromDate: context.fromDate, toDate: context.toDate) })
+    }
+
+    func test_activityAndTrainingApis_getNightlyRecharge_returnsError_whenFtpLookupFails() {
+        let context = makeActivityAndTrainingErrorContext()
+        XCTAssertNotNil(awaitErrorAsync { try await context.api.getNightlyRecharge(identifier: self.deviceId, fromDate: context.fromDate, toDate: context.toDate) })
+    }
+
+    func test_activityAndTrainingApis_getCalories_returnsError_whenFtpLookupFails() {
+        let context = makeActivityAndTrainingErrorContext()
+        XCTAssertNotNil(awaitErrorAsync { try await context.api.getCalories(identifier: self.deviceId, fromDate: context.fromDate, toDate: context.toDate, caloriesType: .activity) })
+    }
+
+    func test_activityAndTrainingApis_getActivitySampleData_returnsError_whenFtpLookupFails() {
+        let context = makeActivityAndTrainingErrorContext()
+        XCTAssertNotNil(awaitErrorAsync { try await context.api.getActivitySampleData(identifier: self.deviceId, fromDate: context.fromDate, toDate: context.toDate) })
+    }
+
+    func test_activityAndTrainingApis_getDailySummaryData_returnsError_whenFtpLookupFails() {
+        let context = makeActivityAndTrainingErrorContext()
+        XCTAssertNotNil(awaitErrorAsync { try await context.api.getDailySummaryData(identifier: self.deviceId, fromDate: context.fromDate, toDate: context.toDate) })
+    }
+
+    func test_activityAndTrainingApis_getActiveTime_returnsError_whenFtpLookupFails() {
+        let context = makeActivityAndTrainingErrorContext()
+        XCTAssertNotNil(awaitErrorAsync { try await context.api.getActiveTime(identifier: self.deviceId, fromDate: context.fromDate, toDate: context.toDate) })
+    }
+
+    func test_activityAndTrainingApis_getTrainingSessionReferences_returnsError_whenFtpLookupFails() {
+        let context = makeActivityAndTrainingErrorContext()
+        XCTAssertNotNil(awaitErrorAsync { try await context.api.getTrainingSessionReferences(identifier: self.deviceId, fromDate: context.fromDate, toDate: context.toDate) })
+    }
+
+    func test_activityAndTrainingApis_getTrainingSession_returnsError_whenFtpLookupFails() {
+        let context = makeActivityAndTrainingErrorContext()
+        XCTAssertNotNil(awaitErrorAsync { try await context.api.getTrainingSession(identifier: self.deviceId, trainingSessionReference: context.reference) })
+    }
+
+    func test_activityAndTrainingApis_getTrainingSessionWithProgress_returnsError_whenFtpLookupFails() {
+        let context = makeActivityAndTrainingErrorContext()
+        XCTAssertNotNil(awaitErrorAsync {
+            try await context.api.getTrainingSessionWithProgress(identifier: self.deviceId, trainingSessionReference: context.reference, progressHandler: { _ in })
+        })
+    }
+    
+    func test_activityAndTrainingApis_deleteTrainingSession_returnsError_whenFtpLookupFails() {
+        let context = makeActivityAndTrainingErrorContext()
+        XCTAssertNotNil(awaitErrorAsync { try await context.api.deleteTrainingSession(identifier: self.deviceId, reference: context.reference) as Void })
+        
+        func test_userSettingsReadAndMutationApis_useExpectedPathsAndValues() throws {
+            v2MockClient.requestReturnValue = .success(try makeUserDeviceSettingsProto(deviceLocation: .deviceLocationWristRight, usbMode: .on, telemetryEnabled: true, autosEnabled: true, atdState: .on, atdSensitivity: 44, minimumDuration: 600))
+            let result = try awaitSingleAsync { [self] in try await v2Api.getPolarUserDeviceSettings(identifier: deviceId) }
+            XCTAssertEqual(result.deviceLocation, .WRIST_RIGHT)
+            XCTAssertEqual(result.usbConnectionMode, .ON)
+            XCTAssertEqual(result.telemetryEnabled, true)
+            XCTAssertEqual(result.autosFilesEnabled, true)
+            
+            let settings = PolarUserDeviceSettings()
+            settings.deviceLocation = .CHEST
+            settings.usbConnectionMode = .OFF
+            settings.telemetryEnabled = false
+            settings.autosFilesEnabled = false
+            try awaitVoidAsync { [self] in try await v2Api.setPolarUserDeviceSettings(deviceId, polarUserDeviceSettings: settings) }
+            
+            var written = try Data_PbUserDeviceSettings(serializedBytes: readAll(from: try XCTUnwrap(v2MockClient.writeCalls.last?.data)))
+            XCTAssertEqual(written.generalSettings.deviceLocation, .deviceLocationChest)
+            XCTAssertEqual(written.telemetrySettings.telemetryEnabled, false)
+            XCTAssertEqual(written.automaticMeasurementSettings.automaticOhrMeasurement.state, .off)
+            
+            v2MockClient.writeCalls.removeAll()
+            v2MockClient.requestReturnValue = .success(try makeUserDeviceSettingsProto())
+            try awaitVoidAsync { [self] in try await v2Api.setUsbConnectionMode(deviceId, enabled: true) }
+            written = try Data_PbUserDeviceSettings(serializedBytes: readAll(from: try XCTUnwrap(v2MockClient.writeCalls.last?.data)))
+            XCTAssertEqual(written.usbConnectionSettings.mode, .on)
+            
+            v2MockClient.writeCalls.removeAll()
+            v2MockClient.requestReturnValue = .success(try makeUserDeviceSettingsProto())
+            try awaitVoidAsync { [self] in try await v2Api.setAutomaticTrainingDetectionSettings(deviceId, mode: true, sensitivity: 77, minimumDuration: 900) }
+            written = try Data_PbUserDeviceSettings(serializedBytes: readAll(from: try XCTUnwrap(v2MockClient.writeCalls.last?.data)))
+            XCTAssertEqual(written.automaticMeasurementSettings.automaticTrainingDetectionSettings.state, .on)
+            XCTAssertEqual(written.automaticMeasurementSettings.automaticTrainingDetectionSettings.sensitivity, 77)
+            XCTAssertEqual(written.automaticMeasurementSettings.automaticTrainingDetectionSettings.minimumTrainingDurationSeconds, 900)
+            
+            v2MockClient.writeCalls.removeAll()
+            v2MockClient.requestReturnValue = .success(try makeUserDeviceSettingsProto())
+            try awaitVoidAsync { [self] in try await v2Api.setTelemetryEnabled(deviceId, enabled: true) }
+            written = try Data_PbUserDeviceSettings(serializedBytes: readAll(from: try XCTUnwrap(v2MockClient.writeCalls.last?.data)))
+            XCTAssertTrue(written.telemetrySettings.telemetryEnabled)
+            
+            v2MockClient.writeCalls.removeAll()
+            v2MockClient.requestReturnValue = .success(try makeUserDeviceSettingsProto(autosEnabled: true))
+            try awaitVoidAsync { [self] in try await v2Api.setAutomaticOHRMeasurementEnabled(deviceId, enabled: false) }
+            written = try Data_PbUserDeviceSettings(serializedBytes: readAll(from: try XCTUnwrap(v2MockClient.writeCalls.last?.data)))
+            XCTAssertEqual(written.automaticMeasurementSettings.automaticOhrMeasurement.state, .off)
+        }
+        
+        func test_setUserDeviceLocation_setDaylightSavingTime_doFirstTimeUse_isFtuDone_and_getUserPhysicalConfiguration_coverErrorAndNilPaths() throws {
+            XCTAssertNotNil(awaitErrorAsync { [self] in try await v2Api.setUserDeviceLocation(deviceId, location: 999) })
+            
+            let (api, utils) = makeDynamicApi()
+            utils.ftpError = PolarErrors.deviceNotConnected
+            XCTAssertNotNil(awaitErrorAsync { try await api.setDaylightSavingTime(self.deviceId) })
+            
+            let config = PolarFirstTimeUseConfig(
+                gender: .male,
+                birthDate: makeDate(1990, 1, 1),
+                height: 180,
+                weight: 80,
+                maxHeartRate: 190,
+                vo2Max: 50,
+                restingHeartRate: 55,
+                trainingBackground: .regular,
+                deviceTime: "not-an-iso-date",
+                typicalDay: .mostlyMoving,
+                sleepGoalMinutes: 480
+            )
+            XCTAssertNotNil(awaitErrorAsync { [self] in try await v2Api.doFirstTimeUse(deviceId, ftuConfig: config) })
+            
+            var userId = Data_PbUserIdentifier()
+            userId.masterIdentifier = 12345
+            v2MockClient.requestReturnValue = .success(try userId.serializedData())
+            XCTAssertTrue(try awaitSingleAsync { [self] in try await v2Api.isFtuDone(deviceId) })
+            
+            v2MockClient.requestReturnValue = .failure(BlePsFtpException.responseError(errorCode: Protocol_PbPFtpError.noSuchFileOrDirectory.rawValue))
+            let physicalConfig = try awaitSingleAsync { [self] in try await v2Api.getUserPhysicalConfiguration(deviceId) }
+            XCTAssertNil(physicalConfig)
+        }
+        
+        func test_deleteDataApis_useFileUtils_results() throws {
+            let (api, utils) = makeDynamicApi()
+            let fileUtils = MockPolarFileUtils(listener: utils.listener!, serviceClientUtils: utils)
+            api.fileUtils = fileUtils
+            fileUtils.listedFiles = ["/SDLOGS/ABC1.SLG", "/U/0/20240601/", "ABC123TRC.BIN"]
+            
+            try awaitVoidAsync { [self] in try await api.deleteStoredDeviceData(deviceId, dataType: .SDLOGS, until: makeDate(2024, 6, 1)) }
+            XCTAssertTrue(fileUtils.removeSingleFileCalls.contains(where: { $0.filePath == "/SDLOGS/ABC1.SLG" }))
+            
+            fileUtils.removeSingleFileCalls.removeAll()
+            try awaitVoidAsync { [self] in try await api.deleteDeviceDateFolders(deviceId, fromDate: makeDate(2024, 6, 1), toDate: makeDate(2024, 6, 1)) }
+            XCTAssertTrue(fileUtils.removeSingleFileCalls.contains(where: { $0.filePath == "/U/0/20240601/" }))
+            
+            fileUtils.removeSingleFileCalls.removeAll()
+            try awaitVoidAsync { [self] in try await api.deleteTelemetryData(deviceId) }
+            XCTAssertTrue(fileUtils.removeSingleFileCalls.contains(where: { $0.filePath == "ABC123TRC.BIN" }))
+        }
+        
+        func test_offlineRecordingControl_onlineAvailability_streaming_sdk_battery_and_waitHelpers_coverAdditionalApis() throws {
+            let pmdTransport = MockPolarGattServiceTransmitter()
+            let pmdClient = MockBlePmdClient(gattServiceTransmitter: pmdTransport)
+            let pmdSession = MockPmdBleDeviceSession(mockPmdClient: pmdClient)
+            let (api, utils) = makeDynamicApi()
+            utils.pmdSession = pmdSession
+            pmdClient.readMeasurementStatusReturnValue = .success([(.acc, .no_measurement_active)])
+            pmdClient.getOfflineRecordingTriggerStatusReturnValue = .success(PmdOfflineTrigger(triggerMode: .systemStart, triggers: [.acc: (.enabled, nil)]))
+            pmdClient.sdkModeEnabledReturnValue = .success(.enabled)
+            try awaitVoidAsync { [self] in try await api.startOfflineRecording(deviceId, feature: .acc, settings: nil, secret: nil) }
+            try awaitVoidAsync { [self] in try await api.stopOfflineRecording(deviceId, feature: .acc) }
+            try awaitVoidAsync { [self] in try await api.setOfflineRecordingTrigger(deviceId, trigger: PolarOfflineRecordingTrigger(triggerMode: .triggerSystemStart, triggerFeatures: [.acc: nil]), secret: nil) }
+            let trigger = try awaitSingleAsync { [self] in try await api.getOfflineRecordingTriggerSetup(deviceId) }
+            try awaitVoidAsync { [self] in try await api.enableSDKMode(deviceId) }
+            try awaitVoidAsync { [self] in try await api.disableSDKMode(deviceId) }
+            XCTAssertTrue(try awaitSingleAsync { [self] in try await api.isSDKModeEnabled(deviceId) })
+            XCTAssertEqual(pmdClient.startMeasurementCalls.first?.recordingType, .offline)
+            XCTAssertEqual(trigger.triggerMode, .triggerSystemStart)
+            
+            let hrTransport = MockPolarGattServiceTransmitter()
+            let hrClient = BleHrClient(gattServiceTransmitter: hrTransport)
+            hrClient.setServiceDiscovered(true)
+            hrClient.notifyDescriptorWritten(BleHrClient.HR_MEASUREMENT, enabled: true, err: 0)
+            let hrSession = MockMultiClientBleDeviceSession(clients: [hrClient])
+            utils.hrSession = hrSession
+            utils.serviceSessionByUuid[BleHrClient.HR_SERVICE.uuidString] = hrSession
+            pmdClient.readFeatureReturnValue = .success([.acc, .mgn, .temperature])
+            let onlineTypes = try awaitSingleAsync { [self] in try await api.getAvailableOnlineStreamDataTypes(deviceId) }
+            let hrTypes = try awaitSingleAsync { [self] in try await api.getAvailableHRServiceDataTypes(identifier: deviceId) }
+            XCTAssertEqual(onlineTypes, Set([.hr, .acc, .magnetometer, .temperature]))
+            XCTAssertEqual(hrTypes, Set([.hr]))
+            
+            let hrStream = api.startHrStreaming(deviceId)
+            Task {
+                try? await Task.sleep(nanoseconds: 50_000_000)
+                hrClient.processServiceData(BleHrClient.HR_MEASUREMENT, data: Data([0x00, 60]), err: 0)
+            }
+            let hrData = try awaitFirstValue(hrStream)
+            XCTAssertEqual(hrData.first?.hr, 60)
+            
+            let basTransport = MockPolarGattServiceTransmitter()
+            let basClient = BleBasClient(gattServiceTransmitter: basTransport)
+            basClient.setServiceDiscovered(true)
+            basClient.processServiceData(CBUUID(string: "2A19"), data: Data([88]), err: 0)
+            basClient.processServiceData(BleBasClient.BATTERY_STATUS_CHARACTERISTIC, data: Data([0x00, 0x21]), err: 0)
+            let basSession = MockMultiClientBleDeviceSession(clients: [basClient])
+            utils.serviceSessionByUuid[BleBasClient.BATTERY_SERVICE.uuidString] = basSession
+            utils.rssiHandler = { _ in -42 }
+            utils.pairingHandler = { _ in true }
+            XCTAssertEqual(try api.getBatteryLevel(identifier: deviceId), 88)
+            XCTAssertEqual(try api.getChargerState(identifier: deviceId), .charging)
+            XCTAssertEqual(try api.getRSSIValue(deviceId), -42)
+            XCTAssertTrue(try api.checkIfDeviceDisconnectedDueRemovedPairing(deviceId))
+            
+            let waitSession = MockBleDeviceSession(mockFtpClient: v2MockClient)
+            waitSession.state = .sessionClosed
+            var fetchCallCount = 0
+            utils.fetchSessionHandler = { _ in
+                fetchCallCount += 1
+                if fetchCallCount > 1 { waitSession.state = .sessionOpen }
+                return waitSession
+            }
+            try awaitSingleAsync({ [self] in try await api.waitForConnection(deviceId); return () }, timeout: 3)
+            XCTAssertGreaterThanOrEqual(fetchCallCount, 2)
+        }
+    }
+        
+        private func makePmdApiWithSessionNotReadyError() throws -> (MockPmdBleApiImpl, PolarSensorSetting) {
+            let transport = MockPolarGattServiceTransmitter()
+            let pmdClient = MockBlePmdClient(gattServiceTransmitter: transport)
+            let pmdSession = MockPmdBleDeviceSession(mockPmdClient: pmdClient)
+            let api = MockPmdBleApiImpl(mockPmdSession: pmdSession)
+            api.pmdServiceUtils.stubError = PolarErrors.deviceNotConnected
+            return (api, try PolarSensorSetting([.sampleRate: 52]))
+        }
+        
+        func test_startEcgStreaming_sessionNotReady_emitsError() throws {
+            let (api, settings) = try makePmdApiWithSessionNotReadyError()
+            XCTAssertNotNil(awaitStreamError(api.startEcgStreaming(deviceId, settings: settings)))
+        }
+        
+        func test_startAccStreaming_sessionNotReady_emitsError() throws {
+            let (api, settings) = try makePmdApiWithSessionNotReadyError()
+            XCTAssertNotNil(awaitStreamError(api.startAccStreaming(deviceId, settings: settings)))
+        }
+        
+        func test_startGyroStreaming_sessionNotReady_emitsError() throws {
+            let (api, settings) = try makePmdApiWithSessionNotReadyError()
+            XCTAssertNotNil(awaitStreamError(api.startGyroStreaming(deviceId, settings: settings)))
+        }
+        
+        func test_startMagnetometerStreaming_sessionNotReady_emitsError() throws {
+            let (api, settings) = try makePmdApiWithSessionNotReadyError()
+            XCTAssertNotNil(awaitStreamError(api.startMagnetometerStreaming(deviceId, settings: settings)))
+        }
+        
+        func test_startPpgStreaming_sessionNotReady_emitsError() throws {
+            let (api, settings) = try makePmdApiWithSessionNotReadyError()
+            XCTAssertNotNil(awaitStreamError(api.startPpgStreaming(deviceId, settings: settings)))
+        }
+        
+        func test_startPpiStreaming_sessionNotReady_emitsError() throws {
+            let (api, _) = try makePmdApiWithSessionNotReadyError()
+            XCTAssertNotNil(awaitStreamError(api.startPpiStreaming(deviceId)))
+        }
+        
+        func test_startTemperatureStreaming_sessionNotReady_emitsError() throws {
+            let (api, settings) = try makePmdApiWithSessionNotReadyError()
+            XCTAssertNotNil(awaitStreamError(api.startTemperatureStreaming(deviceId, settings: settings)))
+        }
+        
+        func test_startPressureStreaming_sessionNotReady_emitsError() throws {
+            let (api, settings) = try makePmdApiWithSessionNotReadyError()
+            XCTAssertNotNil(awaitStreamError(api.startPressureStreaming(deviceId, settings: settings)))
+        }
+        
+    func test_startSkinTemperatureStreaming_sessionNotReady_emitsError() throws {
+        let (api, settings) = try makePmdApiWithSessionNotReadyError()
+        XCTAssertNotNil(awaitStreamError(api.startSkinTemperatureStreaming(deviceId, settings: settings)))
+    }
+
+    // MARK: - stopStreaming tests
+
+    func test_stopStreaming_ecg_callsStopMeasurementWithEcgType() throws {
+        setUpPmdApi()
+        try awaitVoidAsync { [self] in try await pmdApi.stopStreaming(deviceId, type: .ecg) }
+        XCTAssertEqual(mockPmdClient.stopMeasurementCalls.count, 1)
+        XCTAssertEqual(mockPmdClient.stopMeasurementCalls.first, .ecg)
+    }
+
+    func test_stopStreaming_acc_callsStopMeasurementWithAccType() throws {
+        setUpPmdApi()
+        try awaitVoidAsync { [self] in try await pmdApi.stopStreaming(deviceId, type: .acc) }
+        XCTAssertEqual(mockPmdClient.stopMeasurementCalls.first, .acc)
+    }
+
+    func test_stopStreaming_ppg_callsStopMeasurementWithPpgType() throws {
+        setUpPmdApi()
+        try awaitVoidAsync { [self] in try await pmdApi.stopStreaming(deviceId, type: .ppg) }
+        XCTAssertEqual(mockPmdClient.stopMeasurementCalls.first, .ppg)
+    }
+
+    func test_stopStreaming_gyro_callsStopMeasurementWithGyroType() throws {
+        setUpPmdApi()
+        try awaitVoidAsync { [self] in try await pmdApi.stopStreaming(deviceId, type: .gyro) }
+        XCTAssertEqual(mockPmdClient.stopMeasurementCalls.first, .gyro)
+    }
+
+    func test_stopStreaming_magnetometer_callsStopMeasurementWithMgnType() throws {
+        setUpPmdApi()
+        try awaitVoidAsync { [self] in try await pmdApi.stopStreaming(deviceId, type: .mgn) }
+        XCTAssertEqual(mockPmdClient.stopMeasurementCalls.first, .mgn)
+    }
+
+    func test_stopStreaming_stopMeasurementError_wrapsAsDeviceError() {
+        setUpPmdApi()
+        mockPmdClient.stopMeasurementError = NSError(domain: "pmd.stop", code: 42)
+        let e = awaitErrorAsync { [self] in try await pmdApi.stopStreaming(deviceId, type: .ecg) }
+        XCTAssertNotNil(e)
+        if case PolarErrors.deviceError = e! { } else { XCTFail("Expected deviceError, got \(String(describing: e))") }
+    }
+
+    func test_stopStreaming_sessionNotReady_wrapsAsDeviceError() {
+        setUpPmdApi()
+        pmdApi.pmdServiceUtils.stubError = PolarErrors.deviceNotConnected
+        let e = awaitErrorAsync { [self] in try await pmdApi.stopStreaming(deviceId, type: .ecg) }
+        XCTAssertNotNil(e)
+        if case PolarErrors.deviceError = e! { } else { XCTFail("Expected deviceError, got \(String(describing: e))") }
+    }
+
+    // MARK: - stopHrStreaming tests
+
+    private func makeHrApiWithSession() -> (MockDynamicBleApiImpl, MockDynamicServiceClientUtils, BleHrClient) {
+        let hrTransport = MockPolarGattServiceTransmitter()
+        let hrClient = BleHrClient(gattServiceTransmitter: hrTransport)
+        let hrSession = MockMultiClientBleDeviceSession(clients: [hrClient])
+        let (api, utils) = makeDynamicApi()
+        utils.pmdSession = hrSession
+        return (api, utils, hrClient)
+    }
+
+    func test_stopHrStreaming_success_completesWithoutError() throws {
+        let (api, _, _) = makeHrApiWithSession()
+        try awaitVoidAsync { [self] in try await api.stopHrStreaming(deviceId) }
+    }
+
+    func test_stopHrStreaming_finishesActiveHrStream() throws {
+        let (api, _, hrClient) = makeHrApiWithSession()
+        hrClient.setServiceDiscovered(true)
+        hrClient.notifyDescriptorWritten(BleHrClient.HR_MEASUREMENT, enabled: true, err: 0)
+        let hrStream = hrClient.observeHrNotifications(false)
+        var streamFinished = false
+        let exp = XCTestExpectation(description: "stream finished")
+        Task {
+            do {
+                for try await _ in hrStream { }
+            } catch {
+                // stream may finish with or without error
+            }
+            streamFinished = true
+            exp.fulfill()
+        }
+        try awaitVoidAsync { [self] in try await api.stopHrStreaming(deviceId) }
+        wait(for: [exp], timeout: 2)
+        XCTAssertTrue(streamFinished)
+    }
+
+    func test_stopHrStreaming_sessionNotReady_wrapsAsDeviceError() {
+        let (api, utils) = makeDynamicApi()
+        utils.pmdError = PolarErrors.deviceNotConnected
+        let e = awaitErrorAsync { [self] in try await api.stopHrStreaming(deviceId) }
+        XCTAssertNotNil(e)
+        if case PolarErrors.deviceError = e! { } else { XCTFail("Expected deviceError, got \(String(describing: e))") }
+    }
+
+   func test_getSubRecordings_removeOfflineRecords_and_multiBleMode_coverRemainingHelpers() throws {
+           let entry = PolarOfflineRecordingEntry(path: "/U/0/20240615/R/103000/ACC0.REC", size: 100, date: Date(), type: .acc)
+           let get = Protocol_PbPFtpOperation.Command.get.rawValue
+           let remove = Protocol_PbPFtpOperation.Command.remove.rawValue
+           v2MockClient.requestReturnValueClosure = makeCommandAwareRequestClosure([
+               "\(get)|/U/0/20240615/R/103000/": [
+                   { try self.makeDirectoryProtoData(entries: [("ACC0.REC", 50), ("ACC1.REC", 50), ("GYRO0.REC", 50)]) },
+                   { try self.makeDirectoryProtoData(entries: [("ACC0.REC", 50), ("ACC1.REC", 50), ("GYRO0.REC", 50)]) },
+                   { try self.makeDirectoryProtoData(entries: []) },
+               ],
+               "\(remove)|/U/0/20240615/R/103000/ACC0.REC": [{ Data() }],
+               "\(remove)|/U/0/20240615/R/103000/ACC1.REC": [{ Data() }],
+               "\(remove)|/U/0/20240615/R/103000/": [{ Data() }],
+               "\(get)|/U/0/20240615/R/": [{ try self.makeDirectoryProtoData(entries: []) }],
+               "\(remove)|/U/0/20240615/R/": [{ Data() }],
+               "\(get)|/U/0/20240615/": [{ try self.makeDirectoryProtoData(entries: []) }],
+               "\(remove)|/U/0/20240615/": [{ Data() }],
+           ])
+
+           let subRecordings = try awaitSingleAsync { [self] in try await v2Api.getSubRecordings(identifier: deviceId, entry: entry) }
+           XCTAssertEqual(subRecordings, [
+               "/U/0/20240615/R/103000/ACC0.REC",
+               "/U/0/20240615/R/103000/ACC1.REC",
+           ])
+           XCTAssertTrue(try awaitSingleAsync { [self] in try await v2Api.removeOfflineRecords(deviceId, entry: entry) })
+
+           let pfcTransport = MockPolarGattServiceTransmitter()
+           let pfcClient = MockBlePfcClient(gattServiceTransmitter: pfcTransport)
+           let pfcSession = MockPfcBleDeviceSession(mockPfcClient: pfcClient)
+           let pfcApi = MockPfcBleApiImpl(mockPfcSession: pfcSession)
+           pfcClient.commandReturnValue = .success(Pfc.PfcResponse())
+           try awaitVoidAsync { [self] in try await pfcApi.setMultiBLEConnectionMode(identifier: deviceId, enable: true) }
+           pfcClient.commandReturnValue = .success(Pfc.PfcResponse(data: Data([0x00, 0x00, 0x01, 0x01])))
+           XCTAssertTrue(try awaitSingleAsync { [self] in try await pfcApi.getMultiBLEConnectionMode(identifier: deviceId) })
+           XCTAssertEqual(pfcClient.commandCalls.first?.command, .pfcConfigureMultiConnection)
+           XCTAssertEqual(pfcClient.commandCalls.last?.command, .pfcRequestMultiConnectionSetting)
+       }
+
+       @available(*, deprecated)
+       func test_resetAndPowerControlHelpers_sendExpectedResetNotifications() throws {
+           try awaitSingleAsync { [self] in
+               try await v2Api.doFactoryReset(deviceId, preservePairingInformation: true)
+               return ()
+           }
+           var params = try Protocol_PbPFtpFactoryResetParams(serializedBytes: try XCTUnwrap(v2MockClient.sendNotificationCalls.last?.parameters as Data?))
+           XCTAssertTrue(params.otaFwupdate)
+           XCTAssertFalse(params.sleep)
+
+           try awaitSingleAsync { [self] in
+               try await v2Api.doFactoryReset(deviceId)
+               return ()
+           }
+           params = try Protocol_PbPFtpFactoryResetParams(serializedBytes: try XCTUnwrap(v2MockClient.sendNotificationCalls.last?.parameters as Data?))
+           XCTAssertFalse(params.otaFwupdate)
+           XCTAssertFalse(params.sleep)
+
+           try awaitSingleAsync { [self] in
+               try await v2Api.doRestart(deviceId, preservePairingInformation: true)
+               return ()
+           }
+           params = try Protocol_PbPFtpFactoryResetParams(serializedBytes: try XCTUnwrap(v2MockClient.sendNotificationCalls.last?.parameters as Data?))
+           XCTAssertFalse(params.doFactoryDefaults)
+           XCTAssertTrue(params.otaFwupdate)
+
+           try awaitSingleAsync { [self] in
+               try await v2Api.doRestart(deviceId)
+               return ()
+           }
+           params = try Protocol_PbPFtpFactoryResetParams(serializedBytes: try XCTUnwrap(v2MockClient.sendNotificationCalls.last?.parameters as Data?))
+           XCTAssertFalse(params.doFactoryDefaults)
+           XCTAssertFalse(params.otaFwupdate)
+
+           try awaitSingleAsync { [self] in
+               try await v2Api.setWarehouseSleep(deviceId, enableWarehouseSleep: false)
+               return ()
+           }
+           params = try Protocol_PbPFtpFactoryResetParams(serializedBytes: try XCTUnwrap(v2MockClient.sendNotificationCalls.last?.parameters as Data?))
+           XCTAssertFalse(params.sleep)
+           XCTAssertTrue(params.otaFwupdate)
+
+           try awaitSingleAsync { [self] in
+               try await v2Api.setWarehouseSleep(deviceId)
+               return ()
+           }
+           params = try Protocol_PbPFtpFactoryResetParams(serializedBytes: try XCTUnwrap(v2MockClient.sendNotificationCalls.last?.parameters as Data?))
+           XCTAssertTrue(params.sleep)
+           XCTAssertTrue(params.doFactoryDefaults)
+
+           try awaitSingleAsync { [self] in
+               try await v2Api.turnDeviceOff(deviceId)
+               return ()
+           }
+           params = try Protocol_PbPFtpFactoryResetParams(serializedBytes: try XCTUnwrap(v2MockClient.sendNotificationCalls.last?.parameters as Data?))
+           XCTAssertTrue(params.sleep)
+           XCTAssertFalse(params.doFactoryDefaults)
+       }
+
+       func test_syncNotificationHelpers_sendExpectedCommands() throws {
+           try awaitSingleAsync { [self] in
+               try await v2Api.sendInitializationAndStartSyncNotifications(identifier: deviceId)
+               return ()
+           }
+           XCTAssertEqual(v2MockClient.queryCalls.last?.id, Protocol_PbPFtpQuery.requestSynchronization.rawValue)
+           XCTAssertEqual(v2MockClient.sendNotificationCalls.suffix(2).map(\.notification), [
+               Protocol_PbPFtpHostToDevNotification.initializeSession.rawValue,
+               Protocol_PbPFtpHostToDevNotification.startSync.rawValue,
+           ])
+
+           v2MockClient.sendNotificationCalls.removeAll()
+           try awaitSingleAsync { [self] in
+               try await v2Api.sendTerminateAndStopSyncNotifications(identifier: deviceId)
+               return ()
+           }
+           XCTAssertEqual(v2MockClient.sendNotificationCalls.map(\.notification), [
+               Protocol_PbPFtpHostToDevNotification.stopSync.rawValue,
+               Protocol_PbPFtpHostToDevNotification.terminateSession.rawValue,
+           ])
+           let stopParams = try Protocol_PbPFtpStopSyncParams(serializedBytes: try XCTUnwrap(v2MockClient.sendNotificationCalls.first?.parameters as Data?))
+           XCTAssertTrue(stopParams.completed)
+
+           v2MockClient.sendNotificationCalls.removeAll()
+           try awaitSingleAsync { [self] in
+               try await v2Api.sendTerminateSessionNotification(identifier: deviceId)
+               return ()
+           }
+           XCTAssertEqual(v2MockClient.sendNotificationCalls.map(\.notification), [Protocol_PbPFtpHostToDevNotification.terminateSession.rawValue])
+
+           v2MockClient.sendNotificationCalls.removeAll()
+           try awaitSingleAsync { [self] in
+               try await v2Api.sendStopSyncNotification(identifier: deviceId)
+               return ()
+           }
+           XCTAssertEqual(v2MockClient.sendNotificationCalls.map(\.notification), [Protocol_PbPFtpHostToDevNotification.stopSync.rawValue])
+       }
+
+       func test_exerciseControlQueries_sendExpectedCommands_and_getStatusParsesResponse() throws {
+           var status = Protocol_PbPftpGetExerciseStatusResult()
+           status.exerciseState = .exerciseStateRunning
+           status.sportIdentifier.value = UInt64(PolarExerciseSession.SportProfile.running.rawValue)
+
+           v2MockClient.queryReturnValues = [
+               .success(Data()),
+               .success(Data()),
+               .success(Data()),
+               .success(Data()),
+               .success(try status.serializedData()),
+           ]
+
+           try awaitSingleAsync { [self] in
+               try await v2Api.startExercise(identifier: deviceId, profile: .running)
+               return ()
+           }
+           try awaitSingleAsync { [self] in
+               try await v2Api.pauseExercise(identifier: deviceId)
+               return ()
+           }
+           try awaitSingleAsync { [self] in
+               try await v2Api.resumeExercise(identifier: deviceId)
+               return ()
+           }
+           try awaitSingleAsync { [self] in
+               try await v2Api.stopExercise(identifier: deviceId)
+               return ()
+           }
+           let result = try awaitSingleAsync { [self] in
+               try await v2Api.getExerciseStatus(identifier: deviceId)
+           }
+
+           XCTAssertEqual(v2MockClient.queryCalls.map(\.id), [
+               Protocol_PbPFtpQuery.startExercise.rawValue,
+               Protocol_PbPFtpQuery.pauseExercise.rawValue,
+               Protocol_PbPFtpQuery.resumeExercise.rawValue,
+               Protocol_PbPFtpQuery.stopExercise.rawValue,
+               Protocol_PbPFtpQuery.getExerciseStatus.rawValue,
+           ])
+           XCTAssertEqual(result.status, .inProgress)
+           XCTAssertEqual(result.sportProfile, .running)
+       }
+
+       func test_observeExerciseStatus_yieldsParsedNotifications() throws {
+           var status = Protocol_PbPftpGetExerciseStatusResult()
+           status.exerciseState = .exerciseStatePaused
+           status.sportIdentifier.value = UInt64(PolarExerciseSession.SportProfile.cycling.rawValue)
+           v2MockClient.receiveNotificationCalls = [
+               (notification: Protocol_PbPFtpDevToHostNotification.exerciseStatus.rawValue,
+                parameters: [try status.serializedData()],
+                compressed: false),
+           ]
+
+           let values = try collectAllAsync(v2Api.observeExerciseStatus(identifier: deviceId))
+           XCTAssertEqual(values.count, 1)
+           XCTAssertEqual(values.first?.status, .paused)
+           XCTAssertEqual(values.first?.sportProfile, .cycling)
+       }
+
+       @available(*, deprecated)
+       func test_offlineExerciseListingApis_returnErrors_whenFtpLookupFails() {
+           let (api, utils) = makeDynamicApi()
+           utils.ftpError = PolarErrors.deviceNotConnected
+
+           let exerciseEntry = PolarExerciseEntry(path: "/U/0/EX/SAMPLES.BPB", date: Date(), entryId: "x")
+           XCTAssertNotNil(awaitErrorAsync { try await api.fetchExercise(self.deviceId, entry: exerciseEntry) })
+           XCTAssertNotNil(awaitStreamError(api.listExercises(self.deviceId)))
+           XCTAssertNotNil(awaitStreamError(api.fetchStoredExerciseList(self.deviceId)))
+       }
+
+       func test_userSettingsReadAndWriteApis_useExpectedPathsAndValues() throws {
+           let getProtoData = try makeUserDeviceSettingsProto(deviceLocation: .deviceLocationWristRight, usbMode: .on, telemetryEnabled: true, autosEnabled: true, atdState: .on, atdSensitivity: 44, minimumDuration: 600)
+           v2MockClient.requestReturnValue = .success(getProtoData)
+
+           let result = try awaitSingleAsync { [self] in
+               try await v2Api.getPolarUserDeviceSettings(identifier: deviceId)
+           }
+           XCTAssertEqual(result.deviceLocation, .WRIST_RIGHT)
+           XCTAssertEqual(result.usbConnectionMode, .ON)
+           XCTAssertEqual(result.telemetryEnabled, true)
+           XCTAssertEqual(result.autosFilesEnabled, true)
+
+           let settings = PolarUserDeviceSettings()
+           settings.deviceLocation = .CHEST
+           settings.usbConnectionMode = .OFF
+           settings.telemetryEnabled = false
+           settings.autosFilesEnabled = false
+           try awaitSingleAsync { [self] in
+               try await v2Api.setPolarUserDeviceSettings(deviceId, polarUserDeviceSettings: settings)
+               return ()
+           }
+
+           let writeCall = try XCTUnwrap(v2MockClient.writeCalls.last)
+           let header = try Protocol_PbPFtpOperation(serializedBytes: writeCall.header as Data)
+           XCTAssertEqual(header.path, DEVICE_SETTINGS_FILE_PATH)
+           let writtenSettings = try Data_PbUserDeviceSettings(serializedBytes: readAll(from: writeCall.data))
+           XCTAssertEqual(writtenSettings.generalSettings.deviceLocation, .deviceLocationChest)
+           XCTAssertEqual(writtenSettings.telemetrySettings.telemetryEnabled, false)
+           XCTAssertEqual(writtenSettings.automaticMeasurementSettings.automaticOhrMeasurement.state, .off)
+       }
+
+       func test_settingsMutationApis_updateExpectedFields() throws {
+           v2MockClient.requestReturnValue = .success(try makeUserDeviceSettingsProto())
+           try awaitSingleAsync { [self] in
+               try await v2Api.setUsbConnectionMode(deviceId, enabled: true)
+               return ()
+           }
+           var written = try Data_PbUserDeviceSettings(serializedBytes: readAll(from: try XCTUnwrap(v2MockClient.writeCalls.last?.data)))
+           XCTAssertEqual(written.usbConnectionSettings.mode, .on)
+
+           v2MockClient.writeCalls.removeAll()
+           v2MockClient.requestReturnValue = .success(try makeUserDeviceSettingsProto())
+           try awaitSingleAsync { [self] in
+               try await v2Api.setAutomaticTrainingDetectionSettings(deviceId, mode: true, sensitivity: 77, minimumDuration: 900)
+               return ()
+           }
+           written = try Data_PbUserDeviceSettings(serializedBytes: readAll(from: try XCTUnwrap(v2MockClient.writeCalls.last?.data)))
+           XCTAssertEqual(written.automaticMeasurementSettings.automaticTrainingDetectionSettings.state, .on)
+           XCTAssertEqual(written.automaticMeasurementSettings.automaticTrainingDetectionSettings.sensitivity, 77)
+           XCTAssertEqual(written.automaticMeasurementSettings.automaticTrainingDetectionSettings.minimumTrainingDurationSeconds, 900)
+
+           v2MockClient.writeCalls.removeAll()
+           v2MockClient.requestReturnValue = .success(try makeUserDeviceSettingsProto())
+           try awaitSingleAsync { [self] in
+               try await v2Api.setTelemetryEnabled(deviceId, enabled: true)
+               return ()
+           }
+           written = try Data_PbUserDeviceSettings(serializedBytes: readAll(from: try XCTUnwrap(v2MockClient.writeCalls.last?.data)))
+           XCTAssertTrue(written.telemetrySettings.telemetryEnabled)
+
+           v2MockClient.writeCalls.removeAll()
+           v2MockClient.requestReturnValue = .success(try makeUserDeviceSettingsProto(autosEnabled: true))
+           try awaitSingleAsync { [self] in
+               try await v2Api.setAutomaticOHRMeasurementEnabled(deviceId, enabled: false)
+               return ()
+           }
+           written = try Data_PbUserDeviceSettings(serializedBytes: readAll(from: try XCTUnwrap(v2MockClient.writeCalls.last?.data)))
+           XCTAssertEqual(written.automaticMeasurementSettings.automaticOhrMeasurement.state, .off)
+       }
+
+       func test_setUserDeviceLocation_invalidLocation_and_setDaylightSavingTime_sessionError_areReported() {
+           let invalidLocationError = awaitErrorAsync { [self] in
+               try await v2Api.setUserDeviceLocation(deviceId, location: 999)
+           }
+           XCTAssertNotNil(invalidLocationError)
+
+           let (api, utils) = makeDynamicApi()
+           utils.ftpError = PolarErrors.deviceNotConnected
+           let daylightSavingError = awaitErrorAsync { try await api.setDaylightSavingTime(self.deviceId) }
+           XCTAssertNotNil(daylightSavingError)
+       }
+
+       func test_doFirstTimeUse_invalidDeviceTime_throws() {
+           let config = PolarFirstTimeUseConfig(
+               gender: .male,
+               birthDate: makeDate(1990, 1, 1),
+               height: 180,
+               weight: 80,
+               maxHeartRate: 190,
+               vo2Max: 50,
+               restingHeartRate: 55,
+               trainingBackground: .regular,
+               deviceTime: "not-an-iso-date",
+               typicalDay: .mostlyMoving,
+               sleepGoalMinutes: 480
+           )
+
+           XCTAssertNotNil(awaitErrorAsync { [self] in
+               try await v2Api.doFirstTimeUse(deviceId, ftuConfig: config)
+           })
+       }
+
+       func test_isFtuDone_and_getUserPhysicalConfiguration_handleExistingAndMissingFiles() throws {
+           var userId = Data_PbUserIdentifier()
+           userId.masterIdentifier = 12345
+           v2MockClient.requestReturnValue = .success(try userId.serializedData())
+           let isDone = try awaitSingleAsync { [self] in try await v2Api.isFtuDone(deviceId) }
+           XCTAssertTrue(isDone)
+
+           v2MockClient.requestReturnValue = .failure(BlePsFtpException.responseError(errorCode: Protocol_PbPFtpError.noSuchFileOrDirectory.rawValue))
+           let config = try awaitSingleAsync { [self] in try await v2Api.getUserPhysicalConfiguration(deviceId) }
+           XCTAssertNil(config)
+       }
+
+       func test_offlineRecordingControl_and_sdkMode_delegateToPmdClient() throws {
+           let transport = MockPolarGattServiceTransmitter()
+           let pmdClient = MockBlePmdClient(gattServiceTransmitter: transport)
+           let pmdSession = MockPmdBleDeviceSession(mockPmdClient: pmdClient)
+           let (api, utils) = makeDynamicApi()
+           utils.pmdSession = pmdSession
+           pmdClient.readMeasurementStatusReturnValue = .success([(.acc, .no_measurement_active)])
+           pmdClient.getOfflineRecordingTriggerStatusReturnValue = .success(PmdOfflineTrigger(triggerMode: .systemStart, triggers: [.acc: (.enabled, nil)]))
+           pmdClient.sdkModeEnabledReturnValue = .success(.enabled)
+
+           try awaitSingleAsync { [self] in
+               try await api.startOfflineRecording(deviceId, feature: .acc, settings: nil, secret: nil)
+               return ()
+           }
+           try awaitSingleAsync { [self] in
+               try await api.stopOfflineRecording(deviceId, feature: .acc)
+               return ()
+           }
+           try awaitSingleAsync { [self] in
+               try await api.setOfflineRecordingTrigger(deviceId, trigger: PolarOfflineRecordingTrigger(triggerMode: .triggerSystemStart, triggerFeatures: [.acc: nil]), secret: nil)
+               return ()
+           }
+           let trigger = try awaitSingleAsync { [self] in
+               try await api.getOfflineRecordingTriggerSetup(deviceId)
+           }
+           try awaitSingleAsync { [self] in
+               try await api.enableSDKMode(deviceId)
+               return ()
+           }
+           try awaitSingleAsync { [self] in
+               try await api.disableSDKMode(deviceId)
+               return ()
+           }
+           let sdkEnabled = try awaitSingleAsync { [self] in
+               try await api.isSDKModeEnabled(deviceId)
+           }
+
+           XCTAssertEqual(pmdClient.startMeasurementCalls.first?.type, .acc)
+           XCTAssertEqual(pmdClient.startMeasurementCalls.first?.recordingType, .offline)
+           XCTAssertEqual(pmdClient.stopMeasurementCalls, [.acc])
+           XCTAssertEqual(pmdClient.setOfflineRecordingTriggerCalls.count, 1)
+           XCTAssertEqual(trigger.triggerMode, .triggerSystemStart)
+           XCTAssertTrue(trigger.triggerFeatures.keys.contains(.acc))
+           XCTAssertEqual(pmdClient.sdkModeStartCalls, 1)
+           XCTAssertEqual(pmdClient.sdkModeStopCalls, 1)
+           XCTAssertTrue(sdkEnabled)
+       }
+
+       func test_getAvailableOnlineAndHrServiceDataTypes_returnExpectedSets() throws {
+           let hrTransport = MockPolarGattServiceTransmitter()
+           let hrClient = BleHrClient(gattServiceTransmitter: hrTransport)
+           hrClient.setServiceDiscovered(true)
+           hrClient.notifyDescriptorWritten(BleHrClient.HR_MEASUREMENT, enabled: true, err: 0)
+           let hrSession = MockMultiClientBleDeviceSession(clients: [hrClient])
+
+           let pmdTransport = MockPolarGattServiceTransmitter()
+           let pmdClient = MockBlePmdClient(gattServiceTransmitter: pmdTransport)
+           pmdClient.readFeatureReturnValue = .success([.acc, .mgn, .temperature])
+           let pmdSession = MockPmdBleDeviceSession(mockPmdClient: pmdClient)
+
+           let (api, utils) = makeDynamicApi()
+           utils.hrSession = hrSession
+           utils.pmdSession = pmdSession
+           utils.serviceSessionByUuid[BleHrClient.HR_SERVICE.uuidString] = hrSession
+
+           let online = try awaitSingleAsync { [self] in
+               try await api.getAvailableOnlineStreamDataTypes(deviceId)
+           }
+           let hrOnly = try awaitSingleAsync { [self] in
+               try await api.getAvailableHRServiceDataTypes(identifier: deviceId)
+           }
+
+           XCTAssertEqual(online, Set([.hr, .acc, .magnetometer, .temperature]))
+           XCTAssertEqual(hrOnly, Set([.hr]))
+       }
+
+       func test_onlineStreamingApis_wrapPmdErrors() {
+           let transport = MockPolarGattServiceTransmitter()
+           let pmdClient = MockBlePmdClient(gattServiceTransmitter: transport)
+           let pmdSession = MockPmdBleDeviceSession(mockPmdClient: pmdClient)
+           let api = MockPmdBleApiImpl(mockPmdSession: pmdSession)
+           api.pmdServiceUtils.stubError = PolarErrors.deviceNotConnected
+           let settings = try! PolarSensorSetting([.sampleRate: 52])
+
+           XCTAssertNotNil(awaitStreamError(api.startEcgStreaming(deviceId, settings: settings)))
+           XCTAssertNotNil(awaitStreamError(api.startAccStreaming(deviceId, settings: settings)))
+           XCTAssertNotNil(awaitStreamError(api.startGyroStreaming(deviceId, settings: settings)))
+           XCTAssertNotNil(awaitStreamError(api.startMagnetometerStreaming(deviceId, settings: settings)))
+           XCTAssertNotNil(awaitStreamError(api.startPpgStreaming(deviceId, settings: settings)))
+           XCTAssertNotNil(awaitStreamError(api.startPpiStreaming(deviceId)))
+           XCTAssertNotNil(awaitStreamError(api.startTemperatureStreaming(deviceId, settings: settings)))
+           XCTAssertNotNil(awaitStreamError(api.startPressureStreaming(deviceId, settings: settings)))
+           XCTAssertNotNil(awaitStreamError(api.startSkinTemperatureStreaming(deviceId, settings: settings)))
+       }
+
+       func test_startHrStreaming_yieldsMappedHrSample() throws {
+           let transport = MockPolarGattServiceTransmitter()
+           let hrClient = BleHrClient(gattServiceTransmitter: transport)
+           hrClient.setServiceDiscovered(true)
+           hrClient.notifyDescriptorWritten(BleHrClient.HR_MEASUREMENT, enabled: true, err: 0)
+           let hrSession = MockMultiClientBleDeviceSession(clients: [hrClient])
+           let (api, utils) = makeDynamicApi()
+           utils.hrSession = hrSession
+           utils.serviceSessionByUuid[BleHrClient.HR_SERVICE.uuidString] = hrSession
+
+           let stream = api.startHrStreaming(deviceId)
+           Task {
+               try? await Task.sleep(nanoseconds: 50_000_000)
+               hrClient.processServiceData(BleHrClient.HR_MEASUREMENT, data: Data([0x00, 60]), err: 0)
+           }
+
+           let hrData = try awaitFirstValue(stream)
+           XCTAssertEqual(hrData.first?.hr, 60)
+           XCTAssertEqual(hrData.first?.rrAvailable, false)
+       }
+
+       func test_multiBleConnectionMode_queriesAndSetsPfc() throws {
+           let transport = MockPolarGattServiceTransmitter()
+           let pfcClient = MockBlePfcClient(gattServiceTransmitter: transport)
+           let pfcSession = MockPfcBleDeviceSession(mockPfcClient: pfcClient)
+           let api = MockPfcBleApiImpl(mockPfcSession: pfcSession)
+
+           pfcClient.commandReturnValue = .success(Pfc.PfcResponse())
+           try awaitSingleAsync { [self] in
+               try await api.setMultiBLEConnectionMode(identifier: deviceId, enable: true)
+               return ()
+           }
+
+           pfcClient.commandReturnValue = .success(Pfc.PfcResponse(data: Data([0x00, 0x00, 0x01, 0x01])))
+           let enabled = try awaitSingleAsync { [self] in
+               try await api.getMultiBLEConnectionMode(identifier: deviceId)
+           }
+
+           XCTAssertEqual(pfcClient.commandCalls.count, 2)
+           XCTAssertEqual(pfcClient.commandCalls.first?.command, .pfcConfigureMultiConnection)
+           XCTAssertEqual(pfcClient.commandCalls.first?.value, [1])
+           XCTAssertEqual(pfcClient.commandCalls.last?.command, .pfcRequestMultiConnectionSetting)
+           XCTAssertTrue(enabled)
+       }
+
+       func test_batteryRssiAndPairingHelpers_returnUtilityValues() throws {
+           let transport = MockPolarGattServiceTransmitter()
+           let basClient = BleBasClient(gattServiceTransmitter: transport)
+           basClient.setServiceDiscovered(true)
+           basClient.processServiceData(CBUUID(string: "2A19"), data: Data([88]), err: 0)
+           basClient.processServiceData(BleBasClient.BATTERY_STATUS_CHARACTERISTIC, data: Data([0x00, 0x21]), err: 0)
+           let basSession = MockMultiClientBleDeviceSession(clients: [basClient])
+
+           let (api, utils) = makeDynamicApi()
+           utils.serviceSessionByUuid[BleBasClient.BATTERY_SERVICE.uuidString] = basSession
+           utils.rssiHandler = { _ in -42 }
+           utils.pairingHandler = { _ in true }
+
+           XCTAssertEqual(try api.getBatteryLevel(identifier: deviceId), 88)
+           XCTAssertEqual(try api.getChargerState(identifier: deviceId), .charging)
+           XCTAssertEqual(try api.getRSSIValue(deviceId), -42)
+           XCTAssertTrue(try api.checkIfDeviceDisconnectedDueRemovedPairing(deviceId))
+       }
+
+       func test_waitForConnection_returnsAfterSessionBecomesOpen() throws {
+           let (api, utils) = makeDynamicApi()
+           let session = MockBleDeviceSession(mockFtpClient: v2MockClient)
+           session.state = .sessionClosed
+           var callCount = 0
+           utils.fetchSessionHandler = { _ in
+               callCount += 1
+               if callCount > 1 { session.state = .sessionOpen }
+               return session
+           }
+
+           try awaitSingleAsync({ [self] in
+               try await api.waitForConnection(deviceId)
+               return ()
+           }, timeout: 3)
+           XCTAssertGreaterThanOrEqual(callCount, 2)
+       }
+
+       func test_getSubRecordings_and_removeOfflineRecords_coverOfflineRecordingHelpers() throws {
+           let entry = PolarOfflineRecordingEntry(path: "/U/0/20240615/R/103000/ACC0.REC", size: 100, date: Date(), type: .acc)
+           v2MockClient.requestReturnValueClosure = makeCommandAwareRequestClosure([
+               "\(Protocol_PbPFtpOperation.Command.get.rawValue)|/U/0/20240615/R/103000/": [
+                   { try self.makeDirectoryProtoData(entries: [("ACC0.REC", 50), ("ACC1.REC", 50), ("GYRO0.REC", 50)]) },
+                   { try self.makeDirectoryProtoData(entries: [("ACC0.REC", 50), ("ACC1.REC", 50), ("GYRO0.REC", 50)]) },
+                   { try self.makeDirectoryProtoData(entries: []) },
+               ],
+               "\(Protocol_PbPFtpOperation.Command.remove.rawValue)|/U/0/20240615/R/103000/ACC0.REC": [{ Data() }],
+               "\(Protocol_PbPFtpOperation.Command.remove.rawValue)|/U/0/20240615/R/103000/ACC1.REC": [{ Data() }],
+               "\(Protocol_PbPFtpOperation.Command.remove.rawValue)|/U/0/20240615/R/103000/": [{ Data() }],
+               "\(Protocol_PbPFtpOperation.Command.get.rawValue)|/U/0/20240615/R/": [{ try self.makeDirectoryProtoData(entries: []) }],
+               "\(Protocol_PbPFtpOperation.Command.remove.rawValue)|/U/0/20240615/R/": [{ Data() }],
+               "\(Protocol_PbPFtpOperation.Command.get.rawValue)|/U/0/20240615/": [{ try self.makeDirectoryProtoData(entries: []) }],
+               "\(Protocol_PbPFtpOperation.Command.remove.rawValue)|/U/0/20240615/": [{ Data() }],
+           ])
+
+           let subRecordings = try awaitSingleAsync { [self] in
+               try await v2Api.getSubRecordings(identifier: deviceId, entry: entry)
+           }
+           XCTAssertEqual(subRecordings, [
+               "/U/0/20240615/R/103000/ACC0.REC",
+               "/U/0/20240615/R/103000/ACC1.REC",
+           ])
+
+           let removed = try awaitSingleAsync { [self] in
+               try await v2Api.removeOfflineRecords(deviceId, entry: entry)
+           }
+           XCTAssertTrue(removed)
+       }
 }

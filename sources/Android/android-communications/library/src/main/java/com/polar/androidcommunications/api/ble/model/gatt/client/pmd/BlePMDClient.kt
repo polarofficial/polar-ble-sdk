@@ -151,21 +151,53 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
 
     private fun processPmdData(data: ByteArray) {
         BleLogger.d_hex(TAG, "pmd data: ", data)
-        val frame = PmdDataFrame(data, this::getPreviousFrameTimeStamp, this::getFactor, this::getSampleRate)
+        val frame: PmdDataFrame
+        try {
+            frame = PmdDataFrame(data, this::getPreviousFrameTimeStamp, this::getFactor, this::getSampleRate)
+        } catch (e: Throwable) {
+            BleLogger.e(TAG, "PMD data frame header parsing failed: ${e.message}")
+            return
+        }
         previousTimeStampMap[Pair(frame.measurementType, frame.frameType)] = frame.timeStamp
 
         when (frame.measurementType) {
-            PmdMeasurementType.ECG -> ChannelUtils.emitNext(ecgObservers) { it.trySend(EcgData.parseDataFromDataFrame(frame)) }
-            PmdMeasurementType.PPG -> ChannelUtils.emitNext(ppgObservers) { it.trySend(PpgData.parseDataFromDataFrame(frame)) }
-            PmdMeasurementType.ACC -> ChannelUtils.emitNext(accObservers) { it.trySend(AccData.parseDataFromDataFrame(frame)) }
-            PmdMeasurementType.PPI -> ChannelUtils.emitNext(ppiObservers) { it.trySend(PpiData.parseDataFromDataFrame(frame)) }
-            PmdMeasurementType.GYRO -> ChannelUtils.emitNext(gyroObservers) { it.trySend(GyrData.parseDataFromDataFrame(frame)) }
-            PmdMeasurementType.MAGNETOMETER -> ChannelUtils.emitNext(magnetometerObservers) { it.trySend(MagData.parseDataFromDataFrame(frame)) }
-            PmdMeasurementType.PRESSURE -> ChannelUtils.emitNext(pressureObservers) { it.trySend(PressureData.parseDataFromDataFrame(frame)) }
-            PmdMeasurementType.LOCATION -> ChannelUtils.emitNext(locationObservers) { it.trySend(GnssLocationData.parseDataFromDataFrame(frame)) }
-            PmdMeasurementType.TEMPERATURE -> ChannelUtils.emitNext(temperatureObservers) { it.trySend(TemperatureData.parseDataFromDataFrame(frame)) }
-            PmdMeasurementType.SKIN_TEMP -> ChannelUtils.emitNext(skinTemperatureObservers) { it.trySend(SkinTemperatureData.parseDataFromDataFrame(frame)) }
+            PmdMeasurementType.ECG -> safeParseAndEmit(ecgObservers, frame, "ECG") { EcgData.parseDataFromDataFrame(it) }
+            PmdMeasurementType.PPG -> safeParseAndEmit(ppgObservers, frame, "PPG") { PpgData.parseDataFromDataFrame(it) }
+            PmdMeasurementType.ACC -> safeParseAndEmit(accObservers, frame, "ACC") { AccData.parseDataFromDataFrame(it) }
+            PmdMeasurementType.PPI -> safeParseAndEmit(ppiObservers, frame, "PPI") { PpiData.parseDataFromDataFrame(it) }
+            PmdMeasurementType.GYRO -> safeParseAndEmit(gyroObservers, frame, "GYRO") { GyrData.parseDataFromDataFrame(it) }
+            PmdMeasurementType.MAGNETOMETER -> safeParseAndEmit(magnetometerObservers, frame, "MAG") { MagData.parseDataFromDataFrame(it) }
+            PmdMeasurementType.PRESSURE -> safeParseAndEmit(pressureObservers, frame, "PRESSURE") { PressureData.parseDataFromDataFrame(it) }
+            PmdMeasurementType.LOCATION -> safeParseAndEmit(locationObservers, frame, "LOCATION") { GnssLocationData.parseDataFromDataFrame(it) }
+            PmdMeasurementType.TEMPERATURE -> safeParseAndEmit(temperatureObservers, frame, "TEMPERATURE") { TemperatureData.parseDataFromDataFrame(it) }
+            PmdMeasurementType.SKIN_TEMP -> safeParseAndEmit(skinTemperatureObservers, frame, "SKIN_TEMP") { SkinTemperatureData.parseDataFromDataFrame(it) }
             else -> BleLogger.w(TAG, "Unknown or not supported PMD type ${frame.measurementType} received")
+        }
+    }
+
+    /**
+     * Safely parses a PMD data frame and emits the result to all [observers].
+     *
+     * If parsing throws any [Throwable] (including [Error] subclasses such as
+     * [AssertionError] from data-validation helpers) the error is logged and propagated
+     * to all current [observers] via [ChannelUtils.postError] — this terminates the
+     * affected measurement stream with a descriptive error instead of crashing the application.
+     *
+     * SDK users should capture these errors via their preferred error reporting / analytics tool
+     * and may restart the affected stream if desired.
+     */
+    private fun <T : Any> safeParseAndEmit(
+        observers: AtomicSet<Channel<T>>,
+        frame: PmdDataFrame,
+        dataTypeName: String,
+        parser: (PmdDataFrame) -> T
+    ) {
+        try {
+            val result = parser(frame)
+            ChannelUtils.emitNext(observers) { it.trySend(result) }
+        } catch (e: Throwable) {
+            BleLogger.e(TAG, "$dataTypeName data parse error (frameType=${frame.frameType}): ${e.message}")
+            ChannelUtils.postError(observers, e)
         }
     }
 

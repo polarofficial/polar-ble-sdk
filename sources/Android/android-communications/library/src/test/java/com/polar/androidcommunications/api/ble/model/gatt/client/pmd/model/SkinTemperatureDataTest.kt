@@ -67,4 +67,36 @@ class SkinTemperatureDataTest {
         Assert.assertEquals(27.54f, temperatureData.skinTemperatureSamples[1].skinTemperature)
         Assert.assertEquals(27.54f, temperatureData.skinTemperatureSamples[2].skinTemperature)
     }
+
+    // ── Bounds-checking / invalid-data tests ────────────────────────────────
+
+    private fun skinTempHeader(frameTypeByte: Byte) = byteArrayOf(
+        0x07.toByte(),
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+        frameTypeByte
+    )
+
+    @Test
+    fun `Skin Temperature raw type 0 throws PmdDataParseException when dataContent is empty`() {
+        val frame = PmdDataFrame(skinTempHeader(0x00), { _, _ -> 0uL }, { 1.0f }) { 100 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            SkinTemperatureData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `Skin Temperature raw type 0 throws PmdDataParseException when dataContent size is not multiple of 4`() {
+        val frame = PmdDataFrame(skinTempHeader(0x00) + byteArrayOf(0x01, 0x02, 0x03, 0x04, 0x05), { _, _ -> 0uL }, { 1.0f }) { 100 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            SkinTemperatureData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `Skin Temperature compressed type 0 throws PmdDataParseException when dataContent is empty`() {
+        val frame = PmdDataFrame(skinTempHeader(0x80.toByte()), { _, _ -> 100uL }, { 1.0f }) { 0 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            SkinTemperatureData.parseDataFromDataFrame(frame)
+        }
+    }
 }

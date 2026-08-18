@@ -8,7 +8,9 @@ struct SettingsView: View {
     let streamedFeature: PolarDeviceDataType
     let streamSettings: RecordingSettings
     var isOfflineSettings: Bool = false
-    
+    /// When true the dialog only saves the chosen settings; the stream is NOT started.
+    var saveOnly: Bool = false
+
     @Environment(\.presentationMode) var presentationMode
     
     @State private var selectedSampleRate:Int = 0
@@ -36,7 +38,7 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationView {
-            VStack() {
+            VStack(spacing: 0) {
                 Form {
                     ForEach(streamSettings.sortedSettings) { settings in
                         if(settings.type == PolarSensorSetting.SettingType.sampleRate) {
@@ -113,29 +115,38 @@ struct SettingsView: View {
                             }
                         }
                     }
-
-                    Button( isOfflineSettings ?
-                            "Start \(getShortNameForDataType(streamedFeature)) offline recording" :
-                                "Start \(getShortNameForDataType(streamedFeature)) online stream",
-                            action: {
-                        startStream()
-                        presentationMode.wrappedValue.dismiss()
-                        
-                    })
-                    .buttonStyle(PrimaryButtonStyle(buttonState: ButtonState.released))
-                    .padding(15)
                 }
-            }.navigationTitle("\(getShortNameForDataType(streamedFeature)) settings")
-                .toolbar(content: {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button {
-                            presentationMode.wrappedValue.dismiss()
-                        } label: {
-                            Text("Cancel")
-                        }
+
+                Button(action: {
+                    if saveOnly {
+                        saveSettings()
+                    } else {
+                        startStream()
                     }
-                })
-                .onAppear { restorePreviousDerivedSettings() }
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text(saveOnly ? "SAVE" : "START")
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color.red)
+                        .cornerRadius(10)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+            }
+            .navigationTitle("\(getShortNameForDataType(streamedFeature)) settings")
+            .toolbar(content: {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        presentationMode.wrappedValue.dismiss()
+                    } label: {
+                        Text("Cancel")
+                    }
+                }
+            })
+            .onAppear { restorePreviousDerivedSettings() }
         }
     }
 
@@ -178,6 +189,26 @@ struct SettingsView: View {
         default:              outputLabel = " — 1 sample / \(ms / 3_600_000) h"
         }
         return "\(duration)\(outputLabel)"
+    }
+
+    func saveSettings() {
+        var settingValues: [TypeSetting] = []
+        if let sampleRate = streamSettings.sortedSettings.first(where: { $0.type == PolarSensorSetting.SettingType.sampleRate })?.sortedValues[selectedSampleRate] {
+            settingValues.append(TypeSetting(type: PolarSensorSetting.SettingType.sampleRate, values: [sampleRate]))
+        }
+        if let range = streamSettings.sortedSettings.first(where: { $0.type == PolarSensorSetting.SettingType.range })?.sortedValues[selectedRange] {
+            settingValues.append(TypeSetting(type: PolarSensorSetting.SettingType.range, values: [range]))
+        }
+        if let resolution = streamSettings.sortedSettings.first(where: { $0.type == PolarSensorSetting.SettingType.resolution })?.sortedValues[selectedResolution] {
+            settingValues.append(TypeSetting(type: PolarSensorSetting.SettingType.resolution, values: [resolution]))
+        }
+        if let channel = streamSettings.sortedSettings.first(where: { $0.type == PolarSensorSetting.SettingType.channels })?.sortedValues[selectedChannels] {
+            settingValues.append(TypeSetting(type: PolarSensorSetting.SettingType.channels, values: [channel]))
+        }
+        bleSdkManager.saveOnlineStreamSettings(
+            feature: streamedFeature,
+            settings: RecordingSettings(feature: streamedFeature, settings: settingValues)
+        )
     }
 
     func startStream() {

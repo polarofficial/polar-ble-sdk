@@ -19,8 +19,11 @@ import com.polar.sdk.api.model.PolarSensorSetting
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -46,7 +49,7 @@ data class OfflineStreamSettings(
 )
 
 internal data class AvailableOfflineRecordingsState(
-    val deviceId: String = "",
+    val identifier: String = "",
     val offlineRecordingsAvailableOfflineRecordingsState: EnumMap<PolarBleApi.PolarDeviceDataType, Boolean> = EnumMap(PolarBleApi.PolarDeviceDataType.values().associateWith { false }),
 )
 
@@ -72,7 +75,7 @@ class OfflineRecordingViewModel @Inject constructor(
         private const val TAG = "OfflineRecordingViewModel"
     }
 
-    private val deviceId = state.get<String>(ONLINE_OFFLINE_KEY_DEVICE_ID) ?: throw Exception("Offline recording viewModel must know the deviceId")
+    private val identifier = state.get<String>(ONLINE_OFFLINE_KEY_DEVICE_ID) ?: throw Exception("Offline recording viewModel must know the identifier")
 
     private var settingsCache: EnumMap<PolarBleApi.PolarDeviceDataType, OfflineStreamSettings> =
         EnumMap(PolarBleApi.PolarDeviceDataType.values().associateWith { OfflineStreamSettings(null, null, null) })
@@ -85,11 +88,11 @@ class OfflineRecordingViewModel @Inject constructor(
     private val _uiOfflineRecordingState = MutableStateFlow<OfflineRecordingUiState>(OfflineRecordingUiState.FetchingStatus)
     val uiOfflineRecordingState: StateFlow<OfflineRecordingUiState> = _uiOfflineRecordingState.asStateFlow()
 
-    private val _uiShowError: MutableStateFlow<MessageUiState> = MutableStateFlow(MessageUiState(""))
-    val uiShowError: StateFlow<MessageUiState> = _uiShowError.asStateFlow()
+    private val _uiShowError = MutableSharedFlow<MessageUiState>(extraBufferCapacity = 1)
+    val uiShowError: SharedFlow<MessageUiState> = _uiShowError.asSharedFlow()
 
-    private val _uiShowInfo: MutableStateFlow<MessageUiState> = MutableStateFlow(MessageUiState("", ""))
-    val uiShowInfo: StateFlow<MessageUiState> = _uiShowInfo.asStateFlow()
+    private val _uiShowInfo = MutableSharedFlow<MessageUiState>(extraBufferCapacity = 1)
+    val uiShowInfo: SharedFlow<MessageUiState> = _uiShowInfo.asSharedFlow()
 
     private val _uiOfflineRequestedSettingsState: MutableStateFlow<OfflineAvailableStreamSettingsUiState?> = MutableStateFlow(null)
     val uiOfflineRequestedSettingsState: StateFlow<OfflineAvailableStreamSettingsUiState?> = _uiOfflineRequestedSettingsState.asStateFlow()
@@ -109,22 +112,18 @@ class OfflineRecordingViewModel @Inject constructor(
         viewModelScope.launch {
             polarDeviceStreamingRepository.availableFeatures
                 .collect { deviceStreamsAvailable ->
-                    updateOfflineRecordingsAvailableUiState(deviceStreamsAvailable.deviceId, featuresAvailable = deviceStreamsAvailable.availableOfflineFeatures)
+                    updateOfflineRecordingsAvailableUiState(deviceStreamsAvailable.identifier, featuresAvailable = deviceStreamsAvailable.availableOfflineFeatures)
                 }
         }
     }
 
     private fun showError(errorDescription: String, errorThrowable: Throwable? = null) {
         Log.e(TAG, "Show error: $errorDescription. Error reason $errorThrowable")
-        _uiShowError.update {
-            MessageUiState(header = errorDescription, description = errorThrowable?.message)
-        }
+        _uiShowError.tryEmit(MessageUiState(header = errorDescription, description = errorThrowable?.message))
     }
 
-    private fun showInfo(header: String, description: String = "") {
-        _uiShowInfo.update {
-            MessageUiState(header, description)
-        }
+    private fun showInfo(header: String, description: String = "", timeout: Long? = null) {
+        _uiShowInfo.tryEmit(MessageUiState(header, description, timeout))
     }
 
 
@@ -157,12 +156,12 @@ class OfflineRecordingViewModel @Inject constructor(
         Log.d(TAG, "ViewModel onCleared()")
     }
 
-    fun requestOfflineRecSettings(deviceId: String, feature: PolarBleApi.PolarDeviceDataType) {
+    fun requestOfflineRecSettings(identifier: String, feature: PolarBleApi.PolarDeviceDataType) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val available = polarDeviceStreamingRepository.getOfflineRecSettings(deviceId, feature)
+                val available = polarDeviceStreamingRepository.getOfflineRecSettings(identifier, feature)
                 val all = try {
-                    polarDeviceStreamingRepository.getFullOfflineRecSettings(deviceId, feature)
+                    polarDeviceStreamingRepository.getFullOfflineRecSettings(identifier, feature)
                 } catch (e: Exception) {
                     PolarSensorSetting(emptyMap())
                 }
@@ -176,13 +175,13 @@ class OfflineRecordingViewModel @Inject constructor(
                 Log.d(TAG, "Feature $feature all settings ${all.settings}")
 
                 val derivedGroup: PolarDerivedMeasurementSettingsGroup? = try {
-                    val idsResult = polarDeviceStreamingRepository.requestDerivedMeasurementGroupIds(deviceId, feature)
+                    val idsResult = polarDeviceStreamingRepository.requestDerivedMeasurementGroupIds(identifier, feature)
                     val groupIds = (idsResult as? ResultOfRequest.Success)?.value ?: emptySet()
                     if (groupIds.isEmpty()) {
                         null
                     } else {
                         val allGroups = groupIds.mapNotNull { gid ->
-                            val r = polarDeviceStreamingRepository.requestDerivedMeasurementSettingsGroup(deviceId, gid)
+                            val r = polarDeviceStreamingRepository.requestDerivedMeasurementSettingsGroup(identifier, gid)
                             val g = (r as? ResultOfRequest.Success)?.value
                             if (g == null) {
                                 Log.w(TAG, "Derived group 0x${gid.toString(16).uppercase()}: failed to fetch settings – ${(r as? ResultOfRequest.Failure)?.message}")
@@ -221,11 +220,11 @@ class OfflineRecordingViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getOfflineRecSettingsToStartRec(deviceId: String, feature: PolarBleApi.PolarDeviceDataType): PolarSensorSetting {
+    private suspend fun getOfflineRecSettingsToStartRec(identifier: String, feature: PolarBleApi.PolarDeviceDataType): PolarSensorSetting {
         return settingsCache[feature]?.selectedSettings?.let {
             PolarSensorSetting(it)
         } ?: run {
-            val sensorSetting = polarDeviceStreamingRepository.getOfflineRecSettings(deviceId, feature)
+            val sensorSetting = polarDeviceStreamingRepository.getOfflineRecSettings(identifier, feature)
             val selectedSettings = maxSettingsFromStreamSettings(sensorSetting)
             updateSelectedStreamSettings(feature, selectedSettings)
             PolarSensorSetting(selectedSettings)
@@ -287,8 +286,8 @@ class OfflineRecordingViewModel @Inject constructor(
                 val derivedSettings = settingsCache[feature]?.selectedDerivedSettings
 
                 if (feature == PolarBleApi.PolarDeviceDataType.ACC && derivedSettings != null) {
-                    polarDeviceStreamingRepository.stopDerivedOfflineRecording(deviceId)
-                    when (val dr = polarDeviceStreamingRepository.startDerivedOfflineRecording(deviceId, derivedSettings)) {
+                    polarDeviceStreamingRepository.stopDerivedOfflineRecording(identifier)
+                    when (val dr = polarDeviceStreamingRepository.startDerivedOfflineRecording(identifier, derivedSettings)) {
                         is ResultOfRequest.Success -> Unit
                         is ResultOfRequest.Failure -> {
                             offlineRecDisabledUpdateUiState(disabledFeature = feature)
@@ -302,16 +301,16 @@ class OfflineRecordingViewModel @Inject constructor(
                     null
                 } else {
                     try {
-                        getOfflineRecSettingsToStartRec(deviceId, feature)
+                        getOfflineRecSettingsToStartRec(identifier, feature)
                     } catch (settingsException: Exception) {
                         showError("Couldn't get settings for $feature", settingsException)
                         return@launch
                     }
                 }
-                when (val result = polarDeviceStreamingRepository.startOfflineRecording(deviceId, feature, settings)) {
+                when (val result = polarDeviceStreamingRepository.startOfflineRecording(identifier, feature, settings)) {
                     is ResultOfRequest.Success -> { /* nothing extra for non-derived */ }
                     is ResultOfRequest.Failure -> {
-                        when (val stop = polarDeviceStreamingRepository.stopOfflineRecording(deviceId, feature)) {
+                        when (val stop = polarDeviceStreamingRepository.stopOfflineRecording(identifier, feature)) {
                             is ResultOfRequest.Success -> offlineRecDisabledUpdateUiState(disabledFeature = feature)
                             is ResultOfRequest.Failure -> showError(stop.message, stop.throwable)
                         }
@@ -325,7 +324,7 @@ class OfflineRecordingViewModel @Inject constructor(
     fun stopOfflineRecording(features: List<PolarBleApi.PolarDeviceDataType>) {
         viewModelScope.launch(Dispatchers.IO) {
             for (feature in features) {
-                polarDeviceStreamingRepository.stopDerivedOfflineRecording(deviceId)
+                polarDeviceStreamingRepository.stopDerivedOfflineRecording(identifier)
 
                 val isDerivedOnly = feature == PolarBleApi.PolarDeviceDataType.ACC &&
                         settingsCache[feature]?.selectedDerivedSettings != null
@@ -334,7 +333,7 @@ class OfflineRecordingViewModel @Inject constructor(
                     continue
                 }
 
-                when (val result = polarDeviceStreamingRepository.stopOfflineRecording(deviceId, feature)) {
+                when (val result = polarDeviceStreamingRepository.stopOfflineRecording(identifier, feature)) {
                     is ResultOfRequest.Success -> {
                         offlineRecDisabledUpdateUiState(disabledFeature = feature)
                     }
@@ -353,7 +352,7 @@ class OfflineRecordingViewModel @Inject constructor(
             _uiOfflineRecordingState.update {
                 OfflineRecordingUiState.FetchingStatus
             }
-            when (val result = polarDeviceStreamingRepository.requestOfflineRecordingStatus(deviceId)) {
+            when (val result = polarDeviceStreamingRepository.requestOfflineRecordingStatus(identifier)) {
                 is ResultOfRequest.Success -> {
                     _uiOfflineRecordingState.update {
                         OfflineRecordingUiState.Enabled(recordingFeatures = result.value ?: emptyList())
@@ -366,16 +365,16 @@ class OfflineRecordingViewModel @Inject constructor(
         }
     }
 
-    private fun updateOfflineRecordingsAvailableUiState(deviceId: String, featuresAvailable: EnumMap<PolarBleApi.PolarDeviceDataType, Boolean>) {
+    private fun updateOfflineRecordingsAvailableUiState(identifier: String, featuresAvailable: EnumMap<PolarBleApi.PolarDeviceDataType, Boolean>) {
         _uiAvailableOfflineRecTypesState.update {
-            it.copy(deviceId = deviceId, offlineRecordingsAvailableOfflineRecordingsState = featuresAvailable)
+            it.copy(identifier = identifier, offlineRecordingsAvailableOfflineRecordingsState = featuresAvailable)
         }
     }
 
-    fun requestDerivedMeasurementSettings(deviceId: String) {
+    fun requestDerivedMeasurementSettings(identifier: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val groupIds = when (val idsResult = polarDeviceStreamingRepository.requestDerivedMeasurementGroupIds(
-                deviceId,
+                identifier,
                 PolarBleApi.PolarDeviceDataType.ACC
             )) {
                 is ResultOfRequest.Success -> idsResult.value ?: emptySet()
@@ -392,7 +391,7 @@ class OfflineRecordingViewModel @Inject constructor(
             }
 
             val allGroups = groupIds.mapNotNull { gid ->
-                when (val r = polarDeviceStreamingRepository.requestDerivedMeasurementSettingsGroup(deviceId, gid)) {
+                when (val r = polarDeviceStreamingRepository.requestDerivedMeasurementSettingsGroup(identifier, gid)) {
                     is ResultOfRequest.Success -> r.value
                     is ResultOfRequest.Failure -> {
                         Log.w(TAG, "requestDerivedMeasurementSettings: group 0x${gid.toString(16).uppercase()} fetch failed – ${r.message}")
@@ -508,7 +507,7 @@ class OfflineRecordingViewModel @Inject constructor(
 
             Log.d(TAG, "Starting derived offline recording with settings: $settings")
             _uiDerivedRecordingState.update { DerivedRecordingUiState.Recording }
-            when (val result = polarDeviceStreamingRepository.startDerivedOfflineRecording(deviceId, settings)) {
+            when (val result = polarDeviceStreamingRepository.startDerivedOfflineRecording(identifier, settings)) {
                 is ResultOfRequest.Success -> {
                     showInfo(context.getString(R.string.derived_info_recording_started))
                 }
@@ -522,7 +521,7 @@ class OfflineRecordingViewModel @Inject constructor(
 
     fun stopDerivedOfflineRecording() {
         viewModelScope.launch(Dispatchers.IO) {
-            when (val result = polarDeviceStreamingRepository.stopDerivedOfflineRecording(deviceId)) {
+            when (val result = polarDeviceStreamingRepository.stopDerivedOfflineRecording(identifier)) {
                 is ResultOfRequest.Success -> {
                     _uiDerivedRecordingState.update { DerivedRecordingUiState.NotRecording }
                     showInfo(context.getString(R.string.derived_info_recording_stopped))

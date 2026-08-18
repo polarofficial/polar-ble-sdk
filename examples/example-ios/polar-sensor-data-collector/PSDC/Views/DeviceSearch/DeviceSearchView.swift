@@ -74,10 +74,12 @@ struct DeviceSearchView: View {
                             }
                         }
                     }
-                    .task {
-                        bleDeviceManager.startDevicesSearch()
-                    }
+                    
                 }
+                
+            }
+            .task {
+                bleDeviceManager.startDevicesSearch()
             }
             .navigationBarTitle("")
             .navigationBarHidden(true)

@@ -27,6 +27,9 @@ private var deviceOfflineDataTypes: [DatatypeSelection] = []
 private var currentlySelectedDataType: PolarDeviceDataType?
 private var triggerMode: String = "DISABLED"
 private var enabledTriggers: [String: Bool] = [:]
+private var fetchedTriggerMode: String = "DISABLED"
+private var fetchedEnabledDataTypes: Set<PolarDeviceDataType> = []
+private var fetchedSettingsByDataType: [PolarDeviceDataType: SelectedSettingsForType] = [:]
 
 struct DatatypeSelection : Identifiable{
     let id = UUID()
@@ -83,11 +86,14 @@ struct OfflineRecordingStartView: View {
 
 struct TriggerSettingsView: View {
     @State private var selectedTab = 0
-    @State private var triggerMode: String = "DISABLED"
+    @State private var showDiscardEditsConfirmation = false
 
     var body: some View {
         NavigationView {
-            TabView(selection: $selectedTab) {
+            TabView(selection: Binding(
+                get: { selectedTab },
+                set: { handleTabSelectionChange($0) }
+            )) {
                 TriggerStatusView()
                     .tabItem { Label("Status", systemImage: "info.circle") }
                     .tag(0)
@@ -97,7 +103,97 @@ struct TriggerSettingsView: View {
                     .tag(1)
             }
             .navigationTitle("Offline Trigger")
+            .confirmationDialog("Discard unsaved trigger edits?", isPresented: $showDiscardEditsConfirmation, titleVisibility: .visible) {
+                Button("Discard Edits", role: .destructive) {
+                    resetSetupToFetchedState()
+                    selectedTab = 0
+                }
+                Button("Keep Editing", role: .cancel) {
+                    // stay on Setup tab
+                }
+            } message: {
+                Text("You have unsaved trigger setup changes.")
+            }
         }
+    }
+
+    private func handleTabSelectionChange(_ newValue: Int) {
+        if selectedTab == 1 && newValue == 0 && hasUnsavedSetupChanges() {
+            showDiscardEditsConfirmation = true
+            return
+        }
+        selectedTab = newValue
+    }
+
+    private func hasUnsavedSetupChanges() -> Bool {
+        if triggerMode != fetchedTriggerMode {
+            return true
+        }
+
+        let currentEnabled = Set(deviceOfflineDataTypes.filter { $0.isSelected }.map { $0.datatype })
+        if currentEnabled != fetchedEnabledDataTypes {
+            return true
+        }
+
+        let currentSettingsByType: [PolarDeviceDataType: SelectedSettingsForType] =
+            Dictionary(uniqueKeysWithValues: (selectedSettings ?? []).compactMap { item in
+                guard let dataType = item.selectedDataType else { return nil }
+                return (dataType, item)
+            })
+
+        for dataType in currentEnabled {
+            let current = currentSettingsByType[dataType]
+            let fetched = fetchedSettingsByDataType[dataType]
+            if !isSameSettingSelection(current, fetched) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    private func isSameSettingSelection(_ lhs: SelectedSettingsForType?, _ rhs: SelectedSettingsForType?) -> Bool {
+        guard let lhs = lhs, let rhs = rhs else {
+            return lhs == nil && rhs == nil
+        }
+        return lhs.selectedSampleRate == rhs.selectedSampleRate
+            && lhs.selectedResolution == rhs.selectedResolution
+            && lhs.selectedRange == rhs.selectedRange
+            && lhs.selectedChannels == rhs.selectedChannels
+    }
+
+    private func resetSetupToFetchedState() {
+        triggerMode = fetchedTriggerMode
+
+        var updatedTypes: [DatatypeSelection] = []
+        for item in deviceOfflineDataTypes {
+            updatedTypes.append(.init(datatype: item.datatype, isSelected: fetchedEnabledDataTypes.contains(item.datatype)))
+        }
+        deviceOfflineDataTypes = updatedTypes
+
+        enabledTriggers.removeAll()
+        for item in deviceOfflineDataTypes {
+            enabledTriggers[getShortNameForDataType(item.datatype)] = item.isSelected
+        }
+
+        var updatedSettings: [SelectedSettingsForType] = []
+        for item in deviceOfflineDataTypes {
+            if let fetched = fetchedSettingsByDataType[item.datatype] {
+                updatedSettings.append(fetched)
+            } else {
+                let existing = (selectedSettings ?? []).first { $0.selectedDataType == item.datatype }
+                updatedSettings.append(
+                    existing ?? SelectedSettingsForType(
+                        selectedSampleRate: nil,
+                        selectedResolution: nil,
+                        selectedRange: nil,
+                        selectedChannels: nil,
+                        selectedDataType: item.datatype
+                    )
+                )
+            }
+        }
+        selectedSettings = updatedSettings
     }
 }
 
@@ -106,6 +202,9 @@ struct TriggerStatusView: View {
 
     @State private var isLoading = true
     @State private var errorMessage: String?
+    @State private var statusTriggerMode: String = "DISABLED"
+    @State private var statusDeviceOfflineDataTypes: [DatatypeSelection] = []
+    @State private var statusTriggerSettings: [PolarDeviceDataType: PolarSensorSetting] = [:]
     @State private var sampleRateOptions: [UInt32] = []
     @State private var resolutionOptions: [UInt32] = []
     @State private var rangeOptions: [UInt32] = []
@@ -121,15 +220,16 @@ struct TriggerStatusView: View {
             } else {
                 Text("Currently set triggers").font(.headline)
                 Text("Trigger mode").font(.subheadline)
-                Text(triggerMode).foregroundColor(.gray)
+                Text(statusTriggerMode).foregroundColor(.gray)
 
                 Text("Enabled triggers and settings").font(.headline)
-                ForEach(deviceOfflineDataTypes.indices) { index in
-                    if deviceOfflineDataTypes[index].isSelected == true {
+                let currentSelections = Array(statusDeviceOfflineDataTypes)
+                ForEach(currentSelections) { selection in
+                    if selection.isSelected == true {
                         VStack(alignment: .leading) {
-                            Text("\(deviceOfflineDataTypes[index].datatype)").font(.body)
+                            Text("\(selection.datatype)").font(.body)
                             
-                            if let settings = triggerSettings[deviceOfflineDataTypes[index].datatype] {
+                            if let settings = statusTriggerSettings[selection.datatype] {
                                 if let sampleRate = settings.settings[.sampleRate]?.first {
                                     Text("Sample Rate: \(sampleRate) Hz")
                                 }
@@ -159,22 +259,15 @@ struct TriggerStatusView: View {
     private func fetchTriggerSetup() async {
         isLoading = true
         errorMessage = nil
-        settingsOptions = []
         
         isLoading = true
         do {
             let triggerSetup = try await bleSdkManager.getOfflineRecordingTriggerSetup()
             
             DispatchQueue.main.async {
-                triggerMode = mapTriggerMode(triggerSetup.triggerMode)
-                enabledTriggers.removeAll()
-                enabledTriggers = mapTriggerFeatures(triggerSetup.triggerFeatures)
+                statusTriggerMode = mapTriggerMode(triggerSetup.triggerMode)
                 
                 fetchTriggerSettings(from: triggerSetup.triggerFeatures)
-                
-                if (triggerSetup.triggerFeatures.isEmpty) {
-                    selectedSettings = []
-                }
                 self.isLoading = false
             }
         } catch {
@@ -187,22 +280,22 @@ struct TriggerStatusView: View {
 
     private func fetchTriggerSettings(from triggerFeatures: [PolarDeviceDataType: PolarSensorSetting?]) {
 
-        triggerSettings.removeAll()
+        statusTriggerSettings.removeAll()
         for (dataType, sensorSetting) in triggerFeatures {
             guard let setting = sensorSetting else { continue }
-            triggerSettings[dataType] = setting
+            statusTriggerSettings[dataType] = setting
         }
-        deviceOfflineDataTypes = []
+        statusDeviceOfflineDataTypes = []
         for item in bleSdkManager.offlineRecordingFeature.isRecording {
             var isSelected: Bool = false
-                if ( triggerSettings.contains(where: { $0.key == item.key }) ) {
+                if ( statusTriggerSettings.contains(where: { $0.key == item.key }) ) {
                     isSelected = true
                 } else if ( triggerFeatures.contains(where: { $0.key == item.key }) ) {
                     isSelected = true
                 }
             let selection: DatatypeSelection = .init(datatype: item.key, isSelected: isSelected)
-            deviceOfflineDataTypes.append(selection)
-            deviceOfflineDataTypes.sort { $0.datatype.displayName < $1.datatype.displayName }
+            statusDeviceOfflineDataTypes.append(selection)
+            statusDeviceOfflineDataTypes.sort { $0.datatype.displayName < $1.datatype.displayName }
         }
     }
 
@@ -214,29 +307,6 @@ struct TriggerStatusView: View {
         }
     }
 
-    private func mapTriggerFeatures(_ features: [PolarDeviceDataType : PolarSensorSetting?]) -> [String: Bool] {
-        let mapping: [PolarDeviceDataType: String] = [
-            .acc: "ACC",
-            .ecg: "ECG",
-            .gyro: "GYR",
-            .hr: "HR",
-            .magnetometer: "MAG",
-            .ppg: "PPG",
-            .ppi: "PPI",
-            .pressure: "PRESSURE",
-            .skinTemperature: "SKINTEMP",
-            .temperature: "TEMPERATURE"
-        ]
-
-        var mappedFeatures = Dictionary(uniqueKeysWithValues: mapping.values.map { ($0, false) })
-
-        for (dataType, _) in features {
-            if let key = mapping[dataType] {
-                mappedFeatures[key] = true
-            }
-        }
-        return mappedFeatures
-    }
 }
 
 extension PolarDeviceDataType {
@@ -260,6 +330,8 @@ extension PolarDeviceDataType {
 
 struct TriggerSetupView: View {
     @State private var isLoading = true
+    @State private var isApplyingTriggerSetup = false
+    @State private var refreshGeneration = 0
     @State private var errorMessage: String?
     @EnvironmentObject var bleSdkManager: PolarBleSdkManager
     @State var allowedTriggers: [String] = []
@@ -292,12 +364,13 @@ struct TriggerSetupView: View {
                 .background(Color.red.opacity(0.2))
                 .cornerRadius(8)
                 
-                ForEach(deviceOfflineDataTypes.indices) { index in
+                let currentDataTypes = Array(deviceOfflineDataTypes)
+                ForEach(currentDataTypes) { selection in
                     HStack {
-                        Text(deviceOfflineDataTypes[index].datatype.displayName)
-                        if ( settingsOptions!.contains(where: { $0.selectedDataType == deviceOfflineDataTypes[index].datatype })) {
+                        Text(selection.datatype.displayName)
+                        if ( settingsOptions!.contains(where: { $0.selectedDataType == selection.datatype })) {
                             Button(action: {
-                                currentlySelectedDataType = mapStringToDeviceDataType(deviceOfflineDataTypes[index].datatype.displayName)
+                                currentlySelectedDataType = mapStringToDeviceDataType(selection.datatype.displayName)
                                 showSettingsDialog.toggle()
                             }) {
                                 Text("Settings").foregroundColor(.red).font(.footnote)
@@ -307,14 +380,16 @@ struct TriggerSetupView: View {
                         Spacer()
                         Toggle("", isOn: Binding(
                             get: {
-                                deviceOfflineDataTypes[index].isSelected
+                                deviceOfflineDataTypes.first(where: { $0.id == selection.id })?.isSelected ?? false
                             },
                             set: {
-                                deviceOfflineDataTypes[index].isSelected = $0
-                                enabledTriggers[getShortNameForDataType(deviceOfflineDataTypes[index].datatype)] = $0
+                                if let currentIndex = deviceOfflineDataTypes.firstIndex(where: { $0.id == selection.id }) {
+                                    deviceOfflineDataTypes[currentIndex].isSelected = $0
+                                }
+                                enabledTriggers[getShortNameForDataType(selection.datatype)] = $0
 
-                                if ($0 && settingsOptions!.contains(where: { $0.selectedDataType == deviceOfflineDataTypes[index].datatype }) ) {
-                                    if let dataType = mapStringToDeviceDataType(deviceOfflineDataTypes[index].datatype.displayName) {
+                                if ($0 && settingsOptions!.contains(where: { $0.selectedDataType == selection.datatype }) ) {
+                                    if let dataType = mapStringToDeviceDataType(selection.datatype.displayName) {
                                         currentlySelectedDataType = dataType
                                         showSettingsDialog.toggle()
                                     }
@@ -337,11 +412,7 @@ struct TriggerSetupView: View {
                     .foregroundColor(.white)
                     .cornerRadius(8)
             }
-            .alert(item: $appState.bleSdkManager.generalMessage) { message in
-                Alert(
-                    title: Text(message.text)
-                )
-            }
+            .disabled(isApplyingTriggerSetup || isLoading)
             .padding()
         }
         .padding()
@@ -361,14 +432,48 @@ struct TriggerSetupView: View {
                     selectedChannels: channels ?? 0 > 0 ? channels : nil
                 )
             }
-        }.task {
-            await fetchSettings()
+        }
+        .onAppear {
+            refreshGeneration += 1
+            let generation = refreshGeneration
+            Task {
+                await fetchSettings(generation: generation)
+            }
         }
     }
 
-    private func fetchSettings() async {
+    private func fetchSettings(generation: Int) async {
 
         self.isLoading = true
+        var nextSelectedSettings: [SelectedSettingsForType] = []
+        var nextSettingsOptions: [SettingsOptions] = []
+        var nextEnabledTriggers: [String: Bool] = [:]
+        var nextDeviceOfflineDataTypes: [DatatypeSelection] = []
+
+        var triggerSetupFeatures: [PolarDeviceDataType: PolarSensorSetting?] = [:]
+        var currentTriggerMode: PolarOfflineRecordingTriggerMode?
+        var triggerSetupFetchSucceeded = false
+        do {
+            let setup = try await bleSdkManager.getOfflineRecordingTriggerSetup()
+            triggerSetupFeatures = setup.triggerFeatures
+            currentTriggerMode = setup.triggerMode
+            triggerSetupFetchSucceeded = true
+        } catch {
+            BleLogger.error("Failed to retrieve current trigger setup: \(error.localizedDescription)")
+        }
+
+        guard generation == refreshGeneration else {
+            return
+        }
+
+        if let mode = currentTriggerMode {
+            await MainActor.run {
+                let modeText = mapTriggerMode(mode)
+                triggerMode = modeText
+                selectedTriggerMode = modeText
+            }
+        }
+
         for dataType in bleSdkManager.offlineRecordingFeature.isRecording {
             do {
                 try await bleSdkManager.getOfflineRecordingTriggerSettings(feature: dataType.key)
@@ -376,71 +481,96 @@ struct TriggerSetupView: View {
                 BleLogger.error("Failed to retrieve settings for \(dataType), error: \(error.localizedDescription)")
             }
 
-            DispatchQueue.main.async() {
-                var range: UInt32 = 0
-                var resolution: UInt32 = 0
-                var sampleRate: UInt32 = 0
-                var channels: UInt32 = 0
-                var resolutionOptions: [UInt32] = []
-                var sampleRateOptions: [UInt32] = []
-                var channelOptions: [UInt32] = []
-                var rangeOptions: [UInt32] = []
-                guard let settings = self.bleSdkManager.offlineRecordingSettings(for: dataType.key) else {
-                    BleLogger.error("Failed to retrieve settings for \(dataType)")
-                    return
-                }
+            var range: UInt32 = 0
+            var resolution: UInt32 = 0
+            var sampleRate: UInt32 = 0
+            var channels: UInt32 = 0
+            var resolutionOptions: [UInt32] = []
+            var sampleRateOptions: [UInt32] = []
+            var channelOptions: [UInt32] = []
+            var rangeOptions: [UInt32] = []
+            guard let settings = bleSdkManager.offlineRecordingSettings(for: dataType.key) else {
+                BleLogger.error("Failed to retrieve settings for \(dataType)")
+                continue
+            }
 
-                if let sampleRateSetting = settings.settings.first(where: { $0.type == .sampleRate }) {
-                    sampleRateOptions = sampleRateSetting.sortedValues.compactMap { UInt32($0) }
-                    if let firstSampleRate = sampleRateOptions.first {
-                        sampleRate = firstSampleRate
-                    } else {
-                        BleLogger.trace("No valid sample rate values found")
-                    }
-                } else {
-                    BleLogger.trace("No sample rate settings found")
+            if let sampleRateSetting = settings.settings.first(where: { $0.type == .sampleRate }) {
+                sampleRateOptions = sampleRateSetting.sortedValues.compactMap { UInt32($0) }
+                if let firstSampleRate = sampleRateOptions.first {
+                    sampleRate = firstSampleRate
                 }
+            }
 
-                if let resolutionSetting = settings.settings.first(where: { $0.type == .resolution }) {
-                    resolutionOptions = resolutionSetting.sortedValues.compactMap { UInt32($0) }
-                    if let firstResolution = resolutionOptions.first {
-                        resolution = firstResolution
-                    } else {
-                        BleLogger.trace("No valid resolution values found")
-                    }
-                } else {
-                    BleLogger.trace("No resolution settings found")
+            if let resolutionSetting = settings.settings.first(where: { $0.type == .resolution }) {
+                resolutionOptions = resolutionSetting.sortedValues.compactMap { UInt32($0) }
+                if let firstResolution = resolutionOptions.first {
+                    resolution = firstResolution
                 }
+            }
 
-                if let rangeSetting = settings.settings.first(where: { $0.type == .range }) {
-                    rangeOptions = rangeSetting.sortedValues.compactMap { UInt32($0) }
-                    if let firstRange = rangeOptions.first {
-                        BleLogger.trace("Range option set to: \(firstRange)")
-                        range = firstRange
-                    } else {
-                        BleLogger.trace("No valid range values found")
-                    }
-                } else {
-                    BleLogger.trace("No range settings found")
+            if let rangeSetting = settings.settings.first(where: { $0.type == .range }) {
+                rangeOptions = rangeSetting.sortedValues.compactMap { UInt32($0) }
+                if let firstRange = rangeOptions.first {
+                    range = firstRange
                 }
+            }
 
-                if let channelSetting = settings.settings.first(where: { $0.type == .channels }) {
-                    channelOptions = channelSetting.sortedValues.compactMap { UInt32($0) }
-                    if let firstChannel = channelOptions.first {
-                        BleLogger.trace("Channel option set to: \(firstChannel)")
-                        channels = firstChannel
-                    } else {
-                        BleLogger.trace("No channel values found")
-                    }
-                } else {
-                    BleLogger.trace("No channel settings found")
+            if let channelSetting = settings.settings.first(where: { $0.type == .channels }) {
+                channelOptions = channelSetting.sortedValues.compactMap { UInt32($0) }
+                if let firstChannel = channelOptions.first {
+                    channels = firstChannel
                 }
-                selectedSettings?.append(SelectedSettingsForType.init(selectedSampleRate: sampleRate, selectedResolution: resolution, selectedRange: range > 0 ? range : nil, selectedChannels: channels, selectedDataType: dataType.key))
-                settingsOptions?.append(SettingsOptions(sampleRateOptions: sampleRateOptions,
-                                                        resolutionOptions: resolutionOptions,
-                                                        rangeOptions: rangeOptions,
-                                                        channelOptions: channelOptions,
-                                                        selectedDataType: dataType.key))
+            }
+
+            if let appliedSetting = triggerSetupFeatures[dataType.key] ?? nil {
+                if let v = appliedSetting.settings[.sampleRate]?.first { sampleRate = v }
+                if let v = appliedSetting.settings[.resolution]?.first { resolution = v }
+                if let v = appliedSetting.settings[.range]?.first { range = v }
+                if let v = appliedSetting.settings[.channels]?.first { channels = v }
+            }
+
+            let isEnabled = triggerSetupFetchSucceeded
+                ? triggerSetupFeatures.keys.contains(dataType.key)
+                : (deviceOfflineDataTypes.first(where: { $0.datatype == dataType.key })?.isSelected ?? false)
+            let selected = SelectedSettingsForType(
+                selectedSampleRate: sampleRate > 0 ? sampleRate : nil,
+                selectedResolution: resolution > 0 ? resolution : nil,
+                selectedRange: range > 0 ? range : nil,
+                selectedChannels: channels > 0 ? channels : nil,
+                selectedDataType: dataType.key
+            )
+            let options = SettingsOptions(
+                sampleRateOptions: sampleRateOptions,
+                resolutionOptions: resolutionOptions,
+                rangeOptions: rangeOptions,
+                channelOptions: channelOptions,
+                selectedDataType: dataType.key
+            )
+
+            nextSelectedSettings.append(selected)
+            nextSettingsOptions.append(options)
+            nextDeviceOfflineDataTypes.append(.init(datatype: dataType.key, isSelected: isEnabled))
+            nextEnabledTriggers[getShortNameForDataType(dataType.key)] = isEnabled
+        }
+
+        guard generation == refreshGeneration else {
+            return
+        }
+
+        await MainActor.run {
+            nextDeviceOfflineDataTypes.sort { $0.datatype.displayName < $1.datatype.displayName }
+            selectedSettings = nextSelectedSettings
+            settingsOptions = nextSettingsOptions
+            enabledTriggers = nextEnabledTriggers
+            deviceOfflineDataTypes = nextDeviceOfflineDataTypes
+
+            if triggerSetupFetchSucceeded {
+                fetchedTriggerMode = triggerMode
+                fetchedEnabledDataTypes = Set(nextDeviceOfflineDataTypes.filter { $0.isSelected }.map { $0.datatype })
+                fetchedSettingsByDataType = Dictionary(uniqueKeysWithValues: nextSelectedSettings.compactMap { item in
+                    guard let dataType = item.selectedDataType else { return nil }
+                    return (dataType, item)
+                })
             }
         }
         self.isLoading = false
@@ -462,28 +592,56 @@ struct TriggerSetupView: View {
             return
         }
 
-        for (key, isEnabled) in enabledTriggers {
-            guard isEnabled else { continue }
-                if let dataType = mapStringToDeviceDataType(key) {
-                    if ( enabledTriggers.contains(where: { $0.key == dataType.displayName }) ) {
-                        var settings: [PolarSensorSetting.SettingType: UInt32] = [:]
-                        if ( selectedSettings!.contains(where: { $0.selectedDataType == dataType }) ) {
-                            let currentSettings = selectedSettings![selectedSettings!.firstIndex { $0.selectedDataType == dataType }!]
-                            settings[.range] = currentSettings.selectedRange
-                            settings[.channels] = currentSettings.selectedChannels
-                            settings[.sampleRate] = currentSettings.selectedSampleRate
-                            settings[.resolution] = currentSettings.selectedResolution
-                        }
+        // Align with Android behavior: disabling triggers must send an empty
+        // triggerFeatures map to ensure all existing trigger settings are cleared.
+        if mode == .triggerDisabled {
+            enabledTriggers.removeAll()
+            triggerFeatures.removeAll()
+            let trigger = PolarOfflineRecordingTrigger(triggerMode: mode, triggerFeatures: triggerFeatures)
 
-                        do {
-                            triggerFeatures[dataType] = try PolarSensorSetting(settings)
-                        } catch let err {
-                            BleLogger.trace("Settings validation failed for datatype \(dataType), error: \(err)")
-                        }
-                    } else {
-                        NSLog("[TriggerSetupView] Unknown data type: \(key)")
+            NSLog("[TriggerSetupView] Applying trigger mode: \(triggerMode), Features: \(triggerFeatures)")
+
+            Task {
+                await MainActor.run { isApplyingTriggerSetup = true }
+                defer { Task { @MainActor in isApplyingTriggerSetup = false } }
+                do {
+                    try await bleSdkManager.setOfflineRecordingTrigger(trigger: trigger, secret: nil)
+                    await syncTriggerSetupFromDevice()
+                    refreshGeneration += 1
+                    let generation = refreshGeneration
+                    await fetchSettings(generation: generation)
+                    await MainActor.run {
+                        appState.bleSdkManager.generalMessage = Message(text: "Offline triggers disabled")
                     }
+                    NSLog("[TriggerSetupView] Successfully disabled offline recording triggers")
+                } catch {
+                    await MainActor.run {
+                        appState.bleSdkManager.generalMessage = Message(text: "Error: Failed to disable offline triggers: \(error.localizedDescription)")
+                    }
+                    NSLog("[TriggerSetupView] Error disabling offline recording triggers: \(error)")
                 }
+            }
+            return
+        }
+
+        let enabledDataTypes = deviceOfflineDataTypes
+            .filter { $0.isSelected }
+            .map { $0.datatype }
+
+        for dataType in enabledDataTypes {
+            var settings: [PolarSensorSetting.SettingType: UInt32] = [:]
+            if let currentSettings = selectedSettings?.first(where: { $0.selectedDataType == dataType }) {
+                settings[.range] = currentSettings.selectedRange
+                settings[.channels] = currentSettings.selectedChannels
+                settings[.sampleRate] = currentSettings.selectedSampleRate
+                settings[.resolution] = currentSettings.selectedResolution
+            }
+
+            do {
+                triggerFeatures[dataType] = try PolarSensorSetting(settings)
+            } catch let err {
+                BleLogger.trace("Settings validation failed for datatype \(dataType), error: \(err)")
+            }
         }
 
         let trigger = PolarOfflineRecordingTrigger(triggerMode: mode, triggerFeatures: triggerFeatures)
@@ -491,12 +649,64 @@ struct TriggerSetupView: View {
         NSLog("[TriggerSetupView] Applying trigger mode: \(triggerMode), Features: \(triggerFeatures)")
 
         Task {
+            await MainActor.run { isApplyingTriggerSetup = true }
+            defer { Task { @MainActor in isApplyingTriggerSetup = false } }
             do {
                 try await bleSdkManager.setOfflineRecordingTrigger(trigger: trigger, secret: nil)
-                NSLog("[TriggerSetupView] Successfully set offline recording trigger: Mode: \(triggerMode), Features: \(enabledTriggers)")
+                await syncTriggerSetupFromDevice()
+                refreshGeneration += 1
+                let generation = refreshGeneration
+                await fetchSettings(generation: generation)
+                await MainActor.run {
+                    appState.bleSdkManager.generalMessage = Message(text: "Offline trigger setup updated")
+                }
+                NSLog("[TriggerSetupView] Successfully set offline recording trigger: Mode: \(triggerMode), Features: \(triggerFeatures)")
             } catch {
+                await MainActor.run {
+                    appState.bleSdkManager.generalMessage = Message(text: "Error: Failed to set offline triggers: \(error.localizedDescription)")
+                }
                 NSLog("[TriggerSetupView] Error setting offline recording trigger: \(error)")
             }
+        }
+    }
+
+    private func syncTriggerSetupFromDevice() async {
+        do {
+            let triggerSetup = try await bleSdkManager.getOfflineRecordingTriggerSetup()
+            await MainActor.run {
+                let modeText = mapTriggerMode(triggerSetup.triggerMode)
+                triggerMode = modeText
+                selectedTriggerMode = modeText
+
+                let enabledTypes = Set(triggerSetup.triggerFeatures.keys)
+                for index in deviceOfflineDataTypes.indices {
+                    deviceOfflineDataTypes[index].isSelected = enabledTypes.contains(deviceOfflineDataTypes[index].datatype)
+                }
+
+                enabledTriggers.removeAll()
+                for item in deviceOfflineDataTypes {
+                    enabledTriggers[getShortNameForDataType(item.datatype)] = item.isSelected
+                }
+
+                if selectedSettings == nil { selectedSettings = [] }
+                for (dataType, maybeSetting) in triggerSetup.triggerFeatures {
+                    guard let setting = maybeSetting else { continue }
+                    let updated = SelectedSettingsForType(
+                        selectedSampleRate: setting.settings[.sampleRate]?.first,
+                        selectedResolution: setting.settings[.resolution]?.first,
+                        selectedRange: setting.settings[.range]?.first,
+                        selectedChannels: setting.settings[.channels]?.first,
+                        selectedDataType: dataType
+                    )
+                    if let idx = selectedSettings?.firstIndex(where: { $0.selectedDataType == dataType }) {
+                        selectedSettings?[idx] = updated
+                    } else {
+                        selectedSettings?.append(updated)
+                    }
+                }
+            }
+        } catch {
+            BleLogger.error("Failed to sync trigger setup from device: \(error.localizedDescription)")
         }
     }
 

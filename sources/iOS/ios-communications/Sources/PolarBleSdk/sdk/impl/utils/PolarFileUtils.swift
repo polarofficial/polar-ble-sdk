@@ -202,36 +202,4 @@ class PolarFileUtils {
         return calendar.date(from: dc)!
     }
 
-    // MARK: - BLE Low Level APIs
-
-    func writeFile(identifier: String, filePath: String, fileData: Data) async throws {
-        let session = try serviceClientUtils?.sessionFtpClientReady(identifier)
-        guard let client = session?.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-            throw PolarErrors.serviceNotFound
-        }
-        var builder = Protocol_PbPFtpOperation()
-        builder.command = .put
-        builder.path = filePath
-        let proto = try builder.serializedData()
-        let inputStream = InputStream(data: fileData)
-        for try await _ in client.write(proto as NSData, data: inputStream) {}
-    }
-
-    func readFile(identifier: String, filePath: String) async throws -> Data {
-        let data = try await getFile(identifier: identifier, filePath: filePath)
-        return data as Data
-    }
-
-    func listFiles(identifier: String, directoryPath: String, recurseDeep: Bool = false) async throws -> [String] {
-        let condition = { (entry: String) -> Bool in entry.contains(".") || entry == "" }
-        var fileList = [String]()
-        for try await file in listFiles(identifier: identifier, folderPath: directoryPath, condition: condition, recurseDeep: recurseDeep) {
-            fileList.append(file)
-        }
-        return fileList
-    }
-
-    func deleteFile(identifier: String, filePath: String) async throws {
-        _ = try await removeSingleFile(identifier: identifier, filePath: filePath)
-    }
 }

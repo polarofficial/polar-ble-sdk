@@ -23,6 +23,9 @@ import io.mockk.confirmVerified
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import protocol.PftpRequest
 import java.io.ByteArrayOutputStream
@@ -116,6 +119,61 @@ class PolarSleepUtilsTest {
             )
         }
         confirmVerified(mockClient)
+    }
+
+    @Test
+    fun `readSleepFromDayDirectory() should throw when sleep protobuf parsing fails`() = runTest {
+        val mockClient = mockk<BlePsFtpClient>()
+        val date = LocalDate.now()
+        val invalidOutputStream = ByteArrayOutputStream()
+        // Write garbage bytes that are not valid protobuf
+        invalidOutputStream.write(byteArrayOf(0xFF.toByte(), 0xFE.toByte(), 0xAA.toByte()))
+
+        coEvery { mockClient.request(any()) } returns invalidOutputStream
+
+        var exceptionThrown = false
+        try {
+            PolarSleepUtils.readSleepDataFromDayDirectory(mockClient, date)
+        } catch (e: Throwable) {
+            exceptionThrown = true
+        }
+        assertTrue("Expected an exception to be thrown when protobuf parsing fails", exceptionThrown)
+    }
+
+    @Test
+    fun `readSleepFromDayDirectory() should return sleep data without skin temp when skin temp reading fails`() = runTest {
+        val mockClient = mockk<BlePsFtpClient>()
+        val date = LocalDate.now()
+        val sleepOutputStream = ByteArrayOutputStream()
+
+        createValidSleepProto().writeTo(sleepOutputStream)
+
+        // First request (sleep data) succeeds, second (skin temp) throws
+        coEvery { mockClient.request(any()) } returns sleepOutputStream andThenThrows RuntimeException("Skin temp file not found")
+
+        val result = PolarSleepUtils.readSleepDataFromDayDirectory(mockClient, date)
+
+        assertNotNull(result.sleepStartTime)
+        assertNull(result.sleepSkinTemperatureResult)
+    }
+
+    private fun createValidSleepProto(): SleepanalysisResult.PbSleepAnalysisResult {
+        return SleepanalysisResult.PbSleepAnalysisResult.newBuilder()
+            .addSleepwakePhases(createPbSleepWakePhasesMock())
+            .addSleepCycles(createPbSleepCycleMock())
+            .addSnoozeTime(createPbLocalDateTime(23, 59, 59, 59, 1, 2, 2525, 60))
+            .setSleepStartTime(createPbLocalDateTime(23, 45, 45, 1, 1, 2, 2525, 60))
+            .setSleepEndTime(createPbLocalDateTime(7, 5, 7, 6, 2, 2, 2525, 60))
+            .setLastModified(
+                Types.PbSystemDateTime.newBuilder()
+                    .setTime(createPbTime(4, 3, 2, 1))
+                    .setDate(createPbDate(4, 3, 2525))
+                    .setTrusted(true)
+                    .build()
+            )
+            .setSleepGoalMinutes(420)
+            .setSleepResultDate(Types.PbDate.newBuilder().setDay(1).setMonth(2).setYear(2525).build())
+            .build()
     }
 
     private fun createPbSleepCycleMock(): SleepanalysisResult.PbSleepCycle {

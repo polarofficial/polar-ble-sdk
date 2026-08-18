@@ -45,7 +45,7 @@ internal class PolarLoggingApiImpl(
             return try {
                 val data = PolarFileUtils.getFile(identifier, path, listener, TAG)
                 results.add(PolarDeviceLog(path = path, data = data))
-                BleLogger.d(TAG, "exportDeviceLogs: fetched $path")
+                BleLogger.d(TAG, "exportDeviceLogs: fetched $path from $identifier")
                 true
             } catch (throwable: Throwable) {
                 if (isFileNotFound(throwable)) {
@@ -88,6 +88,7 @@ internal class PolarLoggingApiImpl(
         val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
             ?: throw PolarServiceNotAvailable()
+        BleLogger.d(TAG, "setLogConfig: writing config to device $identifier path=${LogConfig.LOG_CONFIG_FILENAME}")
         val builder = PftpRequest.PbPFtpOperation.newBuilder()
         builder.command = PftpRequest.PbPFtpOperation.Command.PUT
         builder.path = LogConfig.LOG_CONFIG_FILENAME

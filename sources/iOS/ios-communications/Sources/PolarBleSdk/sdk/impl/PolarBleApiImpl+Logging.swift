@@ -9,6 +9,7 @@ import Foundation
 extension PolarBleApiImpl: PolarLoggingApi {
 
     func exportDeviceLogs(_ identifier: String) async throws -> [PolarDeviceLog] {
+        logApiCall("exportDeviceLogs", ("identifier", identifier))
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
             throw PolarErrors.serviceNotFound
@@ -24,6 +25,7 @@ extension PolarBleApiImpl: PolarLoggingApi {
         /// so sequential-index loops (TRC, DBGTRC) can stop at the first gap.
         func tryFetch(_ path: String) async -> Bool {
             guard let data = await fileUtils.tryFetchFile(client: client, path: path) else {
+                BleLogger.trace("exportDeviceLogs: \(path) not found on device, skipping")
                 return false
             }
             results.append(PolarDeviceLog(path: path, data: data))
@@ -49,6 +51,7 @@ extension PolarBleApiImpl: PolarLoggingApi {
     }
 
     func getLogConfig(_ identifier: String) async throws -> LogConfig {
+        logApiCall("getLogConfig", ("identifier", identifier))
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
             throw PolarErrors.serviceNotFound
@@ -63,13 +66,21 @@ extension PolarBleApiImpl: PolarLoggingApi {
         BleLogger.trace("getLogConfig: device=\(identifier) path=\(operation.path)")
         try await client.sendNotification(Protocol_PbPFtpHostToDevNotification.initializeSession.rawValue, parameters: nil)
         let data = try await client.request(request)
-        let sensorDataLog = try Data_PbSensorDataLog(serializedBytes: data as Data)
-        let logConfig = LogConfig.fromProto(proto: sensorDataLog)
+        let sensorDataLog: Data_PbSensorDataLog
+        let logConfig: LogConfig
+        do {
+            sensorDataLog = try Data_PbSensorDataLog(serializedBytes: data as Data)
+            logConfig = LogConfig.fromProto(proto: sensorDataLog)
+        } catch {
+            BleLogger.error("getLogConfig: Failed to get LogConfig: \(error)")
+            throw error
+        }
         try await client.sendNotification(Protocol_PbPFtpHostToDevNotification.terminateSession.rawValue, parameters: nil)
         return logConfig
     }
 
     func setLogConfig(_ identifier: String, logConfig: LogConfig) async throws {
+        logApiCall("setLogConfig", ("identifier", identifier), ("logConfig", logConfig))
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
             throw PolarErrors.serviceNotFound

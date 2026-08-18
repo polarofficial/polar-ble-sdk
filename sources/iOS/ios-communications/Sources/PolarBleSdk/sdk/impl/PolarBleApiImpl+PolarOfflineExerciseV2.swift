@@ -5,14 +5,6 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
 
     private static let samplesFile = "SAMPLES.BPB"
 
-    private func handleError(_ error: Error) -> Error {
-        let nsError = error as NSError
-        if let mapped = Protocol_PbPFtpError(rawValue: nsError.code) {
-            return NSError(domain: nsError.domain, code: nsError.code,
-                userInfo: [NSLocalizedDescriptionKey: "\(mapped) (\(nsError.localizedDescription))"])
-        }
-        return error
-    }
 
     // MARK: - PolarOfflineExerciseV2Api
 
@@ -20,6 +12,7 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
         identifier: String,
         sportProfile: PolarExerciseSession.SportProfile
     ) async throws -> OfflineExerciseStartResult {
+        logApiCall("startOfflineExerciseV2", ("identifier", identifier))
         do {
             let session = try serviceClientUtils.sessionFtpClientReady(identifier)
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -47,6 +40,7 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
     }
 
     func stopOfflineExerciseV2(identifier: String) async throws {
+        logApiCall("stopOfflineExerciseV2", ("identifier", identifier))
         do {
             let session = try serviceClientUtils.sessionFtpClientReady(identifier)
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -61,6 +55,7 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
     }
 
     func getOfflineExerciseStatusV2(identifier: String) async throws -> Bool {
+        logApiCall("getOfflineExerciseStatusV2", ("identifier", identifier))
         do {
             let session = try serviceClientUtils.sessionFtpClientReady(identifier)
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -75,6 +70,7 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
     }
 
     func listOfflineExercisesV2(identifier: String, directoryPath: String) -> AsyncThrowingStream<PolarExerciseEntry, Error> {
+        logApiCall("listOfflineExercisesV2", ("identifier", identifier))
         let fileUtilsLocal = PolarFileUtils(listener: listener, serviceClientUtils: serviceClientUtils)
         return AsyncThrowingStream { continuation in
             Task {
@@ -84,6 +80,9 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
                     }
                     continuation.finish()
                 } catch {
+                    if case let BlePsFtpException.responseError(code) = error, code == 202 {
+                        BleLogger.error("Device BUSY (202) - Stop exercise first")
+                    }
                     continuation.finish(throwing: error)
                 }
             }
@@ -91,6 +90,7 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
     }
 
     func fetchOfflineExerciseV2(identifier: String, entry: PolarExerciseEntry) async throws -> PolarExerciseData {
+        logApiCall("fetchOfflineExerciseV2", ("identifier", identifier))
         do {
             let session = try serviceClientUtils.sessionFtpClientReady(identifier)
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -107,11 +107,15 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
                 return PolarExerciseData(interval: samples.recordingInterval.seconds, samples: samples.heartRateSamples)
             }
         } catch {
+            if case let BlePsFtpException.responseError(code) = error, code == 202 {
+                BleLogger.error("Device BUSY (202) - Stop exercise first")
+            }
             throw handleError(error)
         }
     }
 
     func removeOfflineExerciseV2(identifier: String, entry: PolarExerciseEntry) async throws {
+        logApiCall("removeOfflineExerciseV2", ("identifier", identifier))
         do {
             let session = try serviceClientUtils.sessionFtpClientReady(identifier)
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -127,6 +131,7 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
     }
 
     func isOfflineExerciseV2Supported(identifier: String) async throws -> Bool {
+        logApiCall("isOfflineExerciseV2Supported", ("identifier", identifier))
         // Wait for PFTP session to be ready (up to 10 seconds, polling every 5s)
         let timeoutAt = Date().addingTimeInterval(10)
         while Date() < timeoutAt {

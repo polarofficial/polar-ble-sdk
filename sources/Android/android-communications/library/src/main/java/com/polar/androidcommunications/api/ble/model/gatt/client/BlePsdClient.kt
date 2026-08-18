@@ -1,11 +1,8 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client
 
-import android.util.Pair
 import com.polar.androidcommunications.api.ble.BleLogger.Companion.w
 import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError
 import com.polar.androidcommunications.api.ble.exceptions.BleCharacteristicNotificationNotEnabled
-import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected
-import com.polar.androidcommunications.api.ble.exceptions.BleNotSupported
 import com.polar.androidcommunications.api.ble.exceptions.BleTimeout
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
@@ -14,19 +11,22 @@ import com.polar.androidcommunications.common.ble.ChannelUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import java.util.Arrays
 import java.util.UUID
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 class BlePsdClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, PSD_SERVICE) {
-    private val psdMutex = Any()
+    private val psdMutex = Mutex()
     private val psdCpEnabled: AtomicInteger?
-    private var psdFeature: PsdFeature? = null
-    private val mutexFeature = Any()
-    private val psdCpInputQueue = LinkedBlockingQueue<Pair<ByteArray, Int>>()
+    private val psdFeatureFlow: MutableStateFlow<PsdFeature?> = MutableStateFlow(null)
+    private val psdCpResponseChannel = Channel<Pair<ByteArray, Int>>(Channel.UNLIMITED)
 
     private val ppObservers = AtomicSet<Channel<PPData>>()
 
@@ -119,13 +119,8 @@ class BlePsdClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
 
     override fun reset() {
         super.reset()
-        psdCpInputQueue.clear()
-
-        synchronized(mutexFeature) {
-            psdFeature = null
-            (mutexFeature as Object).notifyAll()
-        }
-
+        while (psdCpResponseChannel.tryReceive().isSuccess) { /* drain stale responses */ }
+        psdFeatureFlow.value = null
         ChannelUtils.postDisconnectedAndClearList(ppObservers)
     }
 
@@ -137,18 +132,15 @@ class BlePsdClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
     ) {
         if (data.isNotEmpty()) {
             if (characteristic == PSD_CP) {
-                psdCpInputQueue.add(Pair(data, status))
+                psdCpResponseChannel.trySend(Pair(data, status))
             } else if (characteristic == PSD_FEATURE) {
-                synchronized(mutexFeature) {
-                    if (status == ATT_SUCCESS) {
-                        psdFeature = PsdFeature(data)
-                    } else {
-                        w(
-                            TAG,
-                            "Process service data for feature characteristics with status $status, skipped"
-                        )
-                    }
-                    (mutexFeature as Object).notifyAll()
+                if (status == ATT_SUCCESS) {
+                    psdFeatureFlow.value = PsdFeature(data)
+                } else {
+                    w(
+                        TAG,
+                        "Process service data for feature characteristics with status $status, skipped"
+                    )
                 }
             } else if (status == ATT_SUCCESS) {
                 if (characteristic == PSD_PP) {
@@ -185,9 +177,9 @@ class BlePsdClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
     }
 
     @Throws(Exception::class)
-    private fun sendPsdCommandAndProcessResponse(packet: ByteArray): PsdResponse {
+    private suspend fun sendPsdCommandAndProcessResponse(packet: ByteArray): PsdResponse {
         txInterface.transmitMessages(PSD_SERVICE, PSD_CP, listOf(packet), true)
-        val pair = psdCpInputQueue.poll(30, TimeUnit.SECONDS)
+        val pair = withTimeoutOrNull(30_000L) { psdCpResponseChannel.receive() }
         if (pair != null) {
             if (pair.second == 0) {
                 return PsdResponse(pair.first)
@@ -212,9 +204,9 @@ class BlePsdClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
      * @throws Throwable on any error
      */
     suspend fun sendControlPointCommand(command: PsdMessage, params: ByteArray? = null): PsdResponse = withContext(Dispatchers.IO) {
-        synchronized(psdMutex) {
+        psdMutex.withLock {
             if (psdCpEnabled?.get() == ATT_SUCCESS) {
-                psdCpInputQueue.clear()
+                while (psdCpResponseChannel.tryReceive().isSuccess) { /* drain stale responses */ }
                 val packet = byteArrayOf(command.numVal.toByte())
                 sendPsdCommandAndProcessResponse(packet)
             } else {
@@ -229,19 +221,7 @@ class BlePsdClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
      * @return [PsdFeature] on success
      * @throws Throwable on any error
      */
-    suspend fun readFeature(): PsdFeature = withContext(Dispatchers.IO) {
-        synchronized(mutexFeature) {
-            if (psdFeature == null) {
-                (mutexFeature as Object).wait()
-            }
-            psdFeature?.let { return@withContext it }
-            if (!txInterface.isConnected()) {
-                throw BleDisconnected()
-            } else {
-                throw BleNotSupported("PSD feature characteristic read failed")
-            }
-        }
-    }
+    suspend fun readFeature(): PsdFeature = psdFeatureFlow.filterNotNull().first()
 
     /**
      * start raw pp monitoring

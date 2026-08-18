@@ -46,7 +46,7 @@ class TrainingSessionDataViewModel @Inject constructor(
     private val _devConnectionState = MutableStateFlow(TrainingSessionDataDevConnectionState(true))
     internal var devConnectionState: StateFlow<TrainingSessionDataDevConnectionState> = _devConnectionState.asStateFlow()
 
-    private val deviceId = state.get<String>("deviceIdFragmentArgument") ?: throw Exception("TrainingSessionDataView model requires deviceId")
+    private val identifier = state.get<String>("deviceIdFragmentArgument") ?: throw Exception("TrainingSessionDataView model requires device identifier")
     private val path = state.get<String>("trainingSessionPathFragmentArgument") ?: throw Exception("TrainingSessionDataView model requires path")
 
     var trainingSessionDataUiState: TrainingSessionDataUiState by mutableStateOf(TrainingSessionDataUiState.IsFetching)
@@ -73,13 +73,13 @@ class TrainingSessionDataViewModel @Inject constructor(
                 }
         }
 
-        fetchTrainingSessionWithProgress(deviceId, path)
+        fetchTrainingSessionWithProgress(identifier, path)
     }
 
-    private fun fetchTrainingSessionWithProgress(deviceId: String, path: String) {
-        Log.d(TAG, "fetchTrainingSessionWithProgress path: $path, deviceId: $deviceId")
+    private fun fetchTrainingSessionWithProgress(identifier: String, path: String) {
+        Log.d(TAG, "fetchTrainingSessionWithProgress path: $path, identifier: $identifier")
         viewModelScope.launch {
-            polarDeviceStreamingRepository.getTrainingSessionWithProgress(deviceId, path)
+            polarDeviceStreamingRepository.getTrainingSessionWithProgress(identifier, path)
                 .collect { resultOfRequest ->
                     trainingSessionDataUiState = when (resultOfRequest) {
                         is ResultOfRequest.Success -> {

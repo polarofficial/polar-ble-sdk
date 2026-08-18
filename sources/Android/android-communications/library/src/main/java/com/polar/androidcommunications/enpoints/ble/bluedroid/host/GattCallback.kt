@@ -36,7 +36,12 @@ internal class GattCallback(
     @SuppressLint("MissingPermission")
     override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
         val deviceSession = sessions.getSession(gatt)
-        BleLogger.d(TAG, "GATT state changed device newState: $newState status: $status")
+        val stateStr = when (newState) {
+            BluetoothGatt.STATE_CONNECTED -> "CONNECTED"
+            BluetoothGatt.STATE_DISCONNECTED -> "DISCONNECTED"
+            else -> newState.toString()
+        }
+        BleLogger.d(TAG, "GATT state changed addr=${gatt.device?.address} newState=$stateStr($newState) status=$status sessionFound=${deviceSession != null}")
         if (deviceSession != null) {
             indicatesPairingProblem = Pair(false, -1)
             if (newState == BluetoothGatt.STATE_CONNECTED) {
@@ -57,7 +62,7 @@ internal class GattCallback(
                 }
             }
         } else {
-            BleLogger.e(TAG, "Dead gatt object received")
+            BleLogger.e(TAG, "Dead gatt object received addr=${gatt.device?.address}")
             gatt.close()
         }
     }

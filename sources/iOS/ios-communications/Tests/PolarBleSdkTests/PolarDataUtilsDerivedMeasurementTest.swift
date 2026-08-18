@@ -3,7 +3,7 @@
 import XCTest
 @testable import PolarBleSdk
 
-final class PolarDataUtilsDerivedMeasurementTest: XCTestCase {
+final class PolarDataUtilsDerivedMeasurementTests: XCTestCase {
 
     func testGroupId_takenFromResponsePayload_whenPresent() throws {
         // Arrange

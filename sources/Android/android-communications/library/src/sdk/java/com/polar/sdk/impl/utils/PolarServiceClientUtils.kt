@@ -7,6 +7,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Companion.HR_MEASUREMENT
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleHrClient.Companion.HR_SERVICE
+import com.polar.androidcommunications.api.ble.model.gatt.client.BleMdsClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BlePfcClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.BlePfcClient.Companion.PFC_SERVICE
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
@@ -59,6 +60,16 @@ internal object PolarServiceClientUtils {
     internal fun sessionPsPfcClientReady(identifier: String, listener: BleDeviceListener?): BleDeviceSession {
         val session = sessionServiceReady(identifier, PFC_SERVICE, listener)
         val client = session.fetchClient(PFC_SERVICE) as BlePfcClient? ?: throw PolarServiceNotAvailable()
+        if (client.isServiceDiscovered) {
+            return session
+        }
+        throw PolarNotificationNotEnabled()
+    }
+
+    @Throws(Throwable::class)
+    internal fun sessionMdsClientReady(identifier: String, listener: BleDeviceListener?): BleDeviceSession {
+        val session =  sessionServiceReady(identifier, BleMdsClient.MDS_SERVICE, listener)
+        val client = session.fetchClient(BleMdsClient.MDS_SERVICE) as BleMdsClient? ?: throw PolarServiceNotAvailable()
         if (client.isServiceDiscovered) {
             return session
         }

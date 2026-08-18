@@ -64,7 +64,9 @@ class BDDeviceListenerImpl(
     private lateinit var bondingManager: BDBondingListener
     private val observers = AtomicSet<Channel<BleDeviceSession>>()
     private lateinit var connectionHandler: ConnectionHandler
-    private val _deviceSessionStateFlow = MutableSharedFlow<Pair<BleDeviceSession, DeviceSessionState>>(extraBufferCapacity = 64)
+    // Replay latest state so late subscribers (e.g. monitor started right before/after openSessionDirect)
+    // still receive the current session status.
+    private val _deviceSessionStateFlow = MutableSharedFlow<Pair<BleDeviceSession, DeviceSessionState>>(replay = 1, extraBufferCapacity = 64)
     private var changedCallback: BleDeviceSessionStateChangedCallback? = null
     private var powerStateChangedCallback: BlePowerStateChangedCallback? = null
     private var preferredMTU = ConnectionHandler.POLAR_PREFERRED_MTU
@@ -413,6 +415,7 @@ class BDDeviceListenerImpl(
                 }
             } else {
                 deviceSession.advertisementContent.processAdvertisementData(advData, type, rssi)
+                d(TAG, "adv update addr=${device.address} type=$type sessionState=${deviceSession.sessionState} connectable=${deviceSession.isConnectableAdvertisement}")
             }
 
             connectionHandler.advertisementHeadReceived(deviceSession)
@@ -440,20 +443,18 @@ class BDDeviceListenerImpl(
             } else {
                 scanCallback.clientRemoved()
             }
-            if (_deviceSessionStateFlow.subscriptionCount.value > 0) {
-                if (session.sessionState == DeviceSessionState.SESSION_OPEN_PARK &&
-                    session.previousState == DeviceSessionState.SESSION_OPEN
-                ) {
-                    changedCallback?.stateChanged(session, DeviceSessionState.SESSION_CLOSED)
-                    scope.launch { _deviceSessionStateFlow.emit(Pair(session, DeviceSessionState.SESSION_CLOSED)) }
-                    if (session.sessionState == DeviceSessionState.SESSION_OPEN_PARK) {
-                        changedCallback?.stateChanged(session, DeviceSessionState.SESSION_OPEN_PARK)
-                        scope.launch { _deviceSessionStateFlow.emit(Pair(session, DeviceSessionState.SESSION_OPEN_PARK)) }
-                    }
-                } else {
-                    changedCallback?.stateChanged(session, session.sessionState)
-                    scope.launch { _deviceSessionStateFlow.emit(Pair(session, session.sessionState)) }
+            if (session.sessionState == DeviceSessionState.SESSION_OPEN_PARK &&
+                session.previousState == DeviceSessionState.SESSION_OPEN
+            ) {
+                changedCallback?.stateChanged(session, DeviceSessionState.SESSION_CLOSED)
+                _deviceSessionStateFlow.tryEmit(Pair(session, DeviceSessionState.SESSION_CLOSED))
+                if (session.sessionState == DeviceSessionState.SESSION_OPEN_PARK) {
+                    changedCallback?.stateChanged(session, DeviceSessionState.SESSION_OPEN_PARK)
+                    _deviceSessionStateFlow.tryEmit(Pair(session, DeviceSessionState.SESSION_OPEN_PARK))
                 }
+            } else {
+                changedCallback?.stateChanged(session, session.sessionState)
+                _deviceSessionStateFlow.tryEmit(Pair(session, session.sessionState))
             }
         }
 
@@ -542,5 +543,6 @@ class BDDeviceListenerImpl(
 
     companion object {
         private val TAG: String = BDDeviceListenerImpl::class.java.simpleName
+
     }
 }

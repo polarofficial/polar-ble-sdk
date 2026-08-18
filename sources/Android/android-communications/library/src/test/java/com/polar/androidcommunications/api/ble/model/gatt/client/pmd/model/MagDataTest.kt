@@ -222,4 +222,37 @@ class MagDataTest {
 
         Assert.assertEquals(timeStamp, magData.magSamples[1].timeStamp)
     }
+
+    // ── Bounds-checking / invalid-data tests ────────────────────────────────
+
+    private fun magHeader(frameTypeByte: Byte) = byteArrayOf(
+        0x06.toByte(),
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+        frameTypeByte
+    )
+
+    @Test
+    fun `Magnetometer compressed type 0 throws PmdDataParseException when dataContent is empty`() {
+        val frame = PmdDataFrame(magHeader(0x80.toByte()), { _, _ -> 100uL }, { 1.0f }) { 0 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            MagData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `Magnetometer compressed type 1 throws PmdDataParseException when dataContent is empty`() {
+        val frame = PmdDataFrame(magHeader(0x81.toByte()), { _, _ -> 100uL }, { 1.0f }) { 0 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            MagData.parseDataFromDataFrame(frame)
+        }
+    }
+
+    @Test
+    fun `Magnetometer raw type throws PmdDataParseException`() {
+        // Magnetometer has no supported raw types
+        val frame = PmdDataFrame(magHeader(0x00), { _, _ -> 100uL }, { 1.0f }) { 0 }
+        org.junit.Assert.assertThrows(com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException::class.java) {
+            MagData.parseDataFromDataFrame(frame)
+        }
+    }
 }

@@ -1,5 +1,7 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
+import com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException
+import com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException.Companion.toHex
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame.PmdDataFrameType
@@ -41,19 +43,30 @@ internal class EcgData {
 
         fun parseDataFromDataFrame(frame: PmdDataFrame): EcgData {
             return if (frame.isCompressedFrame) {
-                throw java.lang.Exception("Compressed FrameType: ${frame.frameType} is not supported by EcgData data parser")
+                throw PmdDataParseException(
+                    "ECG compressed frame type ${frame.frameType} is not supported"
+                )
             } else {
                 when (frame.frameType) {
                     PmdDataFrameType.TYPE_0 -> dataFromRawType0(frame)
                     PmdDataFrameType.TYPE_1 -> dataFromRawType1(frame)
                     PmdDataFrameType.TYPE_2 -> dataFromRawType2(frame)
                     PmdDataFrameType.TYPE_3 -> dataFromRawType3(frame)
-                    else -> throw java.lang.Exception("Raw FrameType: ${frame.frameType} is not supported by EcgData data parser")
+                    else -> throw PmdDataParseException(
+                        "ECG raw frame type ${frame.frameType} is not supported"
+                    )
                 }
             }
         }
 
         private fun dataFromRawType0(frame: PmdDataFrame): EcgData {
+            if (frame.dataContent.isEmpty() || frame.dataContent.size % TYPE_0_SAMPLE_SIZE_IN_BYTES != 0) {
+                throw PmdDataParseException(
+                    "ECG raw TYPE_0 dataContent size ${frame.dataContent.size} is not a " +
+                    "non-zero multiple of expected sample size $TYPE_0_SAMPLE_SIZE_IN_BYTES. " +
+                    "Data: ${frame.dataContent.toHex()}"
+                )
+            }
             val ecgData = EcgData()
             var offset = 0
             val step = TYPE_0_SAMPLE_SIZE_IN_BYTES
@@ -70,6 +83,13 @@ internal class EcgData {
         }
 
         private fun dataFromRawType1(frame: PmdDataFrame): EcgData {
+            if (frame.dataContent.isEmpty() || frame.dataContent.size % TYPE_1_SAMPLE_SIZE_IN_BYTES != 0) {
+                throw PmdDataParseException(
+                    "ECG raw TYPE_1 dataContent size ${frame.dataContent.size} is not a " +
+                    "non-zero multiple of expected sample size $TYPE_1_SAMPLE_SIZE_IN_BYTES. " +
+                    "Data: ${frame.dataContent.toHex()}"
+                )
+            }
             val ecgData = EcgData()
             var offset = 0
             val step = TYPE_1_SAMPLE_SIZE_IN_BYTES
@@ -98,6 +118,13 @@ internal class EcgData {
         }
 
         private fun dataFromRawType2(frame: PmdDataFrame): EcgData {
+            if (frame.dataContent.isEmpty() || frame.dataContent.size % TYPE_2_SAMPLE_SIZE_IN_BYTES != 0) {
+                throw PmdDataParseException(
+                    "ECG raw TYPE_2 dataContent size ${frame.dataContent.size} is not a " +
+                    "non-zero multiple of expected sample size $TYPE_2_SAMPLE_SIZE_IN_BYTES. " +
+                    "Data: ${frame.dataContent.toHex()}"
+                )
+            }
             val ecgData = EcgData()
             var offset = 0
             val step = TYPE_2_SAMPLE_SIZE_IN_BYTES
@@ -124,6 +151,13 @@ internal class EcgData {
         }
 
         private fun dataFromRawType3(frame: PmdDataFrame): EcgData {
+            if (frame.dataContent.isEmpty() || frame.dataContent.size % TYPE_3_SAMPLE_SIZE_IN_BYTES != 0) {
+                throw PmdDataParseException(
+                    "ECG raw TYPE_3 dataContent size ${frame.dataContent.size} is not a " +
+                    "non-zero multiple of expected sample size $TYPE_3_SAMPLE_SIZE_IN_BYTES. " +
+                    "Data: ${frame.dataContent.toHex()}"
+                )
+            }
             val ecgData = EcgData()
             var offset = 0
 

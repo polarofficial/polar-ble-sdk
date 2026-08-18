@@ -68,6 +68,8 @@ struct ContentView: View {
                         if bleDeviceManager.connectedDevices().count > 1 {
                             Button("Disconnect all", action: {
                                 bleDeviceManager.disconnectAll()
+                                // Reset AppState to a fresh manager after disconnecting all devices
+                                appState.switchTo(bleDeviceManager.makeSdkManager())
                             }).buttonStyle(PrimaryButtonStyle(buttonState: getConnectButtonState()))
                         }
                     }
@@ -200,9 +202,9 @@ struct ContentView: View {
             
             appHeader = NSLocalizedString("APP_NAME", comment: "") + "\n" + getBuildInfo()
             
-            let appLocalModifications = 
+            let appLocalModifications =
                 Bundle.main.object(forInfoDictionaryKey: "GIT_APP_LOCALLY_MODIFIED") as? String ?? ""
-            let sdkLocalModifications = 
+            let sdkLocalModifications =
                 Bundle.main.object(forInfoDictionaryKey: "GIT_SDK_LOCALLY_MODIFIED") as? String ?? ""
             localModifications = ""
             

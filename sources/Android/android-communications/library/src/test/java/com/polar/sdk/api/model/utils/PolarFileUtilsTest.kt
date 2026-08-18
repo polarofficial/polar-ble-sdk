@@ -22,9 +22,11 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import io.mockk.verify
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert
 import org.junit.Test
 import protocol.PftpRequest
@@ -34,6 +36,11 @@ import java.io.ByteArrayOutputStream
 import java.util.concurrent.atomic.AtomicInteger
 
 class PolarFileUtilsTest {
+
+    @After
+    fun tearDown() {
+        unmockkObject(BlePolarDeviceCapabilitiesUtility)
+    }
 
     @Test
     fun testListFilesRecurseShallowSuccess() = runTest {
@@ -531,6 +538,160 @@ class PolarFileUtilsTest {
         }
         verify(exactly = 1) { client.isServiceDiscovered }
         coVerify(exactly = 1) { client.request(any()) }
+    }
+
+    // -------------------------------------------------------------------------
+    // createFolder tests
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun testCreateFolder_Success() = runTest {
+        // Arrange
+        val deviceId = "E123456F"
+        val folderPath = "/U/0/20240622/ACT/"
+        val (client, listener) = mockBleConnection(deviceId)
+
+        every { client.write(any(), any()) } returns flowOf(0L)
+
+        // Act – must not throw
+        PolarFileUtils.createFolder(deviceId, folderPath, listener, "TestTag")
+
+        // Assert
+        verify(exactly = 1) { client.isServiceDiscovered }
+        verify(exactly = 1) { client.write(any(), any()) }
+    }
+
+    @Test
+    fun testCreateFolder_NormalizesPath_WhenMissingTrailingSlash() = runTest {
+        // Arrange
+        val deviceId = "E123456F"
+        val folderPathWithoutSlash = "/U/0/20240622/ACT"
+        val (client, listener) = mockBleConnection(deviceId)
+
+        every { client.write(any(), any()) } returns flowOf(0L)
+
+        // Act
+        PolarFileUtils.createFolder(deviceId, folderPathWithoutSlash, listener, "TestTag")
+
+        // Assert – the PUT command path must end with '/'
+        val expectedRequest = PftpRequest.PbPFtpOperation.newBuilder()
+            .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
+            .setPath("$folderPathWithoutSlash/")
+            .build()
+            .toByteArray()
+
+        verify(exactly = 1) { client.write(match { it.contentEquals(expectedRequest) }, any()) }
+    }
+
+    @Test
+    fun testCreateFolder_SendsCorrectPutCommand() = runTest {
+        // Arrange
+        val deviceId = "E123456F"
+        val folderPath = "/U/0/20240622/SLP/"
+        val (client, listener) = mockBleConnection(deviceId)
+
+        every { client.write(any(), any()) } returns flowOf(0L)
+
+        // Act
+        PolarFileUtils.createFolder(deviceId, folderPath, listener, "TestTag")
+
+        // Assert – verify the exact PUT command with correct path
+        val expectedRequest = PftpRequest.PbPFtpOperation.newBuilder()
+            .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
+            .setPath(folderPath)
+            .build()
+            .toByteArray()
+
+        verify(exactly = 1) { client.write(match { it.contentEquals(expectedRequest) }, any()) }
+    }
+
+    @Test
+    fun testCreateFolder_Throws_When_NoSession() = runTest {
+        // Arrange
+        val deviceId = "E123456F"
+        val listener = mockk<BleDeviceListener>()
+        val sessions = mockk<Set<BleDeviceSession>>()
+
+        every { listener.deviceSessions() } returns sessions
+        every { sessions.iterator().hasNext() } returns false
+
+        // Act & Assert
+        try {
+            PolarFileUtils.createFolder(deviceId, "/U/0/20240622/ACT/", listener, "TestTag")
+            Assert.fail("Expected PolarDeviceNotFound")
+        } catch (e: PolarDeviceNotFound) {
+            // expected
+        }
+    }
+
+    @Test
+    fun testCreateFolder_Throws_When_NoFtpClient() = runTest {
+        // Arrange
+        val deviceId = "E123456F"
+        val listener = mockk<BleDeviceListener>()
+        val session = mockk<BleDeviceSession>()
+        val sessions = mockk<Set<BleDeviceSession>>()
+        val advContent = mockk<BleAdvertisementContent>()
+        val client = mockk<BlePsFtpClient>()
+
+        every { listener.deviceSessions() } returns sessions
+        every { sessions.iterator().hasNext() } returns true
+        every { sessions.iterator().next() } returns session
+        every { session.advertisementContent } returns advContent
+        every { session.advertisementContent.polarDeviceId } returns deviceId
+        every { session.polarDeviceType } returns "Polar360"
+        every { session.sessionState } returns BleDeviceSession.DeviceSessionState.SESSION_OPEN
+        every { session.fetchClient(any()) } returns client
+        every { client.isServiceDiscovered } returns false
+
+        // Act & Assert
+        try {
+            PolarFileUtils.createFolder(deviceId, "/U/0/20240622/ACT/", listener, "TestTag")
+            Assert.fail("Expected PolarServiceNotAvailable")
+        } catch (e: PolarServiceNotAvailable) {
+            // expected
+        }
+        verify(exactly = 0) { client.write(any(), any()) }
+    }
+
+    @Test
+    fun testCreateFolder_Throws_When_WriteFails() = runTest {
+        // Arrange
+        val deviceId = "E123456F"
+        val (client, listener) = mockBleConnection(deviceId)
+
+        every { client.write(any(), any()) } throws RuntimeException("BLE write failed")
+
+        // Act & Assert
+        try {
+            PolarFileUtils.createFolder(deviceId, "/U/0/20240622/ACT/", listener, "TestTag")
+            Assert.fail("Expected exception")
+        } catch (e: Exception) {
+            // handleError wraps unknown exceptions in a plain Exception
+            Assert.assertFalse(e is BlePsFtpUtils.PftpResponseError)
+        }
+        verify(exactly = 1) { client.isServiceDiscovered }
+        verify(exactly = 1) { client.write(any(), any()) }
+    }
+
+    @Test
+    fun testCreateFolder_Throws_When_PftpResponseError() = runTest {
+        // Arrange
+        val deviceId = "E123456F"
+        val (client, listener) = mockBleConnection(deviceId)
+
+        every { client.write(any(), any()) } throws BlePsFtpUtils.PftpResponseError("Device error", 201)
+
+        // Act & Assert
+        try {
+            PolarFileUtils.createFolder(deviceId, "/U/0/20240622/ACT/", listener, "TestTag")
+            Assert.fail("Expected exception")
+        } catch (e: Exception) {
+            // handleError maps PftpResponseError to a descriptive plain Exception
+            Assert.assertFalse(e is BlePsFtpUtils.PftpResponseError)
+        }
+        verify(exactly = 1) { client.isServiceDiscovered }
+        verify(exactly = 1) { client.write(any(), any()) }
     }
 
     @Test

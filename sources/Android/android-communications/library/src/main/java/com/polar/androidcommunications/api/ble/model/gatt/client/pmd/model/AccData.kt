@@ -1,5 +1,7 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
+import com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException
+import com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException.Companion.toHex
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient.Companion.parseDeltaFramesAll
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
@@ -34,19 +36,31 @@ internal class AccData {
                 when (frame.frameType) {
                     PmdDataFrame.PmdDataFrameType.TYPE_0 -> dataFromCompressedType0(frame)
                     PmdDataFrame.PmdDataFrameType.TYPE_1 -> dataFromCompressedType1(frame)
-                    else -> throw java.lang.Exception("Compressed FrameType: ${frame.frameType} is not supported by ACC data parser")
+                    else -> throw PmdDataParseException(
+                        "ACC compressed frame type ${frame.frameType} is not supported"
+                    )
                 }
             } else {
                 when (frame.frameType) {
                     PmdDataFrame.PmdDataFrameType.TYPE_0 -> dataFromRawType0(frame)
                     PmdDataFrame.PmdDataFrameType.TYPE_1 -> dataFromRawType1(frame)
                     PmdDataFrame.PmdDataFrameType.TYPE_2 -> dataFromRawType2(frame)
-                    else -> throw java.lang.Exception("Raw FrameType: ${frame.frameType} is not supported by ACC data parser")
+                    else -> throw PmdDataParseException(
+                        "ACC raw frame type ${frame.frameType} is not supported"
+                    )
                 }
             }
         }
 
         private fun dataFromRawType0(frame: PmdDataFrame): AccData {
+            val sampleByteSize = TYPE_0_SAMPLE_SIZE_IN_BYTES * TYPE_0_CHANNELS_IN_SAMPLE
+            if (frame.dataContent.isEmpty() || frame.dataContent.size % sampleByteSize != 0) {
+                throw PmdDataParseException(
+                    "ACC raw TYPE_0 dataContent size ${frame.dataContent.size} is not a " +
+                    "non-zero multiple of expected sample size $sampleByteSize. " +
+                    "Data: ${frame.dataContent.toHex()}"
+                )
+            }
             val accData = AccData()
             var offset = 0
             val step = TYPE_0_SAMPLE_SIZE_IN_BYTES
@@ -68,6 +82,14 @@ internal class AccData {
         }
 
         private fun dataFromRawType1(frame: PmdDataFrame): AccData {
+            val sampleByteSize = TYPE_1_SAMPLE_SIZE_IN_BYTES * TYPE_1_CHANNELS_IN_SAMPLE
+            if (frame.dataContent.isEmpty() || frame.dataContent.size % sampleByteSize != 0) {
+                throw PmdDataParseException(
+                    "ACC raw TYPE_1 dataContent size ${frame.dataContent.size} is not a " +
+                    "non-zero multiple of expected sample size $sampleByteSize. " +
+                    "Data: ${frame.dataContent.toHex()}"
+                )
+            }
             val accData = AccData()
             var offset = 0
             val step = TYPE_1_SAMPLE_SIZE_IN_BYTES
@@ -89,6 +111,14 @@ internal class AccData {
         }
 
         private fun dataFromRawType2(frame: PmdDataFrame): AccData {
+            val sampleByteSize = TYPE_2_SAMPLE_SIZE_IN_BYTES * TYPE_2_CHANNELS_IN_SAMPLE
+            if (frame.dataContent.isEmpty() || frame.dataContent.size % sampleByteSize != 0) {
+                throw PmdDataParseException(
+                    "ACC raw TYPE_2 dataContent size ${frame.dataContent.size} is not a " +
+                    "non-zero multiple of expected sample size $sampleByteSize. " +
+                    "Data: ${frame.dataContent.toHex()}"
+                )
+            }
             val accData = AccData()
             var offset = 0
 
@@ -113,6 +143,11 @@ internal class AccData {
 
         private fun dataFromCompressedType0(frame: PmdDataFrame): AccData {
             //Note, special Wolfi type. See SAGRFC85.3
+            if (frame.dataContent.isEmpty()) {
+                throw PmdDataParseException(
+                    "ACC compressed TYPE_0 dataContent is empty"
+                )
+            }
             val accData = AccData()
             val accFactor = frame.factor * 1000 // type 0 data arrives in G units, convert to milliG
             val samples = parseDeltaFramesAll(frame.dataContent, 3, 16, BlePMDClient.PmdDataFieldEncoding.SIGNED_INT)
@@ -127,6 +162,11 @@ internal class AccData {
         }
 
         private fun dataFromCompressedType1(frame: PmdDataFrame): AccData {
+            if (frame.dataContent.isEmpty()) {
+                throw PmdDataParseException(
+                    "ACC compressed TYPE_1 dataContent is empty"
+                )
+            }
             val accData = AccData()
             val samples = parseDeltaFramesAll(frame.dataContent, TYPE_1_CHANNELS_IN_SAMPLE, TYPE_1_SAMPLE_SIZE_IN_BITS, BlePMDClient.PmdDataFieldEncoding.SIGNED_INT)
             val timeStamps = PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp = frame.previousTimeStamp, frameTimeStamp = frame.timeStamp, samplesSize = samples.size, frame.sampleRate)

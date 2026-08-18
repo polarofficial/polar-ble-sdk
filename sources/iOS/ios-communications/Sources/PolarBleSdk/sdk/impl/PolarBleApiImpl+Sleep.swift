@@ -22,6 +22,7 @@ extension PolarBleApiImpl: PolarSleepApi {
     }
 
     func stopSleepRecording(identifier: String) async throws {
+        logApiCall("stopSleepRecording", ("identifier", identifier))
         do {
             _ = try await self.fileUtils.getFile(identifier: identifier, filePath: "/REST/SLEEP.API")
         } catch {
@@ -42,20 +43,33 @@ extension PolarBleApiImpl: PolarSleepApi {
         var sleepRecordingState: SleepRecordingState { return sleep_recording_state }
     }
 
-    func getSleepRecordingState(identifier: String) async throws -> Bool {
-        var firstResult: Bool? = nil
-        for try await items in observeSleepRecordingState(identifier: identifier) {
-            if !items.isEmpty {
-                firstResult = items.last!
-                break
+    func getSleepRecordingState(identifier: String, timeoutMs: UInt64 = 30_000) async throws -> Bool {
+        logApiCall("getSleepRecordingState", ("identifier", identifier), ("timeoutMs", timeoutMs))
+        return try await withThrowingTaskGroup(of: Bool.self) { group in
+            group.addTask {
+                for try await items in self.observeSleepRecordingState(identifier: identifier) {
+                    if let last = items.last {
+                        return last
+                    }
+                }
+                throw PolarErrors.timeout(description: "Timed out(after (\(timeoutMs) ms)) waiting for sleep recording state for device \(identifier).")
             }
+
+            group.addTask {
+                try await Task.sleep(nanoseconds: timeoutMs * 1_000_000)
+                throw PolarErrors.timeout(description: "Timed out waiting for sleep recording state for device \(identifier).")
+            }
+
+            let result = try await group.next()!
+            group.cancelAll()
+            return result
         }
-        return firstResult ?? false
     }
 
     func observeSleepRecordingState(identifier: String) -> AsyncThrowingStream<[Bool], Error> {
+        logApiCall("observeSleepRecordingState", ("identifier", identifier))
         return AsyncThrowingStream { continuation in
-            Task {
+            let task = Task {
                 do {
                     do {
                         _ = try await self.fileUtils.getFile(identifier: identifier, filePath: "/REST/SLEEP.API")
@@ -66,9 +80,11 @@ extension PolarBleApiImpl: PolarSleepApi {
                         }
                         throw error
                     }
+                    try Task.checkCancellation()
                     try await putNotification(identifier: identifier, notification: "{}",
                                               path: "/REST/SLEEP.API?cmd=subscribe&event=sleep_recording_state&details=[enabled]")
                     for try await items in self.receiveRestApiEvents(identifier: identifier) as AsyncThrowingStream<[SleepRecordingStateWrapper], Error> {
+                        try Task.checkCancellation()
                         let bools = items.map { $0.sleepRecordingState.isEnabled }
                         continuation.yield(bools)
                     }
@@ -77,10 +93,12 @@ extension PolarBleApiImpl: PolarSleepApi {
                     continuation.finish(throwing: error)
                 }
             }
+            continuation.onTermination = { _ in task.cancel() }
         }
     }
 
     func getSleep(identifier: String, fromDate: Date, toDate: Date) async throws -> [PolarSleepData.PolarSleepAnalysisResult] {
+        logApiCall("getSleep", ("identifier", identifier))
         if fromDate > toDate {
             throw PolarErrors.invalidArgument(description: "toDate cannot be smaller than fromDate.")
         }
@@ -102,8 +120,12 @@ extension PolarBleApiImpl: PolarSleepApi {
         }
         var sleepDataList: [PolarSleepData.PolarSleepAnalysisResult] = []
         for date in datesList {
-            let result = try await PolarSleepUtils.readSleepFromDayDirectory(client: client, date: date)
-            sleepDataList.append(result)
+            do {
+                let result = try await PolarSleepUtils.readSleepFromDayDirectory(client: client, date: date)
+                sleepDataList.append(result)
+            } catch {
+                BleLogger.error("getSleep: per-date error for \(date): \(error)")
+            }
         }
         // Filter out entries with nil sleepStartTime
         return sleepDataList.filter { $0.sleepStartTime != nil }
@@ -111,6 +133,7 @@ extension PolarBleApiImpl: PolarSleepApi {
 
     @available(*, deprecated, renamed: "getSleep(identifier:fromDate:toDate:)")
     func getSleepData(identifier: String, fromDate: Date, toDate: Date) async throws -> [PolarSleepData.PolarSleepAnalysisResult] {
+        logApiCall("getSleepData", ("identifier", identifier))
         return try await getSleep(identifier: identifier, fromDate: fromDate, toDate: toDate)
     }
 }

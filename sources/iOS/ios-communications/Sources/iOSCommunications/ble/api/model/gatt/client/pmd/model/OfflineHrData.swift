@@ -18,12 +18,12 @@ public class OfflineHrData {
     
     static func parseDataFromDataFrame(frame: PmdDataFrame) throws -> OfflineHrData {
         if (frame.isCompressedFrame) {
-            throw BleGattException.gattDataError(description: "Compressed FrameType: \(frame.frameType) is not supported by Offline HR data parser")
+            throw PmdDataParseError(message: "Compressed FrameType: \(frame.frameType) is not supported by Offline HR data parser")
         } else {
             switch (frame.frameType) {
             case PmdDataFrameType.type_0: return try dataFromRawType0(frame: frame)
             case PmdDataFrameType.type_1: return try dataFromRawType1(frame: frame)
-            default: throw BleGattException.gattDataError(description: "Raw FrameType: \(frame.frameType) is not supported by Offline HR data parser")
+            default: throw PmdDataParseError(message: "Raw FrameType: \(frame.frameType) is not supported by Offline HR data parser")
             }
         }
     }
@@ -39,6 +39,12 @@ public class OfflineHrData {
     }
 
     private static func dataFromRawType1(frame: PmdDataFrame) throws -> OfflineHrData {
+        let sampleByteSize = 3
+        guard !frame.dataContent.isEmpty && frame.dataContent.count % sampleByteSize == 0 else {
+            throw PmdDataParseError(
+                message: "OfflineHR raw TYPE_1 dataContent size \(frame.dataContent.count) is not a " +
+                "non-zero multiple of expected sample size \(sampleByteSize)")
+        }
         let offlineHrData = OfflineHrData()
         var offset = 0
         while (offset < frame.dataContent.count) {

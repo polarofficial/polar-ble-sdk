@@ -10,8 +10,11 @@ import com.polar.polarsensordatacollector.ui.utils.MessageUiState
 import com.polar.sdk.api.model.PolarOfflineRecordingTrigger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -32,23 +35,23 @@ class OfflineTriggerStatusViewModel @Inject constructor(
         private const val TAG = "OfflineTriggerStatusViewModel"
     }
 
-    private val deviceId = state.get<String>(OFFLINE_REC_TRIG_KEY_DEVICE_ID) ?: throw Exception("Offline recording viewModel must know the deviceId")
+    private val identifier = state.get<String>(OFFLINE_REC_TRIG_KEY_DEVICE_ID) ?: throw Exception("Offline recording viewModel must know the identifier")
 
     private val _uiOfflineRecTriggerStatus = MutableStateFlow<OfflineRecTriggerStatusUiState>(OfflineRecTriggerStatusUiState.FetchingStatus)
     internal val uiOfflineRecTriggerStatus: StateFlow<OfflineRecTriggerStatusUiState> = _uiOfflineRecTriggerStatus.asStateFlow()
 
-    private val _uiShowError: MutableStateFlow<MessageUiState> = MutableStateFlow(MessageUiState(""))
-    internal val uiShowError: StateFlow<MessageUiState> = _uiShowError.asStateFlow()
+    private val _uiShowError = MutableSharedFlow<MessageUiState>(extraBufferCapacity = 1)
+    internal val uiShowError: SharedFlow<MessageUiState> = _uiShowError.asSharedFlow()
 
-    private val _uiShowInfo: MutableStateFlow<MessageUiState> = MutableStateFlow(MessageUiState("", ""))
-    internal val uiShowInfo: StateFlow<MessageUiState> = _uiShowInfo.asStateFlow()
+    private val _uiShowInfo = MutableSharedFlow<MessageUiState>(extraBufferCapacity = 1)
+    internal val uiShowInfo: SharedFlow<MessageUiState> = _uiShowInfo.asSharedFlow()
 
     init {
         getOfflineRecordingTriggerStatus()
         viewModelScope.launch {
             polarDeviceStreamingRepository.triggerState
                 .collect { triggerState ->
-                    if (triggerState.deviceId == deviceId) {
+                    if (triggerState.identifier == identifier) {
                         triggerState.triggerStatus?.let { triggersStatus ->
                             _uiOfflineRecTriggerStatus.update {
                                 OfflineRecTriggerStatusUiState.CurrentStatus(triggersStatus)
@@ -61,15 +64,11 @@ class OfflineTriggerStatusViewModel @Inject constructor(
 
     private fun showError(errorDescription: String, errorThrowable: Throwable? = null) {
         Log.e(TAG, "Show error: $errorDescription. Error reason $errorThrowable")
-        _uiShowError.update {
-            MessageUiState(header = errorDescription, description = errorThrowable?.message)
-        }
+        _uiShowError.tryEmit(MessageUiState(header = errorDescription, description = errorThrowable?.message))
     }
 
-    private fun showInfo(header: String, description: String = "") {
-        _uiShowInfo.update {
-            MessageUiState(header, description)
-        }
+    private fun showInfo(header: String, description: String = "", timeout: Long? = null) {
+        _uiShowInfo.tryEmit(MessageUiState(header, description, timeout))
     }
 
     internal fun getOfflineRecordingTriggerStatus() {
@@ -78,7 +77,7 @@ class OfflineTriggerStatusViewModel @Inject constructor(
             _uiOfflineRecTriggerStatus.update {
                 OfflineRecTriggerStatusUiState.FetchingStatus
             }
-            when (val result = polarDeviceStreamingRepository.getOfflineRecordingTriggerStatus(deviceId)) {
+            when (val result = polarDeviceStreamingRepository.getOfflineRecordingTriggerStatus(identifier)) {
                 is ResultOfRequest.Success -> {
                     result.value?.let {
                         _uiOfflineRecTriggerStatus.update {

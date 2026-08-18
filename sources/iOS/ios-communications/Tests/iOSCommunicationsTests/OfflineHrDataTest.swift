@@ -73,9 +73,7 @@ final class OfflineHrDataTest: XCTestCase {
         // Assert
         XCTAssertThrowsError(try OfflineHrData.parseDataFromDataFrame(frame: dataFrame), "Raw FrameType: TYPE_0 is not supported by PPG data parser")
         XCTAssertThrowsError(try OfflineHrData.parseDataFromDataFrame(frame: dataFrame)) { error in
-            guard case BleGattException.gattDataError = error else {
-                return XCTFail()
-            }
+            XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError, got \(error)")
         }
     }
 
@@ -156,9 +154,7 @@ final class OfflineHrDataTest: XCTestCase {
         // Assert
         XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame), "Raw FrameType: TYPE_1 is not supported by PPG data parser")
         XCTAssertThrowsError(try PpgData.parseDataFromDataFrame(frame: dataFrame)) { error in
-            guard case BleGattException.gattDataError = error else {
-                return XCTFail()
-            }
+            XCTAssertTrue(error is PmdDataParseError, "Expected PmdDataParseError, got \(error)")
         }
     }
 }

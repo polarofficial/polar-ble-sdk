@@ -237,8 +237,8 @@ extends <a href=../BleGattBase.html>BleGattBase</a>
                                         </tr>
                                         
                                         <tr class="altColor">
-                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/LinkedBlockingQueue.html>LinkedBlockingQueue</a>&lt;<a href=https://developer.android.com/reference/kotlin/android/util/Pair.html>Pair</a>&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-byte-array/index.html>ByteArray</a>, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt;&gt;</code></td>
-                                            <th class="colSecond" scope="row"><code><a href=BlePfcClient.html#pfcCpInputQueue>pfcCpInputQueue</a></code></th>
+                                            <td class="colFirst"><code>private final Channel&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-pair/index.html>Pair</a>&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-byte-array/index.html>ByteArray</a>, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt;&gt;</code></td>
+                                            <th class="colSecond" scope="row"><code><a href=BlePfcClient.html#pfcCpResponseChannel>pfcCpResponseChannel</a></code></th>
                                             <td class="colLast"></td>
                                         </tr>
                                         
@@ -352,9 +352,9 @@ extends <a href=../BleGattBase.html>BleGattBase</a>
                                         </tr>
                                         
                                         <tr id="i0" class="altColor">
-                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/LinkedBlockingQueue.html>LinkedBlockingQueue</a>&lt;<a href=https://developer.android.com/reference/kotlin/android/util/Pair.html>Pair</a>&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-byte-array/index.html>ByteArray</a>, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt;&gt;</code>
+                                            <td class="colFirst"><code>final Channel&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-pair/index.html>Pair</a>&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-byte-array/index.html>ByteArray</a>, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt;&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=BlePfcClient.html#getPfcCpInputQueue()>getPfcCpInputQueue</a>() </code>
+                                            <th class="colSecond" scope="row"><code><a href=BlePfcClient.html#getPfcCpResponseChannel()>getPfcCpResponseChannel</a>() </code>
                                             </th>
                                             <td class="colLast"></td>
                                         </tr>
@@ -483,15 +483,15 @@ extends <a href=../BleGattBase.html>BleGattBase</a>
                             </a>
                                 <h3>Method Detail</h3>
                                 
-                                <a id="getPfcCpInputQueue()">
+                                <a id="getPfcCpResponseChannel()">
                                     <!--   -->
                                 </a>
                                 <ul class=
                                               "blockList"
                                           >
                                     <li class="blockList">
-                                        <h4>getPfcCpInputQueue</h4>
-                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/LinkedBlockingQueue.html>LinkedBlockingQueue</a>&lt;<a href=https://developer.android.com/reference/kotlin/android/util/Pair.html>Pair</a>&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-byte-array/index.html>ByteArray</a>, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt;&gt; <a href=BlePfcClient.html#getPfcCpInputQueue()>getPfcCpInputQueue</a>()</pre>
+                                        <h4>getPfcCpResponseChannel</h4>
+                                        <pre class="methodSignature"> final Channel&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-pair/index.html>Pair</a>&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-byte-array/index.html>ByteArray</a>, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt;&gt; <a href=BlePfcClient.html#getPfcCpResponseChannel()>getPfcCpResponseChannel</a>()</pre>
                                         <div class="block"></div>
 
                                         <dl>

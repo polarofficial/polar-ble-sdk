@@ -12,12 +12,19 @@ struct PmdDataFrame {
     let sampleRate: UInt
     
     private static let DELTA_FRAME_BIT_MASK: UInt8 = 0x80
-    
+    private static let MIN_FRAME_SIZE = 10
+
     init(data: Data,
          _ getPreviousTimeStamp: (PmdMeasurementType, PmdDataFrameType) -> UInt64,
          _ getFactor: (PmdMeasurementType) -> Float,
          _ getSampleRate: (PmdMeasurementType) -> UInt) throws {
-        
+
+        guard data.count >= PmdDataFrame.MIN_FRAME_SIZE else {
+            throw PmdDataParseError(
+                message: "PMD data frame is too short: expected at least \(PmdDataFrame.MIN_FRAME_SIZE) bytes " +
+                "but received \(data.count). Data: \(PmdDataParseError.toHex(data))")
+        }
+
         measurementType = PmdMeasurementType.fromId(id: data[0])
         let timeBytes = data.subdata(in: 1..<9) as NSData
         var tempTimeStamp: UInt64 = 0
@@ -63,6 +70,6 @@ enum PmdDataFrameType: UInt8, CaseIterable {
                 return type
             }
         }
-        throw BleGattException.gattDataError(description: "FrameType id:\(byte) is not implemented")
+        throw PmdDataParseError(message: "FrameType id:\(byte) is not implemented")
     }
 }

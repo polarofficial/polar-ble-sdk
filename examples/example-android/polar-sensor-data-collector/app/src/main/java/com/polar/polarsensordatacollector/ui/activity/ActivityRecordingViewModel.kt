@@ -17,10 +17,12 @@ import com.polar.sdk.api.model.activity.PolarCaloriesData
 import com.polar.sdk.api.model.sleep.PolarSleepData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.disposables.CompositeDisposable
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -45,13 +47,13 @@ class ActivityRecordingViewModel @Inject constructor(
         ) : ActivityUiState()
     }
 
-    val deviceId = state.get<String>(ONLINE_OFFLINE_KEY_DEVICE_ID) ?: throw Exception("Activity record viewModel must know the deviceId")
+    val identifier = state.get<String>(ONLINE_OFFLINE_KEY_DEVICE_ID) ?: throw Exception("Activity record viewModel must know the identifier")
 
-    private val _uiShowError: MutableStateFlow<MessageUiState> = MutableStateFlow(MessageUiState("", ""))
-    val uiShowError: StateFlow<MessageUiState> = _uiShowError.asStateFlow()
+    private val _uiShowError = MutableSharedFlow<MessageUiState>(extraBufferCapacity = 1)
+    val uiShowError: SharedFlow<MessageUiState> = _uiShowError.asSharedFlow()
 
-    private val _uiShowInfo: MutableStateFlow<MessageUiState> = MutableStateFlow(MessageUiState("", ""))
-    val uiShowInfo: StateFlow<MessageUiState> = _uiShowInfo.asStateFlow()
+    private val _uiShowInfo = MutableSharedFlow<MessageUiState>(extraBufferCapacity = 1)
+    val uiShowInfo: SharedFlow<MessageUiState> = _uiShowInfo.asSharedFlow()
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -61,8 +63,5 @@ class ActivityRecordingViewModel @Inject constructor(
     }
 
     fun initView() {
-        _uiShowInfo.update {
-            MessageUiState("", null)
-        }
     }
 }

@@ -1,5 +1,6 @@
 package com.polar.sdk.api
 
+import com.polar.sdk.api.errors.PolarTimeoutException
 import com.polar.sdk.api.model.sleep.PolarSleepData
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
@@ -14,10 +15,12 @@ interface PolarSleepApi {
      * Get sleep recording state. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA]
      *
      * @param identifier The Polar device ID or BT address
+     * @param timeoutMs maximum time in milliseconds to wait for the state. Default is 30000ms.
      * @return boolean value indicating if sleep recording is ongoing
+     * @throws [PolarTimeoutException] if no response is received within [timeoutMs] milliseconds
      * @throws Throwable if the operation fails
      **/
-    suspend fun getSleepRecordingState(identifier: String): Boolean
+    suspend fun getSleepRecordingState(identifier: String, timeoutMs: Long = 30_000L): Boolean
 
     /**
      * Observe sleep recording state. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA]

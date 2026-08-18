@@ -47,7 +47,8 @@ class BleUtils private constructor() {
         private fun getCode(type: Byte): AD_TYPE {
             return try {
                 if (type.toInt() == -1) AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC else AD_TYPE.entries[type.toInt()]
-            } catch (ex: ArrayIndexOutOfBoundsException) {
+            } catch (ex: IndexOutOfBoundsException) {
+                e(TAG, "Unknown AD type 0x${type.toInt().and(0xFF).toString(16)}, returning GAP_ADTYPE_UNKNOWN: ${ex.localizedMessage}")
                 AD_TYPE.GAP_ADTYPE_UNKNOWN
             }
         }
@@ -93,7 +94,7 @@ class BleUtils private constructor() {
         }
 
         fun validate(valid: Boolean, message: String?) {
-            if (!valid) throw AssertionError(message)
+            if (!valid) throw IllegalArgumentException(message)
         }
     }
 }

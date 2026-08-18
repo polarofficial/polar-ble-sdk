@@ -41,18 +41,24 @@ public class AccData {
             switch (frame.frameType) {
             case PmdDataFrameType.type_0: return try dataFromCompressedType0(frame: frame)
             case PmdDataFrameType.type_1: return try dataFromCompressedType1(frame: frame)
-            default: throw BleGattException.gattDataError(description: "Compressed FrameType: \(frame.frameType) is not supported by ACC data parser")
+            default: throw PmdDataParseError(message: "Compressed FrameType: \(frame.frameType) is not supported by ACC data parser")
             }
         } else {
             switch (frame.frameType) {
             case PmdDataFrameType.type_0: return try dataFromRawType0(frame: frame)
             case PmdDataFrameType.type_1: return try dataFromRawType1(frame: frame)
-            default: throw BleGattException.gattDataError(description: "Raw FrameType: \(frame.frameType) is not supported by ACC data parser")
+            default: throw PmdDataParseError(message: "Raw FrameType: \(frame.frameType) is not supported by ACC data parser")
             }
         }
     }
     
     private static func dataFromRawType0(frame: PmdDataFrame) throws -> AccData {
+        let sampleByteSize = Int(TYPE_0_SAMPLE_SIZE_IN_BYTES * TYPE_0_CHANNELS_IN_SAMPLE)
+        guard !frame.dataContent.isEmpty && frame.dataContent.count % sampleByteSize == 0 else {
+            throw PmdDataParseError(
+                message: "ACC raw TYPE_0 dataContent size \(frame.dataContent.count) is not a " +
+                "non-zero multiple of expected sample size \(sampleByteSize). Data: \(PmdDataParseError.toHex(frame.dataContent))")
+        }
         var offset = 0
         let step = TYPE_0_SAMPLE_SIZE_IN_BYTES
         let samplesSize = Int(Double(frame.dataContent.count) / Double(step * TYPE_0_CHANNELS_IN_SAMPLE))
@@ -74,6 +80,12 @@ public class AccData {
     }
     
     private static func dataFromRawType1(frame: PmdDataFrame) throws -> AccData {
+        let sampleByteSize = Int(TYPE_1_SAMPLE_SIZE_IN_BYTES * TYPE_1_CHANNELS_IN_SAMPLE)
+        guard !frame.dataContent.isEmpty && frame.dataContent.count % sampleByteSize == 0 else {
+            throw PmdDataParseError(
+                message: "ACC raw TYPE_1 dataContent size \(frame.dataContent.count) is not a " +
+                "non-zero multiple of expected sample size \(sampleByteSize). Data: \(PmdDataParseError.toHex(frame.dataContent))")
+        }
         var offset = 0
         let step = TYPE_1_SAMPLE_SIZE_IN_BYTES
         let samplesSize = Int(Double(frame.dataContent.count) / Double(step * TYPE_1_CHANNELS_IN_SAMPLE))
@@ -96,6 +108,9 @@ public class AccData {
     
     private static func dataFromCompressedType0(frame: PmdDataFrame) throws -> AccData {
         //Note, special Wolfi type. See SAGRFC85.3
+        guard !frame.dataContent.isEmpty else {
+            throw PmdDataParseError(message: "ACC compressed TYPE_0 dataContent is empty")
+        }
         let samples = Pmd.parseDeltaFramesToSamples(frame.dataContent, channels: 3, resolution: 16)
         let timeStamps = try PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp: frame.previousTimeStamp, frameTimeStamp: frame.timeStamp, samplesSize: UInt(samples.count), sampleRate: frame.sampleRate)
         let accFactor = frame.factor * 1000 // type 0 data arrives in G units, convert to milliG
@@ -112,6 +127,9 @@ public class AccData {
     }
     
     private static func dataFromCompressedType1(frame: PmdDataFrame) throws -> AccData {
+        guard !frame.dataContent.isEmpty else {
+            throw PmdDataParseError(message: "ACC compressed TYPE_1 dataContent is empty")
+        }
         let samples = Pmd.parseDeltaFramesToSamples(frame.dataContent, channels: TYPE_1_CHANNELS_IN_SAMPLE, resolution: TYPE_1_SAMPLE_SIZE_IN_BITS)
         let timeStamps = try PmdTimeStampUtils.getTimeStamps(previousFrameTimeStamp: frame.previousTimeStamp, frameTimeStamp: frame.timeStamp, samplesSize: UInt(samples.count), sampleRate: frame.sampleRate)
         

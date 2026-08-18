@@ -1,5 +1,7 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
+import com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException
+import com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException.Companion.toHex
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClient.PmdDataFieldEncoding
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
@@ -25,17 +27,26 @@ internal class PressureData {
             return if (frame.isCompressedFrame) {
                 when (frame.frameType) {
                     PmdDataFrame.PmdDataFrameType.TYPE_0 -> dataFromCompressedType0(frame)
-                    else -> throw java.lang.Exception("Compressed FrameType: ${frame.frameType} is not supported by Pressure data parser")
+                    else -> throw PmdDataParseException(
+                        "Pressure compressed frame type ${frame.frameType} is not supported"
+                    )
                 }
             } else {
                 when (frame.frameType) {
                     PmdDataFrame.PmdDataFrameType.TYPE_0 -> dataFromRawType0(frame)
-                    else -> throw java.lang.Exception("Raw FrameType: ${frame.frameType} is not supported by Pressure data parser")
+                    else -> throw PmdDataParseException(
+                        "Pressure raw frame type ${frame.frameType} is not supported"
+                    )
                 }
             }
         }
 
         private fun dataFromCompressedType0(frame: PmdDataFrame): PressureData {
+            if (frame.dataContent.isEmpty()) {
+                throw PmdDataParseException(
+                    "Pressure compressed TYPE_0 dataContent is empty"
+                )
+            }
             val pressureData = PressureData()
             val samples = BlePMDClient.parseDeltaFramesAll(frame.dataContent, TYPE_0_CHANNELS_IN_SAMPLE, TYPE_0_SAMPLE_SIZE_IN_BITS, PmdDataFieldEncoding.FLOAT_IEEE754)
 
@@ -48,6 +59,13 @@ internal class PressureData {
         }
 
         private fun dataFromRawType0(frame: PmdDataFrame): PressureData {
+            if (frame.dataContent.isEmpty() || frame.dataContent.size % TYPE_0_SAMPLE_SIZE_IN_BYTES != 0) {
+                throw PmdDataParseException(
+                    "Pressure raw TYPE_0 dataContent size ${frame.dataContent.size} is not a " +
+                    "non-zero multiple of expected sample size $TYPE_0_SAMPLE_SIZE_IN_BYTES. " +
+                    "Data: ${frame.dataContent.toHex()}"
+                )
+            }
             val pressureData = PressureData()
             var offset = 0
             val step = TYPE_0_SAMPLE_SIZE_IN_BYTES

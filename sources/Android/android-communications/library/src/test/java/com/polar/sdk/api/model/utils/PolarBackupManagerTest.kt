@@ -1,12 +1,17 @@
 package com.polar.sdk.api.model.utils
 
+import com.polar.androidcommunications.api.ble.BleDeviceListener
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
 import com.polar.sdk.impl.utils.PolarBackupManager
 import com.polar.sdk.impl.utils.PolarBackupManager.BackupFileData
+import com.polar.sdk.impl.utils.PolarFileUtils
 import io.mockk.coEvery
+import io.mockk.coJustRun
 import io.mockk.coVerify
 import io.mockk.confirmVerified
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -189,7 +194,7 @@ class PolarBackupManagerTest {
         )} returns flowOf(0L)
 
         // Act
-        backupManager.restoreBackup(mockFileData)
+        backupManager.restoreBackup("testIdentifier", mockFileData, null)
 
         // Assert
         coVerify {
@@ -213,5 +218,127 @@ class PolarBackupManagerTest {
             )
         }
         confirmVerified(mockClient)
+    }
+
+    @Test
+    fun `restoreBackup() should create folders for paths under user root`() = runTest {
+        // Arrange
+        val backupManager = PolarBackupManager(mockClient)
+        val mockListener = mockk<BleDeviceListener>()
+
+        val mockFileData = listOf(
+            BackupFileData(byteArrayOf(), "/U/0/S/", "PHYSDATA.BPB")
+        )
+
+        mockkObject(PolarFileUtils)
+        coJustRun { PolarFileUtils.createFolder(any(), any(), any(), any()) }
+
+        coEvery { mockClient.write(
+            PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
+                .setPath("/U/0/S/PHYSDATA.BPB").build().toByteArray(),
+            any()
+        )} returns flowOf(0L)
+
+        try {
+            // Act
+            backupManager.restoreBackup("testIdentifier", mockFileData, mockListener)
+
+            // Assert: both /U/0/ and /U/0/S/ should be created (paths under ARABICA_USER_ROOT_FOLDER)
+            coVerify(exactly = 1) { PolarFileUtils.createFolder("testIdentifier", "/U/0/", mockListener, any()) }
+            coVerify(exactly = 1) { PolarFileUtils.createFolder("testIdentifier", "/U/0/S/", mockListener, any()) }
+        } finally {
+            unmockkObject(PolarFileUtils)
+        }
+    }
+
+    @Test
+    fun `restoreBackup() should skip folder creation when listener is null`() = runTest {
+        // Arrange
+        val backupManager = PolarBackupManager(mockClient)
+
+        val mockFileData = listOf(
+            BackupFileData(byteArrayOf(), "/U/0/S/", "PHYSDATA.BPB")
+        )
+
+        mockkObject(PolarFileUtils)
+        coJustRun { PolarFileUtils.createFolder(any(), any(), any(), any()) }
+
+        coEvery { mockClient.write(
+            PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
+                .setPath("/U/0/S/PHYSDATA.BPB").build().toByteArray(),
+            any()
+        )} returns flowOf(0L)
+
+        try {
+            // Act
+            backupManager.restoreBackup("testIdentifier", mockFileData, null)
+
+            // Assert: no folder creation when listener is null
+            coVerify(exactly = 0) { PolarFileUtils.createFolder(any(), any(), any(), any()) }
+        } finally {
+            unmockkObject(PolarFileUtils)
+        }
+    }
+
+    @Test
+    fun `restoreBackup() should create folders for each file in user directory`() = runTest {
+        // Arrange
+        val backupManager = PolarBackupManager(mockClient)
+        val mockListener = mockk<BleDeviceListener>()
+
+        // Two files in the same /U/0/S/ directory — folder creation is per-file
+        val mockFileData = listOf(
+            BackupFileData(byteArrayOf(), "/U/0/S/", "PHYSDATA.BPB"),
+            BackupFileData(byteArrayOf(), "/U/0/S/", "UDEVSET.BPB")
+        )
+
+        mockkObject(PolarFileUtils)
+        coJustRun { PolarFileUtils.createFolder(any(), any(), any(), any()) }
+
+        coEvery { mockClient.write(any(), any()) } returns flowOf(0L)
+
+        try {
+            // Act
+            backupManager.restoreBackup("testIdentifier", mockFileData, mockListener)
+
+            // Assert: /U/0/ and /U/0/S/ are each created once per file (2 times total each)
+            coVerify(exactly = 2) { PolarFileUtils.createFolder("testIdentifier", "/U/0/", mockListener, any()) }
+            coVerify(exactly = 2) { PolarFileUtils.createFolder("testIdentifier", "/U/0/S/", mockListener, any()) }
+        } finally {
+            unmockkObject(PolarFileUtils)
+        }
+    }
+
+    @Test
+    fun `restoreBackup() should not create folders for paths outside user root`() = runTest {
+        // Arrange
+        val backupManager = PolarBackupManager(mockClient)
+        val mockListener = mockk<BleDeviceListener>()
+
+        val mockFileData = listOf(
+            BackupFileData(byteArrayOf(), "/SYS/BT/", "BTDEV.BPB")
+        )
+
+        mockkObject(PolarFileUtils)
+        coJustRun { PolarFileUtils.createFolder(any(), any(), any(), any()) }
+
+        coEvery { mockClient.write(
+            PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
+                .setPath("/SYS/BT/BTDEV.BPB").build().toByteArray(),
+            any()
+        )} returns flowOf(0L)
+
+        try {
+            // Act
+            backupManager.restoreBackup("testIdentifier", mockFileData, mockListener)
+
+            // Assert: no folder creation for paths outside /U/0/
+            coVerify(exactly = 0) { PolarFileUtils.createFolder(any(), any(), any(), any()) }
+        } finally {
+            unmockkObject(PolarFileUtils)
+        }
     }
 }

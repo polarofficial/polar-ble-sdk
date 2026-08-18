@@ -1,10 +1,13 @@
 package com.polar.sdk.api.model.activity
 
+import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.sdk.impl.utils.PolarTimeUtils
 import fi.polar.remote.representation.protobuf.AutomaticSamples
 import fi.polar.remote.representation.protobuf.AutomaticSamples.PbAutomaticSampleSessions
 import java.time.LocalDate
 import java.time.LocalTime
+
+private const val TAG = "Polar247HrSamplesData"
 
 data class Polar247HrSamplesData(
     val date: LocalDate,
@@ -29,10 +32,16 @@ data class Polar247HrSamples(
         fun fromProto(heartRateSampleProtos: List<AutomaticSamples.PbAutomaticHeartRateSamples>): List<Polar247HrSamples> {
             var heartRateSampleList = mutableListOf<Polar247HrSamples>()
             for (heartRateSampleProto in heartRateSampleProtos ) {
+                val triggerTypeValue = heartRateSampleProto.triggerType.number
+                val triggerType = AutomaticSampleTriggerType.fromProto(triggerTypeValue)
+                if (triggerType == null) {
+                    BleLogger.w(TAG, "Skipping HR sample with unknown trigger type: $triggerTypeValue")
+                    continue
+                }
                 val sample = Polar247HrSamples(
                     PolarTimeUtils.pbTimeToLocalTime(heartRateSampleProto.time),
                     heartRateSampleProto.heartRateList,
-                    AutomaticSampleTriggerType.fromProto(heartRateSampleProto.triggerType.number)
+                    triggerType
                 )
                 heartRateSampleList.add(sample)
             }
@@ -63,7 +72,12 @@ enum class AutomaticSampleTriggerType(val value: Int) {
     TRIGGER_TYPE_MANUAL(4);
 
     companion object {
-        infix fun fromProto(value: Int): AutomaticSampleTriggerType =
-            AutomaticSampleTriggerType.values().first { it.value == value }
+        /**
+         * Returns the matching [AutomaticSampleTriggerType] for the given protobuf number,
+         * or **null** if the device reports an unknown trigger type (e.g. from newer firmware).
+         * Callers should skip samples with a null trigger type and log the unknown value.
+         */
+        infix fun fromProto(value: Int): AutomaticSampleTriggerType? =
+            AutomaticSampleTriggerType.values().firstOrNull { it.value == value }
     }
 }

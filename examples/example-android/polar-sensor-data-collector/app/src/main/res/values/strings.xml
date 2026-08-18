@@ -7,6 +7,7 @@
     <string name="filter_by_name_prefix">Filter by name prefix</string>
     <string name="device_settings_header">Settings</string>
     <string name="ok_button">OK</string>
+    <string name="start_button">Start</string>
     <string name="stop_button">Stop</string>
     <string name="set">Set</string>
     <string name="submit">Submit</string>
@@ -30,7 +31,7 @@
     <string name="delete_button">Delete</string>
     <string name="set_warehouse_sleep_button_header">Set warehouse sleep</string>
     <string name="set_hibernate_mode_button_header">Set hibernate mode</string>
-    <string name="set_warehouse_sleep_switch_header">Enable?</string>
+    <string name="telemetry_start_header">Start telemetry</string>
     <string name="set_turn_device_off_header">Turn device off</string>
     <string name="ohr_logging_enable">Enable OHR logging</string>
     <string name="ohr_logging_disable">Disable OHR logging</string>
@@ -64,6 +65,7 @@
     <string name="skin_temperature_button_text">Skin temperature data</string>
     <string name="file_attached_mail_text">Hello,\n see file attachment</string>
     <string name="force_stop_sleep_header">Stop sleep recording</string>
+    <string name="get_sleep_status_button">Get sleep status</string>
     <string name="ll_api_header">Low level API functions</string>
 
     <!-- Exercise activity -->
@@ -344,6 +346,9 @@
     <string name="generic_api_button_write">Write</string>
     <string name="generic_api_button_list">List</string>
     <string name="generic_api_button_delete">Delete</string>
+    <string name="generic_api_do_create_folder_header">Create a folder on device</string>
+    <string name="generic_api_do_create_folder">Folder path to create</string>
+    <string name="generic_api_button_create_folder">Create</string>
 
     <!-- Battery API texts -->
     <string name="charge_state_header">Read charge state</string>

@@ -1,5 +1,6 @@
 package com.polar.sdk.impl.utils
 
+import com.polar.androidcommunications.api.ble.BleDeviceListener
 import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
 import java.io.ByteArrayInputStream
@@ -109,11 +110,34 @@ class PolarBackupManager(private val client: BlePsFtpClient) {
      * Restores the backup files.
      * @param backupFiles List of BackupFileData to be restored.
      */
-    suspend fun restoreBackup(backupFiles: List<BackupFileData>) {
+    suspend fun restoreBackup(identifier: String, backupFiles: List<BackupFileData>, listener: BleDeviceListener?) {
         backupFiles.forEach {
             BleLogger.d(TAG, "Restoring backup file: ${it.directory} + ${it.fileName}")
         }
         for (backupFileData in backupFiles) {
+            val segments = backupFileData.directory
+                .split("/")
+                .filter { it.isNotEmpty() }
+
+            val createdFolders = mutableListOf<String>()
+            val paths = (1..segments.size).map { i ->
+                "/" + segments.subList(0, i).joinToString("/") + "/"
+            }.filter { it.startsWith(ARABICA_USER_ROOT_FOLDER) }
+            for (path in paths) {
+                if (listener != null) {
+                    if (!createdFolders.contains(path)) {
+                        createdFolders.add(path)
+                        PolarFileUtils.createFolder(
+                            identifier,
+                            path,
+                            listener,
+                            "Restoring backup folder"
+                        )
+                    }
+                } else {
+                    BleLogger.e(TAG, "BLE listener is null. Skipping folder creation.")
+                }
+            }
             val header = PftpRequest.PbPFtpOperation.newBuilder()
                 .setCommand(PftpRequest.PbPFtpOperation.Command.PUT)
                 .setPath(backupFileData.directory + backupFileData.fileName)

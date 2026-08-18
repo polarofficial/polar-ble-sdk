@@ -50,7 +50,7 @@ class ListTrainingSessionsViewModel @Inject constructor(
     state: SavedStateHandle
 ) : ViewModel() {
     private val formatter = DateTimeFormatter.ofPattern("yyyyMMdd", Locale.ENGLISH)
-    private val deviceId = state.get<String>("deviceIdFragmentArgument") ?: throw Exception("ListTrainingSessionsViewModel model requires deviceId")
+    private val identifier = state.get<String>("deviceIdFragmentArgument") ?: throw Exception("ListTrainingSessionsViewModel model requires device identifier")
     private val fromDateString = state.get<String>("fromDateFragmentArgument") ?: throw Exception("ListTrainingSessionsViewModel model requires fromDate")
     private val toDateString = state.get<String>("toDateFragmentArgument") ?: throw Exception("ListTrainingSessionsViewModel model requires toDate")
     private val fromDate = LocalDate.parse(fromDateString, formatter)
@@ -85,10 +85,10 @@ class ListTrainingSessionsViewModel @Inject constructor(
     }
 
     fun listTrainingSessions() {
-        Log.d(TAG, "listTrainingSessions $deviceId")
+        Log.d(TAG, "listTrainingSessions $identifier")
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                polarDeviceStreamingRepository.getTrainingSessionReferences(deviceId, fromDate, toDate)
+                polarDeviceStreamingRepository.getTrainingSessionReferences(identifier, fromDate, toDate)
                     .onStart {
                         listOfTrainingSessions.clear()
                         withContext(Dispatchers.Main) {
@@ -116,13 +116,13 @@ class ListTrainingSessionsViewModel @Inject constructor(
     }
 
     fun deleteTrainingSession(entry: PolarTrainingSessionReference) {
-        Log.d(TAG, "Delete training session from device $deviceId, path: ${entry.path}")
+        Log.d(TAG, "Delete training session from device $identifier, path: ${entry.path}")
         viewModelScope.launch {
             trainingSessionsUiState = trainingSessionsUiState.copy(
                 deletingEntryPath = entry.path
             )
 
-            when (val result = polarDeviceStreamingRepository.deleteTrainingSession(deviceId, entry.path)) {
+            when (val result = polarDeviceStreamingRepository.deleteTrainingSession(identifier, entry.path)) {
                 is ResultOfRequest.Success -> {
                     Log.d(TAG, "Training session successfully deleted: ${entry.path}")
 

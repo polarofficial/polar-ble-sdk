@@ -70,13 +70,9 @@ internal object PolarSleepUtils {
                 } else null,
                 null
             )
-        } catch (_: Throwable) {
-            PolarSleepAnalysisResult(
-                null, null, null, null,
-                null, null, null, null,
-                null, null, null, null,
-                null, null, null, null
-            )
+        } catch (e: Throwable) {
+            BleLogger.e(TAG, "Failed to parse sleep data for $date: $e")
+            throw e
         }
     }
 
@@ -104,7 +100,8 @@ internal object PolarSleepUtils {
                 result.sleepSkinTemperatureResult = fromPbSleepSkinTemperatureResult(proto)
             }
             result
-        } catch (_: Throwable) {
+        } catch (e: Throwable) {
+            BleLogger.w(TAG, "Failed to read sleep skin temperature data for $date: $e")
             sleepAnalysisResult
         }
     }

@@ -51,7 +51,7 @@ public struct PolarSensorSetting {
     func map2PmdSetting() -> PmdSetting {
         return PmdSetting(settings.reduce(into: [:]) { (result, arg1) in
             let (key, value) = arg1
-            result[PmdSetting.PmdSettingType(rawValue: UInt8(key.rawValue)) ?? PmdSetting.PmdSettingType.unknown]=value.first!
+            result[PmdSetting.PmdSettingType(rawValue: UInt8(key.rawValue)) ?? PmdSetting.PmdSettingType.unknown] = value.first ?? 0
         })
     }
     
@@ -59,11 +59,13 @@ public struct PolarSensorSetting {
     ///
     /// - Returns: PolarSensorSetting with max settings
     public func maxSettings() -> PolarSensorSetting {
-        let selected = settings.reduce(into: [:]) { (result, arg1) in
-            let (key, value) = arg1
-            result[key] = value.max() ?? 0
-        } as [SettingType : UInt32]
-        return try! PolarSensorSetting(selected)
+        var selected = [SettingType: UInt32]()
+        for (key, value) in settings {
+            if let maxVal = value.max(), maxVal > 0 {
+                selected[key] = maxVal
+            }
+        }
+        return (try? PolarSensorSetting(selected)) ?? PolarSensorSetting()
     }
 }
 

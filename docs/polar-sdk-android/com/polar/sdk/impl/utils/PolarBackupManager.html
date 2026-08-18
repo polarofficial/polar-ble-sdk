@@ -269,7 +269,7 @@ public final class <span class="typeNameLabel"><a href=PolarBackupManager.html>P
                                         <tr id="i1" class="rowColor">
                                             <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBackupManager.html#restoreBackup(java.util.List)>restoreBackup</a>(<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBackupManager.BackupFileData.html>PolarBackupManager.BackupFileData</a>&gt; backupFiles) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBackupManager.html#restoreBackup(java.lang.String,java.util.List,.<Error class: unknown class>)>restoreBackup</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBackupManager.BackupFileData.html>PolarBackupManager.BackupFileData</a>&gt; backupFiles, &lt;Error class: unknown class&gt; listener) </code>
                                             </th>
                                             <td class="colLast">Restores the backup files.</td>
                                         </tr>
@@ -363,7 +363,7 @@ public final class <span class="typeNameLabel"><a href=PolarBackupManager.html>P
                                     </li>
                                 </ul>
                                 
-                                <a id="restoreBackup(java.util.List)">
+                                <a id="restoreBackup(java.lang.String,java.util.List,.&lt;Error class: unknown class&gt;)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -371,7 +371,7 @@ public final class <span class="typeNameLabel"><a href=PolarBackupManager.html>P
                                           >
                                     <li class="blockList">
                                         <h4>restoreBackup</h4>
-                                        <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBackupManager.html#restoreBackup(java.util.List)>restoreBackup</a>(<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBackupManager.BackupFileData.html>PolarBackupManager.BackupFileData</a>&gt; backupFiles)</pre>
+                                        <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBackupManager.html#restoreBackup(java.lang.String,java.util.List,.<Error class: unknown class>)>restoreBackup</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBackupManager.BackupFileData.html>PolarBackupManager.BackupFileData</a>&gt; backupFiles, &lt;Error class: unknown class&gt; listener)</pre>
                                         <div class="block"><p>Restores the backup files.</p></div>
 
                                         <dl>
@@ -380,7 +380,11 @@ public final class <span class="typeNameLabel"><a href=PolarBackupManager.html>P
                                             <dt><span class="paramLabel">Parameters:</span></dt>
                                             
                                             
+                                            
+                                            
                                             <dd><code>backupFiles</code> - List of BackupFileData to be restored.</dd>
+                                            
+                                            
                                             
                                             
                                         

@@ -219,7 +219,7 @@ protected constructor() {
          */
         get() = advertisementContent.polarDeviceId
 
-    val polarDeviceType: String
+    open val polarDeviceType: String
         /**
          * @return polar device type
          */
